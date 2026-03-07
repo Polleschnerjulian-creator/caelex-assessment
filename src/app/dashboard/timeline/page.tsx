@@ -226,15 +226,15 @@ function MissionTimelineGantt() {
     { bar: string; bg: string; text: string; border: string }
   > = {
     blue: {
-      bar: "bg-emerald-500",
-      bg: "bg-emerald-500/10",
-      text: "text-emerald-400",
-      border: "border-emerald-500/30",
+      bar: "bg-[var(--accent-success-soft)]0",
+      bg: "bg-[var(--accent-primary-soft)]",
+      text: "text-[var(--accent-primary)]",
+      border: "border-[var(--accent-success)/30]",
     },
     amber: {
-      bar: "bg-amber-500",
-      bg: "bg-amber-500/10",
-      text: "text-amber-400",
+      bar: "bg-[var(--accent-warning)]",
+      bg: "bg-[var(--accent-warning-soft)]",
+      text: "text-[var(--accent-warning)]",
       border: "border-amber-500/30",
     },
     purple: {
@@ -244,27 +244,36 @@ function MissionTimelineGantt() {
       border: "border-purple-500/30",
     },
     emerald: {
-      bar: "bg-emerald-500",
-      bg: "bg-emerald-500/10",
-      text: "text-emerald-400",
-      border: "border-emerald-500/30",
+      bar: "bg-[var(--accent-success-soft)]0",
+      bg: "bg-[var(--accent-primary-soft)]",
+      text: "text-[var(--accent-primary)]",
+      border: "border-[var(--accent-success)/30]",
     },
     slate: {
-      bar: "bg-slate-500",
-      bg: "bg-slate-500/10",
-      text: "text-slate-400",
-      border: "border-slate-500/30",
+      bar: "bg-[var(--surface-sunken)]0",
+      bg: "bg-[var(--surface-sunken)]0/10",
+      text: "text-[var(--text-tertiary)]",
+      border: "border-[var(--border-default)]/30",
     },
   };
 
   const statusLabel = (status: MissionPhase["status"]) => {
     switch (status) {
       case "completed":
-        return { text: "Completed", cls: "bg-emerald-500/20 text-emerald-400" };
+        return {
+          text: "Completed",
+          cls: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+        };
       case "active":
-        return { text: "Active", cls: "bg-emerald-500/20 text-emerald-400" };
+        return {
+          text: "Active",
+          cls: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+        };
       case "future":
-        return { text: "Upcoming", cls: "bg-slate-500/20 text-slate-400" };
+        return {
+          text: "Upcoming",
+          cls: "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)]",
+        };
     }
   };
 
@@ -295,26 +304,26 @@ function MissionTimelineGantt() {
       </CardHeader>
       <CardContent>
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-slate-500 dark:text-white/45">
+        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-[var(--text-secondary)]">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+            <span className="w-3 h-3 rounded-sm bg-[var(--accent-success-soft)]0" />
             Active
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+            <span className="w-3 h-3 rounded-sm bg-[var(--accent-success-soft)]0" />
             Completed
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-slate-500" />
+            <span className="w-3 h-3 rounded-sm bg-[var(--surface-sunken)]0" />
             Upcoming
           </div>
           <div className="flex items-center gap-1.5">
-            <Diamond size={10} className="text-white/70" />
+            <Diamond size={10} className="text-[var(--text-secondary)]" />
             Milestone
           </div>
           {todayOffset !== null && (
             <div className="flex items-center gap-1.5">
-              <span className="w-0.5 h-3 bg-red-500 rounded-full" />
+              <span className="w-0.5 h-3 bg-[var(--accent-danger)] rounded-full" />
               Today
             </div>
           )}
@@ -323,15 +332,15 @@ function MissionTimelineGantt() {
         {/* Desktop Gantt view */}
         <div className="hidden md:block">
           {/* Time axis */}
-          <div className="relative h-8 mb-2 ml-48 border-b border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="relative h-8 mb-2 ml-48 border-b border-[var(--border-default)]">
             {yearLabels.map(({ year, offset }) => (
               <div
                 key={year}
                 className="absolute top-0 flex flex-col items-center"
                 style={{ left: `${offset}%` }}
               >
-                <div className="h-3 w-px bg-slate-300 dark:bg-white/20" />
-                <span className="text-micro text-slate-500 dark:text-white/45 mt-0.5 -translate-x-1/2">
+                <div className="h-3 w-px bg-[var(--surface-sunken)]" />
+                <span className="text-micro text-[var(--text-secondary)] mt-0.5 -translate-x-1/2">
                   {year}
                 </span>
               </div>
@@ -339,7 +348,7 @@ function MissionTimelineGantt() {
             {/* Today marker on axis */}
             {todayOffset !== null && (
               <div
-                className="absolute top-0 bottom-0 w-px bg-red-500 z-10"
+                className="absolute top-0 bottom-0 w-px bg-[var(--accent-danger)] z-10"
                 style={{ left: `${todayOffset}%` }}
               />
             )}
@@ -362,7 +371,7 @@ function MissionTimelineGantt() {
                   {/* Phase label */}
                   <div className="w-48 flex-shrink-0 pr-4">
                     <p
-                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-slate-700 dark:text-white/70"}`}
+                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-[var(--text-secondary)]"}`}
                     >
                       {phase.name}
                     </p>
@@ -372,7 +381,7 @@ function MissionTimelineGantt() {
                       >
                         {sl.text}
                       </span>
-                      <span className="text-micro text-slate-400 dark:text-white/45">
+                      <span className="text-micro text-[var(--text-tertiary)]">
                         {new Date(phase.startDate).getFullYear()}&ndash;
                         {new Date(phase.endDate).getFullYear()}
                       </span>
@@ -380,12 +389,12 @@ function MissionTimelineGantt() {
                   </div>
 
                   {/* Gantt bar area */}
-                  <div className="flex-1 relative h-10 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/5">
+                  <div className="flex-1 relative h-10 bg-[var(--surface-sunken)][0.02] rounded-lg border border-[var(--border-subtle)]">
                     {/* Year grid lines */}
                     {yearLabels.map(({ year, offset }) => (
                       <div
                         key={year}
-                        className="absolute top-0 bottom-0 w-px bg-slate-100 dark:bg-white/5"
+                        className="absolute top-0 bottom-0 w-px bg-[var(--surface-sunken)]"
                         style={{ left: `${offset}%` }}
                       />
                     ))}
@@ -393,7 +402,7 @@ function MissionTimelineGantt() {
                     {/* Today marker */}
                     {todayOffset !== null && (
                       <div
-                        className="absolute top-0 bottom-0 w-px bg-red-500/60 z-10"
+                        className="absolute top-0 bottom-0 w-px bg-[var(--accent-danger)/60] z-10"
                         style={{ left: `${todayOffset}%` }}
                       />
                     )}
@@ -425,16 +434,16 @@ function MissionTimelineGantt() {
                             className={`-translate-x-1/2 ${
                               hoveredMilestone === msKey
                                 ? "text-white fill-white"
-                                : "text-white/90 fill-white/90"
+                                : "text-[var(--text-primary)] fill-white/90"
                             } drop-shadow-md transition-all`}
                           />
                           {/* Milestone tooltip */}
                           {hoveredMilestone === msKey && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-900 border border-white/10 rounded-lg shadow-xl text-xs whitespace-nowrap z-30 pointer-events-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[var(--text-primary)] border border-[var(--border-default)] rounded-lg shadow-xl text-xs whitespace-nowrap z-30 pointer-events-none">
                               <p className="font-medium text-white">
                                 {ms.label}
                               </p>
-                              <p className="text-white/45 text-micro mt-0.5">
+                              <p className="text-[var(--text-tertiary)] text-micro mt-0.5">
                                 {new Date(ms.date).toLocaleDateString("en-US", {
                                   month: "short",
                                   year: "numeric",
@@ -464,7 +473,7 @@ function MissionTimelineGantt() {
                 className={`rounded-lg border p-3 ${colors.border} ${colors.bg}`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     {phase.name}
                   </p>
                   <span
@@ -475,7 +484,7 @@ function MissionTimelineGantt() {
                 </div>
 
                 {/* Date range */}
-                <p className="text-xs text-slate-500 dark:text-white/45 mb-2">
+                <p className="text-xs text-[var(--text-secondary)] mb-2">
                   {new Date(phase.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -488,7 +497,7 @@ function MissionTimelineGantt() {
                 </p>
 
                 {/* Mini progress bar */}
-                <div className="relative h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                <div className="relative h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden mb-2">
                   {(() => {
                     const now = Date.now();
                     const start = new Date(phase.startDate).getTime();
@@ -517,10 +526,10 @@ function MissionTimelineGantt() {
                         className="flex items-center gap-2 text-xs"
                       >
                         <Diamond size={8} className={colors.text} />
-                        <span className="text-slate-700 dark:text-white/70">
+                        <span className="text-[var(--text-secondary)]">
                           {ms.label}
                         </span>
-                        <span className="ml-auto text-slate-400 dark:text-white/45">
+                        <span className="ml-auto text-[var(--text-tertiary)]">
                           {new Date(ms.date).toLocaleDateString("en-US", {
                             month: "short",
                             year: "numeric",
@@ -536,7 +545,7 @@ function MissionTimelineGantt() {
         </div>
 
         {/* Summary footer */}
-        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-white/45">
+        <div className="mt-6 pt-4 border-t border-[var(--border-default)] flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)]">
           <span>
             {phases.length} phases &middot;{" "}
             {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
@@ -668,7 +677,7 @@ function TimelinePageContent() {
 
     if (urgency === "overdue") {
       return (
-        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400">
+        <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
           {Math.abs(days)} days overdue
         </span>
       );
@@ -685,7 +694,7 @@ function TimelinePageContent() {
       );
     }
     return (
-      <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/20 text-emerald-400">
+      <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-success-soft)] text-[var(--accent-primary)]">
         {days} days left
       </span>
     );
@@ -725,7 +734,7 @@ function TimelinePageContent() {
       days.push(
         <div
           key={`empty-${i}`}
-          className="h-24 bg-slate-50 dark:bg-white/[0.01]"
+          className="h-24 bg-[var(--surface-sunken)][0.01]"
         />,
       );
     }
@@ -742,12 +751,14 @@ function TimelinePageContent() {
       days.push(
         <div
           key={day}
-          className={`h-24 p-2 border-r border-b border-slate-200 dark:border-white/5 ${
-            isToday ? "bg-emerald-500/10" : "bg-slate-50 dark:bg-white/[0.01]"
+          className={`h-24 p-2 border-r border-b border-[var(--border-default)] ${
+            isToday
+              ? "bg-[var(--accent-primary-soft)]"
+              : "bg-[var(--surface-sunken)][0.01]"
           }`}
         >
           <div
-            className={`text-sm font-medium mb-1 ${isToday ? "text-emerald-400" : "text-slate-500 dark:text-white/45"}`}
+            className={`text-sm font-medium mb-1 ${isToday ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}
           >
             {day}
           </div>
@@ -758,10 +769,10 @@ function TimelinePageContent() {
                 className={`text-xs px-1.5 py-0.5 rounded truncate ${
                   event.type === "deadline"
                     ? event.status === "OVERDUE"
-                      ? "bg-red-500/20 text-red-300"
+                      ? "bg-[var(--accent-danger-soft)] text-red-300"
                       : event.priority === "CRITICAL"
                         ? "bg-orange-500/20 text-orange-300"
-                        : "bg-emerald-500/20 text-emerald-300"
+                        : "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                     : "bg-purple-500/20 text-purple-300"
                 }`}
                 title={event.title}
@@ -770,7 +781,7 @@ function TimelinePageContent() {
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="text-xs text-slate-400 dark:text-white/45">
+              <div className="text-xs text-[var(--text-tertiary)]">
                 +{dayEvents.length - 3} more
               </div>
             )}
@@ -785,8 +796,8 @@ function TimelinePageContent() {
   if (loading) {
     return (
       <div className="space-y-6" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading timeline data...</span>
       </div>
     );
@@ -797,13 +808,13 @@ function TimelinePageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-2">
+          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2">
             TIMELINE
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
             Timeline & Deadlines
           </h1>
-          <p className="text-slate-500 dark:text-white/45 mt-1">
+          <p className="text-[var(--text-secondary)] mt-1">
             Manage compliance deadlines and mission milestones
           </p>
         </div>
@@ -817,29 +828,29 @@ function TimelinePageContent() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card
-            className={`bg-white dark:bg-white/[0.02] ${stats.overdue > 0 ? "border-red-500/30" : ""}`}
+            className={`bg-[var(--surface-raised)][0.02] ${stats.overdue > 0 ? "border-[var(--accent-danger)/30]" : ""}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2 rounded-lg ${stats.overdue > 0 ? "bg-red-500/20" : "bg-slate-200 dark:bg-white/5"}`}
+                  className={`p-2 rounded-lg ${stats.overdue > 0 ? "bg-[var(--accent-danger-soft)]" : "bg-[var(--surface-sunken)]"}`}
                 >
                   <AlertTriangle
                     size={18}
                     className={
                       stats.overdue > 0
-                        ? "text-red-400"
-                        : "text-slate-400 dark:text-white/45"
+                        ? "text-[var(--accent-danger)]"
+                        : "text-[var(--text-tertiary)]"
                     }
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-2xl font-semibold ${stats.overdue > 0 ? "text-red-400" : "text-white"}`}
+                    className={`text-2xl font-semibold ${stats.overdue > 0 ? "text-[var(--accent-danger)]" : "text-white"}`}
                   >
                     {stats.overdue}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Overdue
                   </p>
                 </div>
@@ -847,17 +858,17 @@ function TimelinePageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-orange-500/10">
                   <Clock size={18} className="text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.dueThisWeek}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     This Week
                   </p>
                 </div>
@@ -865,17 +876,20 @@ function TimelinePageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Calendar size={18} className="text-amber-400" />
+                <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
+                  <Calendar
+                    size={18}
+                    className="text-[var(--accent-warning)]"
+                  />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.dueThisMonth}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     This Month
                   </p>
                 </div>
@@ -883,17 +897,20 @@ function TimelinePageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <CheckCircle2 size={18} className="text-emerald-400" />
+                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
+                  <CheckCircle2
+                    size={18}
+                    className="text-[var(--accent-primary)]"
+                  />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.completionRate}%
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Completed
                   </p>
                 </div>
@@ -905,7 +922,7 @@ function TimelinePageContent() {
 
       {/* Step Navigation */}
       <div
-        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        className="flex items-center gap-2 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
         role="tablist"
         aria-label="Timeline views"
       >
@@ -921,8 +938,8 @@ function TimelinePageContent() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
+                  ? "bg-[var(--surface-sunken)] text-white"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
               }
             `}
           >
@@ -947,9 +964,9 @@ function TimelinePageContent() {
               {/* Overdue Deadlines */}
               {overdueDeadlines.length > 0 && (
                 <div className="lg:col-span-3">
-                  <Card className="border-red-500/20 bg-red-500/5">
+                  <Card className="border-[var(--accent-danger)]/20 bg-[var(--accent-danger)]/5">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-red-400">
+                      <CardTitle className="flex items-center gap-2 text-[var(--accent-danger)]">
                         <AlertTriangle size={20} />
                         Overdue Deadlines
                       </CardTitle>
@@ -958,17 +975,17 @@ function TimelinePageContent() {
                       {overdueDeadlines.map((deadline) => (
                         <div
                           key={deadline.id}
-                          className="flex items-center justify-between bg-red-500/10 rounded-lg p-3"
+                          className="flex items-center justify-between bg-[var(--accent-danger)]/10 rounded-lg p-3"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="text-red-400">
+                            <div className="text-[var(--accent-danger)]">
                               {categoryIcons[deadline.category]}
                             </div>
                             <div>
-                              <p className="font-medium text-slate-900 dark:text-white">
+                              <p className="font-medium text-[var(--text-primary)]">
                                 {deadline.title}
                               </p>
-                              <p className="text-xs text-slate-500 dark:text-white/45">
+                              <p className="text-xs text-[var(--text-secondary)]">
                                 Due:{" "}
                                 {new Date(
                                   deadline.dueDate,
@@ -1008,11 +1025,11 @@ function TimelinePageContent() {
                         setSelectedFilter(selectedFilter ? null : "filter")
                       }
                       aria-label="Filter deadlines"
-                      className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
+                      className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
                     >
                       <Filter
                         size={16}
-                        className="text-slate-500 dark:text-white/45"
+                        className="text-[var(--text-secondary)]"
                         aria-hidden="true"
                       />
                     </button>
@@ -1031,7 +1048,7 @@ function TimelinePageContent() {
                         {deadlines.map((deadline) => (
                           <div
                             key={deadline.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-[--glass-bg-surface] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-[var(--surface-raised)][0.02] rounded-lg p-3 hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -1043,17 +1060,17 @@ function TimelinePageContent() {
                                 {categoryIcons[deadline.category]}
                               </div>
                               <div>
-                                <p className="font-medium text-slate-900 dark:text-white">
+                                <p className="font-medium text-[var(--text-primary)]">
                                   {deadline.title}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-slate-500 dark:text-white/45">
+                                  <span className="text-xs text-[var(--text-secondary)]">
                                     {new Date(
                                       deadline.dueDate,
                                     ).toLocaleDateString()}
                                   </span>
                                   {deadline.regulatoryRef && (
-                                    <span className="text-xs text-slate-400 dark:text-white/45">
+                                    <span className="text-xs text-[var(--text-tertiary)]">
                                       | {deadline.regulatoryRef}
                                     </span>
                                   )}
@@ -1086,7 +1103,7 @@ function TimelinePageContent() {
                       return (
                         <div
                           key={cat.id}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:bg-white/5 transition-colors cursor-pointer"
+                          className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
                             <div
@@ -1095,11 +1112,11 @@ function TimelinePageContent() {
                             >
                               {categoryIcons[cat.id]}
                             </div>
-                            <span className="text-sm text-slate-700 dark:text-white/70">
+                            <span className="text-sm text-[var(--text-secondary)]">
                               {cat.label}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-slate-900 dark:text-white">
+                          <span className="text-sm font-medium text-[var(--text-primary)]">
                             {count}
                           </span>
                         </div>
@@ -1132,17 +1149,17 @@ function TimelinePageContent() {
                       )
                     }
                     aria-label="Previous month"
-                    className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
+                    className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
                   >
                     <ChevronLeft
                       size={16}
-                      className="text-slate-500 dark:text-white/45"
+                      className="text-[var(--text-secondary)]"
                       aria-hidden="true"
                     />
                   </button>
                   <button
                     onClick={() => setCurrentMonth(new Date())}
-                    className="px-3 py-1 text-xs bg-slate-200 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 rounded-lg transition-colors"
+                    className="px-3 py-1 text-xs bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
                   >
                     Today
                   </button>
@@ -1155,11 +1172,11 @@ function TimelinePageContent() {
                       )
                     }
                     aria-label="Next month"
-                    className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
+                    className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
                   >
                     <ChevronRight
                       size={16}
-                      className="text-slate-500 dark:text-white/45"
+                      className="text-[var(--text-secondary)]"
                       aria-hidden="true"
                     />
                   </button>
@@ -1167,12 +1184,12 @@ function TimelinePageContent() {
               </CardHeader>
               <CardContent>
                 {/* Calendar Header */}
-                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-[--glass-border-subtle] mb-1">
+                <div className="grid grid-cols-7 border-b border-[var(--border-default)] mb-1">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
                         key={day}
-                        className="py-2 text-center text-xs font-medium text-slate-500 dark:text-white/45"
+                        className="py-2 text-center text-xs font-medium text-[var(--text-secondary)]"
                       >
                         {day}
                       </div>
@@ -1180,7 +1197,7 @@ function TimelinePageContent() {
                   )}
                 </div>
                 {/* Calendar Grid */}
-                <div className="grid grid-cols-7 border-l border-t border-slate-200 dark:border-white/5">
+                <div className="grid grid-cols-7 border-l border-t border-[var(--border-default)]">
                   {renderCalendar()}
                 </div>
               </CardContent>
@@ -1200,8 +1217,8 @@ function TimelinePageContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
-                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
+                <div className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)]">
+                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
                     Reminder Schedule
                   </h4>
                   <div className="space-y-3">
@@ -1210,7 +1227,7 @@ function TimelinePageContent() {
                         key={days}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-slate-700 dark:text-white/70">
+                        <span className="text-[var(--text-secondary)]">
                           {days === 1 ? "1 day before" : `${days} days before`}
                         </span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1219,20 +1236,20 @@ function TimelinePageContent() {
                             className="sr-only peer"
                             defaultChecked
                           />
-                          <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
                         </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
-                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
+                <div className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)]">
+                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
                     Notification Channels
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/70">
+                      <span className="text-[var(--text-secondary)]">
                         Email notifications
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1241,11 +1258,11 @@ function TimelinePageContent() {
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/70">
+                      <span className="text-[var(--text-secondary)]">
                         In-app notifications
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1254,20 +1271,20 @@ function TimelinePageContent() {
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/70">
+                      <span className="text-[var(--text-secondary)]">
                         Daily digest
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/70">
+                      <span className="text-[var(--text-secondary)]">
                         Weekly summary
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1276,7 +1293,7 @@ function TimelinePageContent() {
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
                       </label>
                     </div>
                   </div>
@@ -1298,20 +1315,20 @@ function TimelinePageContent() {
             role="dialog"
             aria-label="Add new deadline"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Add New Deadline
               </h3>
               <button
                 onClick={() => setShowDeadlineForm(false)}
                 aria-label="Close dialog"
-                className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/45"
+                  className="text-[var(--text-secondary)]"
                   aria-hidden="true"
                 />
               </button>
@@ -1319,7 +1336,7 @@ function TimelinePageContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Title *
                 </label>
                 <input
@@ -1328,13 +1345,13 @@ function TimelinePageContent() {
                   onChange={(e) =>
                     setDeadlineForm({ ...deadlineForm, title: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   placeholder="Deadline title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Description
                 </label>
                 <textarea
@@ -1345,14 +1362,14 @@ function TimelinePageContent() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-[var(--border-focus)]"
                   placeholder="Optional description"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Due Date *
                   </label>
                   <input
@@ -1364,11 +1381,11 @@ function TimelinePageContent() {
                         dueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Priority *
                   </label>
                   <select
@@ -1379,7 +1396,7 @@ function TimelinePageContent() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -1390,7 +1407,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Category *
                 </label>
                 <select
@@ -1401,7 +1418,7 @@ function TimelinePageContent() {
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                 >
                   {categoryMetadata.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -1412,7 +1429,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Regulatory Reference
                 </label>
                 <input
@@ -1424,7 +1441,7 @@ function TimelinePageContent() {
                       regulatoryRef: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   placeholder="e.g., EU Space Act Art. 45"
                 />
               </div>

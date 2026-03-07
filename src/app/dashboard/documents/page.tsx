@@ -240,7 +240,7 @@ function DocumentsPageContent() {
 
     if (status === "expired") {
       return (
-        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400">
+        <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
           Expired
         </span>
       );
@@ -253,7 +253,7 @@ function DocumentsPageContent() {
       );
     }
     return (
-      <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/20 text-emerald-400">
+      <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-success-soft)] text-[var(--accent-primary)]">
         Valid
       </span>
     );
@@ -282,8 +282,8 @@ function DocumentsPageContent() {
   if (loading) {
     return (
       <div className="space-y-6" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading document vault...</span>
       </div>
     );
@@ -294,13 +294,13 @@ function DocumentsPageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-2">
+          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2">
             DOCUMENTS
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
             Document Vault
           </h1>
-          <p className="text-slate-500 dark:text-white/45 mt-1">
+          <p className="text-[var(--text-secondary)] mt-1">
             Secure storage for compliance documents and certificates
           </p>
         </div>
@@ -313,17 +313,20 @@ function DocumentsPageContent() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <FileText size={18} className="text-emerald-400" />
+                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
+                  <FileText
+                    size={18}
+                    className="text-[var(--accent-primary)]"
+                  />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.total}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Total Documents
                   </p>
                 </div>
@@ -332,29 +335,29 @@ function DocumentsPageContent() {
           </Card>
 
           <Card
-            className={`bg-white dark:bg-white/[0.02] ${stats.expired > 0 ? "border-red-500/30" : ""}`}
+            className={`bg-[var(--surface-raised)][0.02] ${stats.expired > 0 ? "border-[var(--accent-danger)/30]" : ""}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2 rounded-lg ${stats.expired > 0 ? "bg-red-500/20" : "bg-slate-200 dark:bg-white/5"}`}
+                  className={`p-2 rounded-lg ${stats.expired > 0 ? "bg-[var(--accent-danger-soft)]" : "bg-[var(--surface-sunken)]"}`}
                 >
                   <AlertTriangle
                     size={18}
                     className={
                       stats.expired > 0
-                        ? "text-red-400"
-                        : "text-slate-400 dark:text-white/45"
+                        ? "text-[var(--accent-danger)]"
+                        : "text-[var(--text-tertiary)]"
                     }
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-2xl font-semibold ${stats.expired > 0 ? "text-red-400" : "text-slate-900 dark:text-white"}`}
+                    className={`text-2xl font-semibold ${stats.expired > 0 ? "text-[var(--accent-danger)]" : "text-[var(--text-primary)]"}`}
                   >
                     {stats.expired}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Expired
                   </p>
                 </div>
@@ -362,17 +365,17 @@ function DocumentsPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-orange-500/10">
                   <Clock size={18} className="text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.expiringThisMonth}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Expiring Soon
                   </p>
                 </div>
@@ -380,17 +383,20 @@ function DocumentsPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <CheckCircle2 size={18} className="text-emerald-400" />
+                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
+                  <CheckCircle2
+                    size={18}
+                    className="text-[var(--accent-primary)]"
+                  />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.completeness}%
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Completeness
                   </p>
                 </div>
@@ -402,7 +408,7 @@ function DocumentsPageContent() {
 
       {/* Step Navigation */}
       <div
-        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        className="flex items-center gap-2 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
         role="tablist"
         aria-label="Document views"
       >
@@ -418,8 +424,8 @@ function DocumentsPageContent() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
               }
             `}
           >
@@ -446,7 +452,7 @@ function DocumentsPageContent() {
                 <div className="flex-1 relative">
                   <Search
                     size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
                     aria-hidden="true"
                   />
                   <label htmlFor="doc-search" className="sr-only">
@@ -458,7 +464,7 @@ function DocumentsPageContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search documents..."
-                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg pl-10 pr-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg pl-10 pr-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)]"
                   />
                 </div>
                 <label htmlFor="doc-category-filter" className="sr-only">
@@ -468,7 +474,7 @@ function DocumentsPageContent() {
                   id="doc-category-filter"
                   value={selectedCategory || ""}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                 >
                   <option value="">All Categories</option>
                   {categoryDisplayInfo.map((cat) => (
@@ -510,7 +516,7 @@ function DocumentsPageContent() {
                             {categoryIcons[category] || <FileText size={16} />}
                           </div>
                           {catInfo?.label || category}
-                          <span className="text-slate-400 dark:text-white/45 text-sm font-normal ml-2">
+                          <span className="text-[var(--text-tertiary)] text-sm font-normal ml-2">
                             {docs.length} document{docs.length !== 1 ? "s" : ""}
                           </span>
                         </CardTitle>
@@ -519,24 +525,24 @@ function DocumentsPageContent() {
                         {docs.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-[var(--surface-raised)][0.02] rounded-lg p-3 hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="text-slate-500 dark:text-white/45">
+                              <div className="text-[var(--text-secondary)]">
                                 {categoryIcons[doc.category] || (
                                   <FileText size={16} />
                                 )}
                               </div>
                               <div>
-                                <p className="font-medium text-slate-900 dark:text-white">
+                                <p className="font-medium text-[var(--text-primary)]">
                                   {doc.name}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-slate-400 dark:text-white/45">
+                                  <span className="text-xs text-[var(--text-tertiary)]">
                                     {formatFileSize(doc.fileSize)}
                                   </span>
                                   {doc.regulatoryRef && (
-                                    <span className="text-xs text-slate-400 dark:text-white/45">
+                                    <span className="text-xs text-[var(--text-tertiary)]">
                                       | {doc.regulatoryRef}
                                     </span>
                                   )}
@@ -556,23 +562,23 @@ function DocumentsPageContent() {
                               </span>
                               <button
                                 onClick={() => setViewingDocument(doc)}
-                                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
+                                className="p-1.5 hover:bg-[var(--surface-sunken)] rounded transition-colors"
                                 aria-label={`View ${doc.name}`}
                               >
                                 <Eye
                                   size={14}
-                                  className="text-slate-400 dark:text-white/45"
+                                  className="text-[var(--text-tertiary)]"
                                   aria-hidden="true"
                                 />
                               </button>
                               <button
                                 onClick={() => handleDownload(doc)}
-                                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
+                                className="p-1.5 hover:bg-[var(--surface-sunken)] rounded transition-colors"
                                 aria-label={`Download ${doc.name}`}
                               >
                                 <Download
                                   size={14}
-                                  className="text-slate-400 dark:text-white/45"
+                                  className="text-[var(--text-tertiary)]"
                                   aria-hidden="true"
                                 />
                               </button>
@@ -601,7 +607,7 @@ function DocumentsPageContent() {
                   {/* Metadata form */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Document Name *
                       </label>
                       <input
@@ -610,12 +616,12 @@ function DocumentsPageContent() {
                         onChange={(e) =>
                           setUploadForm({ ...uploadForm, name: e.target.value })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="e.g., Space Activity License"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Category *
                       </label>
                       <select
@@ -626,7 +632,7 @@ function DocumentsPageContent() {
                             category: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       >
                         {categoryDisplayInfo.map((cat) => (
                           <option key={cat.id} value={cat.id}>
@@ -636,7 +642,7 @@ function DocumentsPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Issue Date
                       </label>
                       <input
@@ -648,11 +654,11 @@ function DocumentsPageContent() {
                             issueDate: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Expiry Date
                       </label>
                       <input
@@ -664,11 +670,11 @@ function DocumentsPageContent() {
                             expiryDate: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Linked Module
                       </label>
                       <select
@@ -679,7 +685,7 @@ function DocumentsPageContent() {
                             moduleType: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       >
                         <option value="">None</option>
                         <option value="AUTHORIZATION">Authorization</option>
@@ -691,7 +697,7 @@ function DocumentsPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Regulatory Reference
                       </label>
                       <input
@@ -703,12 +709,12 @@ function DocumentsPageContent() {
                             regulatoryRef: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="e.g., EU Space Act Art. 18"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Description
                       </label>
                       <textarea
@@ -719,7 +725,7 @@ function DocumentsPageContent() {
                             description: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="Optional description"
                       />
                     </div>
@@ -769,9 +775,9 @@ function DocumentsPageContent() {
             <div className="space-y-6">
               {/* Expired Documents */}
               {expiredDocuments.length > 0 && (
-                <Card className="border-red-500/20 bg-red-500/5">
+                <Card className="border-[var(--accent-danger)]/20 bg-[var(--accent-danger)]/5">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-400">
+                    <CardTitle className="flex items-center gap-2 text-[var(--accent-danger)]">
                       <AlertTriangle size={20} />
                       Expired Documents
                     </CardTitle>
@@ -780,19 +786,19 @@ function DocumentsPageContent() {
                     {expiredDocuments.map((doc) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between bg-red-500/10 rounded-lg p-3"
+                        className="flex items-center justify-between bg-[var(--accent-danger)]/10 rounded-lg p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="text-red-400">
+                          <div className="text-[var(--accent-danger)]">
                             {categoryIcons[doc.category] || (
                               <FileText size={16} />
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-slate-900 dark:text-white">
+                            <p className="font-medium text-[var(--text-primary)]">
                               {doc.name}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-white/45">
+                            <p className="text-xs text-[var(--text-secondary)]">
                               Expired:{" "}
                               {new Date(doc.expiryDate!).toLocaleDateString()}
                               {doc.regulatoryRef && ` | ${doc.regulatoryRef}`}
@@ -821,12 +827,12 @@ function DocumentsPageContent() {
                     <div className="text-center py-8">
                       <CheckCircle2
                         size={48}
-                        className="mx-auto text-emerald-400/50 mb-4"
+                        className="mx-auto text-[var(--accent-primary)]/50 mb-4"
                       />
-                      <p className="text-slate-500 dark:text-white/45">
+                      <p className="text-[var(--text-secondary)]">
                         No documents expiring soon
                       </p>
-                      <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
+                      <p className="text-sm text-[var(--text-tertiary)] mt-1">
                         All your documents are up to date
                       </p>
                     </div>
@@ -839,7 +845,7 @@ function DocumentsPageContent() {
                         return (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3"
+                            className="flex items-center justify-between bg-[var(--surface-raised)][0.02] rounded-lg p-3"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -856,10 +862,10 @@ function DocumentsPageContent() {
                                 )}
                               </div>
                               <div>
-                                <p className="font-medium text-slate-900 dark:text-white">
+                                <p className="font-medium text-[var(--text-primary)]">
                                   {doc.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-white/45">
+                                <p className="text-xs text-[var(--text-secondary)]">
                                   {
                                     categoryDisplayInfo.find(
                                       (c) => c.id === doc.category,
@@ -876,12 +882,12 @@ function DocumentsPageContent() {
                                   className={`text-sm font-medium ${
                                     days && days <= 30
                                       ? "text-orange-400"
-                                      : "text-amber-400"
+                                      : "text-[var(--accent-warning)]"
                                   }`}
                                 >
                                   {days} days
                                 </span>
-                                <p className="text-xs text-slate-400 dark:text-white/45">
+                                <p className="text-xs text-[var(--text-tertiary)]">
                                   {new Date(
                                     doc.expiryDate!,
                                   ).toLocaleDateString()}
@@ -909,25 +915,25 @@ function DocumentsPageContent() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                         Overall Compliance
                       </h3>
-                      <p className="text-sm text-slate-500 dark:text-white/45">
+                      <p className="text-sm text-[var(--text-secondary)]">
                         Document completeness across all modules
                       </p>
                     </div>
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white">
+                    <div className="text-3xl font-bold text-[var(--text-primary)]">
                       {overallCompleteness}%
                     </div>
                   </div>
-                  <div className="w-full bg-slate-200 dark:bg-white/10 rounded-full h-3">
+                  <div className="w-full bg-[var(--surface-sunken)] rounded-full h-3">
                     <div
                       className={`h-3 rounded-full transition-all ${
                         overallCompleteness >= 80
-                          ? "bg-emerald-500"
+                          ? "bg-[var(--accent-success-soft)]0"
                           : overallCompleteness >= 50
-                            ? "bg-amber-500"
-                            : "bg-red-500"
+                            ? "bg-[var(--accent-warning)]"
+                            : "bg-[var(--accent-danger)]"
                       }`}
                       style={{ width: `${overallCompleteness}%` }}
                     />
@@ -945,33 +951,33 @@ function DocumentsPageContent() {
                           <div
                             className={`p-2 rounded-lg ${
                               module.completeness >= 100
-                                ? "bg-emerald-500/10"
+                                ? "bg-[var(--accent-primary-soft)]"
                                 : module.completeness >= 50
-                                  ? "bg-amber-500/10"
-                                  : "bg-red-500/10"
+                                  ? "bg-[var(--accent-warning-soft)]"
+                                  : "bg-[var(--accent-danger)]/10"
                             }`}
                           >
                             {module.completeness >= 100 ? (
                               <CheckCircle2
                                 size={18}
-                                className="text-emerald-400"
+                                className="text-[var(--accent-primary)]"
                               />
                             ) : (
                               <AlertTriangle
                                 size={18}
                                 className={
                                   module.completeness >= 50
-                                    ? "text-amber-400"
-                                    : "text-red-400"
+                                    ? "text-[var(--accent-warning)]"
+                                    : "text-[var(--accent-danger)]"
                                 }
                               />
                             )}
                           </div>
                           <div>
-                            <h4 className="font-medium text-slate-900 dark:text-white">
+                            <h4 className="font-medium text-[var(--text-primary)]">
                               {module.module}
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-white/45">
+                            <p className="text-xs text-[var(--text-secondary)]">
                               {module.present} of {module.required} required
                               documents
                             </p>
@@ -981,10 +987,10 @@ function DocumentsPageContent() {
                           <span
                             className={`text-lg font-semibold ${
                               module.completeness >= 100
-                                ? "text-emerald-400"
+                                ? "text-[var(--accent-primary)]"
                                 : module.completeness >= 50
-                                  ? "text-amber-400"
-                                  : "text-red-400"
+                                  ? "text-[var(--accent-warning)]"
+                                  : "text-[var(--accent-danger)]"
                             }`}
                           >
                             {module.completeness}%
@@ -992,14 +998,14 @@ function DocumentsPageContent() {
                         </div>
                       </div>
 
-                      <div className="w-full bg-slate-200 dark:bg-white/10 rounded-full h-2 mb-3">
+                      <div className="w-full bg-[var(--surface-sunken)] rounded-full h-2 mb-3">
                         <div
                           className={`h-2 rounded-full transition-all ${
                             module.completeness >= 100
-                              ? "bg-emerald-500"
+                              ? "bg-[var(--accent-success-soft)]0"
                               : module.completeness >= 50
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                                ? "bg-[var(--accent-warning)]"
+                                : "bg-[var(--accent-danger)]"
                           }`}
                           style={{
                             width: `${Math.min(module.completeness, 100)}%`,
@@ -1008,15 +1014,15 @@ function DocumentsPageContent() {
                       </div>
 
                       {module.missing.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
-                          <p className="text-xs text-slate-400 dark:text-white/45 mb-2">
+                        <div className="mt-3 pt-3 border-t border-[var(--border-default)]">
+                          <p className="text-xs text-[var(--text-tertiary)] mb-2">
                             Missing documents:
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {module.missing.map((doc, idx) => (
                               <span
                                 key={idx}
-                                className="px-2 py-1 text-xs rounded bg-red-500/10 text-red-400"
+                                className="px-2 py-1 text-xs rounded bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]"
                               >
                                 {doc.name}
                               </span>
@@ -1040,20 +1046,20 @@ function DocumentsPageContent() {
             role="dialog"
             aria-label="Upload document"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Upload Document
               </h3>
               <button
                 onClick={() => setShowUploadModal(false)}
                 aria-label="Close dialog"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/45"
+                  className="text-[var(--text-secondary)]"
                   aria-hidden="true"
                 />
               </button>
@@ -1063,7 +1069,7 @@ function DocumentsPageContent() {
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Document Name *
                   </label>
                   <input
@@ -1072,12 +1078,12 @@ function DocumentsPageContent() {
                     onChange={(e) =>
                       setUploadForm({ ...uploadForm, name: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                     placeholder="e.g., Space Activity License"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Category *
                   </label>
                   <select
@@ -1085,7 +1091,7 @@ function DocumentsPageContent() {
                     onChange={(e) =>
                       setUploadForm({ ...uploadForm, category: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     {categoryDisplayInfo.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -1097,7 +1103,7 @@ function DocumentsPageContent() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Issue Date
                   </label>
                   <input
@@ -1109,11 +1115,11 @@ function DocumentsPageContent() {
                         issueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Expiry Date
                   </label>
                   <input
@@ -1125,13 +1131,13 @@ function DocumentsPageContent() {
                         expiryDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Linked Module
                   </label>
                   <select
@@ -1142,7 +1148,7 @@ function DocumentsPageContent() {
                         moduleType: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     <option value="">None</option>
                     <option value="AUTHORIZATION">Authorization</option>
@@ -1154,7 +1160,7 @@ function DocumentsPageContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
                     Regulatory Reference
                   </label>
                   <input
@@ -1166,13 +1172,13 @@ function DocumentsPageContent() {
                         regulatoryRef: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                     placeholder="e.g., EU Space Act Art. 18"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Description
                 </label>
                 <textarea
@@ -1183,7 +1189,7 @@ function DocumentsPageContent() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-[var(--border-focus)]"
                   placeholder="Optional description"
                 />
               </div>

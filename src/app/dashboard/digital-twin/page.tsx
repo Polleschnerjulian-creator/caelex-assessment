@@ -259,7 +259,7 @@ function ScoreGauge({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[42px] font-light text-slate-900 dark:text-white tracking-tight">
+        <span className="text-[42px] font-light text-[var(--text-primary)] tracking-tight">
           {score}
         </span>
         <span
@@ -289,11 +289,11 @@ function KPICard({
   trend?: number;
 }) {
   const colorMap: Record<string, string> = {
-    blue: "bg-blue-500/10 text-blue-500",
-    purple: "bg-purple-500/10 text-purple-500",
-    emerald: "bg-emerald-500/10 text-emerald-500",
-    amber: "bg-amber-500/10 text-amber-500",
-    red: "bg-red-500/10 text-red-500",
+    blue: "bg-[var(--accent-info-soft)]0/10 text-[var(--accent-primary)]",
+    purple: "bg-purple-500/10 text-[var(--accent-info)]",
+    emerald: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
+    amber: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
+    red: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
     rose: "bg-rose-500/10 text-rose-500",
   };
 
@@ -301,7 +301,7 @@ function KPICard({
     <motion.div
       initial={false}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+      className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 hover:border-[var(--border-default)]:border-[var(--border-default)] transition-colors"
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -312,14 +312,20 @@ function KPICard({
         {trend !== undefined && (
           <div className="flex items-center gap-1">
             {trend > 0 ? (
-              <ArrowUpRight size={12} className="text-emerald-500" />
+              <ArrowUpRight
+                size={12}
+                className="text-[var(--accent-primary)]"
+              />
             ) : trend < 0 ? (
-              <ArrowDownRight size={12} className="text-red-500" />
+              <ArrowDownRight
+                size={12}
+                className="text-[var(--accent-danger)]"
+              />
             ) : (
-              <Minus size={12} className="text-slate-500 dark:text-white/45" />
+              <Minus size={12} className="text-[var(--text-secondary)]" />
             )}
             <span
-              className={`text-caption font-medium ${trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-500" : "text-slate-500 dark:text-white/45"}`}
+              className={`text-caption font-medium ${trend > 0 ? "text-[var(--accent-primary)]" : trend < 0 ? "text-[var(--accent-danger)]" : "text-[var(--text-secondary)]"}`}
             >
               {trend > 0 ? "+" : ""}
               {trend}
@@ -327,14 +333,14 @@ function KPICard({
           </div>
         )}
       </div>
-      <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-0.5">
+      <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-0.5">
         {title}
       </p>
-      <p className="text-heading-lg font-light text-slate-900 dark:text-white tracking-tight">
+      <p className="text-heading-lg font-light text-[var(--text-primary)] tracking-tight">
         {value}
       </p>
       {subtitle && (
-        <p className="text-caption text-slate-500 dark:text-white/45 mt-0.5">
+        <p className="text-caption text-[var(--text-secondary)] mt-0.5">
           {subtitle}
         </p>
       )}
@@ -358,8 +364,8 @@ function TabButton({
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium rounded-lg transition-all ${
         active
-          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-          : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+          ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)/20]"
+          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
       }`}
     >
       {icon}
@@ -371,7 +377,10 @@ function TabButton({
 function LoadingState() {
   return (
     <div className="flex items-center justify-center py-20">
-      <RefreshCw size={24} className="animate-spin text-emerald-500" />
+      <RefreshCw
+        size={24}
+        className="animate-spin text-[var(--accent-primary)]"
+      />
     </div>
   );
 }
@@ -385,11 +394,9 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <Layers size={32} className="text-slate-300 dark:text-white/20 mb-3" />
-      <p className="text-body-lg text-slate-900 dark:text-white mb-1">
-        {title}
-      </p>
-      <p className="text-small text-slate-500 dark:text-white/45 max-w-md">
+      <Layers size={32} className="text-[var(--text-tertiary)] mb-3" />
+      <p className="text-body-lg text-[var(--text-primary)] mb-1">{title}</p>
+      <p className="text-small text-[var(--text-secondary)] max-w-md">
         {description}
       </p>
     </div>
@@ -398,10 +405,12 @@ function EmptyState({
 
 function SeverityBadge({ severity }: { severity: string }) {
   const colors: Record<string, string> = {
-    critical: "bg-red-500/10 text-red-400 border-red-500/20",
-    high: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    low: "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
+    critical:
+      "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] border-[var(--accent-danger)]/20",
+    high: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)/20]",
+    medium:
+      "bg-[var(--accent-info-soft)]0/10 text-[var(--accent-primary)] border-[var(--accent-primary)]/20",
+    low: "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)]",
   };
 
   return (
@@ -415,12 +424,12 @@ function SeverityBadge({ severity }: { severity: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    compliant: "bg-emerald-500/10 text-emerald-400",
-    partial: "bg-amber-500/10 text-amber-400",
-    non_compliant: "bg-red-500/10 text-red-400",
-    not_started:
-      "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45",
-    mostly_compliant: "bg-blue-500/10 text-blue-400",
+    compliant: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
+    partial: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
+    non_compliant: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
+    not_started: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+    mostly_compliant:
+      "bg-[var(--accent-info-soft)]0/10 text-[var(--accent-primary)]",
   };
 
   const label = status
@@ -449,26 +458,24 @@ function OverviewTab({ state }: { state: TwinState }) {
   return (
     <div className="space-y-6">
       {/* Trajectory Chart */}
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
               Compliance Trajectory
             </h3>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               12-month history + 90-day forecast
             </p>
           </div>
           <div className="flex items-center gap-4 text-caption">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 bg-emerald-500 rounded" />
-              <span className="text-slate-500 dark:text-white/45">History</span>
+              <div className="w-3 h-0.5 bg-[var(--accent-primary)] rounded" />
+              <span className="text-[var(--text-secondary)]">History</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 bg-emerald-500/50 rounded border border-dashed border-emerald-500" />
-              <span className="text-slate-500 dark:text-white/45">
-                Forecast
-              </span>
+              <div className="w-3 h-0.5 bg-[var(--accent-success-soft)]0/50 rounded border border-dashed border-[var(--accent-primary)]" />
+              <span className="text-[var(--text-secondary)]">Forecast</span>
             </div>
           </div>
         </div>
@@ -520,28 +527,28 @@ function OverviewTab({ state }: { state: TwinState }) {
 
       {/* Module Breakdown */}
       <div>
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-3">
           Module Breakdown
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {state.modules.map((m) => (
             <div
               key={m.id}
-              className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+              className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 hover:border-[var(--border-default)]:border-[var(--border-default)] transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-body font-medium text-slate-900 dark:text-white">
+                <span className="text-body font-medium text-[var(--text-primary)]">
                   {m.name}
                 </span>
                 <StatusBadge status={m.status} />
               </div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-display-sm font-light text-slate-900 dark:text-white">
+                <span className="text-display-sm font-light text-[var(--text-primary)]">
                   {m.score}
                 </span>
                 {m.trend !== 0 && (
                   <span
-                    className={`text-small flex items-center gap-0.5 ${m.trend > 0 ? "text-emerald-500" : "text-red-500"}`}
+                    className={`text-small flex items-center gap-0.5 ${m.trend > 0 ? "text-[var(--accent-primary)]" : "text-[var(--accent-danger)]"}`}
                   >
                     {m.trend > 0 ? (
                       <TrendingUp size={12} />
@@ -553,13 +560,13 @@ function OverviewTab({ state }: { state: TwinState }) {
                   </span>
                 )}
               </div>
-              <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 mb-2">
+              <div className="w-full bg-[var(--surface-sunken)] rounded-full h-1.5 mb-2">
                 <div
-                  className={`h-1.5 rounded-full ${m.score >= 80 ? "bg-emerald-500" : m.score >= 50 ? "bg-amber-500" : "bg-red-500"}`}
+                  className={`h-1.5 rounded-full ${m.score >= 80 ? "bg-[var(--accent-success-soft)]0" : m.score >= 50 ? "bg-[var(--accent-warning)]" : "bg-[var(--accent-danger)]"}`}
                   style={{ width: `${m.score}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-caption text-slate-500 dark:text-white/45">
+              <div className="flex items-center justify-between text-caption text-[var(--text-secondary)]">
                 <span>Weight: {Math.round(m.weight * 100)}%</span>
                 {m.nextDeadline && (
                   <span>
@@ -575,7 +582,7 @@ function OverviewTab({ state }: { state: TwinState }) {
       {/* Alerts */}
       {state.alerts.length > 0 && (
         <div>
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-3">
             Active Alerts
           </h3>
           <div className="space-y-2">
@@ -584,37 +591,37 @@ function OverviewTab({ state }: { state: TwinState }) {
                 key={alert.id}
                 className={`flex items-start gap-3 p-3 rounded-lg border ${
                   alert.severity === "critical"
-                    ? "bg-red-500/5 border-red-500/20"
+                    ? "bg-[var(--accent-danger)]/5 border-[var(--accent-danger)]/20"
                     : alert.severity === "high"
-                      ? "bg-amber-500/5 border-amber-500/20"
-                      : "bg-slate-50 dark:bg-white/[0.02] border-slate-100 dark:border-white/[0.06]"
+                      ? "bg-[var(--accent-warning)]/5 border-[var(--accent-warning)/20]"
+                      : "bg-[var(--surface-sunken)][0.02] border-[var(--border-subtle)][0.06]"
                 }`}
               >
                 <AlertTriangle
                   size={16}
                   className={
                     alert.severity === "critical"
-                      ? "text-red-500 mt-0.5"
+                      ? "text-[var(--accent-danger)] mt-0.5"
                       : alert.severity === "high"
-                        ? "text-amber-500 mt-0.5"
-                        : "text-slate-500 dark:text-white/45 mt-0.5"
+                        ? "text-[var(--accent-warning)] mt-0.5"
+                        : "text-[var(--text-secondary)] mt-0.5"
                   }
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-body font-medium text-slate-900 dark:text-white">
+                    <span className="text-body font-medium text-[var(--text-primary)]">
                       {alert.title}
                     </span>
                     <SeverityBadge severity={alert.severity} />
                   </div>
-                  <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
+                  <p className="text-small text-[var(--text-secondary)] mt-0.5">
                     {alert.description}
                   </p>
                 </div>
                 {alert.link && (
                   <a
                     href={alert.link}
-                    className="text-caption text-emerald-400 hover:text-emerald-300 whitespace-nowrap flex items-center gap-0.5"
+                    className="text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] whitespace-nowrap flex items-center gap-0.5"
                   >
                     View <ChevronRight size={12} />
                   </a>
@@ -627,52 +634,48 @@ function OverviewTab({ state }: { state: TwinState }) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
             Requirements
           </p>
-          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
+          <p className="text-heading-lg font-light text-[var(--text-primary)]">
             {state.requirements.compliant}/{state.requirements.total}
           </p>
-          <p className="text-caption text-slate-500 dark:text-white/45">
-            covered
-          </p>
+          <p className="text-caption text-[var(--text-secondary)]">covered</p>
         </div>
-        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
             Evidence Gaps
           </p>
-          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
+          <p className="text-heading-lg font-light text-[var(--text-primary)]">
             {state.evidence.total - state.evidence.accepted}
           </p>
-          <p className="text-caption text-slate-500 dark:text-white/45">
+          <p className="text-caption text-[var(--text-secondary)]">
             missing or expired
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
             Days Since Incident
           </p>
-          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
+          <p className="text-heading-lg font-light text-[var(--text-primary)]">
             {state.incidents.open === 0 ? "—" : state.incidents.open}
           </p>
-          <p className="text-caption text-slate-500 dark:text-white/45">
+          <p className="text-caption text-[var(--text-secondary)]">
             {state.incidents.open === 0 ? "no active" : "open"}
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
             30d Velocity
           </p>
           <p
-            className={`text-heading-lg font-light ${state.velocity.thirtyDay > 0 ? "text-emerald-400" : state.velocity.thirtyDay < 0 ? "text-red-400" : "text-slate-900 dark:text-white"}`}
+            className={`text-heading-lg font-light ${state.velocity.thirtyDay > 0 ? "text-[var(--accent-primary)]" : state.velocity.thirtyDay < 0 ? "text-[var(--accent-danger)]" : "text-[var(--text-primary)]"}`}
           >
             {state.velocity.thirtyDay > 0 ? "+" : ""}
             {state.velocity.thirtyDay}
           </p>
-          <p className="text-caption text-slate-500 dark:text-white/45">
-            pts/month
-          </p>
+          <p className="text-caption text-[var(--text-secondary)]">pts/month</p>
         </div>
       </div>
     </div>
@@ -697,8 +700,8 @@ function FrameworksTab() {
     <div className="space-y-6">
       {/* Radar Chart */}
       {data.radarData.length >= 3 && (
-        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
             Framework Radar
           </h3>
           <div className="h-[320px]">
@@ -728,29 +731,29 @@ function FrameworksTab() {
       )}
 
       {/* Comparison Table */}
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--border-subtle)][0.06]">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
             Framework Comparison
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-white/[0.06]">
-                <th className="text-left px-6 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+              <tr className="border-b border-[var(--border-subtle)][0.06]">
+                <th className="text-left px-6 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Framework
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Score
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Requirements
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Last Assessed
                 </th>
               </tr>
@@ -759,14 +762,14 @@ function FrameworksTab() {
               {data.frameworks.map((f) => (
                 <tr
                   key={f.id}
-                  className="border-b border-slate-100 dark:border-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.02]"
+                  className="border-b border-[var(--border-subtle)][0.04] hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
                 >
-                  <td className="px-6 py-3 text-body text-slate-900 dark:text-white font-medium">
+                  <td className="px-6 py-3 text-body text-[var(--text-primary)] font-medium">
                     {f.name}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`text-body-lg font-medium ${f.score >= 80 ? "text-emerald-400" : f.score >= 50 ? "text-amber-400" : "text-red-400"}`}
+                      className={`text-body-lg font-medium ${f.score >= 80 ? "text-[var(--accent-primary)]" : f.score >= 50 ? "text-[var(--accent-warning)]" : "text-[var(--accent-danger)]"}`}
                     >
                       {f.score}
                     </span>
@@ -774,10 +777,10 @@ function FrameworksTab() {
                   <td className="px-4 py-3 text-center">
                     <StatusBadge status={f.status} />
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-[var(--text-secondary)]">
                     {f.requirementsCompliant}/{f.requirementsTotal}
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-[var(--text-secondary)]">
                     {f.lastAssessed
                       ? new Date(f.lastAssessed).toLocaleDateString()
                       : "—"}
@@ -816,13 +819,13 @@ function RiskTab() {
   return (
     <div className="space-y-6">
       {/* Bubble Chart */}
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
               Risk Landscape
             </h3>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               X: Readiness (score) | Y: Criticality (weight) | Size: Financial
               exposure
             </p>
@@ -834,7 +837,7 @@ function RiskTab() {
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: riskColors[zone] }}
                 />
-                <span className="text-slate-500 dark:text-white/45 capitalize">
+                <span className="text-[var(--text-secondary)] capitalize">
                   {zone}
                 </span>
               </div>
@@ -905,32 +908,32 @@ function RiskTab() {
       </div>
 
       {/* Financial Exposure Table */}
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--border-subtle)][0.06]">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
             Financial Exposure
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-white/[0.06]">
-                <th className="text-left px-6 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+              <tr className="border-b border-[var(--border-subtle)][0.06]">
+                <th className="text-left px-6 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Framework
                 </th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-right px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Max Penalty
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Score
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Risk Factor
                 </th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-right px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Adjusted Risk
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Zone
                 </th>
               </tr>
@@ -939,18 +942,18 @@ function RiskTab() {
               {data.map((entry) => (
                 <tr
                   key={entry.id}
-                  className="border-b border-slate-100 dark:border-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.02]"
+                  className="border-b border-[var(--border-subtle)][0.04] hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
                 >
-                  <td className="px-6 py-3 text-body text-slate-900 dark:text-white font-medium">
+                  <td className="px-6 py-3 text-body text-[var(--text-primary)] font-medium">
                     {entry.name}
                   </td>
-                  <td className="px-4 py-3 text-right text-small text-slate-500 dark:text-white/45">
+                  <td className="px-4 py-3 text-right text-small text-[var(--text-secondary)]">
                     EUR {(entry.maxPenalty / 1_000_000).toFixed(1)}M
                   </td>
-                  <td className="px-4 py-3 text-center text-body font-medium text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-center text-body font-medium text-[var(--text-primary)]">
                     {entry.readiness}
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-[var(--text-secondary)]">
                     {entry.riskFactor}%
                   </td>
                   <td
@@ -964,14 +967,14 @@ function RiskTab() {
                   </td>
                 </tr>
               ))}
-              <tr className="bg-slate-50 dark:bg-[--glass-bg-surface]">
+              <tr className="bg-[var(--surface-sunken)]">
                 <td
-                  className="px-6 py-3 text-body text-slate-900 dark:text-white font-semibold"
+                  className="px-6 py-3 text-body text-[var(--text-primary)] font-semibold"
                   colSpan={4}
                 >
                   Total Estimated Risk Exposure
                 </td>
-                <td className="px-4 py-3 text-right text-body-lg font-semibold text-amber-400">
+                <td className="px-4 py-3 text-right text-body-lg font-semibold text-[var(--accent-warning)]">
                   EUR {(totalExposure / 1_000_000).toFixed(1)}M
                 </td>
                 <td />
@@ -1166,13 +1169,13 @@ function ScenariosTab() {
   return (
     <div className="space-y-6">
       {/* Scenario Builder */}
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Scenario Builder
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
+            <label className="text-caption text-[var(--text-secondary)] uppercase tracking-wider block mb-1.5">
               Scenario Type
             </label>
             <select
@@ -1182,7 +1185,7 @@ function ScenariosTab() {
                 setParams({});
                 setResult(null);
               }}
-              className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
             >
               {scenarioTypes.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -1192,7 +1195,7 @@ function ScenariosTab() {
             </select>
           </div>
           <div>
-            <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
+            <label className="text-caption text-[var(--text-secondary)] uppercase tracking-wider block mb-1.5">
               Scenario Name
             </label>
             <input
@@ -1200,7 +1203,7 @@ function ScenariosTab() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Expand to Italy"
-              className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)]"
             />
           </div>
         </div>
@@ -1210,7 +1213,7 @@ function ScenariosTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {currentScenario.paramFields.map((field) => (
               <div key={field.key}>
-                <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
+                <label className="text-caption text-[var(--text-secondary)] uppercase tracking-wider block mb-1.5">
                   {field.label}
                 </label>
                 {field.type === "select" ? (
@@ -1219,7 +1222,7 @@ function ScenariosTab() {
                     onChange={(e) =>
                       setParams({ ...params, [field.key]: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     <option value="">Select...</option>
                     {field.options?.map((o) => (
@@ -1238,7 +1241,7 @@ function ScenariosTab() {
                         [field.key]: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   />
                 ) : field.type === "checkbox" ? (
                   <label className="flex items-center gap-2 mt-1.5">
@@ -1248,9 +1251,9 @@ function ScenariosTab() {
                       onChange={(e) =>
                         setParams({ ...params, [field.key]: e.target.checked })
                       }
-                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[--glass-bg-surface] text-emerald-500 focus:ring-emerald-500"
+                      className="rounded border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-small text-slate-500 dark:text-white/45">
+                    <span className="text-small text-[var(--text-secondary)]">
                       Include
                     </span>
                   </label>
@@ -1263,7 +1266,7 @@ function ScenariosTab() {
         <button
           onClick={handleRun}
           disabled={running || !name.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-white/30 text-white rounded-lg text-body font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] disabled:text-[var(--text-tertiary)]:text-[var(--text-tertiary)] text-white rounded-lg text-body font-medium transition-colors"
         >
           {running ? (
             <RefreshCw size={14} className="animate-spin" />
@@ -1279,36 +1282,36 @@ function ScenariosTab() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6"
+          className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-xl p-6"
         >
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
             Simulation Results
           </h3>
 
           {/* Score Comparison */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
-              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-[var(--surface-sunken)] rounded-xl">
+              <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                 Baseline
               </p>
-              <p className="text-display font-light text-slate-900 dark:text-white">
+              <p className="text-display font-light text-[var(--text-primary)]">
                 {simResult.baselineScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
-              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-[var(--surface-sunken)] rounded-xl">
+              <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                 Projected
               </p>
-              <p className="text-display font-light text-blue-400">
+              <p className="text-display font-light text-[var(--accent-primary)]">
                 {simResult.projectedScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
-              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-[var(--surface-sunken)] rounded-xl">
+              <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                 Delta
               </p>
               <p
-                className={`text-display font-light ${simResult.scoreDelta >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                className={`text-display font-light ${simResult.scoreDelta >= 0 ? "text-[var(--accent-primary)]" : "text-[var(--accent-danger)]"}`}
               >
                 {simResult.scoreDelta >= 0 ? "+" : ""}
                 {simResult.scoreDelta}
@@ -1318,11 +1321,11 @@ function ScenariosTab() {
 
           {/* Financial Impact */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
+            <div className="p-3 bg-[var(--surface-sunken)][0.02] rounded-lg">
+              <p className="text-caption text-[var(--text-secondary)] mb-0.5">
                 Current Exposure
               </p>
-              <p className="text-body-lg text-slate-900 dark:text-white font-medium">
+              <p className="text-body-lg text-[var(--text-primary)] font-medium">
                 EUR{" "}
                 {(
                   simResult.financialImpact.currentExposure / 1_000_000
@@ -1330,11 +1333,11 @@ function ScenariosTab() {
                 M
               </p>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
+            <div className="p-3 bg-[var(--surface-sunken)][0.02] rounded-lg">
+              <p className="text-caption text-[var(--text-secondary)] mb-0.5">
                 Projected Exposure
               </p>
-              <p className="text-body-lg text-amber-400 font-medium">
+              <p className="text-body-lg text-[var(--accent-warning)] font-medium">
                 EUR{" "}
                 {(
                   simResult.financialImpact.projectedExposure / 1_000_000
@@ -1342,12 +1345,12 @@ function ScenariosTab() {
                 M
               </p>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
+            <div className="p-3 bg-[var(--surface-sunken)][0.02] rounded-lg">
+              <p className="text-caption text-[var(--text-secondary)] mb-0.5">
                 Additional Risk
               </p>
               <p
-                className={`text-body-lg font-medium ${simResult.financialImpact.delta >= 0 ? "text-red-400" : "text-emerald-400"}`}
+                className={`text-body-lg font-medium ${simResult.financialImpact.delta >= 0 ? "text-[var(--accent-danger)]" : "text-[var(--accent-primary)]"}`}
               >
                 {simResult.financialImpact.delta >= 0 ? "+" : ""}EUR{" "}
                 {(simResult.financialImpact.delta / 1_000_000).toFixed(1)}M
@@ -1356,15 +1359,15 @@ function ScenariosTab() {
           </div>
 
           {/* Risk Assessment */}
-          <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg mb-4">
+          <div className="p-4 bg-[var(--surface-sunken)][0.02] rounded-lg mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <Info size={14} className="text-slate-500 dark:text-white/45" />
-              <span className="text-small font-medium text-slate-900 dark:text-white">
+              <Info size={14} className="text-[var(--text-secondary)]" />
+              <span className="text-small font-medium text-[var(--text-primary)]">
                 Risk Assessment
               </span>
               <SeverityBadge severity={simResult.riskAssessment.level} />
             </div>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               {simResult.riskAssessment.summary}
             </p>
           </div>
@@ -1372,7 +1375,7 @@ function ScenariosTab() {
           {/* New Requirements */}
           {simResult.newRequirements.length > 0 && (
             <div className="mb-4">
-              <p className="text-small font-medium text-slate-900 dark:text-white mb-2">
+              <p className="text-small font-medium text-[var(--text-primary)] mb-2">
                 New Requirements ({simResult.newRequirements.length})
               </p>
               <div className="space-y-1.5">
@@ -1382,12 +1385,12 @@ function ScenariosTab() {
                     className="flex items-center gap-2 text-small"
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${req.type === "new" ? "bg-amber-500" : req.type === "removed" ? "bg-emerald-500" : "bg-blue-500"}`}
+                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${req.type === "new" ? "bg-[var(--accent-warning)]" : req.type === "removed" ? "bg-[var(--accent-success-soft)]0" : "bg-[var(--accent-info-soft)]0"}`}
                     />
-                    <span className="text-slate-700 dark:text-white/70">
+                    <span className="text-[var(--text-secondary)]">
                       {req.title}
                     </span>
-                    <span className="text-slate-400 dark:text-white/30">
+                    <span className="text-[var(--text-tertiary)]">
                       — {req.framework}
                     </span>
                   </div>
@@ -1399,16 +1402,18 @@ function ScenariosTab() {
           {/* Recommendations */}
           {simResult.recommendations.length > 0 && (
             <div>
-              <p className="text-small font-medium text-slate-900 dark:text-white mb-2">
+              <p className="text-small font-medium text-[var(--text-primary)] mb-2">
                 Recommendations
               </p>
               <ul className="space-y-1">
                 {simResult.recommendations.map((rec, i) => (
                   <li
                     key={i}
-                    className="text-small text-slate-500 dark:text-white/45 flex items-start gap-2"
+                    className="text-small text-[var(--text-secondary)] flex items-start gap-2"
                   >
-                    <span className="text-emerald-500 mt-0.5">•</span>
+                    <span className="text-[var(--accent-primary)] mt-0.5">
+                      •
+                    </span>
                     {rec}
                   </li>
                 ))}
@@ -1423,10 +1428,10 @@ function ScenariosTab() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-emerald-500/20 rounded-xl p-6"
+          className="bg-[var(--surface-sunken)] border border-[var(--accent-primary)/20] rounded-xl p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
               Scenario Comparison
             </h3>
             <button
@@ -1434,7 +1439,7 @@ function ScenariosTab() {
                 setCompareResult(null);
                 setSelectedForCompare([]);
               }}
-              className="text-small text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+              className="text-small text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
             >
               Clear
             </button>
@@ -1444,8 +1449,8 @@ function ScenariosTab() {
               recommendation?: { bestScenarioName?: string; reason?: string };
             }
           ).recommendation && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-4">
-              <p className="text-small font-medium text-emerald-400 mb-1">
+            <div className="p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-lg mb-4">
+              <p className="text-small font-medium text-[var(--accent-primary)] mb-1">
                 Recommended:{" "}
                 {
                   (
@@ -1455,7 +1460,7 @@ function ScenariosTab() {
                   ).recommendation.bestScenarioName
                 }
               </p>
-              <p className="text-small text-slate-500 dark:text-white/45">
+              <p className="text-small text-[var(--text-secondary)]">
                 {
                   (compareResult as { recommendation: { reason: string } })
                     .recommendation.reason
@@ -1474,8 +1479,8 @@ function ScenariosTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-small">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                    <th className="text-left py-2 text-slate-500 dark:text-white/45">
+                  <tr className="border-b border-[var(--border-default)]">
+                    <th className="text-left py-2 text-[var(--text-secondary)]">
                       Dimension
                     </th>
                     {(
@@ -1483,7 +1488,7 @@ function ScenariosTab() {
                     ).scenarios?.map((s: { name: string }, i: number) => (
                       <th
                         key={i}
-                        className="text-right py-2 text-slate-500 dark:text-white/45"
+                        className="text-right py-2 text-[var(--text-secondary)]"
                       >
                         {s.name}
                       </th>
@@ -1501,15 +1506,15 @@ function ScenariosTab() {
                   ).dimensions.map((dim, i) => (
                     <tr
                       key={i}
-                      className="border-b border-slate-100 dark:border-white/5"
+                      className="border-b border-[var(--border-subtle)]"
                     >
-                      <td className="py-2 text-slate-700 dark:text-white/70">
+                      <td className="py-2 text-[var(--text-secondary)]">
                         {dim.dimension}
                       </td>
                       {dim.values.map((v, j) => (
                         <td
                           key={j}
-                          className="py-2 text-right text-slate-900 dark:text-white"
+                          className="py-2 text-right text-[var(--text-primary)]"
                         >
                           {v.label}
                         </td>
@@ -1527,7 +1532,7 @@ function ScenariosTab() {
       {!loading && filteredScenarios && filteredScenarios.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
               Saved Scenarios
             </h3>
             <div className="flex items-center gap-3">
@@ -1535,8 +1540,8 @@ function ScenariosTab() {
                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                 className={`flex items-center gap-1.5 text-small px-3 py-1.5 rounded-lg transition-colors ${
                   showFavoritesOnly
-                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                    ? "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border border-[var(--accent-warning)/20]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
                 }`}
               >
                 <Star
@@ -1549,7 +1554,7 @@ function ScenariosTab() {
                 <button
                   onClick={handleCompare}
                   disabled={comparing}
-                  className="flex items-center gap-1.5 text-small px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-small px-3 py-1.5 bg-[var(--accent-info-soft)]0/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 rounded-lg hover:bg-[var(--accent-info-soft)]0/20 transition-colors disabled:opacity-50"
                 >
                   {comparing ? (
                     <RefreshCw size={12} className="animate-spin" />
@@ -1565,12 +1570,12 @@ function ScenariosTab() {
             {filteredScenarios.map((s) => (
               <div
                 key={s.id}
-                className={`bg-slate-50 dark:bg-[--glass-bg-surface] border rounded-xl p-4 transition-colors ${
+                className={`bg-[var(--surface-sunken)] border rounded-xl p-4 transition-colors ${
                   selectedForCompare.includes(s.id)
-                    ? "border-blue-500/40 bg-blue-500/5 dark:bg-blue-500/5"
+                    ? "border-[var(--accent-primary)]/40 bg-[var(--accent-info-soft)]0/5"
                     : s.isStale
-                      ? "border-amber-500/20"
-                      : "border-slate-100 dark:border-white/[0.06] hover:border-slate-200 dark:hover:border-white/10"
+                      ? "border-[var(--accent-warning)/20]"
+                      : "border-[var(--border-subtle)][0.06] hover:border-[var(--border-default)]:border-[var(--border-default)]"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -1579,13 +1584,13 @@ function ScenariosTab() {
                       type="checkbox"
                       checked={selectedForCompare.includes(s.id)}
                       onChange={() => toggleCompareSelection(s.id)}
-                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[--glass-bg-surface] text-blue-500 focus:ring-blue-500"
+                      className="rounded border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--accent-primary)] focus:ring-blue-500"
                     />
-                    <span className="text-body font-medium text-slate-900 dark:text-white">
+                    <span className="text-body font-medium text-[var(--text-primary)]">
                       {s.name}
                     </span>
                     {s.isStale && (
-                      <span className="text-micro px-1.5 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">
+                      <span className="text-micro px-1.5 py-0.5 bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] rounded-full border border-[var(--accent-warning)/20]">
                         STALE
                       </span>
                     )}
@@ -1595,8 +1600,8 @@ function ScenariosTab() {
                       onClick={() => handleToggleFavorite(s.id, s.isFavorite)}
                       className={`transition-colors ${
                         s.isFavorite
-                          ? "text-amber-400"
-                          : "text-slate-400 dark:text-white/30 hover:text-amber-400"
+                          ? "text-[var(--accent-warning)]"
+                          : "text-[var(--text-tertiary)] hover:text-[var(--accent-warning)]"
                       }`}
                     >
                       <Star
@@ -1607,7 +1612,7 @@ function ScenariosTab() {
                     {s.isStale && (
                       <button
                         onClick={() => handleRecompute(s.id)}
-                        className="text-slate-400 dark:text-white/30 hover:text-emerald-400 transition-colors"
+                        className="text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
                         title="Recompute with latest engine data"
                       >
                         <RefreshCw size={14} />
@@ -1615,20 +1620,22 @@ function ScenariosTab() {
                     )}
                     <button
                       onClick={() => handleDelete(s.id)}
-                      className="text-slate-400 dark:text-white/30 hover:text-red-400 transition-colors"
+                      className="text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-small text-slate-500 dark:text-white/45">
+                <div className="flex items-center gap-3 text-small text-[var(--text-secondary)]">
                   <span className="capitalize">
                     {s.scenarioType.replace(/_/g, " ")}
                   </span>
                   <span>•</span>
                   <span
                     className={
-                      s.scoreDelta >= 0 ? "text-emerald-400" : "text-red-400"
+                      s.scoreDelta >= 0
+                        ? "text-[var(--accent-primary)]"
+                        : "text-[var(--accent-danger)]"
                     }
                   >
                     {s.scoreDelta >= 0 ? "+" : ""}
@@ -1689,10 +1696,10 @@ function TimelineTab() {
     );
 
   const priorityColors: Record<string, string> = {
-    CRITICAL: "bg-red-500",
-    HIGH: "bg-amber-500",
-    MEDIUM: "bg-blue-500",
-    LOW: "bg-slate-400 dark:bg-white/30",
+    CRITICAL: "bg-[var(--accent-danger)]",
+    HIGH: "bg-[var(--accent-warning)]",
+    MEDIUM: "bg-[var(--accent-info-soft)]0",
+    LOW: "bg-[var(--text-tertiary)]",
   };
 
   const typeIcons: Record<string, typeof Clock> = {
@@ -1716,7 +1723,7 @@ function TimelineTab() {
     <div className="space-y-6">
       {Object.entries(grouped).map(([month, entries]) => (
         <div key={month}>
-          <h3 className="text-body font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">
+          <h3 className="text-body font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-3">
             {month}
           </h3>
           <div className="space-y-2">
@@ -1725,35 +1732,35 @@ function TimelineTab() {
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-lg hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-[var(--surface-sunken)] border border-[var(--border-subtle)][0.06] rounded-lg hover:border-[var(--border-default)]:border-[var(--border-default)] transition-colors"
                 >
                   <div
                     className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityColors[entry.priority] || priorityColors.MEDIUM}`}
                   />
                   <Icon
                     size={14}
-                    className="text-slate-500 dark:text-white/45 flex-shrink-0"
+                    className="text-[var(--text-secondary)] flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="text-body text-slate-900 dark:text-white">
+                    <span className="text-body text-[var(--text-primary)]">
                       {entry.title}
                     </span>
                     {entry.module && (
-                      <span className="text-caption text-slate-500 dark:text-white/45 ml-2">
+                      <span className="text-caption text-[var(--text-secondary)] ml-2">
                         ({entry.module})
                       </span>
                     )}
                   </div>
-                  <span className="text-small text-slate-500 dark:text-white/45 flex-shrink-0">
+                  <span className="text-small text-[var(--text-secondary)] flex-shrink-0">
                     {new Date(entry.date).toLocaleDateString()}
                   </span>
                   <span
                     className={`text-micro px-2 py-0.5 rounded-full ${
                       entry.status === "COMPLETED"
-                        ? "bg-emerald-500/10 text-emerald-400"
+                        ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
                         : entry.status === "OVERDUE"
-                          ? "bg-red-500/10 text-red-400"
-                          : "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45"
+                          ? "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]"
+                          : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                     }`}
                   >
                     {entry.status.replace(/_/g, " ").toLowerCase()}
@@ -1821,14 +1828,14 @@ export default function DigitalTwinPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 flex items-center justify-center">
-            <Layers size={20} className="text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary-soft)] to-[var(--accent-info-soft)] flex items-center justify-center">
+            <Layers size={20} className="text-[var(--accent-primary)]" />
           </div>
           <div>
-            <h1 className="text-heading-lg font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-heading-lg font-semibold text-[var(--text-primary)]">
               {t("digitalTwin.title")}
             </h1>
-            <p className="text-body text-slate-500 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               {t("digitalTwin.description")}
             </p>
           </div>
@@ -1840,16 +1847,19 @@ export default function DigitalTwinPage() {
         <LoadingState />
       ) : error ? (
         <div className="text-center py-12">
-          <AlertTriangle size={32} className="text-amber-500 mx-auto mb-3" />
-          <p className="text-body-lg text-slate-900 dark:text-white mb-1">
+          <AlertTriangle
+            size={32}
+            className="text-[var(--accent-warning)] mx-auto mb-3"
+          />
+          <p className="text-body-lg text-[var(--text-primary)] mb-1">
             Failed to load data
           </p>
-          <p className="text-small text-slate-500 dark:text-white/45 mb-4">
+          <p className="text-small text-[var(--text-secondary)] mb-4">
             {error}
           </p>
           <button
             onClick={refetch}
-            className="text-small text-emerald-400 hover:text-emerald-300"
+            className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
           >
             Retry
           </button>
@@ -1941,7 +1951,7 @@ export default function DigitalTwinPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-[var(--border-subtle)][0.06]">
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}

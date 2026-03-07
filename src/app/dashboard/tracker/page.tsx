@@ -36,63 +36,56 @@ const statusColors: Record<
   { bg: string; border: string; dot: string }
 > = {
   not_started: {
-    bg: "bg-slate-50 dark:bg-[--glass-bg-surface]",
-    border: "border-slate-200 dark:border-[--glass-border-subtle]",
-    dot: "bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-[--glass-border-subtle]",
+    bg: "bg-[var(--surface-sunken)]",
+    border: "border-[var(--border-default)]",
+    dot: "bg-[var(--surface-sunken)] border-[var(--border-default)]",
   },
   in_progress: {
-    bg: "bg-amber-50 dark:bg-amber-500/5",
-    border: "border-amber-200 dark:border-amber-500/20",
-    dot: "bg-amber-500 dark:bg-amber-500/60 border-amber-400 dark:border-amber-500/30",
+    bg: "bg-[var(--accent-warning-soft)]/5",
+    border: "border-[var(--accent-warning)]",
+    dot: "bg-[var(--accent-warning)] border-amber-400",
   },
   under_review: {
-    bg: "bg-emerald-50 dark:bg-emerald-400/5",
-    border: "border-emerald-200 dark:border-emerald-400/20",
-    dot: "bg-emerald-500 dark:bg-emerald-400/60 border-emerald-400 dark:border-emerald-400/30",
+    bg: "bg-[var(--accent-success-soft)]",
+    border: "border-[var(--accent-success)]",
+    dot: "bg-[var(--accent-primary)] border-[var(--accent-primary)]",
   },
   compliant: {
-    bg: "bg-emerald-50 dark:bg-emerald-500/5",
-    border: "border-emerald-200 dark:border-emerald-500/20",
-    dot: "bg-emerald-500 dark:bg-emerald-500/60 border-emerald-400 dark:border-emerald-500/30",
+    bg: "bg-[var(--accent-success-soft)]",
+    border: "border-[var(--accent-success)]",
+    dot: "bg-[var(--accent-primary)] border-[var(--accent-primary)]",
   },
   not_applicable: {
-    bg: "bg-slate-50 dark:bg-white/[0.01]",
-    border: "border-slate-200 dark:border-[--glass-border-subtle]",
-    dot: "bg-slate-200 dark:bg-white/5 border-slate-300 dark:border-[--glass-border-subtle]",
+    bg: "bg-[var(--surface-sunken)][0.01]",
+    border: "border-[var(--border-default)]",
+    dot: "bg-[var(--surface-sunken)] border-[var(--border-default)]",
   },
 };
 
 const complianceTypeColors: Record<string, string> = {
   mandatory_pre_activity:
-    "bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400/60",
+    "bg-[var(--accent-danger-soft)]/10 text-[var(--accent-danger)]/60",
   mandatory_ongoing:
-    "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
+    "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]/60",
   design_requirement:
-    "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400/60",
-  conditional:
-    "bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400/60",
-  informational:
-    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
-  enforcement:
-    "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400/60",
+    "bg-[var(--accent-success-soft)] text-[var(--accent-success)]/60",
+  conditional: "bg-yellow-100 text-yellow-700",
+  informational: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+  enforcement: "bg-[var(--accent-info-soft)] text-purple-700",
   scope_determination:
-    "bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400/60",
+    "bg-[var(--accent-danger-soft)]/10 text-[var(--accent-danger)]/60",
   operational:
-    "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
-  voluntary:
-    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
-  monitoring:
-    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
+    "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]/60",
+  voluntary: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+  monitoring: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
 };
 
 const priorityColors: Record<string, string> = {
-  CRITICAL: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400",
-  HIGH: "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
-  MEDIUM:
-    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70",
-  LOW: "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45",
-  CONDITIONAL:
-    "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300/50",
+  CRITICAL: "bg-[var(--accent-danger-soft)]/15 text-[var(--accent-danger)]",
+  HIGH: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]/60",
+  MEDIUM: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+  LOW: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+  CONDITIONAL: "bg-[var(--accent-success-soft)] text-[var(--accent-success)]",
 };
 
 export default function TrackerPage() {
@@ -301,13 +294,13 @@ export default function TrackerPage() {
     return (
       <div className="p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
+          <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
+          <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
           <div className="grid grid-cols-8 gap-2 mt-8">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="h-20 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
+                className="h-20 bg-[var(--surface-sunken)] rounded-lg"
               />
             ))}
           </div>
@@ -319,23 +312,23 @@ export default function TrackerPage() {
 
   return (
     <div className="">
-      <div className="max-w-[1400px]">
+      <div className="max-w-[1360px]">
         {/* Header */}
         <div className="flex justify-between items-start mb-10">
           <div>
-            <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
+            <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3">
               COMPLIANCE TRACKER
             </p>
-            <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
+            <h1 className="text-display-sm font-medium text-[var(--text-primary)] mb-1">
               EU Space Act
             </h1>
-            <p className="text-body-lg text-slate-600 dark:text-white/70">
+            <p className="text-body-lg text-[var(--text-secondary)]">
               Track compliance across all 119 articles and 7 modules
             </p>
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 text-caption px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all"
+            className="flex items-center gap-2 border border-[var(--border-default)] text-[var(--text-secondary)] text-caption px-4 py-2 rounded-lg hover:border-[var(--border-default)]:border-[var(--border-default)] hover:text-[var(--text-primary)] transition-all"
           >
             <Download size={13} aria-hidden="true" />
             Export
@@ -353,24 +346,24 @@ export default function TrackerPage() {
             return (
               <div
                 key={mod.id}
-                className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 text-center"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 text-center"
               >
-                <p className="text-micro text-slate-400 dark:text-white/30">
+                <p className="text-micro text-[var(--text-tertiary)]">
                   {mod.number}
                 </p>
-                <p className="text-heading font-semibold text-slate-900 dark:text-white">
+                <p className="text-heading font-semibold text-[var(--text-primary)]">
                   {pct}%
                 </p>
-                <p className="text-[9px] text-slate-500 dark:text-white/45 mt-1">
+                <p className="text-[9px] text-[var(--text-secondary)] mt-1">
                   {mod.shortName}
                 </p>
               </div>
             );
           })}
           {/* Total */}
-          <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 text-center">
-            <p className="text-micro text-slate-500 dark:text-white/45">ALL</p>
-            <p className="text-heading font-semibold text-slate-900 dark:text-white">
+          <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-3 text-center">
+            <p className="text-micro text-[var(--text-secondary)]">ALL</p>
+            <p className="text-heading font-semibold text-[var(--text-primary)]">
               {moduleProgress["total"]?.total > 0
                 ? Math.round(
                     (moduleProgress["total"].compliant /
@@ -380,19 +373,19 @@ export default function TrackerPage() {
                 : 0}
               %
             </p>
-            <p className="text-[9px] text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-[9px] text-[var(--text-secondary)] mt-1">
               Total
             </p>
           </div>
         </div>
 
         {/* Filter Bar */}
-        <div className="sticky top-0 z-20 bg-white/90 dark:bg-black/90 backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="sticky top-0 z-20 bg-[var(--surface-raised)/90] backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-[var(--border-default)]">
           {/* Search */}
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
               aria-hidden="true"
             />
             <label htmlFor="article-search" className="sr-only">
@@ -404,7 +397,7 @@ export default function TrackerPage() {
               placeholder="Search articles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-body text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
+              className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg pl-9 pr-4 py-2 text-body text-[var(--text-primary)] placeholder-[var(--text-tertiary)] w-[280px] focus:border-[var(--border-default)]:border-[var(--border-default)] focus:outline-none transition-all"
             />
           </div>
 
@@ -414,8 +407,8 @@ export default function TrackerPage() {
               onClick={() => setModuleFilter("all")}
               className={`px-3 py-1 rounded-full text-caption border transition-all ${
                 moduleFilter === "all"
-                  ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                  : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border-[var(--border-default)][0.12]"
+                  : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)]"
               }`}
             >
               All
@@ -426,8 +419,8 @@ export default function TrackerPage() {
                 onClick={() => setModuleFilter(mod.id)}
                 className={`px-3 py-1 rounded-full text-caption border transition-all ${
                   moduleFilter === mod.id
-                    ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                    : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
+                    ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border-[var(--border-default)][0.12]"
+                    : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {mod.shortName}
@@ -445,7 +438,7 @@ export default function TrackerPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as ArticleStatusType | "all")
             }
-            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-caption text-slate-900 dark:text-white focus:outline-none"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-caption text-[var(--text-primary)] focus:outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="not_started">Not Started</option>
@@ -460,7 +453,7 @@ export default function TrackerPage() {
 
           {/* View Toggle */}
           <div
-            className="flex border border-slate-200 dark:border-white/12 rounded-lg overflow-hidden"
+            className="flex border border-[var(--border-default)] rounded-lg overflow-hidden"
             role="tablist"
             aria-label="View mode"
           >
@@ -471,8 +464,8 @@ export default function TrackerPage() {
               onClick={() => setViewMode("articles")}
               className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "articles"
-                  ? "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white"
-                  : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               Articles
@@ -484,8 +477,8 @@ export default function TrackerPage() {
               onClick={() => setViewMode("checklist")}
               className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "checklist"
-                  ? "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white"
-                  : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               Checklist
@@ -507,20 +500,20 @@ export default function TrackerPage() {
                   {collapsedGroups.has(group) ? (
                     <ChevronRight
                       size={14}
-                      className="text-slate-500 dark:text-white/45"
+                      className="text-[var(--text-secondary)]"
                       aria-hidden="true"
                     />
                   ) : (
                     <ChevronDown
                       size={14}
-                      className="text-slate-500 dark:text-white/45"
+                      className="text-[var(--text-secondary)]"
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/45">
+                  <span className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                     {group}
                   </span>
-                  <span className="text-micro text-slate-400 dark:text-white/30 ml-auto">
+                  <span className="text-micro text-[var(--text-tertiary)] ml-auto">
                     {groupArticles.length} articles
                   </span>
                 </button>
@@ -539,9 +532,9 @@ export default function TrackerPage() {
                           key={article.id}
                           className={`${colors.bg} border ${
                             isExpanded
-                              ? "border-slate-300 dark:border-[--glass-border-subtle]"
+                              ? "border-[var(--border-default)]"
                               : colors.border
-                          } rounded-lg transition-all duration-200 hover:border-slate-300 dark:hover:border-[--glass-border-subtle]`}
+                          } rounded-lg transition-all duration-200 hover:border-[var(--border-default)]`}
                         >
                           {/* Collapsed Row */}
                           <button
@@ -559,17 +552,17 @@ export default function TrackerPage() {
                             </span>
 
                             {/* Article Number */}
-                            <span className="text-small text-slate-600 dark:text-white/70 w-[60px]">
+                            <span className="text-small text-[var(--text-secondary)] w-[60px]">
                               Art. {article.number}
                             </span>
 
                             {/* Title */}
-                            <span className="text-body-lg text-slate-900 dark:text-white flex-1">
+                            <span className="text-body-lg text-[var(--text-primary)] flex-1">
                               {article.title}
                             </span>
 
                             {/* Module Badge */}
-                            <span className="text-micro px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70">
+                            <span className="text-micro px-2 py-0.5 rounded-full bg-[var(--surface-sunken)] text-[var(--text-secondary)]">
                               {article.moduleLabel}
                             </span>
 
@@ -577,7 +570,7 @@ export default function TrackerPage() {
                             <span
                               className={`text-micro px-2 py-0.5 rounded-full ${
                                 complianceTypeColors[article.complianceType] ||
-                                "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45"
+                                "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                               }`}
                             >
                               {article.complianceType.replace(/_/g, " ")}
@@ -587,13 +580,13 @@ export default function TrackerPage() {
                             {isExpanded ? (
                               <ChevronDown
                                 size={16}
-                                className="text-slate-400 dark:text-white/30"
+                                className="text-[var(--text-tertiary)]"
                                 aria-hidden="true"
                               />
                             ) : (
                               <ChevronRight
                                 size={16}
-                                className="text-slate-400 dark:text-white/30"
+                                className="text-[var(--text-tertiary)]"
                                 aria-hidden="true"
                               />
                             )}
@@ -603,17 +596,17 @@ export default function TrackerPage() {
                           {isExpanded && (
                             <div className="px-5 pb-6 pl-[76px]">
                               {/* Summary */}
-                              <p className="text-body-lg text-slate-600 dark:text-white/45 leading-[1.7] mb-4">
+                              <p className="text-body-lg text-[var(--text-secondary)] leading-[1.7] mb-4">
                                 {article.summary}
                               </p>
 
                               {/* Operator Action */}
                               {article.operatorAction !== "None" && (
                                 <div className="mb-4">
-                                  <p className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wider mb-1">
+                                  <p className="text-micro text-[var(--text-tertiary)] uppercase tracking-wider mb-1">
                                     REQUIRED ACTION
                                   </p>
-                                  <p className="text-body text-slate-700 dark:text-white/70">
+                                  <p className="text-body text-[var(--text-secondary)]">
                                     {article.operatorAction}
                                   </p>
                                 </div>
@@ -624,7 +617,7 @@ export default function TrackerPage() {
                                 {article.appliesTo.map((op) => (
                                   <span
                                     key={op}
-                                    className="text-[9px] bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70 px-2 py-0.5 rounded"
+                                    className="text-[9px] bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-2 py-0.5 rounded"
                                   >
                                     {op}
                                   </span>
@@ -633,13 +626,13 @@ export default function TrackerPage() {
 
                               {/* Exemptions */}
                               {article.exemptions && (
-                                <p className="text-caption text-white/30 mb-4">
+                                <p className="text-caption text-[var(--text-tertiary)] mb-4">
                                   {article.exemptions}
                                 </p>
                               )}
 
                               {/* Status Selector */}
-                              <div className="flex gap-2 pt-4 border-t border-white/10">
+                              <div className="flex gap-2 pt-4 border-t border-[var(--border-default)]">
                                 {(
                                   [
                                     "not_started",
@@ -658,7 +651,7 @@ export default function TrackerPage() {
                                     className={`px-3 py-1.5 rounded-lg text-caption border transition-all ${
                                       status === s
                                         ? `${statusColors[s].bg} ${statusColors[s].border}`
-                                        : "border-white/12 text-white/70 hover:border-white/[0.1]"
+                                        : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                                     }`}
                                   >
                                     {s === "not_started"
@@ -704,10 +697,10 @@ export default function TrackerPage() {
                 return (
                   <div key={phase} className="mb-8">
                     <div className="flex items-center justify-between mb-4 mt-8">
-                      <p className="text-caption uppercase tracking-[0.2em] text-white/45">
+                      <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
                         {phaseLabel}
                       </p>
-                      <p className="text-micro text-white/30">
+                      <p className="text-micro text-[var(--text-tertiary)]">
                         {completedCount}/{phaseItems.length} completed
                       </p>
                     </div>
@@ -720,7 +713,7 @@ export default function TrackerPage() {
                         return (
                           <div
                             key={item.id}
-                            className="bg-white/[0.015] border border-white/10 rounded-lg px-5 py-4 flex items-center gap-4"
+                            className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-5 py-4 flex items-center gap-4"
                           >
                             {/* Checkbox */}
                             <button
@@ -729,8 +722,8 @@ export default function TrackerPage() {
                               }
                               className={`w-[18px] h-[18px] rounded border flex items-center justify-center transition-all ${
                                 isCompleted
-                                  ? "bg-white border-white"
-                                  : "border-white/[0.12] hover:border-white/[0.2]"
+                                  ? "bg-[var(--surface-raised)] border-white"
+                                  : "border-[var(--border-default)] hover:border-[var(--border-default)]"
                               }`}
                             >
                               {isCompleted && (
@@ -743,13 +736,13 @@ export default function TrackerPage() {
                               <p
                                 className={`text-body-lg ${
                                   isCompleted
-                                    ? "line-through text-white/45"
+                                    ? "line-through text-[var(--text-tertiary)]"
                                     : "text-white"
                                 }`}
                               >
                                 {item.requirement}
                               </p>
-                              <p className="text-caption text-white/45 mt-1">
+                              <p className="text-caption text-[var(--text-tertiary)] mt-1">
                                 {item.articles} · {item.moduleLabel}
                               </p>
                             </div>
@@ -758,7 +751,7 @@ export default function TrackerPage() {
                             <span
                               className={`text-micro uppercase px-2 py-0.5 rounded-full ${
                                 priorityColors[item.priority] ||
-                                "bg-white/[0.04] text-white/70"
+                                "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                               }`}
                             >
                               {item.priority}

@@ -47,30 +47,30 @@ const SEVERITY_CONFIG: Record<
 > = {
   CRITICAL: {
     icon: AlertTriangle,
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    border: "border-red-500/30",
+    color: "text-[var(--accent-danger)]",
+    bg: "bg-[var(--accent-danger)]/10",
+    border: "border-[var(--accent-danger)/30]",
     label: "Critical",
   },
   HIGH: {
     icon: AlertCircle,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
+    color: "text-[var(--accent-warning)]",
+    bg: "bg-[var(--accent-warning-soft)]",
     border: "border-amber-500/30",
     label: "High",
   },
   MEDIUM: {
     icon: Info,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/30",
+    color: "text-[var(--accent-primary)]",
+    bg: "bg-[var(--accent-info-soft)]0/10",
+    border: "border-[var(--accent-primary)]/30",
     label: "Medium",
   },
   LOW: {
     icon: Info,
-    color: "text-slate-400",
-    bg: "bg-slate-500/10",
-    border: "border-slate-500/20",
+    color: "text-[var(--text-tertiary)]",
+    bg: "bg-[var(--surface-sunken)]0/10",
+    border: "border-[var(--border-default)]/20",
     label: "Low",
   },
 };
@@ -176,13 +176,13 @@ export default function RegulatoryFeedPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
             {t("regulatoryFeed.title")}
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2">
             {t("regulatoryFeed.title")}
           </h1>
-          <p className="text-body-lg text-slate-500 dark:text-white/45">
+          <p className="text-body-lg text-[var(--text-secondary)]">
             {t("regulatoryFeed.subtitle")}
           </p>
         </div>
@@ -193,17 +193,17 @@ export default function RegulatoryFeedPage() {
           <StatCard
             label={t("regulatoryFeed.criticalUpdates")}
             value={criticalCount}
-            accent="text-red-400"
+            accent="text-[var(--accent-danger)]"
           />
           <StatCard
             label={t("regulatoryFeed.highUpdates")}
             value={highCount}
-            accent="text-amber-400"
+            accent="text-[var(--accent-warning)]"
           />
           <StatCard
             label={t("regulatoryFeed.thisWeek")}
             value={thisWeekCount}
-            accent="text-blue-400"
+            accent="text-[var(--accent-primary)]"
           />
         </div>
 
@@ -221,8 +221,8 @@ export default function RegulatoryFeedPage() {
                 }}
                 className={`text-small px-3 py-1.5 rounded-full font-medium transition-all ${
                   isActive
-                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                    : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 border border-transparent hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated]"
+                    ? "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
+                    : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-transparent hover:bg-[var(--surface-sunken)]"
                 }`}
               >
                 {sev === "ALL"
@@ -240,7 +240,7 @@ export default function RegulatoryFeedPage() {
                 setModuleFilter(e.target.value);
                 setPage(1);
               }}
-              className="text-small px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 border border-slate-200 dark:border-[--glass-border-subtle] appearance-none pr-7 cursor-pointer"
+              className="text-small px-3 py-1.5 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)] appearance-none pr-7 cursor-pointer"
             >
               <option value="">{t("regulatoryFeed.filterByModule")}</option>
               {Object.entries(MODULE_LABELS).map(([key, label]) => (
@@ -251,7 +251,7 @@ export default function RegulatoryFeedPage() {
             </select>
             <ChevronDown
               size={12}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45 pointer-events-none"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none"
             />
           </div>
         </div>
@@ -261,7 +261,7 @@ export default function RegulatoryFeedPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2
               size={24}
-              className="animate-spin text-slate-400 dark:text-white/45"
+              className="animate-spin text-[var(--text-tertiary)]"
             />
           </div>
         ) : updates.length === 0 ? (
@@ -293,17 +293,17 @@ export default function RegulatoryFeedPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               Previous
             </button>
-            <span className="text-body text-slate-500 dark:text-white/45 px-3">
+            <span className="text-body text-[var(--text-secondary)] px-3">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               Next
             </button>
@@ -326,12 +326,12 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-      <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+      <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {label}
       </p>
       <p
-        className={`text-2xl font-semibold ${accent || "text-slate-900 dark:text-white"}`}
+        className={`text-2xl font-semibold ${accent || "text-[var(--text-primary)]"}`}
       >
         {value}
       </p>
@@ -366,16 +366,16 @@ function FeedItem({
       animate={{ opacity: update.isRead ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      className={`bg-white dark:bg-[--glass-bg-surface] border rounded-xl overflow-hidden transition-all ${
+      className={`bg-[var(--surface-raised)] border rounded-xl overflow-hidden transition-all ${
         update.isRead
-          ? "border-slate-200 dark:border-white/5"
-          : `border-slate-200 dark:${config.border}`
+          ? "border-[var(--border-default)]"
+          : `border-[var(--border-default)]`
       }`}
     >
       {/* Main row */}
       <button
         onClick={onToggle}
-        className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-start gap-3 p-4 text-left hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
       >
         {/* Severity icon */}
         <div
@@ -392,30 +392,30 @@ function FeedItem({
             >
               {config.label}
             </span>
-            <span className="text-micro font-mono text-slate-400 dark:text-white/30">
+            <span className="text-micro font-mono text-[var(--text-tertiary)]">
               {update.celexNumber}
             </span>
-            <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45">
+            <span className="text-micro px-1.5 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-secondary)]">
               {DOC_TYPE_LABELS[update.documentType] || update.documentType}
             </span>
             {update.isRead && (
               <CheckCircle2
                 size={12}
-                className="text-emerald-400 dark:text-emerald-400/50"
+                className="text-[var(--accent-primary)]/50"
               />
             )}
           </div>
-          <h3 className="text-body-lg font-medium text-slate-900 dark:text-white/90 line-clamp-2 leading-snug">
+          <h3 className="text-body-lg font-medium text-[var(--text-primary)] line-clamp-2 leading-snug">
             {update.title}
           </h3>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className="text-caption text-slate-400 dark:text-white/30">
+            <span className="text-caption text-[var(--text-tertiary)]">
               {formatDate(update.publishedAt)}
             </span>
             {update.affectedModules.map((mod) => (
               <span
                 key={mod}
-                className="text-micro px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                className="text-micro px-1.5 py-0.5 rounded bg-[var(--accent-primary-soft)] text-[var(--accent-success)] font-medium"
               >
                 {MODULE_LABELS[mod] || mod}
               </span>
@@ -426,7 +426,7 @@ function FeedItem({
         {/* Expand indicator */}
         <ChevronDown
           size={16}
-          className={`text-slate-400 dark:text-white/30 transition-transform flex-shrink-0 mt-1 ${
+          className={`text-[var(--text-tertiary)] transition-transform flex-shrink-0 mt-1 ${
             isExpanded ? "rotate-180" : ""
           }`}
         />
@@ -442,13 +442,13 @@ function FeedItem({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-white/5">
+            <div className="px-4 pb-4 pt-1 border-t border-[var(--border-subtle)]">
               {/* Match Reason */}
               <div className="mb-3">
-                <p className="text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
+                <p className="text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                   {t("regulatoryFeed.matchReason")}
                 </p>
-                <p className="text-body text-slate-600 dark:text-white/45">
+                <p className="text-body text-[var(--text-secondary)]">
                   {update.matchReason}
                 </p>
               </div>
@@ -459,7 +459,7 @@ function FeedItem({
                   href={update.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-small font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-small font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
                 >
                   <ExternalLink size={12} />
                   {t("regulatoryFeed.viewOnEurLex")}
@@ -471,7 +471,7 @@ function FeedItem({
                       onMarkRead();
                     }}
                     disabled={markingRead}
-                    className="inline-flex items-center gap-1.5 text-small font-medium text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-small font-medium text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors disabled:opacity-50"
                   >
                     {markingRead ? (
                       <Loader2 size={12} className="animate-spin" />
@@ -493,17 +493,17 @@ function FeedItem({
 function EmptyState({ t }: { t: (key: string) => string }) {
   return (
     <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center mx-auto mb-6">
         <Radio
           size={28}
-          className="text-slate-400 dark:text-white/30"
+          className="text-[var(--text-tertiary)]"
           strokeWidth={1.5}
         />
       </div>
-      <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+      <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
         {t("regulatoryFeed.noUpdates")}
       </h3>
-      <p className="text-body-lg text-slate-500 dark:text-white/45 max-w-md mx-auto">
+      <p className="text-body-lg text-[var(--text-secondary)] max-w-md mx-auto">
         {t("regulatoryFeed.noUpdatesDescription")}
       </p>
     </div>

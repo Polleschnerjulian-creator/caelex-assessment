@@ -102,24 +102,24 @@ const SEVERITY_CONFIG: Record<
   { color: string; bg: string; border: string }
 > = {
   critical: {
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    border: "border-red-500/30",
+    color: "text-[var(--accent-danger)]",
+    bg: "bg-[var(--accent-danger)]/10",
+    border: "border-[var(--accent-danger)/30]",
   },
   high: {
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
+    color: "text-[var(--accent-warning)]",
+    bg: "bg-[var(--accent-warning-soft)]",
     border: "border-amber-500/30",
   },
   medium: {
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/30",
+    color: "text-[var(--accent-primary)]",
+    bg: "bg-[var(--accent-primary-soft)]",
+    border: "border-[var(--accent-success)/30]",
   },
   low: {
-    color: "text-slate-400",
-    bg: "bg-slate-500/10",
-    border: "border-slate-500/20",
+    color: "text-[var(--text-tertiary)]",
+    bg: "bg-[var(--surface-sunken)]0/10",
+    border: "border-[var(--border-default)]/20",
   },
 };
 
@@ -135,12 +135,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const WORKFLOW_STATES: Record<string, { label: string; color: string }> = {
-  reported: { label: "Reported", color: "text-amber-400" },
-  triaged: { label: "Triaged", color: "text-emerald-400" },
-  investigating: { label: "Investigating", color: "text-amber-400" },
+  reported: { label: "Reported", color: "text-[var(--accent-warning)]" },
+  triaged: { label: "Triaged", color: "text-[var(--accent-primary)]" },
+  investigating: {
+    label: "Investigating",
+    color: "text-[var(--accent-warning)]",
+  },
   mitigating: { label: "Mitigating", color: "text-orange-400" },
-  resolved: { label: "Resolved", color: "text-green-400" },
-  closed: { label: "Closed", color: "text-slate-400" },
+  resolved: { label: "Resolved", color: "text-[var(--accent-success)]" },
+  closed: { label: "Closed", color: "text-[var(--text-tertiary)]" },
 };
 
 const STATE_ORDER = [
@@ -188,11 +191,11 @@ function getCountdownColor(
   percentRemaining: number,
   isOverdue: boolean,
 ): string {
-  if (isOverdue) return "text-red-400 animate-pulse";
-  if (percentRemaining < 10) return "text-red-400 animate-pulse";
-  if (percentRemaining < 25) return "text-red-400";
-  if (percentRemaining < 50) return "text-amber-400";
-  return "text-green-400";
+  if (isOverdue) return "text-[var(--accent-danger)] animate-pulse";
+  if (percentRemaining < 10) return "text-[var(--accent-danger)] animate-pulse";
+  if (percentRemaining < 25) return "text-[var(--accent-danger)]";
+  if (percentRemaining < 50) return "text-[var(--accent-warning)]";
+  return "text-[var(--accent-success)]";
 }
 
 // ─── Component ───
@@ -466,13 +469,13 @@ export default function IncidentsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <p className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-1">
+          <p className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-1">
             {t("incidents.mono")}
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
             {t("incidents.title")}
           </h1>
-          <p className="text-body-lg text-slate-500 dark:text-white/45 mt-1">
+          <p className="text-body-lg text-[var(--text-secondary)] mt-1">
             {t("incidents.description")}
           </p>
         </div>
@@ -484,16 +487,19 @@ export default function IncidentsPage() {
               initial={false}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3"
+              className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-xl p-4 flex items-center gap-3"
             >
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center animate-pulse">
-                <AlertTriangle size={16} className="text-red-400" />
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent-danger-soft)] flex items-center justify-center animate-pulse">
+                <AlertTriangle
+                  size={16}
+                  className="text-[var(--accent-danger)]"
+                />
               </div>
               <div>
-                <p className="text-body font-medium text-red-400">
+                <p className="text-body font-medium text-[var(--accent-danger)]">
                   Critical Deadline Alert
                 </p>
-                <p className="text-small text-red-400/70">
+                <p className="text-small text-[var(--accent-danger)]/70">
                   One or more NIS2 reporting deadlines are less than 2 hours
                   away. Immediate action required.
                 </p>
@@ -509,13 +515,13 @@ export default function IncidentsPage() {
               label: "Active Incidents",
               value: activeCount,
               icon: Activity,
-              color: "text-emerald-400",
+              color: "text-[var(--accent-primary)]",
             },
             {
               label: "Critical Severity",
               value: criticalCount,
               icon: AlertTriangle,
-              color: "text-red-400",
+              color: "text-[var(--accent-danger)]",
             },
             {
               label: "NIS2 Phases Due",
@@ -527,26 +533,26 @@ export default function IncidentsPage() {
                 0,
               ),
               icon: Clock,
-              color: "text-amber-400",
+              color: "text-[var(--accent-warning)]",
             },
             {
               label: "Overdue Phases",
               value: overdueCount,
               icon: XCircle,
-              color: "text-red-400",
+              color: "text-[var(--accent-danger)]",
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
             >
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon size={14} className={stat.color} />
-                <span className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                <span className="text-caption text-[var(--text-secondary)] uppercase tracking-wider">
                   {stat.label}
                 </span>
               </div>
-              <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+              <p className="text-2xl font-semibold text-[var(--text-primary)]">
                 {stat.value}
               </p>
             </div>
@@ -556,7 +562,7 @@ export default function IncidentsPage() {
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-caption text-slate-500 dark:text-white/45 mr-1">
+            <span className="text-caption text-[var(--text-secondary)] mr-1">
               Severity:
             </span>
             {SEVERITY_FILTERS.map((s) => (
@@ -565,8 +571,8 @@ export default function IncidentsPage() {
                 onClick={() => setSeverityFilter(s)}
                 className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
                   severityFilter === s
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-transparent"
+                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-transparent"
                 }`}
               >
                 {s === "ALL" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -574,7 +580,7 @@ export default function IncidentsPage() {
             ))}
           </div>
           <div className="flex items-center gap-1 ml-4">
-            <span className="text-caption text-slate-500 dark:text-white/45 mr-1">
+            <span className="text-caption text-[var(--text-secondary)] mr-1">
               Category:
             </span>
             {CATEGORY_FILTERS.map((c) => (
@@ -583,8 +589,8 @@ export default function IncidentsPage() {
                 onClick={() => setCategoryFilter(c)}
                 className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
                   categoryFilter === c
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-transparent"
+                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-transparent"
                 }`}
               >
                 {c === "ALL" ? "All" : CATEGORY_LABELS[c] || c}
@@ -598,7 +604,7 @@ export default function IncidentsPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2
               size={24}
-              className="animate-spin text-slate-400 dark:text-white/45"
+              className="animate-spin text-[var(--text-tertiary)]"
             />
           </div>
         )}
@@ -606,17 +612,17 @@ export default function IncidentsPage() {
         {/* Empty state */}
         {!loading && incidents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center mb-4">
               <Shield
                 size={28}
-                className="text-slate-400 dark:text-white/30"
+                className="text-[var(--text-tertiary)]"
                 strokeWidth={1.5}
               />
             </div>
-            <h3 className="text-subtitle font-medium text-slate-700 dark:text-white/70 mb-1">
+            <h3 className="text-subtitle font-medium text-[var(--text-secondary)] mb-1">
               No active incidents
             </h3>
-            <p className="text-body text-slate-500 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               All clear. No incidents require attention.
             </p>
           </div>
@@ -638,12 +644,12 @@ export default function IncidentsPage() {
               return (
                 <div
                   key={incident.id}
-                  className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl overflow-hidden"
+                  className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl overflow-hidden"
                 >
                   {/* Row */}
                   <button
                     onClick={() => fetchExpanded(incident.id)}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
                   >
                     {/* Severity badge */}
                     <div
@@ -651,17 +657,17 @@ export default function IncidentsPage() {
                     />
 
                     {/* Number */}
-                    <span className="text-small font-mono text-slate-500 dark:text-white/45 w-28 shrink-0">
+                    <span className="text-small font-mono text-[var(--text-secondary)] w-28 shrink-0">
                       {incident.incidentNumber}
                     </span>
 
                     {/* Title */}
-                    <span className="text-body text-slate-900 dark:text-white/90 font-medium flex-1 truncate">
+                    <span className="text-body text-[var(--text-primary)] font-medium flex-1 truncate">
                       {incident.title}
                     </span>
 
                     {/* Category tag */}
-                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45 shrink-0">
+                    <span className="text-micro px-2 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-secondary)] shrink-0">
                       {CATEGORY_LABELS[incident.category] || incident.category}
                     </span>
 
@@ -691,8 +697,8 @@ export default function IncidentsPage() {
                                 : overdue
                                   ? "bg-red-400 animate-pulse"
                                   : i < (incident.nis2PhasesSummary?.total || 0)
-                                    ? "bg-slate-300 dark:bg-white/20"
-                                    : "bg-slate-200 dark:bg-white/5"
+                                    ? "bg-[var(--surface-sunken)]"
+                                    : "bg-[var(--surface-sunken)]"
                             }`}
                           />
                         );
@@ -713,7 +719,7 @@ export default function IncidentsPage() {
                       </span>
                     )}
                     {urgentMs !== null && urgentMs <= 0 && (
-                      <span className="text-caption text-red-400 animate-pulse shrink-0">
+                      <span className="text-caption text-[var(--accent-danger)] animate-pulse shrink-0">
                         OVERDUE
                       </span>
                     )}
@@ -722,12 +728,12 @@ export default function IncidentsPage() {
                     {isExpanded ? (
                       <ChevronDown
                         size={14}
-                        className="text-slate-400 dark:text-white/30 shrink-0"
+                        className="text-[var(--text-tertiary)] shrink-0"
                       />
                     ) : (
                       <ChevronRight
                         size={14}
-                        className="text-slate-400 dark:text-white/30 shrink-0"
+                        className="text-[var(--text-tertiary)] shrink-0"
                       />
                     )}
                   </button>
@@ -742,19 +748,19 @@ export default function IncidentsPage() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="border-t border-slate-200 dark:border-dark-border p-4 space-y-5">
+                        <div className="border-t border-[var(--border-default)] p-4 space-y-5">
                           {expandLoading ? (
                             <div className="flex items-center justify-center py-8">
                               <Loader2
                                 size={20}
-                                className="animate-spin text-slate-400 dark:text-white/45"
+                                className="animate-spin text-[var(--text-tertiary)]"
                               />
                             </div>
                           ) : expandedData ? (
                             <>
                               {/* Workflow track */}
                               <div>
-                                <h4 className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                <h4 className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-3">
                                   Workflow Progress
                                 </h4>
                                 <div className="flex items-center gap-0">
@@ -777,10 +783,10 @@ export default function IncidentsPage() {
                                           <div
                                             className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium ${
                                               isActive
-                                                ? "bg-emerald-500 text-white ring-2 ring-emerald-500/30"
+                                                ? "bg-[var(--accent-primary)] text-white ring-2 ring-[var(--border-focus)]/30"
                                                 : isPast
-                                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30 border border-slate-200 dark:border-[--glass-border-subtle]"
+                                                  ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border border-[var(--accent-success)/30]"
+                                                  : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)] border border-[var(--border-default)]"
                                             }`}
                                           >
                                             {isPast ? (
@@ -792,8 +798,8 @@ export default function IncidentsPage() {
                                           <span
                                             className={`text-[9px] mt-1 ${
                                               isActive
-                                                ? "text-emerald-400 font-medium"
-                                                : "text-slate-400 dark:text-white/30"
+                                                ? "text-[var(--accent-primary)] font-medium"
+                                                : "text-[var(--text-tertiary)]"
                                             }`}
                                           >
                                             {wfState?.label || state}
@@ -803,8 +809,8 @@ export default function IncidentsPage() {
                                           <div
                                             className={`w-8 h-[2px] mx-1 mt-[-14px] ${
                                               isPast
-                                                ? "bg-green-500/40"
-                                                : "bg-slate-200 dark:bg-white/10"
+                                                ? "bg-[var(--accent-success)]/40"
+                                                : "bg-[var(--surface-sunken)]"
                                             }`}
                                           />
                                         )}
@@ -831,7 +837,7 @@ export default function IncidentsPage() {
                                             actionLoading ===
                                             `workflow-${incident.id}-${t.event}`
                                           }
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)/20] rounded-lg hover:bg-[var(--accent-success-soft)] transition-colors disabled:opacity-50"
                                         >
                                           {actionLoading ===
                                           `workflow-${incident.id}-${t.event}` ? (
@@ -853,7 +859,7 @@ export default function IncidentsPage() {
                               {/* NIS2 Phase tracker */}
                               {expandedData.nis2Phases.length > 0 && (
                                 <div>
-                                  <h4 className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                  <h4 className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-3">
                                     NIS2 Reporting Phases
                                   </h4>
                                   <div className="space-y-2">
@@ -885,36 +891,36 @@ export default function IncidentsPage() {
                                           key={phase.phase}
                                           className={`flex items-center gap-3 p-3 rounded-lg border ${
                                             isSubmitted
-                                              ? "bg-green-500/5 border-green-500/20"
+                                              ? "bg-[var(--accent-success)]/5 border-[var(--accent-success)]/20"
                                               : isOverdue
-                                                ? "bg-red-500/5 border-red-500/20"
-                                                : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle]"
+                                                ? "bg-[var(--accent-danger)]/5 border-[var(--accent-danger)]/20"
+                                                : "bg-[var(--surface-raised)][0.02] border-[var(--border-default)]"
                                           }`}
                                         >
                                           {/* Status icon */}
                                           {isSubmitted ? (
                                             <CheckCircle2
                                               size={16}
-                                              className="text-green-400 shrink-0"
+                                              className="text-[var(--accent-success)] shrink-0"
                                             />
                                           ) : isOverdue ? (
                                             <AlertCircle
                                               size={16}
-                                              className="text-red-400 animate-pulse shrink-0"
+                                              className="text-[var(--accent-danger)] animate-pulse shrink-0"
                                             />
                                           ) : (
                                             <Clock
                                               size={16}
-                                              className="text-slate-400 dark:text-white/45 shrink-0"
+                                              className="text-[var(--text-tertiary)] shrink-0"
                                             />
                                           )}
 
                                           {/* Phase info */}
                                           <div className="flex-1 min-w-0">
-                                            <p className="text-small font-medium text-slate-900 dark:text-white/90">
+                                            <p className="text-small font-medium text-[var(--text-primary)]">
                                               {phase.phaseName}
                                             </p>
-                                            <p className="text-micro text-slate-500 dark:text-white/45">
+                                            <p className="text-micro text-[var(--text-secondary)]">
                                               Due:{" "}
                                               {new Date(
                                                 phase.deadline,
@@ -924,7 +930,7 @@ export default function IncidentsPage() {
 
                                           {/* Countdown / status */}
                                           {isSubmitted ? (
-                                            <span className="text-caption text-green-400 font-medium shrink-0">
+                                            <span className="text-caption text-[var(--accent-success)] font-medium shrink-0">
                                               Submitted
                                             </span>
                                           ) : (
@@ -952,7 +958,7 @@ export default function IncidentsPage() {
                                                   actionLoading ===
                                                   `draft-${incident.id}-${phase.phase}`
                                                 }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-slate-600 dark:text-white/45 bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-[var(--text-secondary)] bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded hover:bg-[var(--surface-sunken)] transition-colors disabled:opacity-50"
                                               >
                                                 {actionLoading ===
                                                 `draft-${incident.id}-${phase.phase}` ? (
@@ -976,7 +982,7 @@ export default function IncidentsPage() {
                                                   actionLoading ===
                                                   `submit-${incident.id}-${phase.phase}`
                                                 }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-[var(--accent-success)] bg-[var(--accent-success)]/10 border border-[var(--accent-success)]/20 rounded hover:bg-[var(--accent-success-soft)] transition-colors disabled:opacity-50"
                                               >
                                                 {actionLoading ===
                                                 `submit-${incident.id}-${phase.phase}` ? (
@@ -999,7 +1005,7 @@ export default function IncidentsPage() {
                               )}
 
                               {/* Details summary */}
-                              <div className="text-small text-slate-500 dark:text-white/45">
+                              <div className="text-small text-[var(--text-secondary)]">
                                 Detected:{" "}
                                 {new Date(incident.detectedAt).toLocaleString()}{" "}
                                 | Category:{" "}
@@ -1009,7 +1015,7 @@ export default function IncidentsPage() {
                               </div>
                             </>
                           ) : (
-                            <p className="text-body text-slate-500 dark:text-white/45 text-center py-4">
+                            <p className="text-body text-[var(--text-secondary)] text-center py-4">
                               Failed to load incident details.
                             </p>
                           )}

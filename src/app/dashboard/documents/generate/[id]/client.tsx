@@ -80,26 +80,26 @@ export function DocumentViewClient({
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/documents"
-            className="p-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] rounded-lg transition-colors"
           >
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
               {title}
             </h1>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-sm text-slate-500 dark:text-white/45">
+              <span className="text-sm text-[var(--text-secondary)]">
                 {typeLabel}
               </span>
-              <span className="text-slate-300 dark:text-white/20">|</span>
-              <span className="text-sm text-slate-400 dark:text-white/45">
+              <span className="text-[var(--text-tertiary)]">|</span>
+              <span className="text-sm text-[var(--text-tertiary)]">
                 {date}
               </span>
               {modelUsed && (
                 <>
-                  <span className="text-slate-300 dark:text-white/20">|</span>
-                  <span className="text-xs text-slate-400 dark:text-white/30">
+                  <span className="text-[var(--text-tertiary)]">|</span>
+                  <span className="text-xs text-[var(--text-tertiary)]">
                     {modelUsed}
                   </span>
                 </>
@@ -110,19 +110,19 @@ export function DocumentViewClient({
 
         <div className="flex items-center gap-2">
           {status === "COMPLETED" && (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-500">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--accent-primary)]">
               <CheckCircle2 size={14} />
               Completed
             </div>
           )}
           {status === "GENERATING" && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-500">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--accent-warning)]">
               <Clock size={14} />
               Generating
             </div>
           )}
           {status === "FAILED" && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--accent-danger)]">
               <XCircle size={14} />
               Failed
             </div>
@@ -132,7 +132,7 @@ export function DocumentViewClient({
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white transition-colors disabled:opacity-60"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors disabled:opacity-60"
             >
               {downloading ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -153,16 +153,13 @@ export function DocumentViewClient({
 
       {/* Content */}
       {sections.length > 0 ? (
-        <div className="rounded-xl border border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-white/[0.02] p-6">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)][0.02] p-6">
           <SectionRenderer sections={sections} />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <FileText
-            size={40}
-            className="text-slate-300 dark:text-white/20 mb-3"
-          />
-          <p className="text-sm text-slate-500 dark:text-white/45">
+          <FileText size={40} className="text-[var(--text-tertiary)] mb-3" />
+          <p className="text-sm text-[var(--text-secondary)]">
             {status === "GENERATING"
               ? "Document is being generated..."
               : status === "FAILED"

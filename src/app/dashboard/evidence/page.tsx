@@ -87,45 +87,50 @@ function getStatusBadge(status: string) {
     case "ACCEPTED":
       return {
         label: "Accepted",
-        className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        className:
+          "bg-[var(--accent-primary-soft)] text-[var(--accent-success)]",
       };
     case "SUBMITTED":
       return {
         label: "Submitted",
-        className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        className:
+          "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
       };
     case "PENDING":
       return {
         label: "Pending",
-        className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        className:
+          "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
       };
     case "REJECTED":
       return {
         label: "Rejected",
-        className: "bg-red-500/10 text-red-600 dark:text-red-400",
+        className: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
       };
     case "DRAFT":
       return {
         label: "Draft",
-        className: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+        className:
+          "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)]",
       };
     case "EXPIRED":
       return {
         label: "Expired",
-        className: "bg-red-500/10 text-red-600 dark:text-red-400",
+        className: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
       };
     default:
       return {
         label: status,
-        className: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+        className:
+          "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)]",
       };
   }
 }
 
 function getCoverageColor(pct: number): string {
-  if (pct >= 80) return "bg-emerald-500";
-  if (pct >= 50) return "bg-amber-500";
-  return "bg-red-500";
+  if (pct >= 80) return "bg-[var(--accent-success-soft)]0";
+  if (pct >= 50) return "bg-[var(--accent-warning)]";
+  return "bg-[var(--accent-danger)]";
 }
 
 function formatDate(dateStr: string): string {
@@ -169,7 +174,7 @@ export default function EvidenceCoveragePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
       </div>
     );
   }
@@ -178,13 +183,13 @@ export default function EvidenceCoveragePage() {
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <AlertTriangle className="w-8 h-8 text-red-400" />
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <AlertTriangle className="w-8 h-8 text-[var(--accent-danger)]" />
+        <p className="text-sm text-[var(--text-secondary)]">
           {error || "Failed to load evidence data"}
         </p>
         <button
           onClick={fetchData}
-          className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+          className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors"
         >
           Retry
         </button>
@@ -212,14 +217,14 @@ export default function EvidenceCoveragePage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <FileCheck className="w-5 h-5 text-emerald-500" />
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20]">
+          <FileCheck className="w-5 h-5 text-[var(--accent-primary)]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-xl font-semibold text-[var(--text-primary)]">
             Evidence Coverage
           </h1>
-          <p className="text-sm text-slate-500 dark:text-white/45">
+          <p className="text-sm text-[var(--text-secondary)]">
             ACE — Autonomous Compliance Evidence Engine
           </p>
         </div>
@@ -231,17 +236,17 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10">
-              <BarChart3 className="w-4 h-4 text-blue-500" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-info-soft)]0/10">
+              <BarChart3 className="w-4 h-4 text-[var(--accent-primary)]" />
             </div>
-            <span className="text-sm text-slate-500 dark:text-white/45">
+            <span className="text-sm text-[var(--text-secondary)]">
               Total Evidence
             </span>
           </div>
-          <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+          <p className="text-2xl font-semibold text-[var(--text-primary)]">
             {overviewStats.totalEvidence}
           </p>
         </motion.div>
@@ -250,17 +255,17 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-primary-soft)]">
+              <CheckCircle2 className="w-4 h-4 text-[var(--accent-primary)]" />
             </div>
-            <span className="text-sm text-slate-500 dark:text-white/45">
+            <span className="text-sm text-[var(--text-secondary)]">
               Accepted
             </span>
           </div>
-          <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+          <p className="text-2xl font-semibold text-[var(--accent-success)]">
             {overviewStats.acceptedEvidence}
           </p>
         </motion.div>
@@ -269,17 +274,17 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10">
-              <Clock className="w-4 h-4 text-amber-500" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-warning-soft)]">
+              <Clock className="w-4 h-4 text-[var(--accent-warning)]" />
             </div>
-            <span className="text-sm text-slate-500 dark:text-white/45">
+            <span className="text-sm text-[var(--text-secondary)]">
               Pending
             </span>
           </div>
-          <p className="text-2xl font-semibold text-amber-600 dark:text-amber-400">
+          <p className="text-2xl font-semibold text-[var(--accent-warning)]">
             {overviewStats.pendingEvidence}
           </p>
         </motion.div>
@@ -288,17 +293,17 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-primary-soft)]">
+              <ShieldCheck className="w-4 h-4 text-[var(--accent-primary)]" />
             </div>
-            <span className="text-sm text-slate-500 dark:text-white/45">
+            <span className="text-sm text-[var(--text-secondary)]">
               Coverage
             </span>
           </div>
-          <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+          <p className="text-2xl font-semibold text-[var(--text-primary)]">
             {overallCoveragePct}%
           </p>
         </motion.div>
@@ -311,7 +316,7 @@ export default function EvidenceCoveragePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
             Coverage by Regulation
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -321,31 +326,31 @@ export default function EvidenceCoveragePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + i * 0.04 }}
-                className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">
                     {getRegulationLabel(reg.regulationType)}
                   </h3>
                   <span
                     className={`text-sm font-semibold ${
                       reg.coveragePct >= 80
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-[var(--accent-success)]"
                         : reg.coveragePct >= 50
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-red-600 dark:text-red-400"
+                          ? "text-[var(--accent-warning)]"
+                          : "text-[var(--accent-danger)]"
                     }`}
                   >
                     {reg.coveragePct}%
                   </span>
                 </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full">
+                <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full">
                   <div
                     className={`h-full ${getCoverageColor(reg.coveragePct)} rounded-full transition-all duration-500`}
                     style={{ width: `${reg.coveragePct}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-500 dark:text-white/45">
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {reg.coveredRequirements} of {reg.totalRequirements}{" "}
                   requirements covered
                 </p>
@@ -362,13 +367,13 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
             Recent Evidence
           </h2>
           {recentEvidence.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-white/45 py-8 text-center">
+            <p className="text-sm text-[var(--text-secondary)] py-8 text-center">
               No evidence records yet
             </p>
           ) : (
@@ -378,13 +383,13 @@ export default function EvidenceCoveragePage() {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-[--glass-border-subtle] last:border-0"
+                    className="flex items-center gap-3 py-2 border-b border-[var(--border-subtle)] last:border-0"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                         {item.title}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-white/45">
+                      <p className="text-xs text-[var(--text-secondary)]">
                         {getRegulationLabel(item.regulationType)} &middot;{" "}
                         {formatDate(item.updatedAt)}
                       </p>
@@ -406,13 +411,13 @@ export default function EvidenceCoveragePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5"
+          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
         >
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
             Gap Summary
           </h2>
           {gapsByCategory.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-white/45 py-8 text-center">
+            <p className="text-sm text-[var(--text-secondary)] py-8 text-center">
               No regulatory requirements configured
             </p>
           ) : (
@@ -425,16 +430,16 @@ export default function EvidenceCoveragePage() {
                 return (
                   <div key={cat.category}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-slate-700 dark:text-white/70 capitalize">
+                      <span className="text-sm text-[var(--text-secondary)] capitalize">
                         {cat.category.replace(/_/g, " ")}
                       </span>
-                      <span className="text-xs text-slate-500 dark:text-white/45">
+                      <span className="text-xs text-[var(--text-secondary)]">
                         {cat.gaps > 0 ? (
-                          <span className="text-red-500 dark:text-red-400">
+                          <span className="text-[var(--accent-danger)]">
                             {cat.gaps} gap{cat.gaps !== 1 ? "s" : ""}
                           </span>
                         ) : (
-                          <span className="text-emerald-500 dark:text-emerald-400">
+                          <span className="text-[var(--accent-primary)]">
                             Complete
                           </span>
                         )}
@@ -442,7 +447,7 @@ export default function EvidenceCoveragePage() {
                         {cat.total} total
                       </span>
                     </div>
-                    <div className="h-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full">
+                    <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full">
                       <div
                         className={`h-full ${getCoverageColor(coveredPct)} rounded-full transition-all duration-500`}
                         style={{ width: `${coveredPct}%` }}
@@ -461,28 +466,28 @@ export default function EvidenceCoveragePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
-        className="bg-white dark:bg-white/5 dark:backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
       >
         <div className="flex items-center gap-3">
-          <Link2 className="w-4 h-4 text-slate-400 dark:text-white/45" />
+          <Link2 className="w-4 h-4 text-[var(--text-tertiary)]" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-700 dark:text-white/70">
+              <span className="text-sm font-medium text-[var(--text-secondary)]">
                 Evidence Hash-Chain Integrity
               </span>
               {chainIntegrity.verified ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-primary-soft)] text-[var(--accent-success)]">
                   <CheckCircle2 className="w-3 h-3" />
                   Verified
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]">
                   <XCircle className="w-3 h-3" />
                   Integrity Issue
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-white/45 mt-0.5">
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
               {chainIntegrity.totalRecords} hashed record
               {chainIntegrity.totalRecords !== 1 ? "s" : ""} &middot; Last
               verified {formatDate(chainIntegrity.lastVerified)}
