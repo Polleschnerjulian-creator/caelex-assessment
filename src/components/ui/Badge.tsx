@@ -2,9 +2,11 @@
 
 type BadgeVariant =
   | "default"
+  | "primary"
   | "success"
   | "warning"
   | "error"
+  | "danger"
   | "info"
   | "outline";
 type BadgeSize = "sm" | "md";
@@ -22,40 +24,50 @@ const variants: Record<
   { bg: string; text: string; dot: string }
 > = {
   default: {
-    bg: "bg-slate-100 dark:bg-[--glass-bg-surface]",
-    text: "text-slate-600 dark:text-white/70",
-    dot: "bg-slate-400 dark:bg-white/50",
+    bg: "bg-[var(--surface-sunken)]",
+    text: "text-[var(--text-secondary)]",
+    dot: "bg-[var(--text-tertiary)]",
+  },
+  primary: {
+    bg: "bg-[var(--accent-primary-soft)]",
+    text: "text-[var(--accent-primary)]",
+    dot: "bg-[var(--accent-primary)]",
   },
   success: {
-    bg: "bg-emerald-100 dark:bg-emerald-500/15",
-    text: "text-emerald-700 dark:text-emerald-400",
-    dot: "bg-emerald-500 dark:bg-emerald-400",
+    bg: "bg-[var(--accent-success-soft)]",
+    text: "text-[var(--accent-success)]",
+    dot: "bg-[var(--accent-success)]",
   },
   warning: {
-    bg: "bg-amber-100 dark:bg-amber-500/15",
-    text: "text-amber-700 dark:text-amber-400",
-    dot: "bg-amber-500 dark:bg-amber-400",
+    bg: "bg-[var(--accent-warning-soft)]",
+    text: "text-[var(--accent-warning)]",
+    dot: "bg-[var(--accent-warning)]",
   },
   error: {
-    bg: "bg-red-100 dark:bg-red-500/15",
-    text: "text-red-700 dark:text-red-400",
-    dot: "bg-red-500 dark:bg-red-400",
+    bg: "bg-[var(--accent-danger-soft)]",
+    text: "text-[var(--accent-danger)]",
+    dot: "bg-[var(--accent-danger)]",
+  },
+  danger: {
+    bg: "bg-[var(--accent-danger-soft)]",
+    text: "text-[var(--accent-danger)]",
+    dot: "bg-[var(--accent-danger)]",
   },
   info: {
-    bg: "bg-blue-100 dark:bg-blue-500/15",
-    text: "text-blue-700 dark:text-blue-400",
-    dot: "bg-blue-500 dark:bg-blue-400",
+    bg: "bg-[var(--accent-info-soft)]",
+    text: "text-[var(--accent-info)]",
+    dot: "bg-[var(--accent-info)]",
   },
   outline: {
-    bg: "bg-transparent border border-slate-300 dark:border-[--glass-border-hover]",
-    text: "text-slate-600 dark:text-white/70",
-    dot: "bg-slate-400 dark:bg-white/50",
+    bg: "bg-transparent border border-[var(--border-default)]",
+    text: "text-[var(--text-secondary)]",
+    dot: "bg-[var(--text-tertiary)]",
   },
 };
 
 const sizes: Record<BadgeSize, string> = {
-  sm: "px-1.5 py-0.5 text-micro",
-  md: "px-2.5 py-1 text-caption",
+  sm: "h-5 px-1.5 text-[12px]",
+  md: "h-6 px-2 text-[12px]",
 };
 
 export function Badge({
@@ -74,9 +86,8 @@ export function Badge({
         ${sizes[size]}
         ${style.bg}
         ${style.text}
-        rounded-lg
+        rounded-full
         font-medium
-        uppercase tracking-wide
         ${className}
       `}
     >
