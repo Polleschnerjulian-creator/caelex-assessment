@@ -22,10 +22,10 @@ interface NotificationItem {
 }
 
 const severityBorder: Record<string, string> = {
-  INFO: "border-l-[#111827]",
-  WARNING: "border-l-amber-500",
-  URGENT: "border-l-red-500",
-  CRITICAL: "border-l-red-600",
+  INFO: "border-l-[var(--accent-info)]",
+  WARNING: "border-l-[var(--accent-warning)]",
+  URGENT: "border-l-[var(--accent-danger)]",
+  CRITICAL: "border-l-[var(--accent-danger)]",
 };
 
 export default function NotificationCenter() {
@@ -221,7 +221,7 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-[#6B7280] hover:text-[#111827] transition-colors rounded-lg hover:bg-[#F1F3F5]"
+        className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] rounded-[var(--v2-radius-sm)] hover:bg-[var(--surface-sunken)]"
         aria-label={`${t("notifications.notifications")}${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -230,7 +230,7 @@ export default function NotificationCenter() {
         <Bell size={18} aria-hidden="true" />
         {unreadCount > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-red-500 rounded-full text-[9px] font-medium text-white px-1"
+            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-[var(--accent-danger)] rounded-full text-[9px] font-medium text-white px-1"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -245,11 +245,11 @@ export default function NotificationCenter() {
           id="notification-panel"
           role="dialog"
           aria-label={t("notifications.notifications")}
-          className="absolute right-0 top-full mt-2 w-[380px] bg-white border border-[#E5E7EB] rounded-xl shadow-2xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-[380px] bg-[var(--surface-overlay)] border border-[var(--border-default)] rounded-[var(--v2-radius-md)] shadow-[var(--v2-shadow-lg)] z-50 overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
-            <h3 className="text-body-lg font-medium text-[#111827]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)]">
+            <h3 className="text-[14px] font-medium text-[var(--text-primary)]">
               {t("notifications.notifications")}
             </h3>
             <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function NotificationCenter() {
                 <button
                   onClick={markAllRead}
                   disabled={actionLoading === "all"}
-                  className="text-caption text-[#111827] hover:text-[#374151] flex items-center gap-1 disabled:opacity-50"
+                  className="text-[11px] text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center gap-1 disabled:opacity-50"
                 >
                   {actionLoading === "all" ? (
                     <Loader2
@@ -274,7 +274,7 @@ export default function NotificationCenter() {
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close"
-                className="text-[#6B7280] hover:text-[#111827] p-0.5"
+                className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-0.5"
               >
                 <X size={14} aria-hidden="true" />
               </button>
@@ -286,7 +286,7 @@ export default function NotificationCenter() {
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2
-                  className="w-5 h-5 text-[#9CA3AF] animate-spin"
+                  className="w-5 h-5 text-[var(--text-tertiary)] animate-spin"
                   aria-hidden="true"
                 />
                 <span className="sr-only">Loading notifications</span>
@@ -294,10 +294,10 @@ export default function NotificationCenter() {
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-6">
                 <Bell
-                  className="w-8 h-8 text-[#D1D5DB] mb-3"
+                  className="w-8 h-8 text-[var(--border-default)] mb-3"
                   aria-hidden="true"
                 />
-                <p className="text-body text-[#6B7280]">
+                <p className="text-[13px] text-[var(--text-secondary)]">
                   {t("notifications.noNotifications")}
                 </p>
               </div>
@@ -307,8 +307,8 @@ export default function NotificationCenter() {
                 if (!items?.length) return null;
                 return (
                   <div key={group}>
-                    <div className="px-4 py-2 bg-[#F7F8FA]">
-                      <p className="text-micro font-medium uppercase tracking-wider text-[#6B7280]">
+                    <div className="px-4 py-2 bg-[var(--surface-sunken)]">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-secondary)]">
                         {group}
                       </p>
                     </div>
@@ -316,22 +316,22 @@ export default function NotificationCenter() {
                       <div
                         key={n.id}
                         className={`
-                          flex items-start gap-3 px-4 py-3 border-l-2 border-b border-b-[#F1F3F5]
-                          ${severityBorder[n.severity] || "border-l-[#E5E7EB]"}
-                          ${n.read ? "bg-transparent" : "bg-[#F7F8FA]"}
-                          hover:bg-[#F1F3F5] transition-colors group
+                          flex items-start gap-3 px-4 py-3 border-l-2 border-b border-b-[var(--border-subtle)]
+                          ${severityBorder[n.severity] || "border-l-[var(--border-default)]"}
+                          ${n.read ? "bg-transparent" : "bg-[var(--accent-primary-soft)]"}
+                          hover:bg-[var(--surface-sunken)] transition-colors duration-[180ms] group
                         `}
                       >
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`text-small leading-snug ${n.read ? "text-[#6B7280]" : "text-[#111827] font-medium"}`}
+                            className={`text-[12px] leading-snug ${n.read ? "text-[var(--text-secondary)]" : "text-[var(--text-primary)] font-medium"}`}
                           >
                             {n.title}
                           </p>
-                          <p className="text-caption text-[#6B7280] mt-0.5 line-clamp-2">
+                          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 line-clamp-2">
                             {n.message}
                           </p>
-                          <p className="text-micro text-[#9CA3AF] mt-1">
+                          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
                             {formatRelativeTime(n.createdAt)}
                           </p>
                         </div>
@@ -340,7 +340,7 @@ export default function NotificationCenter() {
                             <button
                               onClick={() => markRead(n.id)}
                               disabled={actionLoading === n.id}
-                              className="p-1 text-[#9CA3AF] hover:text-[#111827] transition-colors"
+                              className="p-1 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
                               aria-label={t("notifications.markAsRead")}
                               title={t("notifications.markAsRead")}
                             >
@@ -358,7 +358,7 @@ export default function NotificationCenter() {
                           <button
                             onClick={() => dismiss(n.id)}
                             disabled={actionLoading === n.id}
-                            className="p-1 text-[#9CA3AF] hover:text-red-500 transition-colors"
+                            className="p-1 text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
                             aria-label={t("notifications.dismiss")}
                             title={t("notifications.dismiss")}
                           >

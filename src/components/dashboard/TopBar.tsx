@@ -14,7 +14,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const { t } = useLanguage();
 
   return (
-    <header className="h-16 border-b border-[#E5E7EB] bg-white px-6 lg:px-8 flex items-center justify-between">
+    <header className="h-12 border-b border-[var(--border-default)] bg-[var(--surface-raised)] px-6 lg:px-8 flex items-center justify-between">
       {/* Left */}
       <div className="flex items-center gap-4">
         {/* Mobile hamburger */}
@@ -23,13 +23,13 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           aria-label="Open navigation menu"
           aria-expanded={false}
           aria-controls="sidebar-nav"
-          className="lg:hidden text-[#6B7280] hover:text-[#111827] transition-colors"
+          className="lg:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
         >
           <Menu size={20} aria-hidden="true" />
         </button>
 
         {/* Page title */}
-        <h1 className="text-heading font-medium text-[#111827]">
+        <h1 className="text-[16px] font-semibold text-[var(--text-primary)]">
           {title || t("sidebar.dashboard")}
         </h1>
       </div>
@@ -39,7 +39,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-[#D1D5DB] text-[#4B5563] text-small px-4 py-1.5 rounded-full hover:border-[#9CA3AF] hover:text-[#111827] transition-all"
+          className="border border-[var(--border-default)] text-[var(--text-secondary)] text-small px-4 py-1.5 rounded-full hover:border-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-[180ms]"
         >
           {t("topbar.runAssessment")}
         </Link>
