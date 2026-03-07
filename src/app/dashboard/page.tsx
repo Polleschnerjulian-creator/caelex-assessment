@@ -59,13 +59,13 @@ const ComplianceScoreCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="glass-elevated rounded-2xl p-6 animate-pulse">
+      <div className="rounded-2xl p-6 animate-pulse">
         <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-full bg-white/5" />
+          <div className="w-24 h-24 rounded-full bg-[var(--surface-sunken)]" />
           <div className="flex-1 space-y-3">
-            <div className="h-4 bg-white/5 rounded w-32" />
-            <div className="h-8 bg-white/5 rounded w-20" />
-            <div className="h-3 bg-white/5 rounded w-48" />
+            <div className="h-4 bg-[var(--surface-sunken)] rounded w-32" />
+            <div className="h-8 bg-[var(--surface-sunken)] rounded w-20" />
+            <div className="h-3 bg-[var(--surface-sunken)] rounded w-48" />
           </div>
         </div>
       </div>
@@ -246,7 +246,7 @@ const DEMO_RISK_HEATMAP = [
 function ChartSkeleton() {
   return (
     <div className="h-[280px] w-full flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-slate-300 dark:text-white/20 animate-spin" />
+      <Loader2 className="w-8 h-8 text-[var(--text-tertiary)] animate-spin" />
     </div>
   );
 }
@@ -272,24 +272,24 @@ function KPICard({
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
   const trendColor =
     trend === "up"
-      ? "text-green-400"
+      ? "text-[var(--accent-success)]"
       : trend === "down"
-        ? "text-red-400"
-        : "text-slate-500 dark:text-white/45";
+        ? "text-[var(--accent-danger)]"
+        : "text-[var(--text-secondary)]";
 
   return (
     <motion.div
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 relative overflow-hidden"
+      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-display font-semibold text-slate-900 dark:text-white leading-none">
+          <p className="text-display font-semibold text-[var(--text-primary)] leading-none">
             {value}
           </p>
-          <p className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45 mt-2">
+          <p className="text-caption uppercase tracking-wider text-[var(--text-secondary)] mt-2">
             {label}
           </p>
         </div>
@@ -330,7 +330,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+      <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
         {title}
       </h2>
       {action}
@@ -351,13 +351,13 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-      <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-slate-400 dark:text-white/30" />
+      <div className="w-12 h-12 rounded-full bg-[var(--surface-sunken)] flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-[var(--text-tertiary)]" />
       </div>
-      <h3 className="text-body-lg font-medium text-slate-700 dark:text-white/70 mb-1">
+      <h3 className="text-body-lg font-medium text-[var(--text-secondary)] mb-1">
         {title}
       </h3>
-      <p className="text-small text-slate-500 dark:text-white/45 mb-4 max-w-[240px]">
+      <p className="text-small text-[var(--text-secondary)] mb-4 max-w-[240px]">
         {description}
       </p>
       {action}
@@ -373,10 +373,12 @@ function DeadlineItem({
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const priorityColors = {
-    critical: "bg-red-500/20 text-red-400 border-red-500/30",
-    high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    medium: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    low: "bg-green-500/20 text-green-400 border-green-500/30",
+    critical:
+      "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]",
+    high: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]",
+    medium:
+      "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)]",
+    low: "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]",
   };
 
   const dueDate = new Date(deadline.dueDate);
@@ -389,19 +391,19 @@ function DeadlineItem({
         aria-hidden="true"
         className={`w-2 h-2 rounded-full ${
           deadline.priority === "critical"
-            ? "bg-red-500"
+            ? "bg-[var(--accent-danger)]"
             : deadline.priority === "high"
-              ? "bg-amber-500"
+              ? "bg-[var(--accent-warning)]"
               : deadline.priority === "medium"
-                ? "bg-emerald-500"
-                : "bg-green-500"
+                ? "bg-[var(--accent-success)]"
+                : "bg-[var(--accent-success)]"
         }`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-small text-slate-700 dark:text-white/70 truncate">
+        <p className="text-small text-[var(--text-secondary)] truncate">
           {deadline.title}
         </p>
-        <p className="text-micro text-slate-500 dark:text-white/45">
+        <p className="text-micro text-[var(--text-secondary)]">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
             : t("common.overdue")}
@@ -418,10 +420,10 @@ function DeadlineItem({
 
 function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
   const riskColors = {
-    critical: "bg-red-500",
-    high: "bg-red-500/60",
-    medium: "bg-amber-500/60",
-    low: "bg-green-500/60",
+    critical: "bg-[var(--accent-danger)]",
+    high: "bg-[var(--accent-danger)/60]",
+    medium: "bg-[var(--accent-warning)/60]",
+    low: "bg-[var(--accent-success)/60]",
   };
 
   return (
@@ -430,13 +432,11 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
         className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-micro text-slate-800 dark:text-white/90 font-medium">
+        <span className="text-micro text-[var(--text-primary)] font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-micro text-slate-500 dark:text-white/45">
-        {module}
-      </span>
+      <span className="text-micro text-[var(--text-secondary)]">{module}</span>
       <span className="sr-only">{risk} risk</span>
     </div>
   );
@@ -454,10 +454,10 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-[--glass-border-subtle] dark:hover:border-[--glass-border-hover] transition-all group"
+      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] border border-[var(--border-default)] hover:border-[var(--border-default)] transition-all group"
     >
-      <Icon className="w-5 h-5 text-slate-500 dark:text-white/45 group-hover:text-emerald-400 transition-colors" />
-      <span className="text-micro text-slate-500 dark:text-white/45 group-hover:text-slate-700 dark:group-hover:text-white/70 transition-colors">
+      <Icon className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors" />
+      <span className="text-micro text-[var(--text-secondary)] group-hover:text-[var(--text-secondary)] transition-colors">
         {label}
       </span>
     </Link>
@@ -493,18 +493,18 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle] last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-[var(--border-default)] last:border-0">
       <div
-        className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0"
+        className="w-8 h-8 rounded-lg bg-[var(--surface-sunken)] flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
       >
-        <Icon className="w-4 h-4 text-slate-500 dark:text-white/45" />
+        <Icon className="w-4 h-4 text-[var(--text-secondary)]" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-small text-slate-700 dark:text-white/70 truncate">
+        <p className="text-small text-[var(--text-secondary)] truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
-        <p className="text-micro text-slate-500 dark:text-white/45 mt-0.5">
+        <p className="text-micro text-[var(--text-secondary)] mt-0.5">
           {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -830,14 +830,14 @@ function DashboardContent() {
         aria-live="polite"
         aria-label="Loading dashboard"
       >
-        <div className="animate-pulse space-y-6 max-w-[1400px]">
-          <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/2" />
+        <div className="animate-pulse space-y-6 max-w-[1360px]">
+          <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
+          <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-slate-200 dark:bg-white/5 rounded-xl"
+                className="h-32 bg-[var(--surface-sunken)] rounded-xl"
               />
             ))}
           </div>
@@ -845,7 +845,7 @@ function DashboardContent() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-[340px] bg-slate-200 dark:bg-white/5 rounded-xl"
+                className="h-[340px] bg-[var(--surface-sunken)] rounded-xl"
               />
             ))}
           </div>
@@ -868,19 +868,19 @@ function DashboardContent() {
           >
             <div
               role="status"
-              className="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 flex items-center gap-3 shadow-xl backdrop-blur-sm"
+              className="bg-[var(--accent-success-soft)] border border-[var(--accent-success)] rounded-[var(--v2-radius-md)] px-4 py-3 flex items-center gap-3 shadow-[var(--v2-shadow-md)]"
             >
               <CheckCircle
-                className="w-5 h-5 text-green-400"
+                className="w-5 h-5 text-[var(--accent-success)]"
                 aria-hidden="true"
               />
-              <span className="text-body-lg text-slate-900 dark:text-white font-medium">
+              <span className="text-body-lg text-[var(--text-primary)] font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
                 onClick={() => setShowSuccessToast(false)}
                 aria-label="Dismiss notification"
-                className="text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -889,24 +889,24 @@ function DashboardContent() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-[1400px]">
+      <div className="max-w-[1360px]">
         {/* Pending Assessment Banner */}
         {pendingAssessment && (
           <motion.div
             initial={false}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
+            className="mb-6 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-xl p-6"
           >
             <div className="flex items-start gap-4">
               <ClipboardList
-                className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0"
+                className="w-5 h-5 text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
                 aria-hidden="true"
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-body-lg font-medium text-slate-900 dark:text-white mb-1">
+                <h3 className="text-body-lg font-medium text-[var(--text-primary)] mb-1">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-body text-slate-500 dark:text-white/45">
+                <p className="text-body text-[var(--text-secondary)]">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -914,7 +914,7 @@ function DashboardContent() {
                 <button
                   onClick={handleImportFromLocalStorage}
                   disabled={importing}
-                  className="bg-emerald-500 text-white text-small font-medium px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="bg-[var(--accent-primary)] text-white text-small font-medium px-4 py-2 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {importing ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -926,7 +926,7 @@ function DashboardContent() {
                 <button
                   onClick={handleDismissPendingAssessment}
                   aria-label="Dismiss assessment notification"
-                  className="text-emerald-400 hover:text-emerald-300 p-1"
+                  className="text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] p-1"
                 >
                   <X size={16} aria-hidden="true" />
                 </button>
@@ -940,7 +940,7 @@ function DashboardContent() {
           <motion.h1
             initial={false}
             animate={{ opacity: 1 }}
-            className="text-display font-medium text-slate-900 dark:text-white mb-1"
+            className="text-display font-medium text-[var(--text-primary)] mb-1"
           >
             {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
@@ -948,7 +948,7 @@ function DashboardContent() {
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="text-body-lg text-slate-500 dark:text-white/45"
+            className="text-body-lg text-[var(--text-secondary)]"
           >
             {t("dashboard.commandCenter")}
           </motion.p>
@@ -962,15 +962,15 @@ function DashboardContent() {
           <motion.div
             initial={false}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-lg bg-amber-500/10 border border-amber-500/20"
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-lg bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)/20]"
           >
-            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <p className="text-caption text-amber-400">
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-warning)] animate-pulse" />
+            <p className="text-caption text-[var(--accent-warning)]">
               {t("dashboard.demoMode")}
             </p>
             <Link
               href="/assessment"
-              className="ml-auto text-caption text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
+              className="ml-auto text-caption text-[var(--accent-warning)] hover:text-[var(--accent-warning)] underline underline-offset-2 transition-colors"
             >
               {t("dashboard.startAssessmentLink")}
             </Link>
@@ -1025,25 +1025,25 @@ function DashboardContent() {
           <motion.div
             initial={false}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-50 border border-dashed border-slate-300 dark:bg-white/5 dark:border-white/20 rounded-xl p-8 text-center mb-10"
+            className="bg-[var(--surface-sunken)] border border-dashed border-[var(--border-default)] rounded-xl p-8 text-center mb-10"
           >
-            <h2 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+            <h2 className="text-title font-medium text-[var(--text-primary)] mb-2">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-body text-slate-500 dark:text-white/45 mb-6 max-w-md mx-auto">
+            <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="bg-emerald-500 text-white font-medium text-body px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
+                className="bg-[var(--accent-primary)] text-white font-medium text-body px-6 py-2.5 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-all flex items-center gap-2"
               >
                 <PlayCircle size={16} aria-hidden="true" />
                 {t("dashboard.runAssessmentAction")}
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="border border-slate-300 text-slate-700 dark:border-white/20 dark:text-white/70 font-medium text-body px-6 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                className="border border-[var(--border-default)] text-[var(--text-secondary)] font-medium text-body px-6 py-2.5 rounded-lg hover:bg-[var(--surface-sunken)] transition-all"
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
@@ -1091,7 +1091,7 @@ function DashboardContent() {
             action={
               <Link
                 href="/dashboard/audit-center"
-                className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                className="text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center gap-1"
               >
                 {t("common.viewAll")}{" "}
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -1099,7 +1099,7 @@ function DashboardContent() {
             }
           />
           {recentActivity.length > 0 ? (
-            <div className="divide-y divide-slate-200 dark:divide-white/10">
+            <div className="divide-y divide-[var(--border-default)]">
               {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -1112,7 +1112,7 @@ function DashboardContent() {
               action={
                 <Link
                   href="/assessment"
-                  className="text-small text-emerald-400 hover:text-emerald-300"
+                  className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
                 >
                   {t("dashboard.runAssessmentAction")}
                 </Link>
@@ -1145,7 +1145,7 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[var(--border-default)]">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
@@ -1153,15 +1153,15 @@ function DashboardContent() {
                       aria-hidden="true"
                       className={`w-2.5 h-2.5 rounded ${
                         i === 0
-                          ? "bg-red-500"
+                          ? "bg-[var(--accent-danger)]"
                           : i === 1
-                            ? "bg-red-500/60"
+                            ? "bg-[var(--accent-danger)/60]"
                             : i === 2
-                              ? "bg-amber-500/60"
-                              : "bg-green-500/60"
+                              ? "bg-[var(--accent-warning)/60]"
+                              : "bg-[var(--accent-success)/60]"
                       }`}
                     />
-                    <span className="text-micro text-slate-500 dark:text-white/45">
+                    <span className="text-micro text-[var(--text-secondary)]">
                       {t(`common.${level}`)}
                     </span>
                   </div>
@@ -1216,12 +1216,12 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white border border-slate-200 dark:bg-dark-bg dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-[var(--v2-radius-lg)] p-8 max-w-[400px] w-full shadow-[var(--v2-shadow-lg)]"
               >
-                <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
+                <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
                   {t("dashboard.selectOperatorType")}
                 </h2>
-                <p className="text-body text-slate-500 dark:text-white/45 mb-6">
+                <p className="text-body text-[var(--text-secondary)] mb-6">
                   {t("dashboard.selectOperatorDescription")}
                 </p>
                 <label htmlFor="operator-type-select" className="sr-only">
@@ -1231,7 +1231,7 @@ function DashboardContent() {
                   id="operator-type-select"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 dark:bg-white/5 dark:border-[--glass-border-subtle] dark:text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-[var(--border-focus)]"
                 >
                   <option value="">
                     {t("dashboard.selectOperatorPlaceholder")}
@@ -1246,14 +1246,14 @@ function DashboardContent() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-slate-200 text-slate-500 dark:border-[--glass-border-subtle] dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                    className="flex-1 border border-[var(--border-default)] text-[var(--text-secondary)] py-2.5 rounded-lg text-body hover:bg-[var(--surface-sunken)] transition-all"
                   >
                     {t("common.cancel")}
                   </button>
                   <button
                     onClick={handleImport}
                     disabled={!selectedOperator || importing}
-                    className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-body hover:bg-emerald-600 transition-all disabled:opacity-50"
+                    className="flex-1 bg-[var(--accent-primary)] text-white py-2.5 rounded-lg font-medium text-body hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50"
                   >
                     {importing ? t("common.importing") : t("common.import")}
                   </button>
@@ -1274,14 +1274,14 @@ export default function DashboardPage() {
     <Suspense
       fallback={
         <div className="min-h-screen" role="status" aria-live="polite">
-          <div className="animate-pulse space-y-6 max-w-[1400px]">
-            <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3" />
-            <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/2" />
+          <div className="animate-pulse space-y-6 max-w-[1360px]">
+            <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
+            <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-32 bg-slate-200 dark:bg-white/5 rounded-xl"
+                  className="h-32 bg-[var(--surface-sunken)] rounded-xl"
                 />
               ))}
             </div>
