@@ -392,7 +392,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[240px] lg:h-screen
-          bg-white border-r border-[var(--border-default)]
+          bg-[var(--surface-raised)] border-r border-[var(--border-default)]
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}

@@ -47,16 +47,16 @@ const actionIcons: Record<string, LucideIcon> = {
 };
 
 const actionColors: Record<string, string> = {
-  article_status_changed: "text-emerald-600 dark:text-emerald-400",
-  checklist_item_completed: "text-green-600 dark:text-green-400",
-  checklist_item_uncompleted: "text-amber-600 dark:text-amber-400",
-  document_status_changed: "text-purple-600 dark:text-purple-400",
-  document_uploaded: "text-purple-600 dark:text-purple-400",
-  workflow_created: "text-emerald-600 dark:text-emerald-400",
-  workflow_status_changed: "text-emerald-600 dark:text-emerald-400",
-  workflow_submitted: "text-green-600 dark:text-green-400",
-  assessment_imported: "text-cyan-600 dark:text-cyan-400",
-  bulk_status_update: "text-emerald-600 dark:text-emerald-400",
+  article_status_changed: "text-[var(--accent-success)]",
+  checklist_item_completed: "text-[var(--accent-success)]",
+  checklist_item_uncompleted: "text-[var(--accent-warning)]",
+  document_status_changed: "text-[var(--accent-info)]",
+  document_uploaded: "text-[var(--accent-info)]",
+  workflow_created: "text-[var(--accent-success)]",
+  workflow_status_changed: "text-[var(--accent-success)]",
+  workflow_submitted: "text-[var(--accent-success)]",
+  assessment_imported: "text-cyan-600",
+  bulk_status_update: "text-[var(--accent-success)]",
 };
 
 const entityTypeLabels: Record<string, string> = {
@@ -207,10 +207,10 @@ export default function ActivityFeed({
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="animate-pulse flex items-start gap-3">
-            <div className="w-8 h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded-lg" />
+            <div className="w-8 h-8 bg-[var(--surface-sunken)] rounded-lg" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-3/4" />
-              <div className="h-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded w-1/2" />
+              <div className="h-4 bg-[var(--surface-sunken)] rounded w-3/4" />
+              <div className="h-3 bg-[var(--surface-sunken)] rounded w-1/2" />
             </div>
           </div>
         ))}
@@ -225,11 +225,11 @@ export default function ActivityFeed({
         <div className="flex items-center justify-between gap-4">
           {showFilters && (
             <div className="flex items-center gap-2">
-              <Filter size={14} className="text-slate-500 dark:text-white/45" />
+              <Filter size={14} className="text-[var(--text-secondary)]" />
               <select
                 value={entityFilter}
                 onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 text-slate-700 dark:text-white/45 rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.1]"
+                className="bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-secondary)] rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-[var(--border-default)]:border-white/[0.1]"
               >
                 <option value="all">All Activity</option>
                 <option value="article">Articles</option>
@@ -244,7 +244,7 @@ export default function ActivityFeed({
             <button
               onClick={fetchLogs}
               disabled={refreshing}
-              className="p-1.5 text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
+              className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <RefreshCw
                 size={14}
@@ -256,14 +256,14 @@ export default function ActivityFeed({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleExport("csv")}
-                  className="flex items-center gap-1.5 px-2 py-1 text-caption text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
+                  className="flex items-center gap-1.5 px-2 py-1 text-caption text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <Download size={12} />
                   CSV
                 </button>
                 <button
                   onClick={() => handleExport("json")}
-                  className="flex items-center gap-1.5 px-2 py-1 text-caption text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
+                  className="flex items-center gap-1.5 px-2 py-1 text-caption text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <Download size={12} />
                   JSON
@@ -279,12 +279,12 @@ export default function ActivityFeed({
         <div className="py-12 text-center">
           <Clock
             size={32}
-            className="mx-auto text-slate-300 dark:text-white/10 mb-3"
+            className="mx-auto text-[var(--text-tertiary)] mb-3"
           />
-          <p className="text-body-lg text-slate-600 dark:text-white/45 mb-1">
+          <p className="text-body-lg text-[var(--text-secondary)] mb-1">
             No activity yet
           </p>
-          <p className="text-small text-slate-500 dark:text-white/10">
+          <p className="text-small text-[var(--text-secondary)]">
             Activity will appear here as you track compliance.
           </p>
         </div>
@@ -293,8 +293,7 @@ export default function ActivityFeed({
           <AnimatePresence mode="popLayout">
             {logs.map((log, index) => {
               const Icon = actionIcons[log.action] || FileCheck;
-              const iconColor =
-                actionColors[log.action] || "text-gray-500 dark:text-white/45";
+              const iconColor = actionColors[log.action] || "text-gray-500";
 
               return (
                 <motion.div
@@ -305,33 +304,31 @@ export default function ActivityFeed({
                   transition={{ delay: index * 0.02 }}
                   className={`flex items-start gap-3 ${compact ? "py-2" : "py-3"} ${
                     index < logs.length - 1
-                      ? "border-b border-slate-100 dark:border-[--glass-border-subtle]"
+                      ? "border-b border-[var(--border-subtle)]"
                       : ""
                   }`}
                 >
                   <div
-                    className={`p-1.5 rounded-lg bg-slate-100 dark:bg-[--glass-bg-surface] ${iconColor}`}
+                    className={`p-1.5 rounded-lg bg-[var(--surface-sunken)] ${iconColor}`}
                   >
                     <Icon size={compact ? 12 : 14} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`${compact ? "text-small" : "text-body"} text-slate-800 dark:text-white/70`}
+                      className={`${compact ? "text-small" : "text-body"} text-[var(--text-primary)]`}
                     >
                       {getDescription(log)}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span
-                        className={`${compact ? "text-micro" : "text-caption"} text-slate-600 dark:text-white/45`}
+                        className={`${compact ? "text-micro" : "text-caption"} text-[var(--text-secondary)]`}
                       >
                         {entityTypeLabels[log.entityType] || log.entityType}
                       </span>
-                      <span className="text-slate-300 dark:text-white/10">
-                        ·
-                      </span>
+                      <span className="text-[var(--text-tertiary)]">·</span>
                       <span
-                        className={`${compact ? "text-micro" : "text-caption"} text-slate-600 dark:text-white/45`}
+                        className={`${compact ? "text-micro" : "text-caption"} text-[var(--text-secondary)]`}
                       >
                         {formatTimestamp(log.timestamp)}
                       </span>
@@ -346,7 +343,7 @@ export default function ActivityFeed({
 
       {/* Load more indicator */}
       {total > logs.length && (
-        <p className="text-center text-caption text-slate-600 dark:text-white/45 pt-2">
+        <p className="text-center text-caption text-[var(--text-secondary)] pt-2">
           Showing {logs.length} of {total} activities
         </p>
       )}

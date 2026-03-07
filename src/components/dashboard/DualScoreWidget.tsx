@@ -78,7 +78,7 @@ function ProgressRing({
         fill="none"
         stroke="currentColor"
         strokeWidth={strokeWidth}
-        className="text-slate-100 dark:text-white/5"
+        className="text-[var(--text-primary)]"
       />
       {/* Progress ring */}
       <motion.circle
@@ -136,12 +136,12 @@ export default function DualScoreWidget({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 ${className}`}
+      className={`bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 ${className}`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <ShieldCheck className="w-4 h-4 text-cyan-400" />
-        <h2 className="text-caption font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+        <h2 className="text-caption font-medium uppercase tracking-[0.2em] text-[var(--text-secondary)]">
           Compliance Verification
         </h2>
       </div>
@@ -153,15 +153,15 @@ export default function DualScoreWidget({
           <div className="relative mb-3">
             <ProgressRing progress={selfAssessedScore} color="#10B981" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-semibold text-slate-900 dark:text-white">
+              <span className="text-2xl font-semibold text-[var(--text-primary)]">
                 {animatedSelf}
               </span>
             </div>
           </div>
-          <p className="text-caption font-medium text-slate-700 dark:text-white/70 mb-0.5">
+          <p className="text-caption font-medium text-[var(--text-secondary)] mb-0.5">
             Self-Assessed
           </p>
-          <p className="text-micro text-slate-400 dark:text-white/30">
+          <p className="text-micro text-[var(--text-tertiary)]">
             Based on assessments
           </p>
         </div>
@@ -171,15 +171,15 @@ export default function DualScoreWidget({
           <div className="relative mb-3">
             <ProgressRing progress={verifiedScore} color="#06B6D4" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-semibold text-slate-900 dark:text-white">
+              <span className="text-2xl font-semibold text-[var(--text-primary)]">
                 {animatedVerified}
               </span>
             </div>
           </div>
-          <p className="text-caption font-medium text-slate-700 dark:text-white/70 mb-0.5">
+          <p className="text-caption font-medium text-[var(--text-secondary)] mb-0.5">
             Verified
           </p>
-          <p className="text-micro text-slate-400 dark:text-white/30">
+          <p className="text-micro text-[var(--text-tertiary)]">
             Based on evidence
           </p>
         </div>
@@ -195,20 +195,20 @@ export default function DualScoreWidget({
               <span
                 className={`text-2xl font-semibold ${
                   gap > 25
-                    ? "text-amber-500"
+                    ? "text-[var(--accent-warning)]"
                     : gap > 10
                       ? "text-orange-400"
-                      : "text-emerald-500"
+                      : "text-[var(--accent-primary)]"
                 }`}
               >
                 {animatedGap}
               </span>
             </div>
           </div>
-          <p className="text-caption font-medium text-slate-700 dark:text-white/70 mb-0.5">
+          <p className="text-caption font-medium text-[var(--text-secondary)] mb-0.5">
             Verification Gap
           </p>
-          <p className="text-micro text-slate-400 dark:text-white/30">
+          <p className="text-micro text-[var(--text-tertiary)]">
             {gap > 25
               ? "Evidence needed"
               : gap > 10
@@ -219,22 +219,22 @@ export default function DualScoreWidget({
       </div>
 
       {/* Bottom Stats Line */}
-      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/30">
+      <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)]">
           <BarChart3 className="w-3 h-3" />
           <span>
-            <span className="text-slate-600 dark:text-white/60 font-medium">
+            <span className="text-[var(--text-secondary)] font-medium">
               {acceptedEvidence}
             </span>{" "}
             accepted /{" "}
-            <span className="text-slate-600 dark:text-white/60 font-medium">
+            <span className="text-[var(--text-secondary)] font-medium">
               {totalRequired}
             </span>{" "}
             required
           </span>
         </div>
         {lastVerified && (
-          <div className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/30">
+          <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)]">
             <AlertTriangle className="w-3 h-3" />
             <span>Last verified: {formatRelativeTime(lastVerified)}</span>
           </div>

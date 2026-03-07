@@ -64,7 +64,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2
           size={24}
-          className="animate-spin text-slate-400 dark:text-white/45"
+          className="animate-spin text-[var(--text-tertiary)]"
         />
       </div>
     );
@@ -86,36 +86,34 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
     <div className="flex items-center justify-center min-h-[400px] px-4">
       <div className="max-w-md w-full text-center">
         {/* Lock icon */}
-        <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center mx-auto mb-6">
           <Lock
             size={28}
-            className="text-slate-400 dark:text-white/30"
+            className="text-[var(--text-tertiary)]"
             strokeWidth={1.5}
           />
         </div>
 
         {/* Heading */}
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+        <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
           Upgrade to unlock {moduleLabel}
         </h2>
 
         {/* Description */}
-        <p className="text-body-lg text-slate-500 dark:text-white/45 leading-relaxed mb-6">
+        <p className="text-body-lg text-[var(--text-secondary)] leading-relaxed mb-6">
           {moduleDescription}
         </p>
 
         {/* Plan badge */}
-        <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 mb-6">
-          <span className="text-small text-slate-500 dark:text-white/45">
+        <div className="inline-flex items-center gap-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 mb-6">
+          <span className="text-small text-[var(--text-secondary)]">
             Your plan:
           </span>
-          <span className="text-small font-medium text-slate-700 dark:text-white/70">
+          <span className="text-small font-medium text-[var(--text-secondary)]">
             {PRICING_TIERS[plan].name}
           </span>
-          <span className="text-small text-slate-400 dark:text-white/20">
-            →
-          </span>
-          <span className="text-small font-medium text-emerald-600 dark:text-emerald-400">
+          <span className="text-small text-[var(--text-tertiary)]">→</span>
+          <span className="text-small font-medium text-[var(--accent-success)]">
             {requiredTier.name}
             {requiredTier.price !== null && ` (€${requiredTier.price}/mo)`}
           </span>
@@ -132,7 +130,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
           </Link>
           <Link
             href="/dashboard"
-            className="text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+            className="text-body text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
           >
             Back to Dashboard
           </Link>

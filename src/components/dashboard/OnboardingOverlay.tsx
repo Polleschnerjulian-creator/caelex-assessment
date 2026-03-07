@@ -231,7 +231,7 @@ export default function OnboardingOverlay() {
               stiffness: 300,
               delay: 0.1,
             }}
-            className="relative w-full max-w-lg bg-white dark:bg-[#111113] rounded-xl shadow-2xl border border-slate-200 dark:border-[--glass-border-medium] overflow-hidden"
+            className="relative w-full max-w-lg bg-[var(--surface-raised)] rounded-xl shadow-2xl border border-[var(--border-default)] overflow-hidden"
           >
             {/* Progress Dots */}
             <div className="flex items-center justify-center gap-2 pt-6 pb-2">
@@ -244,7 +244,7 @@ export default function OnboardingOverlay() {
                     key={i}
                     className={`
                       h-1.5 rounded-full transition-all duration-300
-                      ${isActive ? "w-8 bg-emerald-500" : isCompleted ? "w-1.5 bg-emerald-500/40" : "w-1.5 bg-slate-300 dark:bg-white/10"}
+                      ${isActive ? "w-8 bg-[var(--accent-success-soft)]0" : isCompleted ? "w-1.5 bg-[var(--accent-success-soft)]0/40" : "w-1.5 bg-[var(--surface-sunken)]"}
                     `}
                   />
                 );
@@ -266,28 +266,31 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
-                      <CaelexIcon size={32} className="text-emerald-500" />
+                      <CaelexIcon
+                        size={32}
+                        className="text-[var(--accent-primary)]"
+                      />
                     </div>
 
                     <h2
                       id="onboarding-title"
-                      className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
+                      className="text-heading-lg font-semibold text-[var(--text-primary)] mb-2"
                     >
                       Welcome to Caelex
                       {firstName !== "there" ? `, ${firstName}` : ""}
                     </h2>
 
-                    <p className="text-body-lg text-slate-600 dark:text-white/45 mb-2">
+                    <p className="text-body-lg text-[var(--text-secondary)] mb-2">
                       Let&apos;s set up your compliance workspace in 30 seconds
                     </p>
 
                     {session?.user?.name && (
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-medium] mb-8">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <span className="text-micro font-medium text-emerald-600 dark:text-emerald-400">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--surface-sunken)] border border-[var(--border-default)] mb-8">
+                        <div className="w-5 h-5 rounded-full bg-[var(--accent-success-soft)] flex items-center justify-center">
+                          <span className="text-micro font-medium text-[var(--accent-success)]">
                             {session.user.name
                               .split(" ")
                               .map((n) => n[0])
@@ -296,7 +299,7 @@ export default function OnboardingOverlay() {
                               .slice(0, 2)}
                           </span>
                         </div>
-                        <span className="text-small text-slate-700 dark:text-white/70">
+                        <span className="text-small text-[var(--text-secondary)]">
                           {session.user.name}
                         </span>
                       </div>
@@ -329,24 +332,24 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
                       <Download
                         size={28}
                         strokeWidth={1.5}
-                        className="text-emerald-500"
+                        className="text-[var(--accent-primary)]"
                       />
                     </div>
 
                     <div className="text-center mb-6">
                       <h2
                         id="onboarding-title"
-                        className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
+                        className="text-heading-lg font-semibold text-[var(--text-primary)] mb-2"
                       >
                         Assessment Results Found
                       </h2>
-                      <p className="text-body-lg text-slate-600 dark:text-white/45">
+                      <p className="text-body-lg text-[var(--text-secondary)]">
                         We found your assessment results! Import them to
                         auto-populate your compliance dashboard.
                       </p>
@@ -357,7 +360,7 @@ export default function OnboardingOverlay() {
                       <motion.div
                         initial={false}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-2 justify-center text-emerald-600 dark:text-emerald-400 mb-4"
+                        className="flex items-center gap-2 justify-center text-[var(--accent-success)] mb-4"
                       >
                         <CheckCircle size={16} />
                         <span className="text-body font-medium">
@@ -370,7 +373,7 @@ export default function OnboardingOverlay() {
                       <motion.div
                         initial={false}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-center text-body text-red-500 dark:text-red-400 mb-4"
+                        className="text-center text-body text-[var(--accent-danger)] mb-4"
                       >
                         {importError}
                       </motion.div>
@@ -407,10 +410,10 @@ export default function OnboardingOverlay() {
                           disabled={importing}
                           className="
                             w-full flex items-center justify-center gap-2
-                            text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70
+                            text-[var(--text-secondary)] hover:text-[var(--text-primary)]
                             text-body px-6 py-2.5 rounded-xl
                             transition-all duration-200
-                            hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]
+                            hover:bg-[var(--surface-sunken)]
                           "
                         >
                           <SkipForward size={14} aria-hidden="true" />
@@ -432,24 +435,24 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
                       <Sparkles
                         size={28}
                         strokeWidth={1.5}
-                        className="text-emerald-500"
+                        className="text-[var(--accent-primary)]"
                       />
                     </div>
 
                     <div className="text-center mb-6">
                       <h2
                         id="onboarding-title"
-                        className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
+                        className="text-heading-lg font-semibold text-[var(--text-primary)] mb-2"
                       >
                         Your workspace is ready!
                       </h2>
-                      <p className="text-body-lg text-slate-600 dark:text-white/45">
+                      <p className="text-body-lg text-[var(--text-secondary)]">
                         Here&apos;s what to do next:
                       </p>
                     </div>
@@ -463,35 +466,35 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-[--glass-bg-surface]
-                          border border-slate-200 dark:border-[--glass-border-medium]
-                          hover:border-emerald-300 dark:hover:border-emerald-500/30
-                          hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
+                          bg-[var(--surface-sunken)]
+                          border border-[var(--border-default)]
+                          hover:border-emerald-300
+                          hover:bg-[var(--accent-success-soft)]/500/[0.04]
                           transition-all duration-200 text-left
                         "
                       >
                         <div
-                          className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center flex-shrink-0"
+                          className="w-10 h-10 rounded-lg bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)]/15 flex items-center justify-center flex-shrink-0"
                           aria-hidden="true"
                         >
                           <FileCheck
                             size={18}
                             strokeWidth={1.5}
-                            className="text-emerald-500"
+                            className="text-[var(--accent-primary)]"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-body font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-[var(--text-primary)]">
                             Start Authorization
                           </p>
-                          <p className="text-small text-slate-500 dark:text-white/45">
+                          <p className="text-small text-[var(--text-secondary)]">
                             Begin the EU Space Act authorization process
                           </p>
                         </div>
                         <ArrowRight
                           size={14}
                           aria-hidden="true"
-                          className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
+                          className="text-[var(--text-tertiary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
                         />
                       </button>
 
@@ -502,35 +505,35 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-[--glass-bg-surface]
-                          border border-slate-200 dark:border-[--glass-border-medium]
-                          hover:border-emerald-300 dark:hover:border-emerald-500/30
-                          hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
+                          bg-[var(--surface-sunken)]
+                          border border-[var(--border-default)]
+                          hover:border-emerald-300
+                          hover:bg-[var(--accent-success-soft)]/500/[0.04]
                           transition-all duration-200 text-left
                         "
                       >
                         <div
-                          className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/15 flex items-center justify-center flex-shrink-0"
+                          className="w-10 h-10 rounded-lg bg-[var(--accent-warning-soft)] border border-amber-500/15 flex items-center justify-center flex-shrink-0"
                           aria-hidden="true"
                         >
                           <Upload
                             size={18}
                             strokeWidth={1.5}
-                            className="text-amber-500"
+                            className="text-[var(--accent-warning)]"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-body font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-[var(--text-primary)]">
                             Upload Documents
                           </p>
-                          <p className="text-small text-slate-500 dark:text-white/45">
+                          <p className="text-small text-[var(--text-secondary)]">
                             Add compliance documents and evidence
                           </p>
                         </div>
                         <ArrowRight
                           size={14}
                           aria-hidden="true"
-                          className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
+                          className="text-[var(--text-tertiary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
                         />
                       </button>
 
@@ -539,10 +542,10 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-[--glass-bg-surface]
-                          border border-slate-200 dark:border-[--glass-border-medium]
-                          hover:border-emerald-300 dark:hover:border-emerald-500/30
-                          hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
+                          bg-[var(--surface-sunken)]
+                          border border-[var(--border-default)]
+                          hover:border-emerald-300
+                          hover:bg-[var(--accent-success-soft)]/500/[0.04]
                           transition-all duration-200 text-left
                         "
                       >
@@ -553,21 +556,21 @@ export default function OnboardingOverlay() {
                           <CalendarClock
                             size={18}
                             strokeWidth={1.5}
-                            className="text-purple-500"
+                            className="text-[var(--accent-info)]"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-body font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-[var(--text-primary)]">
                             Set Deadlines
                           </p>
-                          <p className="text-small text-slate-500 dark:text-white/45">
+                          <p className="text-small text-[var(--text-secondary)]">
                             Configure compliance milestones and reminders
                           </p>
                         </div>
                         <ArrowRight
                           size={14}
                           aria-hidden="true"
-                          className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
+                          className="text-[var(--text-tertiary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
                         />
                       </button>
                     </div>

@@ -85,7 +85,7 @@ export default function OperatorProfileCard() {
     return (
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center justify-center py-6">
-          <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
+          <Loader2 className="w-5 h-5 text-[var(--text-tertiary)] animate-spin" />
         </div>
       </GlassCard>
     );
@@ -104,8 +104,8 @@ export default function OperatorProfileCard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Satellite className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+            <Satellite className="w-4 h-4 text-[var(--accent-primary)]" />
+            <h3 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
               Operator Profile
             </h3>
           </div>
@@ -133,12 +133,12 @@ export default function OperatorProfileCard() {
         <div className="grid grid-cols-2 gap-4 mb-5">
           {/* Operator Type */}
           <div className="flex items-start gap-2.5">
-            <Satellite className="w-3.5 h-3.5 text-slate-400 dark:text-white/30 mt-0.5 shrink-0" />
+            <Satellite className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                 Operator Type
               </p>
-              <p className="text-body text-slate-700 dark:text-slate-200 truncate">
+              <p className="text-body text-[var(--text-secondary)] truncate">
                 {profile.operatorType
                   ? OPERATOR_TYPE_LABELS[profile.operatorType] ||
                     profile.operatorType
@@ -149,12 +149,12 @@ export default function OperatorProfileCard() {
 
           {/* Primary Orbit */}
           <div className="flex items-start gap-2.5">
-            <Orbit className="w-3.5 h-3.5 text-slate-400 dark:text-white/30 mt-0.5 shrink-0" />
+            <Orbit className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                 Primary Orbit
               </p>
-              <p className="text-body text-slate-700 dark:text-slate-200 truncate">
+              <p className="text-body text-[var(--text-secondary)] truncate">
                 {profile.primaryOrbit
                   ? ORBIT_LABELS[profile.primaryOrbit] || profile.primaryOrbit
                   : "--"}
@@ -164,12 +164,12 @@ export default function OperatorProfileCard() {
 
           {/* Entity Size */}
           <div className="flex items-start gap-2.5">
-            <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-white/30 mt-0.5 shrink-0" />
+            <Building2 className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                 Entity Size
               </p>
-              <p className="text-body text-slate-700 dark:text-slate-200 truncate">
+              <p className="text-body text-[var(--text-secondary)] truncate">
                 {profile.entitySize
                   ? ENTITY_SIZE_LABELS[profile.entitySize] || profile.entitySize
                   : "--"}
@@ -179,12 +179,12 @@ export default function OperatorProfileCard() {
 
           {/* Establishment */}
           <div className="flex items-start gap-2.5">
-            <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-white/30 mt-0.5 shrink-0" />
+            <Globe className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                 Establishment
               </p>
-              <p className="text-body text-slate-700 dark:text-slate-200 truncate">
+              <p className="text-body text-[var(--text-secondary)] truncate">
                 {profile.establishment
                   ? profile.establishment.toUpperCase()
                   : "--"}
@@ -197,7 +197,7 @@ export default function OperatorProfileCard() {
         {!isComplete && (
           <Link
             href="/dashboard/settings?tab=profile"
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors"
           >
             Complete Your Profile
             <ArrowRight className="w-3.5 h-3.5" />

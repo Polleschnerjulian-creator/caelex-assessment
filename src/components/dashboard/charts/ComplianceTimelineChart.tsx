@@ -36,8 +36,8 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 shadow-xl">
-        <p className="text-slate-500 dark:text-white/45 text-caption uppercase tracking-wider mb-2">
+      <div className="bg-[var(--text-primary)]/95/95 backdrop-blur-sm border border-[var(--border-default)] rounded-lg px-4 py-3 shadow-xl">
+        <p className="text-[var(--text-secondary)] text-caption uppercase tracking-wider mb-2">
           {label}
         </p>
         {payload.map((entry, index) => (
@@ -46,10 +46,10 @@ const CustomTooltip = ({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-slate-700 dark:text-white/70 text-small capitalize">
+            <span className="text-[var(--text-secondary)] text-small capitalize">
               {entry.name}:
             </span>
-            <span className="text-slate-900 dark:text-white text-small font-medium">
+            <span className="text-[var(--text-primary)] text-small font-medium">
               {entry.value}%
             </span>
           </div>
@@ -74,7 +74,7 @@ const CustomLegend = ({
             className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: entry.color }}
           />
-          <span className="text-caption text-slate-500 dark:text-white/45 capitalize">
+          <span className="text-caption text-[var(--text-secondary)] capitalize">
             {entry.value}
           </span>
         </div>
@@ -95,7 +95,7 @@ export default function ComplianceTimelineChart({
       className="relative h-[280px] w-full"
     >
       {isDemo && (
-        <div className="absolute top-0 right-0 z-10 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-micro px-2 py-1 rounded">
+        <div className="absolute top-0 right-0 z-10 bg-[var(--accent-warning)]/20 border border-amber-500/30 text-[var(--accent-warning)] text-micro px-2 py-1 rounded">
           SAMPLE DATA
         </div>
       )}

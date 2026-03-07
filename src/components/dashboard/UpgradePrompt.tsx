@@ -47,7 +47,7 @@ export default function UpgradePrompt({
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
@@ -59,12 +59,12 @@ export default function UpgradePrompt({
             transition={{ duration: 0.2 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
           >
-            <div className="w-full max-w-lg bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-lg bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl shadow-2xl overflow-hidden">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-5">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  className="absolute top-4 right-4 p-1 rounded-lg text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-sunken)] transition-colors"
                   aria-label="Close"
                 >
                   <X size={18} />
@@ -77,7 +77,7 @@ export default function UpgradePrompt({
                     <h2 className="text-lg font-semibold text-white">
                       Upgrade to {requiredTier.name}
                     </h2>
-                    <p className="text-sm text-white/70">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       {feature
                         ? `Unlock ${feature}`
                         : moduleName
@@ -92,14 +92,14 @@ export default function UpgradePrompt({
               <div className="px-6 py-5">
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   {/* Current Plan */}
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                  <div className="p-4 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)]">
+                    <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                       Current Plan
                     </p>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <p className="text-lg font-semibold text-[var(--text-primary)]">
                       {currentTier.name}
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       {currentTier.price === 0
                         ? "Free"
                         : `€${currentTier.price}/mo`}
@@ -107,14 +107,14 @@ export default function UpgradePrompt({
                   </div>
 
                   {/* Recommended Plan */}
-                  <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
+                  <div className="p-4 rounded-xl bg-[var(--accent-info-soft)]0/10 border border-[var(--accent-primary)]/30">
+                    <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-wider mb-1">
                       Recommended
                     </p>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <p className="text-lg font-semibold text-[var(--text-primary)]">
                       {requiredTier.name}
                     </p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                    <p className="text-sm text-[var(--accent-primary)]">
                       {requiredTier.price
                         ? `€${requiredTier.price}/mo`
                         : "Custom pricing"}
@@ -124,7 +124,7 @@ export default function UpgradePrompt({
 
                 {/* Feature highlights */}
                 <div className="space-y-2.5 mb-6">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     What you get with {requiredTier.name}:
                   </p>
                   {[
@@ -141,9 +141,9 @@ export default function UpgradePrompt({
                     <div key={i} className="flex items-center gap-2.5">
                       <Check
                         size={14}
-                        className="text-green-500 flex-shrink-0"
+                        className="text-[var(--accent-success)] flex-shrink-0"
                       />
-                      <span className="text-sm text-slate-600 dark:text-slate-300">
+                      <span className="text-sm text-[var(--text-secondary)]">
                         {feature}
                       </span>
                     </div>
@@ -154,14 +154,14 @@ export default function UpgradePrompt({
                 <div className="flex gap-3">
                   <button
                     onClick={handleUpgrade}
-                    className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
                   >
                     Upgrade Now
                     <ArrowRight size={16} />
                   </button>
                   <button
                     onClick={onClose}
-                    className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-dark-card transition-colors"
+                    className="px-4 py-3 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)]:bg-dark-card transition-colors"
                   >
                     Maybe Later
                   </button>

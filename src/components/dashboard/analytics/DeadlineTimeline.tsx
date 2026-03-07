@@ -32,28 +32,30 @@ export function DeadlineTimeline({
 
   if (deadlineAlerts.length === 0) {
     return (
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Upcoming Deadlines
         </h3>
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Calendar className="w-12 h-12 text-slate-600 mb-3" />
-          <p className="text-slate-400">No upcoming deadlines</p>
-          <p className="text-sm text-slate-500">You&apos;re all caught up!</p>
+          <Calendar className="w-12 h-12 text-[var(--text-secondary)] mb-3" />
+          <p className="text-[var(--text-tertiary)]">No upcoming deadlines</p>
+          <p className="text-sm text-[var(--text-secondary)]">
+            You&apos;re all caught up!
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           Upcoming Deadlines
         </h3>
         <Link
           href="/dashboard/timeline"
-          className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+          className="text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center gap-1"
         >
           View all
           <ChevronRight className="w-4 h-4" />
@@ -96,30 +98,30 @@ function DeadlineItem({
   const getSeverityColor = (severity: DashboardAlert["severity"]) => {
     switch (severity) {
       case "critical":
-        return "border-red-500 bg-red-500/10";
+        return "border-[var(--accent-danger)] bg-[var(--accent-danger)]/10";
       case "high":
         return "border-orange-500 bg-orange-500/10";
       case "medium":
         return "border-yellow-500 bg-yellow-500/10";
       case "low":
-        return "border-emerald-500 bg-emerald-500/10";
+        return "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       default:
-        return "border-slate-500 bg-slate-500/10";
+        return "border-[var(--border-default)] bg-[var(--surface-sunken)]0/10";
     }
   };
 
   const getIconColor = (severity: DashboardAlert["severity"]) => {
     switch (severity) {
       case "critical":
-        return "text-red-400";
+        return "text-[var(--accent-danger)]";
       case "high":
         return "text-orange-400";
       case "medium":
         return "text-yellow-400";
       case "low":
-        return "text-emerald-400";
+        return "text-[var(--accent-primary)]";
       default:
-        return "text-slate-400";
+        return "text-[var(--text-tertiary)]";
     }
   };
 
@@ -153,7 +155,7 @@ function DeadlineItem({
     <div className="relative flex gap-4">
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-5 top-10 bottom-0 w-px bg-slate-50 dark:bg-[--glass-bg-elevated]" />
+        <div className="absolute left-5 top-10 bottom-0 w-px bg-[var(--surface-sunken)]" />
       )}
 
       {/* Icon */}
@@ -167,14 +169,14 @@ function DeadlineItem({
       <div className="flex-1 pb-4">
         <Link
           href={alert.link || "#"}
-          className="block hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]/50 rounded-lg -ml-2 px-2 py-1 transition-colors"
+          className="block hover:bg-[var(--surface-sunken)]/50 rounded-lg -ml-2 px-2 py-1 transition-colors"
         >
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h4 className="text-sm font-medium text-slate-900 dark:text-white">
+              <h4 className="text-sm font-medium text-[var(--text-primary)]">
                 {alert.title}
               </h4>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
                 {alert.description}
               </p>
             </div>
@@ -182,10 +184,10 @@ function DeadlineItem({
               <span
                 className={`text-xs font-medium whitespace-nowrap ${
                   alert.severity === "critical"
-                    ? "text-red-400"
+                    ? "text-[var(--accent-danger)]"
                     : alert.severity === "high"
                       ? "text-orange-400"
-                      : "text-slate-400"
+                      : "text-[var(--text-tertiary)]"
                 }`}
               >
                 {formatDueDate(alert.dueDate)}

@@ -42,32 +42,32 @@ export default class ErrorBoundary extends React.Component<
           className="flex items-center justify-center min-h-[400px] p-8"
           role="alert"
         >
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-md w-full text-center">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 max-w-md w-full text-center">
             <div className="flex items-center justify-center mb-5">
-              <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl">
+              <div className="p-3 bg-[var(--accent-danger-soft)]/10 rounded-xl">
                 <AlertTriangle
                   size={28}
-                  className="text-red-500 dark:text-red-400"
+                  className="text-[var(--accent-danger)]"
                   aria-hidden="true"
                 />
               </div>
             </div>
 
-            <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
+            <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
               Something went wrong
             </h2>
-            <p className="text-body-lg text-slate-500 dark:text-white/45 mb-6 leading-relaxed">
+            <p className="text-body-lg text-[var(--text-secondary)] mb-6 leading-relaxed">
               An unexpected error occurred while rendering this section. Please
               try again or contact support if the issue persists.
             </p>
 
             {isDev && this.state.error && (
-              <div className="mb-6 text-left bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4 overflow-auto max-h-[200px]">
-                <p className="font-mono text-caption text-red-600 dark:text-red-400 mb-1">
+              <div className="mb-6 text-left bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-4 overflow-auto max-h-[200px]">
+                <p className="font-mono text-caption text-[var(--accent-danger)] mb-1">
                   {this.state.error.name}: {this.state.error.message}
                 </p>
                 {this.state.error.stack && (
-                  <pre className="font-mono text-micro text-slate-500 dark:text-white/30 whitespace-pre-wrap break-words">
+                  <pre className="font-mono text-micro text-[var(--text-secondary)] whitespace-pre-wrap break-words">
                     {this.state.error.stack}
                   </pre>
                 )}
@@ -76,7 +76,7 @@ export default class ErrorBoundary extends React.Component<
 
             <button
               onClick={this.handleReset}
-              className="inline-flex items-center gap-2 bg-slate-900 dark:bg-white/10 hover:bg-slate-800 dark:hover:bg-white/[0.15] text-white dark:text-white/90 text-small px-5 py-2.5 rounded-lg transition-all"
+              className="inline-flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]:bg-[var(--surface-sunken)] text-white text-small px-5 py-2.5 rounded-lg transition-all"
             >
               Try Again
             </button>

@@ -24,11 +24,11 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-slate-900 dark:text-white text-body font-medium">
+      <div className="bg-[var(--text-primary)]/95/95 backdrop-blur-sm border border-[var(--border-default)] rounded-lg px-3 py-2 shadow-xl">
+        <p className="text-[var(--text-primary)] text-body font-medium">
           {payload[0].name}
         </p>
-        <p className="text-slate-700 dark:text-white/70 text-small">
+        <p className="text-[var(--text-secondary)] text-small">
           {payload[0].value}% compliant
         </p>
       </div>
@@ -77,7 +77,7 @@ export default function ComplianceDonutChart({
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
-          className="text-[42px] font-bold text-slate-900 dark:text-white"
+          className="text-[42px] font-bold text-[var(--text-primary)]"
         >
           {totalScore}%
         </motion.span>
@@ -85,7 +85,7 @@ export default function ComplianceDonutChart({
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.4 }}
-          className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45"
+          className="text-caption uppercase tracking-wider text-[var(--text-secondary)]"
         >
           Overall
         </motion.span>
@@ -93,7 +93,7 @@ export default function ComplianceDonutChart({
 
       {/* Demo Badge */}
       {isDemo && (
-        <div className="absolute top-0 right-0 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-micro px-2 py-1 rounded">
+        <div className="absolute top-0 right-0 bg-[var(--accent-warning)]/20 border border-amber-500/30 text-[var(--accent-warning)] text-micro px-2 py-1 rounded">
           SAMPLE DATA
         </div>
       )}
@@ -106,7 +106,7 @@ export default function ComplianceDonutChart({
               className="w-2.5 h-2.5 rounded-full"
               style={{ backgroundColor: segment.color }}
             />
-            <span className="text-caption text-slate-500 dark:text-white/45">
+            <span className="text-caption text-[var(--text-secondary)]">
               {segment.name}
             </span>
           </div>

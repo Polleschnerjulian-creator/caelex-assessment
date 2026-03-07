@@ -32,11 +32,11 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-slate-900 dark:text-white text-body font-medium">
+      <div className="bg-[var(--text-primary)]/95/95 backdrop-blur-sm border border-[var(--border-default)] rounded-lg px-3 py-2 shadow-xl">
+        <p className="text-[var(--text-primary)] text-body font-medium">
           {data.category}
         </p>
-        <p className="text-slate-700 dark:text-white/70 text-small">
+        <p className="text-[var(--text-secondary)] text-small">
           {data.value}% coverage
         </p>
       </div>
@@ -57,7 +57,7 @@ export default function RegulatoryRadarChart({
       className="relative h-[280px] w-full"
     >
       {isDemo && (
-        <div className="absolute top-0 right-0 z-10 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-micro px-2 py-1 rounded">
+        <div className="absolute top-0 right-0 z-10 bg-[var(--accent-warning)]/20 border border-amber-500/30 text-[var(--accent-warning)] text-micro px-2 py-1 rounded">
           SAMPLE DATA
         </div>
       )}

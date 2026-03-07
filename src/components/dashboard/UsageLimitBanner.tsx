@@ -46,8 +46,8 @@ export default function UsageLimitBanner({
         relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-4
         ${
           isAtLimit
-            ? "bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300"
-            : "bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-blue-800 dark:text-blue-300"
+            ? "bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)] text-amber-800"
+            : "bg-[var(--accent-info-soft)]0/10 border border-[var(--accent-primary)]/30 text-blue-800"
         }
       `}
     >
@@ -84,7 +84,7 @@ export default function UsageLimitBanner({
       </p>
       <button
         onClick={() => setDismissed(true)}
-        className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+        className="p-1 rounded hover:bg-black/5 transition-colors"
         aria-label="Dismiss"
       >
         <X size={14} />

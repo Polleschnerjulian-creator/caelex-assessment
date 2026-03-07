@@ -25,23 +25,23 @@ const severityStyles: Record<
 > = {
   high: {
     border: "border-l-red-500",
-    badge: "bg-red-500/20 border-red-500/30",
-    badgeText: "text-red-400",
-    icon: "text-red-400",
+    badge: "bg-[var(--accent-danger-soft)] border-[var(--accent-danger)/30]",
+    badgeText: "text-[var(--accent-danger)]",
+    icon: "text-[var(--accent-danger)]",
     label: "High",
   },
   medium: {
     border: "border-l-amber-500",
-    badge: "bg-amber-500/20 border-amber-500/30",
-    badgeText: "text-amber-400",
-    icon: "text-amber-400",
+    badge: "bg-[var(--accent-warning)]/20 border-amber-500/30",
+    badgeText: "text-[var(--accent-warning)]",
+    icon: "text-[var(--accent-warning)]",
     label: "Medium",
   },
   low: {
     border: "border-l-blue-500",
-    badge: "bg-blue-500/20 border-blue-500/30",
-    badgeText: "text-blue-400",
-    icon: "text-blue-400",
+    badge: "bg-[var(--accent-info-soft)]0/20 border-[var(--accent-primary)]/30",
+    badgeText: "text-[var(--accent-primary)]",
+    icon: "text-[var(--accent-primary)]",
     label: "Low",
   },
 };
@@ -83,20 +83,20 @@ export default function CrossRegulationAlerts({
       <motion.div
         initial={false}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
+        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
       >
         <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <Shield className="w-4 h-4 text-[var(--accent-primary)]" />
+          <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Cross-Regulation Alerts
           </h2>
         </div>
         <div className="flex flex-col items-center justify-center py-8">
-          <Shield className="w-8 h-8 text-emerald-400/30 mb-3" />
-          <p className="text-body text-slate-500 dark:text-white/45">
+          <Shield className="w-8 h-8 text-[var(--accent-primary)]/30 mb-3" />
+          <p className="text-body text-[var(--text-secondary)]">
             No cross-regulation conflicts detected
           </p>
-          <p className="text-caption text-slate-400 dark:text-white/30 mt-1">
+          <p className="text-caption text-[var(--text-tertiary)] mt-1">
             All regulatory interactions are aligned.
           </p>
         </div>
@@ -118,29 +118,29 @@ export default function CrossRegulationAlerts({
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
+      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <AlertTriangle className="w-4 h-4 text-[var(--accent-warning)]" />
+          <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Cross-Regulation Alerts
           </h2>
         </div>
         <div className="flex items-center gap-3">
           {severityCounts.high && (
-            <span className="text-micro bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded">
+            <span className="text-micro bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border border-[var(--accent-danger)/30] px-1.5 py-0.5 rounded">
               {severityCounts.high} High
             </span>
           )}
           {severityCounts.medium && (
-            <span className="text-micro bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded">
+            <span className="text-micro bg-[var(--accent-warning)]/20 text-[var(--accent-warning)] border border-amber-500/30 px-1.5 py-0.5 rounded">
               {severityCounts.medium} Medium
             </span>
           )}
           {severityCounts.low && (
-            <span className="text-micro bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded">
+            <span className="text-micro bg-[var(--accent-info-soft)]0/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 px-1.5 py-0.5 rounded">
               {severityCounts.low} Low
             </span>
           )}
@@ -161,12 +161,12 @@ export default function CrossRegulationAlerts({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ delay: index * 0.03 }}
-                className={`bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
+                className={`bg-[var(--surface-sunken)] border border-[var(--border-default)] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
               >
                 {/* Card header */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : alert.id)}
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
+                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-[var(--surface-sunken)] transition-colors"
                 >
                   <AlertTriangle
                     className={`w-4 h-4 mt-0.5 flex-shrink-0 ${style.icon}`}
@@ -181,18 +181,18 @@ export default function CrossRegulationAlerts({
                       {alert.regulations.map((reg) => (
                         <span
                           key={reg}
-                          className="text-micro bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-white/30 px-1.5 py-0.5 rounded"
+                          className="text-micro bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
                         >
                           {reg}
                         </span>
                       ))}
                     </div>
-                    <p className="text-small font-medium text-slate-800 dark:text-white/80 leading-snug">
+                    <p className="text-small font-medium text-[var(--text-primary)] leading-snug">
                       {alert.title}
                     </p>
                   </div>
                   <ChevronDown
-                    className={`w-4 h-4 text-slate-400 dark:text-white/30 flex-shrink-0 mt-1 transition-transform ${
+                    className={`w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0 mt-1 transition-transform ${
                       isExpanded ? "rotate-180" : ""
                     }`}
                   />
@@ -208,28 +208,28 @@ export default function CrossRegulationAlerts({
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-3 pb-3 pt-0 border-t border-slate-200 dark:border-white/5 space-y-3">
+                      <div className="px-3 pb-3 pt-0 border-t border-[var(--border-default)] space-y-3">
                         {/* Description */}
                         <div className="flex items-start gap-2 mt-3">
-                          <Info className="w-3 h-3 text-slate-400 dark:text-white/30 mt-0.5 flex-shrink-0" />
-                          <p className="text-caption text-slate-600 dark:text-white/45 leading-relaxed">
+                          <Info className="w-3 h-3 text-[var(--text-tertiary)] mt-0.5 flex-shrink-0" />
+                          <p className="text-caption text-[var(--text-secondary)] leading-relaxed">
                             {alert.description}
                           </p>
                         </div>
 
                         {/* Resolution */}
-                        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-md p-2.5">
-                          <p className="text-micro font-medium uppercase tracking-wider text-emerald-400 mb-1">
+                        <div className="bg-[var(--accent-success-soft)]0/5 border border-[var(--accent-primary)/20] rounded-md p-2.5">
+                          <p className="text-micro font-medium uppercase tracking-wider text-[var(--accent-primary)] mb-1">
                             Resolution
                           </p>
-                          <p className="text-caption text-slate-600 dark:text-white/45 leading-relaxed">
+                          <p className="text-caption text-[var(--text-secondary)] leading-relaxed">
                             {alert.resolution}
                           </p>
                         </div>
 
                         {/* Affected modules */}
                         <div>
-                          <p className="text-micro font-medium uppercase tracking-wider text-slate-500 dark:text-white/30 mb-1.5">
+                          <p className="text-micro font-medium uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                             Affected Modules
                           </p>
                           <div className="flex flex-wrap gap-1.5">
@@ -240,7 +240,7 @@ export default function CrossRegulationAlerts({
                                   moduleLinks[mod] ||
                                   `/dashboard/modules/${mod}`
                                 }
-                                className="inline-flex items-center gap-1 text-caption text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-500/5 border border-emerald-500/20 px-2 py-0.5 rounded"
+                                className="inline-flex items-center gap-1 text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] transition-colors bg-[var(--accent-success-soft)]0/5 border border-[var(--accent-primary)/20] px-2 py-0.5 rounded"
                               >
                                 <span className="capitalize">{mod}</span>
                                 <ExternalLink className="w-2.5 h-2.5" />
@@ -262,7 +262,7 @@ export default function CrossRegulationAlerts({
       {hiddenCount > 0 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-3 w-full text-center text-caption text-slate-500 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors py-2"
+          className="mt-3 w-full text-center text-caption text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors py-2"
         >
           {showAll
             ? "Show fewer alerts"

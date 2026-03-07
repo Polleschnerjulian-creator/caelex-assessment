@@ -30,32 +30,32 @@ export function ComplianceScoreCard({
   const getGradeColor = (g: string) => {
     switch (g) {
       case "A":
-        return "text-green-400";
+        return "text-[var(--accent-success)]";
       case "B":
-        return "text-emerald-400";
+        return "text-[var(--accent-primary)]";
       case "C":
         return "text-yellow-400";
       case "D":
         return "text-orange-400";
       case "F":
-        return "text-red-400";
+        return "text-[var(--accent-danger)]";
       default:
-        return "text-slate-400";
+        return "text-[var(--text-tertiary)]";
     }
   };
 
   const getStatusColor = (s: string) => {
     switch (s) {
       case "compliant":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)/30]";
       case "mostly_compliant":
-        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+        return "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border-[var(--accent-success)/30]";
       case "partial":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
       case "non_compliant":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)/30]";
       default:
-        return "bg-slate-500/20 text-slate-400 border-slate-500/30";
+        return "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)] border-[var(--border-default)]/30";
     }
   };
 
@@ -82,13 +82,15 @@ export function ComplianceScoreCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
             Compliance Score
           </h2>
-          <p className="text-sm text-slate-400">EU Space Act Compliance</p>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            EU Space Act Compliance
+          </p>
         </div>
         <div
           className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(status)}`}
@@ -109,7 +111,7 @@ export function ComplianceScoreCard({
               fill="none"
               stroke="currentColor"
               strokeWidth="12"
-              className="text-slate-300 dark:text-white/20"
+              className="text-[var(--text-tertiary)]"
             />
             {/* Progress circle */}
             <motion.circle
@@ -122,10 +124,10 @@ export function ComplianceScoreCard({
               strokeLinecap="round"
               className={
                 score >= 80
-                  ? "text-green-500"
+                  ? "text-[var(--accent-success)]"
                   : score >= 60
                     ? "text-yellow-500"
-                    : "text-red-500"
+                    : "text-[var(--accent-danger)]"
               }
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
@@ -136,14 +138,16 @@ export function ComplianceScoreCard({
           {/* Score in center */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              className="text-4xl font-bold text-slate-900 dark:text-white"
+              className="text-4xl font-bold text-[var(--text-primary)]"
               initial={false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
             >
               {score}
             </motion.span>
-            <span className="text-slate-400 text-sm">out of 100</span>
+            <span className="text-[var(--text-tertiary)] text-sm">
+              out of 100
+            </span>
           </div>
         </div>
 
@@ -156,7 +160,9 @@ export function ComplianceScoreCard({
               <span className={`text-3xl font-bold ${getGradeColor(grade)}`}>
                 Grade {grade}
               </span>
-              <p className="text-sm text-slate-400">Overall Rating</p>
+              <p className="text-sm text-[var(--text-tertiary)]">
+                Overall Rating
+              </p>
             </div>
           </div>
 
@@ -164,31 +170,33 @@ export function ComplianceScoreCard({
           {previousScore !== undefined && (
             <div className="flex items-center gap-2">
               {trend > 0 ? (
-                <TrendingUp className="w-5 h-5 text-green-400" />
+                <TrendingUp className="w-5 h-5 text-[var(--accent-success)]" />
               ) : trend < 0 ? (
-                <TrendingDown className="w-5 h-5 text-red-400" />
+                <TrendingDown className="w-5 h-5 text-[var(--accent-danger)]" />
               ) : (
-                <Minus className="w-5 h-5 text-slate-400" />
+                <Minus className="w-5 h-5 text-[var(--text-tertiary)]" />
               )}
               <span
                 className={
                   trend > 0
-                    ? "text-green-400"
+                    ? "text-[var(--accent-success)]"
                     : trend < 0
-                      ? "text-red-400"
-                      : "text-slate-400"
+                      ? "text-[var(--accent-danger)]"
+                      : "text-[var(--text-tertiary)]"
                 }
               >
                 {trend > 0 ? "+" : ""}
                 {trend} points
               </span>
-              <span className="text-slate-500">vs previous period</span>
+              <span className="text-[var(--text-secondary)]">
+                vs previous period
+              </span>
             </div>
           )}
 
           {/* Warning for low score */}
           {score < 60 && (
-            <div className="flex items-center gap-2 text-amber-400 bg-amber-500/10 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-2 text-[var(--accent-warning)] bg-[var(--accent-warning-soft)] px-3 py-2 rounded-lg">
               <AlertTriangle className="w-5 h-5" />
               <span className="text-sm">
                 Action required to improve compliance
@@ -198,7 +206,7 @@ export function ComplianceScoreCard({
 
           {/* Last updated */}
           {lastUpdated && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[var(--text-secondary)]">
               Last calculated:{" "}
               {lastUpdated.toLocaleDateString("en-GB", {
                 day: "numeric",

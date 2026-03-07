@@ -91,15 +91,17 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
   const getStatusIcon = (status: ModuleStatus["status"]) => {
     switch (status) {
       case "compliant":
-        return <CheckCircle2 className="w-5 h-5 text-green-400" />;
+        return (
+          <CheckCircle2 className="w-5 h-5 text-[var(--accent-success)]" />
+        );
       case "partial":
         return <Clock className="w-5 h-5 text-yellow-400" />;
       case "non_compliant":
-        return <XCircle className="w-5 h-5 text-red-400" />;
+        return <XCircle className="w-5 h-5 text-[var(--accent-danger)]" />;
       case "pending":
-        return <Clock className="w-5 h-5 text-emerald-400" />;
+        return <Clock className="w-5 h-5 text-[var(--accent-primary)]" />;
       default:
-        return <Clock className="w-5 h-5 text-slate-400" />;
+        return <Clock className="w-5 h-5 text-[var(--text-tertiary)]" />;
     }
   };
 
@@ -121,22 +123,22 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-400";
+    if (score >= 80) return "text-[var(--accent-success)]";
     if (score >= 60) return "text-yellow-400";
-    if (score > 0) return "text-red-400";
-    return "text-slate-400";
+    if (score > 0) return "text-[var(--accent-danger)]";
+    return "text-[var(--text-tertiary)]";
   };
 
   const getProgressColor = (score: number) => {
-    if (score >= 80) return "bg-green-500";
+    if (score >= 80) return "bg-[var(--accent-success)]";
     if (score >= 60) return "bg-yellow-500";
-    if (score > 0) return "bg-red-500";
-    return "bg-slate-500";
+    if (score > 0) return "bg-[var(--accent-danger)]";
+    return "bg-[var(--surface-sunken)]0";
   };
 
   return (
     <Link href={config.href}>
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[--glass-border-medium] transition-colors group">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-5 hover:border-[var(--border-default)] transition-colors group">
         <div className="flex items-start justify-between mb-4">
           <div
             className={`p-2 rounded-lg bg-${config.color}-500/10 text-${config.color}-400`}
@@ -146,24 +148,24 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
           {getStatusIcon(module.status)}
         </div>
 
-        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+        <h3 className="font-semibold text-[var(--text-primary)] mb-1">
           {config.label}
         </h3>
-        <p className="text-sm text-slate-400 mb-4">
+        <p className="text-sm text-[var(--text-tertiary)] mb-4">
           {getStatusLabel(module.status)}
         </p>
 
         {/* Progress bar */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-slate-500">Score</span>
+            <span className="text-xs text-[var(--text-secondary)]">Score</span>
             <span
               className={`text-sm font-semibold ${getScoreColor(module.score)}`}
             >
               {module.score}%
             </span>
           </div>
-          <div className="h-1.5 bg-slate-50 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor(module.score)} transition-all duration-500`}
               style={{ width: `${module.score}%` }}
@@ -173,11 +175,11 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
 
         {/* Stats */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-500">
+          <span className="text-[var(--text-secondary)]">
             {module.itemsComplete}/{module.itemsTotal} items
           </span>
           {module.criticalIssues > 0 && (
-            <span className="text-red-400 font-medium">
+            <span className="text-[var(--accent-danger)] font-medium">
               {module.criticalIssues} critical
             </span>
           )}
@@ -185,10 +187,10 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
 
         {/* Next deadline */}
         {module.nextDeadline && (
-          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="mt-3 pt-3 border-t border-[var(--border-default)]">
             <div className="flex items-center gap-2 text-xs">
-              <Clock className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-slate-400">
+              <Clock className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+              <span className="text-[var(--text-tertiary)]">
                 Due{" "}
                 {module.nextDeadline.toLocaleDateString("en-GB", {
                   day: "numeric",
@@ -201,7 +203,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
 
         {/* Hover arrow */}
         <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)]" />
         </div>
       </div>
     </Link>

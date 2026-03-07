@@ -209,7 +209,7 @@ export default function OperatorProfileEditor() {
     return (
       <GlassCard hover={false} className="p-8">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
+          <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
         </div>
       </GlassCard>
     );
@@ -218,7 +218,7 @@ export default function OperatorProfileEditor() {
   if (fetchError || !profile) {
     return (
       <GlassCard hover={false} className="p-8">
-        <div className="flex items-center justify-center gap-2 py-12 text-slate-400 dark:text-white/45">
+        <div className="flex items-center justify-center gap-2 py-12 text-[var(--text-tertiary)]">
           <AlertCircle className="w-5 h-5" />
           <p>Failed to load operator profile. Please try again later.</p>
         </div>
@@ -234,28 +234,28 @@ export default function OperatorProfileEditor() {
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-title font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-title font-semibold text-[var(--text-primary)]">
               Operator Profile
             </h2>
-            <p className="text-body text-slate-500 dark:text-white/45 mt-1">
+            <p className="text-body text-[var(--text-secondary)] mt-1">
               Complete your operator profile to pre-fill regulatory assessments.
             </p>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === "saving" && (
-              <div className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/45">
+              <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)]">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 <span>Saving...</span>
               </div>
             )}
             {saveStatus === "saved" && (
-              <div className="flex items-center gap-1.5 text-caption text-emerald-500">
+              <div className="flex items-center gap-1.5 text-caption text-[var(--accent-primary)]">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Saved</span>
               </div>
             )}
             {saveStatus === "error" && (
-              <div className="flex items-center gap-1.5 text-caption text-red-400">
+              <div className="flex items-center gap-1.5 text-caption text-[var(--accent-danger)]">
                 <AlertCircle className="w-3.5 h-3.5" />
                 <span>Save failed</span>
               </div>
@@ -278,8 +278,8 @@ export default function OperatorProfileEditor() {
       {/* Section: Classification */}
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Satellite className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <Satellite className="w-4 h-4 text-[var(--accent-primary)]" />
+          <h3 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Classification
           </h3>
         </div>
@@ -316,7 +316,7 @@ export default function OperatorProfileEditor() {
           />
 
           <div className="space-y-3">
-            <label className="block text-body font-medium text-slate-700 dark:text-white/70">
+            <label className="block text-body font-medium text-[var(--text-secondary)]">
               Special Classifications
             </label>
             <div className="flex flex-col gap-2.5">
@@ -325,9 +325,9 @@ export default function OperatorProfileEditor() {
                   type="checkbox"
                   checked={profile.isResearch}
                   onChange={(e) => handleChange("isResearch", e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
+                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
                 />
-                <span className="text-body text-slate-700 dark:text-slate-200">
+                <span className="text-body text-[var(--text-secondary)]">
                   Research entity (eligible for light regime)
                 </span>
               </label>
@@ -338,9 +338,9 @@ export default function OperatorProfileEditor() {
                   onChange={(e) =>
                     handleChange("isDefenseOnly", e.target.checked)
                   }
-                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
+                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
                 />
-                <span className="text-body text-slate-700 dark:text-slate-200">
+                <span className="text-body text-[var(--text-secondary)]">
                   Defense-only operations (excluded from EU Space Act)
                 </span>
               </label>
@@ -352,8 +352,8 @@ export default function OperatorProfileEditor() {
       {/* Section: Mission Profile */}
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Orbit className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <Orbit className="w-4 h-4 text-[var(--accent-primary)]" />
+          <h3 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Mission Profile
           </h3>
         </div>
@@ -429,7 +429,7 @@ export default function OperatorProfileEditor() {
           />
 
           <div className="space-y-3">
-            <label className="block text-body font-medium text-slate-700 dark:text-white/70">
+            <label className="block text-body font-medium text-[var(--text-secondary)]">
               Constellation
             </label>
             <label className="flex items-center gap-2.5 cursor-pointer">
@@ -439,9 +439,9 @@ export default function OperatorProfileEditor() {
                 onChange={(e) =>
                   handleChange("isConstellation", e.target.checked)
                 }
-                className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
+                className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
               />
-              <span className="text-body text-slate-700 dark:text-slate-200">
+              <span className="text-body text-[var(--text-secondary)]">
                 Part of a constellation
               </span>
             </label>
@@ -467,8 +467,8 @@ export default function OperatorProfileEditor() {
       {/* Section: Jurisdiction */}
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Globe className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <Globe className="w-4 h-4 text-[var(--accent-primary)]" />
+          <h3 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Jurisdiction
           </h3>
         </div>
@@ -486,10 +486,10 @@ export default function OperatorProfileEditor() {
           />
 
           <div className="space-y-2">
-            <label className="block text-body font-medium text-slate-700 dark:text-white/70">
+            <label className="block text-body font-medium text-[var(--text-secondary)]">
               Operating Jurisdictions
             </label>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               Select all jurisdictions where you operate or provide services.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
@@ -506,8 +506,8 @@ export default function OperatorProfileEditor() {
                       px-3 py-2 rounded-lg text-caption font-medium transition-all duration-200 text-left
                       ${
                         isSelected
-                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                          : "bg-slate-50 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/50 border border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
+                          ? "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-success)] border border-[var(--accent-success)/30]"
+                          : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-default)]"
                       }
                     `}
                   >
@@ -525,9 +525,9 @@ export default function OperatorProfileEditor() {
               onChange={(e) =>
                 handleChange("offersEUServices", e.target.checked)
               }
-              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
+              className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
             />
-            <span className="text-body text-slate-700 dark:text-slate-200">
+            <span className="text-body text-[var(--text-secondary)]">
               Offers services in the EU market
             </span>
           </label>
@@ -537,48 +537,48 @@ export default function OperatorProfileEditor() {
       {/* Assessment Pre-fill Info */}
       <GlassCard hover={false} className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <FileText className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+          <FileText className="w-4 h-4 text-[var(--accent-primary)]" />
+          <h3 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
             Assessment Pre-fill
           </h3>
         </div>
-        <p className="text-body text-slate-500 dark:text-white/45 mb-4">
+        <p className="text-body text-[var(--text-secondary)] mb-4">
           Your operator profile can pre-fill answers for the following
           assessments, saving time and ensuring consistency.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border-default)]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.operatorType && profile.entitySize
-                  ? "bg-emerald-500"
-                  : "bg-slate-300 dark:bg-white/20"
+                  ? "bg-[var(--accent-success-soft)]0"
+                  : "bg-[var(--surface-sunken)]"
               }`}
             />
             <div className="min-w-0">
-              <p className="text-body font-medium text-slate-700 dark:text-slate-200">
+              <p className="text-body font-medium text-[var(--text-secondary)]">
                 EU Space Act Assessment
               </p>
-              <p className="text-small text-slate-500 dark:text-white/45">
+              <p className="text-small text-[var(--text-secondary)]">
                 {profile.operatorType && profile.entitySize
                   ? "Ready to pre-fill"
                   : "Needs operator type & entity size"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border-default)]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.entitySize && profile.establishment
-                  ? "bg-emerald-500"
-                  : "bg-slate-300 dark:bg-white/20"
+                  ? "bg-[var(--accent-success-soft)]0"
+                  : "bg-[var(--surface-sunken)]"
               }`}
             />
             <div className="min-w-0">
-              <p className="text-body font-medium text-slate-700 dark:text-slate-200">
+              <p className="text-body font-medium text-[var(--text-secondary)]">
                 NIS2 Assessment
               </p>
-              <p className="text-small text-slate-500 dark:text-white/45">
+              <p className="text-small text-[var(--text-secondary)]">
                 {profile.entitySize && profile.establishment
                   ? "Ready to pre-fill"
                   : "Needs entity size & establishment"}

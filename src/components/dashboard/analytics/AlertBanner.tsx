@@ -32,7 +32,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
       {criticalAlerts.length > 3 && (
         <Link
           href="/dashboard/alerts"
-          className="flex items-center justify-center gap-2 py-2 text-sm text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="flex items-center justify-center gap-2 py-2 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white transition-colors"
         >
           <Bell className="w-4 h-4" />
           View {criticalAlerts.length - 3} more alerts
@@ -59,18 +59,18 @@ function AlertItem({
       exit={{ opacity: 0, x: 100 }}
       className={`rounded-lg border p-4 ${
         isCritical
-          ? "bg-red-500/10 border-red-500/30"
+          ? "bg-[var(--accent-danger)]/10 border-[var(--accent-danger)/30]"
           : "bg-orange-500/10 border-orange-500/30"
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           className={`flex-shrink-0 p-1 rounded ${
-            isCritical ? "bg-red-500/20" : "bg-orange-500/20"
+            isCritical ? "bg-[var(--accent-danger-soft)]" : "bg-orange-500/20"
           }`}
         >
           <AlertTriangle
-            className={`w-5 h-5 ${isCritical ? "text-red-400" : "text-orange-400"}`}
+            className={`w-5 h-5 ${isCritical ? "text-[var(--accent-danger)]" : "text-orange-400"}`}
           />
         </div>
 
@@ -79,12 +79,12 @@ function AlertItem({
             <div>
               <h4
                 className={`font-medium ${
-                  isCritical ? "text-red-400" : "text-orange-400"
+                  isCritical ? "text-[var(--accent-danger)]" : "text-orange-400"
                 }`}
               >
                 {alert.title}
               </h4>
-              <p className="text-sm text-slate-400 mt-0.5">
+              <p className="text-sm text-[var(--text-tertiary)] mt-0.5">
                 {alert.description}
               </p>
             </div>
@@ -92,7 +92,7 @@ function AlertItem({
             {onDismiss && (
               <button
                 onClick={() => onDismiss(alert.id)}
-                className="flex-shrink-0 p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex-shrink-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -104,7 +104,7 @@ function AlertItem({
               href={alert.link}
               className={`inline-flex items-center gap-1 mt-2 text-sm font-medium ${
                 isCritical
-                  ? "text-red-400 hover:text-red-300"
+                  ? "text-[var(--accent-danger)] hover:text-red-300"
                   : "text-orange-400 hover:text-orange-300"
               }`}
             >
@@ -123,7 +123,7 @@ export function CompactAlertBadge({ count }: { count: number }) {
   if (count === 0) return null;
 
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-[var(--accent-danger)] rounded-full">
       {count > 99 ? "99+" : count}
     </span>
   );

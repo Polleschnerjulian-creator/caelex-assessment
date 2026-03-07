@@ -69,9 +69,9 @@ export function TrendChart({
   }, [chartData.points]);
 
   const getTrendColor = (trend: number) => {
-    if (trend > 0) return "text-green-400";
-    if (trend < 0) return "text-red-400";
-    return "text-slate-400";
+    if (trend > 0) return "text-[var(--accent-success)]";
+    if (trend < 0) return "text-[var(--accent-danger)]";
+    return "text-[var(--text-tertiary)]";
   };
 
   const getTrendIcon = (trend: number) => {
@@ -94,13 +94,15 @@ export function TrendChart({
 
   if (data.length === 0) {
     return (
-      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           {title}
         </h3>
-        {subtitle && <p className="text-sm text-slate-400 mb-4">{subtitle}</p>}
+        {subtitle && (
+          <p className="text-sm text-[var(--text-tertiary)] mb-4">{subtitle}</p>
+        )}
         <div
-          className="flex items-center justify-center text-slate-500"
+          className="flex items-center justify-center text-[var(--text-secondary)]"
           style={{ height }}
         >
           <p>No trend data available</p>
@@ -110,13 +112,15 @@ export function TrendChart({
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
             {title}
           </h3>
-          {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-[var(--text-tertiary)]">{subtitle}</p>
+          )}
         </div>
         <div
           className={`flex items-center gap-1 ${getTrendColor(chartData.trend)}`}
@@ -132,7 +136,7 @@ export function TrendChart({
       <div className="relative" style={{ height }}>
         {/* Y-axis labels */}
         {showLabels && (
-          <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between text-xs text-slate-500 py-2">
+          <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between text-xs text-[var(--text-secondary)] py-2">
             <span>{chartData.max}</span>
             <span>{Math.round((chartData.max + chartData.min) / 2)}</span>
             <span>{chartData.min}</span>
@@ -222,7 +226,7 @@ export function TrendChart({
         {/* X-axis labels */}
         {showLabels && chartData.points.length > 0 && (
           <div
-            className={`flex justify-between text-xs text-slate-500 mt-2 ${showLabels ? "ml-10" : ""}`}
+            className={`flex justify-between text-xs text-[var(--text-secondary)] mt-2 ${showLabels ? "ml-10" : ""}`}
           >
             <span>
               {chartData.points[0].date.toLocaleDateString("en-GB", {
@@ -254,10 +258,12 @@ export function TrendChart({
 
       {/* Current score */}
       {chartData.points.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-400">Current Score</span>
-            <span className="text-lg font-semibold text-slate-900 dark:text-white">
+            <span className="text-sm text-[var(--text-tertiary)]">
+              Current Score
+            </span>
+            <span className="text-lg font-semibold text-[var(--text-primary)]">
               {chartData.points[chartData.points.length - 1].score.toFixed(0)}%
             </span>
           </div>
@@ -301,9 +307,7 @@ export function MiniTrendChart({
   }, [data]);
 
   if (data.length < 2) {
-    return (
-      <div className="w-20 h-6 bg-slate-50 dark:bg-[--glass-bg-elevated] rounded" />
-    );
+    return <div className="w-20 h-6 bg-[var(--surface-sunken)] rounded" />;
   }
 
   const strokeColor = chartData.trend >= 0 ? "#22C55E" : "#EF4444";
