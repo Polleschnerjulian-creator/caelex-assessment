@@ -41,6 +41,7 @@ import {
   Calendar,
   Satellite,
   Activity,
+  Target,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -627,6 +628,12 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               >
                 Ephemeris
               </NavItem>
+              <CompactModuleItem
+                href="/dashboard/optimizer"
+                icon={<Target className="w-4 h-4" />}
+                label="Optimizer"
+                onClick={handleNavClick}
+              />
             </div>
           </div>
 

@@ -39,6 +39,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/evidence": "_literal:Evidence Coverage",
   "/dashboard/sentinel": "_literal:Sentinel",
   "/dashboard/ephemeris": "_literal:Ephemeris",
+  "/dashboard/optimizer": "_literal:Regulatory Arbitrage Optimizer",
   "/dashboard/settings": "sidebar.settings",
   "/dashboard/admin": "sidebar.adminPanel",
 };
