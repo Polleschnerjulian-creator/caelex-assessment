@@ -6,16 +6,30 @@ interface ProgressProps {
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   showValue?: boolean;
-  color?: "emerald" | "blue" | "amber" | "red" | "white";
+  color?:
+    | "primary"
+    | "success"
+    | "warning"
+    | "danger"
+    | "emerald"
+    | "blue"
+    | "amber"
+    | "red"
+    | "white";
   label?: string;
   className?: string;
 }
 
-const colors = {
-  emerald: "bg-emerald-500",
-  blue: "bg-blue-500",
-  amber: "bg-amber-500",
-  red: "bg-red-500",
+const colors: Record<string, string> = {
+  primary: "bg-[var(--accent-primary)]",
+  success: "bg-[var(--accent-success)]",
+  warning: "bg-[var(--accent-warning)]",
+  danger: "bg-[var(--accent-danger)]",
+  // Legacy aliases
+  emerald: "bg-[var(--accent-success)]",
+  blue: "bg-[var(--accent-primary)]",
+  amber: "bg-[var(--accent-warning)]",
+  red: "bg-[var(--accent-danger)]",
   white: "bg-white",
 };
 
@@ -31,7 +45,7 @@ export function Progress({
   size = "md",
   showLabel = false,
   showValue = false,
-  color = "emerald",
+  color = "primary",
   label = "Progress",
   className = "",
 }: ProgressProps) {
@@ -41,20 +55,22 @@ export function Progress({
     <div className={`space-y-1.5 ${className}`}>
       {(showLabel || showValue) && (
         <div className="flex justify-between items-center text-small">
-          {showLabel && <span className="text-white/45">{label}</span>}
+          {showLabel && (
+            <span className="text-[var(--text-tertiary)]">{label}</span>
+          )}
           {showValue && (
-            <span className="text-white/70 font-medium tabular-nums">
+            <span className="text-[var(--text-secondary)] font-medium tabular-nums">
               {Math.round(percent)}%
             </span>
           )}
         </div>
       )}
       <div
-        className={`w-full bg-slate-200 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden ${heights[size]}`}
+        className={`w-full bg-[var(--surface-sunken)] rounded-full overflow-hidden ${heights[size]}`}
       >
         <div
           className={`
-            ${colors[color]} ${heights[size]}
+            ${colors[color] || colors.primary} ${heights[size]}
             rounded-full
             transition-all duration-500 ease-out
           `}
@@ -76,16 +92,29 @@ interface CircularProgressProps {
   max?: number;
   size?: number;
   strokeWidth?: number;
-  color?: "emerald" | "blue" | "amber" | "red";
+  color?:
+    | "primary"
+    | "success"
+    | "warning"
+    | "danger"
+    | "emerald"
+    | "blue"
+    | "amber"
+    | "red";
   showValue?: boolean;
   className?: string;
 }
 
-const circleColors = {
-  emerald: "stroke-emerald-500",
-  blue: "stroke-blue-500",
-  amber: "stroke-amber-500",
-  red: "stroke-red-500",
+const circleColors: Record<string, string> = {
+  primary: "stroke-[var(--accent-primary)]",
+  success: "stroke-[var(--accent-success)]",
+  warning: "stroke-[var(--accent-warning)]",
+  danger: "stroke-[var(--accent-danger)]",
+  // Legacy aliases
+  emerald: "stroke-[var(--accent-success)]",
+  blue: "stroke-[var(--accent-primary)]",
+  amber: "stroke-[var(--accent-warning)]",
+  red: "stroke-[var(--accent-danger)]",
 };
 
 export function CircularProgress({
@@ -93,7 +122,7 @@ export function CircularProgress({
   max = 100,
   size = 48,
   strokeWidth = 4,
-  color = "emerald",
+  color = "primary",
   showValue = true,
   className = "",
 }: CircularProgressProps) {
@@ -123,7 +152,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
-          className="stroke-white/10 fill-none"
+          className="stroke-[var(--surface-sunken)] fill-none"
         />
         {/* Progress circle */}
         <circle
@@ -132,7 +161,7 @@ export function CircularProgress({
           r={radius}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className={`${circleColors[color]} fill-none transition-all duration-500 ease-out`}
+          className={`${circleColors[color] || circleColors.primary} fill-none transition-all duration-500 ease-out`}
           style={{
             strokeDasharray: circumference,
             strokeDashoffset: offset,
@@ -140,7 +169,7 @@ export function CircularProgress({
         />
       </svg>
       {showValue && (
-        <span className="absolute text-small font-medium text-white tabular-nums">
+        <span className="absolute text-small font-medium text-[var(--text-primary)] tabular-nums">
           {Math.round(percent)}%
         </span>
       )}
