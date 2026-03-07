@@ -71,26 +71,26 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
       onClick={onClick}
       aria-current={isActive ? "page" : undefined}
       className={`
-        group flex items-center gap-3 px-3 py-2 rounded-lg text-body
-        transition-all duration-150
+        group flex items-center gap-3 h-9 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-body
+        transition-all duration-[180ms] ease-out
         ${
           isActive
-            ? "bg-[#F1F3F5] text-[#111827] font-medium"
-            : "text-[#4B5563] hover:text-[#111827] hover:bg-[#F7F8FA]"
+            ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium border-l-[3px] border-l-[var(--accent-primary)]"
+            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
         }
       `}
     >
       {icon && (
         <span
           aria-hidden="true"
-          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[#111827]" : "text-[#9CA3AF] group-hover:text-[#4B5563]"}`}
+          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"}`}
         >
           {icon}
         </span>
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-micro px-1.5 py-0.5 rounded bg-[#F1F3F5] text-[#4B5563]">
+        <span className="text-micro px-1.5 py-0.5 rounded-full bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium">
           {badge}
         </span>
       )}
@@ -129,14 +129,14 @@ function CompactModuleItem({
         locked ? `${label} (requires ${requiredPlan} plan)` : undefined
       }
       className={`
-        group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-small
-        transition-all duration-150
+        group flex items-center gap-2.5 h-8 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-small
+        transition-all duration-[180ms] ease-out
         ${
           locked
-            ? "text-[#9CA3AF] hover:text-[#6B7280] hover:bg-[#F7F8FA] cursor-default"
+            ? "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)] cursor-default"
             : isActive
-              ? "bg-[#F1F3F5] text-[#111827] font-medium"
-              : "text-[#4B5563] hover:text-[#111827] hover:bg-[#F7F8FA]"
+              ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium border-l-[3px] border-l-[var(--accent-primary)]"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
         }
       `}
     >
@@ -144,10 +144,10 @@ function CompactModuleItem({
         aria-hidden="true"
         className={`w-3.5 h-3.5 flex-shrink-0 ${
           locked
-            ? "text-[#D1D5DB]"
+            ? "text-[var(--border-default)]"
             : isActive
-              ? "text-[#111827]"
-              : "text-[#9CA3AF] group-hover:text-[#4B5563]"
+              ? "text-[var(--accent-primary)]"
+              : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"
         }`}
       >
         {icon}
@@ -156,11 +156,11 @@ function CompactModuleItem({
       {locked && (
         <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
-            <span className="text-[8px] font-medium uppercase tracking-wider text-[#9CA3AF]">
+            <span className="text-[8px] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
               {requiredPlan}
             </span>
           )}
-          <Lock size={14} className="text-[#D1D5DB]" />
+          <Lock size={14} className="text-[var(--border-default)]" />
         </span>
       )}
     </Link>
@@ -196,14 +196,14 @@ function ModuleGroup({
         aria-expanded={isExpanded}
         aria-controls={panelId}
         className={`
-          w-full flex items-center gap-2 px-3 py-2 rounded-lg text-caption font-medium uppercase tracking-wider
-          transition-all duration-150
+          w-full flex items-center gap-2 px-3 py-2 mx-2 rounded-[var(--v2-radius-sm)] text-[12px] font-medium uppercase tracking-wider
+          transition-all duration-[180ms] ease-out
           ${
             hasActiveItem
-              ? "text-[#111827]"
-              : "text-[#9CA3AF] hover:text-[#4B5563]"
+              ? "text-[var(--text-primary)]"
+              : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
           }
-          hover:bg-[#F7F8FA]
+          hover:bg-[var(--surface-sunken)]
         `}
       >
         <motion.span
@@ -219,8 +219,8 @@ function ModuleGroup({
           aria-label={`${count} modules`}
           className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
-              ? "bg-[#111827] text-white"
-              : "bg-[#F1F3F5] text-[#9CA3AF]"
+              ? "bg-[var(--accent-primary)] text-white"
+              : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]"
           }`}
         >
           {count}
@@ -391,8 +391,8 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       <aside
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
-          w-[280px] lg:w-[260px] lg:h-screen
-          bg-white border-r border-[#E5E7EB]
+          w-[280px] lg:w-[240px] lg:h-screen
+          bg-white border-r border-[var(--border-default)]
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -402,16 +402,16 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-[#4B5563] hover:text-[#111827] rounded-lg hover:bg-[#F1F3F5] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--v2-radius-sm)] hover:bg-[var(--surface-sunken)] transition-colors duration-[180ms]"
         >
           <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header */}
-        <div className="h-16 flex items-center px-6 border-b border-[#E5E7EB]">
+        <div className="h-12 flex items-center px-6 border-b border-[var(--border-default)]">
           <Link href="/" className="flex items-center gap-2">
-            <Logo size={22} className="text-[#111827]" />
-            <span className="text-micro text-[#9CA3AF] tracking-wider">
+            <Logo size={22} className="text-[var(--text-primary)]" />
+            <span className="text-micro text-[var(--text-tertiary)] tracking-wider">
               v0.1
             </span>
           </Link>
@@ -424,7 +424,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         >
           {/* Overview Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               {t("sidebar.overview")}
             </p>
             <div className="space-y-0.5">
@@ -447,7 +447,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Compliance Modules Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               {t("sidebar.complianceModules")}
             </p>
 
@@ -601,7 +601,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* AI Agent Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
@@ -639,7 +639,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Resources Section */}
           <div>
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               {t("sidebar.resources")}
             </p>
             <div className="space-y-0.5">
@@ -721,7 +721,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Assure Section */}
           <div className="mt-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               Assure
             </p>
             <div className="space-y-0.5">
@@ -745,7 +745,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Network Section */}
           <div className="mt-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
               {t("sidebar.network") || "Network"}
             </p>
             <div className="space-y-0.5">
@@ -762,7 +762,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Admin — only for admin role users */}
           {user?.role === "admin" && (
             <div className="mt-5">
-              <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
+              <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
                 {t("sidebar.admin")}
               </p>
               <div className="space-y-0.5">
@@ -800,7 +800,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[#E5E7EB] space-y-1">
+        <div className="p-3 border-t border-[var(--border-default)] space-y-1">
           <NavItem
             href="/dashboard/settings"
             icon={<Settings size={16} strokeWidth={1.5} />}
@@ -811,21 +811,25 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           <button
             onClick={handleLogout}
             className="
-              w-full flex items-center gap-3 px-3 py-2 rounded-lg text-body
-              text-[#4B5563] hover:text-red-600 hover:bg-red-50
-              transition-all duration-150
+              w-full flex items-center gap-3 h-9 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-body
+              text-[var(--text-secondary)] hover:text-[var(--accent-danger)] hover:bg-[var(--accent-danger-soft)]
+              transition-all duration-[180ms] ease-out
             "
           >
-            <LogOut size={16} className="text-[#9CA3AF]" aria-hidden="true" />
+            <LogOut
+              size={16}
+              className="text-[var(--text-tertiary)]"
+              aria-hidden="true"
+            />
             <span>{t("sidebar.signOut")}</span>
           </button>
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-t border-[#E5E7EB]">
+        <div className="p-4 border-t border-[var(--border-default)]">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-[#F1F3F5] flex items-center justify-center flex-shrink-0 border border-[#E5E7EB]">
+            <div className="w-9 h-9 rounded-full bg-[var(--surface-sunken)] flex items-center justify-center flex-shrink-0 border border-[var(--border-default)]">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
@@ -834,7 +838,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <span className="text-small font-medium text-[#4B5563]">
+                <span className="text-small font-medium text-[var(--text-secondary)]">
                   {initials}
                 </span>
               )}
@@ -842,10 +846,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-body font-medium text-[#111827] truncate">
+              <p className="text-body font-medium text-[var(--text-primary)] truncate">
                 {user?.name || t("common.user")}
               </p>
-              <p className="text-caption text-[#9CA3AF] truncate">
+              <p className="text-caption text-[var(--text-tertiary)] truncate">
                 {user?.email || ""}
               </p>
             </div>
