@@ -6,24 +6,32 @@ Caelex is a **full-stack space regulatory compliance SaaS platform** built with 
 
 The platform includes:
 
-- **3 assessment modules** — EU Space Act (8 questions, 119 articles), NIS2 Directive (space-scoped), National Space Laws (10 jurisdictions)
-- **8 compliance dashboard modules** — Authorization, Registration, Cybersecurity, Debris, Environmental, Insurance, NIS2, Supervision
-- **Full SaaS infrastructure** — Multi-tenant organizations, RBAC, Stripe billing, document vault, audit trail, API v1
+- **4 assessment modules** — EU Space Act (8 questions, 119 articles), NIS2 Directive (space-scoped), National Space Laws (10 jurisdictions), Unified multi-regulation assessment
+- **15 compliance dashboard modules** — Authorization, Registration, Cybersecurity, Debris, Environmental, Insurance, NIS2, Supervision, COPUOS/IADC, Export Control (ITAR/EAR), Spectrum/ITU, UK Space Industry Act, US Regulatory (FCC/FAA), Digital Twin, Evidence
+- **Astra AI** — Claude-powered compliance copilot with tool execution
+- **Assure Platform** — Investor due diligence: RRS scoring, RCR rating, data rooms, risk register, benchmarking
+- **Academy** — Training courses, simulations, classrooms, badges
+- **Mission Control** — 3D satellite tracking, ephemeris forecasting, Sentinel monitoring
+- **Full SaaS infrastructure** — Multi-tenant organizations, RBAC, Stripe billing, document vault, audit trail, API v1, stakeholder network, NCA portal
 
 ## Tech Stack
 
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript (strict mode)
 - **Database:** PostgreSQL via Neon Serverless
-- **ORM:** Prisma 5.22 (2,424-line schema, 50+ models, 108 indices)
+- **ORM:** Prisma 5.22 (6,265-line schema, 161 models, 76 enums, 481 indices)
 - **Auth:** NextAuth v5 (credentials + Google OAuth + SSO SAML/OIDC)
 - **Payments:** Stripe (checkout, portal, webhooks)
 - **Storage:** Cloudflare R2 / S3-compatible (via AWS SDK)
-- **Rate Limiting:** Upstash Redis (sliding window, 7 tiers)
+- **AI:** Anthropic Claude (@anthropic-ai/sdk) for Astra AI copilot + document generation
+- **Rate Limiting:** Upstash Redis (sliding window, 19 tiers)
 - **Encryption:** AES-256-GCM (scrypt key derivation) for sensitive fields
 - **Email:** Resend (primary) / Nodemailer SMTP (fallback)
-- **PDF:** @react-pdf/renderer (client-side report generation)
-- **3D:** Three.js (@react-three/fiber) for landing page
+- **PDF:** @react-pdf/renderer (client-side) + jsPDF (server-side), 8+ report types
+- **3D:** Three.js (@react-three/fiber) for landing page + mission control globe
+- **Charts:** Recharts for dashboard analytics
+- **Drag & Drop:** @dnd-kit
+- **Satellite:** satellite.js for orbital mechanics
 - **Animations:** Framer Motion
 - **Icons:** Lucide React
 - **Validation:** Zod
@@ -36,127 +44,226 @@ The platform includes:
 
 ```
 src/
-  app/                  44 page routes + 138 API route files
+  app/                  153 page routes + 400 API route files
     (root)              Landing page, layout, globals
-    assessment/         3 assessment wizards (EU Space Act, NIS2, Space Law)
-    dashboard/          Authenticated dashboard with 8 modules + admin
-    api/                138 route handlers across 32 domains
+    assessment/         4 assessment wizards (EU Space Act, NIS2, Space Law, Unified)
+    dashboard/          Authenticated dashboard with 15 modules + admin
+    assure/             20+ investor due diligence pages
+    academy/            8 training/learning pages
+    api/                400 route handlers across 56 domains
     resources/          Public resource pages (FAQ, glossary, timeline)
-    legal/              Legal pages (impressum, privacy, terms, cookies)
-  components/           130 React components across 20 subdirectories
+    legal/              Legal pages (DE + EN: impressum, privacy, terms, cookies)
+    blog/               Blog system with dynamic slugs
+    careers/            Career pages with application flow
+    stakeholder/        Stakeholder portal
+  components/           292 React components across 38 subdirectories
     assessment/         Wizard components (AssessmentWizard, QuestionStep, OptionCard, etc.)
     results/            Results dashboard components (ComplianceProfile, ModuleCards, etc.)
-    dashboard/          Dashboard layout (Sidebar, TopBar, analytics cards)
-    landing/            Landing page sections (Hero, Stats, Features, 3D scene)
-    ui/                 Shared UI primitives (Button, Card, Badge, Input, etc.)
+    dashboard/          Dashboard layout (Sidebar, TopBar, analytics cards, charts)
+    astra/              AI assistant (14 components: chat, tools, conversations)
+    assure/             Investor due diligence (40+ components: RRS, RCR, data rooms, risks)
+    academy/            Training (10 components: courses, quizzes, simulations)
+    landing/            Landing page sections (34 components incl. 3D scene)
+    mission-control/    Satellite tracking (11 components: 3D globe, orbits)
+    network/            Stakeholder network (14 components: attestations, data rooms)
+    nca-portal/         NCA submissions (12 components)
+    ui/                 Shared UI primitives (16 components)
     [domain]/           Domain-specific components (audit, billing, documents, etc.)
-  data/                 20 regulatory data files
+  data/                 32 regulatory data files
     articles.ts         EU Space Act articles (67 grouped entries covering 119 articles)
-    nis2-requirements.ts  NIS2 requirements (51 entries, 2,243 LOC)
+    nis2-requirements.ts  NIS2 requirements (51 entries, 3,973 LOC)
     national-space-laws.ts  10 jurisdictions (1,681 LOC)
+    cybersecurity-requirements.ts  ENISA/NIS2 controls (3,418 LOC)
     modules.ts          Module definitions + compliance type normalization
-    [domain]-requirements.ts  Domain-specific data (cybersecurity, debris, insurance, etc.)
+    academy/            Course and scenario definitions
+    assure/             Due diligence data (risks, benchmarks, data room structure)
+    [domain]-requirements.ts  Domain-specific data (debris, insurance, ITAR/EAR, spectrum, etc.)
   lib/                  Business logic, engines, services, utilities
-    engine.server.ts    EU Space Act compliance engine (server-only)
-    nis2-engine.server.ts  NIS2 compliance engine (server-only)
-    space-law-engine.server.ts  National space law engine (server-only)
-    services/           24 service files (notification, subscription, audit, etc.)
-    email/              Email templates and sending (Resend + SMTP)
-    pdf/                PDF report generation (6 report types)
+    *.server.ts         32 server-only engine files
+    astra/              AI assistant engine (tool executor, context builder, prompts)
+    services/           65 service files
+    email/              19 email template files (Resend + SMTP)
+    pdf/                43 PDF generation files (8+ report types)
     stripe/             Stripe integration (client, products, webhooks)
     storage/            R2/S3 file storage client
     workflow/           Authorization workflow state machine
-  hooks/                Custom React hooks (keyboard shortcuts, onboarding)
+    ephemeris/          Satellite compliance forecasting subsystem
+    assure/             IRS/RRS scoring engines
+    i18n/               Internationalization (EN, DE, FR, ES)
+  hooks/                Custom React hooks (keyboard shortcuts, onboarding, analytics, i18n)
+  content/              Blog posts, guides, glossary terms
   types/                External type declarations
 
 prisma/
-  schema.prisma         Database schema (2,424 lines, 50+ models, 108 indices)
+  schema.prisma         Database schema (6,265 lines, 161 models, 76 enums, 481 indices)
   seed-admin.ts         Admin user seeding
 
-tests/
-  unit/                 37 unit test files
-  integration/          25 integration test files
-  e2e/                  6 E2E test files
-  fixtures/             Test fixtures and factories
-  mocks/                MSW handlers
+tests/                  163 test files (co-located in src/ as *.test.ts)
 ```
 
 ## Key Routes
 
 ### Public Pages
 
-- `/` — Landing page
+- `/` — Landing page (Hero, BlogShowcase, MissionStatement, SoftwareShowcase)
 - `/assessment` — Assessment module picker
 - `/assessment/eu-space-act` — EU Space Act 8-question wizard
 - `/assessment/nis2` — NIS2 assessment wizard
 - `/assessment/space-law` — National space law wizard
+- `/assessment/unified` — Combined multi-regulation assessment
+- `/demo` — Demo request page (liquid glass design)
 - `/pricing` — Pricing tiers
-- `/resources/*` — FAQ, glossary, timeline, EU Space Act overview
-- `/legal/*` — Impressum, privacy, terms (DE+EN), cookies
+- `/platform`, `/about`, `/security`, `/contact` — Marketing pages
+- `/resources/*` — FAQ, glossary, timeline, guides, EU Space Act overview
+- `/legal/*` — Impressum, privacy, terms, cookies (DE+EN)
+- `/blog`, `/blog/[slug]` — Blog system
+- `/careers`, `/careers/[id]`, `/careers/apply` — Career pages
+- `/glossary`, `/guides`, `/modules`, `/jurisdictions` — Content pages
 - `/docs/api` — API documentation (Swagger UI)
+- `/supplier/[token]` — Supplier data portal (token-gated)
+- `/stakeholder/portal` — Stakeholder compliance portal
 
-### Authenticated Pages
+### Authenticated Dashboard Pages
 
-- `/dashboard` — Main compliance dashboard
-- `/dashboard/modules/*` — 8 compliance modules (authorization, cybersecurity, debris, environmental, insurance, nis2, registration, supervision)
+- `/dashboard` — Main compliance dashboard (6 charts, compliance score, module overview)
+- `/dashboard/modules/*` — 15 compliance modules (authorization, cybersecurity, debris, environmental, insurance, nis2, registration, supervision, copuos, export-control, spectrum, uk-space, us-regulatory + digital-twin, evidence)
 - `/dashboard/documents` — Document vault
+- `/dashboard/generate` — AI document generation studio
 - `/dashboard/timeline` — Mission timeline & deadlines
 - `/dashboard/tracker` — Article-level compliance tracker
+- `/dashboard/astra` — Astra AI assistant (full-page chat)
+- `/dashboard/mission-control` — 3D satellite tracking globe
+- `/dashboard/ephemeris` — Satellite compliance forecasting
+- `/dashboard/sentinel` — Satellite telemetry monitoring
+- `/dashboard/optimizer` — Regulatory arbitrage optimizer
+- `/dashboard/network` — Stakeholder network & attestations
+- `/dashboard/nca-portal` — NCA submission pipeline
+- `/dashboard/audit-center` — Audit logs & evidence
+- `/dashboard/incidents` — Incident management (NIS2 phases)
+- `/dashboard/regulatory-feed` — Regulatory updates
+- `/dashboard/verity` — Compliance certificate management
 - `/dashboard/settings` — User settings + billing
-- `/dashboard/admin` — Admin panel (users, organizations)
+- `/dashboard/admin` — Admin panel (users, organizations, analytics)
 
-### API Domains (138 route files)
+### Assure Pages (Investor Due Diligence)
 
-`admin`, `assessment`, `audit`, `auth`, `authorization`, `careers`, `contact`, `cron`, `cybersecurity`, `dashboard`, `debris`, `documents`, `environmental`, `insurance`, `invitations`, `nca`, `nis2`, `notifications`, `organization`, `organizations`, `registration`, `reports`, `security`, `sessions`, `space-law`, `sso`, `stripe`, `supervision`, `supplier`, `timeline`, `tracker`, `user`, `v1`
+- `/assure/dashboard` — Assure main dashboard
+- `/assure/profile/[section]` — Company profile builder (8 sections)
+- `/assure/benchmarks` — Peer benchmark comparison
+- `/assure/risks`, `/assure/risks/scenarios` — Risk register & scenario analysis
+- `/assure/materials`, `/assure/dataroom` — Materials & data room management
+- `/assure/investors` — Investor management & updates
 
-## Compliance Engines (server-only)
+### Academy Pages (Training)
 
-### EU Space Act Engine (`src/lib/engine.server.ts`)
+- `/academy/dashboard` — Learner progress
+- `/academy/courses` — Course catalog
+- `/academy/classroom` — Interactive classroom
+- `/academy/simulations` — Scenario simulations
+- `/academy/instructor` — Instructor portal
 
-- Maps 7 operator types (SCO, LO, LSO, ISOS, CAP, PDP, TCO) + ALL
-- Filters 119 articles by operator type via `applies_to` field
-- Determines regime (standard vs light) based on entity size
-- Calculates module statuses across 9 modules
-- Generates checklists (pre-authorization, ongoing, end-of-life)
-- Light regime: Art. 10 simplified requirements for small/research entities
+### API Domains (400 route files across 56 domains)
 
-### NIS2 Engine (`src/lib/nis2-engine.server.ts`)
+`academy`, `admin`, `analytics`, `assessment`, `assure`, `astra`, `audit`, `audit-center`, `auth`, `authorization`, `careers`, `contact`, `copuos`, `cron`, `cybersecurity`, `dashboard`, `debris`, `demo`, `digital-twin`, `documents`, `environmental`, `export-control`, `generate2`, `insurance`, `invitations`, `nca`, `nca-portal`, `network`, `newsletter`, `nis2`, `notifications`, `onboarding`, `organization`, `organizations`, `public`, `registration`, `regulatory-feed`, `reports`, `satellites`, `security`, `sessions`, `space-law`, `spectrum`, `sso`, `stakeholder`, `stripe`, `supervision`, `supplier`, `timeline`, `tracker`, `uk-space`, `unified`, `us-regulatory`, `user`, `v1`, `widget`
 
-- Classifies entities as essential/important/out-of-scope per Art. 2-3
-- Space-specific exceptions (SATCOM, ground infra, launch services)
-- 51 requirements mapped to Art. 21(2) measures (a)-(j) + Art. 23/27/29
-- Incident timeline: 24h early warning, 72h notification, 1 month final report
-- Penalties: EUR 10M or 2% (essential), EUR 7M or 1.4% (important)
+## Compliance Engines (32 server-only files)
 
-### Space Law Engine (`src/lib/space-law-engine.server.ts`)
+All engines use `*.server.ts` extension and `import "server-only"` — never bundled to client.
 
-- 10 jurisdictions: FR, UK, BE, NL, LU, AT, DK, DE, IT, NO
-- Favorability scoring with weighted factors
-- Multi-jurisdiction comparison matrices
-- EU Space Act cross-references (47 mappings)
+### Core Assessment Engines
 
-## Database Models (Key Ones)
+| Engine                | File                              | Coverage                                                             |
+| --------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| EU Space Act          | `engine.server.ts`                | 7 operator types, 119 articles, 9 modules, standard/light regime     |
+| NIS2 Directive        | `nis2-engine.server.ts`           | Essential/important/out-of-scope, 51 requirements, incident timeline |
+| National Space Law    | `space-law-engine.server.ts`      | 10 jurisdictions, favorability scoring, 47 cross-references          |
+| UK Space Industry Act | `uk-space-engine.server.ts`       | UK-specific assessment                                               |
+| US Regulatory         | `us-regulatory-engine.server.ts`  | FCC/FAA/ITAR                                                         |
+| COPUOS/IADC           | `copuos-engine.server.ts`         | Debris mitigation guidelines                                         |
+| Export Control        | `export-control-engine.server.ts` | ITAR/EAR requirement mapping                                         |
+| Spectrum/ITU          | `spectrum-engine.server.ts`       | Frequency licensing                                                  |
+| NIS2 Auto             | `nis2-auto-assessment.server.ts`  | Automated classification from operator profile                       |
+| Unified               | `unified-engine-merger.server.ts` | Multi-regulation result aggregation                                  |
+| RRS                   | `rrs-engine.server.ts`            | Regulatory Readiness Score (Assure)                                  |
+| RCR                   | `rcr-engine.server.ts`            | Regulatory Credit Rating (Assure)                                    |
+
+### Security Engines
+
+`mfa.server.ts`, `webauthn.server.ts`, `login-security.server.ts`, `audit-hash.server.ts`, `anomaly-detection.server.ts`, `hmac-signing.server.ts`, `honey-tokens.server.ts`, `cors.server.ts`, `cache.server.ts`
+
+### Astra AI Engine (`src/lib/astra/`)
+
+- `engine.ts` — `AstraEngine` class, Anthropic tool-use loop (max 10 iterations), `claude-sonnet-4-6`
+- `tool-executor.ts` — Tool execution (2,046 LOC)
+- `tool-definitions.ts` — Tool definitions passed to Anthropic API
+- `context-builder.ts` — Fetches compliance scores, assessments, workflows from DB
+- `conversation-manager.ts` — Prisma-backed persistence with auto-summarization
+- `regulatory-knowledge/` — Static knowledge files (EU Space Act, NIS2, jurisdictions, glossary)
+
+### Ephemeris Engine (`src/lib/ephemeris/`)
+
+- `core/satellite-compliance-state.ts` — Live compliance state from orbital data
+- `forecast/forecast-engine.ts` — Compliance forecast curves
+- `models/orbital-decay.ts`, `fuel-depletion.ts`, `subsystem-degradation.ts` — Physics models
+- `simulation/what-if-engine.ts` — Scenario simulation
+- `data/celestrak-adapter.ts` — CelesTrak TLE data adapter
+
+## Database Models (161 models, grouped by domain)
 
 ```
-User, Account, Session, VerificationToken     — Auth (NextAuth)
-Organization, OrganizationMember, Invitation  — Multi-tenancy
-Spacecraft                                     — Spacecraft registry
-AuthorizationWorkflow                          — Authorization processes
-CybersecurityAssessment, DebrisAssessment     — Module assessments
-EnvironmentalAssessment, InsuranceAssessment
-NIS2Assessment, SpaceLawAssessment
-Document, DocumentTemplate, DocumentLink       — Document vault
-SupervisionConfig, SupervisionReport          — Supervision
-IncidentReport, NCASubmission                 — Incident tracking
-Deadline, MissionPhase                        — Timeline
-Notification, NotificationPreference          — Notifications
-AuditLog, SecurityAuditLog                    — Audit trail
-ApiKey, Webhook, WebhookDelivery              — API v1
-Subscription, SubscriptionUsage, Invoice      — Billing (Stripe)
-ScheduledReport, ReportArchive                — Automated reports
-SupplierDataRequest                           — Supplier portal
-SSODomain                                      — Enterprise SSO
-Comment                                        — Collaboration
+Auth:           User, Account, Session, VerificationToken, MfaConfig, WebAuthnCredential,
+                LoginAttempt, LoginEvent, SecurityEvent, UserConsent, UserSession
+
+Multi-tenancy:  Organization, OrganizationMember, OrganizationInvitation, SSOConnection
+
+Spacecraft:     Spacecraft, SpaceObjectRegistration
+
+Assessments:    CybersecurityAssessment, DebrisAssessment, EnvironmentalAssessment,
+                InsuranceAssessment, NIS2Assessment, CopuosAssessment, UkSpaceAssessment,
+                UsRegulatoryAssessment, ExportControlAssessment, SpectrumAssessment
+                (each with *RequirementStatus child model)
+
+Authorization:  AuthorizationWorkflow, AuthorizationDocument
+
+Supervision:    SupervisionConfig, SupervisionReport, SupervisionCalendarEvent,
+                Incident, IncidentAsset, IncidentAttachment, IncidentNIS2Phase
+
+NCA Portal:     NCASubmission, NCACorrespondence, NCADocPackage, NCADocument, SubmissionPackage
+
+Documents:      Document, DocumentTemplate, DocumentAccessLog, DocumentComment,
+                DocumentShare, GeneratedDocument
+
+Timeline:       Deadline, MissionPhase, Milestone, ScheduledReport, ReportArchive
+
+Notifications:  Notification, NotificationLog, NotificationPreference
+
+Audit:          AuditLog (hash-chain), SecurityAuditLog, HoneyToken, HoneyTokenTrigger
+
+API/Billing:    ApiKey, ApiRequest, Webhook, WebhookDelivery, Subscription
+
+Astra AI:       AstraConversation, AstraMessage
+
+Assure:         AssureCompanyProfile, AssureFinancialProfile, AssureMarketProfile,
+                AssureTeamProfile, AssureTechProfile, AssureTractionProfile,
+                AssureRegulatoryProfile, AssureRisk, AssureMaterial, AssureMilestone,
+                AssureDDPackage, AssureDataRoom, AssureDataRoomDocument,
+                AssureDataRoomLink, AssureShareLink, InvestmentReadinessScore, RRSSnapshot
+
+Rating:         RegulatoryCreditRating, RegulatoryReadinessScore, RCRAppeal, RCRBenchmark
+
+Network:        StakeholderEngagement, DataRoom, DataRoomDocument, ComplianceAttestation
+
+Academy:        AcademyCourse, AcademyModule, AcademyLesson, AcademyEnrollment,
+                AcademyClassroom, AcademyBadge, AcademySimulationRun
+
+Ephemeris:      EphemerisForecast, OrbitalData, SolarFluxRecord, SatelliteAlert,
+                SatelliteComplianceState
+
+Sentinel:       SentinelAgent, SentinelPacket
+
+Verity:         VerityAttestation, VerityCertificate, VerityIssuerKey
+
+Analytics:      AnalyticsEvent, AnalyticsDailyAggregate, CustomerHealthScore
 ```
 
 ## Environment Variables
@@ -185,36 +292,64 @@ Comment                                        — Collaboration
 
 ### Optional
 
-| Variable                                                                       | Purpose             |
-| ------------------------------------------------------------------------------ | ------------------- |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`                                        | Google OAuth        |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`                          | SMTP email fallback |
-| `R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` | File storage        |
-| `LOGSNAG_TOKEN`                                                                | Event tracking      |
+| Variable                                                                       | Purpose                      |
+| ------------------------------------------------------------------------------ | ---------------------------- |
+| `ANTHROPIC_API_KEY`                                                            | Astra AI assistant (Claude)  |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`                                        | Google OAuth                 |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`                          | SMTP email (primary)         |
+| `SMTP_FROM` / `SMTP_FROM_NAME`                                                 | Sender address and name      |
+| `R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` | File storage (R2/S3)         |
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_AUTH_TOKEN`                                 | Sentry client-side + deploys |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`                                           | Stripe client-side           |
+| `NEXT_PUBLIC_APP_URL`                                                          | Public URL (CSRF, emails)    |
+| `LOGSNAG_TOKEN`                                                                | Event tracking               |
+| `ADMIN_EMAILS`                                                                 | Admin seed script (CSV)      |
 
 ## Commands
 
 ```bash
-npm run dev           # Development server
-npm run build         # Production build (prisma generate + next build)
-npm run start         # Start production server
-npm run lint          # ESLint check
-npm run typecheck     # TypeScript type check (tsc --noEmit)
-npm run test          # Run Vitest (unit + integration)
-npm run test:run      # Run tests once (no watch)
-npm run test:coverage # Run tests with coverage report
-npm run test:e2e      # Run Playwright E2E tests
-npm run test:all      # Run all tests (Vitest + Playwright)
-npm run db:push       # Push Prisma schema to database
-npm run db:generate   # Generate Prisma client
-npm run db:studio     # Open Prisma Studio
+# Core
+npm run dev              # Development server
+npm run build            # Production build (prisma generate + next build)
+npm run build:deploy     # Production build with migration (generate + migrate deploy + build)
+npm run start            # Start production server
+npm run lint             # ESLint check
+npm run typecheck        # TypeScript type check (tsc --noEmit)
+
+# Testing (39 scripts total)
+npm run test             # Run Vitest (watch mode)
+npm run test:run         # Run tests once (no watch)
+npm run test:unit        # Unit tests only (tests/unit)
+npm run test:integration # Integration tests only (tests/integration)
+npm run test:contracts   # Contract tests only (tests/contracts)
+npm run test:coverage    # Tests with coverage report
+npm run test:ci          # CI mode (coverage + JUnit output)
+npm run test:e2e         # Playwright E2E tests
+npm run test:e2e:ui      # Playwright with UI
+npm run test:e2e:a11y    # Accessibility E2E tests
+npm run test:e2e:visual  # Visual regression tests
+npm run test:mutation    # Stryker mutation testing
+npm run test:all         # All tests (Vitest + Playwright)
+
+# Database
+npm run db:push          # Push Prisma schema (no migration)
+npm run db:generate      # Generate Prisma client
+npm run db:migrate       # Deploy migrations (production)
+npm run db:migrate:dev   # Create new migration (development)
+npm run db:migrate:reset # Reset database (destructive)
+npm run db:studio        # Open Prisma Studio
+
+# Other
+npm run security:audit   # npm audit (moderate+)
+npm run lighthouse       # Lighthouse CI
+npm run build:widget     # Build embeddable widget
 ```
 
 ## Code Conventions
 
 - **Server-only files:** `*.server.ts` — Never bundled to client. Import `server-only` package.
 - **Input validation:** Centralized Zod schemas in `src/lib/validations.ts`
-- **Rate limiting:** `src/lib/ratelimit.ts` — Upstash Redis with 7 tiers (api, auth, registration, assessment, export, sensitive, supplier)
+- **Rate limiting:** `src/lib/ratelimit.ts` — Upstash Redis sliding window with 19 tiers: `api` (100/min), `auth` (5/min), `registration` (3/hr), `assessment` (10/hr), `export` (20/hr), `sensitive` (5/hr), `supplier` (30/hr), `document_generation` (5/hr), `nca_portal` (30/hr), `nca_package` (10/hr), `public_api` (5/hr), `widget` (30/hr), `mfa` (5/min), `generate2` (20/hr), `admin` (30/min), `contact` (5/hr), `assure` (30/hr), `assure_public` (10/hr), `academy` (30/min). In-memory fallback with ~50% lower limits for dev.
 - **Encryption:** `src/lib/encryption.ts` — AES-256-GCM for VAT numbers, bank accounts, tax IDs, policy numbers
 - **Auth helpers:** `src/lib/auth.ts` (NextAuth config) + `src/lib/api-auth.ts` (API key auth)
 - **Audit logging:** `src/lib/audit.ts` — Full trail with IP, user-agent, entity changes
@@ -224,11 +359,17 @@ npm run db:studio     # Open Prisma Studio
 ## Security
 
 - **CSRF:** Origin header validation in middleware + CSRF tokens on state-changing requests
-- **Rate limiting:** Upstash Redis sliding window (7 tiers, IP-based + user-based)
-- **Brute force:** 5 login attempts per 15 minutes, event logging
+- **Rate limiting:** Upstash Redis sliding window (19 tiers, IP-based + user-based), in-memory fallback for dev
+- **IP resolution:** 4-layer trust: cf-connecting-ip → x-real-ip → rightmost x-forwarded-for → "unknown" (strict)
+- **Brute force:** 5 login attempts per 15 minutes, event logging, `LoginAttempt` + `LoginEvent` models
+- **MFA:** TOTP with QR setup + backup codes, WebAuthn/FIDO2 hardware keys (`MfaConfig`, `WebAuthnCredential`)
 - **Bot detection:** User-Agent blocking + timing validation on assessment endpoints
 - **Headers:** CSP, HSTS (2yr preload), X-Frame-Options DENY, Permissions-Policy
-- **Encryption:** AES-256-GCM with scrypt key derivation for sensitive DB fields
+- **Encryption:** AES-256-GCM with scrypt key derivation for sensitive DB fields (VAT, bank, tax, policy numbers)
+- **Per-org encryption:** Unique encryption key per tenant, derived from org ID + master key
+- **Audit hash chain:** SHA-256 linking — each `AuditLog` entry references previous hash, tamper-evident trail
+- **Honey tokens:** `HoneyToken` / `HoneyTokenTrigger` models for intrusion detection
+- **Anomaly detection:** `anomaly-detection.server.ts` — behavioral analysis engine
 - **Password hashing:** Bcrypt with 12 rounds
 - **Source maps:** Disabled in production (`hideSourceMaps: true`)
 - **Secrets:** All externalized to env vars, zero hardcoded
@@ -309,15 +450,32 @@ text-display-lg 48px  Hero headlines
 - Buttons: `bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-6 py-3`
 - Transitions: Framer Motion for wizard steps, `transition-all duration-200` for hovers
 
-## Cron Jobs (Vercel)
+## Cron Jobs (17 Vercel cron routes)
 
-- `/api/cron/deadline-reminders` — Daily at 8:00 AM UTC
-- `/api/cron/document-expiry` — Daily at 9:00 AM UTC
-- `/api/cron/generate-scheduled-reports` — Weekly Monday at 6:00 AM UTC
+| Route                                  | Schedule             | Purpose                               |
+| -------------------------------------- | -------------------- | ------------------------------------- |
+| `/api/cron/compliance-snapshot`        | Daily 01:00          | Snapshot org compliance scores        |
+| `/api/cron/analytics-aggregate`        | Daily 02:00          | Aggregate analytics events            |
+| `/api/cron/data-retention-cleanup`     | Daily 03:00          | GDPR data retention cleanup           |
+| `/api/cron/solar-flux-polling`         | Daily 04:00          | Fetch solar flux data for ephemeris   |
+| `/api/cron/celestrak-polling`          | Daily 05:00          | Fetch TLE data from CelesTrak         |
+| `/api/cron/ephemeris-daily`            | Daily 06:00          | Run daily ephemeris forecasts         |
+| `/api/cron/generate-scheduled-reports` | Mon 06:00            | Generate scheduled compliance reports |
+| `/api/cron/regulatory-feed`            | Daily 07:00          | Poll regulatory update sources        |
+| `/api/cron/compute-rrs`                | Daily 07:00          | Compute Regulatory Readiness Scores   |
+| `/api/cron/compute-rcr`                | Daily 07:30          | Compute Regulatory Credit Ratings     |
+| `/api/cron/deadline-reminders`         | Daily 08:00          | Email deadline reminders              |
+| `/api/cron/document-expiry`            | Daily 09:00          | Check and notify document expirations |
+| `/api/cron/onboarding-emails`          | Daily 10:00          | Drip onboarding email sequences       |
+| `/api/cron/churn-detection`            | Daily 10:00          | Detect at-risk customers              |
+| `/api/cron/reengagement`               | Daily 11:00          | Re-engagement email campaigns         |
+| `/api/cron/demo-followup`              | Daily 12:00          | Follow up on demo requests            |
+| `/api/cron/nca-deadlines`              | (not in vercel.json) | NCA submission deadline tracking      |
 
 ## Deployment
 
 - **Platform:** Vercel (auto-deploy on push)
-- **Database:** Neon PostgreSQL (serverless)
-- **Node.js:** >= 18.0.0 required
+- **Database:** Neon PostgreSQL (serverless, connection pooling)
+- **Node.js:** v20 (pinned in `.nvmrc`)
 - **Build:** `prisma generate && next build`
+- **Cron:** 16 Vercel cron jobs configured in `vercel.json`, authenticated via `CRON_SECRET`
