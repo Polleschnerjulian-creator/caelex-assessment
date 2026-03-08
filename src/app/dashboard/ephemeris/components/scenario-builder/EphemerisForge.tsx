@@ -46,9 +46,9 @@ interface EphemerisForgeProps {
   onBack: () => void;
 }
 
-// ─── Ghost Hint (shown when canvas is empty) ────────────────────────────────
+// ─── Ghost Hint (static overlay, centered in canvas viewport) ───────────────
 
-function GhostHint() {
+function GhostHint({ visible }: { visible: boolean }) {
   return (
     <div
       style={{
@@ -57,15 +57,16 @@ function GhostHint() {
         left: "50%",
         transform: "translate(-50%, -50%)",
         pointerEvents: "none",
-        zIndex: 1,
+        zIndex: 5,
         textAlign: "center",
-        opacity: 0.45,
+        opacity: visible ? 1 : 0,
+        transition: "opacity 500ms ease",
       }}
     >
       <div
         style={{
           fontSize: 14,
-          color: "#64748B",
+          color: "#9CA3AF",
           fontWeight: 500,
           lineHeight: 1.5,
         }}
@@ -75,8 +76,9 @@ function GhostHint() {
       <div
         style={{
           fontSize: 11,
-          color: "#94A3B8",
+          color: "#9CA3AF",
           marginTop: 6,
+          opacity: 0.7,
         }}
       >
         Press{" "}
@@ -339,8 +341,8 @@ function EphemerisForgeInner({
         )}
       </ReactFlow>
 
-      {/* Ghost Hint */}
-      {isCanvasEmpty && <GhostHint />}
+      {/* Ghost Hint — fades out when first ScenarioNode is added */}
+      <GhostHint visible={isCanvasEmpty} />
 
       {/* Floating Glass Toolbar */}
       <ForgeToolbar

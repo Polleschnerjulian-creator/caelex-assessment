@@ -489,6 +489,17 @@ export default function Sidebar({
   const collapsed = forgeMode ? isLg && !forgeExpanded : isCollapsed && isLg;
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
 
+  // Broadcast sidebar width so Forge overlays (BlockPalette) can follow
+  useEffect(() => {
+    if (forgeMode) {
+      window.dispatchEvent(
+        new CustomEvent("sidebar-width-change", {
+          detail: { width: sidebarWidth },
+        }),
+      );
+    }
+  }, [forgeMode, sidebarWidth]);
+
   // Active group detection
   const getActiveGroup = (): string | null => {
     if (EU_MODULES.some((m) => pathname.startsWith(m))) return "eu";

@@ -418,10 +418,10 @@ export default function SatelliteDetailPage({
           </div>
         </div>
 
-        {/* ── Metrics Strip ─────────────────────────────────────────────────── */}
+        {/* ── Metrics Strip (hidden in scenarios mode) ────────────────────── */}
         <div
           style={{
-            display: "grid",
+            display: activeTab === "scenarios" ? "none" : "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
             borderBottom: `1px solid ${C.border}`,
           }}
@@ -553,7 +553,7 @@ export default function SatelliteDetailPage({
             <ModulesTab modules={state.modules} C={C} />
           )}
           {activeTab === "scenarios" && (
-            <div style={{ flex: 1, minHeight: "calc(100vh - 180px)" }}>
+            <div style={{ flex: 1, minHeight: "calc(100vh - 100px)" }}>
               <EphemerisForge
                 noradId={noradId}
                 satelliteName={state?.satelliteName ?? noradId}
@@ -572,7 +572,9 @@ export default function SatelliteDetailPage({
           )}
         </div>
       </div>
-      <AlertsSidebar alerts={sidebarAlerts} noradId={noradId} />
+      {activeTab !== "scenarios" && (
+        <AlertsSidebar alerts={sidebarAlerts} noradId={noradId} />
+      )}
     </div>
   );
 }

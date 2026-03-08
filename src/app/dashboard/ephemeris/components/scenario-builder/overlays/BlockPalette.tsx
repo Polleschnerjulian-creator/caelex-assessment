@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Search,
   ChevronRight,
@@ -40,6 +40,20 @@ export default function BlockPalette({
     () => new Set(BLOCK_CATEGORIES.map((c) => c.id)),
   );
 
+  // Track sidebar width for dynamic left position
+  const [sidebarWidth, setSidebarWidth] = useState(72);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSidebarWidth(detail.width);
+    };
+    window.addEventListener("sidebar-width-change", handler);
+    return () => window.removeEventListener("sidebar-width-change", handler);
+  }, []);
+
+  // left = sidebar left (12) + sidebar width + gap (8)
+  const paletteLeft = 12 + sidebarWidth + 8;
+
   const filteredGroups = useMemo(() => {
     if (!query.trim()) return BLOCKS_BY_CATEGORY;
     const q = query.toLowerCase();
@@ -74,7 +88,7 @@ export default function BlockPalette({
 
   const glassBase: React.CSSProperties = {
     position: "fixed",
-    left: 80,
+    left: paletteLeft,
     top: 72,
     bottom: 24,
     zIndex: 40,
@@ -84,7 +98,7 @@ export default function BlockPalette({
     border: `1px solid ${GLASS.border}`,
     borderRadius: GLASS.panelRadius,
     boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
-    transition: "width 200ms ease, opacity 200ms ease",
+    transition: "left 200ms ease, width 200ms ease, opacity 200ms ease",
     overflow: "hidden",
   };
 

@@ -69,9 +69,9 @@ function ScenarioNode({ id, data }: NodeProps) {
   const isDone = d.computeState === "done";
   const hasResult = isDone && d.stepResult !== null;
 
-  // Zoom detail levels
+  // Zoom detail levels — full controls at normal zoom, summary when zoomed out
   const showParams = zoom >= 0.5;
-  const showFullControls = zoom > 1.0;
+  const showFullControls = zoom >= 0.6;
 
   return (
     <div className="forge-node-spawn" style={nodeStyle(categoryColor)}>
