@@ -90,16 +90,7 @@ export default function DemoPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] text-white relative overflow-hidden">
-      {/* Ambient background glow */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(74,98,232,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(16,185,129,0.05) 0%, transparent 60%)",
-        }}
-      />
-
+    <div className="landing-light min-h-screen bg-[#ecedf1] text-[#111118] relative overflow-hidden">
       {/* Navigation */}
       <motion.nav
         initial={{ opacity: 0, y: -10 }}
@@ -108,9 +99,9 @@ export default function DemoPage() {
         className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 pt-8 flex items-center justify-between"
       >
         <Link href="/" className="flex items-center gap-2.5">
-          <CaelexIcon size={28} className="text-white" />
+          <CaelexIcon size={28} className="text-[#111118]" />
           <span
-            className="text-[18px] font-semibold text-white"
+            className="text-[18px] font-semibold text-[#111118]"
             style={{ letterSpacing: "-0.01em" }}
           >
             caelex
@@ -118,7 +109,7 @@ export default function DemoPage() {
         </Link>
         <Link
           href="/"
-          className="flex items-center gap-2 text-[13px] text-[#8a8aa0] hover:text-white transition-colors duration-200"
+          className="flex items-center gap-2 text-[13px] text-[#8e8ea0] hover:text-[#111118] transition-colors duration-200"
         >
           <ArrowLeft size={14} />
           Back
@@ -135,7 +126,7 @@ export default function DemoPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-400/80 mb-6">
+              <span className="inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8e8ea0] mb-6">
                 Book a Demo
               </span>
 
@@ -143,13 +134,13 @@ export default function DemoPage() {
                 className="font-bold leading-[1.05] tracking-[-0.03em] mb-6"
                 style={{ fontSize: "clamp(32px, 5vw, 56px)" }}
               >
-                <span className="text-white">See the platform</span>
+                <span className="text-[#111118]">See the platform</span>
                 <br />
-                <span className="text-[#4a4a6a]">before you commit.</span>
+                <span className="text-[#b8b8c8]">before you commit.</span>
               </h1>
 
               <p
-                className="text-[#94A3B8] leading-relaxed max-w-lg mb-12"
+                className="text-[#5c5c72] leading-relaxed max-w-lg mb-12"
                 style={{ fontSize: "clamp(15px, 1.8vw, 17px)" }}
               >
                 15 minutes. Tailored to your operator type, jurisdiction, and
@@ -170,17 +161,21 @@ export default function DemoPage() {
                     <div
                       className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 mt-0.5"
                       style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        background: "rgba(255,255,255,0.7)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255,255,255,0.8)",
+                        boxShadow:
+                          "0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",
                       }}
                     >
-                      <item.icon size={16} className="text-[#E2E8F0]" />
+                      <item.icon size={16} className="text-[#111118]" />
                     </div>
                     <div>
-                      <h3 className="text-[14px] font-semibold text-[#E2E8F0] mb-0.5">
+                      <h3 className="text-[14px] font-semibold text-[#111118] mb-0.5">
                         {item.title}
                       </h3>
-                      <p className="text-[13px] text-[#64748B] leading-relaxed">
+                      <p className="text-[13px] text-[#8e8ea0] leading-relaxed">
                         {item.description}
                       </p>
                     </div>
@@ -189,7 +184,7 @@ export default function DemoPage() {
               </div>
 
               {/* Trust signals */}
-              <div className="flex items-center gap-5 text-[12px] text-[#4a4a6a]">
+              <div className="flex items-center gap-5 text-[12px] text-[#8e8ea0]">
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} />
                   <span>15 min</span>
@@ -215,12 +210,12 @@ export default function DemoPage() {
               <div
                 className="rounded-[22px] p-8 md:p-10"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
+                  background: "rgba(255,255,255,0.72)",
                   backdropFilter: "blur(40px) saturate(1.8)",
                   WebkitBackdropFilter: "blur(40px) saturate(1.8)",
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.75)",
                   boxShadow:
-                    "0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.15)",
+                    "0 8px 32px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.015)",
                 }}
               >
                 {submitted ? (
@@ -228,31 +223,25 @@ export default function DemoPage() {
                     <div
                       className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
                       style={{
-                        background: "rgba(16,185,129,0.1)",
-                        border: "1px solid rgba(16,185,129,0.2)",
+                        background: "rgba(0,0,0,0.04)",
+                        border: "1px solid rgba(0,0,0,0.06)",
                       }}
                     >
-                      <CheckCircle size={28} className="text-emerald-400" />
+                      <CheckCircle size={28} className="text-[#111118]" />
                     </div>
                     <h3
-                      className="font-bold text-white mb-2"
+                      className="font-bold text-[#111118] mb-2"
                       style={{ fontSize: "clamp(18px, 2.5vw, 24px)" }}
                     >
                       You&apos;re on the list.
                     </h3>
-                    <p className="text-[14px] text-[#94A3B8] mb-8 max-w-sm mx-auto">
+                    <p className="text-[14px] text-[#5c5c72] mb-8 max-w-sm mx-auto">
                       We&apos;ll reach out within 24 hours to schedule your
                       personalized walkthrough.
                     </p>
                     <Link
                       href="/assessment"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[14px] font-medium transition-all duration-200 hover:-translate-y-px"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                        boxShadow:
-                          "0 4px 16px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
-                      }}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111118] text-white text-[14px] font-medium transition-all duration-200 hover:bg-[#2a2a3a] hover:-translate-y-px"
                     >
                       Try Free Assessment
                       <ArrowRight size={14} />
@@ -261,10 +250,10 @@ export default function DemoPage() {
                 ) : (
                   <>
                     <div className="mb-8">
-                      <h2 className="text-[20px] font-bold text-white mb-1">
+                      <h2 className="text-[20px] font-bold text-[#111118] mb-1">
                         Request a demo
                       </h2>
-                      <p className="text-[13px] text-[#64748B]">
+                      <p className="text-[13px] text-[#8e8ea0]">
                         Free &middot; 15 minutes &middot; No credit card
                       </p>
                     </div>
@@ -273,7 +262,7 @@ export default function DemoPage() {
                       <div>
                         <label
                           htmlFor="demo-name"
-                          className="block text-[11px] font-semibold text-[#94A3B8] uppercase tracking-[0.1em] mb-2"
+                          className="block text-[11px] font-semibold text-[#5c5c72] uppercase tracking-[0.1em] mb-2"
                         >
                           Name
                         </label>
@@ -285,26 +274,18 @@ export default function DemoPage() {
                           placeholder="Your name"
                           required
                           autoComplete="name"
-                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-[#4a4a6a] outline-none transition-colors duration-200"
+                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-[#111118] placeholder:text-[#b8b8c8] outline-none transition-colors duration-200 focus:border-[#111118]"
                           style={{
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "rgba(0,0,0,0.025)",
+                            border: "1px solid rgba(0,0,0,0.06)",
                           }}
-                          onFocus={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.2)")
-                          }
-                          onBlur={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.08)")
-                          }
                         />
                       </div>
 
                       <div>
                         <label
                           htmlFor="demo-email"
-                          className="block text-[11px] font-semibold text-[#94A3B8] uppercase tracking-[0.1em] mb-2"
+                          className="block text-[11px] font-semibold text-[#5c5c72] uppercase tracking-[0.1em] mb-2"
                         >
                           Work email
                         </label>
@@ -316,26 +297,18 @@ export default function DemoPage() {
                           placeholder="you@company.com"
                           required
                           autoComplete="email"
-                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-[#4a4a6a] outline-none transition-colors duration-200"
+                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-[#111118] placeholder:text-[#b8b8c8] outline-none transition-colors duration-200 focus:border-[#111118]"
                           style={{
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "rgba(0,0,0,0.025)",
+                            border: "1px solid rgba(0,0,0,0.06)",
                           }}
-                          onFocus={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.2)")
-                          }
-                          onBlur={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.08)")
-                          }
                         />
                       </div>
 
                       <div>
                         <label
                           htmlFor="demo-company"
-                          className="block text-[11px] font-semibold text-[#94A3B8] uppercase tracking-[0.1em] mb-2"
+                          className="block text-[11px] font-semibold text-[#5c5c72] uppercase tracking-[0.1em] mb-2"
                         >
                           Company
                         </label>
@@ -347,30 +320,18 @@ export default function DemoPage() {
                           placeholder="Company name"
                           required
                           autoComplete="organization"
-                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-[#4a4a6a] outline-none transition-colors duration-200"
+                          className="w-full rounded-xl px-4 py-3.5 text-[14px] text-[#111118] placeholder:text-[#b8b8c8] outline-none transition-colors duration-200 focus:border-[#111118]"
                           style={{
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "rgba(0,0,0,0.025)",
+                            border: "1px solid rgba(0,0,0,0.06)",
                           }}
-                          onFocus={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.2)")
-                          }
-                          onBlur={(e) =>
-                            (e.target.style.borderColor =
-                              "rgba(255,255,255,0.08)")
-                          }
                         />
                       </div>
 
                       {error && (
                         <p
-                          className="text-[13px] text-red-400 rounded-lg px-4 py-2.5"
+                          className="text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5"
                           role="alert"
-                          style={{
-                            background: "rgba(239,68,68,0.08)",
-                            border: "1px solid rgba(239,68,68,0.15)",
-                          }}
                         >
                           {error}
                         </p>
@@ -379,13 +340,7 @@ export default function DemoPage() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full flex items-center justify-center gap-2 text-white text-[14px] font-medium px-6 py-4 rounded-xl transition-all duration-200 disabled:opacity-50 mt-2 hover:-translate-y-px"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                          boxShadow:
-                            "0 4px 16px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.12)",
-                        }}
+                        className="w-full flex items-center justify-center gap-2 bg-[#111118] text-white text-[14px] font-medium px-6 py-4 rounded-xl transition-all duration-200 disabled:opacity-50 mt-2 hover:bg-[#2a2a3a] hover:-translate-y-px"
                       >
                         {submitting ? (
                           <>
@@ -401,11 +356,11 @@ export default function DemoPage() {
                       </button>
                     </form>
 
-                    <p className="text-[11px] text-[#4a4a6a] text-center mt-5">
+                    <p className="text-[11px] text-[#b8b8c8] text-center mt-5">
                       By submitting, you agree to our{" "}
                       <Link
                         href="/legal/privacy"
-                        className="underline hover:text-[#94A3B8] transition-colors"
+                        className="underline hover:text-[#5c5c72] transition-colors"
                       >
                         Privacy Policy
                       </Link>
@@ -424,10 +379,12 @@ export default function DemoPage() {
           <div
             className="rounded-[22px] p-10 md:p-14"
             style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
+              background: "rgba(255,255,255,0.65)",
+              border: "1px solid rgba(255,255,255,0.75)",
+              backdropFilter: "blur(24px) saturate(1.6)",
+              WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+              boxShadow:
+                "0 4px 24px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8)",
             }}
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -441,12 +398,12 @@ export default function DemoPage() {
                   className="text-center"
                 >
                   <div
-                    className="font-bold text-white tracking-[-0.02em]"
+                    className="font-bold text-[#111118] tracking-[-0.02em]"
                     style={{ fontSize: "clamp(28px, 4vw, 44px)" }}
                   >
                     {stat.value}
                   </div>
-                  <div className="font-mono text-[11px] text-[#4a4a6a] uppercase tracking-[0.1em] mt-2">
+                  <div className="font-mono text-[11px] text-[#8e8ea0] uppercase tracking-[0.1em] mt-2">
                     {stat.label}
                   </div>
                 </motion.div>
@@ -469,22 +426,25 @@ export default function DemoPage() {
               className="font-bold leading-[1.1] tracking-[-0.03em] mb-4"
               style={{ fontSize: "clamp(24px, 4vw, 40px)" }}
             >
-              <span className="text-white">Rather explore on your own?</span>
+              <span className="text-[#111118]">
+                Rather explore on your own?
+              </span>
             </h2>
-            <p className="text-[15px] text-[#64748B] leading-relaxed mb-10 max-w-md mx-auto">
+            <p className="text-[15px] text-[#5c5c72] leading-relaxed mb-10 max-w-md mx-auto">
               The free assessment takes 5 minutes and gives you a full
               compliance profile — no account required.
             </p>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white text-[14px] font-medium transition-all duration-200 hover:-translate-y-px"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-[14px] font-medium transition-all duration-200 hover:-translate-y-px"
               style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.8)",
                 backdropFilter: "blur(16px)",
                 WebkitBackdropFilter: "blur(16px)",
                 boxShadow:
-                  "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  "0 2px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",
+                color: "#111118",
               }}
             >
               Start Free Assessment
@@ -496,7 +456,7 @@ export default function DemoPage() {
 
       {/* Footer line */}
       <div className="relative z-10 pb-12 text-center">
-        <p className="text-[11px] text-[#334155]">
+        <p className="text-[11px] text-[#b8b8c8]">
           &copy; {new Date().getFullYear()} Caelex. All rights reserved.
         </p>
       </div>
