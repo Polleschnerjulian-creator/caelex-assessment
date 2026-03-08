@@ -17,6 +17,11 @@ import type {
 } from "./types";
 import { getNoradId } from "./entity-adapter";
 import { calculateLaunchComplianceState } from "./launch-compliance-state";
+import { calculateISOSComplianceState } from "./isos-compliance-state";
+import { calculateLSOComplianceState } from "./lso-compliance-state";
+import { calculateCAPComplianceState } from "./cap-compliance-state";
+import { calculatePDPComplianceState } from "./pdp-compliance-state";
+import { calculateTCOComplianceState } from "./tco-compliance-state";
 import {
   calculateOverallScore,
   calculateModuleScore,
@@ -117,9 +122,29 @@ export async function calculateEntityComplianceState(
     return calculateLaunchComplianceState(entity, prisma);
   }
 
-  throw new Error(
-    `Operator type ${entity.operatorType} not yet supported in Ephemeris`,
-  );
+  if (entity.operatorType === "ISOS") {
+    return calculateISOSComplianceState(entity, prisma);
+  }
+
+  if (entity.operatorType === "LSO") {
+    return calculateLSOComplianceState(entity, prisma);
+  }
+
+  if (entity.operatorType === "CAP") {
+    return calculateCAPComplianceState(entity, prisma);
+  }
+
+  if (entity.operatorType === "PDP") {
+    return calculatePDPComplianceState(entity, prisma);
+  }
+
+  if (entity.operatorType === "TCO") {
+    return calculateTCOComplianceState(entity, prisma);
+  }
+
+  // Exhaustive check — all 7 OperatorTypes handled above
+  const _exhaustive: never = entity.operatorType as never;
+  throw new Error(`Operator type ${_exhaustive} not supported in Ephemeris`);
 }
 
 /**

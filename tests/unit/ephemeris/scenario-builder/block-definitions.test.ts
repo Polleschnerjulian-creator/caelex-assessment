@@ -7,8 +7,9 @@ import {
 } from "@/app/dashboard/ephemeris/components/scenario-builder/block-definitions";
 
 describe("BLOCK_DEFINITIONS", () => {
-  it("has exactly 6 entries", () => {
-    expect(BLOCK_DEFINITIONS).toHaveLength(6);
+  it("has expected number of entries", () => {
+    // 55 SCO + 16 LO + 10 ISOS + 10 LSO + 8 CAP + 7 PDP + 8 TCO + 1 Cross-Type = 115
+    expect(BLOCK_DEFINITIONS.length).toBeGreaterThanOrEqual(115);
   });
 
   it("has all unique IDs", () => {

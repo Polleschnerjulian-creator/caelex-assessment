@@ -53,6 +53,22 @@ const CATEGORY_SHORT: Record<BlockCategory, string> = {
   vehicle_anomalies: "VEH",
   range_environment: "RNG",
   launch_regulatory: "LRG",
+  proximity_operations: "PRX",
+  target_events: "TGT",
+  isos_regulatory: "ISR",
+  site_infrastructure: "SIT",
+  site_environmental: "SEV",
+  site_regulatory: "SRG",
+  capacity_management: "CAP",
+  service_operations: "SVC",
+  cap_regulatory: "CRG",
+  data_operations: "DAT",
+  data_security_events: "DSE",
+  pdp_regulatory: "PRG",
+  ground_operations: "GND",
+  command_events: "CMD",
+  tco_regulatory: "TRG",
+  cross_type: "DEP",
 };
 
 // ---------------------------------------------------------------------------

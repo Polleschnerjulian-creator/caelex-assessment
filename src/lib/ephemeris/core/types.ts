@@ -35,7 +35,8 @@ export type AlertType =
   | "REGULATORY_CHANGE"
   | "DATA_STALE"
   | "HORIZON_SHORTENED"
-  | "CA_EVENT";
+  | "CA_EVENT"
+  | "DEPENDENCY_IMPACT";
 
 export type EventType =
   | "BREACH"
@@ -493,6 +494,28 @@ export type WhatIfScenarioType =
   | "SANCTIONS_EXPORT_CONTROL"
   | "BUDGET_CUT"
   | "PARTNER_DEFAULT"
+  // ISOS-specific
+  | "ISOS_APPROACH_ABORT"
+  | "ISOS_KEEPOUT_ZONE_VIOLATION"
+  | "ISOS_RELATIVE_NAV_FAILURE"
+  | "ISOS_CAPTURE_MECHANISM_FAILURE"
+  | "ISOS_TARGET_TUMBLE_INCREASE"
+  | "ISOS_TARGET_DEBRIS_CLOUD"
+  | "ISOS_TARGET_NON_COOPERATION"
+  | "ISOS_AUTHORIZATION_CHANGE"
+  | "ISOS_DEBRIS_REMEDIATION_ORDER"
+  | "ISOS_OOS_STANDARD_CHANGE"
+  // LSO-specific
+  | "LSO_PAD_DAMAGE"
+  | "LSO_RANGE_RADAR_FAILURE"
+  | "LSO_FTS_SYSTEM_FAILURE"
+  | "LSO_WEATHER_STATION_OUTAGE"
+  | "LSO_NOISE_COMPLIANCE_VIOLATION"
+  | "LSO_EMISSION_LIMIT_BREACH"
+  | "LSO_WILDLIFE_IMPACT_ASSESSMENT"
+  | "LSO_SITE_LICENSE_CONDITION_CHANGE"
+  | "LSO_AIRSPACE_RESTRICTION_CHANGE"
+  | "LSO_NOTAM_CONFLICT"
   // Launch Operations (LO-specific)
   | "LO_LAUNCH_DELAY"
   | "LO_LAUNCH_WINDOW_CHANGE"
@@ -510,6 +533,34 @@ export type WhatIfScenarioType =
   | "LO_LAUNCH_LICENSE_CONDITION_CHANGE"
   | "LO_PAYLOAD_CLASSIFICATION_CHANGE"
   | "LO_TECHNOLOGY_TRANSFER_ISSUE"
+  // CAP-specific
+  | "CAP_SERVICE_OUTAGE"
+  | "CAP_CAPACITY_DEGRADATION"
+  | "CAP_SLA_BREACH"
+  | "CAP_GROUND_SEGMENT_FAILURE"
+  | "CAP_BANDWIDTH_SATURATION"
+  | "CAP_CUSTOMER_MIGRATION"
+  | "CAP_NIS2_CLASSIFICATION_CHANGE"
+  | "CAP_DATA_SOVEREIGNTY_CHANGE"
+  // PDP-specific
+  | "PDP_DATA_BREACH"
+  | "PDP_GROUND_STATION_OUTAGE"
+  | "PDP_QUALITY_DEGRADATION"
+  | "PDP_ARCHIVE_CORRUPTION"
+  | "PDP_DISTRIBUTION_VIOLATION"
+  | "PDP_NIS2_CLASSIFICATION_CHANGE"
+  | "PDP_DATA_SOVEREIGNTY_CHANGE"
+  // TCO-specific
+  | "TCO_COMMAND_LINK_LOSS"
+  | "TCO_TRACKING_ACCURACY_DEGRADATION"
+  | "TCO_GROUND_STATION_FAILURE"
+  | "TCO_ANTENNA_FAILURE"
+  | "TCO_TIMING_SYNCHRONIZATION_LOSS"
+  | "TCO_COMMAND_AUTHENTICATION_BREACH"
+  | "TCO_NIS2_CLASSIFICATION_CHANGE"
+  | "TCO_INTEROPERABILITY_FAILURE"
+  // Cross-Type
+  | "DEPENDENCY_FAILURE"
   // Legacy
   | "FUEL_BURN"
   | "CONSTELLATION_CHANGE";
@@ -752,6 +803,290 @@ export interface LaunchJurisdictionSimulation {
   strengths: string[];
   challenges: string[];
   narrative: string;
+}
+
+// ─── ISOS Types ─────────────────────────────────────────────────────────────
+
+export interface ISOSMissionProfile {
+  missionType:
+    | "servicing"
+    | "refueling"
+    | "debris_removal"
+    | "assembly"
+    | "inspection"
+    | "life_extension";
+  servicerNoradId?: string;
+  targetNoradId?: string;
+  targetName?: string;
+  targetOperator?: string;
+  approachMethod: "cooperative" | "non_cooperative";
+  captureMethod?:
+    | "robotic_arm"
+    | "net"
+    | "harpoon"
+    | "magnetic"
+    | "tentacles"
+    | "docking";
+  keepOutZoneKm: number;
+  plannedProximityDate?: Date;
+  missionDurationDays?: number;
+  hasTargetConsent: boolean;
+}
+
+export interface ProximityOperationsState {
+  currentDistanceKm: number | null;
+  approachVelocityMps: number | null;
+  relativeAttitude: "stable" | "drifting" | "tumbling" | null;
+  communicationStatus: "nominal" | "intermittent" | "lost" | null;
+  abortCapability: boolean;
+  fuelForAbortKg: number | null;
+}
+
+export type ISOSModuleKey =
+  | "mission_authorization"
+  | "proximity_operations"
+  | "fuel"
+  | "target_compliance"
+  | "cyber"
+  | "debris_risk"
+  | "insurance"
+  | "documentation";
+
+// ─── LSO Types ──────────────────────────────────────────────────────────────
+
+export interface LaunchSiteProfile {
+  locationType: "coastal" | "inland" | "offshore" | "airborne";
+  latitude: number;
+  longitude: number;
+  capabilities: ("orbital" | "suborbital" | "sounding_rocket" | "balloon")[];
+  maxLaunchRateYear: number;
+  padCount: number;
+  rangeLength: string;
+  environmentalZone?: string;
+}
+
+export interface GroundSystemHealth {
+  ftsStatus: "operational" | "degraded" | "offline" | null;
+  radarStatus: "operational" | "degraded" | "offline" | null;
+  telemetryStatus: "operational" | "degraded" | "offline" | null;
+  weatherStationStatus: "operational" | "degraded" | "offline" | null;
+  powerSystemStatus: "operational" | "degraded" | "offline" | null;
+  communicationsStatus: "operational" | "degraded" | "offline" | null;
+}
+
+export type LSOModuleKey =
+  | "site_authorization"
+  | "range_safety_systems"
+  | "environmental_compliance"
+  | "ground_infrastructure"
+  | "cyber"
+  | "insurance"
+  | "emergency_response"
+  | "documentation";
+
+// ─── CAP Types ──────────────────────────────────────────────────────────────
+
+export interface CapacityProviderProfile {
+  serviceType:
+    | "transponder_lease"
+    | "managed_service"
+    | "hosted_payload"
+    | "ground_segment";
+  bandwidthMhz: number;
+  coverageRegion: string;
+  uplinkSites: string[];
+  customerCount: number;
+  slaAvailabilityPct: number;
+  redundancyLevel: "none" | "partial" | "full";
+}
+
+export type CAPModuleKey =
+  | "service_authorization"
+  | "service_continuity"
+  | "capacity_management"
+  | "cyber"
+  | "sla_compliance"
+  | "insurance"
+  | "spectrum_coordination"
+  | "documentation";
+
+// ─── PDP Types ──────────────────────────────────────────────────────────────
+
+export interface PayloadDataProfile {
+  dataType:
+    | "earth_observation"
+    | "sar"
+    | "optical"
+    | "hyperspectral"
+    | "rf_monitoring"
+    | "weather";
+  processingLevel: "raw" | "l1" | "l2" | "l3" | "l4";
+  archiveSizeTb: number;
+  distributionChannels: string[];
+  securityClassification: "open" | "restricted" | "classified";
+  groundStationCount: number;
+  dailyAcquisitionGb: number;
+}
+
+export type PDPModuleKey =
+  | "data_authorization"
+  | "data_security"
+  | "data_quality"
+  | "cyber"
+  | "distribution_compliance"
+  | "insurance"
+  | "spectrum_rights"
+  | "documentation";
+
+// ─── TCO Types ──────────────────────────────────────────────────────────────
+
+export interface TCOFacilityProfile {
+  facilityType: "primary_moc" | "backup_moc" | "ground_station" | "relay";
+  antennaCount: number;
+  supportedBands: ("s_band" | "x_band" | "ka_band" | "uhf" | "vhf")[];
+  satellitesSupported: number;
+  commandEncryption: "aes256" | "triple_des" | "proprietary" | "none";
+  timingSource: "gps" | "cesium" | "rubidium" | "network";
+  ccsdsCompliant: boolean;
+  crossSupportCapable: boolean;
+}
+
+export interface TCOGroundStationHealth {
+  antennaStatus: "operational" | "degraded" | "offline" | null;
+  commandLinkStatus: "operational" | "degraded" | "offline" | null;
+  telemetryLinkStatus: "operational" | "degraded" | "offline" | null;
+  timingStatus: "operational" | "degraded" | "offline" | null;
+  powerSystemStatus: "operational" | "degraded" | "offline" | null;
+  networkStatus: "operational" | "degraded" | "offline" | null;
+}
+
+export type TCOModuleKey =
+  | "operations_authorization"
+  | "ground_infrastructure"
+  | "cyber"
+  | "command_integrity"
+  | "tracking_accuracy"
+  | "insurance"
+  | "interoperability"
+  | "documentation";
+
+// ─── Cross-Type Intelligence Types ──────────────────────────────────────────
+
+export type DependencyType =
+  | "TTC_PROVIDER"
+  | "LAUNCH_PROVIDER"
+  | "LAUNCH_SITE"
+  | "CAPACITY_SOURCE"
+  | "DATA_SOURCE"
+  | "SERVICING_TARGET"
+  | "DATA_PROVIDER"
+  | "GROUND_NETWORK"
+  | "INSURANCE_SHARED";
+
+export type DependencyStrength = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+export interface EntityDependencyInput {
+  sourceEntityId: string;
+  targetEntityId: string;
+  dependencyType: DependencyType;
+  strength: DependencyStrength;
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DependencyImpact {
+  sourceEntityId: string;
+  sourceEntityName: string;
+  sourceOperatorType: string;
+  targetEntityId: string;
+  targetEntityName: string;
+  targetOperatorType: string;
+  dependencyType: string;
+  strength: string;
+  impactScore: number;
+  propagatedScoreDelta: number;
+  propagatedHorizonDelta: number;
+  affectedModules: string[];
+  narrative: string;
+}
+
+export interface EntityDependencyGraph {
+  nodes: EntityGraphNode[];
+  edges: EntityGraphEdge[];
+  clusters: EntityCluster[];
+}
+
+export interface EntityGraphNode {
+  entityId: string;
+  name: string;
+  operatorType: string;
+  score: number;
+  horizon: number | null;
+  riskCategory: string;
+  dependencyCount: number;
+  dependentCount: number;
+  criticality: number;
+}
+
+export interface EntityGraphEdge {
+  sourceEntityId: string;
+  targetEntityId: string;
+  dependencyType: string;
+  strength: string;
+  impactMultiplier: number;
+}
+
+export interface EntityCluster {
+  id: string;
+  name: string;
+  entityIds: string[];
+  clusterScore: number;
+  weakestLink: string;
+  criticalPath: string[];
+}
+
+export interface CrossTypeImpactResult {
+  triggerEntityId: string;
+  triggerEvent: string;
+  directImpacts: DependencyImpact[];
+  cascadeImpacts: DependencyImpact[];
+  totalEntitiesAffected: number;
+  totalScoreImpact: number;
+  criticalPathLength: number;
+}
+
+export interface CrossTypeFleetIntelligence {
+  fleetScore: number;
+  entityCount: number;
+  riskDistribution: Record<string, number>;
+  dependencyGraph: EntityDependencyGraph;
+  singlePointsOfFailure: EntityGraphNode[];
+  riskConcentration: RiskConcentration[];
+  cascadeRisk: CascadeRiskAssessment;
+  typeCorrelation: TypeCorrelationMatrix;
+}
+
+export interface RiskConcentration {
+  clusterId: string;
+  clusterName: string;
+  riskLevel: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  reason: string;
+}
+
+export interface CascadeRiskAssessment {
+  maxCascadeDepth: number;
+  highRiskChains: CascadeChain[];
+}
+
+export interface CascadeChain {
+  entities: string[];
+  weakestScore: number;
+  weakestEntity: string;
+  chainType: string;
+}
+
+export interface TypeCorrelationMatrix {
+  correlations: { typeA: string; typeB: string; correlation: number }[];
 }
 
 // ─── Tracked Deadlines ───────────────────────────────────────────────────────

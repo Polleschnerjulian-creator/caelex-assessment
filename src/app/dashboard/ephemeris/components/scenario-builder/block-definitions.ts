@@ -41,7 +41,23 @@ export type BlockCategory =
   | "launch_operations"
   | "vehicle_anomalies"
   | "range_environment"
-  | "launch_regulatory";
+  | "launch_regulatory"
+  | "proximity_operations"
+  | "target_events"
+  | "isos_regulatory"
+  | "site_infrastructure"
+  | "site_environmental"
+  | "site_regulatory"
+  | "capacity_management"
+  | "service_operations"
+  | "cap_regulatory"
+  | "data_operations"
+  | "data_security_events"
+  | "pdp_regulatory"
+  | "ground_operations"
+  | "command_events"
+  | "tco_regulatory"
+  | "cross_type";
 
 export interface CategoryMeta {
   id: BlockCategory;
@@ -116,6 +132,105 @@ export const BLOCK_CATEGORIES: CategoryMeta[] = [
     label: "Launch Regulatory",
     icon: "FileCheck",
     color: "text-emerald-500",
+  },
+  {
+    id: "proximity_operations",
+    label: "Proximity Operations",
+    icon: "Target",
+    color: "text-violet-500",
+  },
+  {
+    id: "target_events",
+    label: "Target Events",
+    icon: "Crosshair",
+    color: "text-cyan-500",
+  },
+  {
+    id: "isos_regulatory",
+    label: "ISOS Regulatory",
+    icon: "FileCheck",
+    color: "text-emerald-500",
+  },
+  {
+    id: "site_infrastructure",
+    label: "Site Infrastructure",
+    icon: "Building",
+    color: "text-amber-500",
+  },
+  {
+    id: "site_environmental",
+    label: "Site Environmental",
+    icon: "Leaf",
+    color: "text-cyan-500",
+  },
+  {
+    id: "site_regulatory",
+    label: "Site Regulatory",
+    icon: "FileCheck",
+    color: "text-emerald-500",
+  },
+  // CAP categories
+  {
+    id: "capacity_management",
+    label: "Capacity Management",
+    icon: "Server",
+    color: "text-blue-500",
+  },
+  {
+    id: "service_operations",
+    label: "Service Operations",
+    icon: "Settings",
+    color: "text-cyan-500",
+  },
+  {
+    id: "cap_regulatory",
+    label: "CAP Regulatory",
+    icon: "FileCheck",
+    color: "text-blue-500",
+  },
+  // PDP categories
+  {
+    id: "data_operations",
+    label: "Data Operations",
+    icon: "Database",
+    color: "text-purple-500",
+  },
+  {
+    id: "data_security_events",
+    label: "Data Security Events",
+    icon: "ShieldAlert",
+    color: "text-red-500",
+  },
+  {
+    id: "pdp_regulatory",
+    label: "PDP Regulatory",
+    icon: "FileCheck",
+    color: "text-purple-500",
+  },
+  // TCO categories
+  {
+    id: "ground_operations",
+    label: "Ground Operations",
+    icon: "Radio",
+    color: "text-amber-500",
+  },
+  {
+    id: "command_events",
+    label: "Command Events",
+    icon: "Terminal",
+    color: "text-red-500",
+  },
+  {
+    id: "tco_regulatory",
+    label: "TCO Regulatory",
+    icon: "FileCheck",
+    color: "text-amber-500",
+  },
+  {
+    id: "cross_type",
+    label: "Cross-Type Dependencies",
+    icon: "GitBranch",
+    color: "text-violet-500",
   },
 ];
 
@@ -1748,6 +1863,1146 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
           "partner_country_restriction",
         ],
         defaultValue: "additional_review",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // ISOS — PROXIMITY OPERATIONS (4)
+  // =========================================================================
+  {
+    id: "isos-approach-abort",
+    name: "Approach Abort",
+    description: "Simulate aborting the approach to the target.",
+    icon: "ArrowLeftCircle",
+    color: "text-violet-500",
+    scenarioType: "ISOS_APPROACH_ABORT",
+    category: "proximity_operations",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "abortPhase",
+        label: "Phase",
+        options: [
+          "far_approach",
+          "close_approach",
+          "final_approach",
+          "docking",
+        ],
+        defaultValue: "close_approach",
+      },
+      {
+        type: "select",
+        key: "reason",
+        label: "Reason",
+        options: [
+          "target_tumble",
+          "sensor_failure",
+          "fuel_low",
+          "ground_command",
+          "collision_risk",
+        ],
+        defaultValue: "target_tumble",
+      },
+    ],
+  },
+  {
+    id: "isos-keepout-zone-violation",
+    name: "Keep-Out Zone Violation",
+    description: "Simulate an unintended entry into the target keep-out zone.",
+    icon: "ShieldAlert",
+    color: "text-violet-600",
+    scenarioType: "ISOS_KEEPOUT_ZONE_VIOLATION",
+    category: "proximity_operations",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "violationDistanceKm",
+        label: "Distance at Violation",
+        min: 0.01,
+        max: 10,
+        step: 0.1,
+        defaultValue: 0.5,
+        unit: "km",
+      },
+      {
+        type: "select",
+        key: "duration",
+        label: "Duration in Zone",
+        options: ["seconds", "minutes", "sustained"],
+        defaultValue: "minutes",
+      },
+    ],
+  },
+  {
+    id: "isos-relative-nav-failure",
+    name: "Relative Navigation Failure",
+    description: "Simulate failure of the relative navigation system.",
+    icon: "Compass",
+    color: "text-violet-400",
+    scenarioType: "ISOS_RELATIVE_NAV_FAILURE",
+    category: "proximity_operations",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "sensorType",
+        label: "Failed Sensor",
+        options: ["lidar", "camera", "radar", "gps_relative", "all"],
+        defaultValue: "lidar",
+      },
+      {
+        type: "select",
+        key: "redundancy",
+        label: "Backup Available",
+        options: ["yes", "degraded", "none"],
+        defaultValue: "degraded",
+      },
+    ],
+  },
+  {
+    id: "isos-capture-mechanism-failure",
+    name: "Capture Mechanism Failure",
+    description: "Simulate failure of the capture/docking mechanism.",
+    icon: "Hand",
+    color: "text-violet-500",
+    scenarioType: "ISOS_CAPTURE_MECHANISM_FAILURE",
+    category: "proximity_operations",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "failureType",
+        label: "Failure",
+        options: [
+          "partial_grip",
+          "no_grip",
+          "stuck_open",
+          "stuck_closed",
+          "misalignment",
+        ],
+        defaultValue: "partial_grip",
+      },
+      {
+        type: "select",
+        key: "retryPossible",
+        label: "Retry Possible",
+        options: ["yes", "no"],
+        defaultValue: "yes",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // ISOS — TARGET EVENTS (3)
+  // =========================================================================
+  {
+    id: "isos-target-tumble-increase",
+    name: "Target Tumble Rate Increase",
+    description: "Simulate the target satellite increasing its tumble rate.",
+    icon: "RotateCcw",
+    color: "text-cyan-500",
+    scenarioType: "ISOS_TARGET_TUMBLE_INCREASE",
+    category: "target_events",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "tumbleRate",
+        label: "Tumble Rate",
+        options: ["slow_stable", "moderate", "fast", "chaotic"],
+        defaultValue: "moderate",
+      },
+    ],
+  },
+  {
+    id: "isos-target-debris-cloud",
+    name: "Target Debris Cloud",
+    description: "Simulate debris generation near the target.",
+    icon: "Cloud",
+    color: "text-cyan-400",
+    scenarioType: "ISOS_TARGET_DEBRIS_CLOUD",
+    category: "target_events",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "source",
+        label: "Source",
+        options: [
+          "target_breakup",
+          "nearby_collision",
+          "nearby_explosion",
+          "micrometeoroid",
+        ],
+        defaultValue: "nearby_collision",
+      },
+      {
+        type: "select",
+        key: "debrisDensity",
+        label: "Density",
+        options: ["low", "medium", "high"],
+        defaultValue: "medium",
+      },
+    ],
+  },
+  {
+    id: "isos-target-non-cooperation",
+    name: "Target Owner Non-Cooperation",
+    description: "Simulate the target operator withdrawing cooperation.",
+    icon: "UserX",
+    color: "text-cyan-600",
+    scenarioType: "ISOS_TARGET_NON_COOPERATION",
+    category: "target_events",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "reason",
+        label: "Reason",
+        options: [
+          "commercial_dispute",
+          "regulatory_order",
+          "changed_plans",
+          "operator_bankrupt",
+        ],
+        defaultValue: "commercial_dispute",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // ISOS — ISOS REGULATORY (3)
+  // =========================================================================
+  {
+    id: "isos-authorization-change",
+    name: "ISOS Authorization Change (Art. 63)",
+    description: "Simulate a change in Art. 63 ISOS authorization conditions.",
+    icon: "FileEdit",
+    color: "text-emerald-500",
+    scenarioType: "ISOS_AUTHORIZATION_CHANGE",
+    category: "isos_regulatory",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "changeType",
+        label: "Change",
+        options: [
+          "keepout_zone_increase",
+          "additional_safety_review",
+          "insurance_increase",
+          "consent_revocation",
+          "approach_speed_limit",
+        ],
+        defaultValue: "keepout_zone_increase",
+      },
+    ],
+  },
+  {
+    id: "isos-debris-remediation-order",
+    name: "Debris Remediation Order",
+    description: "Simulate a regulatory order mandating debris removal.",
+    icon: "Trash2",
+    color: "text-emerald-400",
+    scenarioType: "ISOS_DEBRIS_REMEDIATION_ORDER",
+    category: "isos_regulatory",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "timelineDays",
+        label: "Compliance Timeline",
+        min: 30,
+        max: 730,
+        step: 30,
+        defaultValue: 180,
+        unit: "days",
+      },
+      {
+        type: "slider",
+        key: "targetCount",
+        label: "Objects to Remove",
+        min: 1,
+        max: 10,
+        step: 1,
+        defaultValue: 1,
+        unit: "",
+      },
+    ],
+  },
+  {
+    id: "isos-oos-standard-change",
+    name: "On-Orbit Servicing Standard Change",
+    description:
+      "Simulate a change in international OOS standards (CONFERS, ISO).",
+    icon: "BookOpen",
+    color: "text-emerald-500",
+    scenarioType: "ISOS_OOS_STANDARD_CHANGE",
+    category: "isos_regulatory",
+    operatorTypes: ["ISOS"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "standard",
+        label: "Standard",
+        options: [
+          "confers_best_practices",
+          "iso_24113_update",
+          "iadc_guidelines_update",
+          "national_regulation",
+        ],
+        defaultValue: "confers_best_practices",
+      },
+      {
+        type: "select",
+        key: "impact",
+        label: "Impact Level",
+        options: ["minor_update", "significant_change", "major_overhaul"],
+        defaultValue: "significant_change",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // LSO — SITE INFRASTRUCTURE (4)
+  // =========================================================================
+  {
+    id: "lso-pad-damage",
+    name: "Pad Damage",
+    description: "Simulate damage to a launch pad.",
+    icon: "Hammer",
+    color: "text-amber-500",
+    scenarioType: "LSO_PAD_DAMAGE",
+    category: "site_infrastructure",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["minor_surface", "structural", "major_destruction"],
+        defaultValue: "structural",
+      },
+      {
+        type: "select",
+        key: "padId",
+        label: "Affected Pad",
+        options: ["pad_1", "pad_2", "all_pads"],
+        defaultValue: "pad_1",
+      },
+      {
+        type: "slider",
+        key: "repairTimeDays",
+        label: "Est. Repair Time",
+        min: 7,
+        max: 365,
+        step: 7,
+        defaultValue: 90,
+        unit: "days",
+      },
+    ],
+  },
+  {
+    id: "lso-range-radar-failure",
+    name: "Range Radar Failure",
+    description: "Simulate failure of the range safety radar system.",
+    icon: "Radio",
+    color: "text-amber-400",
+    scenarioType: "LSO_RANGE_RADAR_FAILURE",
+    category: "site_infrastructure",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "failureType",
+        label: "Type",
+        options: ["degraded_accuracy", "intermittent", "total_failure"],
+        defaultValue: "degraded_accuracy",
+      },
+      {
+        type: "select",
+        key: "redundancyAvailable",
+        label: "Backup Radar",
+        options: ["yes", "no"],
+        defaultValue: "yes",
+      },
+    ],
+  },
+  {
+    id: "lso-fts-system-failure",
+    name: "FTS System Failure",
+    description: "Simulate a Flight Termination System failure.",
+    icon: "AlertOctagon",
+    color: "text-amber-600",
+    scenarioType: "LSO_FTS_SYSTEM_FAILURE",
+    category: "site_infrastructure",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "component",
+        label: "Failed Component",
+        options: [
+          "command_transmitter",
+          "destruct_receiver",
+          "safe_arm_device",
+          "software",
+        ],
+        defaultValue: "command_transmitter",
+      },
+    ],
+  },
+  {
+    id: "lso-weather-station-outage",
+    name: "Weather Station Outage",
+    description: "Simulate meteorological system failure.",
+    icon: "CloudOff",
+    color: "text-amber-400",
+    scenarioType: "LSO_WEATHER_STATION_OUTAGE",
+    category: "site_infrastructure",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "systemsAffected",
+        label: "Systems",
+        options: [
+          "wind_profiler",
+          "lightning_detection",
+          "upper_atmosphere",
+          "all",
+        ],
+        defaultValue: "wind_profiler",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // LSO — SITE ENVIRONMENTAL (3)
+  // =========================================================================
+  {
+    id: "lso-noise-compliance-violation",
+    name: "Noise Compliance Violation",
+    description: "Simulate exceeding noise limits during launch operations.",
+    icon: "VolumeX",
+    color: "text-cyan-500",
+    scenarioType: "LSO_NOISE_COMPLIANCE_VIOLATION",
+    category: "site_environmental",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "excessDb",
+        label: "Excess (dB)",
+        min: 1,
+        max: 30,
+        step: 1,
+        defaultValue: 5,
+        unit: "dB",
+      },
+    ],
+  },
+  {
+    id: "lso-emission-limit-breach",
+    name: "Emission Limit Breach",
+    description: "Simulate exceeding environmental emission limits.",
+    icon: "Wind",
+    color: "text-cyan-400",
+    scenarioType: "LSO_EMISSION_LIMIT_BREACH",
+    category: "site_environmental",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "emissionType",
+        label: "Type",
+        options: ["hcl", "alumina", "co2", "nox", "particulate"],
+        defaultValue: "hcl",
+      },
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["marginal", "significant", "major"],
+        defaultValue: "marginal",
+      },
+    ],
+  },
+  {
+    id: "lso-wildlife-impact-assessment",
+    name: "Wildlife Impact Assessment Required",
+    description: "Simulate a regulatory requirement for wildlife impact study.",
+    icon: "Bird",
+    color: "text-cyan-500",
+    scenarioType: "LSO_WILDLIFE_IMPACT_ASSESSMENT",
+    category: "site_environmental",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "species",
+        label: "Protected Species",
+        options: [
+          "marine_mammals",
+          "nesting_birds",
+          "migratory_species",
+          "multiple",
+        ],
+        defaultValue: "nesting_birds",
+      },
+      {
+        type: "slider",
+        key: "assessmentTimeDays",
+        label: "Assessment Duration",
+        min: 30,
+        max: 365,
+        step: 30,
+        defaultValue: 90,
+        unit: "days",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // LSO — SITE REGULATORY (3)
+  // =========================================================================
+  {
+    id: "lso-site-license-condition-change",
+    name: "Site License Condition Change",
+    description: "Simulate a change in launch site license conditions.",
+    icon: "FileEdit",
+    color: "text-emerald-500",
+    scenarioType: "LSO_SITE_LICENSE_CONDITION_CHANGE",
+    category: "site_regulatory",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "conditionType",
+        label: "Condition",
+        options: [
+          "launch_rate_reduction",
+          "operating_hours_restriction",
+          "additional_environmental_monitoring",
+          "safety_zone_expansion",
+          "insurance_increase",
+        ],
+        defaultValue: "launch_rate_reduction",
+      },
+    ],
+  },
+  {
+    id: "lso-airspace-restriction-change",
+    name: "Airspace Restriction Change",
+    description: "Simulate changes to airspace restrictions around the site.",
+    icon: "Plane",
+    color: "text-emerald-400",
+    scenarioType: "LSO_AIRSPACE_RESTRICTION_CHANGE",
+    category: "site_regulatory",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "changeType",
+        label: "Change",
+        options: [
+          "new_air_route",
+          "restricted_zone_expansion",
+          "temporary_flight_restriction",
+          "military_exercise",
+        ],
+        defaultValue: "new_air_route",
+      },
+    ],
+  },
+  {
+    id: "lso-notam-conflict",
+    name: "NOTAM Conflict",
+    description: "Simulate a conflict with a Notice to Air Missions.",
+    icon: "FileWarning",
+    color: "text-emerald-500",
+    scenarioType: "LSO_NOTAM_CONFLICT",
+    category: "site_regulatory",
+    operatorTypes: ["LSO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "conflictType",
+        label: "Conflict",
+        options: [
+          "overlapping_notam",
+          "military_priority",
+          "commercial_aviation_reroute",
+          "international_overflight",
+        ],
+        defaultValue: "overlapping_notam",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // CAP — CAPACITY MANAGEMENT (5)
+  // =========================================================================
+  {
+    id: "cap-service-outage",
+    name: "Service Outage",
+    description: "Simulate a partial or total service outage.",
+    icon: "WifiOff",
+    color: "text-blue-600",
+    scenarioType: "CAP_SERVICE_OUTAGE",
+    category: "capacity_management",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "scope",
+        label: "Scope",
+        options: ["partial", "total"],
+        defaultValue: "partial",
+      },
+      {
+        type: "slider",
+        key: "durationHours",
+        label: "Duration",
+        min: 1,
+        max: 720,
+        step: 1,
+        defaultValue: 24,
+        unit: "hours",
+      },
+    ],
+  },
+  {
+    id: "cap-capacity-degradation",
+    name: "Capacity Degradation",
+    description: "Simulate a reduction in available capacity.",
+    icon: "TrendingDown",
+    color: "text-blue-500",
+    scenarioType: "CAP_CAPACITY_DEGRADATION",
+    category: "capacity_management",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "degradationPct",
+        label: "Degradation",
+        min: 5,
+        max: 100,
+        step: 5,
+        defaultValue: 20,
+        unit: "%",
+      },
+    ],
+  },
+  {
+    id: "cap-sla-breach",
+    name: "SLA Breach",
+    description: "Simulate a service level agreement breach.",
+    icon: "FileX",
+    color: "text-blue-400",
+    scenarioType: "CAP_SLA_BREACH",
+    category: "capacity_management",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["minor", "major"],
+        defaultValue: "minor",
+      },
+      {
+        type: "slider",
+        key: "customersAffected",
+        label: "Customers Affected",
+        min: 1,
+        max: 50,
+        step: 1,
+        defaultValue: 1,
+        unit: "",
+      },
+    ],
+  },
+  {
+    id: "cap-ground-segment-failure",
+    name: "Ground Segment Failure",
+    description: "Simulate a failure in the ground segment infrastructure.",
+    icon: "ServerCrash",
+    color: "text-blue-500",
+    scenarioType: "CAP_GROUND_SEGMENT_FAILURE",
+    category: "capacity_management",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "component",
+        label: "Component",
+        options: ["noc", "gateway", "teleport", "monitoring"],
+        defaultValue: "noc",
+      },
+      {
+        type: "select",
+        key: "redundancy",
+        label: "Redundancy Available",
+        options: ["yes", "no"],
+        defaultValue: "yes",
+      },
+    ],
+  },
+  {
+    id: "cap-bandwidth-saturation",
+    name: "Bandwidth Saturation",
+    description: "Simulate bandwidth utilization reaching saturation.",
+    icon: "Gauge",
+    color: "text-blue-400",
+    scenarioType: "CAP_BANDWIDTH_SATURATION",
+    category: "capacity_management",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "utilizationPct",
+        label: "Utilization",
+        min: 80,
+        max: 110,
+        step: 1,
+        defaultValue: 95,
+        unit: "%",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // CAP — SERVICE OPERATIONS (1)
+  // =========================================================================
+  {
+    id: "cap-customer-migration",
+    name: "Customer Migration",
+    description: "Simulate a customer migration event.",
+    icon: "ArrowRightLeft",
+    color: "text-cyan-500",
+    scenarioType: "CAP_CUSTOMER_MIGRATION",
+    category: "service_operations",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "scale",
+        label: "Scale",
+        options: ["single", "batch", "fleet_wide"],
+        defaultValue: "single",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // CAP — CAP REGULATORY (2)
+  // =========================================================================
+  {
+    id: "cap-nis2-classification-change",
+    name: "NIS2 Classification Change",
+    description: "Simulate a change in NIS2 entity classification.",
+    icon: "Shield",
+    color: "text-blue-500",
+    scenarioType: "CAP_NIS2_CLASSIFICATION_CHANGE",
+    category: "cap_regulatory",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "newClassification",
+        label: "New Classification",
+        options: ["essential", "important", "out_of_scope"],
+        defaultValue: "essential",
+      },
+    ],
+  },
+  {
+    id: "cap-data-sovereignty-change",
+    name: "Data Sovereignty Change",
+    description: "Simulate a data sovereignty or jurisdiction change.",
+    icon: "Globe",
+    color: "text-blue-400",
+    scenarioType: "CAP_DATA_SOVEREIGNTY_CHANGE",
+    category: "cap_regulatory",
+    operatorTypes: ["CAP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "scope",
+        label: "Scope",
+        options: ["single_jurisdiction", "multi_jurisdiction"],
+        defaultValue: "single_jurisdiction",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // PDP — DATA OPERATIONS (3)
+  // =========================================================================
+  {
+    id: "pdp-data-breach",
+    name: "Data Breach",
+    description: "Simulate a data breach incident.",
+    icon: "ShieldOff",
+    color: "text-purple-600",
+    scenarioType: "PDP_DATA_BREACH",
+    category: "data_operations",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "dataType",
+        label: "Data Type",
+        options: ["imagery", "sar", "metadata", "restricted", "classified"],
+        defaultValue: "imagery",
+      },
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["minor", "major"],
+        defaultValue: "minor",
+      },
+    ],
+  },
+  {
+    id: "pdp-ground-station-outage",
+    name: "Ground Station Outage",
+    description: "Simulate a ground station outage affecting data acquisition.",
+    icon: "Radio",
+    color: "text-purple-500",
+    scenarioType: "PDP_GROUND_STATION_OUTAGE",
+    category: "data_operations",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "stationsAffected",
+        label: "Stations Affected",
+        options: ["single", "multiple", "all"],
+        defaultValue: "single",
+      },
+    ],
+  },
+  {
+    id: "pdp-quality-degradation",
+    name: "Quality Degradation",
+    description: "Simulate a degradation in data quality.",
+    icon: "TrendingDown",
+    color: "text-purple-400",
+    scenarioType: "PDP_QUALITY_DEGRADATION",
+    category: "data_operations",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "degradationType",
+        label: "Degradation Type",
+        options: ["resolution", "radiometric", "geometric", "total_loss"],
+        defaultValue: "resolution",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // PDP — DATA SECURITY EVENTS (2)
+  // =========================================================================
+  {
+    id: "pdp-archive-corruption",
+    name: "Archive Corruption",
+    description: "Simulate corruption of the data archive.",
+    icon: "DatabaseZap",
+    color: "text-red-500",
+    scenarioType: "PDP_ARCHIVE_CORRUPTION",
+    category: "data_security_events",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "extent",
+        label: "Extent",
+        options: ["partial", "total"],
+        defaultValue: "partial",
+      },
+    ],
+  },
+  {
+    id: "pdp-distribution-violation",
+    name: "Distribution Violation",
+    description: "Simulate unauthorized data distribution.",
+    icon: "Ban",
+    color: "text-red-400",
+    scenarioType: "PDP_DISTRIBUTION_VIOLATION",
+    category: "data_security_events",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "violationType",
+        label: "Violation Type",
+        options: ["unauthorized_access", "license_violation", "export_control"],
+        defaultValue: "unauthorized_access",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // PDP — PDP REGULATORY (2)
+  // =========================================================================
+  {
+    id: "pdp-nis2-classification-change",
+    name: "NIS2 Classification Change",
+    description: "Simulate a change in NIS2 entity classification.",
+    icon: "Shield",
+    color: "text-purple-500",
+    scenarioType: "PDP_NIS2_CLASSIFICATION_CHANGE",
+    category: "pdp_regulatory",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "newClassification",
+        label: "New Classification",
+        options: ["essential", "important", "out_of_scope"],
+        defaultValue: "essential",
+      },
+    ],
+  },
+  {
+    id: "pdp-data-sovereignty-change",
+    name: "Data Sovereignty Change",
+    description: "Simulate a data sovereignty or jurisdiction change.",
+    icon: "Globe",
+    color: "text-purple-400",
+    scenarioType: "PDP_DATA_SOVEREIGNTY_CHANGE",
+    category: "pdp_regulatory",
+    operatorTypes: ["PDP"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "scope",
+        label: "Scope",
+        options: ["single_jurisdiction", "multi_jurisdiction"],
+        defaultValue: "single_jurisdiction",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // TCO — GROUND OPERATIONS (3)
+  // =========================================================================
+  {
+    id: "tco-command-link-loss",
+    name: "Command Link Loss",
+    description: "Simulate loss of command link to spacecraft.",
+    icon: "Unlink",
+    color: "text-amber-600",
+    scenarioType: "TCO_COMMAND_LINK_LOSS",
+    category: "ground_operations",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "duration",
+        label: "Duration",
+        options: ["temporary", "extended", "permanent"],
+        defaultValue: "temporary",
+      },
+      {
+        type: "slider",
+        key: "affectedSatellites",
+        label: "Affected Satellites",
+        min: 1,
+        max: 50,
+        step: 1,
+        defaultValue: 1,
+        unit: "",
+      },
+    ],
+  },
+  {
+    id: "tco-tracking-accuracy-degradation",
+    name: "Tracking Accuracy Degradation",
+    description: "Simulate degradation in tracking accuracy.",
+    icon: "Crosshair",
+    color: "text-amber-500",
+    scenarioType: "TCO_TRACKING_ACCURACY_DEGRADATION",
+    category: "ground_operations",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "degradationLevel",
+        label: "Degradation Level",
+        options: ["moderate", "severe", "total_loss"],
+        defaultValue: "moderate",
+      },
+    ],
+  },
+  {
+    id: "tco-ground-station-failure",
+    name: "Ground Station Failure",
+    description: "Simulate a ground station system failure.",
+    icon: "Building",
+    color: "text-amber-400",
+    scenarioType: "TCO_GROUND_STATION_FAILURE",
+    category: "ground_operations",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "failureType",
+        label: "Failure Type",
+        options: ["partial", "total"],
+        defaultValue: "partial",
+      },
+      {
+        type: "select",
+        key: "redundancy",
+        label: "Redundancy Available",
+        options: ["yes", "no"],
+        defaultValue: "yes",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // TCO — COMMAND EVENTS (3)
+  // =========================================================================
+  {
+    id: "tco-antenna-failure",
+    name: "Antenna Failure",
+    description: "Simulate a ground antenna failure.",
+    icon: "Radio",
+    color: "text-red-500",
+    scenarioType: "TCO_ANTENNA_FAILURE",
+    category: "command_events",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "antennaType",
+        label: "Antenna Type",
+        options: ["primary", "secondary", "backup"],
+        defaultValue: "primary",
+      },
+    ],
+  },
+  {
+    id: "tco-timing-synchronization-loss",
+    name: "Timing Synchronization Loss",
+    description: "Simulate loss of timing synchronization.",
+    icon: "Clock",
+    color: "text-red-400",
+    scenarioType: "TCO_TIMING_SYNCHRONIZATION_LOSS",
+    category: "command_events",
+    operatorTypes: ["TCO"],
+    parameterDefs: [],
+  },
+  {
+    id: "tco-command-authentication-breach",
+    name: "Command Authentication Breach",
+    description: "Simulate a breach in command authentication security.",
+    icon: "ShieldAlert",
+    color: "text-red-600",
+    scenarioType: "TCO_COMMAND_AUTHENTICATION_BREACH",
+    category: "command_events",
+    operatorTypes: ["TCO"],
+    parameterDefs: [],
+  },
+
+  // =========================================================================
+  // TCO — TCO REGULATORY (2)
+  // =========================================================================
+  {
+    id: "tco-nis2-classification-change",
+    name: "NIS2 Classification Change",
+    description: "Simulate a change in NIS2 entity classification.",
+    icon: "Shield",
+    color: "text-amber-500",
+    scenarioType: "TCO_NIS2_CLASSIFICATION_CHANGE",
+    category: "tco_regulatory",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "newClassification",
+        label: "New Classification",
+        options: ["essential", "important", "out_of_scope"],
+        defaultValue: "essential",
+      },
+    ],
+  },
+  {
+    id: "tco-interoperability-failure",
+    name: "Interoperability Failure",
+    description: "Simulate an interoperability or protocol failure.",
+    icon: "GitBranch",
+    color: "text-amber-400",
+    scenarioType: "TCO_INTEROPERABILITY_FAILURE",
+    category: "tco_regulatory",
+    operatorTypes: ["TCO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "scope",
+        label: "Scope",
+        options: ["single_protocol", "multi_protocol"],
+        defaultValue: "single_protocol",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // CROSS-TYPE DEPENDENCIES (1)
+  // =========================================================================
+  {
+    id: "dependency-failure",
+    name: "Dependency Failure",
+    description:
+      "Simulate the impact of an upstream dependency failing on this entity.",
+    icon: "GitBranch",
+    color: "text-violet-500",
+    scenarioType: "DEPENDENCY_FAILURE",
+    category: "cross_type",
+    parameterDefs: [
+      {
+        type: "select",
+        key: "dependencyType",
+        label: "Dependency Type",
+        options: [
+          "TTC_PROVIDER",
+          "LAUNCH_PROVIDER",
+          "LAUNCH_SITE",
+          "CAPACITY_SOURCE",
+          "DATA_SOURCE",
+          "SERVICING_TARGET",
+          "DATA_PROVIDER",
+          "GROUND_NETWORK",
+          "INSURANCE_SHARED",
+        ],
+        defaultValue: "TTC_PROVIDER",
+      },
+      {
+        type: "select",
+        key: "strength",
+        label: "Dependency Strength",
+        options: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        defaultValue: "HIGH",
+      },
+      {
+        type: "slider",
+        key: "scoreDelta",
+        label: "Upstream Score Drop",
+        min: -50,
+        max: -5,
+        step: 5,
+        defaultValue: -20,
+        unit: "pts",
       },
     ],
   },

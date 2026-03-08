@@ -72,6 +72,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   vehicle_anomalies: "#F59E0B",
   range_environment: "#06B6D4",
   launch_regulatory: "#10B981",
+  cross_type: "#8B5CF6",
 };
 
 // ─── Compute State ────────────────────────────────────────────────────────────

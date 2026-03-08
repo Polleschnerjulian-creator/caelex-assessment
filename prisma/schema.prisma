@@ -2536,7 +2536,8 @@ model Organization {
   optimizationResults OptimizationResult[]
 
   // Ephemeris Universal: generic operator entities
-  operatorEntities OperatorEntity[]
+  operatorEntities    OperatorEntity[]
+  entityDependencies  EntityDependency[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -2712,11 +2713,60 @@ model OperatorEntity {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization          Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dependenciesAsSource  EntityDependency[] @relation("DependencySource")
+  dependenciesAsTarget  EntityDependency[] @relation("DependencyTarget")
 
   @@index([organizationId])
   @@index([operatorType])
   @@index([organizationId, operatorType])
+}
+
+// ============================================
+// ENTITY DEPENDENCY (Cross-Type Intelligence)
+// ============================================
+
+model EntityDependency {
+  id              String             @id @default(cuid())
+  organizationId  String
+  sourceEntityId  String             // The entity that DEPENDS on another
+  targetEntityId  String             // The entity being DEPENDED upon
+  dependencyType  DependencyType
+  strength        DependencyStrength @default(MEDIUM)
+  description     String?            // e.g., "KSAT Svalbard provides TT&C for Eutelsat-7B"
+  metadata        Json?              // Type-specific metadata
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceEntity OperatorEntity @relation("DependencySource", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+  targetEntity OperatorEntity @relation("DependencyTarget", fields: [targetEntityId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceEntityId, targetEntityId, dependencyType])
+  @@index([organizationId])
+  @@index([sourceEntityId])
+  @@index([targetEntityId])
+  @@index([targetEntityId, isActive])
+}
+
+enum DependencyType {
+  TTC_PROVIDER        // TCO -> SCO: ground station tracks satellite
+  LAUNCH_PROVIDER     // LO -> SCO: launcher deploys satellite
+  LAUNCH_SITE         // LSO -> LO: site hosts launch vehicle
+  CAPACITY_SOURCE     // CAP -> SCO: capacity sourced from satellite
+  DATA_SOURCE         // PDP -> SCO: data sourced from satellite
+  SERVICING_TARGET    // ISOS -> SCO: servicer targets satellite
+  DATA_PROVIDER       // PDP -> CAP: data feeds into capacity service
+  GROUND_NETWORK      // TCO -> TCO: ground station network dependency
+  INSURANCE_SHARED    // Any -> Any: shared insurance pool
+}
+
+enum DependencyStrength {
+  CRITICAL // Total dependency - target failure = source failure
+  HIGH     // Strong dependency - target failure severely impacts source
+  MEDIUM   // Moderate dependency - target failure degrades source
+  LOW      // Weak dependency - target failure has minor impact on source
 }
 
 enum OperatorType {

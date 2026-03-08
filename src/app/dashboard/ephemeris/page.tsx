@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "./components/alerts-sidebar";
+import DependencyGraphView from "./components/dependency-graph-view";
 import { useEphemerisTheme } from "./theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ export default function EphemerisDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "fleet" | "alerts" | "intelligence"
+    "fleet" | "alerts" | "intelligence" | "dependencies"
   >("fleet");
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -612,30 +613,36 @@ export default function EphemerisDashboard() {
             padding: "0 24px",
           }}
         >
-          {(["fleet", "alerts", "intelligence"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "10px 20px",
-                fontSize: 12,
-                fontWeight: 500,
-                color:
-                  activeTab === tab ? COLORS.textPrimary : COLORS.textMuted,
-                borderBottom:
-                  activeTab === tab
-                    ? `2px solid ${COLORS.brand}`
-                    : "2px solid transparent",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                textTransform: "capitalize",
-                ...sans,
-              }}
-            >
-              {tab === "alerts" ? `Alerts (${totalAlerts})` : tab}
-            </button>
-          ))}
+          {(["fleet", "alerts", "intelligence", "dependencies"] as const).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color:
+                    activeTab === tab ? COLORS.textPrimary : COLORS.textMuted,
+                  borderBottom:
+                    activeTab === tab
+                      ? `2px solid ${COLORS.brand}`
+                      : "2px solid transparent",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                  ...sans,
+                }}
+              >
+                {tab === "alerts"
+                  ? `Alerts (${totalAlerts})`
+                  : tab === "dependencies"
+                    ? "Dependencies"
+                    : tab}
+              </button>
+            ),
+          )}
         </div>
 
         {/* ── Error ────────────────────────────────────────────────────── */}
@@ -1662,6 +1669,9 @@ export default function EphemerisDashboard() {
               </div>
             </div>
           )}
+
+          {/* DEPENDENCIES TAB */}
+          {activeTab === "dependencies" && <DependencyGraphView />}
         </div>
       </div>
       <AlertsSidebar alerts={allAlerts} />

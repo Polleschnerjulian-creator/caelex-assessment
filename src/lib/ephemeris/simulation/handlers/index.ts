@@ -84,6 +84,72 @@ import {
   runPartnerDefault,
 } from "./financial";
 
+// ─── ISOS Handlers ──────────────────────────────────────────────────────────
+import {
+  runApproachAbort,
+  runKeepoutZoneViolation,
+  runRelativeNavFailure,
+  runCaptureMechanismFailure,
+  runTargetTumbleIncrease,
+  runTargetDebrisCloud,
+  runTargetNonCooperation,
+  runIsosAuthorizationChange,
+  runDebrisRemediationOrderIsos,
+  runOosStandardChange,
+} from "./isos";
+
+// ─── LSO Handlers ───────────────────────────────────────────────────────────
+import {
+  runPadDamage,
+  runRangeRadarFailure,
+  runFtsSystemFailure,
+  runWeatherStationOutage,
+  runNoiseComplianceViolation,
+  runEmissionLimitBreach,
+  runWildlifeImpactAssessment,
+  runSiteLicenseConditionChange,
+  runAirspaceRestrictionChange,
+  runNotamConflict,
+} from "./lso";
+
+// ─── CAP Handlers ──────────────────────────────────────────────────────────
+import {
+  runCapServiceOutage,
+  runCapCapacityDegradation,
+  runCapSlaBreach,
+  runCapGroundSegmentFailure,
+  runCapBandwidthSaturation,
+  runCapCustomerMigration,
+  runCapNis2ClassificationChange,
+  runCapDataSovereigntyChange,
+} from "./cap";
+
+// ─── PDP Handlers ──────────────────────────────────────────────────────────
+import {
+  runPdpDataBreach,
+  runPdpGroundStationOutage,
+  runPdpQualityDegradation,
+  runPdpArchiveCorruption,
+  runPdpDistributionViolation,
+  runPdpNis2ClassificationChange,
+  runPdpDataSovereigntyChange,
+} from "./pdp";
+
+// ─── TCO Handlers ──────────────────────────────────────────────────────────
+import {
+  runTcoCommandLinkLoss,
+  runTcoTrackingAccuracyDegradation,
+  runTcoGroundStationFailure,
+  runTcoAntennaFailure,
+  runTcoTimingSynchronizationLoss,
+  runTcoCommandAuthenticationBreach,
+  runTcoNis2ClassificationChange,
+  runTcoInteroperabilityFailure,
+} from "./tco";
+
+// ─── Dependency Handlers ────────────────────────────────────────────────────
+import { runDependencyFailure } from "./dependency";
+
 // ─── Launch Operator Handlers ───────────────────────────────────────────────
 import {
   runLoLaunchDelay,
@@ -179,6 +245,59 @@ export const SCENARIO_HANDLERS: Record<string, ScenarioHandler> = {
   BUDGET_CUT: runBudgetCut,
   PARTNER_DEFAULT: runPartnerDefault,
 
+  // ISOS
+  ISOS_APPROACH_ABORT: runApproachAbort,
+  ISOS_KEEPOUT_ZONE_VIOLATION: runKeepoutZoneViolation,
+  ISOS_RELATIVE_NAV_FAILURE: runRelativeNavFailure,
+  ISOS_CAPTURE_MECHANISM_FAILURE: runCaptureMechanismFailure,
+  ISOS_TARGET_TUMBLE_INCREASE: runTargetTumbleIncrease,
+  ISOS_TARGET_DEBRIS_CLOUD: runTargetDebrisCloud,
+  ISOS_TARGET_NON_COOPERATION: runTargetNonCooperation,
+  ISOS_AUTHORIZATION_CHANGE: runIsosAuthorizationChange,
+  ISOS_DEBRIS_REMEDIATION_ORDER: runDebrisRemediationOrderIsos,
+  ISOS_OOS_STANDARD_CHANGE: runOosStandardChange,
+
+  // LSO
+  LSO_PAD_DAMAGE: runPadDamage,
+  LSO_RANGE_RADAR_FAILURE: runRangeRadarFailure,
+  LSO_FTS_SYSTEM_FAILURE: runFtsSystemFailure,
+  LSO_WEATHER_STATION_OUTAGE: runWeatherStationOutage,
+  LSO_NOISE_COMPLIANCE_VIOLATION: runNoiseComplianceViolation,
+  LSO_EMISSION_LIMIT_BREACH: runEmissionLimitBreach,
+  LSO_WILDLIFE_IMPACT_ASSESSMENT: runWildlifeImpactAssessment,
+  LSO_SITE_LICENSE_CONDITION_CHANGE: runSiteLicenseConditionChange,
+  LSO_AIRSPACE_RESTRICTION_CHANGE: runAirspaceRestrictionChange,
+  LSO_NOTAM_CONFLICT: runNotamConflict,
+
+  // CAP
+  CAP_SERVICE_OUTAGE: runCapServiceOutage,
+  CAP_CAPACITY_DEGRADATION: runCapCapacityDegradation,
+  CAP_SLA_BREACH: runCapSlaBreach,
+  CAP_GROUND_SEGMENT_FAILURE: runCapGroundSegmentFailure,
+  CAP_BANDWIDTH_SATURATION: runCapBandwidthSaturation,
+  CAP_CUSTOMER_MIGRATION: runCapCustomerMigration,
+  CAP_NIS2_CLASSIFICATION_CHANGE: runCapNis2ClassificationChange,
+  CAP_DATA_SOVEREIGNTY_CHANGE: runCapDataSovereigntyChange,
+
+  // PDP
+  PDP_DATA_BREACH: runPdpDataBreach,
+  PDP_GROUND_STATION_OUTAGE: runPdpGroundStationOutage,
+  PDP_QUALITY_DEGRADATION: runPdpQualityDegradation,
+  PDP_ARCHIVE_CORRUPTION: runPdpArchiveCorruption,
+  PDP_DISTRIBUTION_VIOLATION: runPdpDistributionViolation,
+  PDP_NIS2_CLASSIFICATION_CHANGE: runPdpNis2ClassificationChange,
+  PDP_DATA_SOVEREIGNTY_CHANGE: runPdpDataSovereigntyChange,
+
+  // TCO
+  TCO_COMMAND_LINK_LOSS: runTcoCommandLinkLoss,
+  TCO_TRACKING_ACCURACY_DEGRADATION: runTcoTrackingAccuracyDegradation,
+  TCO_GROUND_STATION_FAILURE: runTcoGroundStationFailure,
+  TCO_ANTENNA_FAILURE: runTcoAntennaFailure,
+  TCO_TIMING_SYNCHRONIZATION_LOSS: runTcoTimingSynchronizationLoss,
+  TCO_COMMAND_AUTHENTICATION_BREACH: runTcoCommandAuthenticationBreach,
+  TCO_NIS2_CLASSIFICATION_CHANGE: runTcoNis2ClassificationChange,
+  TCO_INTEROPERABILITY_FAILURE: runTcoInteroperabilityFailure,
+
   // Launch Operator
   LO_LAUNCH_DELAY: runLoLaunchDelay,
   LO_LAUNCH_WINDOW_CHANGE: runLoLaunchWindowChange,
@@ -196,4 +315,7 @@ export const SCENARIO_HANDLERS: Record<string, ScenarioHandler> = {
   LO_LAUNCH_LICENSE_CONDITION_CHANGE: runLoLaunchLicenseConditionChange,
   LO_PAYLOAD_CLASSIFICATION_CHANGE: runLoPayloadClassificationChange,
   LO_TECHNOLOGY_TRANSFER_ISSUE: runLoTechnologyTransferIssue,
+
+  // Cross-Type Dependencies
+  DEPENDENCY_FAILURE: runDependencyFailure,
 };

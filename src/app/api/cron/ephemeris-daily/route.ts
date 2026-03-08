@@ -7,6 +7,7 @@ import { calculateSatelliteComplianceState } from "@/lib/ephemeris/core/satellit
 import { toPublicState } from "@/lib/ephemeris/core/types";
 import type { AlertSeverity } from "@/lib/ephemeris/core/types";
 import { notifyOrganization } from "@/lib/services/notification-service";
+import { propagateImpact } from "@/lib/ephemeris/cross-type/impact-propagation";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes for fleet processing
@@ -26,6 +27,7 @@ interface CronResult {
   processed: number;
   alertsCreated: number;
   alertsResolved: number;
+  crossTypeImpacts: number;
   errors: string[];
   durationMs: number;
 }
@@ -69,6 +71,7 @@ export async function GET(req: Request) {
       processed: result.processed,
       alertsCreated: result.alertsCreated,
       alertsResolved: result.alertsResolved,
+      crossTypeImpacts: result.crossTypeImpacts,
       errors: result.errors.length,
       duration: `${result.durationMs}ms`,
     });
@@ -106,7 +109,19 @@ async function processAllSatellites(): Promise<CronResult> {
   let processed = 0;
   let alertsCreated = 0;
   let alertsResolved = 0;
+  let crossTypeImpacts = 0;
   const errors: string[] = [];
+
+  // Track score changes for cross-type propagation
+  const scoreChanges: Array<{
+    orgId: string;
+    entityId: string;
+    noradId: string;
+    previousScore: number;
+    newScore: number;
+    delta: number;
+    affectedModules: string[];
+  }> = [];
 
   // Find all organizations with spacecraft
   const orgs = await prisma.organization.findMany({
@@ -129,6 +144,9 @@ async function processAllSatellites(): Promise<CronResult> {
 
     for (const sc of satellites) {
       try {
+        // Fetch previous score for delta comparison
+        const previousState = await fetchPreviousScore(org.id, sc.noradId);
+
         const state = await calculateSatelliteComplianceState({
           prisma,
           orgId: org.id,
@@ -153,9 +171,82 @@ async function processAllSatellites(): Promise<CronResult> {
         alertsCreated += alertResult.created;
         alertsResolved += alertResult.resolved;
 
+        // Track significant score changes for cross-type propagation
+        if (previousState !== null) {
+          const delta = state.overallScore - previousState.score;
+          if (Math.abs(delta) >= 5) {
+            // Identify which modules changed
+            const changedModules: string[] = [];
+            for (const [key, mod] of Object.entries(state.modules)) {
+              if (mod.status !== "COMPLIANT") {
+                changedModules.push(key);
+              }
+            }
+
+            scoreChanges.push({
+              orgId: org.id,
+              entityId: previousState.entityId ?? sc.noradId,
+              noradId: sc.noradId,
+              previousScore: previousState.score,
+              newScore: state.overallScore,
+              delta,
+              affectedModules: changedModules,
+            });
+          }
+        }
+
         processed++;
       } catch (error) {
         const msg = `Failed for ${sc.noradId}: ${error instanceof Error ? error.message : "Unknown"}`;
+        errors.push(msg);
+        logger.error(msg);
+      }
+    }
+
+    // ─── Cross-Type Impact Propagation ─────────────────────────────────
+    // For significant score drops, propagate impacts through dependencies
+    for (const change of scoreChanges.filter((c) => c.orgId === org.id)) {
+      if (change.delta >= 0) continue; // Only propagate degradations
+
+      try {
+        const impactResult = await propagateImpact(
+          change.entityId,
+          change.orgId,
+          change.delta,
+          change.affectedModules,
+          prisma,
+          `Daily score change: ${change.previousScore} → ${change.newScore}`,
+        );
+
+        if (impactResult.totalEntitiesAffected > 0) {
+          crossTypeImpacts += impactResult.totalEntitiesAffected;
+          logger.info(
+            `Cross-type impact from ${change.noradId}: ${impactResult.totalEntitiesAffected} entities affected`,
+          );
+
+          // Create DEPENDENCY_IMPACT alerts for directly impacted entities
+          for (const impact of impactResult.directImpacts) {
+            if (Math.abs(impact.propagatedScoreDelta) >= 5) {
+              await notifyOrganization(
+                change.orgId,
+                "COMPLIANCE_SCORE_DROPPED",
+                `[Dependency Impact] ${impact.sourceEntityName} affected`,
+                impact.narrative,
+                {
+                  entityType: "operator_entity",
+                  entityId: impact.sourceEntityId,
+                  severity:
+                    Math.abs(impact.propagatedScoreDelta) >= 15
+                      ? "CRITICAL"
+                      : "WARNING",
+                  actionUrl: `/dashboard/ephemeris`,
+                },
+              );
+            }
+          }
+        }
+      } catch (error) {
+        const msg = `Impact propagation failed for ${change.noradId}: ${error instanceof Error ? error.message : "Unknown"}`;
         errors.push(msg);
         logger.error(msg);
       }
@@ -166,9 +257,43 @@ async function processAllSatellites(): Promise<CronResult> {
     processed,
     alertsCreated,
     alertsResolved,
+    crossTypeImpacts,
     errors: errors.slice(0, 20), // Limit error list
     durationMs: Date.now() - startTime,
   };
+}
+
+/**
+ * Fetch the previous compliance score for a satellite to detect changes.
+ */
+async function fetchPreviousScore(
+  orgId: string,
+  noradId: string,
+): Promise<{ score: number; entityId: string | null } | null> {
+  const db = prisma as unknown as Record<string, unknown>;
+  const stateModel = db["satelliteComplianceState"] as
+    | {
+        findUnique: (
+          args: Record<string, unknown>,
+        ) => Promise<{ overallScore: number; noradId: string } | null>;
+      }
+    | undefined;
+
+  if (!stateModel) return null;
+
+  const result = await stateModel.findUnique({
+    where: { noradId_operatorId: { noradId, operatorId: orgId } },
+  });
+
+  if (!result) return null;
+
+  // Try to find the corresponding OperatorEntity
+  const entity = await prisma.operatorEntity.findFirst({
+    where: { organizationId: orgId },
+    select: { id: true },
+  });
+
+  return { score: result.overallScore, entityId: entity?.id ?? null };
 }
 
 // ─── Persistence ────────────────────────────────────────────────────────────
