@@ -6,39 +6,43 @@ import type {
   ComplianceFactorInternal,
   DataFreshness,
 } from "./types";
-import {
-  MODULE_WEIGHTS,
-  SAFETY_GATE_MAX_SCORE,
-  DATA_FRESHNESS_THRESHOLDS,
-} from "./constants";
+import { SAFETY_GATE_MAX_SCORE, DATA_FRESHNESS_THRESHOLDS } from "./constants";
+import { getModuleConfig } from "./module-registry";
 
 /**
  * Scoring Engine — Weighted module aggregation with safety gate.
  *
  * Safety gate: If ANY safety-critical module (orbital, fuel, subsystems) is
  * NON_COMPLIANT, overall score is capped at SAFETY_GATE_MAX_SCORE (49).
+ *
+ * Module weights and safety-critical flags are read from the Module Registry,
+ * keyed by operatorType (defaults to 'SCO' for backward compatibility).
  */
 
 /**
  * Calculate overall compliance score from module scores.
  * Returns 0-100 with safety gate applied.
  */
-export function calculateOverallScore(modules: ModuleScoresInternal): number {
+export function calculateOverallScore(
+  modules: ModuleScoresInternal,
+  operatorType: string = "SCO",
+): number {
+  const config = getModuleConfig(operatorType);
   let weightedSum = 0;
   let totalWeight = 0;
 
   for (const [key, mod] of Object.entries(modules)) {
-    const config = MODULE_WEIGHTS[key];
-    if (!config) continue;
+    const modConfig = config[key];
+    if (!modConfig) continue;
 
-    weightedSum += mod.score * config.weight;
-    totalWeight += config.weight;
+    weightedSum += mod.score * modConfig.weight;
+    totalWeight += modConfig.weight;
   }
 
   const rawScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 
   // Safety gate check
-  if (isSafetyGateTriggered(modules)) {
+  if (isSafetyGateTriggered(modules, operatorType)) {
     return Math.min(rawScore, SAFETY_GATE_MAX_SCORE);
   }
 
@@ -48,10 +52,15 @@ export function calculateOverallScore(modules: ModuleScoresInternal): number {
 /**
  * Check if any safety-critical module is NON_COMPLIANT.
  */
-export function isSafetyGateTriggered(modules: ModuleScoresInternal): boolean {
+export function isSafetyGateTriggered(
+  modules: ModuleScoresInternal,
+  operatorType: string = "SCO",
+): boolean {
+  const config = getModuleConfig(operatorType);
+
   for (const [key, mod] of Object.entries(modules)) {
-    const config = MODULE_WEIGHTS[key];
-    if (config?.safetyGate && mod.status === "NON_COMPLIANT") {
+    const modConfig = config[key];
+    if (modConfig?.safetyGate && mod.status === "NON_COMPLIANT") {
       return true;
     }
   }

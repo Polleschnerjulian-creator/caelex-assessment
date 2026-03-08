@@ -13,7 +13,9 @@ import type {
   AssessmentDataBundle,
   VerityAttestationSummary,
   RegulatoryChangeImpact,
+  OperatorEntityInput,
 } from "./types";
+import { getNoradId } from "./entity-adapter";
 import {
   calculateOverallScore,
   calculateModuleScore,
@@ -79,6 +81,40 @@ interface AggregationInput {
   noradId: string;
   satelliteName: string;
   launchDate: Date | null;
+}
+
+/**
+ * Generic entry point — Calculate compliance state for any OperatorEntity.
+ * For SCO, delegates to the existing satellite pipeline.
+ * For other types: throws (Phase 2+).
+ */
+export async function calculateEntityComplianceState(
+  entity: OperatorEntityInput,
+  prisma: PrismaClient,
+): Promise<SatelliteComplianceStateInternal> {
+  if (entity.operatorType === "SCO") {
+    const noradId = getNoradId(entity);
+    if (!noradId) throw new Error("SCO entity missing noradId");
+
+    const launchDate =
+      entity.metadata.launchDate instanceof Date
+        ? entity.metadata.launchDate
+        : typeof entity.metadata.launchDate === "string"
+          ? new Date(entity.metadata.launchDate)
+          : null;
+
+    return calculateSatelliteComplianceState({
+      prisma,
+      orgId: entity.organizationId,
+      noradId,
+      satelliteName: entity.name,
+      launchDate,
+    });
+  }
+
+  throw new Error(
+    `Operator type ${entity.operatorType} not yet supported in Ephemeris`,
+  );
 }
 
 /**

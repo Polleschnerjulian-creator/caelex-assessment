@@ -569,6 +569,50 @@ export function toPublicState(
   };
 }
 
+// ─── Operator Entity Types ──────────────────────────────────────────────────
+
+export type { OperatorType } from "@prisma/client";
+
+export interface EntityIdentifiers {
+  type: string; // OperatorType string: "SCO" | "LO" | "LSO" | etc.
+  noradId?: string; // SCO
+  cosparId?: string; // SCO
+  vehicleId?: string; // LO
+  launchLicenseId?: string; // LO
+  facilityId?: string; // LSO, TCO
+  siteCode?: string; // LSO
+  missionId?: string; // ISOS
+  targetNoradId?: string; // ISOS
+  serviceId?: string; // CAP
+  systemId?: string; // PDP
+  networkId?: string; // TCO
+}
+
+export interface OperatorEntityInput {
+  id: string;
+  organizationId: string;
+  operatorType: string; // OperatorType string
+  name: string;
+  identifiers: EntityIdentifiers;
+  metadata: Record<string, unknown>;
+  jurisdictions: string[];
+  status: "ACTIVE" | "PLANNED" | "DECOMMISSIONED";
+}
+
+// ─── Module Registry Types ──────────────────────────────────────────────────
+
+export interface ModuleRegistration {
+  key: string;
+  label: string;
+  weight: number;
+  safetyCritical: boolean;
+  regulationRefs: string[];
+  requiredDataSources: DataSource[];
+  predictionModel?: string;
+}
+
+export type ModuleRegistry = Record<string, ModuleRegistration[]>;
+
 // ─── Tracked Deadlines ───────────────────────────────────────────────────────
 
 export interface TrackedDeadlineDefinition {

@@ -2535,6 +2535,9 @@ model Organization {
   // Optimizer: regulatory arbitrage optimization results
   optimizationResults OptimizationResult[]
 
+  // Ephemeris Universal: generic operator entities
+  operatorEntities OperatorEntity[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -2691,6 +2694,45 @@ enum SpacecraftStatus {
   DECOMMISSIONING
   DEORBITED
   LOST
+}
+
+// ============================================
+// OPERATOR ENTITY (Ephemeris Universal)
+// ============================================
+
+model OperatorEntity {
+  id             String       @id @default(cuid())
+  organizationId String
+  operatorType   OperatorType
+  name           String
+  identifiers    Json // Type-discriminated: { type: "SCO", noradId: "25544" } etc.
+  metadata       Json // Type-specific properties: { type: "SCO", altitudeKm: 408, ... }
+  jurisdictions  String[] // ["DE", "NO"]
+  status         EntityStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([operatorType])
+  @@index([organizationId, operatorType])
+}
+
+enum OperatorType {
+  SCO // Satellite/Constellation Operator
+  LO // Launch Operator
+  LSO // Launch Site Operator
+  ISOS // In-Space Operations & Servicing
+  CAP // Capacity Provider
+  PDP // Payload Data Provider
+  TCO // Tracking, Commanding & Operations
+}
+
+enum EntityStatus {
+  ACTIVE
+  PLANNED
+  DECOMMISSIONED
 }
 
 // ============================================
