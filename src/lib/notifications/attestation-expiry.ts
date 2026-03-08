@@ -44,11 +44,11 @@ export async function processAttestationExpiryReminders(): Promise<{
           (attestation.expiresAt.getTime() - now.getTime()) / 86400000,
         );
 
-        // Only notify at 30-day and 7-day marks (within a 2-day window)
-        const is30DayWindow = daysUntilExpiry <= 30 && daysUntilExpiry > 28;
-        const is7DayWindow = daysUntilExpiry <= 7 && daysUntilExpiry > 5;
-
-        if (!is30DayWindow && !is7DayWindow) continue;
+        // Notify at 30-day and 7-day marks.
+        // Use full ranges (<=30, <=7) — dedup via entityId prevents duplicates.
+        // Narrow windows (28-30, 5-7) risk missing notifications if cron skips a day.
+        const is7DayWindow = daysUntilExpiry <= 7;
+        const is30DayWindow = !is7DayWindow && daysUntilExpiry <= 30;
 
         const severity = is7DayWindow ? "WARNING" : "INFO";
         const title = is7DayWindow

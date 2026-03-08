@@ -74,7 +74,9 @@ export async function generateIssuerKeyPair(): Promise<{
  */
 export function decryptPrivateKey(encryptedHex: string): Buffer {
   const masterKey = process.env.VERITY_MASTER_KEY;
-  if (!masterKey) throw new Error("VERITY_MASTER_KEY not set");
+  if (!masterKey || masterKey.length !== 64) {
+    throw new Error("VERITY_MASTER_KEY must be 64 hex chars (32 bytes)");
+  }
 
   const [ivHex, authTagHex, ciphertextHex] = encryptedHex.split(":");
 

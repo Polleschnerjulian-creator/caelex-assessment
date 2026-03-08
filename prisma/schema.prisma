@@ -6059,6 +6059,11 @@ model SentinelPacket {
   @@index([dataPoint])
   @@index([collectedAt])
   @@index([chainPosition])
+  // Composite indexes for common query patterns (SVA assessment)
+  @@index([agentId, satelliteNorad, dataPoint, collectedAt])
+  @@index([agentId, dataPoint, crossVerified])
+  @@index([agentId, chainPosition])
+  @@index([processedAt])
 }
 
 model CrossVerification {

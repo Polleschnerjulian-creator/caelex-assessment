@@ -57,12 +57,16 @@ export async function GET(req: Request) {
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
   const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
 
+  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
   const results = {
     expiredSessions: 0,
     expiredVerificationTokens: 0,
     oldAnalyticsEvents: 0,
     oldAstraConversations: 0,
     oldAstraMessages: 0,
+    oldSentinelPackets: 0,
+    oldCrossVerifications: 0,
   };
 
   try {
@@ -128,13 +132,34 @@ export async function GET(req: Request) {
       messages: oldAstraMessages,
     });
 
+    // Batch 4: Sentinel data retention
+    // CrossVerification records >6 months (derived data, can be recomputed)
+    // SentinelPacket records >1 year (keep audit-relevant window)
+    const [oldCrossVerifications, oldSentinelPackets] =
+      await prisma.$transaction([
+        prisma.crossVerification.deleteMany({
+          where: { verifiedAt: { lt: sixMonthsAgo } },
+        }),
+        prisma.sentinelPacket.deleteMany({
+          where: { processedAt: { lt: oneYearAgo } },
+        }),
+      ]);
+    results.oldCrossVerifications = oldCrossVerifications.count;
+    results.oldSentinelPackets = oldSentinelPackets.count;
+    logger.info("Sentinel data retention cleanup", {
+      crossVerifications: oldCrossVerifications.count,
+      sentinelPackets: oldSentinelPackets.count,
+    });
+
     const duration = Date.now() - startTime;
     const totalDeleted =
       results.expiredSessions +
       results.expiredVerificationTokens +
       results.oldAnalyticsEvents +
       results.oldAstraConversations +
-      results.oldAstraMessages;
+      results.oldAstraMessages +
+      results.oldSentinelPackets +
+      results.oldCrossVerifications;
 
     logger.info("Data retention cleanup complete", {
       totalDeleted,

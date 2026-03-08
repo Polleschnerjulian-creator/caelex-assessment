@@ -64,6 +64,14 @@
     {
       "path": "/api/cron/ephemeris-daily",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sentinel-cross-verify",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/sentinel-heartbeat",
+      "schedule": "30 0 * * *"
     }
   ]
 }
