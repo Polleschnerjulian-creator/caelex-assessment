@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
   ComposedChart,
 } from "recharts";
-import ScenarioBuilder from "../components/scenario-builder/ScenarioBuilder";
+import EphemerisForge from "../components/scenario-builder/EphemerisForge";
 
 // ─── Color Helpers (theme-aware — see ../theme.ts) ──────────────────────────
 
@@ -532,19 +532,12 @@ export default function SatelliteDetailPage({
             <ModulesTab modules={state.modules} C={C} />
           )}
           {activeTab === "scenarios" && (
-            <div
-              style={{
-                background: C.elevated,
-                borderRadius: 6,
-                padding: 20,
-                border: `1px solid ${C.border}`,
-              }}
-            >
-              <ScenarioBuilder
-                noradId={noradId}
-                satelliteName={state?.satelliteName ?? noradId}
-              />
-            </div>
+            <EphemerisForge
+              noradId={noradId}
+              satelliteName={state?.satelliteName ?? noradId}
+              satelliteState={state}
+              onBack={() => setActiveTab("forecast")}
+            />
           )}
           {activeTab === "cascade" && <CascadeTab noradId={noradId} C={C} />}
           {activeTab === "datasources" && state && (
