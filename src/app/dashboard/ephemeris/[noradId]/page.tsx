@@ -335,13 +335,13 @@ export default function SatelliteDetailPage({
           flexDirection: "column",
         }}
       >
-        {/* ── Top Bar ───────────────────────────────────────────────────────── */}
+        {/* ── Top Bar (hidden in scenarios mode) ───────────────────────────── */}
         <div
           style={{
             background: C.sunken,
             borderBottom: `1px solid ${C.border}`,
             padding: "10px 24px",
-            display: "flex",
+            display: activeTab === "scenarios" ? "none" : "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
@@ -500,12 +500,21 @@ export default function SatelliteDetailPage({
           />
         </div>
 
-        {/* ── Tab Bar ───────────────────────────────────────────────────────── */}
+        {/* ── Tab Bar (glass bg in scenarios mode) ──────────────────────────── */}
         <div
           style={{
             display: "flex",
-            borderBottom: `1px solid ${C.border}`,
-            background: C.sunken,
+            borderBottom:
+              activeTab === "scenarios"
+                ? "1px solid rgba(255,255,255,0.75)"
+                : `1px solid ${C.border}`,
+            background:
+              activeTab === "scenarios" ? "rgba(255,255,255,0.72)" : C.sunken,
+            backdropFilter:
+              activeTab === "scenarios" ? "blur(20px)" : undefined,
+            WebkitBackdropFilter:
+              activeTab === "scenarios" ? "blur(20px)" : undefined,
+            transition: "background 200ms ease",
           }}
         >
           {tabs.map((tab) => (
@@ -521,10 +530,19 @@ export default function SatelliteDetailPage({
                 border: "none",
                 borderBottom:
                   activeTab === tab.id
-                    ? `2px solid ${C.accent}`
+                    ? `2px solid ${
+                        activeTab === "scenarios" ? "#10B981" : C.accent
+                      }`
                     : "2px solid transparent",
                 background: "transparent",
-                color: activeTab === tab.id ? C.textPrimary : C.textTertiary,
+                color:
+                  activeTab === tab.id
+                    ? activeTab === "scenarios"
+                      ? "#0F172A"
+                      : C.textPrimary
+                    : activeTab === "scenarios"
+                      ? "#64748B"
+                      : C.textTertiary,
                 cursor: "pointer",
                 transition: "color 0.15s, border-color 0.15s",
               }}

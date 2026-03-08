@@ -11,7 +11,7 @@ const SEVERITY_COLOR: Record<NonNullable<EdgeSeverity> | "idle", string> = {
   warning: FORGE.edgeWarning,
   critical: FORGE.edgeCritical,
   computing: FORGE.edgeComputing,
-  idle: FORGE.edgeIdle,
+  idle: "#94A3B8",
 };
 
 function edgeColor(severity: EdgeSeverity): string {

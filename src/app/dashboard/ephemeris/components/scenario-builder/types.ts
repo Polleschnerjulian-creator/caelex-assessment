@@ -84,6 +84,7 @@ export interface SatelliteOriginData {
   horizonDays: number | null;
   horizonRegulation: string | null;
   weakestModule: string | null;
+  showHint?: boolean;
 }
 
 export interface ScenarioNodeData {

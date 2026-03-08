@@ -80,6 +80,7 @@ function createOriginNode(): Node {
     position: { x: 350, y: 200 },
     data: data as unknown as Record<string, unknown>,
     deletable: false,
+    draggable: false,
   };
 }
 

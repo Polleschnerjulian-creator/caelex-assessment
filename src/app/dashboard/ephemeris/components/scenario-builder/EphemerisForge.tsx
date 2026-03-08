@@ -17,6 +17,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
+import { Zap } from "lucide-react";
 import { useForgeTheme, GLASS } from "../../theme";
 import { useForgeGraph } from "./useForgeGraph";
 import { useForgeComputation } from "./useForgeComputation";
@@ -36,6 +37,7 @@ import BlockPalette from "./overlays/BlockPalette";
 import RadialMenu from "./overlays/RadialMenu";
 import SlashCommand from "./overlays/SlashCommand";
 import ComparisonBar from "./overlays/ComparisonBar";
+import ForgeAstraChat from "./overlays/ForgeAstraChat";
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -44,60 +46,6 @@ interface EphemerisForgeProps {
   satelliteName: string;
   satelliteState: any;
   onBack: () => void;
-}
-
-// ─── Ghost Hint (static overlay, centered in canvas viewport) ───────────────
-
-function GhostHint({ visible }: { visible: boolean }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        pointerEvents: "none",
-        zIndex: 5,
-        textAlign: "center",
-        opacity: visible ? 1 : 0,
-        transition: "opacity 500ms ease",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 14,
-          color: "#9CA3AF",
-          fontWeight: 500,
-          lineHeight: 1.5,
-        }}
-      >
-        Right-click or drag a block to start building your scenario
-      </div>
-      <div
-        style={{
-          fontSize: 11,
-          color: "#9CA3AF",
-          marginTop: 6,
-          opacity: 0.7,
-        }}
-      >
-        Press{" "}
-        <kbd
-          style={{
-            padding: "1px 5px",
-            background: "rgba(255,255,255,0.6)",
-            borderRadius: 3,
-            fontSize: 11,
-            fontFamily: "'IBM Plex Mono', monospace",
-            border: "1px solid rgba(0,0,0,0.08)",
-          }}
-        >
-          /
-        </kbd>{" "}
-        for quick search
-      </div>
-    </div>
-  );
 }
 
 // ─── Inner Component (requires ReactFlowProvider ancestor) ──────────────────
@@ -156,6 +104,7 @@ function EphemerisForgeInner({
     y: number;
   } | null>(null);
   const [showSlashCommand, setShowSlashCommand] = useState(false);
+  const [showAstra, setShowAstra] = useState(false);
 
   // Check if canvas is empty (only origin node, no scenario nodes)
   const isCanvasEmpty = useMemo(
@@ -180,9 +129,15 @@ function EphemerisForgeInner({
     [],
   );
 
-  // Inject callbacks into scenario node data
+  // Inject callbacks into scenario node data + showHint for origin
   const nodesWithCallbacks = useMemo(() => {
     return graph.nodes.map((node) => {
+      if (node.type === FORGE_NODE_TYPES.ORIGIN) {
+        return {
+          ...node,
+          data: { ...node.data, showHint: isCanvasEmpty },
+        };
+      }
       if (node.type === FORGE_NODE_TYPES.SCENARIO) {
         return {
           ...node,
@@ -202,7 +157,7 @@ function EphemerisForgeInner({
       }
       return node;
     });
-  }, [graph.nodes, graph.updateNodeData, graph.removeNode]);
+  }, [graph.nodes, graph.updateNodeData, graph.removeNode, isCanvasEmpty]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -341,9 +296,6 @@ function EphemerisForgeInner({
         )}
       </ReactFlow>
 
-      {/* Ghost Hint — fades out when first ScenarioNode is added */}
-      <GhostHint visible={isCanvasEmpty} />
-
       {/* Floating Glass Toolbar */}
       <ForgeToolbar
         satelliteName={satelliteName}
@@ -379,6 +331,45 @@ function EphemerisForgeInner({
 
       {/* Comparison Bar */}
       <ComparisonBar nodes={graph.nodes} edges={graph.edges} />
+
+      {/* Floating Astra Glass Button */}
+      {!showAstra && (
+        <button
+          onClick={() => setShowAstra(true)}
+          title="Open Astra AI"
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            zIndex: 50,
+            width: 48,
+            height: 48,
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,0.8)",
+            background: "rgba(255,255,255,0.75)",
+            backdropFilter: `blur(${GLASS.blur}px)`,
+            WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+            boxShadow:
+              "0 4px 12px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 200ms ease, box-shadow 200ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          <Zap size={20} strokeWidth={1.8} color="#0F172A" />
+        </button>
+      )}
+
+      {/* Floating Astra Chat Panel */}
+      <ForgeAstraChat isOpen={showAstra} onClose={() => setShowAstra(false)} />
 
       {/* CSS Keyframe Animations */}
       <style>{`

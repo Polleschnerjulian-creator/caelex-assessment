@@ -72,12 +72,12 @@ function ResultNode({ data }: NodeProps) {
     }
     if (computeState === "computing") {
       return {
-        border: `2px dashed ${FORGE.edgeComputing}`,
+        border: `1px solid ${GLASS.border}`,
         animation: "forge-shimmer 1.5s ease-in-out infinite",
       };
     }
     if (computeState === "idle" || !res) {
-      return { border: `2px dashed ${FORGE.textMuted}` };
+      return { border: `1px solid ${GLASS.border}` };
     }
     // done
     return { border: `2px solid ${sevColor}` };

@@ -112,6 +112,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   const isAstraPage = pathname === "/dashboard/astra";
 
+  // Track forge mode so we can hide the global Astra button (Forge has its own)
+  const [forgeActive, setForgeActive] = useState(false);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setForgeActive((e as CustomEvent).detail.active);
+    };
+    window.addEventListener("forge-mode-change", handler);
+    return () => window.removeEventListener("forge-mode-change", handler);
+  }, []);
+
   return (
     <div className="caelex-v2 min-h-screen bg-[var(--bg-base)]">
       {/* Sidebar */}
@@ -158,8 +168,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Floating Astra button */}
-      {!isAstraPage && (
+      {/* Floating Astra button — hidden when Forge is active (Forge has its own) */}
+      {!isAstraPage && !forgeActive && (
         <Link
           href="/dashboard/astra"
           aria-label="Open Astra AI Assistant"

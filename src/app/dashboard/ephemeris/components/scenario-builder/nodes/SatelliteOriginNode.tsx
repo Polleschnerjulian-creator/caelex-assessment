@@ -85,6 +85,38 @@ function SatelliteOriginNode({ data }: NodeProps) {
 
       {/* Output handle only */}
       <Handle type="source" position={Position.Right} style={handleStyle} />
+
+      {/* Hint text — positioned below the node, fades when nodes are added */}
+      {d.showHint && (
+        <div style={hintStyle}>
+          <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 500 }}>
+            Right-click or drag a block to start building
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#9CA3AF",
+              marginTop: 4,
+              opacity: 0.7,
+            }}
+          >
+            Press{" "}
+            <kbd
+              style={{
+                padding: "1px 5px",
+                background: "rgba(255,255,255,0.6)",
+                borderRadius: 3,
+                fontSize: 11,
+                fontFamily: "'IBM Plex Mono', monospace",
+                border: "1px solid rgba(0,0,0,0.08)",
+              }}
+            >
+              /
+            </kbd>{" "}
+            for quick search
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -179,6 +211,17 @@ const handleStyle: React.CSSProperties = {
   border: "2px solid rgba(255,255,255,0.9)",
   outline: `2px solid ${FORGE.originBorder}`,
   borderRadius: "50%",
+};
+
+const hintStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: "50%",
+  transform: "translateX(-50%)",
+  marginTop: 20,
+  textAlign: "center",
+  whiteSpace: "nowrap",
+  pointerEvents: "none",
 };
 
 export default memo(SatelliteOriginNode);
