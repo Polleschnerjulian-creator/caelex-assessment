@@ -194,6 +194,14 @@ export default function SatelliteDetailPage({
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("forecast");
+  const [verityAttestations, setVerityAttestations] = useState<
+    Array<{
+      regulationRef: string;
+      trustLevel: string;
+      status: string;
+      attestationId: string;
+    }>
+  >([]);
 
   // Notify sidebar of forge mode (scenarios tab active)
   useEffect(() => {
@@ -222,14 +230,17 @@ export default function SatelliteDetailPage({
       }
       setLoading(false);
 
-      // Then load forecast + history in parallel (non-blocking)
-      const [forecastRes, historyRes] = await Promise.all([
+      // Then load forecast + history + attestations in parallel (non-blocking)
+      const [forecastRes, historyRes, attestRes] = await Promise.all([
         fetch(`/api/v1/ephemeris/forecast?norad_id=${noradId}`, {
           headers: csrfHeaders(),
         }),
         fetch(
           `/api/v1/ephemeris/history?norad_id=${noradId}&lookback_days=30`,
           { headers: csrfHeaders() },
+        ),
+        fetch(`/api/v1/verity/attestation/list?status=VALID&limit=100`).catch(
+          () => null,
         ),
       ]);
 
@@ -245,6 +256,26 @@ export default function SatelliteDetailPage({
               date: h.calculatedAt,
               score: h.overallScore,
             })),
+          );
+        }
+      }
+      if (attestRes?.ok) {
+        const d = await attestRes.json();
+        if (Array.isArray(d.items)) {
+          setVerityAttestations(
+            d.items.map(
+              (a: {
+                regulationRef: string;
+                trustLevel: string;
+                status: string;
+                attestationId: string;
+              }) => ({
+                regulationRef: a.regulationRef,
+                trustLevel: a.trustLevel,
+                status: a.status,
+                attestationId: a.attestationId,
+              }),
+            ),
           );
         }
       }
@@ -550,7 +581,11 @@ export default function SatelliteDetailPage({
             />
           )}
           {activeTab === "modules" && state && (
-            <ModulesTab modules={state.modules} C={C} />
+            <ModulesTab
+              modules={state.modules}
+              C={C}
+              attestations={verityAttestations}
+            />
           )}
           {activeTab === "scenarios" && (
             <div style={{ flex: 1, minHeight: "calc(100vh - 100px)" }}>
@@ -568,6 +603,7 @@ export default function SatelliteDetailPage({
               dataSources={state.dataSources}
               dataFreshness={state.dataFreshness}
               C={C}
+              attestationCount={verityAttestations.length}
             />
           )}
         </div>
@@ -1016,10 +1052,36 @@ function ForecastTab({
 function ModulesTab({
   modules,
   C,
+  attestations = [],
 }: {
   modules: SatelliteState["modules"];
   C: EphemerisColors;
+  attestations?: Array<{
+    regulationRef: string;
+    trustLevel: string;
+    status: string;
+    attestationId: string;
+  }>;
 }) {
+  // Build a map of regulationRef -> attestation for quick lookup
+  const attestationMap = useMemo(() => {
+    const map = new Map<
+      string,
+      { trustLevel: string; status: string; attestationId: string }
+    >();
+    for (const a of attestations) {
+      // Keep the highest trust level attestation per regulation
+      const existing = map.get(a.regulationRef);
+      if (
+        !existing ||
+        (a.trustLevel === "HIGH" && existing.trustLevel !== "HIGH")
+      ) {
+        map.set(a.regulationRef, a);
+      }
+    }
+    return map;
+  }, [attestations]);
+
   const sorted = useMemo(
     () => Object.entries(modules).sort(([, a], [, b]) => a.score - b.score),
     [modules],
@@ -1050,72 +1112,131 @@ function ModulesTab({
           MODULE SCORES (sorted by risk)
         </div>
         <div style={{ padding: 16 }}>
-          {sorted.map(([key, mod]) => (
-            <div
-              key={key}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "160px 1fr 60px 80px",
-                alignItems: "center",
-                gap: 12,
-                padding: "8px 0",
-                borderBottom: `1px solid ${C.border}`,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 12,
-                  color: C.textSecondary,
-                }}
-              >
-                {MODULE_LABELS[key] ?? key}
-              </span>
+          {sorted.map(([key, mod]) => {
+            // Check if any factor in this module has a Verity attestation
+            const moduleAttestations = mod.factors
+              .map((f) => attestationMap.get(f.regulationRef))
+              .filter(Boolean);
+            const hasAttestation = moduleAttestations.length > 0;
+            const highestTrust = hasAttestation
+              ? moduleAttestations.some((a) => a!.trustLevel === "HIGH")
+                ? "HIGH"
+                : moduleAttestations.some((a) => a!.trustLevel === "MEDIUM")
+                  ? "MEDIUM"
+                  : "LOW"
+              : null;
 
-              {/* Bar */}
+            return (
               <div
+                key={key}
                 style={{
-                  height: 8,
-                  background: C.sunken,
-                  borderRadius: 4,
-                  overflow: "hidden",
+                  display: "grid",
+                  gridTemplateColumns: "160px 1fr 60px 40px 80px",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "8px 0",
+                  borderBottom: `1px solid ${C.border}`,
                 }}
               >
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 12,
+                    color: C.textSecondary,
+                  }}
+                >
+                  {MODULE_LABELS[key] ?? key}
+                </span>
+
+                {/* Bar */}
                 <div
                   style={{
-                    height: "100%",
-                    width: `${mod.score}%`,
-                    background: scoreColor(mod.score, C),
+                    height: 8,
+                    background: C.sunken,
                     borderRadius: 4,
-                    transition: "width 0.3s ease",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${mod.score}%`,
+                      background: scoreColor(mod.score, C),
+                      borderRadius: 4,
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: scoreColor(mod.score, C),
+                    textAlign: "right",
+                  }}
+                >
+                  {mod.score}
+                </span>
+
+                {/* Verity badge */}
+                <span
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  {hasAttestation && (
+                    <span
+                      title={`Verity attested (${highestTrust})`}
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 9,
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        padding: "2px 6px",
+                        borderRadius: 3,
+                        background:
+                          highestTrust === "HIGH"
+                            ? "rgba(61,214,140,0.12)"
+                            : highestTrust === "MEDIUM"
+                              ? "rgba(90,173,255,0.12)"
+                              : "rgba(245,166,35,0.12)",
+                        color:
+                          highestTrust === "HIGH"
+                            ? C.nominal
+                            : highestTrust === "MEDIUM"
+                              ? "#5AADFF"
+                              : C.warning,
+                        border: `1px solid ${
+                          highestTrust === "HIGH"
+                            ? "rgba(61,214,140,0.2)"
+                            : highestTrust === "MEDIUM"
+                              ? "rgba(90,173,255,0.2)"
+                              : "rgba(245,166,35,0.2)"
+                        }`,
+                      }}
+                    >
+                      ✓ V
+                    </span>
+                  )}
+                </span>
+
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    color: riskColor(mod.status, C),
+                    textAlign: "right",
+                  }}
+                >
+                  {mod.status}
+                </span>
               </div>
-
-              <span
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: scoreColor(mod.score, C),
-                  textAlign: "right",
-                }}
-              >
-                {mod.score}
-              </span>
-
-              <span
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10,
-                  color: riskColor(mod.status, C),
-                  textAlign: "right",
-                }}
-              >
-                {mod.status}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1877,10 +1998,12 @@ function DataSourcesTab({
   dataSources,
   dataFreshness,
   C,
+  attestationCount = 0,
 }: {
   dataSources: SatelliteState["dataSources"];
   dataFreshness: string;
   C: EphemerisColors;
+  attestationCount?: number;
 }) {
   const freshnessInfo = (() => {
     switch (dataFreshness) {
@@ -2001,6 +2124,23 @@ function DataSourcesTab({
                 }}
               >
                 {SOURCE_LABELS[key] ?? key}
+                {key === "verity" && attestationCount > 0 && (
+                  <a
+                    href="/dashboard/audit-center"
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 10,
+                      padding: "1px 6px",
+                      borderRadius: 3,
+                      background: "rgba(74,98,232,0.10)",
+                      color: "#6E8BFA",
+                      border: "1px solid rgba(74,98,232,0.15)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {attestationCount} active
+                  </a>
+                )}
               </td>
               <td
                 style={{
