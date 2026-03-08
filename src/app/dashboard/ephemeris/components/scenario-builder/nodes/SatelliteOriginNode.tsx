@@ -21,7 +21,7 @@ function getScoreLabel(score: number): string {
 }
 
 function SatelliteOriginNode({ data }: NodeProps) {
-  const d = data as SatelliteOriginData;
+  const d = data as unknown as SatelliteOriginData;
   const score = d.overallScore;
   const scoreColor = score !== null ? getScoreColor(score) : FORGE.textMuted;
   const scoreLabel = score !== null ? getScoreLabel(score) : "—";

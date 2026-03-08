@@ -182,10 +182,13 @@ function EphemerisForgeInner({
   }, [graph]);
 
   // 10. Canvas event handlers
-  const handlePaneContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setRadialMenuPos({ x: e.clientX, y: e.clientY });
-  }, []);
+  const handlePaneContextMenu = useCallback(
+    (e: MouseEvent | React.MouseEvent<Element, MouseEvent>) => {
+      e.preventDefault();
+      setRadialMenuPos({ x: e.clientX, y: e.clientY });
+    },
+    [],
+  );
 
   const handlePaneClick = useCallback(() => {
     setRadialMenuPos(null);
