@@ -163,6 +163,7 @@ interface UseForgeComputationOptions {
   updateNodeData: (
     nodeId: string,
     data: Partial<Record<string, unknown>>,
+    skipHistory?: boolean,
   ) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
 }
@@ -242,11 +243,15 @@ export function useForgeComputation({
       for (const nodeId of chain.nodeIds) {
         const node = currentNodes.find((n) => n.id === nodeId);
         if (node?.type === FORGE_NODE_TYPES.SCENARIO) {
-          updateNodeDataRef.current(nodeId, { computeState: state });
+          updateNodeDataRef.current(nodeId, { computeState: state }, true);
         }
       }
       if (chain.resultNodeId) {
-        updateNodeDataRef.current(chain.resultNodeId, { computeState: state });
+        updateNodeDataRef.current(
+          chain.resultNodeId,
+          { computeState: state },
+          true,
+        );
       }
     },
     [],
@@ -303,10 +308,20 @@ export function useForgeComputation({
 
         const nodeData = node.data as unknown as ScenarioNodeData;
         const scenarioType = getScenarioType(nodeData.definitionId);
-        if (scenarioType === "CUSTOM") continue;
+        if (scenarioType === "CUSTOM") {
+          updateNodeDataRef.current(
+            nodeId,
+            {
+              computeState: "done" as ComputeState,
+              stepResult: null,
+            },
+            true,
+          );
+          continue;
+        }
 
         // Mark individual node as computing
-        updateNodeDataRef.current(nodeId, { computeState: "computing" });
+        updateNodeDataRef.current(nodeId, { computeState: "computing" }, true);
 
         const res = await fetch("/api/v1/ephemeris/what-if", {
           method: "POST",
@@ -356,10 +371,14 @@ export function useForgeComputation({
         stepResults.push(stepResult);
 
         // Store StepResult on the ScenarioNode
-        updateNodeDataRef.current(nodeId, {
-          computeState: "done" as ComputeState,
-          stepResult,
-        });
+        updateNodeDataRef.current(
+          nodeId,
+          {
+            computeState: "done" as ComputeState,
+            stepResult,
+          },
+          true,
+        );
 
         // Update the edge leading to this node with severity color
         const nodeIndex = chain.nodeIds.indexOf(nodeId);
@@ -384,10 +403,14 @@ export function useForgeComputation({
       // Aggregate results into the chain's ResultNode
       if (chain.resultNodeId && stepResults.length > 0) {
         const aggregated = aggregateResults(stepResults);
-        updateNodeDataRef.current(chain.resultNodeId, {
-          aggregatedResult: aggregated,
-          computeState: "done" as ComputeState,
-        });
+        updateNodeDataRef.current(
+          chain.resultNodeId,
+          {
+            aggregatedResult: aggregated,
+            computeState: "done" as ComputeState,
+          },
+          true,
+        );
 
         // Update the edge to the result node
         const lastNodeId = chain.nodeIds[chain.nodeIds.length - 1];
@@ -403,10 +426,14 @@ export function useForgeComputation({
         }
       } else if (chain.resultNodeId) {
         // No scenario nodes produced results
-        updateNodeDataRef.current(chain.resultNodeId, {
-          aggregatedResult: null,
-          computeState: "done" as ComputeState,
-        });
+        updateNodeDataRef.current(
+          chain.resultNodeId,
+          {
+            aggregatedResult: null,
+            computeState: "done" as ComputeState,
+          },
+          true,
+        );
       }
     },
     [updateEdgeData],
@@ -450,23 +477,30 @@ export function useForgeComputation({
 
     try {
       // Process all chains in parallel; within each chain, nodes are sequential
-      await Promise.all(
+      // Use Promise.allSettled to prevent partial failure from leaving ghost updates
+      const results = await Promise.allSettled(
         computeChains.map(async (chain) => {
-          try {
-            await computeChain(chain, currentVersion, controller.signal);
-          } catch (err) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-              return;
-            }
-            // Mark this chain as errored
-            if (mutationVersionRef.current === currentVersion) {
-              setChainComputeState(chain, "error");
-              setChainEdgesSeverity(chain, null);
-            }
-            throw err;
-          }
+          await computeChain(chain, currentVersion, controller.signal);
         }),
       );
+
+      // Process results: abort remaining work and mark errored chains
+      let firstError: Error | null = null;
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        if (result.status === "rejected") {
+          const err = result.reason;
+          if (err instanceof DOMException && err.name === "AbortError")
+            continue;
+          if (mutationVersionRef.current === currentVersion) {
+            setChainComputeState(computeChains[i], "error");
+            setChainEdgesSeverity(computeChains[i], null);
+          }
+          if (!firstError)
+            firstError = err instanceof Error ? err : new Error(String(err));
+        }
+      }
+      if (firstError) throw firstError;
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         // Cancelled — don't update state

@@ -209,6 +209,7 @@ type GraphAction =
       type: "UPDATE_NODE_DATA";
       nodeId: string;
       data: Partial<Record<string, unknown>>;
+      skipHistory?: boolean;
     }
   | { type: "ADD_EDGE"; connection: Connection }
   | { type: "REMOVE_EDGE"; edgeId: string }
@@ -318,6 +319,10 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
         nodes: newNodes,
         edges: state.present.edges,
       };
+      // Skip history for compute state updates (e.g. computing → done)
+      if (action.skipHistory) {
+        return { ...state, present: newState };
+      }
       return pushHistory(state, newState);
     }
 
@@ -595,8 +600,12 @@ export function useForgeGraph() {
   }, []);
 
   const updateNodeData = useCallback(
-    (nodeId: string, data: Partial<Record<string, unknown>>) => {
-      dispatch({ type: "UPDATE_NODE_DATA", nodeId, data });
+    (
+      nodeId: string,
+      data: Partial<Record<string, unknown>>,
+      skipHistory = false,
+    ) => {
+      dispatch({ type: "UPDATE_NODE_DATA", nodeId, data, skipHistory });
     },
     [],
   );
