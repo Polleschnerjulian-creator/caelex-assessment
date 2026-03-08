@@ -195,6 +195,19 @@ export default function SatelliteDetailPage({
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("forecast");
 
+  // Notify sidebar of forge mode (scenarios tab active)
+  useEffect(() => {
+    const isForge = activeTab === "scenarios";
+    window.dispatchEvent(
+      new CustomEvent("forge-mode-change", { detail: { active: isForge } }),
+    );
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent("forge-mode-change", { detail: { active: false } }),
+      );
+    };
+  }, [activeTab]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -318,6 +331,8 @@ export default function SatelliteDetailPage({
           minHeight: "100vh",
           color: C.textPrimary,
           fontFamily: "'Inter', sans-serif",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {/* ── Top Bar ───────────────────────────────────────────────────────── */}
@@ -520,7 +535,13 @@ export default function SatelliteDetailPage({
         </div>
 
         {/* ── Tab Content ───────────────────────────────────────────────────── */}
-        <div style={{ padding: 24 }}>
+        <div
+          style={
+            activeTab === "scenarios"
+              ? { flex: 1, display: "flex", flexDirection: "column" as const }
+              : { padding: 24 }
+          }
+        >
           {activeTab === "forecast" && (
             <ForecastTab
               forecast={forecast}
@@ -532,12 +553,14 @@ export default function SatelliteDetailPage({
             <ModulesTab modules={state.modules} C={C} />
           )}
           {activeTab === "scenarios" && (
-            <EphemerisForge
-              noradId={noradId}
-              satelliteName={state?.satelliteName ?? noradId}
-              satelliteState={state}
-              onBack={() => setActiveTab("forecast")}
-            />
+            <div style={{ flex: 1, minHeight: "calc(100vh - 180px)" }}>
+              <EphemerisForge
+                noradId={noradId}
+                satelliteName={state?.satelliteName ?? noradId}
+                satelliteState={state}
+                onBack={() => setActiveTab("forecast")}
+              />
+            </div>
           )}
           {activeTab === "cascade" && <CascadeTab noradId={noradId} C={C} />}
           {activeTab === "datasources" && state && (

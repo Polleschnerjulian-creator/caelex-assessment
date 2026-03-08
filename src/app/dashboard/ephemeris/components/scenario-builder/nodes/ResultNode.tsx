@@ -84,7 +84,7 @@ function ResultNode({ data }: NodeProps) {
   }, [computeState, res, sevColor]);
 
   const bgTint = useMemo(() => {
-    if (computeState !== "done" || !severity) return GLASS.bg;
+    if (computeState !== "done" || !severity) return "rgba(248,248,248,0.8)";
     return sevColor + "18"; // severity tint over glass
   }, [computeState, severity, sevColor]);
 

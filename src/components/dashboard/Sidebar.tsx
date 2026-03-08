@@ -429,6 +429,10 @@ export default function Sidebar({
   const [mounted, setMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  // Forge mode — auto-collapse when Ephemeris Forge is active
+  const [forgeMode, setForgeMode] = useState(false);
+  const [forgeExpanded, setForgeExpanded] = useState(false);
+
   // Desktop detection — collapse only on lg+
   const [isLg, setIsLg] = useState(true);
   useEffect(() => {
@@ -450,7 +454,29 @@ export default function Sidebar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Listen for forge-mode events from the Ephemeris page
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.active) {
+        setForgeMode(true);
+        setForgeExpanded(false);
+        onCollapsedChange?.(true);
+      } else {
+        setForgeMode(false);
+        setForgeExpanded(false);
+        // Restore stored collapse state
+        const stored = localStorage.getItem(SIDEBAR_KEY) === "true";
+        setIsCollapsed(stored);
+        onCollapsedChange?.(stored);
+      }
+    };
+    window.addEventListener("forge-mode-change", handler);
+    return () => window.removeEventListener("forge-mode-change", handler);
+  }, [onCollapsedChange]);
+
   const toggleCollapse = () => {
+    if (forgeMode) return; // Don't allow manual toggle in forge mode
     setIsCollapsed((prev) => {
       const next = !prev;
       localStorage.setItem(SIDEBAR_KEY, String(next));
@@ -459,8 +485,8 @@ export default function Sidebar({
     });
   };
 
-  // Only collapsed on desktop
-  const collapsed = isCollapsed && isLg;
+  // Only collapsed on desktop — in forge mode, collapsed unless hovered
+  const collapsed = forgeMode ? isLg && !forgeExpanded : isCollapsed && isLg;
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
 
   // Active group detection
@@ -536,8 +562,14 @@ export default function Sidebar({
 
       {/* ═══ Glass Panel ═══ */}
       <aside
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          if (forgeMode) setForgeExpanded(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          if (forgeMode) setForgeExpanded(false);
+        }}
         className={`
           fixed z-40 flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-[calc(100%+24px)]"}

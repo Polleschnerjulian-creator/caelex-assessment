@@ -61,8 +61,8 @@ export function useEphemerisTheme(): EphemerisColors {
 // ─── Forge Theme (always light) ─────────────────────────────────────────────
 
 export const FORGE = {
-  canvasBg: "#FAFBFC",
-  gridDot: "#E2E8F0",
+  canvasBg: "#FAFAF9",
+  gridDot: "#D4D4D0",
   nodeBg: "#FFFFFF",
   nodeBorder: "#E2E8F0",
   nodeBorderHover: "#CBD5E1",
@@ -98,11 +98,11 @@ export function useForgeTheme(): ForgeColors {
 // ─── Liquid Glass Design Tokens ─────────────────────────────────────────────
 
 export const GLASS = {
-  bg: "rgba(255,255,255,0.7)",
+  bg: "rgba(255,255,255,0.72)",
   bgHover: "rgba(255,255,255,0.78)",
   bgSidebar: "rgba(255,255,255,0.72)",
   bgToolbar: "rgba(255,255,255,0.72)",
-  border: "rgba(255,255,255,0.8)",
+  border: "rgba(255,255,255,0.75)",
   borderHover: "rgba(255,255,255,0.9)",
   borderSidebar: "rgba(255,255,255,0.75)",
   shadow: "0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06)",

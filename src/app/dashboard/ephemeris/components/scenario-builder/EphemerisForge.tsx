@@ -1,8 +1,8 @@
 "use client";
 
-// ─── EphemerisForge — Fullscreen Canvas with Liquid Glass UI ────────────────
-// Renders as a fullscreen takeover (position: fixed, inset: 0). All UI elements
-// float over the ReactFlow canvas using the Apple Liquid Glass design system.
+// ─── EphemerisForge — Inline Canvas with Liquid Glass UI ────────────────────
+// Renders inline within the dashboard layout (width/height: 100%). All UI
+// overlays float over the ReactFlow canvas using the Liquid Glass design system.
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -36,7 +36,6 @@ import BlockPalette from "./overlays/BlockPalette";
 import RadialMenu from "./overlays/RadialMenu";
 import SlashCommand from "./overlays/SlashCommand";
 import ComparisonBar from "./overlays/ComparisonBar";
-import ForgeFloatingSidebar from "./overlays/ForgeFloatingSidebar";
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -288,14 +287,14 @@ function EphemerisForgeInner({
     setShowMinimap((prev) => !prev);
   }, []);
 
-  // ─── Render — Fullscreen Liquid Glass ───────────────────────────────────
+  // ─── Render — Inline Liquid Glass ───────────────────────────────────────
 
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 30,
+        width: "100%",
+        height: "100%",
+        position: "relative",
         background: forgeTheme.canvasBg,
       }}
     >
@@ -342,9 +341,6 @@ function EphemerisForgeInner({
 
       {/* Ghost Hint */}
       {isCanvasEmpty && <GhostHint />}
-
-      {/* Floating Glass Sidebar */}
-      <ForgeFloatingSidebar />
 
       {/* Floating Glass Toolbar */}
       <ForgeToolbar

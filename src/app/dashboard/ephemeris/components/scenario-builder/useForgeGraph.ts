@@ -77,7 +77,7 @@ function createOriginNode(): Node {
   return {
     id: ORIGIN_NODE_ID,
     type: FORGE_NODE_TYPES.ORIGIN,
-    position: { x: 100, y: 300 },
+    position: { x: 350, y: 200 },
     data: data as unknown as Record<string, unknown>,
     deletable: false,
   };
