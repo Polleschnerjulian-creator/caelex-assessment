@@ -25,7 +25,12 @@ const TLE_CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
  * Fetch GP data for a specific NORAD ID from CelesTrak.
  * Uses in-memory cache to avoid hammering the API.
  */
+const NORAD_ID_RE = /^\d{1,8}$/;
+
 async function fetchTLE(noradId: string): Promise<CelesTrakGPRecord | null> {
+  // Validate NORAD ID to prevent URL injection (SVA-20)
+  if (!NORAD_ID_RE.test(noradId)) return null;
+
   // Check cache
   if (tleCache && Date.now() - tleCache.fetchedAt < TLE_CACHE_TTL) {
     return tleCache.data.get(noradId) ?? null;
@@ -33,7 +38,7 @@ async function fetchTLE(noradId: string): Promise<CelesTrakGPRecord | null> {
 
   // Fetch single satellite GP data
   try {
-    const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${noradId}&FORMAT=json`;
+    const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${encodeURIComponent(noradId)}&FORMAT=json`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -222,6 +227,15 @@ export async function crossVerifyPacket(
   const gp = await fetchTLE(packet.satelliteNorad);
   if (!gp) {
     return null; // CelesTrak unavailable
+  }
+
+  // SVA-71: Reject stale TLE data — SGP4 unreliable beyond 14 days from epoch
+  if (gp.EPOCH) {
+    const epochAge =
+      (Date.now() - new Date(gp.EPOCH).getTime()) / (1000 * 60 * 60 * 24);
+    if (epochAge > 14) {
+      return null; // TLE too old for reliable propagation
+    }
   }
 
   const collectedAt = new Date(packet.collectedAt);

@@ -7,6 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { createHash, createPublicKey, verify } from "node:crypto";
 import { randomBytes } from "node:crypto";
 
+/** Sentinel chain genesis sentinel — first packet's previousHash must match this. */
+export const CHAIN_GENESIS_HASH = "sha256:genesis";
+
 // ═══════════════════════════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════════════════════════
@@ -145,11 +148,10 @@ export async function ingestPacket(
   }
 
   // 4. Verify chain continuity (warn but accept — breaks may indicate packet loss)
+  const expectedPrevHash = agent.lastChainHash ?? CHAIN_GENESIS_HASH;
   const chainValid =
-    agent.chainPosition === 0 ||
-    (packet.integrity.previous_hash ===
-      (agent.lastChainHash ?? "sha256:genesis") &&
-      packet.integrity.chain_position === agent.chainPosition);
+    packet.integrity.previous_hash === expectedPrevHash &&
+    packet.integrity.chain_position === agent.chainPosition;
 
   // 5. Store packet + update agent atomically
   try {
@@ -172,6 +174,7 @@ export async function ingestPacket(
           signature: packet.integrity.signature,
           signatureValid: true,
           chainValid,
+          trustScore: 0.6, // Base trust: agent-collected (SVA-45)
         },
       }),
       prisma.sentinelAgent.update({
@@ -273,7 +276,7 @@ export async function verifyChain(
     actual: string;
   }> = [];
 
-  let expectedPrevHash = startHash ?? "sha256:genesis";
+  let expectedPrevHash = startHash ?? CHAIN_GENESIS_HASH;
   let expectedPosition = (startPosition ?? -1) + 1;
 
   for (const pkt of packets) {

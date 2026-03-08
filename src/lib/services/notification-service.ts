@@ -585,8 +585,16 @@ async function dispatchNotification(notification: Notification): Promise<void> {
   // Get user preferences
   const preferences = await getNotificationPreferences(notification.userId);
 
-  // Check if in quiet hours
-  if (preferences?.quietHoursEnabled && isInQuietHours(preferences)) {
+  // Check if in quiet hours — NEVER suppress CRITICAL/WARNING notifications (SVA-55)
+  const isCritical =
+    notification.severity === "WARNING" ||
+    notification.severity === "CRITICAL" ||
+    notification.severity === "URGENT";
+  if (
+    !isCritical &&
+    preferences?.quietHoursEnabled &&
+    isInQuietHours(preferences)
+  ) {
     // Skip immediate notification, will be included in digest
     return;
   }
@@ -616,13 +624,30 @@ function isInQuietHours(preferences: NotificationPreference): boolean {
     return false;
   }
 
-  const now = new Date();
+  // Use user's timezone (SVA-74), fallback to Europe/Berlin
+  const tz = preferences.quietHoursTimezone || "Europe/Berlin";
+  let currentMinutes: number;
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour: "numeric",
+      minute: "numeric",
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+    const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+    currentMinutes = hour * 60 + minute;
+  } catch {
+    // Invalid timezone — fallback to server time
+    const now = new Date();
+    currentMinutes = now.getHours() * 60 + now.getMinutes();
+  }
+
   const [startHour, startMin] = preferences.quietHoursStart
     .split(":")
     .map(Number);
   const [endHour, endMin] = preferences.quietHoursEnd.split(":").map(Number);
-
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const startMinutes = startHour * 60 + startMin;
   const endMinutes = endHour * 60 + endMin;
 

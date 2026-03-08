@@ -86,7 +86,7 @@ export async function resolveEvidence(
               actual_value: rawValue,
               data_point: dataPoint,
               source: "sentinel",
-              trust_score: hasCrossVerification ? 0.98 : 0.92,
+              trust_score: hasCrossVerification ? 0.98 : 0.8,
               collected_at: packet.collectedAt.toISOString(),
               sentinel_anchor: {
                 sentinel_id: agent.sentinelId,

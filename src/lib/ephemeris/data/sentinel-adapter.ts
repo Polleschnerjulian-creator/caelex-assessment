@@ -75,6 +75,8 @@ export async function getSentinelTimeSeries(
         satelliteNorad: noradId,
         dataPoint,
         collectedAt: { gte: cutoff },
+        signatureValid: true, // SVA-64: exclude tampered packets from forecasts
+        chainValid: true,
       },
       orderBy: { collectedAt: "asc" },
       select: {
