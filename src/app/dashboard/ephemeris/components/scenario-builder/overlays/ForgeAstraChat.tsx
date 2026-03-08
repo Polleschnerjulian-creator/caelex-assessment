@@ -12,6 +12,14 @@ interface ForgeAstraChatProps {
   onClose: () => void;
 }
 
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const CHAT_WIDTH = 380;
+const CHAT_HEIGHT = 500;
+const EDGE_GAP = 24;
+const BUTTON_SIZE = 48;
+const BUTTON_GAP = 8;
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function ForgeAstraChat({
@@ -25,11 +33,24 @@ export default function ForgeAstraChat({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(
     null,
   );
-  const [position, setPosition] = useState({
-    x: 100,
-    y: window.innerHeight - 560,
-  });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
+
+  // Reset position to bottom-right each time the chat opens
+  useEffect(() => {
+    if (isOpen) {
+      setPosition({
+        x: window.innerWidth - CHAT_WIDTH - EDGE_GAP,
+        y:
+          window.innerHeight -
+          CHAT_HEIGHT -
+          EDGE_GAP -
+          BUTTON_SIZE -
+          BUTTON_GAP,
+      });
+      setMinimized(false);
+    }
+  }, [isOpen]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -87,15 +108,15 @@ export default function ForgeAstraChat({
 
   if (!isOpen) return null;
 
-  // Minimized pill
+  // Minimized pill — bottom-right near the Astra button
   if (minimized) {
     return (
       <button
         onClick={() => setMinimized(false)}
         style={{
           position: "fixed",
-          left: position.x,
-          bottom: 24,
+          right: EDGE_GAP,
+          bottom: EDGE_GAP + BUTTON_SIZE + BUTTON_GAP,
           zIndex: 55,
           display: "flex",
           alignItems: "center",
@@ -114,6 +135,8 @@ export default function ForgeAstraChat({
           fontWeight: 600,
           letterSpacing: "0.04em",
           color: "#0F172A",
+          animation: "forgeAstraChatOpen 200ms ease-out",
+          transformOrigin: "bottom right",
         }}
       >
         ASTRA <Zap size={12} />
@@ -121,7 +144,7 @@ export default function ForgeAstraChat({
     );
   }
 
-  // Full chat window
+  // Full chat window — anchored bottom-right, draggable
   return (
     <div
       style={{
@@ -129,8 +152,8 @@ export default function ForgeAstraChat({
         left: position.x,
         top: position.y,
         zIndex: 55,
-        width: 380,
-        height: 500,
+        width: CHAT_WIDTH,
+        height: CHAT_HEIGHT,
         display: "flex",
         flexDirection: "column",
         background: "rgba(255,255,255,0.75)",
@@ -140,6 +163,8 @@ export default function ForgeAstraChat({
         borderRadius: 20,
         boxShadow: "0 4px 12px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08)",
         overflow: "hidden",
+        animation: "forgeAstraChatOpen 250ms ease-out",
+        transformOrigin: "bottom right",
       }}
     >
       {/* Header — draggable */}

@@ -266,7 +266,8 @@ function EphemerisForgeInner({
         edgeTypes={edgeTypes}
         onPaneClick={handlePaneClick}
         onPaneContextMenu={handlePaneContextMenu}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        fitView
+        fitViewOptions={{ maxZoom: 1, padding: 0.3 }}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode="Shift"
         selectionKeyCode="Shift"
@@ -394,6 +395,11 @@ function EphemerisForgeInner({
 
         .forge-node-delete { opacity: 0; }
         *:hover > .forge-node-delete { opacity: 1; }
+
+        @keyframes forgeAstraChatOpen {
+          0% { opacity: 0; transform: scale(0.9) translateY(8px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
       `}</style>
     </div>
   );
