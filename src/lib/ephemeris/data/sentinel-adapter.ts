@@ -42,6 +42,8 @@ async function getAgentIds(
  * Queries the latest N days of SentinelPacket data for a given satellite + metric,
  * returns validated, sorted time series points.
  */
+const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 export async function getSentinelTimeSeries(
   prisma: PrismaClient,
   orgId: string,
@@ -49,6 +51,10 @@ export async function getSentinelTimeSeries(
   dataPoint: string,
   days: number = 365,
 ): Promise<SentinelTimeSeries> {
+  if (FORBIDDEN_KEYS.has(dataPoint)) {
+    return { metric: dataPoint, noradId, points: [] };
+  }
+
   safeLog("Fetching Sentinel time series", { orgId, noradId, dataPoint, days });
 
   const cutoff = new Date();

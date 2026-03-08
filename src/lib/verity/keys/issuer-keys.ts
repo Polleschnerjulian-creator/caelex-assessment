@@ -78,7 +78,13 @@ export function decryptPrivateKey(encryptedHex: string): Buffer {
     throw new Error("VERITY_MASTER_KEY must be 64 hex chars (32 bytes)");
   }
 
-  const [ivHex, authTagHex, ciphertextHex] = encryptedHex.split(":");
+  const parts = encryptedHex.split(":");
+  if (parts.length !== 3) {
+    throw new Error(
+      "Invalid encrypted key format (expected iv:authTag:ciphertext)",
+    );
+  }
+  const [ivHex, authTagHex, ciphertextHex] = parts;
 
   const decipher = createDecipheriv(
     "aes-256-gcm",

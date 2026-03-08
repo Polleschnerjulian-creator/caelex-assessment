@@ -375,8 +375,13 @@ export function computeTrustScore(input: {
   return score;
 }
 
+const BATCH_CONCURRENCY = 5;
+const BATCH_TIMEOUT_MS = 50_000; // 10s buffer for Vercel's 60s limit
+
 /**
  * Batch cross-verify all unverified orbital packets for an agent.
+ * Processes in parallel batches of 5 with timeout guard.
+ * Pre-warms TLE cache to avoid duplicate HTTP calls.
  */
 export async function crossVerifyAgent(agentId: string): Promise<{
   total: number;
@@ -384,6 +389,8 @@ export async function crossVerifyAgent(agentId: string): Promise<{
   failed: number;
   skipped: number;
 }> {
+  const startTime = Date.now();
+
   const packets = await prisma.sentinelPacket.findMany({
     where: {
       agentId,
@@ -392,21 +399,45 @@ export async function crossVerifyAgent(agentId: string): Promise<{
       satelliteNorad: { not: null },
     },
     orderBy: { chainPosition: "asc" },
-    take: 100, // Process in batches
+    take: 100,
+    select: { id: true, satelliteNorad: true },
   });
+
+  if (packets.length === 0) {
+    return { total: 0, verified: 0, failed: 0, skipped: 0 };
+  }
+
+  // Pre-warm TLE cache: fetch unique NORAD IDs upfront
+  const uniqueNorads = [...new Set(packets.map((p) => p.satelliteNorad!))];
+  await Promise.allSettled(uniqueNorads.map((n) => fetchTLE(n)));
 
   let verified = 0;
   let failed = 0;
   let skipped = 0;
 
-  for (const packet of packets) {
-    const result = await crossVerifyPacket(packet.id);
-    if (result === null) {
-      skipped++;
-    } else if (result.verified) {
-      verified++;
-    } else {
-      failed++;
+  // Process in parallel batches
+  for (let i = 0; i < packets.length; i += BATCH_CONCURRENCY) {
+    // Timeout guard: abort if approaching serverless limit
+    if (Date.now() - startTime > BATCH_TIMEOUT_MS) {
+      skipped += packets.length - i;
+      break;
+    }
+
+    const batch = packets.slice(i, i + BATCH_CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map((p) => crossVerifyPacket(p.id)),
+    );
+
+    for (const result of results) {
+      if (result.status === "rejected") {
+        failed++;
+      } else if (result.value === null) {
+        skipped++;
+      } else if (result.value.verified) {
+        verified++;
+      } else {
+        failed++;
+      }
     }
   }
 

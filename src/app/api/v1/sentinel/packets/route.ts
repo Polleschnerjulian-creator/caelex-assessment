@@ -73,9 +73,25 @@ export async function GET(request: NextRequest) {
     if (dataPoint) where.dataPoint = dataPoint;
     if (satellite) where.satelliteNorad = satellite;
     if (since || until) {
+      const sinceDate = since ? new Date(since) : undefined;
+      const untilDate = until ? new Date(until) : undefined;
+
+      if (since && isNaN(sinceDate!.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid 'since' date format" },
+          { status: 400 },
+        );
+      }
+      if (until && isNaN(untilDate!.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid 'until' date format" },
+          { status: 400 },
+        );
+      }
+
       where.collectedAt = {
-        ...(since ? { gte: new Date(since) } : {}),
-        ...(until ? { lte: new Date(until) } : {}),
+        ...(sinceDate ? { gte: sinceDate } : {}),
+        ...(untilDate ? { lte: untilDate } : {}),
       };
     }
 

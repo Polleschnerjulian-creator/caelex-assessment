@@ -210,9 +210,42 @@ export async function ingestPacket(
 // CHAIN VERIFICATION
 // ═══════════════════════════════════════════════════════════════════════
 
-export async function verifyChain(agentId: string) {
+/**
+ * Verifies the hash-chain integrity for a Sentinel agent.
+ * Incremental: only verifies packets after lastVerifiedPosition.
+ * Updates checkpoint atomically on success.
+ *
+ * @param fullVerify - Re-verify entire chain from genesis (ignores checkpoint)
+ */
+export async function verifyChain(
+  agentId: string,
+  fullVerify = false,
+): Promise<{
+  valid: boolean;
+  total_packets: number;
+  verified_from: number;
+  verified_to: number;
+  breaks: Array<{ position: number; expected: string; actual: string }>;
+  incremental: boolean;
+}> {
+  const agent = await prisma.sentinelAgent.findUnique({
+    where: { id: agentId },
+    select: { lastVerifiedPosition: true, lastVerifiedHash: true },
+  });
+
+  const startPosition = fullVerify
+    ? null
+    : (agent?.lastVerifiedPosition ?? null);
+  const startHash = fullVerify ? null : (agent?.lastVerifiedHash ?? null);
+
+  // Fetch only unverified packets (or all if fullVerify / no checkpoint)
   const packets = await prisma.sentinelPacket.findMany({
-    where: { agentId },
+    where: {
+      agentId,
+      ...(startPosition != null
+        ? { chainPosition: { gt: startPosition } }
+        : {}),
+    },
     orderBy: { chainPosition: "asc" },
     select: {
       packetId: true,
@@ -224,7 +257,14 @@ export async function verifyChain(agentId: string) {
   });
 
   if (packets.length === 0) {
-    return { valid: true, total_packets: 0, breaks: [] };
+    return {
+      valid: true,
+      total_packets: 0,
+      verified_from: startPosition ?? 0,
+      verified_to: startPosition ?? 0,
+      breaks: [],
+      incremental: startPosition != null,
+    };
   }
 
   const breaks: Array<{
@@ -233,11 +273,10 @@ export async function verifyChain(agentId: string) {
     actual: string;
   }> = [];
 
-  let expectedPrevHash = "sha256:genesis";
-  let expectedPosition = 0;
+  let expectedPrevHash = startHash ?? "sha256:genesis";
+  let expectedPosition = (startPosition ?? -1) + 1;
 
   for (const pkt of packets) {
-    // Check position continuity
     if (pkt.chainPosition !== expectedPosition) {
       breaks.push({
         position: expectedPosition,
@@ -246,7 +285,6 @@ export async function verifyChain(agentId: string) {
       });
     }
 
-    // Check hash chain
     if (pkt.previousHash !== expectedPrevHash) {
       breaks.push({
         position: pkt.chainPosition,
@@ -259,12 +297,26 @@ export async function verifyChain(agentId: string) {
     expectedPosition = pkt.chainPosition + 1;
   }
 
+  const lastPacket = packets[packets.length - 1]!;
+
+  // Update checkpoint atomically if chain is valid
+  if (breaks.length === 0) {
+    await prisma.sentinelAgent.update({
+      where: { id: agentId },
+      data: {
+        lastVerifiedPosition: lastPacket.chainPosition,
+        lastVerifiedHash: lastPacket.contentHash,
+      },
+    });
+  }
+
   return {
     valid: breaks.length === 0,
     total_packets: packets.length,
-    first_position: packets[0]!.chainPosition,
-    last_position: packets[packets.length - 1]!.chainPosition,
+    verified_from: packets[0]!.chainPosition,
+    verified_to: lastPacket.chainPosition,
     breaks,
+    incremental: startPosition != null,
   };
 }
 

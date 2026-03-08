@@ -7,6 +7,7 @@ import {
   Shield,
   Link2,
   CheckCircle2,
+  AlertCircle,
   AlertTriangle,
   XCircle,
   RefreshCw,
@@ -139,50 +140,62 @@ export default function SentinelDashboard() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchAgents = useCallback(async () => {
+    setError(null);
     try {
       const res = await fetch("/api/v1/sentinel/agents");
-      if (res.ok) {
-        const json = await res.json();
-        setAgents(json.data || []);
-        if (json.data?.length > 0 && !selectedAgent) {
-          setSelectedAgent(json.data[0].id);
-        }
+      if (!res.ok) {
+        setError(`Failed to load agents (HTTP ${res.status})`);
+        return;
+      }
+      const json = await res.json();
+      setAgents(json.data || []);
+      if (json.data?.length > 0 && !selectedAgent) {
+        setSelectedAgent(json.data[0].id);
       }
     } catch {
-      // silent
+      setError(
+        "Network error while loading agents. Please check your connection.",
+      );
     }
   }, [selectedAgent]);
 
   const fetchPackets = useCallback(async () => {
     if (!selectedAgent) return;
+    setError(null);
     try {
       const res = await fetch(
         `/api/v1/sentinel/packets?agent_id=${selectedAgent}&limit=25`,
       );
-      if (res.ok) {
-        const json = await res.json();
-        setPackets(json.data || []);
+      if (!res.ok) {
+        setError(`Failed to load evidence packets (HTTP ${res.status})`);
+        return;
       }
+      const json = await res.json();
+      setPackets(json.data || []);
     } catch {
-      // silent
+      setError("Network error while loading evidence packets.");
     }
   }, [selectedAgent]);
 
   const verifyChain = useCallback(async () => {
     if (!selectedAgent) return;
     setIsVerifying(true);
+    setError(null);
     try {
       const res = await fetch(
         `/api/v1/sentinel/chain/verify?agent_id=${selectedAgent}`,
       );
-      if (res.ok) {
-        const json = await res.json();
-        setChainResult(json.data);
+      if (!res.ok) {
+        setError(`Chain verification failed (HTTP ${res.status})`);
+        return;
       }
+      const json = await res.json();
+      setChainResult(json.data);
     } catch {
-      // silent
+      setError("Network error during chain verification.");
     } finally {
       setIsVerifying(false);
     }
@@ -369,6 +382,9 @@ export default function SentinelDashboard() {
         )}
       </AnimatePresence>
 
+      {/* Error Banner */}
+      {error && <ErrorBanner message={error} onRetry={fetchAgents} />}
+
       {/* Chain Integrity Banner */}
       {chainResult && (
         <ChainIntegrityBanner
@@ -521,6 +537,29 @@ export default function SentinelDashboard() {
 // ═══════════════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════
+
+function ErrorBanner({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+      <div className="flex items-center gap-2">
+        <AlertCircle className="h-4 w-4 text-red-400" />
+        <span className="text-small text-red-300">{message}</span>
+      </div>
+      <button
+        onClick={onRetry}
+        className="text-small font-medium text-red-400 hover:text-red-300"
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
 
 function StatCard({
   label,

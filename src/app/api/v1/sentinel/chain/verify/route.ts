@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
-    const result = await verifyChain(agentId);
+    const fullVerify = url.searchParams.get("full_verify") === "true";
+    const result = await verifyChain(agentId, fullVerify);
 
     return NextResponse.json({
       data: {

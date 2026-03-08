@@ -2526,6 +2526,9 @@ model Organization {
   // Sentinel: autonomous compliance evidence agents
   sentinelAgents SentinelAgent[]
 
+  // Verity: compliance attestations (multi-tenant FK)
+  verityAttestations VerityAttestation[]
+
   // Ephemeris: predictive compliance intelligence
   satelliteComplianceStates  SatelliteComplianceState[]
   satelliteComplianceHistory SatelliteComplianceStateHistory[]
@@ -6008,8 +6011,13 @@ model SentinelAgent {
   version           String?
   configHash        String?
   enabledCollectors String[] // ["orbit_debris", "cybersecurity", ...]
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+
+  // Chain verification checkpoint (for incremental verification)
+  lastVerifiedPosition Int?
+  lastVerifiedHash     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   packets     SentinelPacket[]
   crossChecks CrossVerification[]
@@ -6097,6 +6105,8 @@ model VerityAttestation {
   id             String  @id @default(cuid())
   attestationId  String  @unique
   operatorId     String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   satelliteNorad String?
 
   regulationRef  String
@@ -6142,6 +6152,7 @@ model VerityAttestation {
   certificateLinks VerityCertificateClaim[]
 
   @@index([operatorId])
+  @@index([organizationId])
   @@index([regulationRef])
   @@index([issuerKeyId])
   @@index([collectedAt])
