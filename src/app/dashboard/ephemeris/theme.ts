@@ -57,3 +57,40 @@ export function useEphemerisTheme(): EphemerisColors {
 
   return isDark ? DARK : LIGHT;
 }
+
+// ─── Forge Theme (always light) ─────────────────────────────────────────────
+
+export const FORGE = {
+  canvasBg: "#FAFBFC",
+  gridDot: "#E2E8F0",
+  nodeBg: "#FFFFFF",
+  nodeBorder: "#E2E8F0",
+  nodeBorderHover: "#CBD5E1",
+  nodeShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  nodeShadowHover: "0 4px 12px rgba(0,0,0,0.1)",
+  toolbarBg: "rgba(255,255,255,0.88)",
+  toolbarBorder: "#E2E8F0",
+  toolbarShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  textPrimary: "#0F172A",
+  textSecondary: "#334155",
+  textTertiary: "#64748B",
+  textMuted: "#94A3B8",
+  originBorder: "#10B981",
+  originGlow: "0 0 0 3px rgba(16,185,129,0.15)",
+  edgeNominal: "#10B981",
+  edgeWarning: "#F59E0B",
+  edgeCritical: "#EF4444",
+  edgeComputing: "#94A3B8",
+  edgeIdle: "#CBD5E1",
+  nominal: "#16A34A",
+  warning: "#EA580C",
+  critical: "#DC2626",
+  watch: "#CA8A04",
+  accent: "#2563EB",
+} as const;
+
+export type ForgeColors = typeof FORGE;
+
+export function useForgeTheme(): ForgeColors {
+  return FORGE;
+}
