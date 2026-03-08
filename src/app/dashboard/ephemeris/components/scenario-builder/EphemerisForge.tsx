@@ -1,9 +1,8 @@
 "use client";
 
 // ─── EphemerisForge — Main Container ────────────────────────────────────────
-// Top-level container that wires React Flow canvas, custom nodes/edges,
-// overlays (toolbar, radial menu, slash command, comparison bar), and both
-// hooks (useForgeGraph, useForgeComputation).
+// Renders within the normal dashboard layout (not fullscreen). Wires React Flow
+// canvas, custom nodes/edges, overlays, BlockPalette, and both hooks.
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -33,6 +32,7 @@ import ForgeEdge from "./edges/ForgeEdge";
 
 // Overlay components
 import ForgeToolbar from "./overlays/ForgeToolbar";
+import BlockPalette from "./overlays/BlockPalette";
 import RadialMenu from "./overlays/RadialMenu";
 import SlashCommand from "./overlays/SlashCommand";
 import ComparisonBar from "./overlays/ComparisonBar";
@@ -42,8 +42,59 @@ import ComparisonBar from "./overlays/ComparisonBar";
 interface EphemerisForgeProps {
   noradId: string;
   satelliteName: string;
-  satelliteState: any; // the state object from the satellite detail page
+  satelliteState: any;
   onBack: () => void;
+}
+
+// ─── Ghost Hint (shown when canvas is empty) ────────────────────────────────
+
+function GhostHint() {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+        zIndex: 1,
+        textAlign: "center",
+        opacity: 0.45,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 14,
+          color: "#64748B",
+          fontWeight: 500,
+          lineHeight: 1.5,
+        }}
+      >
+        Right-click or drag a block to start building your scenario
+      </div>
+      <div
+        style={{
+          fontSize: 11,
+          color: "#94A3B8",
+          marginTop: 6,
+        }}
+      >
+        Press{" "}
+        <kbd
+          style={{
+            padding: "1px 5px",
+            background: "#E2E8F0",
+            borderRadius: 3,
+            fontSize: 11,
+            fontFamily: "'IBM Plex Mono', monospace",
+          }}
+        >
+          /
+        </kbd>{" "}
+        for quick search
+      </div>
+    </div>
+  );
 }
 
 // ─── Inner Component (requires ReactFlowProvider ancestor) ──────────────────
@@ -54,10 +105,9 @@ function EphemerisForgeInner({
   satelliteState,
   onBack,
 }: EphemerisForgeProps) {
-  // 1. Theme
   const forgeTheme = useForgeTheme();
 
-  // 2. Build origin data from satellite state
+  // Build origin data from satellite state
   const originData: SatelliteOriginData = useMemo(
     () => ({
       satelliteName,
@@ -71,23 +121,21 @@ function EphemerisForgeInner({
     [satelliteName, noradId, satelliteState],
   );
 
-  // 3. Graph state hook
+  // Graph state hook
   const graph = useForgeGraph();
 
-  // Sync origin data into graph when it changes
   useEffect(() => {
     graph.setOriginData(originData);
   }, [originData, graph.setOriginData]);
 
-  // 4. Derive chains from current graph state
+  // Derive chains
   const chains = useMemo(
     () => graph.getChains(),
-    // getChains reads from a ref, but we need to recompute when nodes/edges change
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [graph.getChains, graph.nodes, graph.edges],
   );
 
-  // 5. Computation hook
+  // Computation hook
   useForgeComputation({
     noradId,
     nodes: graph.nodes,
@@ -97,15 +145,22 @@ function EphemerisForgeInner({
     onEdgesChange: graph.onEdgesChange,
   });
 
-  // 6. Local state for overlays
+  // Local state
   const [showMinimap, setShowMinimap] = useState(true);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   const [radialMenuPos, setRadialMenuPos] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [showSlashCommand, setShowSlashCommand] = useState(false);
 
-  // 7. Node/edge types (memoized!)
+  // Check if canvas is empty (only origin node, no scenario nodes)
+  const isCanvasEmpty = useMemo(
+    () => !graph.nodes.some((n) => n.type === FORGE_NODE_TYPES.SCENARIO),
+    [graph.nodes],
+  );
+
+  // Node/edge types
   const nodeTypes: NodeTypes = useMemo(
     () => ({
       [FORGE_NODE_TYPES.ORIGIN]: SatelliteOriginNode,
@@ -122,7 +177,7 @@ function EphemerisForgeInner({
     [],
   );
 
-  // 8. Inject callbacks into scenario node data
+  // Inject callbacks into scenario node data
   const nodesWithCallbacks = useMemo(() => {
     return graph.nodes.map((node) => {
       if (node.type === FORGE_NODE_TYPES.SCENARIO) {
@@ -146,7 +201,7 @@ function EphemerisForgeInner({
     });
   }, [graph.nodes, graph.updateNodeData, graph.removeNode]);
 
-  // 9. Keyboard shortcuts
+  // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -174,14 +229,13 @@ function EphemerisForgeInner({
       }
       if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        /* save handled by toolbar */
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [graph]);
 
-  // 10. Canvas event handlers
+  // Canvas event handlers
   const handlePaneContextMenu = useCallback(
     (e: MouseEvent | React.MouseEvent<Element, MouseEvent>) => {
       e.preventDefault();
@@ -194,7 +248,7 @@ function EphemerisForgeInner({
     setRadialMenuPos(null);
   }, []);
 
-  // 11. Block selection handler
+  // Block selection handler
   const reactFlowInstance = useReactFlow();
 
   const handleSelectBlock = useCallback(
@@ -212,15 +266,15 @@ function EphemerisForgeInner({
     [reactFlowInstance, graph],
   );
 
-  // Slash command handler (no screen position)
-  const handleSlashSelectBlock = useCallback(
+  // Palette block selection (no screen position — spawn at viewport center)
+  const handlePaletteSelectBlock = useCallback(
     (definitionId: string) => {
       handleSelectBlock(definitionId);
     },
     [handleSelectBlock],
   );
 
-  // 12. Toolbar callbacks
+  // Toolbar callbacks
   const handleSave = useCallback(
     (name: string) => {
       return graph.saveScenario(name, noradId);
@@ -232,14 +286,20 @@ function EphemerisForgeInner({
     setShowMinimap((prev) => !prev);
   }, []);
 
-  // 13. Render
+  // Render — inline layout (not fullscreen)
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 40,
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "calc(100vh - 220px)",
+        minHeight: 500,
         background: forgeTheme.canvasBg,
+        borderRadius: 8,
+        border: `1px solid ${forgeTheme.nodeBorder}`,
+        overflow: "hidden",
+        position: "relative",
       }}
     >
       {/* Toolbar */}
@@ -254,44 +314,55 @@ function EphemerisForgeInner({
         onToggleMinimap={handleToggleMinimap}
       />
 
-      {/* React Flow Canvas */}
-      <div style={{ position: "absolute", inset: 0, top: 48 }}>
-        <ReactFlow
-          nodes={nodesWithCallbacks}
-          edges={graph.edges}
-          onNodesChange={graph.onNodesChange}
-          onEdgesChange={graph.onEdgesChange}
-          onConnect={graph.onConnect}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          onPaneClick={handlePaneClick}
-          onPaneContextMenu={handlePaneContextMenu}
-          fitView
-          deleteKeyCode={["Backspace", "Delete"]}
-          multiSelectionKeyCode="Shift"
-          selectionKeyCode="Shift"
-          panOnScroll
-          zoomOnDoubleClick={false}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={20}
-            size={1}
-            color={forgeTheme.gridDot}
-          />
-          {showMinimap && (
-            <MiniMap
-              zoomable
-              pannable
-              style={{
-                background: forgeTheme.canvasBg,
-                border: `1px solid ${forgeTheme.nodeBorder}`,
-                borderRadius: 8,
-              }}
+      {/* Body: Palette + Canvas */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Block Palette (left side) */}
+        <BlockPalette
+          onSelectBlock={handlePaletteSelectBlock}
+          collapsed={paletteCollapsed}
+          onToggleCollapse={() => setPaletteCollapsed((p) => !p)}
+        />
+
+        {/* React Flow Canvas */}
+        <div style={{ flex: 1, position: "relative" }}>
+          {isCanvasEmpty && <GhostHint />}
+          <ReactFlow
+            nodes={nodesWithCallbacks}
+            edges={graph.edges}
+            onNodesChange={graph.onNodesChange}
+            onEdgesChange={graph.onEdgesChange}
+            onConnect={graph.onConnect}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onPaneClick={handlePaneClick}
+            onPaneContextMenu={handlePaneContextMenu}
+            fitView
+            deleteKeyCode={["Backspace", "Delete"]}
+            multiSelectionKeyCode="Shift"
+            selectionKeyCode="Shift"
+            panOnScroll
+            zoomOnDoubleClick={false}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              color={forgeTheme.gridDot}
             />
-          )}
-        </ReactFlow>
+            {showMinimap && (
+              <MiniMap
+                zoomable
+                pannable
+                style={{
+                  background: forgeTheme.canvasBg,
+                  border: `1px solid ${forgeTheme.nodeBorder}`,
+                  borderRadius: 8,
+                }}
+              />
+            )}
+          </ReactFlow>
+        </div>
       </div>
 
       {/* Radial Menu (right-click) */}
@@ -304,11 +375,11 @@ function EphemerisForgeInner({
       {/* Slash Command Palette */}
       <SlashCommand
         isOpen={showSlashCommand}
-        onSelectBlock={handleSlashSelectBlock}
+        onSelectBlock={handlePaletteSelectBlock}
         onClose={() => setShowSlashCommand(false)}
       />
 
-      {/* Comparison Bar (auto-shows when 2+ results are done) */}
+      {/* Comparison Bar */}
       <ComparisonBar nodes={graph.nodes} edges={graph.edges} />
 
       {/* CSS Keyframe Animations */}

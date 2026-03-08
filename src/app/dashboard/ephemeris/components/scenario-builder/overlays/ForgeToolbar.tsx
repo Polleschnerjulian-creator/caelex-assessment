@@ -140,12 +140,9 @@ export default function ForgeToolbar({
   return (
     <div
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
+        position: "relative",
         height: 48,
-        zIndex: 50,
+        flexShrink: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
