@@ -121,61 +121,80 @@ export async function ingestPacket(
   if (agent.status !== "ACTIVE")
     return { accepted: false, error: "Agent not active" };
 
-  // 2. Verify Ed25519 signature
+  // 2. Verify Ed25519 signature — REJECT if invalid
   const signatureValid = verifyPacketSignature(
     packet.integrity.content_hash,
     packet.integrity.signature,
     agent.publicKey,
   );
+  if (!signatureValid) {
+    return { accepted: false, error: "SIGNATURE_INVALID" };
+  }
 
-  // 3. Verify content hash (re-hash data+regulation_mapping)
+  // 3. Verify content hash — REJECT if mismatch
   const expectedHash = computeContentHash({
     data: packet.data,
     regulation_mapping: packet.regulation_mapping,
   });
-  const hashValid = expectedHash === packet.integrity.content_hash;
+  if (expectedHash !== packet.integrity.content_hash) {
+    return { accepted: false, error: "HASH_MISMATCH" };
+  }
 
-  // 4. Verify chain continuity
+  // 4. Verify chain continuity (warn but accept — breaks may indicate packet loss)
   const chainValid =
     agent.chainPosition === 0 ||
     (packet.integrity.previous_hash ===
       (agent.lastChainHash ?? "sha256:genesis") &&
       packet.integrity.chain_position === agent.chainPosition);
 
-  // 5. Store packet
-  await prisma.sentinelPacket.create({
-    data: {
-      packetId: packet.packet_id,
-      agentId,
-      satelliteNorad: packet.satellite_norad_id,
-      dataPoint: packet.data.data_point,
-      values: packet.data.values as object,
-      sourceSystem: packet.data.source_system,
-      collectionMethod: packet.data.collection_method,
-      collectedAt: new Date(packet.data.collection_timestamp),
-      complianceNotes: packet.data.compliance_notes,
-      regulationMapping: packet.regulation_mapping as object[],
-      contentHash: packet.integrity.content_hash,
-      previousHash: packet.integrity.previous_hash,
-      chainPosition: packet.integrity.chain_position,
-      signature: packet.integrity.signature,
-      signatureValid,
-      chainValid: chainValid && hashValid,
-    },
-  });
-
-  // 6. Update agent state
-  await prisma.sentinelAgent.update({
-    where: { id: agentId },
-    data: {
-      lastSeen: new Date(),
-      lastPacketAt: new Date(),
-      chainPosition: packet.integrity.chain_position + 1,
-      lastChainHash: packet.integrity.content_hash,
-      version: packet.metadata.sentinel_version,
-      configHash: packet.metadata.config_hash,
-    },
-  });
+  // 5. Store packet + update agent atomically
+  try {
+    await prisma.$transaction([
+      prisma.sentinelPacket.create({
+        data: {
+          packetId: packet.packet_id,
+          agentId,
+          satelliteNorad: packet.satellite_norad_id,
+          dataPoint: packet.data.data_point,
+          values: packet.data.values as object,
+          sourceSystem: packet.data.source_system,
+          collectionMethod: packet.data.collection_method,
+          collectedAt: new Date(packet.data.collection_timestamp),
+          complianceNotes: packet.data.compliance_notes,
+          regulationMapping: packet.regulation_mapping as object[],
+          contentHash: packet.integrity.content_hash,
+          previousHash: packet.integrity.previous_hash,
+          chainPosition: packet.integrity.chain_position,
+          signature: packet.integrity.signature,
+          signatureValid: true,
+          chainValid,
+        },
+      }),
+      prisma.sentinelAgent.update({
+        where: { id: agentId },
+        data: {
+          lastSeen: new Date(),
+          lastPacketAt: new Date(),
+          chainPosition: packet.integrity.chain_position + 1,
+          lastChainHash: packet.integrity.content_hash,
+          version: packet.metadata.sentinel_version,
+          configHash: packet.metadata.config_hash,
+        },
+      }),
+    ]);
+  } catch (err: unknown) {
+    // Handle duplicate packet_id (idempotent retry)
+    if (
+      err instanceof Error &&
+      err.message.includes("Unique constraint failed")
+    ) {
+      return {
+        accepted: true,
+        chain_position: packet.integrity.chain_position,
+      };
+    }
+    throw err;
+  }
 
   return {
     accepted: true,
