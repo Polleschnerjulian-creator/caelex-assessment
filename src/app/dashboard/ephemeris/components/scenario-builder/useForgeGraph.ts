@@ -33,17 +33,23 @@ const ORIGIN_NODE_ID = "origin";
 const RESULT_NODE_OFFSET_X = 250;
 const MAX_HISTORY = 50;
 
-let _nodeCounter = 0;
-function nextNodeId(prefix: string): string {
-  _nodeCounter += 1;
-  return `${prefix}-${Date.now()}-${_nodeCounter}`;
-}
+// ID generation — encapsulated via closure. IDs include Date.now() to
+// guarantee uniqueness even across hot-module-reload boundaries.
+const idGen = (() => {
+  let counter = 0;
+  return {
+    nextNodeId(prefix: string): string {
+      counter += 1;
+      return `${prefix}-${Date.now()}-${counter}`;
+    },
+    nextEdgeId(): string {
+      counter += 1;
+      return `edge-${Date.now()}-${counter}`;
+    },
+  };
+})();
 
-let _edgeCounter = 0;
-function nextEdgeId(): string {
-  _edgeCounter += 1;
-  return `edge-${Date.now()}-${_edgeCounter}`;
-}
+const { nextNodeId, nextEdgeId } = idGen;
 
 // ─── Initial State ───────────────────────────────────────────────────────────
 
@@ -461,10 +467,13 @@ function buildChains(nodes: Node[], edges: Edge[]): Chain[] {
 
   const chains: Chain[] = [];
   let chainCounter = 0;
+  const visited = new Set<string>();
 
   function walk(currentId: string, currentChain: string[]): void {
     const node = nodeMap.get(currentId);
     if (!node) return;
+    if (visited.has(currentId)) return; // cycle guard
+    visited.add(currentId);
 
     currentChain.push(currentId);
 
