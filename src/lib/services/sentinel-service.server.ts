@@ -59,7 +59,7 @@ export async function registerSentinelAgent(input: {
   });
 
   if (!org) {
-    return { error: "Organization not found", status: 404 };
+    return { error: "Registration failed", status: 400 };
   }
 
   // Check if agent already exists
@@ -68,11 +68,15 @@ export async function registerSentinelAgent(input: {
   });
 
   if (existing) {
-    // Update existing agent
+    // Verify caller owns the agent by checking token
+    if (existing.token !== input.tokenHash) {
+      return { error: "Cannot update agent: invalid token", status: 403 };
+    }
+
+    // Update metadata ONLY — do NOT update publicKey (SVA-05)
     const updated = await prisma.sentinelAgent.update({
       where: { sentinelId: input.sentinel_id },
       data: {
-        publicKey: input.public_key,
         version: input.version,
         enabledCollectors: input.collectors,
         lastSeen: new Date(),
@@ -89,7 +93,7 @@ export async function registerSentinelAgent(input: {
       sentinelId: input.sentinel_id,
       publicKey: input.public_key,
       token: input.tokenHash,
-      status: "ACTIVE",
+      status: "PENDING",
       version: input.version,
       enabledCollectors: input.collectors,
       lastSeen: new Date(),

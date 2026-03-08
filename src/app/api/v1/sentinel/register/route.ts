@@ -45,6 +45,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate public key is valid Ed25519 PEM
+    try {
+      const { createPublicKey } = await import("node:crypto");
+      const key = createPublicKey(parsed.data.public_key);
+      if (key.asymmetricKeyType !== "ed25519") {
+        return NextResponse.json(
+          { error: "Public key must be Ed25519" },
+          { status: 400 },
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid public key PEM format" },
+        { status: 400 },
+      );
+    }
+
     // Hash the token for storage/lookup
     const { createHash } = await import("node:crypto");
     const tokenHash = createHash("sha256").update(token).digest("hex");
