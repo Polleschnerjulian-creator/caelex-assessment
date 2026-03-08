@@ -6123,6 +6123,14 @@ model VerityAttestation {
   // Commitment Secret (encrypted, optional)
   encryptedSecret String?
 
+  // Manual attestation fields
+  description String?
+  entityId    String?
+
+  // Revocation
+  revokedAt     DateTime?
+  revokedReason String?
+
   issuedAt  DateTime @default(now())
   expiresAt DateTime
 
@@ -6132,6 +6140,8 @@ model VerityAttestation {
   @@index([regulationRef])
   @@index([issuerKeyId])
   @@index([collectedAt])
+  @@index([revokedAt])
+  @@index([entityId])
 }
 
 model VerityCertificate {

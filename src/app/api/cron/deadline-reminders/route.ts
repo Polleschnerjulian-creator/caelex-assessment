@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { processDeadlineReminders } from "@/lib/notifications";
+import { processAttestationExpiryReminders } from "@/lib/notifications/attestation-expiry";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 
@@ -48,7 +49,13 @@ export async function GET(req: Request) {
   try {
     logger.info("Starting deadline reminder processing...");
 
-    const result = await processDeadlineReminders();
+    const [result, attestationResult] = await Promise.all([
+      processDeadlineReminders(),
+      processAttestationExpiryReminders().catch((err) => {
+        logger.error("Attestation expiry processing failed", err);
+        return { processed: 0, notified: 0, errors: [] as string[] };
+      }),
+    ]);
 
     const duration = Date.now() - startTime;
 
@@ -57,6 +64,8 @@ export async function GET(req: Request) {
       sent: result.sent,
       skipped: result.skipped,
       errors: result.errors.length,
+      attestationsProcessed: attestationResult.processed,
+      attestationsNotified: attestationResult.notified,
       duration: `${duration}ms`,
     });
 
@@ -66,8 +75,12 @@ export async function GET(req: Request) {
       sent: result.sent,
       skipped: result.skipped,
       errorCount: result.errors.length,
-      errors: result.errors.slice(0, 10), // Limit errors in response
+      errors: result.errors.slice(0, 10),
       deadlinesSent: result.deadlinesSent,
+      attestations: {
+        processed: attestationResult.processed,
+        notified: attestationResult.notified,
+      },
       duration: `${duration}ms`,
       processedAt: new Date().toISOString(),
     });

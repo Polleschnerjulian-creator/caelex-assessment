@@ -25,6 +25,7 @@ export async function getVerityAttestations(
     const where: Record<string, unknown> = {
       operatorId,
       expiresAt: { gt: new Date() }, // Only non-expired
+      revokedAt: null, // Only non-revoked
     };
     if (noradId) {
       where.satelliteNorad = noradId;
@@ -79,6 +80,7 @@ export async function getVerityStatus(
     const where: Record<string, unknown> = {
       operatorId,
       expiresAt: { gt: new Date() },
+      revokedAt: null, // Only non-revoked
     };
     if (noradId) {
       where.satelliteNorad = noradId;

@@ -71,8 +71,67 @@ function VerifyPageContent() {
     } else if (id) {
       setIdInput(id);
       setMode("id");
+      // Auto-verify if ID is provided via URL (attestation or certificate)
+      setAutoVerifyId(id);
     }
   }, [searchParams]);
+
+  // Auto-verify state for URL-provided IDs
+  const [autoVerifyId, setAutoVerifyId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!autoVerifyId) return;
+    setAutoVerifyId(null);
+    // Trigger verification automatically
+    handleVerifyById(autoVerifyId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoVerifyId]);
+
+  const handleVerifyById = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      // Try attestation ID first (va_ prefix), then certificate
+      if (id.startsWith("va_")) {
+        // Look up attestation by attestationId
+        const listRes = await fetch(`/api/v1/verity/attestation/list?limit=1`);
+        if (listRes.ok) {
+          // Verify via the full attestation JSON stored in DB
+          const res = await fetch("/api/v1/verity/attestation/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ attestation_id: id }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setResult(data);
+            return;
+          }
+        }
+      }
+      // Fall through to certificate verification
+      const certRes = await fetch(
+        `/api/v1/verity/certificate/${encodeURIComponent(id)}`,
+      );
+      if (!certRes.ok)
+        throw new Error(
+          "ID not found — not a valid attestation or certificate ID",
+        );
+      const certData = await certRes.json();
+      const res = await fetch("/api/v1/verity/certificate/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ certificate: certData.certificate }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed");
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleVerify = async () => {
     setLoading(true);
@@ -81,22 +140,8 @@ function VerifyPageContent() {
 
     try {
       if (mode === "id") {
-        // Fetch certificate by ID first
-        const certRes = await fetch(
-          `/api/v1/verity/certificate/${encodeURIComponent(idInput)}`,
-        );
-        if (!certRes.ok) throw new Error("Certificate not found");
-        const certData = await certRes.json();
-
-        // Then verify it
-        const res = await fetch("/api/v1/verity/certificate/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ certificate: certData.certificate }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Verification failed");
-        setResult(data);
+        await handleVerifyById(idInput);
+        return;
       } else {
         const parsed = JSON.parse(jsonInput);
 
