@@ -29,11 +29,19 @@ export async function GET(request: NextRequest) {
 
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: { organizationId: true },
+      select: { organizationId: true, role: true },
     });
 
     if (!membership) {
       return NextResponse.json({ error: "No organization" }, { status: 403 });
+    }
+
+    // Chain verification is a privileged operation — require elevated role
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(membership.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
     }
 
     const url = new URL(request.url);

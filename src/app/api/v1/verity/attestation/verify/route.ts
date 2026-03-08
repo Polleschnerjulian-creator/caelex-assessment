@@ -47,13 +47,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up key by key_id in DB — STRICT: no fallback
+    // Look up key by key_id in DB — STRICT: no fallback to embedded key
     const keyInfo = await getKeyByKeyId(prisma, attestation.issuer.key_id);
-    const issuer_known = !!keyInfo;
-    const publicKeyHex = keyInfo?.publicKeyHex ?? attestation.issuer.public_key;
+
+    if (!keyInfo) {
+      return NextResponse.json({
+        valid: false,
+        attestation_id: attestation.attestation_id,
+        issuer_known: false,
+        errors: ["Issuer key not found in Caelex keyset. Cannot verify."],
+        verified_at: new Date().toISOString(),
+      });
+    }
+
+    const publicKeyHex = keyInfo.publicKeyHex;
 
     // Verify attestation
-    const result = verifyAttestation(attestation, publicKeyHex, issuer_known);
+    const result = verifyAttestation(attestation, publicKeyHex, true);
 
     // Also check that the key from DB matches the one in the attestation
     if (keyInfo && keyInfo.publicKeyHex !== attestation.issuer.public_key) {
@@ -64,27 +74,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Increment verification count if attestation is in DB
-    if (issuer_known) {
-      try {
-        await prisma.verityAttestation.updateMany({
-          where: { attestationId: attestation.attestation_id },
-          data: {}, // Just touching to confirm it exists
-        });
-      } catch {
-        // Not in our DB — that's fine, could be externally submitted
-      }
+    try {
+      await prisma.verityAttestation.updateMany({
+        where: { attestationId: attestation.attestation_id },
+        data: {}, // Just touching to confirm it exists
+      });
+    } catch {
+      // Not in our DB — that's fine, could be externally submitted
     }
 
     safeLog("Attestation verification completed", {
       attestationId: attestation.attestation_id,
       valid: String(result.valid),
-      issuer_known: String(issuer_known),
+      issuer_known: "true",
     });
 
     return NextResponse.json({
       valid: result.valid,
       attestation_id: attestation.attestation_id,
-      issuer_known,
+      issuer_known: true,
       checks: result.checks,
       claim: attestation.claim?.claim_statement,
       result: attestation.claim?.result,

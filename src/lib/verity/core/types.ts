@@ -86,7 +86,7 @@ export interface SentinelAnchor {
 
 export interface CrossVerificationRef {
   public_source: string;
-  verification_result: "VERIFIED" | "PLAUSIBLE" | "ANOMALY";
+  verification_result: "MATCH" | "CLOSE" | "MISMATCH";
   verified_at: string;
 }
 

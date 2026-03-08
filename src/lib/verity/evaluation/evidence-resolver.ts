@@ -56,6 +56,8 @@ export async function resolveEvidence(
         const packetWhere: Record<string, unknown> = {
           agentId: agent.id,
           dataPoint,
+          signatureValid: true,
+          chainValid: true,
         };
         if (satelliteNorad) {
           packetWhere.satelliteNorad = satelliteNorad;
@@ -78,7 +80,7 @@ export async function resolveEvidence(
           const rawValue = values[dataPoint];
           if (typeof rawValue === "number") {
             const crossCheck = packet.crossChecks[0] ?? null;
-            const hasCrossVerification = crossCheck?.result === "VERIFIED";
+            const hasCrossVerification = crossCheck?.result === "MATCH";
 
             return {
               actual_value: rawValue,
@@ -96,9 +98,9 @@ export async function resolveEvidence(
                 ? {
                     public_source: crossCheck.publicSource,
                     verification_result: crossCheck.result as
-                      | "VERIFIED"
-                      | "PLAUSIBLE"
-                      | "ANOMALY",
+                      | "MATCH"
+                      | "CLOSE"
+                      | "MISMATCH",
                     verified_at: crossCheck.verifiedAt.toISOString(),
                   }
                 : null,
