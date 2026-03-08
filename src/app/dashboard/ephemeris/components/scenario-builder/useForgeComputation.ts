@@ -4,7 +4,7 @@
 // Watches for graph mutations (node/edge changes) and auto-computes after a
 // 500ms debounce. For each chain detected in the graph, walks scenario nodes
 // sequentially, POSTing each to the what-if API. Stores StepResult on each
-// ScenarioNode and aggregates into the chain's ResultNode.
+// ScenarioNode and spawns a compact ResultNode via spawnResultNode.
 //
 // Uses AbortController to cancel in-flight requests when the graph mutates
 // during computation. A mutation version counter ensures stale results are
@@ -121,6 +121,9 @@ function aggregateResults(steps: StepResult[]): SimulationResults {
  * Build a fingerprint string from the scenario-relevant parts of the graph.
  * Changes in node IDs, parameters, or edge connections will produce a
  * different fingerprint, triggering recomputation.
+ *
+ * IMPORTANT: Excludes result nodes and edges to result nodes so that
+ * spawning/clearing result nodes does not trigger recomputation loops.
  */
 function buildGraphFingerprint(nodes: Node[], edges: Edge[]): string {
   // Only consider scenario nodes for fingerprinting
@@ -133,7 +136,7 @@ function buildGraphFingerprint(nodes: Node[], edges: Edge[]): string {
     return `${n.id}:${data.definitionId}:${JSON.stringify(data.parameters)}`;
   });
 
-  // Edge connections (sorted for determinism)
+  // Only include edges between origin/scenario nodes (exclude result targets)
   const edgeParts = edges
     .filter((e) => {
       const sourceNode = nodes.find((n) => n.id === e.source);
@@ -143,8 +146,7 @@ function buildGraphFingerprint(nodes: Node[], edges: Edge[]): string {
         targetNode &&
         (sourceNode.type === FORGE_NODE_TYPES.ORIGIN ||
           sourceNode.type === FORGE_NODE_TYPES.SCENARIO) &&
-        (targetNode.type === FORGE_NODE_TYPES.SCENARIO ||
-          targetNode.type === FORGE_NODE_TYPES.RESULT)
+        targetNode.type === FORGE_NODE_TYPES.SCENARIO
       );
     })
     .map((e) => `${e.source}->${e.target}`)
@@ -166,6 +168,11 @@ interface UseForgeComputationOptions {
     skipHistory?: boolean,
   ) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
+  spawnResultNode: (
+    sourceNodeId: string,
+    aggregatedResult: SimulationResults,
+  ) => void;
+  clearResultNodes: () => void;
 }
 
 interface UseForgeComputationReturn {
@@ -184,6 +191,8 @@ export function useForgeComputation({
   chains,
   updateNodeData,
   onEdgesChange,
+  spawnResultNode,
+  clearResultNodes,
 }: UseForgeComputationOptions): UseForgeComputationReturn {
   // ── State exposed to consumers ──────────────────────────────────────────
   const [isComputing, setIsComputing] = useState(false);
@@ -213,6 +222,12 @@ export function useForgeComputation({
   const noradIdRef = useRef(noradId);
   noradIdRef.current = noradId;
 
+  const spawnResultNodeRef = useRef(spawnResultNode);
+  spawnResultNodeRef.current = spawnResultNode;
+
+  const clearResultNodesRef = useRef(clearResultNodes);
+  clearResultNodesRef.current = clearResultNodes;
+
   // ── Graph fingerprint ───────────────────────────────────────────────────
   const fingerprint = useMemo(
     () => buildGraphFingerprint(nodes, edges),
@@ -236,7 +251,7 @@ export function useForgeComputation({
     [],
   );
 
-  // ── Set compute state on all scenario nodes in a chain ──────────────────
+  // ── Set compute state on scenario nodes in a chain ────────────────────
   const setChainComputeState = useCallback(
     (chain: Chain, state: ComputeState) => {
       const currentNodes = nodesRef.current;
@@ -246,39 +261,28 @@ export function useForgeComputation({
           updateNodeDataRef.current(nodeId, { computeState: state }, true);
         }
       }
-      if (chain.resultNodeId) {
-        updateNodeDataRef.current(
-          chain.resultNodeId,
-          { computeState: state },
-          true,
-        );
-      }
+      // Note: result nodes are not updated here — they are managed by
+      // spawnResultNode and don't exist until computation completes.
     },
     [],
   );
 
-  // ── Set severity on all edges along a chain ─────────────────────────────
+  // ── Set severity on scenario edges along a chain ──────────────────────
   const setChainEdgesSeverity = useCallback(
     (chain: Chain, severity: EdgeSeverity) => {
       const currentEdges = edgesRef.current;
+      const currentNodes = nodesRef.current;
       for (let i = 0; i < chain.nodeIds.length - 1; i++) {
         const sourceId = chain.nodeIds[i];
         const targetId = chain.nodeIds[i + 1];
+        // Only update edges between non-result nodes
+        const targetNode = currentNodes.find((n) => n.id === targetId);
+        if (targetNode?.type === FORGE_NODE_TYPES.RESULT) continue;
         const edge = currentEdges.find(
           (e) => e.source === sourceId && e.target === targetId,
         );
         if (edge) {
           updateEdgeData(edge.id, { severity, horizonDelta: null });
-        }
-      }
-      // Edge from last chain node to result node
-      if (chain.resultNodeId) {
-        const lastNodeId = chain.nodeIds[chain.nodeIds.length - 1];
-        const resultEdge = currentEdges.find(
-          (e) => e.source === lastNodeId && e.target === chain.resultNodeId,
-        );
-        if (resultEdge) {
-          updateEdgeData(resultEdge.id, { severity, horizonDelta: null });
         }
       }
     },
@@ -397,43 +401,14 @@ export function useForgeComputation({
         }
       }
 
-      // Check staleness before aggregation
+      // Check staleness before spawning result
       if (mutationVersionRef.current !== version) return;
 
-      // Aggregate results into the chain's ResultNode
-      if (chain.resultNodeId && stepResults.length > 0) {
+      // Spawn a compact ResultNode at the end of the chain
+      if (scenarioNodeIds.length > 0 && stepResults.length > 0) {
         const aggregated = aggregateResults(stepResults);
-        updateNodeDataRef.current(
-          chain.resultNodeId,
-          {
-            aggregatedResult: aggregated,
-            computeState: "done" as ComputeState,
-          },
-          true,
-        );
-
-        // Update the edge to the result node
-        const lastNodeId = chain.nodeIds[chain.nodeIds.length - 1];
-        const resultEdge = currentEdges.find(
-          (e) => e.source === lastNodeId && e.target === chain.resultNodeId,
-        );
-        if (resultEdge) {
-          const severity = severityFromDelta(aggregated.totalHorizonDelta);
-          updateEdgeData(resultEdge.id, {
-            severity,
-            horizonDelta: aggregated.totalHorizonDelta,
-          });
-        }
-      } else if (chain.resultNodeId) {
-        // No scenario nodes produced results
-        updateNodeDataRef.current(
-          chain.resultNodeId,
-          {
-            aggregatedResult: null,
-            computeState: "done" as ComputeState,
-          },
-          true,
-        );
+        const lastScenarioNodeId = scenarioNodeIds[scenarioNodeIds.length - 1];
+        spawnResultNodeRef.current(lastScenarioNodeId, aggregated);
       }
     },
     [updateEdgeData],
@@ -466,6 +441,9 @@ export function useForgeComputation({
 
     if (computeChains.length === 0) return;
 
+    // Clear existing result nodes before recomputing
+    clearResultNodesRef.current();
+
     setIsComputing(true);
     setComputeError(null);
 
@@ -477,14 +455,13 @@ export function useForgeComputation({
 
     try {
       // Process all chains in parallel; within each chain, nodes are sequential
-      // Use Promise.allSettled to prevent partial failure from leaving ghost updates
       const results = await Promise.allSettled(
         computeChains.map(async (chain) => {
           await computeChain(chain, currentVersion, controller.signal);
         }),
       );
 
-      // Process results: abort remaining work and mark errored chains
+      // Process results: mark errored chains
       let firstError: Error | null = null;
       for (let i = 0; i < results.length; i++) {
         const result = results[i];

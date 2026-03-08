@@ -11,7 +11,6 @@ import {
   Background,
   BackgroundVariant,
   MiniMap,
-  useReactFlow,
   type NodeTypes,
   type EdgeTypes,
 } from "@xyflow/react";
@@ -86,7 +85,7 @@ function EphemerisForgeInner({
     [graph.getChains, graph.nodes, graph.edges],
   );
 
-  // Computation hook
+  // Computation hook (spawns ResultNodes lazily after results arrive)
   useForgeComputation({
     noradId,
     nodes: graph.nodes,
@@ -94,6 +93,8 @@ function EphemerisForgeInner({
     chains,
     updateNodeData: graph.updateNodeData,
     onEdgesChange: graph.onEdgesChange,
+    spawnResultNode: graph.spawnResultNode,
+    clearResultNodes: graph.clearResultNodes,
   });
 
   // Local state
@@ -206,30 +207,14 @@ function EphemerisForgeInner({
     setRadialMenuPos(null);
   }, []);
 
-  // Block selection handler
-  const reactFlowInstance = useReactFlow();
-
-  const handleSelectBlock = useCallback(
-    (definitionId: string, screenPos?: { x: number; y: number }) => {
-      const position = screenPos
-        ? reactFlowInstance.screenToFlowPosition(screenPos)
-        : reactFlowInstance.screenToFlowPosition({
-            x: window.innerWidth / 2,
-            y: window.innerHeight / 2,
-          });
-      graph.addScenarioNode(position, definitionId);
+  // Unified block selection — auto-positions + auto-connects to chain end
+  const handleAddBlock = useCallback(
+    (definitionId: string) => {
+      graph.addScenarioNode(definitionId);
       setRadialMenuPos(null);
       setShowSlashCommand(false);
     },
-    [reactFlowInstance, graph],
-  );
-
-  // Palette block selection (no screen position — spawn at viewport center)
-  const handlePaletteSelectBlock = useCallback(
-    (definitionId: string) => {
-      handleSelectBlock(definitionId);
-    },
-    [handleSelectBlock],
+    [graph],
   );
 
   // Toolbar callbacks
@@ -311,7 +296,7 @@ function EphemerisForgeInner({
 
       {/* Block Palette (floating glass panel) */}
       <BlockPalette
-        onSelectBlock={handlePaletteSelectBlock}
+        onSelectBlock={handleAddBlock}
         collapsed={paletteCollapsed}
         onToggleCollapse={() => setPaletteCollapsed((p) => !p)}
       />
@@ -319,14 +304,14 @@ function EphemerisForgeInner({
       {/* Radial Menu (right-click) */}
       <RadialMenu
         position={radialMenuPos}
-        onSelectBlock={handleSelectBlock}
+        onSelectBlock={handleAddBlock}
         onClose={() => setRadialMenuPos(null)}
       />
 
       {/* Slash Command Palette */}
       <SlashCommand
         isOpen={showSlashCommand}
-        onSelectBlock={handlePaletteSelectBlock}
+        onSelectBlock={handleAddBlock}
         onClose={() => setShowSlashCommand(false)}
       />
 

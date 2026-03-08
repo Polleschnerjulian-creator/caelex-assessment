@@ -1,8 +1,11 @@
 "use client";
 
 // ─── useForgeGraph — Graph State Hook ────────────────────────────────────────
-// Manages all graph state: nodes, edges, CRUD operations, auto ResultNode
-// management, chain detection for computation, undo/redo, and serialization.
+// Manages all graph state: nodes, edges, CRUD operations, chain detection for
+// computation, undo/redo, and serialization.
+//
+// ResultNodes are NOT auto-created here. They are spawned lazily by the
+// computation hook only after a chain produces an actual result.
 
 import { useCallback, useReducer, useRef } from "react";
 import {
@@ -23,6 +26,8 @@ import {
   type ForgeEdgeData,
   type SavedScenario,
   type Chain,
+  type SimulationResults,
+  type EdgeSeverity,
 } from "./types";
 
 import { BLOCK_DEFINITIONS, getDefaultParameters } from "./block-definitions";
@@ -31,6 +36,7 @@ import { BLOCK_DEFINITIONS, getDefaultParameters } from "./block-definitions";
 
 const ORIGIN_NODE_ID = "origin";
 const RESULT_NODE_OFFSET_X = 250;
+const AUTO_LAYOUT_OFFSET_X = 350;
 const MAX_HISTORY = 50;
 
 // ID generation — encapsulated via closure. IDs include Date.now() to
@@ -96,103 +102,56 @@ function createInitialState(): HistoryState {
   };
 }
 
-// ─── ResultNode Auto-Management ──────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Remove all result-type nodes and their edges from a graph state. */
+function clearAllResultNodes(state: GraphState): GraphState {
+  const resultNodeIds = new Set(
+    state.nodes
+      .filter((n) => n.type === FORGE_NODE_TYPES.RESULT)
+      .map((n) => n.id),
+  );
+  if (resultNodeIds.size === 0) return state;
+  return {
+    nodes: state.nodes.filter((n) => !resultNodeIds.has(n.id)),
+    edges: state.edges.filter(
+      (e) => !resultNodeIds.has(e.source) && !resultNodeIds.has(e.target),
+    ),
+  };
+}
 
 /**
- * Finds all nodes that have an output handle but no outgoing edge, and ensures
- * a ResultNode exists 250px to the right. Removes orphaned ResultNodes that
- * now have an outgoing edge (user connected something past them).
+ * Find the last "open" node in the graph — an origin or scenario node with
+ * no outgoing edge to another scenario node. When multiple open nodes exist,
+ * pick the rightmost one (highest x position).
  */
-function updateResultNodes(state: GraphState): GraphState {
-  const { nodes, edges } = state;
-
-  // Set of source node IDs that have outgoing edges
-  const nodesWithOutgoing = new Set(edges.map((e) => e.source));
-
-  // Identify which result nodes currently exist, keyed by the source node they display for
-  const existingResultNodes = new Map<string, Node>();
-  for (const node of nodes) {
-    if (node.type === FORGE_NODE_TYPES.RESULT) {
-      const data = node.data as unknown as ResultNodeData;
-      existingResultNodes.set(data.chainId, node);
+function findLastOpenNode(nodes: Node[], edges: Edge[]): Node {
+  // Set of node IDs that have an outgoing edge to a scenario node
+  const nodesWithScenarioOutgoing = new Set<string>();
+  for (const edge of edges) {
+    const target = nodes.find((n) => n.id === edge.target);
+    if (target && target.type === FORGE_NODE_TYPES.SCENARIO) {
+      nodesWithScenarioOutgoing.add(edge.source);
     }
   }
 
-  // Nodes that should have a result node: origin or scenario nodes without outgoing edges
-  const nodesNeedingResult = nodes.filter(
+  // Find origin and scenario nodes with no outgoing scenario edge
+  const openNodes = nodes.filter(
     (n) =>
       (n.type === FORGE_NODE_TYPES.ORIGIN ||
         n.type === FORGE_NODE_TYPES.SCENARIO) &&
-      !nodesWithOutgoing.has(n.id),
+      !nodesWithScenarioOutgoing.has(n.id),
   );
 
-  // IDs of source nodes that need result nodes
-  const needsResultSet = new Set(nodesNeedingResult.map((n) => n.id));
-
-  // Remove result nodes whose source now has an outgoing edge
-  // Also remove result nodes that have outgoing edges themselves (user connected past them)
-  const resultNodesToRemove = new Set<string>();
-  existingResultNodes.forEach((resultNode, sourceId) => {
-    if (!needsResultSet.has(sourceId) || nodesWithOutgoing.has(resultNode.id)) {
-      resultNodesToRemove.add(resultNode.id);
-    }
-  });
-
-  // Also remove edges connected to removed result nodes
-  const filteredEdges = edges.filter(
-    (e) =>
-      !resultNodesToRemove.has(e.source) && !resultNodesToRemove.has(e.target),
-  );
-
-  // Filter out removed result nodes
-  let updatedNodes = nodes.filter((n) => !resultNodesToRemove.has(n.id));
-
-  // Create new result nodes for nodes that need them and don't already have one
-  for (const sourceNode of nodesNeedingResult) {
-    const existingResult = existingResultNodes.get(sourceNode.id);
-    if (existingResult && !resultNodesToRemove.has(existingResult.id)) {
-      // Already has a valid result node
-      continue;
-    }
-
-    const resultData: ResultNodeData = {
-      chainId: sourceNode.id,
-      aggregatedResult: null,
-      computeState: "idle",
-    };
-
-    const resultNode: Node = {
-      id: nextNodeId("result"),
-      type: FORGE_NODE_TYPES.RESULT,
-      position: {
-        x: sourceNode.position.x + RESULT_NODE_OFFSET_X,
-        y: sourceNode.position.y,
-      },
-      data: resultData as unknown as Record<string, unknown>,
-      deletable: false,
-      selectable: false,
-      draggable: true,
-    };
-
-    const edgeData: ForgeEdgeData = {
-      severity: null,
-      horizonDelta: null,
-    };
-
-    const resultEdge: Edge = {
-      id: nextEdgeId(),
-      source: sourceNode.id,
-      target: resultNode.id,
-      type: "forge-edge",
-      animated: false,
-      data: edgeData as unknown as Record<string, unknown>,
-    };
-
-    updatedNodes = [...updatedNodes, resultNode];
-    filteredEdges.push(resultEdge);
+  if (openNodes.length === 0) {
+    return nodes.find((n) => n.id === ORIGIN_NODE_ID)!;
   }
 
-  return { nodes: updatedNodes, edges: filteredEdges };
+  // Pick the rightmost open node
+  return openNodes.reduce(
+    (best, n) => (n.position.x > best.position.x ? n : best),
+    openNodes[0],
+  );
 }
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
@@ -200,11 +159,7 @@ function updateResultNodes(state: GraphState): GraphState {
 type GraphAction =
   | { type: "APPLY_NODE_CHANGES"; changes: NodeChange[] }
   | { type: "APPLY_EDGE_CHANGES"; changes: EdgeChange[] }
-  | {
-      type: "ADD_SCENARIO_NODE";
-      position: { x: number; y: number };
-      definitionId: string;
-    }
+  | { type: "ADD_SCENARIO_NODE"; definitionId: string }
   | { type: "REMOVE_NODE"; nodeId: string }
   | {
       type: "UPDATE_NODE_DATA";
@@ -216,6 +171,12 @@ type GraphAction =
   | { type: "REMOVE_EDGE"; edgeId: string }
   | { type: "SET_ORIGIN_DATA"; data: Partial<SatelliteOriginData> }
   | { type: "LOAD_SCENARIO"; scenario: SavedScenario }
+  | {
+      type: "SPAWN_RESULT_NODE";
+      sourceNodeId: string;
+      aggregatedResult: SimulationResults;
+    }
+  | { type: "CLEAR_RESULT_NODES" }
   | { type: "RESET" }
   | { type: "UNDO" }
   | { type: "REDO" };
@@ -236,7 +197,6 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
   switch (action.type) {
     case "APPLY_NODE_CHANGES": {
       const newNodes = applyNodeChanges(action.changes, state.present.nodes);
-      // Position/selection/dimension changes are minor — no result node update needed
       const isMinorChange = action.changes.every(
         (c) =>
           c.type === "position" ||
@@ -248,21 +208,28 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
         edges: state.present.edges,
       };
       if (isMinorChange) {
-        // Don't push history for drag/select, just update present
         return { ...state, present: newState };
       }
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      // Structural change — clear stale result nodes
+      const cleaned = clearAllResultNodes(newState);
+      return pushHistory(state, cleaned);
     }
 
     case "APPLY_EDGE_CHANGES": {
       const newEdges = applyEdgeChanges(action.changes, state.present.edges);
-      const newState: GraphState = {
+      // Only "remove" is structural; "replace" and "select" are minor
+      const isMinorChange = action.changes.every(
+        (c) => c.type === "select" || c.type === "replace",
+      );
+      let newState: GraphState = {
         nodes: state.present.nodes,
         edges: newEdges,
       };
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      if (isMinorChange) {
+        return { ...state, present: newState };
+      }
+      newState = clearAllResultNodes(newState);
+      return pushHistory(state, newState);
     }
 
     case "ADD_SCENARIO_NODE": {
@@ -271,6 +238,16 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
       );
       if (!definition) return state;
 
+      // Clear existing result nodes (chain is changing)
+      const cleanedState = clearAllResultNodes(state.present);
+
+      // Find last open node for auto-positioning + auto-connect
+      const lastOpen = findLastOpenNode(cleanedState.nodes, cleanedState.edges);
+      const position = {
+        x: lastOpen.position.x + AUTO_LAYOUT_OFFSET_X,
+        y: lastOpen.position.y,
+      };
+
       const scenarioData: ScenarioNodeData = {
         definitionId: action.definitionId,
         parameters: getDefaultParameters(definition),
@@ -278,19 +255,33 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
         stepResult: null,
       };
 
+      const newNodeId = nextNodeId("scenario");
       const newNode: Node = {
-        id: nextNodeId("scenario"),
+        id: newNodeId,
         type: FORGE_NODE_TYPES.SCENARIO,
-        position: action.position,
+        position,
         data: scenarioData as unknown as Record<string, unknown>,
       };
 
-      const newState: GraphState = {
-        nodes: [...state.present.nodes, newNode],
-        edges: state.present.edges,
+      // Auto-connect edge from last open node to new node
+      const edgeData: ForgeEdgeData = {
+        severity: null,
+        horizonDelta: null,
       };
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      const autoEdge: Edge = {
+        id: nextEdgeId(),
+        source: lastOpen.id,
+        target: newNodeId,
+        type: "forge-edge",
+        animated: false,
+        data: edgeData as unknown as Record<string, unknown>,
+      };
+
+      const newGraphState: GraphState = {
+        nodes: [...cleanedState.nodes, newNode],
+        edges: [...cleanedState.edges, autoEdge],
+      };
+      return pushHistory(state, newGraphState);
     }
 
     case "REMOVE_NODE": {
@@ -303,9 +294,12 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
       const newEdges = state.present.edges.filter(
         (e) => e.source !== action.nodeId && e.target !== action.nodeId,
       );
-      const newState: GraphState = { nodes: newNodes, edges: newEdges };
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      // Clear all result nodes since chain structure changed
+      const cleaned = clearAllResultNodes({
+        nodes: newNodes,
+        edges: newEdges,
+      });
+      return pushHistory(state, cleaned);
     }
 
     case "UPDATE_NODE_DATA": {
@@ -354,24 +348,25 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
         data: edgeData as unknown as Record<string, unknown>,
       };
 
-      const newState: GraphState = {
+      let newState: GraphState = {
         nodes: state.present.nodes,
         edges: [...state.present.edges, newEdge],
       };
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      // Manual edge changes chain structure — clear stale result nodes
+      newState = clearAllResultNodes(newState);
+      return pushHistory(state, newState);
     }
 
     case "REMOVE_EDGE": {
       const newEdges = state.present.edges.filter(
         (e) => e.id !== action.edgeId,
       );
-      const newState: GraphState = {
+      let newState: GraphState = {
         nodes: state.present.nodes,
         edges: newEdges,
       };
-      const updated = updateResultNodes(newState);
-      return pushHistory(state, updated);
+      newState = clearAllResultNodes(newState);
+      return pushHistory(state, newState);
     }
 
     case "SET_ORIGIN_DATA": {
@@ -391,13 +386,17 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
 
     case "LOAD_SCENARIO": {
       const { scenario } = action;
-      const loadedNodes: Node[] = scenario.nodes.map((n) => ({
-        id: n.id,
-        type: n.type,
-        position: n.position,
-        data: n.data,
-        deletable: n.type === FORGE_NODE_TYPES.ORIGIN ? false : undefined,
-      }));
+      // Filter out any result nodes from saved data (they'll be recomputed)
+      const loadedNodes: Node[] = scenario.nodes
+        .filter((n) => n.type !== FORGE_NODE_TYPES.RESULT)
+        .map((n) => ({
+          id: n.id,
+          type: n.type,
+          position: n.position,
+          data: n.data,
+          deletable: n.type === FORGE_NODE_TYPES.ORIGIN ? false : undefined,
+          draggable: n.type === FORGE_NODE_TYPES.ORIGIN ? false : undefined,
+        }));
       const edgeData: ForgeEdgeData = {
         severity: null,
         horizonDelta: null,
@@ -413,12 +412,99 @@ function graphReducer(state: HistoryState, action: GraphAction): HistoryState {
         nodes: loadedNodes,
         edges: loadedEdges,
       };
-      const updated = updateResultNodes(newState);
       return {
         past: [],
-        present: updated,
+        present: newState,
         future: [],
       };
+    }
+
+    // ── Lazy ResultNode lifecycle (managed by computation hook) ────────────
+
+    case "SPAWN_RESULT_NODE": {
+      const { sourceNodeId, aggregatedResult } = action;
+      const sourceNode = state.present.nodes.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) return state;
+
+      // Check if a result node already exists for this source
+      const existingResult = state.present.nodes.find((n) => {
+        if (n.type !== FORGE_NODE_TYPES.RESULT) return false;
+        const rd = n.data as unknown as ResultNodeData;
+        return rd.chainId === sourceNodeId;
+      });
+
+      if (existingResult) {
+        // Update existing result node data
+        const newNodes = state.present.nodes.map((n) => {
+          if (n.id !== existingResult.id) return n;
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              aggregatedResult,
+              computeState: "done",
+            },
+          };
+        });
+        return {
+          ...state,
+          present: { nodes: newNodes, edges: state.present.edges },
+        };
+      }
+
+      // Create new result node
+      const delta = aggregatedResult.totalHorizonDelta;
+      const edgeSeverity: EdgeSeverity =
+        delta > 0 ? "nominal" : delta > -90 ? "warning" : "critical";
+
+      const resultData: ResultNodeData = {
+        chainId: sourceNodeId,
+        aggregatedResult,
+        computeState: "done",
+      };
+
+      const resultNode: Node = {
+        id: nextNodeId("result"),
+        type: FORGE_NODE_TYPES.RESULT,
+        position: {
+          x: sourceNode.position.x + RESULT_NODE_OFFSET_X,
+          y: sourceNode.position.y,
+        },
+        data: resultData as unknown as Record<string, unknown>,
+        deletable: false,
+        selectable: false,
+        draggable: true,
+      };
+
+      const resultEdgeData: ForgeEdgeData = {
+        severity: edgeSeverity,
+        horizonDelta: delta,
+      };
+
+      const resultEdge: Edge = {
+        id: nextEdgeId(),
+        source: sourceNodeId,
+        target: resultNode.id,
+        type: "forge-edge",
+        animated: false,
+        data: resultEdgeData as unknown as Record<string, unknown>,
+      };
+
+      // Don't push to undo history — result nodes are computation artifacts
+      return {
+        ...state,
+        present: {
+          nodes: [...state.present.nodes, resultNode],
+          edges: [...state.present.edges, resultEdge],
+        },
+      };
+    }
+
+    case "CLEAR_RESULT_NODES": {
+      const cleaned = clearAllResultNodes(state.present);
+      if (cleaned === state.present) return state; // no-op
+      // Don't push to undo history
+      return { ...state, present: cleaned };
     }
 
     case "RESET": {
@@ -589,12 +675,9 @@ export function useForgeGraph() {
 
   // ── CRUD Operations ─────────────────────────────────────────────────────
 
-  const addScenarioNode = useCallback(
-    (position: { x: number; y: number }, definitionId: string) => {
-      dispatch({ type: "ADD_SCENARIO_NODE", position, definitionId });
-    },
-    [],
-  );
+  const addScenarioNode = useCallback((definitionId: string) => {
+    dispatch({ type: "ADD_SCENARIO_NODE", definitionId });
+  }, []);
 
   const removeNode = useCallback((nodeId: string) => {
     dispatch({ type: "REMOVE_NODE", nodeId });
@@ -617,6 +700,19 @@ export function useForgeGraph() {
 
   const setOriginData = useCallback((data: Partial<SatelliteOriginData>) => {
     dispatch({ type: "SET_ORIGIN_DATA", data });
+  }, []);
+
+  // ── ResultNode lifecycle (called by computation hook) ───────────────────
+
+  const spawnResultNode = useCallback(
+    (sourceNodeId: string, aggregatedResult: SimulationResults) => {
+      dispatch({ type: "SPAWN_RESULT_NODE", sourceNodeId, aggregatedResult });
+    },
+    [],
+  );
+
+  const clearResultNodes = useCallback(() => {
+    dispatch({ type: "CLEAR_RESULT_NODES" });
   }, []);
 
   // ── Chain Detection ─────────────────────────────────────────────────────
@@ -680,6 +776,10 @@ export function useForgeGraph() {
     updateNodeData,
     removeEdge,
     setOriginData,
+
+    // ResultNode lifecycle
+    spawnResultNode,
+    clearResultNodes,
 
     // Chain detection
     getChains,
