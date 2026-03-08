@@ -208,6 +208,46 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:academy",
       }),
+
+      // Sentinel agent registration: 5 per hour per IP
+      sentinel_register: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:sentinel_register",
+      }),
+
+      // Sentinel ingest: 10 per minute per token (burst-friendly for agents)
+      sentinel_ingest: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:sentinel_ingest",
+      }),
+
+      // Sentinel dashboard reads: 60 per minute per user
+      sentinel_read: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:sentinel_read",
+      }),
+
+      // Sentinel expensive ops (cross-verify, chain verify): 10 per hour
+      sentinel_expensive: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:sentinel_expensive",
+      }),
+
+      // Verity public verify: 30 per hour per IP
+      verity_public: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:verity_public",
+      }),
     }
   : null;
 
@@ -300,6 +340,11 @@ const fallbackLimiters = {
   assure: new InMemoryRateLimiter(15, 3600000), // 15/hr vs 30/hr (Redis)
   assure_public: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
   academy: new InMemoryRateLimiter(15, 60000), // 15/min vs 30/min (Redis)
+  sentinel_register: new InMemoryRateLimiter(2, 3600000),
+  sentinel_ingest: new InMemoryRateLimiter(5, 60000),
+  sentinel_read: new InMemoryRateLimiter(30, 60000),
+  sentinel_expensive: new InMemoryRateLimiter(3, 3600000),
+  verity_public: new InMemoryRateLimiter(10, 3600000),
 };
 
 // ─── Public API ───
@@ -323,7 +368,12 @@ export type RateLimitType =
   | "contact"
   | "assure"
   | "assure_public"
-  | "academy";
+  | "academy"
+  | "sentinel_register"
+  | "sentinel_ingest"
+  | "sentinel_read"
+  | "sentinel_expensive"
+  | "verity_public";
 
 /**
  * Check rate limit for an identifier.

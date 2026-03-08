@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { registerSentinelAgent } from "@/lib/services/sentinel-service.server";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 const RegisterSchema = z.object({
   sentinel_id: z.string().min(1),
@@ -13,6 +18,12 @@ const RegisterSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit(
+      "sentinel_register",
+      getIdentifier(request),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     // Auth: Bearer token
     const token = request.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) {

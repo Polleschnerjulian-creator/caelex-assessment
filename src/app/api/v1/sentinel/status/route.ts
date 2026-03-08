@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateSentinelAgent } from "@/lib/services/sentinel-service.server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 export async function GET(request: NextRequest) {
   try {
+    const rl = await checkRateLimit("sentinel_read", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const token = request.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return NextResponse.json(

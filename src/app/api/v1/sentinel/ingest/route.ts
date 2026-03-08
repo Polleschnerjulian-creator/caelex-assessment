@@ -5,6 +5,7 @@ import {
 } from "@/lib/services/sentinel-service.server";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 
 const PacketSchema = z.object({
   packet_id: z.string(),
@@ -59,6 +60,9 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
+
+    const rl = await checkRateLimit("sentinel_ingest", `token:${token}`);
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const agent = await authenticateSentinelAgent(token);
     if (!agent) {

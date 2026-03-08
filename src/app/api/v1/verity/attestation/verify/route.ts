@@ -4,6 +4,11 @@ import { verifyAttestation } from "@/lib/verity/core/attestation";
 import { getKeyByKeyId } from "@/lib/verity/keys/issuer-keys";
 import { parseAttestation } from "@/lib/verity/certificates/serializer";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/verity/attestation/verify
@@ -16,6 +21,9 @@ import { safeLog } from "@/lib/verity/utils/redaction";
  */
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit("verity_public", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
     const { attestation: rawAttestation } = body;
 

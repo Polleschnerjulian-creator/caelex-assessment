@@ -6,6 +6,11 @@ import {
   crossVerifyAgent,
 } from "@/lib/services/cross-verification.server";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/sentinel/cross-verify
@@ -20,6 +25,12 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(
+      "sentinel_expensive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
