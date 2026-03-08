@@ -424,14 +424,13 @@ export default function Sidebar({
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
   const [upgradeModule, setUpgradeModule] = useState<string | undefined>();
 
-  // Collapse state
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Collapse state — collapsed by default, expands on hover
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Forge mode — auto-collapse when Ephemeris Forge is active
+  // Forge mode — force-collapse when Ephemeris Forge is active (no manual toggle)
   const [forgeMode, setForgeMode] = useState(false);
-  const [forgeExpanded, setForgeExpanded] = useState(false);
 
   // Desktop detection — collapse only on lg+
   const [isLg, setIsLg] = useState(true);
@@ -443,12 +442,14 @@ export default function Sidebar({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Load collapse state
+  // Load collapse state — default to collapsed
   useEffect(() => {
     setMounted(true);
     const stored = localStorage.getItem(SIDEBAR_KEY);
-    if (stored === "true") {
-      setIsCollapsed(true);
+    if (stored === "false") {
+      setIsCollapsed(false);
+      onCollapsedChange?.(false);
+    } else {
       onCollapsedChange?.(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -460,20 +461,15 @@ export default function Sidebar({
       const detail = (e as CustomEvent).detail;
       if (detail.active) {
         setForgeMode(true);
-        setForgeExpanded(false);
         onCollapsedChange?.(true);
       } else {
         setForgeMode(false);
-        setForgeExpanded(false);
-        // Restore stored collapse state
-        const stored = localStorage.getItem(SIDEBAR_KEY) === "true";
-        setIsCollapsed(stored);
-        onCollapsedChange?.(stored);
+        onCollapsedChange?.(isCollapsed);
       }
     };
     window.addEventListener("forge-mode-change", handler);
     return () => window.removeEventListener("forge-mode-change", handler);
-  }, [onCollapsedChange]);
+  }, [onCollapsedChange, isCollapsed]);
 
   const toggleCollapse = () => {
     if (forgeMode) return; // Don't allow manual toggle in forge mode
@@ -485,8 +481,10 @@ export default function Sidebar({
     });
   };
 
-  // Only collapsed on desktop — in forge mode, collapsed unless hovered
-  const collapsed = forgeMode ? isLg && !forgeExpanded : isCollapsed && isLg;
+  // Collapsed on desktop — expands on hover (both forge mode and normal)
+  const collapsed = forgeMode
+    ? isLg && !isHovered
+    : isCollapsed && isLg && !isHovered;
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
 
   // Broadcast sidebar width so Forge overlays (BlockPalette) can follow
@@ -573,14 +571,8 @@ export default function Sidebar({
 
       {/* ═══ Glass Panel ═══ */}
       <aside
-        onMouseEnter={() => {
-          setIsHovered(true);
-          if (forgeMode) setForgeExpanded(true);
-        }}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          if (forgeMode) setForgeExpanded(false);
-        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={`
           fixed z-40 flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-[calc(100%+24px)]"}

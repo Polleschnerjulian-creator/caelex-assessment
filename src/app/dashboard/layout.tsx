@@ -49,14 +49,14 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [layoutMounted, setLayoutMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    // Read sidebar state to avoid flash
+    // Read sidebar state — default collapsed
     const stored = localStorage.getItem("caelex-sidebar-collapsed");
-    if (stored === "true") setSidebarCollapsed(true);
+    if (stored === "false") setSidebarCollapsed(false);
     setLayoutMounted(true);
   }, []);
   const router = useRouter();

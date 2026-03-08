@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useRef } from "react";
 import { Handle, Position, useStore, type NodeProps } from "@xyflow/react";
 import { X } from "lucide-react";
 import { FORGE, GLASS } from "../../../theme";
@@ -46,6 +46,17 @@ function formatDelta(delta: number): string {
 function ScenarioNode({ id, data }: NodeProps) {
   const d = data as unknown as ScenarioNodeDataWithCallbacks;
   const zoom = useStore((s) => s.transform[2]);
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  // Release any active slider when mouse leaves the node
+  const handleNodeMouseLeave = useCallback(() => {
+    const el = nodeRef.current;
+    if (!el) return;
+    const active = el.querySelector<HTMLInputElement>(
+      'input[type="range"]:active, input[type="range"]:focus',
+    );
+    if (active) active.blur();
+  }, []);
 
   const handleParamChange = useCallback(
     (key: string, value: unknown) => {
@@ -74,7 +85,12 @@ function ScenarioNode({ id, data }: NodeProps) {
   const showFullControls = zoom >= 0.6;
 
   return (
-    <div className="forge-node-spawn" style={nodeStyle(categoryColor)}>
+    <div
+      ref={nodeRef}
+      className="forge-node-spawn"
+      style={nodeStyle(categoryColor)}
+      onMouseLeave={handleNodeMouseLeave}
+    >
       {/* Input handle */}
       <Handle
         type="target"
