@@ -11,6 +11,7 @@ import { useEphemerisTheme } from "./theme";
 interface FleetState {
   noradId: string;
   satelliteName: string;
+  operatorType?: string;
   overallScore: number;
   dataFreshness: string;
   complianceHorizon: {
@@ -27,6 +28,13 @@ interface FleetState {
   }>;
   modules?: Record<string, { score: number; status: string }>;
 }
+
+type TypeFilter = "ALL" | "SCO" | "LO";
+
+const TYPE_BADGE_COLORS: Record<string, string> = {
+  SCO: "#3B82F6",
+  LO: "#F59E0B",
+};
 
 interface FleetIntelligence {
   fleetScore: number;
@@ -159,6 +167,7 @@ export default function EphemerisDashboard() {
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [lastCalc, setLastCalc] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -229,10 +238,13 @@ export default function EphemerisDashboard() {
   // Fleet score delta from intelligence
   const fleetDelta = intel?.trend?.shortTermDelta ?? 0;
 
-  // Sort fleet
+  // Filter + sort fleet
   const sortedFleet = useMemo(() => {
-    const sorted = [...fleet];
-    sorted.sort((a, b) => {
+    const filtered =
+      typeFilter === "ALL"
+        ? [...fleet]
+        : fleet.filter((f) => (f.operatorType ?? "SCO") === typeFilter);
+    filtered.sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
         case "name":
@@ -255,8 +267,8 @@ export default function EphemerisDashboard() {
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-    return sorted;
-  }, [fleet, sortKey, sortDir]);
+    return filtered;
+  }, [fleet, sortKey, sortDir, typeFilter]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
@@ -509,7 +521,7 @@ export default function EphemerisDashboard() {
                 ...sans,
               }}
             >
-              Satellites
+              Entities
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
               <span
@@ -671,10 +683,82 @@ export default function EphemerisDashboard() {
                     ...sans,
                   }}
                 >
-                  No satellites registered. Add spacecraft to your organization.
+                  No entities registered. Add spacecraft or launch vehicles to
+                  your organization.
                 </div>
               ) : (
                 <>
+                  {/* Type filter bar */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "10px 0 6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: COLORS.textMuted,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        ...sans,
+                      }}
+                    >
+                      Type
+                    </span>
+                    <select
+                      value={typeFilter}
+                      onChange={(e) =>
+                        setTypeFilter(e.target.value as TypeFilter)
+                      }
+                      style={{
+                        fontSize: 11,
+                        padding: "3px 8px",
+                        background: COLORS.elevated,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 4,
+                        color: COLORS.textSecondary,
+                        cursor: "pointer",
+                        outline: "none",
+                        ...sans,
+                      }}
+                    >
+                      <option value="ALL">All ({fleet.length})</option>
+                      <option value="SCO">
+                        SCO — Spacecraft (
+                        {
+                          fleet.filter(
+                            (f) => (f.operatorType ?? "SCO") === "SCO",
+                          ).length
+                        }
+                        )
+                      </option>
+                      <option value="LO">
+                        LO — Launch Vehicle (
+                        {fleet.filter((f) => f.operatorType === "LO").length})
+                      </option>
+                    </select>
+                    {typeFilter !== "ALL" && (
+                      <button
+                        onClick={() => setTypeFilter("ALL")}
+                        style={{
+                          fontSize: 10,
+                          padding: "2px 6px",
+                          background: "transparent",
+                          border: `1px solid ${COLORS.border}`,
+                          borderRadius: 3,
+                          color: COLORS.textMuted,
+                          cursor: "pointer",
+                          ...sans,
+                        }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+
                   <table
                     style={{
                       width: "100%",
@@ -684,6 +768,15 @@ export default function EphemerisDashboard() {
                   >
                     <thead>
                       <tr>
+                        <th
+                          style={{
+                            ...headerCellStyle,
+                            textAlign: "center",
+                            width: 52,
+                          }}
+                        >
+                          Type
+                        </th>
                         <th
                           style={{
                             ...headerCellStyle,
@@ -806,6 +899,31 @@ export default function EphemerisDashboard() {
                               window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
                             }}
                           >
+                            <td
+                              style={{
+                                ...cellStyle,
+                                textAlign: "center",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  padding: "1px 6px",
+                                  borderRadius: 3,
+                                  fontSize: 9,
+                                  fontWeight: 700,
+                                  letterSpacing: "0.04em",
+                                  color: "#fff",
+                                  backgroundColor:
+                                    TYPE_BADGE_COLORS[
+                                      sat.operatorType ?? "SCO"
+                                    ] ?? COLORS.textMuted,
+                                  ...sans,
+                                }}
+                              >
+                                {sat.operatorType ?? "SCO"}
+                              </span>
+                            </td>
                             <td
                               style={{
                                 ...cellStyle,
@@ -942,7 +1060,7 @@ export default function EphemerisDashboard() {
                       ...sans,
                     }}
                   >
-                    Showing {fleet.length} of {fleet.length} satellites
+                    Showing {sortedFleet.length} of {fleet.length} entities
                   </div>
                 </>
               )}
