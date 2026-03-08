@@ -78,8 +78,8 @@ describe("Module Registry", () => {
   });
 
   describe("empty registries", () => {
-    it("validateRegistry returns valid for LO (empty)", () => {
-      expect(validateRegistry("LO")).toEqual({ valid: true });
+    it("validateRegistry returns valid for LSO (empty)", () => {
+      expect(validateRegistry("LSO")).toEqual({ valid: true });
     });
 
     it("validateRegistry returns valid for all empty types", () => {
@@ -88,8 +88,8 @@ describe("Module Registry", () => {
       }
     });
 
-    it("getModulesForType returns empty array for LO", () => {
-      expect(getModulesForType("LO")).toEqual([]);
+    it("getModulesForType returns empty array for LSO", () => {
+      expect(getModulesForType("LSO")).toEqual([]);
     });
 
     it("getModulesForType returns empty array for unknown type", () => {
@@ -97,11 +97,11 @@ describe("Module Registry", () => {
     });
 
     it("getModuleWeights returns empty object for empty types", () => {
-      expect(getModuleWeights("LO")).toEqual({});
+      expect(getModuleWeights("LSO")).toEqual({});
     });
 
     it("getSafetyCriticalModules returns empty array for empty types", () => {
-      expect(getSafetyCriticalModules("LO")).toEqual([]);
+      expect(getSafetyCriticalModules("LSO")).toEqual([]);
     });
   });
 });
@@ -314,13 +314,11 @@ vi.mock("../data/sentinel-adapter", () => ({
   getSentinelTimeSeries: vi
     .fn()
     .mockResolvedValue({ dataPoint: "test", points: [] }),
-  getSentinelStatus: vi
-    .fn()
-    .mockResolvedValue({
-      connected: false,
-      lastPacket: null,
-      packetsLast24h: 0,
-    }),
+  getSentinelStatus: vi.fn().mockResolvedValue({
+    connected: false,
+    lastPacket: null,
+    packetsLast24h: 0,
+  }),
 }));
 vi.mock("../data/solar-flux-adapter", () => ({
   getCurrentF107: vi.fn().mockResolvedValue(150),
@@ -338,22 +336,18 @@ vi.mock("../data/verity-adapter", () => ({
     .mockResolvedValue({ attestations: 0, latestTrustLevel: null }),
 }));
 vi.mock("../data/assessment-adapter", () => ({
-  getAssessmentData: vi
-    .fn()
-    .mockResolvedValue({
-      debris: null,
-      cyber: null,
-      insurance: null,
-      environmental: null,
-      nis2: null,
-    }),
-  getAssessmentStatus: vi
-    .fn()
-    .mockResolvedValue({
-      completedModules: 0,
-      totalModules: 5,
-      lastUpdated: null,
-    }),
+  getAssessmentData: vi.fn().mockResolvedValue({
+    debris: null,
+    cyber: null,
+    insurance: null,
+    environmental: null,
+    nis2: null,
+  }),
+  getAssessmentStatus: vi.fn().mockResolvedValue({
+    completedModules: 0,
+    totalModules: 5,
+    lastUpdated: null,
+  }),
 }));
 vi.mock("../data/eurlex-adapter", () => ({
   getRegulatoryChanges: vi.fn().mockResolvedValue([]),
@@ -367,14 +361,12 @@ vi.mock("../models/fuel-depletion", () => ({
   getFuelDepletionFactors: vi.fn().mockReturnValue([]),
 }));
 vi.mock("../models/subsystem-degradation", () => ({
-  predictSubsystemHealth: vi
-    .fn()
-    .mockReturnValue({
-      thruster: { status: "UNKNOWN" },
-      battery: { status: "UNKNOWN" },
-      solarArray: { status: "UNKNOWN" },
-      overallSubsystemHealth: 0,
-    }),
+  predictSubsystemHealth: vi.fn().mockReturnValue({
+    thruster: { status: "UNKNOWN" },
+    battery: { status: "UNKNOWN" },
+    solarArray: { status: "UNKNOWN" },
+    overallSubsystemHealth: 0,
+  }),
   getSubsystemFactors: vi.fn().mockReturnValue([]),
 }));
 vi.mock("../models/deadline-events", () => ({
@@ -416,7 +408,7 @@ describe("calculateEntityComplianceState", () => {
     expect(result.operatorId).toBe("org1");
   });
 
-  it("throws for LO operator type (not yet supported)", async () => {
+  it("delegates to calculateLaunchComplianceState for LO type", async () => {
     const { calculateEntityComplianceState } =
       await import("./satellite-compliance-state");
 
@@ -431,9 +423,15 @@ describe("calculateEntityComplianceState", () => {
       status: "ACTIVE",
     };
 
-    await expect(
-      calculateEntityComplianceState(entity, {} as never),
-    ).rejects.toThrow("Operator type LO not yet supported in Ephemeris");
+    const mockPrisma = {
+      satelliteAlert: null,
+    } as never;
+
+    const result = await calculateEntityComplianceState(entity, mockPrisma);
+    expect(result).toBeDefined();
+    expect(result.noradId).toBe("v123");
+    expect(result.satelliteName).toBe("Test Launch");
+    expect(result.operatorId).toBe("org1");
   });
 
   it("throws for SCO entity missing noradId", async () => {

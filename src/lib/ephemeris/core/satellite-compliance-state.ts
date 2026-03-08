@@ -16,6 +16,7 @@ import type {
   OperatorEntityInput,
 } from "./types";
 import { getNoradId } from "./entity-adapter";
+import { calculateLaunchComplianceState } from "./launch-compliance-state";
 import {
   calculateOverallScore,
   calculateModuleScore,
@@ -110,6 +111,10 @@ export async function calculateEntityComplianceState(
       satelliteName: entity.name,
       launchDate,
     });
+  }
+
+  if (entity.operatorType === "LO") {
+    return calculateLaunchComplianceState(entity, prisma);
   }
 
   throw new Error(

@@ -68,6 +68,10 @@ export const CATEGORY_COLORS: Record<string, string> = {
   regulatory: "#10B981",
   operational: "#EC4899",
   financial: "#EF4444",
+  launch_operations: "#3B82F6",
+  vehicle_anomalies: "#F59E0B",
+  range_environment: "#06B6D4",
+  launch_regulatory: "#10B981",
 };
 
 // ─── Compute State ────────────────────────────────────────────────────────────

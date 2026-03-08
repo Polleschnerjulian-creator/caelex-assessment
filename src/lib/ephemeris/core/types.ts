@@ -493,6 +493,23 @@ export type WhatIfScenarioType =
   | "SANCTIONS_EXPORT_CONTROL"
   | "BUDGET_CUT"
   | "PARTNER_DEFAULT"
+  // Launch Operations (LO-specific)
+  | "LO_LAUNCH_DELAY"
+  | "LO_LAUNCH_WINDOW_CHANGE"
+  | "LO_PAD_TURNAROUND_DELAY"
+  | "LO_MULTI_MANIFEST_CHANGE"
+  | "LO_ENGINE_ANOMALY"
+  | "LO_FTS_ACTIVATION"
+  | "LO_STAGE_SEPARATION_ANOMALY"
+  | "LO_FAIRING_FAILURE"
+  | "LO_UPPER_STAGE_RESTART_FAILURE"
+  | "LO_RANGE_SAFETY_VIOLATION"
+  | "LO_WEATHER_DELAY"
+  | "LO_ENVIRONMENTAL_PROTEST"
+  | "LO_OVERFLIGHT_RESTRICTION"
+  | "LO_LAUNCH_LICENSE_CONDITION_CHANGE"
+  | "LO_PAYLOAD_CLASSIFICATION_CHANGE"
+  | "LO_TECHNOLOGY_TRANSFER_ISSUE"
   // Legacy
   | "FUEL_BURN"
   | "CONSTELLATION_CHANGE";
@@ -612,6 +629,130 @@ export interface ModuleRegistration {
 }
 
 export type ModuleRegistry = Record<string, ModuleRegistration[]>;
+
+// ─── Launch Operator Types ───────────────────────────────────────────────────
+
+export interface LaunchVehicleProfile {
+  vehicleClass: "micro" | "small" | "medium" | "heavy" | "super_heavy";
+  payloadCapacityKg: number;
+  propulsionType: "solid" | "liquid" | "hybrid";
+  stageCount: number;
+  reusable: boolean;
+  launchSite: string;
+  launchSiteJurisdiction: string;
+  targetOrbits: string[];
+}
+
+export interface LaunchCampaign {
+  id: string;
+  vehicleEntityId: string;
+  campaignName: string;
+  targetLaunchDate?: Date;
+  launchWindowStart?: Date;
+  launchWindowEnd?: Date;
+  payloadManifest: PayloadEntry[];
+  status: "planning" | "integration" | "on_pad" | "launched" | "scrubbed";
+}
+
+export interface PayloadEntry {
+  name: string;
+  operatorName: string;
+  massKg: number;
+  classification: "unclassified" | "controlled" | "itar_restricted";
+}
+
+export interface LaunchDeadline {
+  key: string;
+  label: string;
+  regulationRef: string;
+  frequency: "once" | "per_campaign" | "annual" | "biannual";
+  leadTimeDays: number;
+  baseSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+}
+
+export type LaunchModuleKey =
+  | "launch_authorization"
+  | "range_safety"
+  | "third_party_liability"
+  | "environmental_impact"
+  | "payload_integration"
+  | "cyber"
+  | "documentation"
+  | "frequency_coordination"
+  | "export_control";
+
+// LO-specific What-If Scenario Types
+export type LaunchWhatIfScenarioType =
+  // Launch Operations
+  | "LO_LAUNCH_DELAY"
+  | "LO_LAUNCH_WINDOW_CHANGE"
+  | "LO_PAD_TURNAROUND_DELAY"
+  | "LO_MULTI_MANIFEST_CHANGE"
+  // Vehicle Anomalies
+  | "LO_ENGINE_ANOMALY"
+  | "LO_FTS_ACTIVATION"
+  | "LO_STAGE_SEPARATION_ANOMALY"
+  | "LO_FAIRING_FAILURE"
+  | "LO_UPPER_STAGE_RESTART_FAILURE"
+  // Range & Environment
+  | "LO_RANGE_SAFETY_VIOLATION"
+  | "LO_WEATHER_DELAY"
+  | "LO_ENVIRONMENTAL_PROTEST"
+  | "LO_OVERFLIGHT_RESTRICTION"
+  // Launch Regulatory
+  | "LO_LAUNCH_LICENSE_CONDITION_CHANGE"
+  | "LO_PAYLOAD_CLASSIFICATION_CHANGE"
+  | "LO_TECHNOLOGY_TRANSFER_ISSUE";
+
+// Launch Jurisdiction Profile for jurisdiction simulator
+export interface LaunchJurisdictionProfile {
+  name: string;
+  primaryLaw: string;
+  authority: string;
+  primaryLaunchSite: string;
+  latitude: number;
+  insuranceMinimumEur: number;
+  approvalTimelineMonths: number;
+  environmentalAssessment: string;
+  exportControl: string;
+  polarOrbitAccess: string;
+  equatorialAccess: string;
+  maxLaunchRateYear: number;
+  strengths: string[];
+  challenges: string[];
+}
+
+export interface LaunchJurisdictionSimulation {
+  fromJurisdiction: string;
+  toJurisdiction: string;
+  vehicle: { vehicleId: string; name: string };
+  complianceDelta: {
+    scoreBefore: number;
+    scoreAfter: number;
+    scoreDelta: number;
+  };
+  insuranceDelta: {
+    currentMinEur: number;
+    newMinEur: number;
+    deltaEur: number;
+  };
+  approvalTimelineDelta: {
+    currentMonths: number;
+    newMonths: number;
+    deltaMonths: number;
+  };
+  orbitAccessComparison: {
+    polar: { current: string; new: string };
+    equatorial: { current: string; new: string };
+  };
+  environmentalComparison: {
+    current: string;
+    new: string;
+  };
+  strengths: string[];
+  challenges: string[];
+  narrative: string;
+}
 
 // ─── Tracked Deadlines ───────────────────────────────────────────────────────
 

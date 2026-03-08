@@ -2,8 +2,11 @@ import type {
   JurisdictionSimulation,
   JurisdictionRequirement,
   JurisdictionRequirementChange,
+  LaunchVehicleProfile,
+  LaunchJurisdictionSimulation,
 } from "../core/types";
 import { JURISDICTIONS, getJurisdiction } from "./jurisdiction-data";
+import { LAUNCH_JURISDICTIONS } from "@/data/launch-operator-requirements";
 
 /**
  * Jurisdiction Simulator
@@ -198,4 +201,158 @@ function estimateComplianceWork(addedRequirements: number): string {
   if (addedRequirements <= 2) return "2-4 weeks";
   if (addedRequirements <= 4) return "1-2 months";
   return "3-6 months";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Launch Operator Jurisdiction Comparison
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compare launch jurisdictions for a launch vehicle.
+ * Evaluates insurance, approval timeline, orbit access, and environmental requirements.
+ */
+export function simulateLaunchJurisdictionChange(
+  currentJurisdiction: string,
+  targetJurisdiction: string,
+  vehicle: { vehicleId: string; name: string },
+  currentScore: number,
+): LaunchJurisdictionSimulation {
+  const current = LAUNCH_JURISDICTIONS[currentJurisdiction.toUpperCase()];
+  const target = LAUNCH_JURISDICTIONS[targetJurisdiction.toUpperCase()];
+
+  if (!current || !target) {
+    throw new Error(
+      `Unknown launch jurisdiction: ${!current ? currentJurisdiction : targetJurisdiction}`,
+    );
+  }
+
+  // Insurance delta
+  const insuranceDeltaEur =
+    target.insuranceMinimumEur - current.insuranceMinimumEur;
+
+  // Approval timeline delta
+  const approvalDeltaMonths =
+    target.approvalTimelineMonths - current.approvalTimelineMonths;
+
+  // Score delta estimate based on multiple factors
+  let scoreDelta = 0;
+
+  // Insurance impact: higher = worse (-2 per €5M increase)
+  scoreDelta += Math.round((-insuranceDeltaEur / 5_000_000) * 2);
+
+  // Approval timeline: longer = worse (-1 per 2 months)
+  scoreDelta += Math.round((-approvalDeltaMonths / 2) * 1);
+
+  // Environmental complexity comparison
+  const envComplexity: Record<string, number> = {
+    "EIA, limited scope": 1,
+    "EIA, moderate scope": 2,
+    "EIA + Habitats Regulations Assessment": 3,
+    "VIA (Valutazione Impatto Ambientale)": 3,
+    "UVP (Environmental Impact Assessment), strict": 4,
+    "Full ICPE, strict (ESA/CNES standards)": 5,
+  };
+  const currentEnvScore = envComplexity[current.environmentalAssessment] ?? 2;
+  const targetEnvScore = envComplexity[target.environmentalAssessment] ?? 2;
+  scoreDelta += (currentEnvScore - targetEnvScore) * 2;
+
+  // Launch rate capacity
+  if (target.maxLaunchRateYear > current.maxLaunchRateYear) {
+    scoreDelta += 2;
+  } else if (target.maxLaunchRateYear < current.maxLaunchRateYear) {
+    scoreDelta -= 2;
+  }
+
+  const scoreAfter = Math.max(0, Math.min(100, currentScore + scoreDelta));
+
+  // Build narrative
+  const narrativeParts: string[] = [];
+  if (insuranceDeltaEur > 0) {
+    narrativeParts.push(
+      `Insurance minimum increases by €${(insuranceDeltaEur / 1_000_000).toFixed(0)}M`,
+    );
+  } else if (insuranceDeltaEur < 0) {
+    narrativeParts.push(
+      `Insurance minimum decreases by €${(Math.abs(insuranceDeltaEur) / 1_000_000).toFixed(0)}M`,
+    );
+  }
+  if (approvalDeltaMonths > 0) {
+    narrativeParts.push(
+      `Approval timeline extends by ${approvalDeltaMonths} months`,
+    );
+  } else if (approvalDeltaMonths < 0) {
+    narrativeParts.push(
+      `Approval timeline shortens by ${Math.abs(approvalDeltaMonths)} months`,
+    );
+  }
+  narrativeParts.push(
+    `Moving from ${current.primaryLaunchSite} (${current.latitude}°N) to ${target.primaryLaunchSite} (${target.latitude}°N)`,
+  );
+
+  return {
+    fromJurisdiction: currentJurisdiction.toUpperCase(),
+    toJurisdiction: targetJurisdiction.toUpperCase(),
+    vehicle,
+    complianceDelta: {
+      scoreBefore: currentScore,
+      scoreAfter,
+      scoreDelta,
+    },
+    insuranceDelta: {
+      currentMinEur: current.insuranceMinimumEur,
+      newMinEur: target.insuranceMinimumEur,
+      deltaEur: insuranceDeltaEur,
+    },
+    approvalTimelineDelta: {
+      currentMonths: current.approvalTimelineMonths,
+      newMonths: target.approvalTimelineMonths,
+      deltaMonths: approvalDeltaMonths,
+    },
+    orbitAccessComparison: {
+      polar: {
+        current: current.polarOrbitAccess,
+        new: target.polarOrbitAccess,
+      },
+      equatorial: {
+        current: current.equatorialAccess,
+        new: target.equatorialAccess,
+      },
+    },
+    environmentalComparison: {
+      current: current.environmentalAssessment,
+      new: target.environmentalAssessment,
+    },
+    strengths: target.strengths,
+    challenges: target.challenges,
+    narrative: narrativeParts.join(". ") + ".",
+  };
+}
+
+/**
+ * Compare all launch jurisdictions for a vehicle and rank by favorability.
+ */
+export function compareAllLaunchJurisdictions(
+  currentCode: string,
+  vehicle: { vehicleId: string; name: string },
+  currentScore: number,
+): LaunchJurisdictionSimulation[] {
+  const results: LaunchJurisdictionSimulation[] = [];
+
+  for (const code of Object.keys(LAUNCH_JURISDICTIONS)) {
+    if (code === currentCode.toUpperCase()) continue;
+    results.push(
+      simulateLaunchJurisdictionChange(
+        currentCode,
+        code,
+        vehicle,
+        currentScore,
+      ),
+    );
+  }
+
+  results.sort(
+    (a, b) => b.complianceDelta.scoreDelta - a.complianceDelta.scoreDelta,
+  );
+
+  return results;
 }

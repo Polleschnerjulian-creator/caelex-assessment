@@ -49,6 +49,10 @@ const CATEGORY_SHORT: Record<BlockCategory, string> = {
   regulatory: "REG",
   operational: "OPS",
   financial: "FIN",
+  launch_operations: "LCH",
+  vehicle_anomalies: "VEH",
+  range_environment: "RNG",
+  launch_regulatory: "LRG",
 };
 
 // ---------------------------------------------------------------------------

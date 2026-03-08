@@ -37,7 +37,11 @@ export type BlockCategory =
   | "communication"
   | "regulatory"
   | "operational"
-  | "financial";
+  | "financial"
+  | "launch_operations"
+  | "vehicle_anomalies"
+  | "range_environment"
+  | "launch_regulatory";
 
 export interface CategoryMeta {
   id: BlockCategory;
@@ -89,6 +93,30 @@ export const BLOCK_CATEGORIES: CategoryMeta[] = [
     icon: "DollarSign",
     color: "text-emerald-500",
   },
+  {
+    id: "launch_operations",
+    label: "Launch Operations",
+    icon: "Rocket",
+    color: "text-blue-500",
+  },
+  {
+    id: "vehicle_anomalies",
+    label: "Vehicle Anomalies",
+    icon: "AlertTriangle",
+    color: "text-amber-500",
+  },
+  {
+    id: "range_environment",
+    label: "Range & Environment",
+    icon: "MapPin",
+    color: "text-cyan-500",
+  },
+  {
+    id: "launch_regulatory",
+    label: "Launch Regulatory",
+    icon: "FileCheck",
+    color: "text-emerald-500",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -112,6 +140,8 @@ export interface BlockDefinition {
   category: BlockCategory;
   /** Parameter definitions (may be empty). */
   parameterDefs: ParameterDef[];
+  /** Operator types this block is available for. Undefined = all types. */
+  operatorTypes?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -1294,6 +1324,430 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
         label: "Criticality",
         options: ["low", "medium", "high"],
         defaultValue: "medium",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // LAUNCH OPERATIONS — LO only (4)
+  // =========================================================================
+  {
+    id: "lo-launch-delay",
+    name: "Launch Delay",
+    description: "Simulate a launch delay and its cascading compliance impact.",
+    icon: "Clock",
+    color: "text-blue-500",
+    scenarioType: "LO_LAUNCH_DELAY",
+    category: "launch_operations",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "delayDays",
+        label: "Delay Duration",
+        min: 1,
+        max: 365,
+        step: 1,
+        defaultValue: 30,
+        unit: "days",
+      },
+      {
+        type: "select",
+        key: "reason",
+        label: "Delay Reason",
+        options: [
+          "technical",
+          "weather",
+          "regulatory",
+          "customer",
+          "range_conflict",
+        ],
+        defaultValue: "technical",
+      },
+    ],
+  },
+  {
+    id: "lo-launch-window-change",
+    name: "Launch Window Change",
+    description: "Simulate a change in the available launch window.",
+    icon: "Calendar",
+    color: "text-blue-400",
+    scenarioType: "LO_LAUNCH_WINDOW_CHANGE",
+    category: "launch_operations",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "windowShiftDays",
+        label: "Window Shift",
+        min: -90,
+        max: 90,
+        step: 1,
+        defaultValue: 14,
+        unit: "days",
+      },
+      {
+        type: "slider",
+        key: "windowDurationDays",
+        label: "New Window Duration",
+        min: 1,
+        max: 30,
+        step: 1,
+        defaultValue: 7,
+        unit: "days",
+      },
+    ],
+  },
+  {
+    id: "lo-pad-turnaround-delay",
+    name: "Pad Turnaround Delay",
+    description: "Simulate delayed pad availability between campaigns.",
+    icon: "Timer",
+    color: "text-blue-500",
+    scenarioType: "LO_PAD_TURNAROUND_DELAY",
+    category: "launch_operations",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "additionalDays",
+        label: "Additional Days",
+        min: 1,
+        max: 90,
+        step: 1,
+        defaultValue: 14,
+        unit: "days",
+      },
+    ],
+  },
+  {
+    id: "lo-multi-manifest-change",
+    name: "Multi-Manifest Change",
+    description: "Simulate adding or removing a payload from the manifest.",
+    icon: "Layers",
+    color: "text-blue-400",
+    scenarioType: "LO_MULTI_MANIFEST_CHANGE",
+    category: "launch_operations",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "action",
+        label: "Action",
+        options: ["add_payload", "remove_payload"],
+        defaultValue: "add_payload",
+      },
+      {
+        type: "select",
+        key: "payloadClassification",
+        label: "Payload Classification",
+        options: ["unclassified", "controlled", "itar_restricted"],
+        defaultValue: "unclassified",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // VEHICLE ANOMALIES — LO only (5)
+  // =========================================================================
+  {
+    id: "lo-engine-anomaly",
+    name: "Engine Anomaly",
+    description: "Simulate an engine anomaly during test or flight.",
+    icon: "Flame",
+    color: "text-amber-500",
+    scenarioType: "LO_ENGINE_ANOMALY",
+    category: "vehicle_anomalies",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "stage",
+        label: "Stage",
+        options: ["first_stage", "second_stage", "upper_stage"],
+        defaultValue: "first_stage",
+      },
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["minor", "major", "catastrophic"],
+        defaultValue: "major",
+      },
+    ],
+  },
+  {
+    id: "lo-fts-activation",
+    name: "FTS Activation",
+    description: "Simulate a Flight Termination System activation event.",
+    icon: "AlertOctagon",
+    color: "text-amber-600",
+    scenarioType: "LO_FTS_ACTIVATION",
+    category: "vehicle_anomalies",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "flightPhase",
+        label: "Flight Phase",
+        options: [
+          "first_stage_burn",
+          "stage_separation",
+          "upper_stage_burn",
+          "coast",
+        ],
+        defaultValue: "first_stage_burn",
+      },
+    ],
+  },
+  {
+    id: "lo-stage-separation-anomaly",
+    name: "Stage Separation Anomaly",
+    description: "Simulate a stage separation failure or delay.",
+    icon: "Unlink",
+    color: "text-amber-400",
+    scenarioType: "LO_STAGE_SEPARATION_ANOMALY",
+    category: "vehicle_anomalies",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "outcome",
+        label: "Outcome",
+        options: [
+          "delayed_separation",
+          "partial_separation",
+          "failed_separation",
+        ],
+        defaultValue: "delayed_separation",
+      },
+    ],
+  },
+  {
+    id: "lo-fairing-failure",
+    name: "Fairing Failure",
+    description: "Simulate a payload fairing separation failure.",
+    icon: "ShieldOff",
+    color: "text-amber-500",
+    scenarioType: "LO_FAIRING_FAILURE",
+    category: "vehicle_anomalies",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "failureType",
+        label: "Failure Type",
+        options: ["delayed_separation", "partial_separation", "no_separation"],
+        defaultValue: "delayed_separation",
+      },
+    ],
+  },
+  {
+    id: "lo-upper-stage-restart-failure",
+    name: "Upper Stage Restart Failure",
+    description:
+      "Simulate an upper stage restart failure affecting orbit insertion.",
+    icon: "RefreshCwOff",
+    color: "text-amber-600",
+    scenarioType: "LO_UPPER_STAGE_RESTART_FAILURE",
+    category: "vehicle_anomalies",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "restartAttempt",
+        label: "Restart Attempt",
+        min: 1,
+        max: 5,
+        step: 1,
+        defaultValue: 2,
+        unit: "",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // RANGE & ENVIRONMENT — LO only (4)
+  // =========================================================================
+  {
+    id: "lo-range-safety-violation",
+    name: "Range Safety Violation",
+    description:
+      "Simulate a trajectory deviation triggering range safety concerns.",
+    icon: "AlertTriangle",
+    color: "text-cyan-500",
+    scenarioType: "LO_RANGE_SAFETY_VIOLATION",
+    category: "range_environment",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "deviationType",
+        label: "Deviation Type",
+        options: ["azimuth", "altitude", "velocity", "debris_footprint"],
+        defaultValue: "azimuth",
+      },
+      {
+        type: "select",
+        key: "severity",
+        label: "Severity",
+        options: ["minor", "major", "critical"],
+        defaultValue: "major",
+      },
+    ],
+  },
+  {
+    id: "lo-weather-delay",
+    name: "Weather Delay",
+    description: "Simulate weather-related launch delays.",
+    icon: "CloudRain",
+    color: "text-cyan-400",
+    scenarioType: "LO_WEATHER_DELAY",
+    category: "range_environment",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "slider",
+        key: "delayDays",
+        label: "Expected Delay",
+        min: 1,
+        max: 30,
+        step: 1,
+        defaultValue: 3,
+        unit: "days",
+      },
+      {
+        type: "select",
+        key: "weatherType",
+        label: "Weather Type",
+        options: [
+          "wind",
+          "lightning",
+          "visibility",
+          "upper_wind_shear",
+          "precipitation",
+        ],
+        defaultValue: "wind",
+      },
+    ],
+  },
+  {
+    id: "lo-environmental-protest",
+    name: "Environmental Protest/Injunction",
+    description: "Simulate an environmental challenge to launch operations.",
+    icon: "Scale",
+    color: "text-cyan-500",
+    scenarioType: "LO_ENVIRONMENTAL_PROTEST",
+    category: "range_environment",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "type",
+        label: "Challenge Type",
+        options: ["protest", "legal_injunction", "regulatory_review"],
+        defaultValue: "regulatory_review",
+      },
+      {
+        type: "slider",
+        key: "estimatedDelayDays",
+        label: "Estimated Delay",
+        min: 7,
+        max: 365,
+        step: 1,
+        defaultValue: 60,
+        unit: "days",
+      },
+    ],
+  },
+  {
+    id: "lo-overflight-restriction",
+    name: "Overflight Restriction Change",
+    description:
+      "Simulate a change in overflight restrictions affecting launch azimuth.",
+    icon: "MapPinOff",
+    color: "text-cyan-600",
+    scenarioType: "LO_OVERFLIGHT_RESTRICTION",
+    category: "range_environment",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "restrictionType",
+        label: "Type",
+        options: ["new_restriction", "expanded_zone", "temporary_tfr"],
+        defaultValue: "new_restriction",
+      },
+    ],
+  },
+
+  // =========================================================================
+  // LAUNCH REGULATORY — LO only (3)
+  // =========================================================================
+  {
+    id: "lo-launch-license-condition-change",
+    name: "Launch License Condition Change",
+    description: "Simulate a change in launch license conditions by the NCA.",
+    icon: "FileEdit",
+    color: "text-emerald-500",
+    scenarioType: "LO_LAUNCH_LICENSE_CONDITION_CHANGE",
+    category: "launch_regulatory",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "conditionType",
+        label: "Condition",
+        options: [
+          "insurance_increase",
+          "additional_safety_review",
+          "environmental_restriction",
+          "frequency_restriction",
+          "launch_rate_limit",
+        ],
+        defaultValue: "additional_safety_review",
+      },
+    ],
+  },
+  {
+    id: "lo-payload-classification-change",
+    name: "Payload Classification Change",
+    description: "Simulate a payload being reclassified under export control.",
+    icon: "Tag",
+    color: "text-emerald-400",
+    scenarioType: "LO_PAYLOAD_CLASSIFICATION_CHANGE",
+    category: "launch_regulatory",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "newClassification",
+        label: "New Classification",
+        options: ["unclassified", "controlled", "itar_restricted"],
+        defaultValue: "controlled",
+      },
+    ],
+  },
+  {
+    id: "lo-technology-transfer-issue",
+    name: "Technology Transfer Issue",
+    description: "Simulate a technology transfer compliance issue.",
+    icon: "Lock",
+    color: "text-emerald-500",
+    scenarioType: "LO_TECHNOLOGY_TRANSFER_ISSUE",
+    category: "launch_regulatory",
+    operatorTypes: ["LO"],
+    parameterDefs: [
+      {
+        type: "select",
+        key: "issueType",
+        label: "Issue",
+        options: [
+          "denied_license",
+          "additional_review",
+          "partner_country_restriction",
+        ],
+        defaultValue: "additional_review",
       },
     ],
   },

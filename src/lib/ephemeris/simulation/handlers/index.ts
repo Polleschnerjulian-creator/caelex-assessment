@@ -84,6 +84,26 @@ import {
   runPartnerDefault,
 } from "./financial";
 
+// ─── Launch Operator Handlers ───────────────────────────────────────────────
+import {
+  runLoLaunchDelay,
+  runLoLaunchWindowChange,
+  runLoPadTurnaroundDelay,
+  runLoMultiManifestChange,
+  runLoEngineAnomaly,
+  runLoFtsActivation,
+  runLoStageSeparationAnomaly,
+  runLoFairingFailure,
+  runLoUpperStageRestartFailure,
+  runLoRangeSafetyViolation,
+  runLoWeatherDelay,
+  runLoEnvironmentalProtest,
+  runLoOverflightRestriction,
+  runLoLaunchLicenseConditionChange,
+  runLoPayloadClassificationChange,
+  runLoTechnologyTransferIssue,
+} from "./launch";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type ScenarioHandler = (
@@ -158,4 +178,22 @@ export const SCENARIO_HANDLERS: Record<string, ScenarioHandler> = {
   SANCTIONS_EXPORT_CONTROL: runSanctionsExportControl,
   BUDGET_CUT: runBudgetCut,
   PARTNER_DEFAULT: runPartnerDefault,
+
+  // Launch Operator
+  LO_LAUNCH_DELAY: runLoLaunchDelay,
+  LO_LAUNCH_WINDOW_CHANGE: runLoLaunchWindowChange,
+  LO_PAD_TURNAROUND_DELAY: runLoPadTurnaroundDelay,
+  LO_MULTI_MANIFEST_CHANGE: runLoMultiManifestChange,
+  LO_ENGINE_ANOMALY: runLoEngineAnomaly,
+  LO_FTS_ACTIVATION: runLoFtsActivation,
+  LO_STAGE_SEPARATION_ANOMALY: runLoStageSeparationAnomaly,
+  LO_FAIRING_FAILURE: runLoFairingFailure,
+  LO_UPPER_STAGE_RESTART_FAILURE: runLoUpperStageRestartFailure,
+  LO_RANGE_SAFETY_VIOLATION: runLoRangeSafetyViolation,
+  LO_WEATHER_DELAY: runLoWeatherDelay,
+  LO_ENVIRONMENTAL_PROTEST: runLoEnvironmentalProtest,
+  LO_OVERFLIGHT_RESTRICTION: runLoOverflightRestriction,
+  LO_LAUNCH_LICENSE_CONDITION_CHANGE: runLoLaunchLicenseConditionChange,
+  LO_PAYLOAD_CLASSIFICATION_CHANGE: runLoPayloadClassificationChange,
+  LO_TECHNOLOGY_TRANSFER_ISSUE: runLoTechnologyTransferIssue,
 };
