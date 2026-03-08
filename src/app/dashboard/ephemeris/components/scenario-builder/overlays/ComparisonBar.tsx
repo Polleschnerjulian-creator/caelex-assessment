@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Node, Edge } from "@xyflow/react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import {
   FORGE_NODE_TYPES,
   type ResultNodeData,
@@ -112,13 +112,13 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
         bottom: 24,
         left: "50%",
         transform: "translateX(-50%)",
-        zIndex: 50,
-        background: "rgba(255, 255, 255, 0.92)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: `1px solid ${FORGE.nodeBorder}`,
-        borderRadius: 14,
-        boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
+        zIndex: 45,
+        background: GLASS.bg,
+        backdropFilter: `blur(${GLASS.blur}px)`,
+        WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+        border: `1px solid ${GLASS.border}`,
+        borderRadius: GLASS.panelRadius,
+        boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
         padding: "16px 24px",
         display: "flex",
         flexDirection: "column",
@@ -146,8 +146,8 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                 gap: 6,
                 padding: "10px 14px",
                 borderRadius: 10,
-                background: FORGE.canvasBg,
-                border: `1px solid ${FORGE.nodeBorder}`,
+                background: "rgba(255,255,255,0.4)",
+                border: "1px solid rgba(255,255,255,0.6)",
               }}
             >
               <span

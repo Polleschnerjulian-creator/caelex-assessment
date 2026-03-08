@@ -8,13 +8,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import { CATEGORY_COLORS } from "../types";
-import {
-  BLOCK_DEFINITIONS,
-  BLOCK_CATEGORIES,
-  type BlockDefinition,
-} from "../block-definitions";
+import { BLOCK_DEFINITIONS, BLOCK_CATEGORIES } from "../block-definitions";
 import { ICON_MAP } from "../icon-map";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -74,20 +70,35 @@ export default function BlockPalette({
     [onSelectBlock],
   );
 
-  // Collapsed state: show only a thin toggle strip
+  // ─── Glass base styles ─────────────────────────────────────────────────────
+
+  const glassBase: React.CSSProperties = {
+    position: "fixed",
+    left: 80,
+    top: 72,
+    bottom: 24,
+    zIndex: 40,
+    background: GLASS.bg,
+    backdropFilter: `blur(${GLASS.blur}px)`,
+    WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+    border: `1px solid ${GLASS.border}`,
+    borderRadius: GLASS.panelRadius,
+    boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
+    transition: "width 200ms ease, opacity 200ms ease",
+    overflow: "hidden",
+  };
+
+  // Collapsed state: show only a thin glass toggle strip
   if (collapsed) {
     return (
       <div
         style={{
+          ...glassBase,
           width: 40,
-          height: "100%",
-          background: FORGE.nodeBg,
-          borderRight: `1px solid ${FORGE.nodeBorder}`,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           paddingTop: 12,
-          flexShrink: 0,
         }}
       >
         <button
@@ -110,14 +121,10 @@ export default function BlockPalette({
   return (
     <div
       style={{
+        ...glassBase,
         width: 260,
-        height: "100%",
-        background: FORGE.nodeBg,
-        borderRight: `1px solid ${FORGE.nodeBorder}`,
         display: "flex",
         flexDirection: "column",
-        flexShrink: 0,
-        overflow: "hidden",
       }}
     >
       {/* Header */}
@@ -127,15 +134,15 @@ export default function BlockPalette({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: `1px solid ${FORGE.nodeBorder}`,
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <span
           style={{
-            fontSize: 12,
-            fontWeight: 600,
+            fontSize: 11,
+            fontWeight: 700,
             color: FORGE.textPrimary,
-            letterSpacing: "0.02em",
+            letterSpacing: "0.06em",
           }}
         >
           BLOCKS
@@ -159,7 +166,7 @@ export default function BlockPalette({
       <div
         style={{
           padding: "8px 12px",
-          borderBottom: `1px solid ${FORGE.nodeBorder}`,
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <div
@@ -167,8 +174,9 @@ export default function BlockPalette({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            background: "#F1F5F9",
-            borderRadius: 6,
+            background: "rgba(255,255,255,0.5)",
+            border: "1px solid rgba(255,255,255,0.6)",
+            borderRadius: 8,
             padding: "6px 8px",
           }}
         >
@@ -267,12 +275,12 @@ export default function BlockPalette({
                           background: "none",
                           cursor: "pointer",
                           textAlign: "left",
-                          borderRadius: 0,
+                          borderRadius: 6,
                           transition: "background 150ms",
                         }}
                         onMouseEnter={(e) => {
                           (e.currentTarget as HTMLElement).style.background =
-                            "#F1F5F9";
+                            "rgba(255,255,255,0.5)";
                         }}
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLElement).style.background =

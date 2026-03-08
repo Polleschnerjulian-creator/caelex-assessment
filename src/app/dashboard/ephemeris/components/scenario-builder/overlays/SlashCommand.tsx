@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Search } from "lucide-react";
 import { BLOCK_DEFINITIONS, BLOCK_CATEGORIES } from "../block-definitions";
 import { CATEGORY_COLORS } from "../types";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -140,10 +140,12 @@ export default function SlashCommand({
           pointerEvents: isOpen ? "auto" : "none",
           transition: "transform 180ms ease, opacity 180ms ease",
           zIndex: 51,
-          backgroundColor: FORGE.nodeBg,
-          borderRadius: 12,
-          boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-          border: `1px solid ${FORGE.nodeBorder}`,
+          background: GLASS.bg,
+          backdropFilter: `blur(${GLASS.blur}px)`,
+          WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+          borderRadius: GLASS.panelRadius,
+          boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
+          border: `1px solid ${GLASS.border}`,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -157,7 +159,7 @@ export default function SlashCommand({
             alignItems: "center",
             gap: 8,
             padding: "10px 14px",
-            borderBottom: `1px solid ${FORGE.nodeBorder}`,
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
           }}
         >
           <Search size={16} color={FORGE.textTertiary} />
@@ -240,7 +242,7 @@ export default function SlashCommand({
                       padding: "7px 14px",
                       cursor: "pointer",
                       backgroundColor: isHighlighted
-                        ? FORGE.canvasBg
+                        ? "rgba(255,255,255,0.5)"
                         : "transparent",
                       transition: "background-color 80ms ease",
                     }}

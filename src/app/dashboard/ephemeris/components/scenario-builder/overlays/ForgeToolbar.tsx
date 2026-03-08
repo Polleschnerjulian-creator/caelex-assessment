@@ -11,7 +11,7 @@ import {
   Map,
 } from "lucide-react";
 import { useReactFlow } from "@xyflow/react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import type { SavedScenario } from "../types";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -127,53 +127,59 @@ export default function ForgeToolbar({
     gap: 4,
     height: 32,
     padding: "0 10px",
-    borderRadius: 6,
-    border: `1px solid ${FORGE.toolbarBorder}`,
-    background: "transparent",
+    borderRadius: 8,
+    border: "1px solid rgba(255,255,255,0.5)",
+    background: "rgba(255,255,255,0.3)",
     color: FORGE.textSecondary,
     cursor: "pointer",
     fontSize: 13,
     fontFamily: "Inter, system-ui, sans-serif",
-    transition: "background 150ms, color 150ms",
+    transition: "all 200ms ease",
   };
 
   return (
     <div
       style={{
-        position: "relative",
-        height: 48,
-        flexShrink: 0,
+        position: "fixed",
+        top: 12,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 40,
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
+        gap: 12,
         padding: "0 16px",
-        background: FORGE.toolbarBg,
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${FORGE.toolbarBorder}`,
-        boxShadow: FORGE.toolbarShadow,
+        height: 48,
+        background: GLASS.bgToolbar,
+        backdropFilter: `blur(${GLASS.blur}px)`,
+        WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+        border: `1px solid ${GLASS.border}`,
+        borderRadius: GLASS.panelRadius,
+        boxShadow: `${GLASS.shadowToolbar}, ${GLASS.insetGlow}`,
         fontFamily: "Inter, system-ui, sans-serif",
       }}
     >
       {/* ── Left Section ──────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button
           onClick={onBack}
           style={{ ...btnBase, padding: "0 8px" }}
           title="Back"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <ArrowLeft size={16} />
         </button>
 
         <span
           style={{
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: 600,
             color: FORGE.textPrimary,
             whiteSpace: "nowrap",
@@ -184,11 +190,11 @@ export default function ForgeToolbar({
 
         <span
           style={{
-            fontSize: 11,
+            fontSize: 10,
             fontFamily: "'IBM Plex Mono', monospace",
             color: FORGE.textTertiary,
-            background: FORGE.nodeBorder,
-            padding: "2px 8px",
+            background: "rgba(0,0,0,0.04)",
+            padding: "2px 7px",
             borderRadius: 4,
             letterSpacing: "0.02em",
           }}
@@ -197,8 +203,18 @@ export default function ForgeToolbar({
         </span>
       </div>
 
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          width: 1,
+          height: 20,
+          background: "rgba(0,0,0,0.08)",
+          flexShrink: 0,
+        }}
+      />
+
       {/* ── Center Section ────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <input
           ref={nameInputRef}
           type="text"
@@ -206,17 +222,18 @@ export default function ForgeToolbar({
           onChange={(e) => setScenarioName(e.target.value)}
           onFocus={(e) => e.target.select()}
           style={{
-            width: 200,
+            width: 180,
             height: 32,
             padding: "0 10px",
-            borderRadius: 6,
-            border: `1px solid ${FORGE.toolbarBorder}`,
-            background: "transparent",
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255,255,255,0.3)",
             color: FORGE.textPrimary,
             fontSize: 13,
             fontFamily: "Inter, system-ui, sans-serif",
             outline: "none",
             textAlign: "center",
+            transition: "all 200ms ease",
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -230,12 +247,14 @@ export default function ForgeToolbar({
           onClick={handleSave}
           style={btnBase}
           title="Save scenario"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <Save size={14} />
           <span>Save</span>
@@ -246,12 +265,14 @@ export default function ForgeToolbar({
             onClick={() => setLoadOpen((v) => !v)}
             style={btnBase}
             title="Load scenario"
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = FORGE.nodeBorder)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "transparent")
-            }
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+              e.currentTarget.style.borderColor = GLASS.borderHover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+            }}
           >
             <FolderOpen size={14} />
             <span>Load</span>
@@ -261,16 +282,18 @@ export default function ForgeToolbar({
             <div
               style={{
                 position: "absolute",
-                top: 38,
+                top: 42,
                 left: "50%",
                 transform: "translateX(-50%)",
                 minWidth: 240,
                 maxHeight: 280,
                 overflowY: "auto",
-                background: "#FFFFFF",
-                border: `1px solid ${FORGE.toolbarBorder}`,
-                borderRadius: 8,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                background: GLASS.bg,
+                backdropFilter: `blur(${GLASS.blur}px)`,
+                WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+                border: `1px solid ${GLASS.border}`,
+                borderRadius: GLASS.panelRadius,
+                boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
                 zIndex: 60,
                 padding: 4,
               }}
@@ -296,14 +319,15 @@ export default function ForgeToolbar({
                       width: "100%",
                       textAlign: "left",
                       padding: "8px 12px",
-                      borderRadius: 6,
+                      borderRadius: 8,
                       border: "none",
                       background: "transparent",
                       cursor: "pointer",
-                      transition: "background 120ms",
+                      transition: "background 150ms",
                     }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.background = FORGE.canvasBg)
+                      (e.currentTarget.style.background =
+                        "rgba(255,255,255,0.5)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.background = "transparent")
@@ -335,28 +359,40 @@ export default function ForgeToolbar({
         </div>
       </div>
 
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          width: 1,
+          height: 20,
+          background: "rgba(0,0,0,0.08)",
+          flexShrink: 0,
+        }}
+      />
+
       {/* ── Right Section ─────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <button
           onClick={onReset}
-          style={btnBase}
+          style={{ ...btnBase, padding: "0 8px" }}
           title="Reset canvas"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <RotateCcw size={14} />
         </button>
 
         <span
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontFamily: "'IBM Plex Mono', monospace",
             color: FORGE.textTertiary,
-            minWidth: 42,
+            minWidth: 38,
             textAlign: "center",
           }}
         >
@@ -367,12 +403,14 @@ export default function ForgeToolbar({
           onClick={() => zoomOut()}
           style={{ ...btnBase, padding: "0 8px" }}
           title="Zoom out"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <ZoomOut size={14} />
         </button>
@@ -381,12 +419,14 @@ export default function ForgeToolbar({
           onClick={() => zoomIn()}
           style={{ ...btnBase, padding: "0 8px" }}
           title="Zoom in"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <ZoomIn size={14} />
         </button>
@@ -396,18 +436,22 @@ export default function ForgeToolbar({
           style={{
             ...btnBase,
             padding: "0 8px",
-            background: showMinimap ? FORGE.nodeBorder : "transparent",
+            background: showMinimap
+              ? "rgba(255,255,255,0.5)"
+              : "rgba(255,255,255,0.3)",
             color: showMinimap ? FORGE.textPrimary : FORGE.textSecondary,
           }}
           title="Toggle minimap"
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = FORGE.nodeBorder)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = showMinimap
-              ? FORGE.nodeBorder
-              : "transparent")
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.borderColor = GLASS.borderHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = showMinimap
+              ? "rgba(255,255,255,0.5)"
+              : "rgba(255,255,255,0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
         >
           <Map size={14} />
         </button>

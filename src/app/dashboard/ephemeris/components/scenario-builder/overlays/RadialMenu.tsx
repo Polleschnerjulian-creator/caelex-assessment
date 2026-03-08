@@ -225,10 +225,10 @@ export default function RadialMenu({
                 </span>
               </button>
 
-              {/* Block list popover on hover */}
+              {/* Block list popover on hover — glass design */}
               {isHovered && blocks.length > 0 && (
                 <div
-                  className="absolute z-50 rounded-lg border overflow-hidden"
+                  className="absolute z-50 overflow-hidden"
                   style={{
                     left: BUTTON_SIZE / 2,
                     top: BUTTON_SIZE + 4,
@@ -236,19 +236,23 @@ export default function RadialMenu({
                     minWidth: 180,
                     maxHeight: 240,
                     overflowY: "auto",
-                    backgroundColor: "#1E293B",
-                    borderColor: "#334155",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                    background: "rgba(255,255,255,0.75)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                    borderRadius: 12,
+                    boxShadow:
+                      "0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
                     animation: "radialFadeIn 0.12s ease-out",
                   }}
                 >
                   {/* Category header */}
                   <div
-                    className="px-3 py-1.5 text-xs font-semibold border-b"
+                    className="px-3 py-1.5 text-xs font-semibold"
                     style={{
                       color: color,
-                      borderColor: "#334155",
-                      backgroundColor: "rgba(0,0,0,0.2)",
+                      borderBottom: "1px solid rgba(0,0,0,0.06)",
+                      backgroundColor: "rgba(255,255,255,0.3)",
                     }}
                   >
                     {category.label}
@@ -259,15 +263,15 @@ export default function RadialMenu({
                     <button
                       key={block.id}
                       type="button"
-                      className="w-full text-left px-3 py-2 text-xs cursor-pointer border-b last:border-b-0"
+                      className="w-full text-left px-3 py-2 text-xs cursor-pointer"
                       style={{
-                        color: "#E2E8F0",
-                        borderColor: "#334155",
-                        transition: "background-color 0.1s",
+                        color: "#334155",
+                        borderBottom: "1px solid rgba(0,0,0,0.04)",
+                        transition: "background-color 0.15s",
                       }}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLElement).style.backgroundColor =
-                          `${color}22`;
+                          "rgba(255,255,255,0.5)";
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLElement).style.backgroundColor =
@@ -281,7 +285,7 @@ export default function RadialMenu({
                       <span className="font-medium">{block.name}</span>
                       <span
                         className="block mt-0.5"
-                        style={{ color: "#94A3B8", fontSize: 10 }}
+                        style={{ color: "#64748B", fontSize: 10 }}
                       >
                         {block.description.length > 60
                           ? block.description.slice(0, 57) + "..."

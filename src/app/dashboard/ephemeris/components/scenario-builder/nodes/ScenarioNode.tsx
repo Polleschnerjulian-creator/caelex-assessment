@@ -3,7 +3,7 @@
 import React, { memo, useCallback } from "react";
 import { Handle, Position, useStore, type NodeProps } from "@xyflow/react";
 import { X } from "lucide-react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import { CATEGORY_COLORS, type ScenarioNodeData } from "../types";
 import {
   BLOCK_DEFINITIONS,
@@ -225,14 +225,16 @@ function ScenarioNode({ id, data }: NodeProps) {
 
 const nodeStyle = (categoryColor: string): React.CSSProperties => ({
   width: 240,
-  background: FORGE.nodeBg,
-  border: `1px solid ${categoryColor}`,
+  background: GLASS.bg,
+  backdropFilter: `blur(${GLASS.blur}px)`,
+  WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+  border: `1px solid ${GLASS.border}`,
   borderLeft: `3px solid ${categoryColor}`,
-  borderRadius: 8,
+  borderRadius: GLASS.nodeRadius,
   padding: 10,
   position: "relative",
-  boxShadow: FORGE.nodeShadow,
-  transition: "box-shadow 0.15s ease",
+  boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
+  transition: "box-shadow 200ms ease, border-color 200ms ease",
 });
 
 const headerStyle: React.CSSProperties = {
@@ -280,7 +282,7 @@ const paramsContainerStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: 6,
-  borderTop: `1px solid ${FORGE.nodeBorder}`,
+  borderTop: "1px solid rgba(0,0,0,0.06)",
   paddingTop: 8,
   marginTop: 2,
 };
@@ -326,9 +328,9 @@ const selectStyle: React.CSSProperties = {
   fontSize: 10,
   fontWeight: 500,
   color: FORGE.textSecondary,
-  background: FORGE.canvasBg,
-  border: `1px solid ${FORGE.nodeBorder}`,
-  borderRadius: 4,
+  background: "rgba(255,255,255,0.4)",
+  border: "1px solid rgba(255,255,255,0.6)",
+  borderRadius: 6,
   padding: "2px 4px",
   outline: "none",
   cursor: "pointer",
@@ -347,7 +349,7 @@ const resultFooterStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  borderTop: `1px solid ${FORGE.nodeBorder}`,
+  borderTop: "1px solid rgba(0,0,0,0.06)",
   paddingTop: 6,
   marginTop: 6,
 };
@@ -363,7 +365,7 @@ const shimmerStyle: React.CSSProperties = {
 const handleTargetStyle = (color: string): React.CSSProperties => ({
   width: 8,
   height: 8,
-  background: "#FFFFFF",
+  background: "rgba(255,255,255,0.9)",
   border: `2px solid ${color}`,
   borderRadius: "50%",
 });
@@ -372,7 +374,7 @@ const handleSourceStyle = (color: string): React.CSSProperties => ({
   width: 8,
   height: 8,
   background: color,
-  border: "2px solid #FFFFFF",
+  border: "2px solid rgba(255,255,255,0.9)",
   outline: `1px solid ${color}`,
   borderRadius: "50%",
 });

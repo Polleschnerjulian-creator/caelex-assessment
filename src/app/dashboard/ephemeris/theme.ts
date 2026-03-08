@@ -94,3 +94,24 @@ export type ForgeColors = typeof FORGE;
 export function useForgeTheme(): ForgeColors {
   return FORGE;
 }
+
+// ─── Liquid Glass Design Tokens ─────────────────────────────────────────────
+
+export const GLASS = {
+  bg: "rgba(255,255,255,0.7)",
+  bgHover: "rgba(255,255,255,0.78)",
+  bgSidebar: "rgba(255,255,255,0.72)",
+  bgToolbar: "rgba(255,255,255,0.72)",
+  border: "rgba(255,255,255,0.8)",
+  borderHover: "rgba(255,255,255,0.9)",
+  borderSidebar: "rgba(255,255,255,0.75)",
+  shadow: "0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06)",
+  shadowHover: "0 2px 8px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.1)",
+  shadowToolbar: "0 2px 8px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)",
+  insetGlow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+  blur: 20,
+  nodeRadius: 16,
+  panelRadius: 12,
+} as const;
+
+export type GlassTokens = typeof GLASS;

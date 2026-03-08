@@ -3,7 +3,7 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Satellite } from "lucide-react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import type { SatelliteOriginData } from "../types";
 
 function getScoreColor(score: number): string {
@@ -93,12 +93,15 @@ function SatelliteOriginNode({ data }: NodeProps) {
 
 const nodeStyle: React.CSSProperties = {
   width: 280,
-  background: "#FFFFFF",
+  background: GLASS.bg,
+  backdropFilter: `blur(${GLASS.blur}px)`,
+  WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
   border: `2px solid ${FORGE.originBorder}`,
-  borderRadius: 12,
-  boxShadow: FORGE.originGlow,
+  borderRadius: GLASS.nodeRadius,
+  boxShadow: `${FORGE.originGlow}, ${GLASS.shadow}, ${GLASS.insetGlow}`,
   padding: 16,
   position: "relative",
+  transition: "box-shadow 200ms ease, border-color 200ms ease",
 };
 
 const headerStyle: React.CSSProperties = {
@@ -144,7 +147,7 @@ const scoreSectionStyle: React.CSSProperties = {
 const metricsRowStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  borderTop: `1px solid ${FORGE.nodeBorder}`,
+  borderTop: "1px solid rgba(0,0,0,0.06)",
   paddingTop: 10,
 };
 
@@ -173,7 +176,7 @@ const handleStyle: React.CSSProperties = {
   width: 10,
   height: 10,
   background: FORGE.originBorder,
-  border: "2px solid #FFFFFF",
+  border: "2px solid rgba(255,255,255,0.9)",
   outline: `2px solid ${FORGE.originBorder}`,
   borderRadius: "50%",
 };

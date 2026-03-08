@@ -3,7 +3,7 @@
 import React, { memo, useState, useMemo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { AlertTriangle, BarChart3 } from "lucide-react";
-import { FORGE } from "../../../theme";
+import { FORGE, GLASS } from "../../../theme";
 import type { ResultNodeData, SimulationResults } from "../types";
 
 // ─── Severity Mapping ────────────────────────────────────────────────────────
@@ -84,19 +84,22 @@ function ResultNode({ data }: NodeProps) {
   }, [computeState, res, sevColor]);
 
   const bgTint = useMemo(() => {
-    if (computeState !== "done" || !severity) return "#FFFFFF";
-    return sevColor + "0D"; // 5% opacity hex
+    if (computeState !== "done" || !severity) return GLASS.bg;
+    return sevColor + "18"; // severity tint over glass
   }, [computeState, severity, sevColor]);
 
   const nodeContainerStyle: React.CSSProperties = {
     width: 200,
     minHeight: 140,
     background: bgTint,
-    borderRadius: 12,
-    boxShadow: FORGE.nodeShadow,
+    backdropFilter: `blur(${GLASS.blur}px)`,
+    WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+    borderRadius: GLASS.nodeRadius,
+    boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
     padding: 14,
     position: "relative",
     cursor: res ? "pointer" : "default",
+    transition: "box-shadow 200ms ease, border-color 200ms ease",
     ...borderStyle,
   };
 
@@ -238,7 +241,7 @@ const handleStyle: React.CSSProperties = {
   width: 10,
   height: 10,
   background: FORGE.edgeIdle,
-  border: "2px solid #FFFFFF",
+  border: "2px solid rgba(255,255,255,0.9)",
   outline: `2px solid ${FORGE.edgeIdle}`,
   borderRadius: "50%",
 };
@@ -305,7 +308,7 @@ const badgeStyle: React.CSSProperties = {
 const metricsRow: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  borderTop: `1px solid ${FORGE.nodeBorder}`,
+  borderTop: "1px solid rgba(0,0,0,0.06)",
   paddingTop: 8,
 };
 
@@ -331,7 +334,7 @@ const metricValue: React.CSSProperties = {
 };
 
 const expandedSection: React.CSSProperties = {
-  borderTop: `1px solid ${FORGE.nodeBorder}`,
+  borderTop: "1px solid rgba(0,0,0,0.06)",
   marginTop: 8,
   paddingTop: 8,
 };

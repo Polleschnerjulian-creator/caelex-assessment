@@ -1,8 +1,8 @@
 "use client";
 
-// ─── EphemerisForge — Main Container ────────────────────────────────────────
-// Renders within the normal dashboard layout (not fullscreen). Wires React Flow
-// canvas, custom nodes/edges, overlays, BlockPalette, and both hooks.
+// ─── EphemerisForge — Fullscreen Canvas with Liquid Glass UI ────────────────
+// Renders as a fullscreen takeover (position: fixed, inset: 0). All UI elements
+// float over the ReactFlow canvas using the Apple Liquid Glass design system.
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -17,7 +17,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { useForgeTheme } from "../../theme";
+import { useForgeTheme, GLASS } from "../../theme";
 import { useForgeGraph } from "./useForgeGraph";
 import { useForgeComputation } from "./useForgeComputation";
 import { FORGE_NODE_TYPES, type SatelliteOriginData } from "./types";
@@ -36,6 +36,7 @@ import BlockPalette from "./overlays/BlockPalette";
 import RadialMenu from "./overlays/RadialMenu";
 import SlashCommand from "./overlays/SlashCommand";
 import ComparisonBar from "./overlays/ComparisonBar";
+import ForgeFloatingSidebar from "./overlays/ForgeFloatingSidebar";
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -83,10 +84,11 @@ function GhostHint() {
         <kbd
           style={{
             padding: "1px 5px",
-            background: "#E2E8F0",
+            background: "rgba(255,255,255,0.6)",
             borderRadius: 3,
             fontSize: 11,
             fontFamily: "'IBM Plex Mono', monospace",
+            border: "1px solid rgba(0,0,0,0.08)",
           }}
         >
           /
@@ -286,23 +288,65 @@ function EphemerisForgeInner({
     setShowMinimap((prev) => !prev);
   }, []);
 
-  // Render — inline layout (not fullscreen)
+  // ─── Render — Fullscreen Liquid Glass ───────────────────────────────────
+
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        height: "calc(100vh - 220px)",
-        minHeight: 500,
+        position: "fixed",
+        inset: 0,
+        zIndex: 30,
         background: forgeTheme.canvasBg,
-        borderRadius: 8,
-        border: `1px solid ${forgeTheme.nodeBorder}`,
-        overflow: "hidden",
-        position: "relative",
       }}
     >
-      {/* Toolbar */}
+      {/* Full-bleed React Flow Canvas */}
+      <ReactFlow
+        nodes={nodesWithCallbacks}
+        edges={graph.edges}
+        onNodesChange={graph.onNodesChange}
+        onEdgesChange={graph.onEdgesChange}
+        onConnect={graph.onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onPaneClick={handlePaneClick}
+        onPaneContextMenu={handlePaneContextMenu}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        deleteKeyCode={["Backspace", "Delete"]}
+        multiSelectionKeyCode="Shift"
+        selectionKeyCode="Shift"
+        panOnScroll
+        zoomOnDoubleClick={false}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
+          size={1}
+          color={forgeTheme.gridDot}
+        />
+        {showMinimap && (
+          <MiniMap
+            zoomable
+            pannable
+            style={{
+              background: GLASS.bg,
+              backdropFilter: `blur(${GLASS.blur}px)`,
+              WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+              border: `1px solid ${GLASS.border}`,
+              borderRadius: GLASS.panelRadius,
+              boxShadow: GLASS.shadow,
+            }}
+          />
+        )}
+      </ReactFlow>
+
+      {/* Ghost Hint */}
+      {isCanvasEmpty && <GhostHint />}
+
+      {/* Floating Glass Sidebar */}
+      <ForgeFloatingSidebar />
+
+      {/* Floating Glass Toolbar */}
       <ForgeToolbar
         satelliteName={satelliteName}
         noradId={noradId}
@@ -314,56 +358,12 @@ function EphemerisForgeInner({
         onToggleMinimap={handleToggleMinimap}
       />
 
-      {/* Body: Palette + Canvas */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Block Palette (left side) */}
-        <BlockPalette
-          onSelectBlock={handlePaletteSelectBlock}
-          collapsed={paletteCollapsed}
-          onToggleCollapse={() => setPaletteCollapsed((p) => !p)}
-        />
-
-        {/* React Flow Canvas */}
-        <div style={{ flex: 1, position: "relative" }}>
-          {isCanvasEmpty && <GhostHint />}
-          <ReactFlow
-            nodes={nodesWithCallbacks}
-            edges={graph.edges}
-            onNodesChange={graph.onNodesChange}
-            onEdgesChange={graph.onEdgesChange}
-            onConnect={graph.onConnect}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onPaneClick={handlePaneClick}
-            onPaneContextMenu={handlePaneContextMenu}
-            fitView
-            deleteKeyCode={["Backspace", "Delete"]}
-            multiSelectionKeyCode="Shift"
-            selectionKeyCode="Shift"
-            panOnScroll
-            zoomOnDoubleClick={false}
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={20}
-              size={1}
-              color={forgeTheme.gridDot}
-            />
-            {showMinimap && (
-              <MiniMap
-                zoomable
-                pannable
-                style={{
-                  background: forgeTheme.canvasBg,
-                  border: `1px solid ${forgeTheme.nodeBorder}`,
-                  borderRadius: 8,
-                }}
-              />
-            )}
-          </ReactFlow>
-        </div>
-      </div>
+      {/* Block Palette (floating glass panel) */}
+      <BlockPalette
+        onSelectBlock={handlePaletteSelectBlock}
+        collapsed={paletteCollapsed}
+        onToggleCollapse={() => setPaletteCollapsed((p) => !p)}
+      />
 
       {/* Radial Menu (right-click) */}
       <RadialMenu
@@ -402,6 +402,9 @@ function EphemerisForgeInner({
           50% { opacity: 1; }
         }
         .forge-shimmer { animation: forgeShimmer 1.5s ease-in-out infinite; }
+
+        .forge-node-delete { opacity: 0; }
+        *:hover > .forge-node-delete { opacity: 1; }
       `}</style>
     </div>
   );
