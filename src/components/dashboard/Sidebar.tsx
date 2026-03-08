@@ -427,6 +427,7 @@ export default function Sidebar({
   // Collapse state
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Desktop detection — collapse only on lg+
   const [isLg, setIsLg] = useState(true);
@@ -535,6 +536,8 @@ export default function Sidebar({
 
       {/* ═══ Glass Panel ═══ */}
       <aside
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={`
           fixed z-40 flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-[calc(100%+24px)]"}
@@ -743,7 +746,9 @@ export default function Sidebar({
 
           {/* Data Monitoring */}
           <div style={{ marginBottom: collapsed ? 8 : 20 }}>
-            <SectionHeader collapsed={collapsed}>Data Monitoring</SectionHeader>
+            <SectionHeader collapsed={collapsed}>
+              Evidence Collection
+            </SectionHeader>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/sentinel"
@@ -1018,12 +1023,12 @@ export default function Sidebar({
         </div>
       </aside>
 
-      {/* Expand handle — right edge of collapsed sidebar, visible on hover */}
+      {/* Expand handle — right edge of collapsed sidebar, visible on sidebar hover */}
       {collapsed && (
         <button
           onClick={toggleCollapse}
           aria-label="Expand sidebar"
-          className="hidden lg:flex fixed z-50 items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+          className="hidden lg:flex fixed z-50 items-center justify-center transition-opacity duration-200"
           style={{
             left: sidebarWidth + 12,
             top: "50%",
@@ -1038,6 +1043,8 @@ export default function Sidebar({
             boxShadow:
               "0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
             color: "var(--sidebar-nav-icon-color)",
+            opacity: isHovered ? 1 : 0,
+            pointerEvents: isHovered ? "auto" : "none",
           }}
         >
           <ChevronRight size={14} />
