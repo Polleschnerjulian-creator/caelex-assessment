@@ -80,6 +80,10 @@
     {
       "path": "/api/cron/cdm-polling",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/ca-cleanup",
+      "schedule": "0 2 * * 0"
     }
   ]
 }
