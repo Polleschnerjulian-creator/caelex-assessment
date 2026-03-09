@@ -700,7 +700,7 @@ export function Generate2Page() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-dark-bg">
+    <div className="flex h-[calc(100vh-64px)] bg-light-bg dark:bg-dark-bg">
       {/* Left Panel — Document Selector (280px) */}
       <div className="w-[280px] shrink-0 border-r border-dark-border bg-dark-surface/50">
         <DocumentSelectorPanel

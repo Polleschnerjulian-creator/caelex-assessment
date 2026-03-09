@@ -103,16 +103,16 @@ export default function AstraFullPage() {
   // ─── Consent Gate ───
   if (!astraConsented) {
     return (
-      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-dark-bg">
+      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-light-bg dark:bg-dark-bg">
         <div className="max-w-md w-full px-6">
           <div className="flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
               <ShieldCheck size={28} className="text-cyan-400" />
             </div>
-            <h2 className="text-heading font-semibold text-white mb-2">
+            <h2 className="text-heading font-semibold text-slate-900 dark:text-white mb-2">
               ASTRA AI Einwilligung
             </h2>
-            <p className="text-body text-white/45 leading-relaxed mb-3">
+            <p className="text-body text-slate-500 dark:text-white/45 leading-relaxed mb-3">
               ASTRA verwendet Ihre Compliance-Daten, um kontextbezogene
               regulatorische Beratung zu liefern. Ihre Eingaben werden
               verarbeitet, aber nicht zum Trainieren von KI-Modellen verwendet.
@@ -123,7 +123,7 @@ export default function AstraFullPage() {
               keine Rechtsberatung dar. Bitte verifizieren Sie regulatorische
               Informationen stets mit qualifizierten Fachleuten.
             </p>
-            <ul className="text-small text-white/45 space-y-2 mb-6 text-left">
+            <ul className="text-small text-slate-500 dark:text-white/45 space-y-2 mb-6 text-left">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5">&#x2022;</span>
                 <span>Gesprachsdaten werden verschlusselt gespeichert</span>
@@ -143,7 +143,7 @@ export default function AstraFullPage() {
             >
               Einverstanden &mdash; ASTRA aktivieren
             </button>
-            <p className="text-micro text-white/45 mt-4">
+            <p className="text-micro text-slate-500 dark:text-white/45 mt-4">
               Siehe unsere{" "}
               <a
                 href="/legal/privacy"
@@ -162,7 +162,7 @@ export default function AstraFullPage() {
 
   // ─── Main Layout ───
   return (
-    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-dark-bg">
+    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-light-bg dark:bg-dark-bg">
       {/* Conversation List (toggle, left) */}
       <AnimatePresence>
         {showConversations && (
@@ -183,7 +183,7 @@ export default function AstraFullPage() {
       {/* Center Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Chat Header */}
-        <div className="flex items-center justify-between px-4 h-12 border-b border-white/10 bg-white/[0.01] flex-shrink-0">
+        <div className="flex items-center justify-between px-4 h-12 border-b border-slate-200 dark:border-white/10 bg-white/[0.01] flex-shrink-0">
           <div className="flex items-center gap-2">
             {/* Toggle Conversations */}
             <button
@@ -198,7 +198,9 @@ export default function AstraFullPage() {
             <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
               <Zap size={12} className="text-cyan-400" />
             </div>
-            <span className="text-body font-medium text-white">ASTRA</span>
+            <span className="text-body font-medium text-slate-900 dark:text-white">
+              ASTRA
+            </span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium uppercase tracking-wider">
               Beta
             </span>

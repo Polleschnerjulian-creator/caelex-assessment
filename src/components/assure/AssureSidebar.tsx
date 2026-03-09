@@ -103,7 +103,7 @@ function AssureNavItem({
         ${
           isActive
             ? "bg-emerald-500/10 text-emerald-400 font-medium"
-            : "text-white/60 hover:text-white hover:bg-white/[0.06]"
+            : "text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         }
       `}
     >
@@ -112,7 +112,7 @@ function AssureNavItem({
         className={`w-4 h-4 flex-shrink-0 ${
           isActive
             ? "text-emerald-400"
-            : "text-white/40 group-hover:text-white/70"
+            : "text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/70"
         }`}
       >
         {icon}
@@ -150,7 +150,7 @@ export default function AssureSidebar({ isOpen, onClose }: AssureSidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[260px] lg:h-screen
-          bg-navy-950 border-r border-white/10
+          bg-white dark:bg-navy-950 border-r border-slate-200 dark:border-white/10
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -160,19 +160,19 @@ export default function AssureSidebar({ isOpen, onClose }: AssureSidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-white/45 hover:text-white rounded-lg hover:bg-white/[0.06] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-slate-400 dark:text-white/45 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
         >
           <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header / Branding */}
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
           <Link href="/assure/dashboard" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
               <Shield size={16} className="text-emerald-400" />
             </div>
             <div className="flex flex-col">
-              <span className="text-body-lg font-semibold text-white tracking-wide">
+              <span className="text-body-lg font-semibold text-slate-900 dark:text-white tracking-wide">
                 CAELEX
               </span>
               <span className="text-micro font-medium text-emerald-400 tracking-[0.2em] -mt-0.5">
@@ -199,18 +199,18 @@ export default function AssureSidebar({ isOpen, onClose }: AssureSidebarProps) {
         </nav>
 
         {/* Footer — Switch to Comply */}
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-slate-200 dark:border-white/10">
           <Link
             href="/dashboard"
             className="
               flex items-center gap-3 px-3 py-2.5 rounded-lg text-body
-              text-white/40 hover:text-white/70 hover:bg-white/[0.06]
+              text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06]
               transition-all duration-150
             "
           >
             <ArrowLeftRight
               size={16}
-              className="text-white/40"
+              className="text-slate-400 dark:text-white/40"
               aria-hidden="true"
             />
             <span>Switch to Comply</span>

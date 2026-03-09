@@ -30,19 +30,19 @@ export default function ApiDocsPage() {
   );
 
   return (
-    <div className="dark-section min-h-screen bg-dark-bg text-white">
+    <div className="dark-section min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-white/10">
+      <div className="border-b border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-500/10 rounded-lg">
               <Book className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-medium text-white">
+              <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
                 API Documentation
               </h1>
-              <p className="text-white/45 text-sm">
+              <p className="text-slate-500 dark:text-white/45 text-sm">
                 Caelex REST API v{openApiSpec.info.version}
               </p>
             </div>
@@ -51,7 +51,7 @@ export default function ApiDocsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-white/10">
+      <div className="border-b border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1">
             <button
@@ -59,7 +59,7 @@ export default function ApiDocsPage() {
               className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === "reference"
                   ? "text-emerald-400"
-                  : "text-white/45 hover:text-white/70"
+                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
               }`}
             >
               API Reference
@@ -72,7 +72,7 @@ export default function ApiDocsPage() {
               className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === "examples"
                   ? "text-emerald-400"
-                  : "text-white/45 hover:text-white/70"
+                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
               }`}
             >
               Code Examples
@@ -236,8 +236,10 @@ function CodeExamples() {
     <div className="space-y-8">
       {/* Quick Start */}
       <section>
-        <h2 className="text-xl font-semibold text-white mb-4">Quick Start</h2>
-        <p className="text-white/45 mb-4">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+          Quick Start
+        </h2>
+        <p className="text-slate-500 dark:text-white/45 mb-4">
           Get started with the Caelex API in minutes. Here are examples in
           popular languages.
         </p>
@@ -375,8 +377,10 @@ func reportIncident(incident IncidentInput) error {
 
       {/* Webhooks */}
       <section>
-        <h2 className="text-xl font-semibold text-white mb-4">Webhooks</h2>
-        <p className="text-white/45 mb-4">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+          Webhooks
+        </h2>
+        <p className="text-slate-500 dark:text-white/45 mb-4">
           Receive real-time notifications when events occur in your Caelex
           account.
         </p>
@@ -437,7 +441,7 @@ app.post('/webhooks/caelex', (req, res) => {
 
       {/* Error Handling */}
       <section>
-        <h2 className="text-xl font-semibold text-white mb-4">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
           Error Handling
         </h2>
 
@@ -456,23 +460,23 @@ app.post('/webhooks/caelex', (req, res) => {
 }`}
         />
 
-        <div className="mt-4 bg-white/[0.02] border border-white/10 rounded-lg overflow-hidden">
+        <div className="mt-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 text-left text-white/70 font-medium">
+              <tr className="border-b border-slate-200 dark:border-white/10">
+                <th className="px-4 py-3 text-left text-slate-600 dark:text-white/70 font-medium">
                   Status Code
                 </th>
-                <th className="px-4 py-3 text-left text-white/70 font-medium">
+                <th className="px-4 py-3 text-left text-slate-600 dark:text-white/70 font-medium">
                   Error Code
                 </th>
-                <th className="px-4 py-3 text-left text-white/70 font-medium">
+                <th className="px-4 py-3 text-left text-slate-600 dark:text-white/70 font-medium">
                   Description
                 </th>
               </tr>
             </thead>
-            <tbody className="text-white/45">
-              <tr className="border-b border-white/5">
+            <tbody className="text-slate-500 dark:text-white/45">
+              <tr className="border-b border-slate-100 dark:border-white/5">
                 <td className="px-4 py-3">
                   <code className="text-amber-400">400</code>
                 </td>
@@ -481,14 +485,14 @@ app.post('/webhooks/caelex', (req, res) => {
                   The request body is malformed or missing required fields
                 </td>
               </tr>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-slate-100 dark:border-white/5">
                 <td className="px-4 py-3">
                   <code className="text-red-400">401</code>
                 </td>
                 <td className="px-4 py-3">UNAUTHORIZED</td>
                 <td className="px-4 py-3">Invalid or missing API key</td>
               </tr>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-slate-100 dark:border-white/5">
                 <td className="px-4 py-3">
                   <code className="text-red-400">403</code>
                 </td>
@@ -497,7 +501,7 @@ app.post('/webhooks/caelex', (req, res) => {
                   API key doesn&apos;t have required permissions
                 </td>
               </tr>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-slate-100 dark:border-white/5">
                 <td className="px-4 py-3">
                   <code className="text-amber-400">404</code>
                 </td>
@@ -543,11 +547,11 @@ function CodeBlock({
   };
 
   return (
-    <div className="bg-white/[0.02] border border-white/10 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+    <div className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-white/10">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm font-medium text-white/70"
+          className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-white/70"
         >
           {isExpanded ? (
             <ChevronDown className="w-4 h-4" />
@@ -557,12 +561,12 @@ function CodeBlock({
           {title}
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/45 px-2 py-0.5 bg-white/5 rounded">
+          <span className="text-xs text-slate-500 dark:text-white/45 px-2 py-0.5 bg-slate-200 dark:bg-white/5 rounded">
             {language}
           </span>
           <button
             onClick={handleCopy}
-            className="p-1.5 text-white/45 hover:text-white/70 transition-colors"
+            className="p-1.5 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
             title="Copy to clipboard"
           >
             {copied ? (
@@ -574,8 +578,8 @@ function CodeBlock({
         </div>
       </div>
       {isExpanded && (
-        <div className="p-4 bg-black/20 overflow-x-auto">
-          <pre className="text-sm text-white/70 font-mono whitespace-pre">
+        <div className="p-4 bg-slate-100 dark:bg-black/20 overflow-x-auto">
+          <pre className="text-sm text-slate-700 dark:text-white/70 font-mono whitespace-pre">
             <code>{code}</code>
           </pre>
         </div>

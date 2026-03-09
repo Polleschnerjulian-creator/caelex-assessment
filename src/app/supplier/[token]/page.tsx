@@ -87,10 +87,12 @@ export default function SupplierPortalPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="dark-section min-h-screen bg-dark-bg text-white flex items-center justify-center">
+      <div className="dark-section min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-blue-400 animate-spin mx-auto mb-4" />
-          <p className="text-white/70 text-sm">Validating access...</p>
+          <p className="text-slate-500 dark:text-white/70 text-sm">
+            Validating access...
+          </p>
         </div>
       </div>
     );
@@ -99,15 +101,15 @@ export default function SupplierPortalPage() {
   // Invalid or expired token
   if (!validation?.valid) {
     return (
-      <div className="dark-section min-h-screen bg-dark-bg text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
+      <div className="dark-section min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
           {validation?.expired ? (
             <>
               <Clock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold text-white mb-2">
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                 Link Expired
               </h1>
-              <p className="text-white/45 text-sm mb-6">
+              <p className="text-slate-500 dark:text-white/45 text-sm mb-6">
                 This data request link has expired. Please contact the
                 requesting party to receive a new link.
               </p>
@@ -115,10 +117,10 @@ export default function SupplierPortalPage() {
           ) : validation?.revoked ? (
             <>
               <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold text-white mb-2">
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                 Access Revoked
               </h1>
-              <p className="text-white/45 text-sm mb-6">
+              <p className="text-slate-500 dark:text-white/45 text-sm mb-6">
                 This data request has been cancelled. Please contact the
                 requesting party for more information.
               </p>
@@ -126,18 +128,18 @@ export default function SupplierPortalPage() {
           ) : (
             <>
               <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold text-white mb-2">
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                 Invalid Link
               </h1>
-              <p className="text-white/45 text-sm mb-6">
+              <p className="text-slate-500 dark:text-white/45 text-sm mb-6">
                 {validation?.error ||
                   "This link is invalid or no longer active. Please check the link and try again."}
               </p>
             </>
           )}
 
-          <div className="pt-4 border-t border-white/10">
-            <p className="text-white/45 text-xs">
+          <div className="pt-4 border-t border-slate-200 dark:border-white/10">
+            <p className="text-slate-500 dark:text-white/45 text-xs">
               Powered by Caelex Compliance Platform
             </p>
           </div>
@@ -159,22 +161,26 @@ export default function SupplierPortalPage() {
 
   // Valid token - show form
   return (
-    <div className="dark-section min-h-screen bg-dark-bg text-white">
+    <div className="dark-section min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-white">
       {/* Header */}
-      <header className="border-b border-white/10 bg-white/[0.02]">
+      <header className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Supplier Data Request
               </h1>
-              <p className="text-sm text-white/45">
+              <p className="text-sm text-slate-500 dark:text-white/45">
                 Environmental footprint data collection
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-white/45">Powered by</p>
-              <p className="text-sm font-medium text-white">Caelex</p>
+              <p className="text-xs text-slate-500 dark:text-white/45">
+                Powered by
+              </p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                Caelex
+              </p>
             </div>
           </div>
         </div>
@@ -183,17 +189,17 @@ export default function SupplierPortalPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Request Info Card */}
-        <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6 mb-8">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-8">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
               <CheckCircle2 className="w-5 h-5 text-blue-400" />
             </div>
             <div className="flex-1">
-              <h2 className="text-white font-medium mb-1">
+              <h2 className="text-slate-900 dark:text-white font-medium mb-1">
                 Data Request from{" "}
                 {validation.request?.companyName || "Customer"}
               </h2>
-              <p className="text-white/45 text-sm mb-4">
+              <p className="text-slate-500 dark:text-white/45 text-sm mb-4">
                 {validation.request?.missionName
                   ? `For mission: ${validation.request.missionName}`
                   : "Environmental footprint assessment"}
@@ -201,27 +207,27 @@ export default function SupplierPortalPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                  <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                     Supplier
                   </p>
-                  <p className="text-white">
+                  <p className="text-slate-900 dark:text-white">
                     {validation.request?.supplierName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                  <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                     Component Type
                   </p>
-                  <p className="text-white">
+                  <p className="text-slate-900 dark:text-white">
                     {validation.request?.componentType}
                   </p>
                 </div>
                 {validation.request?.deadline && (
                   <div>
-                    <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                    <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                       Deadline
                     </p>
-                    <p className="text-white">
+                    <p className="text-slate-900 dark:text-white">
                       {new Date(
                         validation.request.deadline,
                       ).toLocaleDateString()}
@@ -231,11 +237,11 @@ export default function SupplierPortalPage() {
               </div>
 
               {validation.request?.notes && (
-                <div className="mt-4 p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                <div className="mt-4 p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/5">
+                  <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                     Notes from requester
                   </p>
-                  <p className="text-white/70 text-sm">
+                  <p className="text-slate-600 dark:text-white/70 text-sm">
                     {validation.request.notes}
                   </p>
                 </div>
@@ -252,10 +258,12 @@ export default function SupplierPortalPage() {
         />
 
         {/* Privacy Notice */}
-        <div className="mt-8 p-4 bg-white/[0.02] rounded-lg border border-white/5">
-          <p className="text-white/45 text-xs">
-            <strong className="text-white/45">Privacy Notice:</strong> The data
-            you provide will be used solely for environmental footprint
+        <div className="mt-8 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/5">
+          <p className="text-slate-500 dark:text-white/45 text-xs">
+            <strong className="text-slate-500 dark:text-white/45">
+              Privacy Notice:
+            </strong>{" "}
+            The data you provide will be used solely for environmental footprint
             calculations as required by EU Space Act regulations. Your data will
             be handled in accordance with GDPR requirements and will not be
             shared with third parties without your consent.

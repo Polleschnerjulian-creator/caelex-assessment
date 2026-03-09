@@ -72,10 +72,10 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
     .filter((c) => c.tools.length > 0);
 
   return (
-    <div className="w-[320px] flex-shrink-0 border-l border-white/10 bg-dark-bg flex flex-col h-full">
+    <div className="w-[320px] flex-shrink-0 border-l border-slate-200 dark:border-white/10 bg-white dark:bg-dark-bg flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 h-12 border-b border-white/10 flex-shrink-0">
-        <span className="text-body font-medium text-white/70">
+      <div className="flex items-center justify-between px-4 h-12 border-b border-slate-200 dark:border-white/10 flex-shrink-0">
+        <span className="text-body font-medium text-slate-700 dark:text-white/70">
           Tools & Functions
         </span>
         <button

@@ -17,7 +17,7 @@ export default function VerityHero() {
         quality={90}
       />
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#0A0F1E]/70" />
+      <div className="absolute inset-0 bg-white/70 dark:bg-[#0A0F1E]/70" />
 
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
@@ -25,7 +25,7 @@ export default function VerityHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 mb-6"
+          className="font-mono text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-white/40 mb-6"
         >
           Caelex Verity
         </motion.p>
@@ -34,7 +34,7 @@ export default function VerityHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="font-semibold text-white leading-[1.05] mb-6"
+          className="font-semibold text-slate-900 dark:text-white leading-[1.05] mb-6"
           style={{ fontSize: "clamp(40px, 7vw, 80px)" }}
         >
           Prove compliance.
@@ -46,7 +46,7 @@ export default function VerityHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-body-lg md:text-subtitle text-white/60 max-w-xl mx-auto mb-10 leading-relaxed"
+          className="text-body-lg md:text-subtitle text-slate-500 dark:text-white/60 max-w-xl mx-auto mb-10 leading-relaxed"
         >
           Privacy-preserving compliance attestations for satellite operators.
           Cryptographically signed proof that regulatory thresholds are met —

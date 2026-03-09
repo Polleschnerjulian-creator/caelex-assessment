@@ -35,10 +35,10 @@ export default function SuccessConfirmation({
   };
 
   return (
-    <div className="dark-section min-h-screen bg-dark-bg text-white flex items-center justify-center p-4">
+    <div className="dark-section min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-white flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Success Card */}
-        <div className="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
           {/* Success Icon */}
           <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle2
@@ -48,35 +48,37 @@ export default function SuccessConfirmation({
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-semibold text-white mb-2">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
             Data Submitted Successfully
           </h1>
 
           {/* Subtitle */}
-          <p className="text-white/45 mb-8">
+          <p className="text-slate-500 dark:text-white/45 mb-8">
             Thank you for providing environmental data for your component.
           </p>
 
           {/* Submission Details */}
-          <div className="bg-white/[0.02] rounded-lg p-4 mb-6 text-left">
+          <div className="bg-slate-50 dark:bg-white/[0.02] rounded-lg p-4 mb-6 text-left">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                   Supplier
                 </p>
-                <p className="text-white">{supplierName}</p>
+                <p className="text-slate-900 dark:text-white">{supplierName}</p>
               </div>
               <div>
-                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                   Component
                 </p>
-                <p className="text-white">{componentType}</p>
+                <p className="text-slate-900 dark:text-white">
+                  {componentType}
+                </p>
               </div>
               <div>
-                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                   Submitted
                 </p>
-                <p className="text-white">
+                <p className="text-slate-900 dark:text-white">
                   {new Date().toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
@@ -87,10 +89,10 @@ export default function SuccessConfirmation({
                 </p>
               </div>
               <div>
-                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
+                <p className="text-slate-500 dark:text-white/45 text-xs uppercase tracking-wider mb-1">
                   Reference
                 </p>
-                <p className="text-white font-mono text-xs">
+                <p className="text-slate-900 dark:text-white font-mono text-xs">
                   SUP-{Date.now().toString(36).toUpperCase().slice(0, 8)}
                 </p>
               </div>
@@ -101,7 +103,7 @@ export default function SuccessConfirmation({
           <div className="space-y-3">
             <button
               onClick={handleDownloadReceipt}
-              className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" aria-hidden="true" />
               Download Submission Receipt
@@ -109,8 +111,8 @@ export default function SuccessConfirmation({
           </div>
 
           {/* Next Steps */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <h3 className="text-white/90 font-medium mb-4">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10">
+            <h3 className="text-slate-800 dark:text-white/90 font-medium mb-4">
               What happens next?
             </h3>
             <div className="space-y-3 text-left">
@@ -118,7 +120,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">1</span>
                 </div>
-                <p className="text-white/45 text-sm">
+                <p className="text-slate-500 dark:text-white/45 text-sm">
                   Your data will be reviewed by the requesting party
                 </p>
               </div>
@@ -126,7 +128,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">2</span>
                 </div>
-                <p className="text-white/45 text-sm">
+                <p className="text-slate-500 dark:text-white/45 text-sm">
                   The data will be incorporated into their Environmental
                   Footprint Declaration
                 </p>
@@ -135,7 +137,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">3</span>
                 </div>
-                <p className="text-white/45 text-sm">
+                <p className="text-slate-500 dark:text-white/45 text-sm">
                   You may be contacted if additional information is needed
                 </p>
               </div>
@@ -143,8 +145,8 @@ export default function SuccessConfirmation({
           </div>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-white/45 text-xs">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10">
+            <p className="text-slate-500 dark:text-white/45 text-xs">
               You can safely close this window. Your data has been securely
               stored.
             </p>
@@ -153,8 +155,11 @@ export default function SuccessConfirmation({
 
         {/* Caelex Branding */}
         <div className="mt-6 text-center">
-          <p className="text-white/30 text-xs">
-            Powered by <span className="text-white/45 font-medium">Caelex</span>
+          <p className="text-slate-400 dark:text-white/30 text-xs">
+            Powered by{" "}
+            <span className="text-slate-500 dark:text-white/45 font-medium">
+              Caelex
+            </span>
             {" · "}
             Space Compliance Platform
           </p>

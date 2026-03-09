@@ -182,7 +182,7 @@ export default function SetupWizard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-navy-950 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
       </div>
     );
@@ -190,14 +190,14 @@ export default function SetupWizard() {
 
   return (
     <>
-      <div className="min-h-screen bg-navy-950 flex">
+      <div className="min-h-screen bg-white dark:bg-navy-950 flex">
         {/* Left: Step sidebar */}
-        <div className="w-[220px] border-r border-white/10 p-6 hidden lg:flex flex-col">
+        <div className="w-[220px] border-r border-slate-200 dark:border-white/10 p-6 hidden lg:flex flex-col">
           <div className="mb-8">
-            <h2 className="text-body font-semibold text-white/80">
+            <h2 className="text-body font-semibold text-slate-900 dark:text-white/80">
               Setup Wizard
             </h2>
-            <p className="text-micro text-white/30 mt-1">
+            <p className="text-micro text-slate-400 dark:text-white/30 mt-1">
               Step {step + 1} of {STEPS.length}
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function SetupWizard() {
                       ? "bg-emerald-500/10 text-emerald-400"
                       : isComplete
                         ? "text-emerald-500 hover:bg-white/[0.03]"
-                        : "text-white/30 cursor-not-allowed"
+                        : "text-slate-300 dark:text-white/30 cursor-not-allowed"
                   }`}
                 >
                   {isComplete ? (
@@ -248,12 +248,14 @@ export default function SetupWizard() {
                   <div
                     key={i}
                     className={`h-1 flex-1 rounded-full ${
-                      i <= step ? "bg-emerald-500" : "bg-white/10"
+                      i <= step
+                        ? "bg-emerald-500"
+                        : "bg-slate-200 dark:bg-white/10"
                     }`}
                   />
                 ))}
               </div>
-              <p className="text-micro text-white/30 mt-2">
+              <p className="text-micro text-slate-400 dark:text-white/30 mt-2">
                 Step {step + 1} of {STEPS.length} &mdash; {STEPS[step].label}
               </p>
             </div>
@@ -295,11 +297,11 @@ export default function SetupWizard() {
             </AnimatePresence>
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between mt-10 pt-6 border-t border-white/5">
+            <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-200 dark:border-white/5">
               {step > 0 ? (
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 text-body text-white/40 hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 text-body text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back
@@ -332,7 +334,7 @@ export default function SetupWizard() {
         </div>
 
         {/* Right: Score + ASTRA */}
-        <div className="w-[320px] border-l border-white/10 p-6 hidden xl:flex flex-col gap-6 sticky top-0 h-screen overflow-y-auto">
+        <div className="w-[320px] border-l border-slate-200 dark:border-white/10 p-6 hidden xl:flex flex-col gap-6 sticky top-0 h-screen overflow-y-auto">
           <LiveScoreWidget score={scoreResult} />
           <AstraCoPilot
             step={step + 1}

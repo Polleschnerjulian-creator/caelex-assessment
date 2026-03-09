@@ -144,7 +144,7 @@ function MfaChallengeContent() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
+    <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4">
       {/* Background grid */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
@@ -159,20 +159,20 @@ function MfaChallengeContent() {
       >
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size={24} className="text-white" />
+          <Logo size={24} className="text-slate-900 dark:text-white" />
         </div>
 
         {/* Card */}
-        <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-8">
+        <div className="bg-white dark:bg-white/[0.03] backdrop-blur-sm border border-slate-200 dark:border-white/[0.08] rounded-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="mx-auto w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
               <Shield className="w-7 h-7 text-emerald-400" />
             </div>
-            <h1 className="text-display-sm font-medium text-white">
+            <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
               Two-Factor Authentication
             </h1>
-            <p className="text-white/40 text-body-lg mt-2">
+            <p className="text-slate-500 dark:text-white/40 text-body-lg mt-2">
               {isBackupCode
                 ? "Enter one of your backup codes"
                 : "Enter the 6-digit code from your authenticator app"}
@@ -207,8 +207,8 @@ function MfaChallengeContent() {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       disabled={isLoading}
                       className="w-12 h-14 text-center text-2xl font-mono font-semibold
-                        bg-white/[0.03] border border-white/[0.08]
-                        rounded-lg text-white
+                        bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08]
+                        rounded-lg text-slate-900 dark:text-white
                         focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20
                         focus:bg-emerald-500/[0.03]
                         disabled:opacity-40 disabled:cursor-not-allowed
@@ -225,12 +225,12 @@ function MfaChallengeContent() {
                         ? "text-red-400"
                         : countdown <= 10
                           ? "text-amber-400"
-                          : "text-white/30"
+                          : "text-slate-400 dark:text-white/30"
                     }`}
                   >
                     {countdown}s
                   </span>
-                  <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="w-24 h-1 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
                     <motion.div
                       className={`h-full rounded-full ${
                         countdown <= 5
@@ -266,10 +266,10 @@ function MfaChallengeContent() {
                     placeholder="XXXXXXXX"
                     disabled={isLoading}
                     className="w-full h-14 text-center text-xl font-mono font-semibold tracking-widest
-                      bg-white/[0.03] border border-white/[0.08]
-                      rounded-lg text-white
+                      bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08]
+                      rounded-lg text-slate-900 dark:text-white
                       focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20
-                      placeholder:text-white/15
+                      placeholder:text-slate-300 dark:placeholder:text-white/15
                       disabled:opacity-40 disabled:cursor-not-allowed
                       transition-all duration-200 outline-none"
                   />
@@ -314,7 +314,7 @@ function MfaChallengeContent() {
           )}
 
           {/* Toggle Backup Code */}
-          <div className="mt-6 pt-6 border-t border-white/[0.06]">
+          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/[0.06]">
             <button
               onClick={() => {
                 setIsBackupCode(!isBackupCode);
@@ -322,7 +322,7 @@ function MfaChallengeContent() {
                 setCode(["", "", "", "", "", ""]);
                 setBackupCode("");
               }}
-              className="w-full text-center text-small text-white/30
+              className="w-full text-center text-small text-slate-400 dark:text-white/30
                 hover:text-emerald-400/80 transition-colors duration-200"
             >
               {isBackupCode
@@ -336,8 +336,8 @@ function MfaChallengeContent() {
         <div className="mt-6 text-center">
           <a
             href="/login"
-            className="inline-flex items-center gap-1.5 text-small text-white/25
-              hover:text-white/50 transition-colors duration-200"
+            className="inline-flex items-center gap-1.5 text-small text-slate-400 dark:text-white/25
+              hover:text-slate-600 dark:hover:text-white/50 transition-colors duration-200"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to login
@@ -350,9 +350,9 @@ function MfaChallengeContent() {
 
 function MfaChallengeLoading() {
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
+    <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-8">
+        <div className="bg-white dark:bg-white/[0.03] backdrop-blur-sm border border-slate-200 dark:border-white/[0.08] rounded-2xl p-8">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           </div>

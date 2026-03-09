@@ -41,8 +41,8 @@ export default function PublicVerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center">
-          <p className="text-white/30">Loading...</p>
+        <div className="min-h-screen bg-white dark:bg-[#0A0F1E] flex items-center justify-center">
+          <p className="text-slate-400 dark:text-white/30">Loading...</p>
         </div>
       }
     >
@@ -177,13 +177,13 @@ function VerifyPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E]">
+    <div className="min-h-screen bg-white dark:bg-[#0A0F1E]">
       {/* Header */}
-      <div className="border-b border-white/[0.06]">
+      <div className="border-b border-slate-200 dark:border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-emerald-500" />
-            <span className="text-body font-semibold text-white">
+            <span className="text-body font-semibold text-slate-900 dark:text-white">
               Caelex Verity
             </span>
           </Link>
@@ -191,7 +191,7 @@ function VerifyPageContent() {
             href="/api/v1/verity/public-key"
             target="_blank"
             rel="noopener"
-            className="flex items-center gap-1.5 text-caption text-white/30 hover:text-white/60 transition-colors"
+            className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
           >
             <Key className="w-3.5 h-3.5" />
             Public Key
@@ -202,23 +202,23 @@ function VerifyPageContent() {
       <div className="max-w-3xl mx-auto px-6 py-12">
         {/* Title */}
         <div className="text-center mb-10">
-          <h1 className="text-display-sm font-semibold text-white mb-2">
+          <h1 className="text-display-sm font-semibold text-slate-900 dark:text-white mb-2">
             Verify Compliance Attestation
           </h1>
-          <p className="text-body text-white/45">
+          <p className="text-body text-slate-500 dark:text-white/45">
             Verify the cryptographic integrity of a Caelex compliance
             attestation or certificate. No login required.
           </p>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex gap-1 p-1 bg-white/[0.03] rounded-lg w-fit mx-auto mb-6">
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-white/[0.03] rounded-lg w-fit mx-auto mb-6">
           <button
             onClick={() => setMode("json")}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
               mode === "json"
-                ? "bg-white/[0.08] text-white"
-                : "text-white/40 hover:text-white/70"
+                ? "bg-white dark:bg-white/[0.08] text-slate-900 dark:text-white shadow-sm dark:shadow-none"
+                : "text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70"
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -228,8 +228,8 @@ function VerifyPageContent() {
             onClick={() => setMode("id")}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
               mode === "id"
-                ? "bg-white/[0.08] text-white"
-                : "text-white/40 hover:text-white/70"
+                ? "bg-white dark:bg-white/[0.08] text-slate-900 dark:text-white shadow-sm dark:shadow-none"
+                : "text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70"
             }`}
           >
             <Search className="w-4 h-4" />
@@ -243,14 +243,14 @@ function VerifyPageContent() {
             value={jsonInput}
             onChange={(e) => setJsonInput(e.target.value)}
             placeholder="Paste attestation or certificate JSON here..."
-            className="w-full h-48 bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-small text-white font-mono placeholder-white/20 focus:border-white/[0.25] outline-none resize-y mb-4"
+            className="w-full h-48 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-small text-slate-900 dark:text-white font-mono placeholder-slate-400 dark:placeholder-white/20 focus:border-slate-400 dark:focus:border-white/[0.25] outline-none resize-y mb-4"
           />
         ) : (
           <input
             value={idInput}
             onChange={(e) => setIdInput(e.target.value)}
             placeholder="Enter certificate ID (e.g. vc_1709...)"
-            className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-body text-white placeholder-white/20 focus:border-white/[0.25] outline-none mb-4"
+            className="w-full bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-body text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 focus:border-slate-400 dark:focus:border-white/[0.25] outline-none mb-4"
           />
         )}
 
@@ -259,7 +259,7 @@ function VerifyPageContent() {
           disabled={
             loading || (mode === "json" ? !jsonInput.trim() : !idInput.trim())
           }
-          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-white font-medium py-3 rounded-xl transition-colors"
+          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-white/30 text-white font-medium py-3 rounded-xl transition-colors"
         >
           {loading ? "Verifying..." : "Verify"}
         </button>
@@ -273,7 +273,7 @@ function VerifyPageContent() {
 
         {/* Result */}
         {result && (
-          <div className="mt-6 bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+          <div className="mt-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden">
             {/* Result Header */}
             <div
               className={`p-5 ${
@@ -289,12 +289,12 @@ function VerifyPageContent() {
                   <XCircle className="w-7 h-7 text-red-400" />
                 )}
                 <div>
-                  <p className="text-title font-semibold text-white">
+                  <p className="text-title font-semibold text-slate-900 dark:text-white">
                     {result.valid
                       ? "Verification Passed"
                       : "Verification Failed"}
                   </p>
-                  <p className="text-small text-white/40">
+                  <p className="text-small text-slate-500 dark:text-white/40">
                     {result.valid
                       ? "All cryptographic checks passed. This attestation is authentic."
                       : (result.errors?.[0] ??
@@ -313,7 +313,7 @@ function VerifyPageContent() {
                     key={key}
                     className="flex items-center justify-between py-1"
                   >
-                    <span className="text-small text-white/50 capitalize">
+                    <span className="text-small text-slate-500 dark:text-white/50 capitalize">
                       {key.replace(/_/g, " ")}
                     </span>
                     {val === true ? (
@@ -327,21 +327,21 @@ function VerifyPageContent() {
 
             {/* Claims (for certificates) */}
             {result.claims && result.claims.length > 0 && (
-              <div className="border-t border-white/[0.06] p-5">
-                <h3 className="text-body font-medium text-white mb-3">
+              <div className="border-t border-slate-200 dark:border-white/[0.06] p-5">
+                <h3 className="text-body font-medium text-slate-900 dark:text-white mb-3">
                   Claims ({result.claims.length})
                 </h3>
                 <div className="space-y-2">
                   {result.claims.map((claim, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between bg-white/[0.02] rounded-lg p-3"
+                      className="flex items-center justify-between bg-slate-100 dark:bg-white/[0.02] rounded-lg p-3"
                     >
                       <div>
-                        <p className="text-small text-white/70">
+                        <p className="text-small text-slate-600 dark:text-white/70">
                           {claim.claim_statement}
                         </p>
-                        <p className="text-caption text-white/30 mt-0.5">
+                        <p className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
                           {claim.regulation_ref.replace(/_/g, " ")} · Trust:{" "}
                           {claim.trust_level}
                         </p>
@@ -358,34 +358,44 @@ function VerifyPageContent() {
             )}
 
             {/* Meta */}
-            <div className="border-t border-white/[0.06] p-5">
+            <div className="border-t border-slate-200 dark:border-white/[0.06] p-5">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {result.issuer && (
                   <div>
-                    <p className="text-caption text-white/30">Issuer</p>
-                    <p className="text-small text-white/70">{result.issuer}</p>
+                    <p className="text-caption text-slate-400 dark:text-white/30">
+                      Issuer
+                    </p>
+                    <p className="text-small text-slate-600 dark:text-white/70">
+                      {result.issuer}
+                    </p>
                   </div>
                 )}
                 {result.issuer_key_id && (
                   <div>
-                    <p className="text-caption text-white/30">Key ID</p>
-                    <p className="text-small text-white/70 font-mono">
+                    <p className="text-caption text-slate-400 dark:text-white/30">
+                      Key ID
+                    </p>
+                    <p className="text-small text-slate-600 dark:text-white/70 font-mono">
                       {result.issuer_key_id}
                     </p>
                   </div>
                 )}
                 {result.algorithm && (
                   <div>
-                    <p className="text-caption text-white/30">Algorithm</p>
-                    <p className="text-small text-white/70">
+                    <p className="text-caption text-slate-400 dark:text-white/30">
+                      Algorithm
+                    </p>
+                    <p className="text-small text-slate-600 dark:text-white/70">
                       {result.algorithm}
                     </p>
                   </div>
                 )}
                 {result.verified_at && (
                   <div>
-                    <p className="text-caption text-white/30">Verified At</p>
-                    <p className="text-small text-white/70">
+                    <p className="text-caption text-slate-400 dark:text-white/30">
+                      Verified At
+                    </p>
+                    <p className="text-small text-slate-600 dark:text-white/70">
                       {new Date(result.verified_at).toLocaleString()}
                     </p>
                   </div>
@@ -399,7 +409,7 @@ function VerifyPageContent() {
         <div className="mt-10">
           <button
             onClick={() => setShowExplainer(!showExplainer)}
-            className="flex items-center gap-2 text-small text-white/40 hover:text-white/70 transition-colors mx-auto"
+            className="flex items-center gap-2 text-small text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70 transition-colors mx-auto"
           >
             {showExplainer ? (
               <ChevronUp className="w-4 h-4" />
@@ -410,9 +420,9 @@ function VerifyPageContent() {
           </button>
 
           {showExplainer && (
-            <div className="mt-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 text-small text-white/50 leading-relaxed space-y-4">
+            <div className="mt-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] rounded-xl p-6 text-small text-slate-500 dark:text-white/50 leading-relaxed space-y-4">
               <p>
-                <strong className="text-white/70">
+                <strong className="text-slate-700 dark:text-white/70">
                   Privacy-Preserving Compliance Attestation
                 </strong>{" "}
                 allows satellite operators to demonstrate regulatory compliance
@@ -432,7 +442,7 @@ function VerifyPageContent() {
                 signature using Caelex&apos;s{" "}
                 <a
                   href="/api/v1/verity/public-key"
-                  className="underline text-white/60 hover:text-white/80"
+                  className="underline text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/80"
                 >
                   public key
                 </a>
@@ -449,11 +459,11 @@ function VerifyPageContent() {
 
         {/* Footer */}
         <div className="mt-10 text-center">
-          <p className="text-caption text-white/20">
+          <p className="text-caption text-slate-400 dark:text-white/20">
             Powered by{" "}
             <Link
               href="/"
-              className="underline hover:text-white/40 transition-colors"
+              className="underline hover:text-slate-600 dark:hover:text-white/40 transition-colors"
             >
               Caelex
             </Link>{" "}

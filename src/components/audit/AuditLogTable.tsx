@@ -397,7 +397,7 @@ export function AuditLogTable({
                                     <span className="text-red-400 text-xs">
                                       Previous:
                                     </span>
-                                    <pre className="mt-1 p-2 bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
+                                    <pre className="mt-1 p-2 bg-slate-50 dark:bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
                                       {typeof log.previousValue === "string"
                                         ? log.previousValue
                                         : JSON.stringify(
@@ -413,7 +413,7 @@ export function AuditLogTable({
                                     <span className="text-green-400 text-xs">
                                       New:
                                     </span>
-                                    <pre className="mt-1 p-2 bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
+                                    <pre className="mt-1 p-2 bg-slate-50 dark:bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
                                       {typeof log.newValue === "string"
                                         ? log.newValue
                                         : JSON.stringify(log.newValue, null, 2)}

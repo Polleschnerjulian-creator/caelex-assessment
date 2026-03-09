@@ -13,7 +13,7 @@ import CtaSection from "./components/cta-section";
 
 export default function VerityPageClient() {
   return (
-    <div className="min-h-screen bg-[#0A0F1E]">
+    <div className="min-h-screen bg-white dark:bg-[#0A0F1E]">
       <Navigation theme="dark" />
 
       <main>

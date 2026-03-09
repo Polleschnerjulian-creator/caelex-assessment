@@ -69,32 +69,32 @@ export default function EmailGate({
               role="dialog"
               aria-modal="true"
               aria-labelledby="email-gate-title"
-              className="bg-dark-bg border border-white/[0.15] rounded-xl w-full max-w-md overflow-hidden shadow-2xl"
+              className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/[0.15] rounded-xl w-full max-w-md overflow-hidden shadow-2xl"
             >
               {/* Header */}
               <div className="relative px-6 pt-6 pb-4">
                 <button
                   onClick={onClose}
                   aria-label="Close dialog"
-                  className="absolute top-4 right-4 p-2 text-white/45 hover:text-white transition-colors rounded-lg hover:bg-white/[0.08]"
+                  className="absolute top-4 right-4 p-2 text-slate-400 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.08]"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
 
                 <div
-                  className="w-12 h-12 rounded-xl bg-white/[0.08] flex items-center justify-center mb-4"
+                  className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/[0.08] flex items-center justify-center mb-4"
                   aria-hidden="true"
                 >
-                  <FileDown className="w-6 h-6 text-white/70" />
+                  <FileDown className="w-6 h-6 text-slate-600 dark:text-white/70" />
                 </div>
 
                 <h2
                   id="email-gate-title"
-                  className="text-heading font-light text-white mb-2"
+                  className="text-heading font-light text-slate-900 dark:text-white mb-2"
                 >
                   Get Your Compliance Report
                 </h2>
-                <p className="text-body-lg text-white/70">
+                <p className="text-body-lg text-slate-500 dark:text-white/70">
                   Enter your email to download your personalized EU Space Act
                   compliance report.
                 </p>
@@ -104,12 +104,13 @@ export default function EmailGate({
               <form onSubmit={handleSubmit} className="px-6 pb-6">
                 {/* Email (required) */}
                 <div className="mb-4">
-                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
-                    Email <span className="text-white/70">*</span>
+                  <label className="block text-micro uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
+                    Email{" "}
+                    <span className="text-slate-700 dark:text-white/70">*</span>
                   </label>
                   <div className="relative">
                     <Mail
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -121,7 +122,7 @@ export default function EmailGate({
                         if (emailError) setEmailError(null);
                       }}
                       placeholder="you@company.com"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.12] rounded-lg text-body-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-slate-400 dark:focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                   {emailError && (
@@ -133,12 +134,15 @@ export default function EmailGate({
 
                 {/* Company (optional) */}
                 <div className="mb-4">
-                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
-                    Company <span className="text-white/45">(optional)</span>
+                  <label className="block text-micro uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
+                    Company{" "}
+                    <span className="text-slate-400 dark:text-white/45">
+                      (optional)
+                    </span>
                   </label>
                   <div className="relative">
                     <Building
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -146,19 +150,22 @@ export default function EmailGate({
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="Your organization"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.12] rounded-lg text-body-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-slate-400 dark:focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* Role (optional) */}
                 <div className="mb-6">
-                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
-                    Role <span className="text-white/45">(optional)</span>
+                  <label className="block text-micro uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
+                    Role{" "}
+                    <span className="text-slate-400 dark:text-white/45">
+                      (optional)
+                    </span>
                   </label>
                   <div className="relative">
                     <User
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -166,7 +173,7 @@ export default function EmailGate({
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                       placeholder="Your role"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.12] rounded-lg text-body-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-slate-400 dark:focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                 </div>
@@ -196,7 +203,7 @@ export default function EmailGate({
                       )}
                     </div>
                   </div>
-                  <span className="text-body text-white/70 group-hover:text-white transition-colors">
+                  <span className="text-body text-slate-500 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                     Notify me when Caelex launches (we&apos;ll never spam you)
                   </span>
                 </label>
@@ -224,7 +231,7 @@ export default function EmailGate({
                 </button>
 
                 {/* Privacy note */}
-                <p className="text-caption text-white/45 text-center mt-4">
+                <p className="text-caption text-slate-400 dark:text-white/45 text-center mt-4">
                   We respect your privacy. Your data is not stored or shared.
                 </p>
               </form>

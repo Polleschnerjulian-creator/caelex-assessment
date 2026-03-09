@@ -42,7 +42,7 @@ function FieldInput({
   onChange: (value: unknown) => void;
 }) {
   const baseInputClasses =
-    "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-body-lg text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all";
+    "w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all";
 
   switch (field.type) {
     case "textarea":
@@ -72,7 +72,7 @@ function FieldInput({
     case "currency":
       return (
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-body-lg">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 text-body-lg">
             $
           </span>
           <input
@@ -94,11 +94,18 @@ function FieldInput({
           onChange={(e) => onChange(e.target.value)}
           className={`${baseInputClasses} appearance-none cursor-pointer`}
         >
-          <option value="" className="bg-navy-900 text-white/40">
+          <option
+            value=""
+            className="bg-white dark:bg-navy-900 text-slate-400 dark:text-white/40"
+          >
             Select {field.label.toLowerCase()}...
           </option>
           {field.options?.map((opt) => (
-            <option key={opt} value={opt} className="bg-navy-900 text-white">
+            <option
+              key={opt}
+              value={opt}
+              className="bg-white dark:bg-navy-900 text-slate-900 dark:text-white"
+            >
               {opt}
             </option>
           ))}
@@ -111,7 +118,7 @@ function FieldInput({
           type="date"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          className={`${baseInputClasses} [color-scheme:dark]`}
+          className={`${baseInputClasses} [color-scheme:light] dark:[color-scheme:dark]`}
         />
       );
 
@@ -138,7 +145,7 @@ function FieldInput({
                   );
                   onChange(newList);
                 }}
-                className="p-2 text-white/30 hover:text-red-400 transition-colors flex-shrink-0"
+                className="p-2 text-slate-300 dark:text-white/30 hover:text-red-400 transition-colors flex-shrink-0"
                 aria-label={`Remove item ${idx + 1}`}
               >
                 &times;
@@ -190,8 +197,10 @@ export default function ProfileSectionEditor({
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-heading font-semibold text-white">{section}</h3>
-          <p className="text-small text-white/40 mt-0.5">
+          <h3 className="text-heading font-semibold text-slate-900 dark:text-white">
+            {section}
+          </h3>
+          <p className="text-small text-slate-400 dark:text-white/40 mt-0.5">
             {filledCount} of {fields.length} fields completed
           </p>
         </div>
@@ -214,7 +223,7 @@ export default function ProfileSectionEditor({
       </div>
 
       {/* Completion bar */}
-      <div className="w-full h-1 bg-white/5 rounded-full mb-6 overflow-hidden">
+      <div className="w-full h-1 bg-slate-200 dark:bg-white/5 rounded-full mb-6 overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${completionScore}%` }}
@@ -259,9 +268,9 @@ export default function ProfileSectionEditor({
                     className="text-red-400 flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0" />
+                  <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-white/20 flex-shrink-0" />
                 )}
-                <label className="text-body font-medium text-white/80">
+                <label className="text-body font-medium text-slate-700 dark:text-white/80">
                   {field.label}
                   {field.required && (
                     <span className="text-red-400 ml-0.5">*</span>
@@ -276,9 +285,9 @@ export default function ProfileSectionEditor({
                   <div className="flex items-start gap-1.5 mb-1.5 ml-5">
                     <Info
                       size={12}
-                      className="text-white/20 mt-0.5 flex-shrink-0"
+                      className="text-slate-300 dark:text-white/20 mt-0.5 flex-shrink-0"
                     />
-                    <span className="text-small text-white/30">
+                    <span className="text-small text-slate-400 dark:text-white/30">
                       {field.hint}
                     </span>
                   </div>
