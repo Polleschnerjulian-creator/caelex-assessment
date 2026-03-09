@@ -4,6 +4,7 @@
  * An actual_value MUST NEVER appear in logs, error messages, or console output.
  * This utility ensures that.
  */
+import { logger } from "@/lib/logger";
 
 const REDACTED_FIELDS = [
   "actual_value",
@@ -29,7 +30,13 @@ export function redact(obj: Record<string, unknown>): Record<string, unknown> {
       REDACTED_FIELDS.some((f) => key.toLowerCase().includes(f.toLowerCase()))
     ) {
       result[key] = "[REDACTED]";
-    } else if (val && typeof val === "object" && !Array.isArray(val)) {
+    } else if (Array.isArray(val)) {
+      result[key] = val.map((item) =>
+        item && typeof item === "object"
+          ? redact(item as Record<string, unknown>)
+          : item,
+      );
+    } else if (val && typeof val === "object") {
       result[key] = redact(val as Record<string, unknown>);
     } else {
       result[key] = val;
@@ -44,8 +51,8 @@ export function redact(obj: Record<string, unknown>): Record<string, unknown> {
  */
 export function safeLog(message: string, data?: Record<string, unknown>): void {
   if (data) {
-    console.log(`[Verity] ${message}`, redact(data));
+    logger.info(`[Verity] ${message}`, redact(data));
   } else {
-    console.log(`[Verity] ${message}`);
+    logger.info(`[Verity] ${message}`);
   }
 }

@@ -128,12 +128,12 @@ async function processDeadline(
   const reminderDays = deadline.reminderDays || [30, 14, 7, 3, 1];
   const remindersSent = deadline.remindersSent || [];
 
-  // Find which reminder day we should check
-  const matchingReminderDay = reminderDays.find((day) => {
-    // Check if the number of days until due matches a reminder day
-    // Also handle overdue cases (negative days)
-    if (daysUntilDue === day) {
-      // Check if we already sent a reminder for this threshold
+  // Find the highest reminder threshold that applies (SVA-75).
+  // Use <= instead of === so missed cron runs still trigger the reminder.
+  // wasReminderSent dedup prevents duplicate sends.
+  const sortedDays = [...reminderDays].sort((a, b) => b - a);
+  const matchingReminderDay = sortedDays.find((day) => {
+    if (daysUntilDue <= day) {
       return !wasReminderSent(remindersSent, deadline.dueDate, day);
     }
     return false;

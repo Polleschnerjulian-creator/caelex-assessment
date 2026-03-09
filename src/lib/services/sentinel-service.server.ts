@@ -4,8 +4,14 @@
  */
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { createHash, createPublicKey, verify } from "node:crypto";
-import { randomBytes } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  createPublicKey,
+  verify,
+  timingSafeEqual,
+  randomBytes,
+} from "node:crypto";
 
 /** Sentinel chain genesis sentinel — first packet's previousHash must match this. */
 export const CHAIN_GENESIS_HASH = "sha256:genesis";
@@ -26,7 +32,15 @@ export async function authenticateSentinelAgent(token: string) {
   return agent;
 }
 
+/**
+ * Hash a token using HMAC-SHA256 with a server-side secret (SVA-39).
+ * Falls back to plain SHA-256 if AUTH_SECRET is not set (dev only).
+ */
 function hashToken(raw: string): string {
+  const secret = process.env.AUTH_SECRET;
+  if (secret) {
+    return createHmac("sha256", secret).update(raw).digest("hex");
+  }
   return createHash("sha256").update(raw).digest("hex");
 }
 

@@ -313,6 +313,11 @@ export async function crossVerifyPacket(
   const verified =
     confidence >= 0.7 && checks.every((c) => c.result !== "MISMATCH");
 
+  // Clean up previous cross-verification attempts for this packet (SVA-44)
+  await prisma.crossVerification.deleteMany({
+    where: { packetId },
+  });
+
   // Store cross-verification results
   for (const check of checks) {
     await prisma.crossVerification.create({

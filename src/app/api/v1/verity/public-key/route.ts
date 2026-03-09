@@ -20,6 +20,8 @@ export async function GET() {
       total_keys: String(keys.length),
     });
 
+    // Only expose active key publicly (SVA-84).
+    // Rotated keys are looked up internally by key_id during verification.
     return NextResponse.json({
       active_key: activeKey
         ? {
@@ -29,13 +31,8 @@ export async function GET() {
             active_since: activeKey.active_since,
           }
         : null,
-      all_keys: keys.map((k) => ({
-        key_id: k.key_id,
-        public_key: k.public_key,
-        algorithm: k.algorithm,
-        active: k.active,
-      })),
-      verification_url: "https://caelex.eu/api/v1/verity/certificate/verify",
+      total_keys: keys.length,
+      verification_url: "https://caelex.eu/api/v1/verity/attestation/verify",
     });
   } catch (error) {
     safeLog("Public key endpoint failed", {
