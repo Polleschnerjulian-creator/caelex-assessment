@@ -810,6 +810,14 @@ export default function Sidebar({
               >
                 Ephemeris
               </NavItem>
+              <NavItem
+                href="/dashboard/shield"
+                icon={<Shield size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Shield
+              </NavItem>
             </div>
           </div>
 
