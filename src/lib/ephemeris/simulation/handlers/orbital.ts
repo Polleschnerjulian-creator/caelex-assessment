@@ -218,12 +218,27 @@ export function runOrbitalSlotChange(
 
 /**
  * Simulate a collision avoidance maneuver.
- * Severity depends on miss distance; fuel expenditure is typically small.
+ *
+ * Supports two modes:
+ * 1. Single-event mode (missDistanceKm + fuelCostPct) — severity depends on miss distance
+ * 2. Annual cumulative mode (deltaV + frequency) — models repeated CA maneuvers over a year
+ *
+ * When deltaV and frequency are provided, the handler computes cumulative annual fuel impact
+ * and projects compliance consequences of sustained CA operations.
  */
 export function runCollisionAvoidance(
   baseline: SatelliteComplianceStateInternal,
   scenario: WhatIfScenario,
 ): WhatIfResult {
+  const deltaV = scenario.parameters.deltaV as number | undefined;
+  const frequency = scenario.parameters.frequency as number | undefined;
+
+  // If deltaV and frequency are provided, use annual cumulative mode
+  if (deltaV !== undefined && frequency !== undefined) {
+    return runCollisionAvoidanceAnnual(baseline, scenario, deltaV, frequency);
+  }
+
+  // Otherwise, use single-event mode (existing behavior)
   const missDistanceKm = (scenario.parameters.missDistanceKm as number) ?? 1.0;
   const fuelCostPct = (scenario.parameters.fuelCostPct as number) ?? 0.5;
 
@@ -282,6 +297,127 @@ export function runCollisionAvoidance(
     confidenceBand: {
       optimistic: Math.round(horizonDelta * 0.5),
       pessimistic: Math.round(horizonDelta * 2),
+    },
+  });
+}
+
+/**
+ * Annual cumulative collision avoidance mode.
+ *
+ * Models the compliance impact of performing repeated CA maneuvers over a year.
+ * Fuel cost per maneuver ≈ deltaV * 0.5 (% of remaining fuel).
+ * Total annual fuel cost = fuelCostPerManeuver * frequency.
+ */
+function runCollisionAvoidanceAnnual(
+  baseline: SatelliteComplianceStateInternal,
+  scenario: WhatIfScenario,
+  deltaV: number,
+  frequency: number,
+): WhatIfResult {
+  const baselineHorizon =
+    baseline.complianceHorizon.daysUntilFirstBreach ?? 9999;
+  const currentFuel = getFuelFromModules(baseline);
+
+  // Fuel data unavailable — return advisory result
+  if (currentFuel === null) {
+    return buildResult(scenario, baseline, {
+      recommendation:
+        "Fuel data unavailable for impact assessment. " +
+        `Planned CA profile: ${deltaV} m/s deltaV, ${frequency} maneuvers/year. ` +
+        "Provide fuel telemetry to enable full compliance projection.",
+      severityLevel: "MEDIUM",
+      affectedRegulations: [
+        {
+          regulationRef: "eu_space_act_art_64",
+          statusBefore: baseline.modules.collision_avoidance.status,
+          statusAfter: "COMPLIANT",
+          crossingDateBefore: null,
+          crossingDateAfter: null,
+        },
+      ],
+    });
+  }
+
+  // Compute fuel impact
+  const fuelCostPerManeuver = deltaV * 0.5; // % of remaining fuel per maneuver
+  const annualFuelCost = fuelCostPerManeuver * frequency;
+  const projectedFuel = Math.max(0, currentFuel - annualFuelCost);
+
+  // Determine fuel module compliance status after maneuvers
+  let fuelStatusAfter: string;
+  if (projectedFuel < 10) {
+    fuelStatusAfter = "NON_COMPLIANT";
+  } else if (projectedFuel < 25) {
+    fuelStatusAfter = "WARNING";
+  } else {
+    fuelStatusAfter = baseline.modules.fuel.status;
+  }
+
+  // Fuel reduction shortens mission lifetime proportionally
+  const horizonReduction =
+    currentFuel > 0
+      ? Math.round(baselineHorizon * (annualFuelCost / currentFuel))
+      : 0;
+  const horizonDelta = -horizonReduction;
+  const projectedHorizon = Math.max(0, baselineHorizon + horizonDelta);
+
+  // Severity based on annual fuel consumption rate
+  let severityLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  if (projectedFuel < 10) {
+    severityLevel = "CRITICAL";
+  } else if (projectedFuel < 25) {
+    severityLevel = "HIGH";
+  } else if (annualFuelCost > 5) {
+    severityLevel = "MEDIUM";
+  } else {
+    severityLevel = "LOW";
+  }
+
+  // Affected regulations: CA compliance + fuel compliance
+  const affectedRegulations: WhatIfResult["affectedRegulations"] = [
+    {
+      regulationRef: "eu_space_act_art_64",
+      statusBefore: baseline.modules.collision_avoidance.status,
+      statusAfter: "COMPLIANT",
+      crossingDateBefore: null,
+      crossingDateAfter: null,
+    },
+    {
+      regulationRef: "eu_space_act_art_70",
+      statusBefore: baseline.modules.fuel.status,
+      statusAfter: fuelStatusAfter,
+      crossingDateBefore: null,
+      crossingDateAfter:
+        fuelStatusAfter === "NON_COMPLIANT" ? new Date().toISOString() : null,
+    },
+  ];
+
+  return buildResult(scenario, baseline, {
+    projectedHorizon,
+    horizonDelta,
+    affectedRegulations,
+    fuelImpact: {
+      before: currentFuel,
+      after: projectedFuel,
+      delta: -annualFuelCost,
+    },
+    recommendation:
+      `Collision avoidance maneuver consumes ${annualFuelCost.toFixed(1)}% fuel annually ` +
+      `(${deltaV} m/s deltaV x ${frequency} maneuvers/year). ` +
+      `Projected remaining: ${projectedFuel.toFixed(1)}%. ` +
+      (fuelStatusAfter === "NON_COMPLIANT"
+        ? `Fuel reserves would drop below 10% passivation threshold, triggering NON_COMPLIANT status per Art. 70. Consider reducing maneuver frequency or optimizing deltaV budget.`
+        : fuelStatusAfter === "WARNING"
+          ? `Fuel reserves approaching warning threshold (25%). Monitor consumption rate and consider deltaV optimization.`
+          : `Fuel reserves remain within acceptable margins. CA maneuver addresses conjunction per Art. 64.`),
+    severityLevel,
+    costEstimate: {
+      fuelKg: annualFuelCost * 0.3,
+      description: `Annual CA fuel expenditure: ${frequency} maneuvers x ${deltaV} m/s (~${annualFuelCost.toFixed(1)}% reserves/year)`,
+    },
+    confidenceBand: {
+      optimistic: Math.round(horizonDelta * 0.7),
+      pessimistic: Math.round(horizonDelta * 1.5),
     },
   });
 }
