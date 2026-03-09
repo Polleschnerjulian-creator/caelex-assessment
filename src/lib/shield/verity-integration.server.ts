@@ -1,5 +1,5 @@
 import "server-only";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ export async function createCAAttestation(
           ...payload,
           createdBy: "shield_verity_integration",
           createdAt: now.toISOString(),
-        },
+        } as unknown as Prisma.InputJsonValue,
         description: `Collision avoidance attestation for conjunction ${event.conjunctionId} (${event.decision})`,
         entityId: event.id,
         expiresAt,
