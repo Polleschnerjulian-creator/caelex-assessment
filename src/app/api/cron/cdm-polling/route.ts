@@ -17,6 +17,7 @@ import {
   shouldAutoClose,
 } from "@/lib/shield/conjunction-tracker.server";
 import type { CDMPollingResult } from "@/lib/shield/types";
+import { notifyOrganization } from "@/lib/services/notification-service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -223,6 +224,21 @@ async function pollCDMs(): Promise<CDMPollingResult> {
               },
             });
             newEvents++;
+
+            // Notify organization for HIGH/EMERGENCY new conjunction events
+            if (tier === "EMERGENCY" || tier === "HIGH") {
+              await notifyOrganization(
+                org.id,
+                tier === "EMERGENCY"
+                  ? "SHIELD_CONJUNCTION_EMERGENCY"
+                  : "SHIELD_CONJUNCTION_HIGH",
+                `Shield: ${tier} Conjunction — ${ourNoradId} ↔ ${threatNoradId}`,
+                `Conjunction event classified as ${tier}. Pc: ${cdm.collisionProbability.toExponential(2)}, TCA: ${cdm.tca.toISOString().slice(0, 16)} UTC. Review immediately.`,
+                { actionUrl: `/dashboard/shield/${event.id}` },
+              ).catch((err) => {
+                logger.error("Failed to send Shield notification", err);
+              });
+            }
           } else {
             // Update existing event with new CDM data
             const previousTier = event.riskTier;
@@ -270,6 +286,21 @@ async function pollCDMs(): Promise<CDMPollingResult> {
                 },
               });
               escalations++;
+
+              // Notify organization when tier escalates to HIGH or EMERGENCY
+              if (tier === "EMERGENCY" || tier === "HIGH") {
+                await notifyOrganization(
+                  org.id,
+                  tier === "EMERGENCY"
+                    ? "SHIELD_CONJUNCTION_EMERGENCY"
+                    : "SHIELD_CONJUNCTION_HIGH",
+                  `Shield: ${tier} Conjunction — ${ourNoradId} ↔ ${threatNoradId}`,
+                  `Conjunction event escalated to ${tier}. Pc: ${cdm.collisionProbability.toExponential(2)}, TCA: ${cdm.tca.toISOString().slice(0, 16)} UTC. Review immediately.`,
+                  { actionUrl: `/dashboard/shield/${event.id}` },
+                ).catch((err) => {
+                  logger.error("Failed to send Shield notification", err);
+                });
+              }
             }
 
             updatedEvents++;

@@ -2114,6 +2114,10 @@ enum NotificationType {
   // Regulatory Feed
   REGULATORY_UPDATE
   REGULATORY_CRITICAL_UPDATE
+
+  // Shield: Conjunction Assessment
+  SHIELD_CONJUNCTION_EMERGENCY
+  SHIELD_CONJUNCTION_HIGH
 }
 
 // ============================================

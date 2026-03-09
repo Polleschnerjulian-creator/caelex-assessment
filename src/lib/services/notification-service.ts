@@ -331,6 +331,20 @@ export const NOTIFICATION_CONFIG: Record<
     defaultSeverity: "CRITICAL",
     emailSubjectPrefix: "[CRITICAL Regulatory]",
   },
+
+  // Shield: Conjunction Assessment
+  SHIELD_CONJUNCTION_EMERGENCY: {
+    label: "Shield Emergency Conjunction",
+    category: "spacecraft",
+    defaultSeverity: "CRITICAL",
+    emailSubjectPrefix: "[EMERGENCY]",
+  },
+  SHIELD_CONJUNCTION_HIGH: {
+    label: "Shield High-Risk Conjunction",
+    category: "spacecraft",
+    defaultSeverity: "URGENT",
+    emailSubjectPrefix: "[HIGH RISK]",
+  },
 };
 
 export const NOTIFICATION_CATEGORIES = [
