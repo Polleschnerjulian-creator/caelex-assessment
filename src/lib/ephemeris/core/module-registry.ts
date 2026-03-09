@@ -44,6 +44,19 @@ export const MODULE_REGISTRY: ModuleRegistry = {
       predictionModel: "subsystem-degradation",
     },
     {
+      key: "collision_avoidance",
+      label: "Collision Avoidance Compliance",
+      weight: 15,
+      safetyCritical: true,
+      regulationRefs: [
+        "eu_space_act_art_63",
+        "eu_space_act_art_64",
+        "iadc_ca_guidelines",
+      ],
+      requiredDataSources: ["shield"] as DataSource[],
+      predictionModel: "collision-avoidance-risk",
+    },
+    {
       key: "cyber",
       label: "Cybersecurity",
       weight: 10,
@@ -262,6 +275,19 @@ export const MODULE_REGISTRY: ModuleRegistry = {
       regulationRefs: ["eu_space_act_art_63", "iadc_proximity_guidelines"],
       requiredDataSources: ["sentinel", "assessment"] as DataSource[],
       predictionModel: "proximity-safety",
+    },
+    {
+      key: "collision_avoidance",
+      label: "Collision Avoidance Compliance",
+      weight: 15,
+      safetyCritical: true,
+      regulationRefs: [
+        "eu_space_act_art_63",
+        "eu_space_act_art_64",
+        "iadc_ca_guidelines",
+      ],
+      requiredDataSources: ["shield"] as DataSource[],
+      predictionModel: "collision-avoidance-risk",
     },
     {
       key: "fuel",

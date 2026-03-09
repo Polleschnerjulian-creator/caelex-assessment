@@ -16,6 +16,7 @@ export type DataSource =
   | "sentinel"
   | "assessment"
   | "verity"
+  | "shield"
   | "derived"
   | "none";
 export type ForecastModel =
@@ -91,6 +92,7 @@ export type ModuleKey =
   | "orbital"
   | "fuel"
   | "subsystems"
+  | "collision_avoidance"
   | "cyber"
   | "ground"
   | "documentation"
@@ -120,6 +122,12 @@ export interface DataSourcesStatus {
   celestrak: {
     lastTle: string | null;
     tleAge: number | null; // Minutes since last TLE
+  };
+  shield?: {
+    connected: boolean;
+    activeEvents: number;
+    lastPollAt: string | null;
+    source: string;
   };
 }
 

@@ -36,6 +36,7 @@ function makeModules(
     fuel: { score: 80, status: "COMPLIANT" },
     orbital: { score: 90, status: "COMPLIANT" },
     subsystems: { score: 75, status: "COMPLIANT" },
+    collision_avoidance: { score: 75, status: "COMPLIANT" },
     cyber: { score: 70, status: "COMPLIANT" },
     ground: { score: 60, status: "WARNING" },
     documentation: { score: 85, status: "COMPLIANT" },

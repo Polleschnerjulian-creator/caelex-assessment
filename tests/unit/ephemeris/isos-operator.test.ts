@@ -56,13 +56,13 @@ const mockBaseline: SatelliteComplianceStateInternal = {
 describe("ISOS Module Registry", () => {
   const isosModules = MODULE_REGISTRY.ISOS;
 
-  it("has 8 modules", () => {
-    expect(isosModules).toHaveLength(8);
+  it("has 9 modules", () => {
+    expect(isosModules).toHaveLength(9);
   });
 
-  it("weights sum to 100", () => {
+  it("weights sum to 115", () => {
     const totalWeight = isosModules.reduce((sum, m) => sum + m.weight, 0);
-    expect(totalWeight).toBe(100);
+    expect(totalWeight).toBe(115);
   });
 
   it("has no duplicate keys", () => {
@@ -80,8 +80,9 @@ describe("ISOS Module Registry", () => {
     const safetyCritical = getSafetyCriticalModules("ISOS");
     expect(safetyCritical).toContain("mission_authorization");
     expect(safetyCritical).toContain("proximity_operations");
+    expect(safetyCritical).toContain("collision_avoidance");
     expect(safetyCritical).toContain("fuel");
-    expect(safetyCritical).toHaveLength(3);
+    expect(safetyCritical).toHaveLength(4);
   });
 
   it("returns weights as Record", () => {

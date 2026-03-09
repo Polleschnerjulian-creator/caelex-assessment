@@ -78,6 +78,7 @@ function buildBaseline(
         ],
       }),
       subsystems: buildMockModule({ status: "COMPLIANT" }),
+      collision_avoidance: buildMockModule(),
       cyber: buildMockModule(),
       ground: buildMockModule(),
       documentation: buildMockModule(),

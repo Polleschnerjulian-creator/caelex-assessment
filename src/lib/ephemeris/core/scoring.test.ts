@@ -55,6 +55,7 @@ function makeModules(
     orbital: makeModule({ score: 80 }),
     fuel: makeModule({ score: 90 }),
     subsystems: makeModule({ score: 85 }),
+    collision_avoidance: makeModule({ score: 75 }),
     cyber: makeModule({ score: 70 }),
     ground: makeModule({ score: 75 }),
     documentation: makeModule({ score: 60 }),
@@ -82,6 +83,7 @@ describe("Scoring Engine", () => {
         orbital: { score: 100 },
         fuel: { score: 100 },
         subsystems: { score: 100 },
+        collision_avoidance: { score: 100 },
         cyber: { score: 100 },
         ground: { score: 100 },
         documentation: { score: 100 },
@@ -98,6 +100,7 @@ describe("Scoring Engine", () => {
         orbital: { score: 0 },
         fuel: { score: 0 },
         subsystems: { score: 0 },
+        collision_avoidance: { score: 0 },
         cyber: { score: 0 },
         ground: { score: 0 },
         documentation: { score: 0 },
@@ -115,6 +118,7 @@ describe("Scoring Engine", () => {
         orbital: { score: 50 },
         fuel: { score: 100 },
         subsystems: { score: 50 },
+        collision_avoidance: { score: 50 },
         cyber: { score: 50 },
         ground: { score: 50 },
         documentation: { score: 50 },
@@ -123,10 +127,10 @@ describe("Scoring Engine", () => {
       });
 
       const score = calculateOverallScore(modules);
-      // Weighted sum: 50*15 + 100*20 + 50*15 + 50*10 + 50*10 + 50*8 + 50*7 + 0*5 = 750+2000+750+500+500+400+350+0 = 5250
-      // Total weight: 15+20+15+10+10+8+7+5 = 90
-      // Score: round(5250/90) = round(58.33) = 58
-      expect(score).toBe(58);
+      // Weighted sum: 50*15 + 100*20 + 50*15 + 50*15 + 50*10 + 50*10 + 50*8 + 50*7 + 0*5 = 750+2000+750+750+500+500+400+350+0 = 6000
+      // Total weight: 15+20+15+15+10+10+8+7+5 = 105
+      // Score: round(6000/105) = round(57.14) = 57
+      expect(score).toBe(57);
     });
 
     it("caps score at SAFETY_GATE_MAX_SCORE (49) when safety gate triggered", () => {

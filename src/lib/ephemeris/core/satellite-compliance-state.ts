@@ -46,6 +46,10 @@ import {
   getAssessmentStatus,
 } from "../data/assessment-adapter";
 import { getRegulatoryChanges } from "../data/eurlex-adapter";
+import {
+  getShieldComplianceFactors,
+  getShieldDataSourceStatus,
+} from "../data/shield-adapter";
 
 // Prediction models
 import {
@@ -198,6 +202,24 @@ export async function calculateSatelliteComplianceState(
     assessmentData,
   );
 
+  // ─── Shield adapter (collision avoidance) ───────────────────────────
+  let shieldFactor: Awaited<
+    ReturnType<typeof getShieldComplianceFactors>
+  > | null = null;
+  let shieldStatus: Awaited<
+    ReturnType<typeof getShieldDataSourceStatus>
+  > | null = null;
+  try {
+    [shieldFactor, shieldStatus] = await Promise.all([
+      getShieldComplianceFactors(prisma, orgId, noradId),
+      getShieldDataSourceStatus(prisma, orgId),
+    ]);
+  } catch {
+    // Shield errors must not crash Ephemeris — degrade gracefully
+    shieldFactor = null;
+    shieldStatus = null;
+  }
+
   // ─── Step 2: Run prediction models ─────────────────────────────────
   const missionAgeDays = launchDate
     ? Math.floor((Date.now() - launchDate.getTime()) / (24 * 60 * 60 * 1000))
@@ -216,6 +238,7 @@ export async function calculateSatelliteComplianceState(
     attestations,
     regulatoryChanges,
     missionAgeDays,
+    shieldFactor,
   );
 
   // ─── Step 3: Aggregate scores ──────────────────────────────────────
@@ -231,6 +254,7 @@ export async function calculateSatelliteComplianceState(
     verity: verityStatus,
     assessment: assessmentStatus,
     celestrak: celestrakStatus,
+    ...(shieldStatus ? { shield: shieldStatus } : {}),
   };
 
   // ─── Step 6: Load active alerts ────────────────────────────────────
@@ -265,6 +289,7 @@ function buildModuleScores(
   attestations: VerityAttestationSummary[],
   regulatoryChanges: RegulatoryChangeImpact[],
   missionAgeDays: number,
+  shieldFactor: Awaited<ReturnType<typeof getShieldComplianceFactors>> | null,
 ): ModuleScoresInternal {
   // Orbital module
   const orbital = orbitalElements
@@ -329,10 +354,14 @@ function buildModuleScores(
   // Registration module — basic placeholder
   const registration = buildRegistrationModule();
 
+  // Collision Avoidance module — from Shield adapter
+  const collision_avoidance = buildCollisionAvoidanceModule(shieldFactor);
+
   return {
     orbital,
     fuel,
     subsystems,
+    collision_avoidance,
     cyber,
     ground,
     documentation,
@@ -552,6 +581,31 @@ function buildRegistrationModule(): ModuleScoresInternal["registration"] {
   // Registration status would come from SpaceObjectRegistration model.
   // For now, return UNKNOWN (Phase 2: query registration status).
   return buildUnknownModule("registration");
+}
+
+function buildCollisionAvoidanceModule(
+  shieldFactor: Awaited<ReturnType<typeof getShieldComplianceFactors>> | null,
+): ModuleScoresInternal["collision_avoidance"] {
+  if (!shieldFactor || shieldFactor.status === "UNKNOWN") {
+    return buildUnknownModule("collision_avoidance");
+  }
+
+  const factor: ComplianceFactorInternal = {
+    id: shieldFactor.key,
+    name: shieldFactor.label,
+    regulationRef: "eu_space_act_art_63",
+    thresholdValue: 70,
+    thresholdType: "ABOVE",
+    unit: "%",
+    status: shieldFactor.status,
+    source: "shield",
+    confidence: shieldFactor.status === "COMPLIANT" ? 0.9 : 0.8,
+    lastMeasured: shieldFactor.measuredAt.toISOString(),
+    currentValue: shieldFactor.score,
+    daysToThreshold: null,
+  };
+
+  return calculateModuleScore([factor], "shield");
 }
 
 // ─── Compliance Horizon ──────────────────────────────────────────────────────
