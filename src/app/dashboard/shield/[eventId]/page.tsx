@@ -20,6 +20,11 @@ import {
   Loader2,
   Send,
   X,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Copy,
+  ClipboardCheck,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -281,6 +286,21 @@ export default function ShieldEventDetailPage() {
   const [decisionError, setDecisionError] = useState("");
   const [decisionSuccess, setDecisionSuccess] = useState("");
 
+  // Documentation tab state
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [ncaLoading, setNcaLoading] = useState(false);
+  const [ncaSuccess, setNcaSuccess] = useState("");
+  const [ncaError, setNcaError] = useState("");
+  const [expandedCdm, setExpandedCdm] = useState<string | null>(null);
+
+  // Coordination tab state
+  const [copied, setCopied] = useState(false);
+  const [coordNotes, setCoordNotes] = useState<
+    Array<{ text: string; timestamp: Date }>
+  >([]);
+  const [newNote, setNewNote] = useState("");
+
   // Workflow action states
   const [showManeuverForm, setShowManeuverForm] = useState(false);
   const [fuelConsumedPct, setFuelConsumedPct] = useState("");
@@ -445,6 +465,116 @@ export default function ShieldEventDetailPage() {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  // ── Documentation Handlers ────────────────────────────────────────────────
+
+  const handleGenerateReport = async () => {
+    setGeneratingReport(true);
+    setReportError("");
+    try {
+      const res = await fetch(`/api/shield/events/${eventId}/report`, {
+        method: "POST",
+        headers: csrfHeaders(),
+      });
+      if (!res.ok) throw new Error("Failed to generate report");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ca-report-${event?.conjunctionId ?? eventId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      fetchEvent(); // refresh to show reportGenerated=true
+    } catch {
+      setReportError("Failed to generate report");
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const handleNotifyNca = async () => {
+    setNcaLoading(true);
+    setNcaError("");
+    setNcaSuccess("");
+    try {
+      const res = await fetch(`/api/shield/events/${eventId}/nca-notify`, {
+        method: "POST",
+        headers: csrfHeaders(),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to notify NCA");
+      }
+      setNcaSuccess("NCA notification sent successfully");
+      await fetchEvent();
+    } catch (err: any) {
+      setNcaError(err.message || "Failed to notify NCA");
+    } finally {
+      setNcaLoading(false);
+    }
+  };
+
+  // ── Coordination Handlers ───────────────────────────────────────────────
+
+  const handleCopyEventSummary = () => {
+    if (!event) return;
+    const summary = [
+      `Conjunction: ${event.conjunctionId}`,
+      `Status: ${formatLabel(event.status)}`,
+      `Risk Tier: ${event.riskTier}`,
+      `TCA: ${new Date(event.tca).toISOString()}`,
+      `Latest Pc: ${formatPc(event.latestPc)}`,
+      `Miss Distance: ${event.latestMissDistance.toFixed(0)}m`,
+      `NORAD IDs: ${event.noradId} ↔ ${event.threatNoradId}`,
+      event.decision ? `Decision: ${event.decision}` : "Decision: Pending",
+    ].join("\n");
+    navigator.clipboard.writeText(summary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExportCSV = () => {
+    if (!event) return;
+    const headers = [
+      "CDM ID",
+      "Date",
+      "Pc",
+      "Miss Distance (m)",
+      "Relative Speed (m/s)",
+      "Tier",
+    ];
+    const rows = event.cdmRecords.map((c: any) => [
+      c.cdmId,
+      new Date(c.creationDate).toISOString(),
+      c.collisionProbability,
+      c.missDistance,
+      c.relativeSpeed ?? "",
+      c.riskTier,
+    ]);
+    const csv = [headers.join(","), ...rows.map((r: any) => r.join(","))].join(
+      "\n",
+    );
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cdms-${event.conjunctionId}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleAddNote = () => {
+    if (!newNote.trim()) return;
+    setCoordNotes((prev) => [
+      { text: newNote.trim(), timestamp: new Date() },
+      ...prev,
+    ]);
+    setNewNote("");
   };
 
   // ── Loading State ──────────────────────────────────────────────────────────
@@ -615,43 +745,247 @@ export default function ShieldEventDetailPage() {
       )}
 
       {activeTab === "documentation" && (
-        <GlassMotion>
-          <Card variant="elevated">
-            <CardHeader>
-              <CardTitle>
-                <FileText className="w-4 h-4 inline mr-2" />
-                Documentation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-body text-[var(--text-secondary)]">
-                Coming in next update. This tab will include compliance report
-                generation, NCA notification management, and Verity attestation
-                integration.
-              </p>
-            </CardContent>
-          </Card>
-        </GlassMotion>
+        <div className="space-y-6">
+          {/* Generate CA Report */}
+          <GlassMotion>
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle>
+                  <FileText className="w-4 h-4 inline mr-2" />
+                  Collision Avoidance Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-body text-[var(--text-secondary)]">
+                  Generate a comprehensive PDF report documenting this
+                  conjunction event, CDM history, decisions taken, and
+                  escalation timeline.
+                </p>
+                {event.reportGenerated && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <span className="text-small text-emerald-400 font-medium">
+                      Report previously generated
+                    </span>
+                  </div>
+                )}
+                {reportError && (
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-small text-red-400">
+                    {reportError}
+                  </div>
+                )}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={generatingReport}
+                  onClick={handleGenerateReport}
+                  icon={<FileText className="w-4 h-4" />}
+                >
+                  Generate Report
+                </Button>
+              </CardContent>
+            </Card>
+          </GlassMotion>
+
+          {/* NCA Notification */}
+          <GlassMotion>
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle>
+                  <Shield className="w-4 h-4 inline mr-2" />
+                  National Competent Authority Notification
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-body text-[var(--text-secondary)]">
+                  Record that the NCA has been notified about this conjunction
+                  event for regulatory compliance.
+                </p>
+                {event.ncaNotified ? (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <span className="text-small text-emerald-400 font-medium">
+                      NCA notified on{" "}
+                      {event.ncaNotifiedAt
+                        ? formatDate(event.ncaNotifiedAt)
+                        : "N/A"}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {ncaError && (
+                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-small text-red-400">
+                        {ncaError}
+                      </div>
+                    )}
+                    {ncaSuccess && (
+                      <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-small text-emerald-400">
+                        {ncaSuccess}
+                      </div>
+                    )}
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      loading={ncaLoading}
+                      onClick={handleNotifyNca}
+                      icon={<Send className="w-4 h-4" />}
+                    >
+                      Notify NCA
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </GlassMotion>
+
+          {/* Raw CDM Archive */}
+          <GlassMotion>
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle>
+                  <Activity className="w-4 h-4 inline mr-2" />
+                  Raw CDM Data Archive
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-body text-[var(--text-secondary)]">
+                  {event.cdmRecords?.length ?? 0} CDM records received
+                </p>
+                {(event.cdmRecords || []).map((cdm: any) => (
+                  <div
+                    key={cdm.id}
+                    className="rounded-lg glass-surface overflow-hidden"
+                  >
+                    <button
+                      onClick={() =>
+                        setExpandedCdm(expandedCdm === cdm.id ? null : cdm.id)
+                      }
+                      className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--fill-light)] transition-colors"
+                    >
+                      <span className="text-body text-[var(--text-primary)] font-mono">
+                        CDM {cdm.cdmId} —{" "}
+                        {new Date(cdm.creationDate).toLocaleDateString()}
+                      </span>
+                      {expandedCdm === cdm.id ? (
+                        <ChevronUp className="w-4 h-4 text-[var(--text-secondary)]" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-[var(--text-secondary)]" />
+                      )}
+                    </button>
+                    {expandedCdm === cdm.id && (
+                      <pre className="mt-0 px-4 pb-4 pt-2 glass-surface text-xs text-slate-400 overflow-x-auto max-h-64 overflow-y-auto">
+                        {JSON.stringify(cdm.rawCdm, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                ))}
+                {(!event.cdmRecords || event.cdmRecords.length === 0) && (
+                  <p className="text-body text-[var(--text-secondary)] text-center py-4">
+                    No CDM records available.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </GlassMotion>
+        </div>
       )}
 
       {activeTab === "coordination" && (
-        <GlassMotion>
-          <Card variant="elevated">
-            <CardHeader>
-              <CardTitle>
-                <MessageSquare className="w-4 h-4 inline mr-2" />
-                Coordination
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-body text-[var(--text-secondary)]">
-                Coming in next update. This tab will include inter-operator
-                coordination messaging, Space-Track data sharing, and
-                stakeholder notifications.
-              </p>
-            </CardContent>
-          </Card>
-        </GlassMotion>
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <GlassMotion>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCopyEventSummary}
+                icon={
+                  copied ? (
+                    <ClipboardCheck className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )
+                }
+              >
+                {copied ? "Copied!" : "Copy Event Summary"}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleExportCSV}
+                icon={<Download className="w-4 h-4" />}
+              >
+                Export CDMs as CSV
+              </Button>
+            </div>
+          </GlassMotion>
+
+          {/* Communication Log */}
+          <GlassMotion>
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle>
+                  <MessageSquare className="w-4 h-4 inline mr-2" />
+                  Coordination Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-small text-blue-400">
+                  Notes are stored locally for this session. For permanent
+                  records, generate a CA Report.
+                </div>
+
+                {/* Add Note Form */}
+                <div className="space-y-2">
+                  <textarea
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Add a coordination note..."
+                    rows={3}
+                    maxLength={2000}
+                    className="w-full p-3 rounded-lg glass-surface border border-[var(--glass-border-subtle)] text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  />
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={!newNote.trim()}
+                    onClick={handleAddNote}
+                    icon={<Send className="w-4 h-4" />}
+                  >
+                    Add Note
+                  </Button>
+                </div>
+
+                {/* Notes List */}
+                {coordNotes.length > 0 ? (
+                  <div className="space-y-3 pt-2 border-t border-[var(--separator)]">
+                    {coordNotes.map((note, idx) => (
+                      <div key={idx} className="p-3 rounded-lg glass-surface">
+                        <p className="text-body text-[var(--text-primary)] whitespace-pre-wrap">
+                          {note.text}
+                        </p>
+                        <p className="text-micro text-[var(--text-tertiary)] mt-2">
+                          {note.timestamp.toLocaleString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-body text-[var(--text-secondary)] text-center py-4">
+                    No coordination notes yet.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </GlassMotion>
+        </div>
       )}
     </div>
   );
