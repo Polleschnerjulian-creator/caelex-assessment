@@ -2542,6 +2542,10 @@ model Organization {
   operatorEntities    OperatorEntity[]
   entityDependencies  EntityDependency[]
 
+  // Shield: Conjunction Assessment & Collision Avoidance
+  conjunctionEvents     ConjunctionEvent[]
+  caConfig              CAConfig?
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -6380,4 +6384,152 @@ model OptimizationResult {
   createdAt DateTime @default(now())
 
   @@index([organizationId, createdAt])
+}
+
+// ============================================
+// SHIELD: CONJUNCTION ASSESSMENT & COLLISION AVOIDANCE
+// ============================================
+
+enum ConjunctionStatus {
+  NEW
+  MONITORING
+  ASSESSMENT_REQUIRED
+  DECISION_MADE
+  MANEUVER_PLANNED
+  MANEUVER_EXECUTED
+  MANEUVER_VERIFIED
+  CLOSED
+}
+
+enum RiskTier {
+  EMERGENCY
+  HIGH
+  ELEVATED
+  MONITOR
+  INFORMATIONAL
+}
+
+enum CADecision {
+  MANEUVER
+  ACCEPT_RISK
+  MONITOR
+  COORDINATE
+}
+
+model ConjunctionEvent {
+  id                  String              @id @default(cuid())
+  organizationId      String
+  spacecraftId        String
+  noradId             String
+  threatNoradId       String
+  threatObjectName    String?
+  threatObjectType    String
+  conjunctionId       String
+  status              ConjunctionStatus   @default(NEW)
+  riskTier            RiskTier
+
+  peakPc              Float
+  peakPcAt            DateTime
+  latestPc            Float
+  latestMissDistance  Float
+  tca                 DateTime
+  relativeSpeed       Float?
+
+  decision            CADecision?
+  decisionBy          String?
+  decisionAt          DateTime?
+  decisionRationale   String?             @db.Text
+
+  maneuverPlan        Json?
+  maneuverExecutedAt  DateTime?
+  maneuverVerified    Boolean             @default(false)
+  fuelConsumedPct     Float?
+
+  ncaNotified         Boolean             @default(false)
+  ncaNotifiedAt       DateTime?
+  reportGenerated     Boolean             @default(false)
+  verityAttestationId String?
+
+  closedAt            DateTime?
+  closedReason        String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cdmRecords          CDMRecord[]
+  escalationLog       CAEscalationLog[]
+
+  @@unique([organizationId, conjunctionId])
+  @@index([organizationId, status])
+  @@index([spacecraftId, status])
+  @@index([noradId, tca])
+  @@index([riskTier, status])
+  @@index([tca])
+}
+
+model CDMRecord {
+  id                    String            @id @default(cuid())
+  conjunctionEventId    String
+  cdmId                 String            @unique
+  creationDate          DateTime
+  tca                   DateTime
+  missDistance           Float
+  relativeSpeed         Float?
+  collisionProbability  Float
+  probabilityMethod     String?
+
+  sat1StateVector       Json?
+  sat1Covariance        Json?
+  sat2StateVector       Json?
+  sat2Covariance        Json?
+  sat2Maneuverable      String?
+
+  rawCdm                Json
+  riskTier              RiskTier
+  createdAt             DateTime          @default(now())
+
+  conjunctionEvent      ConjunctionEvent  @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
+
+  @@index([conjunctionEventId, creationDate])
+}
+
+model CAEscalationLog {
+  id                    String            @id @default(cuid())
+  conjunctionEventId    String
+  previousTier          RiskTier
+  newTier               RiskTier
+  previousStatus        ConjunctionStatus
+  newStatus             ConjunctionStatus
+  triggeredBy           String
+  details               String?
+  createdAt             DateTime          @default(now())
+
+  conjunctionEvent      ConjunctionEvent  @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
+
+  @@index([conjunctionEventId, createdAt])
+}
+
+model CAConfig {
+  id                    String            @id @default(cuid())
+  organizationId        String            @unique
+
+  emergencyPcThreshold  Float             @default(0.001)
+  highPcThreshold       Float             @default(0.0001)
+  elevatedPcThreshold   Float             @default(0.00001)
+  monitorPcThreshold    Float             @default(0.0000001)
+
+  notifyOnTier          RiskTier          @default(HIGH)
+  emergencyEmailAll     Boolean           @default(true)
+
+  autoCloseAfterTcaHours Int              @default(24)
+
+  ncaAutoNotify         Boolean           @default(false)
+  ncaJurisdiction       String?
+
+  defaultAssigneeId     String?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
