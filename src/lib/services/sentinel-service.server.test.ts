@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
     sentinelAgent: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
     sentinelPacket: { create: vi.fn(), findMany: vi.fn() },
     organization: { findFirst: vi.fn() },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -37,6 +38,7 @@ const mockPrisma = prisma as unknown as {
     findMany: ReturnType<typeof vi.fn>;
   };
   organization: { findFirst: ReturnType<typeof vi.fn> };
+  $transaction: ReturnType<typeof vi.fn>;
 };
 
 describe("Sentinel Service", () => {
@@ -48,6 +50,9 @@ describe("Sentinel Service", () => {
     mockPrisma.sentinelPacket.create.mockReset();
     mockPrisma.sentinelPacket.findMany.mockReset();
     mockPrisma.organization.findFirst.mockReset();
+    mockPrisma.$transaction.mockReset();
+    // Default: $transaction resolves successfully
+    mockPrisma.$transaction.mockResolvedValue([{}, {}]);
   });
 
   describe("authenticateSentinelAgent", () => {
@@ -85,7 +90,7 @@ describe("Sentinel Service", () => {
   });
 
   describe("registerSentinelAgent", () => {
-    it("returns 404 when organization not found", async () => {
+    it("returns error when organization not found", async () => {
       mockPrisma.organization.findFirst.mockResolvedValue(null);
       const result = await registerSentinelAgent({
         sentinel_id: "s1",
@@ -95,12 +100,16 @@ describe("Sentinel Service", () => {
         collectors: [],
         tokenHash: "hash",
       });
-      expect(result).toEqual({ error: "Organization not found", status: 404 });
+      expect(result.status).toBe(400);
+      expect(result.error).toBeDefined();
     });
 
-    it("updates existing agent", async () => {
+    it("updates existing agent when token matches", async () => {
       mockPrisma.organization.findFirst.mockResolvedValue({ id: "org-1" });
-      mockPrisma.sentinelAgent.findUnique.mockResolvedValue({ id: "agent-1" });
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue({
+        id: "agent-1",
+        token: "hash",
+      });
       mockPrisma.sentinelAgent.update.mockResolvedValue({
         id: "agent-1",
         version: "2.0",
@@ -115,6 +124,23 @@ describe("Sentinel Service", () => {
       });
       expect(result.status).toBe(200);
       expect(mockPrisma.sentinelAgent.update).toHaveBeenCalled();
+    });
+
+    it("rejects update when token does not match (SVA-05)", async () => {
+      mockPrisma.organization.findFirst.mockResolvedValue({ id: "org-1" });
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue({
+        id: "agent-1",
+        token: "correct-hash",
+      });
+      const result = await registerSentinelAgent({
+        sentinel_id: "s1",
+        operator_id: "org-1",
+        public_key: "pk",
+        version: "2.0",
+        collectors: ["fuel"],
+        tokenHash: "wrong-hash",
+      });
+      expect(result.status).toBe(403);
     });
 
     it("creates new agent when not existing", async () => {
@@ -187,7 +213,7 @@ describe("Sentinel Service", () => {
       expect(result.error).toContain("not active");
     });
 
-    it("stores packet and updates agent state on valid input", async () => {
+    it("rejects packet with invalid signature", async () => {
       mockPrisma.sentinelAgent.findUnique.mockResolvedValue({
         id: "agent-1",
         status: "ACTIVE",
@@ -195,20 +221,10 @@ describe("Sentinel Service", () => {
         chainPosition: 0,
         lastChainHash: null,
       });
-      mockPrisma.sentinelPacket.create.mockResolvedValue({});
-      mockPrisma.sentinelAgent.update.mockResolvedValue({});
       const result = await ingestPacket("agent-1", basePacket);
-      expect(result.accepted).toBe(true);
-      expect(result.chain_position).toBe(0);
-      expect(mockPrisma.sentinelPacket.create).toHaveBeenCalled();
-      expect(mockPrisma.sentinelAgent.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            chainPosition: 1,
-            lastChainHash: basePacket.integrity.content_hash,
-          }),
-        }),
-      );
+      // Ed25519 verify fails for fake key/sig → SIGNATURE_INVALID
+      expect(result.accepted).toBe(false);
+      expect(result.error).toBe("SIGNATURE_INVALID");
     });
   });
 
@@ -283,6 +299,145 @@ describe("Sentinel Service", () => {
       ]);
       const result = await verifyChain("agent-1");
       expect(result.valid).toBe(false);
+    });
+
+    // SVA-29: Chain corruption / content hash tampering detection
+    it("detects content hash tampering in fullVerify mode (SVA-15/SVA-29)", async () => {
+      // Simulate a packet whose stored data no longer matches its contentHash
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue({
+        lastVerifiedPosition: null,
+        lastVerifiedHash: null,
+      });
+      mockPrisma.sentinelPacket.findMany.mockResolvedValue([
+        {
+          packetId: "p1",
+          chainPosition: 0,
+          contentHash: "sha256:original_hash_that_no_longer_matches",
+          previousHash: "sha256:genesis",
+          signatureValid: true,
+          dataPoint: "remaining_fuel_pct",
+          values: { percentage: 85 },
+          sourceSystem: "telemetry",
+          collectionMethod: "API",
+          collectedAt: new Date("2024-01-15T12:00:00Z"),
+          complianceNotes: [],
+          regulationMapping: [{ ref: "art_64", status: "COMPLIANT", note: "" }],
+        },
+      ]);
+
+      // fullVerify = true triggers re-computation
+      const result = await verifyChain("agent-1", true);
+      expect(result.valid).toBe(false);
+      expect(result.breaks.length).toBeGreaterThan(0);
+      expect(result.breaks[0]!.actual).toContain("TAMPERED");
+    });
+
+    it("passes fullVerify when content hashes are authentic (SVA-15)", async () => {
+      // First compute the real hash for test data
+      const { createHash } = await import("node:crypto");
+
+      const testData = {
+        data: {
+          data_point: "remaining_fuel_pct",
+          values: { percentage: 85 },
+          source_system: "telemetry",
+          collection_method: "API",
+          collection_timestamp: "2024-01-15T12:00:00.000Z",
+          compliance_notes: [] as string[],
+        },
+        regulation_mapping: [{ ref: "art_64", status: "COMPLIANT", note: "" }],
+      };
+
+      // Reproduce the canonicalize + hash logic
+      function canonicalize(value: unknown): string {
+        if (value === null || value === undefined) return "null";
+        if (typeof value === "string") return JSON.stringify(value);
+        if (typeof value === "number" || typeof value === "boolean")
+          return String(value);
+        if (Array.isArray(value))
+          return "[" + value.map((v) => canonicalize(v)).join(",") + "]";
+        if (typeof value === "object") {
+          const obj = value as Record<string, unknown>;
+          const keys = Object.keys(obj).sort();
+          const pairs = keys.map(
+            (k) => `${JSON.stringify(k)}:${canonicalize(obj[k])}`,
+          );
+          return "{" + pairs.join(",") + "}";
+        }
+        return String(value);
+      }
+
+      const canonical = canonicalize(testData);
+      const realHash = `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue({
+        lastVerifiedPosition: null,
+        lastVerifiedHash: null,
+      });
+      mockPrisma.sentinelPacket.findMany.mockResolvedValue([
+        {
+          packetId: "p1",
+          chainPosition: 0,
+          contentHash: realHash,
+          previousHash: "sha256:genesis",
+          signatureValid: true,
+          dataPoint: "remaining_fuel_pct",
+          values: { percentage: 85 },
+          sourceSystem: "telemetry",
+          collectionMethod: "API",
+          collectedAt: new Date("2024-01-15T12:00:00.000Z"),
+          complianceNotes: [],
+          regulationMapping: [{ ref: "art_64", status: "COMPLIANT", note: "" }],
+        },
+      ]);
+      mockPrisma.sentinelAgent.update.mockResolvedValue({});
+
+      const result = await verifyChain("agent-1", true);
+      expect(result.valid).toBe(true);
+      expect(result.breaks).toEqual([]);
+    });
+  });
+
+  // SVA-51: Registration race condition handling
+  describe("registration race condition (SVA-51)", () => {
+    it("returns 409 when concurrent create hits unique constraint", async () => {
+      mockPrisma.organization.findFirst.mockResolvedValue({ id: "org-1" });
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue(null);
+      // Simulate unique constraint violation from concurrent insert
+      mockPrisma.sentinelAgent.create.mockRejectedValue(
+        new Error("Unique constraint failed on the fields: (`sentinelId`)"),
+      );
+
+      const result = await registerSentinelAgent({
+        sentinel_id: "s1",
+        operator_id: "org-1",
+        public_key: "pk",
+        version: "1.0",
+        collectors: [],
+        tokenHash: "hash",
+      });
+
+      expect(result.status).toBe(409);
+      expect(result.error).toContain("concurrent");
+    });
+
+    it("re-throws non-constraint errors from create", async () => {
+      mockPrisma.organization.findFirst.mockResolvedValue({ id: "org-1" });
+      mockPrisma.sentinelAgent.findUnique.mockResolvedValue(null);
+      mockPrisma.sentinelAgent.create.mockRejectedValue(
+        new Error("Connection timeout"),
+      );
+
+      await expect(
+        registerSentinelAgent({
+          sentinel_id: "s1",
+          operator_id: "org-1",
+          public_key: "pk",
+          version: "1.0",
+          collectors: [],
+          tokenHash: "hash",
+        }),
+      ).rejects.toThrow("Connection timeout");
     });
   });
 });

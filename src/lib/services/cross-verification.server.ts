@@ -299,7 +299,13 @@ export async function crossVerifyPacket(
     });
   }
 
-  // Compute confidence
+  // Compute confidence (SVA-72: calibration rationale)
+  // MATCH  = 1.0 — within noise floor (inclination ±0.01°, period ±0.5min, ecc ±0.0001)
+  // CLOSE  = 0.6 — within operational tolerance but outside noise (may indicate
+  //                 TLE age drift, minor maneuver, or collection timing offset).
+  //                 0.6 chosen so 2 CLOSE + 1 MATCH = 0.73 (just above 0.7 threshold),
+  //                 but 3 CLOSE alone = 0.6 (below threshold → not verified).
+  // MISMATCH = 0.0 — exceeds tolerance; any MISMATCH blocks verification.
   const matchCount = checks.filter((c) => c.result === "MATCH").length;
   const closeCount = checks.filter((c) => c.result === "CLOSE").length;
   const totalChecks = checks.length;

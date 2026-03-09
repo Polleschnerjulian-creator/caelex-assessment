@@ -102,22 +102,32 @@ export async function registerSentinelAgent(input: {
     return { agent: updated, status: 200 };
   }
 
-  // Create new agent
-  const agent = await prisma.sentinelAgent.create({
-    data: {
-      organizationId: org.id,
-      name: `Sentinel ${input.sentinel_id.slice(0, 12)}`,
-      sentinelId: input.sentinel_id,
-      publicKey: input.public_key,
-      token: input.tokenHash,
-      status: "PENDING",
-      version: input.version,
-      enabledCollectors: input.collectors,
-      lastSeen: new Date(),
-    },
-  });
-
-  return { agent, status: 201 };
+  // Create new agent — catch unique constraint race condition (SVA-51)
+  try {
+    const agent = await prisma.sentinelAgent.create({
+      data: {
+        organizationId: org.id,
+        name: `Sentinel ${input.sentinel_id.slice(0, 12)}`,
+        sentinelId: input.sentinel_id,
+        publicKey: input.public_key,
+        token: input.tokenHash,
+        status: "PENDING",
+        version: input.version,
+        enabledCollectors: input.collectors,
+        lastSeen: new Date(),
+      },
+    });
+    return { agent, status: 201 };
+  } catch (err: unknown) {
+    // Concurrent registration won the race — retry as update
+    if (
+      err instanceof Error &&
+      err.message.includes("Unique constraint failed")
+    ) {
+      return { error: "Agent already registered (concurrent)", status: 409 };
+    }
+    throw err;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -256,6 +266,7 @@ export async function verifyChain(
   const startHash = fullVerify ? null : (agent?.lastVerifiedHash ?? null);
 
   // Fetch only unverified packets (or all if fullVerify / no checkpoint)
+  // Include values + regulationMapping to re-compute content hashes (SVA-15)
   const packets = await prisma.sentinelPacket.findMany({
     where: {
       agentId,
@@ -270,6 +281,13 @@ export async function verifyChain(
       contentHash: true,
       previousHash: true,
       signatureValid: true,
+      dataPoint: true,
+      values: true,
+      sourceSystem: true,
+      collectionMethod: true,
+      collectedAt: true,
+      complianceNotes: true,
+      regulationMapping: true,
     },
   });
 
@@ -308,6 +326,28 @@ export async function verifyChain(
         expected: expectedPrevHash.slice(0, 20) + "...",
         actual: pkt.previousHash.slice(0, 20) + "...",
       });
+    }
+
+    // Re-compute content hash from stored data to detect tampering (SVA-15)
+    if (fullVerify && pkt.values && pkt.regulationMapping) {
+      const recomputed = computeContentHash({
+        data: {
+          data_point: pkt.dataPoint,
+          values: pkt.values,
+          source_system: pkt.sourceSystem,
+          collection_method: pkt.collectionMethod,
+          collection_timestamp: pkt.collectedAt.toISOString(),
+          compliance_notes: pkt.complianceNotes,
+        },
+        regulation_mapping: pkt.regulationMapping,
+      });
+      if (recomputed !== pkt.contentHash) {
+        breaks.push({
+          position: pkt.chainPosition,
+          expected: pkt.contentHash.slice(0, 20) + "...",
+          actual: `TAMPERED (recomputed ${recomputed.slice(0, 20)}...)`,
+        });
+      }
     }
 
     expectedPrevHash = pkt.contentHash;

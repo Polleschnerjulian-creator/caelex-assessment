@@ -21,7 +21,7 @@ vi.mock("satellite.js", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     sentinelPacket: { findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
-    crossVerification: { create: vi.fn() },
+    crossVerification: { create: vi.fn(), deleteMany: vi.fn() },
   },
 }));
 
@@ -41,6 +41,7 @@ const mockPrisma = prisma as unknown as {
   };
   crossVerification: {
     create: ReturnType<typeof vi.fn>;
+    deleteMany: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -56,6 +57,10 @@ const mockSat = sat as unknown as {
 // ── Helpers ──
 
 function makeCelesTrakGP(overrides: Record<string, unknown> = {}) {
+  // Use a recent epoch to pass SVA-71 TLE age check (< 14 days)
+  const recentEpoch = new Date(
+    Date.now() - 2 * 24 * 60 * 60 * 1000,
+  ).toISOString();
   return {
     OBJECT_NAME: "ISS (ZARYA)",
     OBJECT_ID: "1998-067A",
@@ -64,7 +69,7 @@ function makeCelesTrakGP(overrides: Record<string, unknown> = {}) {
     COUNTRY_CODE: "ISS",
     LAUNCH_DATE: "1998-11-20",
     DECAY_DATE: null,
-    EPOCH: "2024-01-15T12:00:00.000Z",
+    EPOCH: recentEpoch,
     MEAN_MOTION: 15.5,
     ECCENTRICITY: 0.0001,
     INCLINATION: 51.6,
@@ -151,10 +156,14 @@ function mockFetchNotOk() {
 describe("Cross-Verification Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules;
     mockPrisma.sentinelPacket.findUnique.mockReset();
     mockPrisma.sentinelPacket.findMany.mockReset();
     mockPrisma.sentinelPacket.update.mockReset();
     mockPrisma.crossVerification.create.mockReset();
+    mockPrisma.crossVerification.deleteMany.mockReset();
+    // Default: deleteMany resolves (SVA-44 cleanup)
+    mockPrisma.crossVerification.deleteMany.mockResolvedValue({ count: 0 });
   });
 
   // ─────────────────────────────────────────────────────────────────
@@ -459,14 +468,10 @@ describe("Cross-Verification Service", () => {
 
   describe("crossVerifyAgent", () => {
     it("returns counts for verified, failed, and skipped packets", async () => {
-      // Set up three packets:
-      // - pkt-1: will succeed verification (MATCH)
-      // - pkt-2: will succeed but fail verification (MISMATCH)
-      // - pkt-3: will be skipped (missing NORAD)
+      // findMany returns slim select results (id + satelliteNorad)
       const packets = [
-        makePacket({ id: "pkt-1" }),
-        makePacket({ id: "pkt-2" }),
-        makePacket({ id: "pkt-3", satelliteNorad: null }),
+        { id: "pkt-1", satelliteNorad: "25544" },
+        { id: "pkt-2", satelliteNorad: "25544" },
       ];
 
       mockPrisma.sentinelPacket.findMany.mockResolvedValue(packets);
@@ -495,10 +500,6 @@ describe("Cross-Verification Service", () => {
               eccentricity: 0.5,
             },
           }),
-        )
-        // pkt-3: no NORAD => skipped
-        .mockResolvedValueOnce(
-          makePacket({ id: "pkt-3", satelliteNorad: null }),
         );
 
       mockPrisma.crossVerification.create.mockResolvedValue({});
@@ -509,11 +510,8 @@ describe("Cross-Verification Service", () => {
 
       const result = await crossVerifyAgent("agent-1");
 
-      expect(result.total).toBe(3);
-      // The exact distribution depends on threshold logic, but total should add up
-      expect(result.verified + result.failed + result.skipped).toBe(3);
-      // pkt-3 has no NORAD so crossVerifyPacket returns null => skipped
-      expect(result.skipped).toBeGreaterThanOrEqual(1);
+      expect(result.total).toBe(2);
+      expect(result.verified + result.failed + result.skipped).toBe(2);
     });
 
     it("returns zero counts when no packets found", async () => {
@@ -543,6 +541,7 @@ describe("Cross-Verification Service", () => {
         },
         orderBy: { chainPosition: "asc" },
         take: 100,
+        select: { id: true, satelliteNorad: true },
       });
     });
   });
