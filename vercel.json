@@ -84,6 +84,10 @@
     {
       "path": "/api/cron/ca-cleanup",
       "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/ca-digest",
+      "schedule": "30 7 * * *"
     }
   ]
 }
