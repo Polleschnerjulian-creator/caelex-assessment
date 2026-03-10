@@ -335,20 +335,24 @@ export function DocumentPreviewPanel({
       )}
 
       {/* Section outline */}
-      <div className="mb-6 rounded-xl p-4" style={innerGlass}>
+      <div className="mb-6">
         <h4 className="text-sm font-medium text-slate-600 mb-3">
           Document Outline
         </h4>
-        <div className="space-y-0.5">
-          {sections.map((section) => (
+        <div className="rounded-xl overflow-hidden" style={innerGlass}>
+          {sections.map((section, idx) => (
             <div
               key={section.number}
-              className="flex items-center gap-2 text-sm text-slate-500 px-3 py-1.5 rounded-lg hover:bg-white/50 transition-colors"
+              className={`flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-white/40 ${
+                idx !== sections.length - 1
+                  ? "border-b border-black/[0.04]"
+                  : ""
+              }`}
             >
-              <span className="text-xs font-mono text-slate-400 w-5">
+              <span className="w-7 h-7 rounded-lg bg-black/[0.04] flex items-center justify-center text-xs font-semibold text-slate-400 shrink-0">
                 {section.number}
               </span>
-              {section.title}
+              <span className="text-sm text-slate-600">{section.title}</span>
             </div>
           ))}
         </div>
@@ -365,7 +369,7 @@ export function DocumentPreviewPanel({
       {/* Generate button */}
       <button
         onClick={onGenerate}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors"
       >
         <FileText size={16} />
         {canResume
