@@ -151,7 +151,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         }
       `}</style>
       <div className="sidebar-content-area flex flex-col min-h-screen">
-        {!isEphemerisPage && (
+        {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
         )}
         <main

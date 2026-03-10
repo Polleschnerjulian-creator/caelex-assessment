@@ -48,7 +48,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             EU Space Act References
           </h3>
-          <div className="glass-elevated border border-[var(--glass-border-subtle)] rounded-lg p-3">
+          <div className="glass-surface border border-[var(--glass-border-subtle)] rounded-lg p-3">
             <p className="text-sm text-slate-300">{meta.articleRef}</p>
             <p className="text-xs text-slate-500 mt-1">
               {meta.category === "debris"
@@ -90,7 +90,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             Quick Links
           </h3>
-          <div className="space-y-1.5">
+          <div className="glass-surface border border-[var(--glass-border-subtle)] rounded-lg p-3 space-y-2">
             <Link
               href={moduleLink}
               className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors"
@@ -122,12 +122,14 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             About This Document
           </h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            {meta.description}
-          </p>
-          <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
-            <span>Priority: {meta.priority}</span>
-            <span>{meta.estimatedSections} sections</span>
+          <div className="glass-surface border border-[var(--glass-border-subtle)] rounded-lg p-3">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              {meta.description}
+            </p>
+            <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
+              <span>Priority: {meta.priority}</span>
+              <span>{meta.estimatedSections} sections</span>
+            </div>
           </div>
         </div>
       </div>

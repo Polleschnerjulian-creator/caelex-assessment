@@ -688,7 +688,7 @@ export function Generate2Page() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#060810] via-[#0a0e1a] to-[#0d1220]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-400">
@@ -700,9 +700,9 @@ export function Generate2Page() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-light-bg dark:bg-dark-bg">
-      {/* Left Panel — Document Selector (280px) */}
-      <div className="w-[280px] shrink-0 border-r border-[var(--glass-border-subtle)] glass-surface">
+    <div className="flex h-screen bg-gradient-to-br from-[#060810] via-[#0a0e1a] to-[#0d1220] p-3 gap-3">
+      {/* Left Panel — Document Selector */}
+      <div className="w-[280px] shrink-0 rounded-2xl glass-elevated border border-[var(--glass-border-subtle)] overflow-hidden">
         <DocumentSelectorPanel
           selectedType={selectedType}
           onSelect={handleSelect}
@@ -713,8 +713,8 @@ export function Generate2Page() {
         />
       </div>
 
-      {/* Center Panel — Preview/Generation (flex-1) */}
-      <div className="flex-1 min-w-0 overflow-hidden">
+      {/* Center Panel — Preview/Generation */}
+      <div className="flex-1 min-w-0 rounded-2xl glass-elevated border border-[var(--glass-border-subtle)] overflow-hidden">
         <DocumentPreviewPanel
           selectedType={selectedType}
           meta={selectedMeta}
@@ -736,8 +736,8 @@ export function Generate2Page() {
         />
       </div>
 
-      {/* Right Panel — Context (320px) */}
-      <div className="w-[320px] shrink-0 border-l border-[var(--glass-border-subtle)] glass-surface hidden xl:block">
+      {/* Right Panel — Context */}
+      <div className="w-[320px] shrink-0 rounded-2xl glass-elevated border border-[var(--glass-border-subtle)] overflow-hidden hidden xl:block">
         <ContextPanel
           meta={selectedMeta}
           readiness={selectedReadiness || null}
