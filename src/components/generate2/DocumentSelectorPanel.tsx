@@ -110,7 +110,7 @@ export function DocumentSelectorPanel({
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
         >
           <Package size={14} />
           {isPackageGenerating ? "Generating..." : "Generate Full Package"}
