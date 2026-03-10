@@ -22,6 +22,16 @@ interface GenerationProgressProps {
   phase: GenerationPhase;
 }
 
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
 export function GenerationProgress({
   sections,
   completedSections,
@@ -52,8 +62,11 @@ export function GenerationProgress({
         >
           {/* ASTRA avatar */}
           <div className="relative">
-            <div className="w-14 h-14 rounded-xl glass-elevated border border-emerald-500/20 flex items-center justify-center">
-              <Zap size={24} className="text-emerald-400" />
+            <div
+              className="w-14 h-14 rounded-xl flex items-center justify-center"
+              style={innerGlass}
+            >
+              <Zap size={24} className="text-emerald-500" />
             </div>
             <motion.div
               className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500"
@@ -64,10 +77,10 @@ export function GenerationProgress({
 
           {/* Title */}
           <div className="text-center">
-            <h3 className="text-lg font-medium text-slate-100">
+            <h3 className="text-lg font-medium text-slate-800">
               ASTRA is generating your document
             </h3>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               {phase === "init"
                 ? "Preparing assessment data..."
                 : phase === "finalizing"
@@ -131,14 +144,14 @@ export function GenerationProgress({
           {/* Overall progress bar */}
           <div className="w-full">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-caption text-slate-500">
+              <span className="text-caption text-slate-400">
                 Overall Progress
               </span>
-              <span className="text-caption font-medium text-emerald-400">
+              <span className="text-caption font-medium text-emerald-600">
                 {progress}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full glass-surface overflow-hidden">
+            <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 animate={{ width: `${progress}%` }}
@@ -172,13 +185,13 @@ function PhaseRow({
   return (
     <motion.div
       initial={false}
-      animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
+      animate={{ opacity: isPending ? 0.4 : 1, x: 0 }}
       transition={{ duration: 0.25 }}
       className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
         isActive
-          ? "glass-elevated glass-accent"
+          ? "bg-emerald-500/[0.08] border border-emerald-400/20"
           : isCompleted
-            ? "glass-surface"
+            ? "bg-white/30"
             : ""
       }`}
     >
@@ -197,10 +210,10 @@ function PhaseRow({
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           >
-            <Loader2 size={18} className="text-emerald-400" />
+            <Loader2 size={18} className="text-emerald-500" />
           </motion.div>
         ) : (
-          <Icon size={18} className="text-slate-600" />
+          <Icon size={18} className="text-slate-300" />
         )}
       </div>
 
@@ -209,10 +222,10 @@ function PhaseRow({
         <p
           className={`text-sm font-medium ${
             isActive
-              ? "text-emerald-400"
+              ? "text-emerald-600"
               : isCompleted
-                ? "text-slate-400"
-                : "text-slate-600"
+                ? "text-slate-500"
+                : "text-slate-300"
           }`}
         >
           {title}
@@ -223,7 +236,7 @@ function PhaseRow({
               initial={false}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-slate-500 mt-0.5"
+              className="text-xs text-slate-400 mt-0.5"
             >
               {subtitle}
             </motion.p>

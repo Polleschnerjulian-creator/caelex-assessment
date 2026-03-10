@@ -12,9 +12,9 @@ interface DocumentTypeCardProps {
 }
 
 const priorityStyles = {
-  P0: "bg-red-500/10 text-red-400 border-red-500/20",
-  P1: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  P2: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+  P0: "bg-red-500/10 text-red-500 border-red-500/20",
+  P1: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  P2: "bg-slate-500/10 text-slate-500 border-slate-500/20",
 };
 
 export function DocumentTypeCard({
@@ -27,10 +27,10 @@ export function DocumentTypeCard({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 group ${
+      className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 group ${
         isSelected
-          ? "glass-elevated glass-accent"
-          : "glass-surface glass-interactive border-[var(--glass-border-subtle)]"
+          ? "bg-white/60 border-emerald-400/40 shadow-sm"
+          : "bg-white/0 border-transparent hover:bg-white/40 hover:border-white/40"
       }`}
     >
       <div className="flex items-center gap-2.5">
@@ -51,14 +51,14 @@ export function DocumentTypeCard({
               {meta.priority}
             </span>
             {hasDocument && (
-              <span className="text-micro px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+              <span className="text-micro px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/20">
                 Done
               </span>
             )}
           </div>
           <p
             className={`text-sm truncate mt-0.5 ${
-              isSelected ? "text-slate-100 font-medium" : "text-slate-300"
+              isSelected ? "text-slate-900 font-medium" : "text-slate-700"
             }`}
           >
             {meta.shortTitle}

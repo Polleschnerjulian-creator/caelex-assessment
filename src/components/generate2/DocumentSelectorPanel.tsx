@@ -34,10 +34,10 @@ export function DocumentSelectorPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-[var(--glass-border-subtle)]">
+      <div className="px-4 py-3 border-b border-black/[0.06]">
         <div className="flex items-center gap-2">
-          <FileText size={16} className="text-emerald-400" />
-          <h2 className="text-sm font-semibold text-slate-200">
+          <FileText size={16} className="text-emerald-500" />
+          <h2 className="text-sm font-semibold text-slate-800">
             NCA Documents
           </h2>
         </div>
@@ -49,10 +49,10 @@ export function DocumentSelectorPanel({
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {/* Category A — Debris */}
         <div>
-          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-400 px-1 mb-2">
             Category A — Debris Mitigation
           </h3>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {debrisDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -68,10 +68,10 @@ export function DocumentSelectorPanel({
 
         {/* Category B — Cybersecurity */}
         <div>
-          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-400 px-1 mb-2">
             Category B — Cybersecurity
           </h3>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {cyberDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -87,10 +87,10 @@ export function DocumentSelectorPanel({
 
         {/* Category C — General Compliance */}
         <div>
-          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-400 px-1 mb-2">
             Category C — General Compliance
           </h3>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {generalDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -106,11 +106,11 @@ export function DocumentSelectorPanel({
       </div>
 
       {/* Generate Full Package button */}
-      <div className="px-3 py-3 border-t border-[var(--glass-border-subtle)]">
+      <div className="px-3 py-3 border-t border-black/[0.06]">
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
         >
           <Package size={14} />
           {isPackageGenerating ? "Generating..." : "Generate Full Package"}
