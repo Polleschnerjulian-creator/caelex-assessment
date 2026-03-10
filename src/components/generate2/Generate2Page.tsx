@@ -752,6 +752,16 @@ export function Generate2Page() {
         <ContextPanel
           meta={selectedMeta}
           readiness={selectedReadiness || null}
+          allReadiness={readiness}
+          completedDocs={completedDocs}
+          panelState={panelState}
+          sections={sections}
+          completedSections={completedSections}
+          currentSection={currentSection}
+          generationPhase={generationPhase}
+          actionRequiredCount={documentState.actionRequiredCount}
+          evidencePlaceholderCount={documentState.evidencePlaceholderCount}
+          onSelectDocument={handleSelect}
         />
       </div>
     </div>
