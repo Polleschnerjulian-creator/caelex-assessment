@@ -331,12 +331,11 @@ function EphemerisForgeInner({
             width: 56,
             height: 56,
             borderRadius: 18,
-            border: "1px solid rgba(255,255,255,0.08)",
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(80px) saturate(1.6)",
-            WebkitBackdropFilter: "blur(80px) saturate(1.6)",
-            boxShadow:
-              "0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
+            border: "1px solid rgba(0,0,0,0.08)",
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(24px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -353,23 +352,23 @@ function EphemerisForgeInner({
           <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
             <path
               d="M 0 -10 L 0 3"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
             <path
               d="M 0 3 L 10 10"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
             <path
               d="M 0 3 L -10 10"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
-            <circle cx="0" cy="3" r="2.5" fill="white" />
+            <circle cx="0" cy="3" r="2.5" fill="#0F172A" />
           </svg>
         </button>
       )}
@@ -408,8 +407,8 @@ function EphemerisForgeInner({
         }
 
         @keyframes astraFabPulse {
-          0%, 100% { box-shadow: 0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08), 0 0 0 0 rgba(255,255,255,0); }
-          50% { box-shadow: 0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08), 0 0 0 8px rgba(255,255,255,0.04); }
+          0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0 rgba(0,0,0,0); }
+          50% { box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06), 0 0 0 8px rgba(0,0,0,0.04); }
         }
         .astra-fab-pulse { animation: astraFabPulse 3s ease-in-out infinite; }
       `}</style>

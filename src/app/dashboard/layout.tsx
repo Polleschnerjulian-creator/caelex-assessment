@@ -3,19 +3,18 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
 import { OrganizationProvider } from "@/components/providers/OrganizationProvider";
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
+import AstraWidget from "@/components/astra/AstraWidget";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
   LanguageProvider,
   useLanguage,
 } from "@/components/providers/LanguageProvider";
-// Caelex cube-corner logo (inline SVG for FAB)
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard": "sidebar.dashboard",
@@ -114,6 +113,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   // Track forge mode so we can hide the global Astra button (Forge has its own)
   const [forgeActive, setForgeActive] = useState(false);
+  const [astraWidgetOpen, setAstraWidgetOpen] = useState(false);
   useEffect(() => {
     const handler = (e: Event) => {
       setForgeActive((e as CustomEvent).detail.active);
@@ -168,46 +168,54 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Floating Astra button — hidden when Forge is active (Forge has its own) */}
-      {!isAstraPage && !forgeActive && (
-        <Link
-          href="/dashboard/astra"
+      {/* Floating Astra FAB — hidden when Forge is active or widget is open */}
+      {!isAstraPage && !forgeActive && !astraWidgetOpen && (
+        <button
+          onClick={() => setAstraWidgetOpen(true)}
           aria-label="Open Astra AI Assistant"
           className="fixed bottom-7 right-7 z-[100] flex items-center justify-center transition-all duration-200 ease-out hover:scale-[1.08] active:scale-95"
           style={{
             width: 56,
             height: 56,
             borderRadius: 18,
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(80px) saturate(1.6)",
-            WebkitBackdropFilter: "blur(80px) saturate(1.6)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow:
-              "0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(24px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
           <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
             <path
               d="M 0 -10 L 0 3"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
             <path
               d="M 0 3 L 10 10"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
             <path
               d="M 0 3 L -10 10"
-              stroke="white"
+              stroke="#0F172A"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
-            <circle cx="0" cy="3" r="2.5" fill="white" />
+            <circle cx="0" cy="3" r="2.5" fill="#0F172A" />
           </svg>
-        </Link>
+        </button>
+      )}
+
+      {/* Astra Chat Widget */}
+      {!forgeActive && (
+        <AstraWidget
+          isOpen={astraWidgetOpen}
+          onClose={() => setAstraWidgetOpen(false)}
+          sidebarMargin={contentMargin}
+        />
       )}
     </div>
   );
