@@ -487,6 +487,11 @@ export default function Sidebar({
     : isCollapsed && isLg && !isHovered;
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
 
+  // Notify layout when effective collapsed state changes (including hover)
+  useEffect(() => {
+    onCollapsedChange?.(collapsed);
+  }, [collapsed, onCollapsedChange]);
+
   // Broadcast sidebar width so Forge overlays (BlockPalette) can follow
   useEffect(() => {
     if (forgeMode) {
