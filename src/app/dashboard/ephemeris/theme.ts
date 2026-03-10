@@ -95,7 +95,7 @@ export function useForgeTheme(): ForgeColors {
   return FORGE;
 }
 
-// ─── Liquid Glass Design Tokens ─────────────────────────────────────────────
+// ─── Glassmorphism Design Tokens ────────────────────────────────────────────
 
 export const GLASS = {
   bg: "rgba(255,255,255,0.72)",

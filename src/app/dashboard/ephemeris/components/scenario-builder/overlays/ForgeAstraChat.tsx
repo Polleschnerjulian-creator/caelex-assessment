@@ -1,9 +1,42 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Zap, Minus, X, Send } from "lucide-react";
+import { Minus, X, Send } from "lucide-react";
 import { useAstra } from "@/components/astra/AstraProvider";
-import { GLASS } from "../../../theme";
+
+// ─── Caelex Logo (Cube Corner + Dot) ────────────────────────────────────────
+
+function CaelexLogo({ size = 28 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="-14 -14 28 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M 0 -10 L 0 3"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 0 3 L 10 10"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 0 3 L -10 10"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle cx="0" cy="3" r="2.5" fill="white" />
+    </svg>
+  );
+}
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -15,10 +48,50 @@ interface ForgeAstraChatProps {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const CHAT_WIDTH = 380;
-const CHAT_HEIGHT = 500;
-const EDGE_GAP = 24;
-const BUTTON_SIZE = 48;
-const BUTTON_GAP = 8;
+const CHAT_HEIGHT = 520;
+const EDGE_GAP = 28;
+const BUTTON_SIZE = 56;
+const BUTTON_GAP = 12;
+
+// ─── Caelex Dark Palette ────────────────────────────────────────────────────
+
+const C = {
+  bg: "#111114",
+  bgElevated: "#18181B",
+  bgSurface: "#1C1C1E",
+  border: "rgba(255,255,255,0.08)",
+  borderMedium: "rgba(255,255,255,0.12)",
+  borderStrong: "rgba(255,255,255,0.15)",
+  textPrimary: "rgba(255,255,255,0.9)",
+  textSecondary: "rgba(255,255,255,0.4)",
+  textMuted: "rgba(255,255,255,0.2)",
+  userBubble: "rgba(255,255,255,0.1)",
+  userBubbleBorder: "rgba(255,255,255,0.12)",
+  assistantBubble: "rgba(255,255,255,0.04)",
+  assistantBubbleBorder: "rgba(255,255,255,0.06)",
+  sendActive: "rgba(255,255,255,0.85)",
+  sendInactive: "rgba(255,255,255,0.04)",
+  inputBg: "rgba(255,255,255,0.04)",
+  inputBorder: "rgba(255,255,255,0.08)",
+  inputFocus: "rgba(255,255,255,0.2)",
+  caret: "rgba(255,255,255,0.6)",
+  scrollbar: "rgba(255,255,255,0.08)",
+} as const;
+
+// ─── Glassmorphism Styles ───────────────────────────────────────────────────
+
+const glassWindow: React.CSSProperties = {
+  background: C.bg,
+  backdropFilter: "blur(80px) saturate(1.6)",
+  WebkitBackdropFilter: "blur(80px) saturate(1.6)",
+  border: `1px solid ${C.border}`,
+  borderRadius: 20,
+  boxShadow: [
+    "0 40px 80px rgba(0,0,0,0.5)",
+    "0 16px 32px rgba(0,0,0,0.3)",
+    "inset 0 0 0 0.5px rgba(255,255,255,0.08)",
+  ].join(", "),
+};
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -29,6 +102,7 @@ export default function ForgeAstraChat({
   const { messages, sendMessage, isTyping, resetChat } = useAstra();
   const [minimized, setMinimized] = useState(false);
   const [input, setInput] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(
     null,
@@ -108,7 +182,7 @@ export default function ForgeAstraChat({
 
   if (!isOpen) return null;
 
-  // Minimized pill — bottom-right near the Astra button
+  // Minimized pill
   if (minimized) {
     return (
       <button
@@ -117,29 +191,30 @@ export default function ForgeAstraChat({
           position: "fixed",
           right: EDGE_GAP,
           bottom: EDGE_GAP + BUTTON_SIZE + BUTTON_GAP,
-          zIndex: 55,
+          zIndex: 99,
           display: "flex",
           alignItems: "center",
           gap: 6,
           padding: "8px 16px",
-          background: "rgba(255,255,255,0.75)",
-          backdropFilter: `blur(${GLASS.blur}px)`,
-          WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-          border: "1px solid rgba(255,255,255,0.8)",
+          background: C.bgElevated,
+          backdropFilter: "blur(80px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(80px) saturate(1.6)",
+          border: `1px solid ${C.border}`,
           borderRadius: 20,
           boxShadow:
-            "0 4px 12px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08)",
+            "0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
           cursor: "pointer",
-          fontFamily: "'IBM Plex Mono', monospace",
+          fontFamily:
+            "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif",
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: "0.04em",
-          color: "#0F172A",
-          animation: "forgeAstraChatOpen 200ms ease-out",
+          color: C.textPrimary,
+          animation: "astraChatOpen 200ms cubic-bezier(0.16, 1, 0.3, 1)",
           transformOrigin: "bottom right",
         }}
       >
-        ASTRA <Zap size={12} />
+        ASTRA <CaelexLogo size={14} />
       </button>
     );
   }
@@ -151,22 +226,32 @@ export default function ForgeAstraChat({
         position: "fixed",
         left: position.x,
         top: position.y,
-        zIndex: 55,
+        zIndex: 99,
         width: CHAT_WIDTH,
         height: CHAT_HEIGHT,
         display: "flex",
         flexDirection: "column",
-        background: "rgba(255,255,255,0.75)",
-        backdropFilter: `blur(${GLASS.blur}px)`,
-        WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-        border: "1px solid rgba(255,255,255,0.8)",
-        borderRadius: 20,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08)",
         overflow: "hidden",
-        animation: "forgeAstraChatOpen 250ms ease-out",
+        animation: "astraChatOpen 250ms cubic-bezier(0.16, 1, 0.3, 1)",
         transformOrigin: "bottom right",
+        ...glassWindow,
       }}
     >
+      {/* Top refraction highlight */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 1,
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
+          borderRadius: "20px 20px 0 0",
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Header — draggable */}
       <div
         onMouseDown={handleMouseDown}
@@ -175,21 +260,34 @@ export default function ForgeAstraChat({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: `1px solid ${C.border}`,
           cursor: "grab",
           userSelect: "none",
           flexShrink: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Zap size={14} color="#2563EB" />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.06)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CaelexLogo size={18} />
+          </div>
           <span
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11,
+              fontFamily:
+                "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif",
+              fontSize: 12,
               fontWeight: 700,
               letterSpacing: "0.06em",
-              color: "#0F172A",
+              color: C.textPrimary,
             }}
           >
             ASTRA
@@ -211,6 +309,7 @@ export default function ForgeAstraChat({
 
       {/* Messages */}
       <div
+        className="astra-messages-scroll"
         style={{
           flex: 1,
           overflowY: "auto",
@@ -225,12 +324,31 @@ export default function ForgeAstraChat({
             style={{
               textAlign: "center",
               padding: "40px 16px",
-              color: "#94A3B8",
+              color: C.textSecondary,
               fontSize: 12,
             }}
           >
-            <Zap size={20} color="#2563EB" style={{ margin: "0 auto 8px" }} />
-            <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                background: "rgba(255,255,255,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 10px",
+              }}
+            >
+              <CaelexLogo size={22} />
+            </div>
+            <div
+              style={{
+                fontWeight: 600,
+                color: C.textPrimary,
+                marginBottom: 4,
+              }}
+            >
               Astra AI Assistant
             </div>
             <div>Ask about compliance, regulations, or this scenario.</div>
@@ -243,6 +361,7 @@ export default function ForgeAstraChat({
               display: "flex",
               flexDirection: "column",
               alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+              animation: "astraMsgFadeIn 200ms ease-out",
             }}
           >
             <div
@@ -254,12 +373,15 @@ export default function ForgeAstraChat({
                     ? "12px 12px 4px 12px"
                     : "12px 12px 12px 4px",
                 background:
-                  msg.role === "user" ? "#2563EB" : "rgba(255,255,255,0.6)",
-                color: msg.role === "user" ? "#fff" : "#0F172A",
+                  msg.role === "user" ? C.userBubble : C.assistantBubble,
+                color: C.textPrimary,
                 fontSize: 12,
                 lineHeight: 1.5,
-                border:
-                  msg.role === "user" ? "none" : "1px solid rgba(0,0,0,0.06)",
+                border: `1px solid ${
+                  msg.role === "user"
+                    ? C.userBubbleBorder
+                    : C.assistantBubbleBorder
+                }`,
                 wordBreak: "break-word",
               }}
             >
@@ -272,24 +394,54 @@ export default function ForgeAstraChat({
             style={{
               padding: "8px 12px",
               borderRadius: "12px 12px 12px 4px",
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(0,0,0,0.06)",
+              background: C.assistantBubble,
+              border: `1px solid ${C.assistantBubbleBorder}`,
               fontSize: 12,
-              color: "#94A3B8",
+              color: C.textSecondary,
               maxWidth: "85%",
+              display: "flex",
+              gap: 4,
+              alignItems: "center",
             }}
           >
-            Thinking...
+            <span
+              className="astra-typing-dot"
+              style={{ animationDelay: "0ms" }}
+            />
+            <span
+              className="astra-typing-dot"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="astra-typing-dot"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
         )}
         <div ref={messagesEndRef} />
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          padding: "6px 16px",
+          textAlign: "center",
+          fontSize: 10,
+          color: C.textMuted,
+          borderTop: `1px solid ${C.border}`,
+          fontFamily:
+            "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif",
+          letterSpacing: "0.02em",
+        }}
+      >
+        Powered by ASTRA · Caelex
       </div>
 
       {/* Input */}
       <div
         style={{
           padding: "10px 12px",
-          borderTop: "1px solid rgba(0,0,0,0.06)",
+          borderTop: `1px solid ${C.border}`,
           display: "flex",
           alignItems: "center",
           gap: 8,
@@ -301,17 +453,23 @@ export default function ForgeAstraChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setInputFocused(true)}
+          onBlur={() => setInputFocused(false)}
           placeholder="Ask about regulations..."
           disabled={isTyping}
           style={{
             flex: 1,
-            border: "1px solid rgba(0,0,0,0.08)",
+            border: `1px solid ${inputFocused ? C.inputFocus : C.inputBorder}`,
             borderRadius: 10,
             padding: "8px 12px",
             fontSize: 12,
-            background: "rgba(255,255,255,0.5)",
-            color: "#0F172A",
+            background: C.inputBg,
+            color: C.textPrimary,
+            caretColor: C.caret,
             outline: "none",
+            transition: "border-color 150ms ease",
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif",
           }}
         />
         <button
@@ -322,19 +480,49 @@ export default function ForgeAstraChat({
             height: 32,
             borderRadius: 10,
             border: "none",
-            background: input.trim() ? "#2563EB" : "rgba(0,0,0,0.06)",
-            color: input.trim() ? "#fff" : "#94A3B8",
+            background: input.trim() ? C.sendActive : C.sendInactive,
+            color: input.trim() ? "#000" : C.textMuted,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: input.trim() ? "pointer" : "default",
             flexShrink: 0,
-            transition: "background 150ms ease",
+            transition: "background 150ms ease, color 150ms ease",
           }}
         >
           <Send size={14} />
         </button>
       </div>
+
+      {/* Scoped CSS */}
+      <style>{`
+        .astra-messages-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .astra-messages-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .astra-messages-scroll::-webkit-scrollbar-thumb {
+          background: ${C.scrollbar};
+          border-radius: 2px;
+        }
+        @keyframes astraMsgFadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .astra-typing-dot {
+          display: inline-block;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: ${C.textSecondary};
+          animation: astraTypingBounce 1s ease-in-out infinite;
+        }
+        @keyframes astraTypingBounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-4px); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -345,9 +533,10 @@ const headerBtnStyle: React.CSSProperties = {
   borderRadius: 6,
   border: "none",
   background: "transparent",
-  color: "#64748B",
+  color: "rgba(255,255,255,0.4)",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  transition: "color 150ms ease",
 };

@@ -15,7 +15,7 @@ import {
   LanguageProvider,
   useLanguage,
 } from "@/components/providers/LanguageProvider";
-import { Zap } from "lucide-react";
+// Caelex cube-corner logo (inline SVG for FAB)
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard": "sidebar.dashboard",
@@ -173,21 +173,40 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <Link
           href="/dashboard/astra"
           aria-label="Open Astra AI Assistant"
-          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-200 ease-out hover:scale-105 active:scale-95 group"
+          className="fixed bottom-7 right-7 z-[100] flex items-center justify-center transition-all duration-200 ease-out hover:scale-[1.08] active:scale-95"
           style={{
-            background: "var(--astra-fab-bg, rgba(255,255,255,0.7))",
-            backdropFilter: "blur(24px) saturate(1.6)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.6)",
-            border: "1px solid var(--astra-fab-border, rgba(255,255,255,0.6))",
+            width: 56,
+            height: 56,
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(80px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(80px) saturate(1.6)",
+            border: "1px solid rgba(255,255,255,0.08)",
             boxShadow:
-              "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.7)",
+              "0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
           }}
         >
-          <Zap
-            size={22}
-            strokeWidth={1.8}
-            className="text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors duration-200"
-          />
+          <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
+            <path
+              d="M 0 -10 L 0 3"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 0 3 L 10 10"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 0 3 L -10 10"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <circle cx="0" cy="3" r="2.5" fill="white" />
+          </svg>
         </Link>
       )}
     </div>

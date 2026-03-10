@@ -1,8 +1,8 @@
 "use client";
 
-// ─── EphemerisForge — Inline Canvas with Liquid Glass UI ────────────────────
+// ─── EphemerisForge — Inline Canvas with Glassmorphism UI ───────────────────
 // Renders inline within the dashboard layout (width/height: 100%). All UI
-// overlays float over the ReactFlow canvas using the Liquid Glass design system.
+// overlays float over the ReactFlow canvas using the glassmorphism design system.
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -16,7 +16,6 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { Zap } from "lucide-react";
 import { useForgeTheme, GLASS } from "../../theme";
 import { useForgeGraph } from "./useForgeGraph";
 import { useForgeComputation } from "./useForgeComputation";
@@ -229,7 +228,7 @@ function EphemerisForgeInner({
     setShowMinimap((prev) => !prev);
   }, []);
 
-  // ─── Render — Inline Liquid Glass ───────────────────────────────────────
+  // ─── Render — Inline Glassmorphism ─────────────────────────────────────
 
   return (
     <div
@@ -318,25 +317,26 @@ function EphemerisForgeInner({
       {/* Comparison Bar */}
       <ComparisonBar nodes={graph.nodes} edges={graph.edges} />
 
-      {/* Floating Astra Glass Button */}
+      {/* Floating Astra Button */}
       {!showAstra && (
         <button
           onClick={() => setShowAstra(true)}
           title="Open Astra AI"
+          className="astra-fab-pulse"
           style={{
             position: "fixed",
-            bottom: 24,
-            right: 24,
-            zIndex: 50,
-            width: 48,
-            height: 48,
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,0.8)",
-            background: "rgba(255,255,255,0.75)",
-            backdropFilter: `blur(${GLASS.blur}px)`,
-            WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
+            bottom: 28,
+            right: 28,
+            zIndex: 100,
+            width: 56,
+            height: 56,
+            borderRadius: 18,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(80px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(80px) saturate(1.6)",
             boxShadow:
-              "0 4px 12px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+              "0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -344,13 +344,33 @@ function EphemerisForgeInner({
             transition: "transform 200ms ease, box-shadow 200ms ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.05)";
+            e.currentTarget.style.transform = "scale(1.08)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
-          <Zap size={20} strokeWidth={1.8} color="#0F172A" />
+          <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
+            <path
+              d="M 0 -10 L 0 3"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 0 3 L 10 10"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 0 3 L -10 10"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <circle cx="0" cy="3" r="2.5" fill="white" />
+          </svg>
         </button>
       )}
 
@@ -381,10 +401,17 @@ function EphemerisForgeInner({
         .forge-node-delete { opacity: 0; }
         *:hover > .forge-node-delete { opacity: 1; }
 
-        @keyframes forgeAstraChatOpen {
-          0% { opacity: 0; transform: scale(0.9) translateY(8px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes astraChatOpen {
+          0% { opacity: 0; transform: scale(0.4); filter: blur(8px); }
+          70% { opacity: 1; transform: scale(1.02); filter: blur(0); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0); }
         }
+
+        @keyframes astraFabPulse {
+          0%, 100% { box-shadow: 0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08), 0 0 0 0 rgba(255,255,255,0); }
+          50% { box-shadow: 0 16px 32px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(255,255,255,0.08), 0 0 0 8px rgba(255,255,255,0.04); }
+        }
+        .astra-fab-pulse { animation: astraFabPulse 3s ease-in-out infinite; }
       `}</style>
     </div>
   );
