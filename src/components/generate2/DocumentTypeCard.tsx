@@ -29,8 +29,8 @@ export function DocumentTypeCard({
       onClick={onClick}
       className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 group ${
         isSelected
-          ? "bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/20"
-          : "bg-dark-card/50 border-dark-border/50 hover:bg-dark-card hover:border-dark-border"
+          ? "glass-elevated glass-accent"
+          : "glass-surface glass-interactive border-[var(--glass-border-subtle)]"
       }`}
     >
       <div className="flex items-center gap-2.5">
@@ -58,7 +58,7 @@ export function DocumentTypeCard({
           </div>
           <p
             className={`text-sm truncate mt-0.5 ${
-              isSelected ? "text-white font-medium" : "text-slate-300"
+              isSelected ? "text-slate-100 font-medium" : "text-slate-300"
             }`}
           >
             {meta.shortTitle}

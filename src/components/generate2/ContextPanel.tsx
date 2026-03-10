@@ -13,8 +13,10 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
   if (!meta) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
-        <BookOpen size={32} className="text-slate-700 mb-3" />
-        <p className="text-sm text-slate-600">
+        <div className="w-12 h-12 rounded-xl glass-elevated flex items-center justify-center mb-3">
+          <BookOpen size={20} className="text-slate-500" />
+        </div>
+        <p className="text-sm text-slate-500">
           Select a document to view context
         </p>
       </div>
@@ -33,10 +35,10 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-dark-border">
+      <div className="px-4 py-3 border-b border-[var(--glass-border-subtle)]">
         <div className="flex items-center gap-2">
           <BookOpen size={16} className="text-emerald-400" />
-          <h2 className="text-sm font-semibold text-white">Context</h2>
+          <h2 className="text-sm font-semibold text-slate-200">Context</h2>
         </div>
       </div>
 
@@ -46,7 +48,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             EU Space Act References
           </h3>
-          <div className="bg-dark-card border border-dark-border rounded-lg p-3">
+          <div className="glass-elevated border border-[var(--glass-border-subtle)] rounded-lg p-3">
             <p className="text-sm text-slate-300">{meta.articleRef}</p>
             <p className="text-xs text-slate-500 mt-1">
               {meta.category === "debris"

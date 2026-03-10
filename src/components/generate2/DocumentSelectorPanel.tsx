@@ -34,10 +34,12 @@ export function DocumentSelectorPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-dark-border">
+      <div className="px-4 py-3 border-b border-[var(--glass-border-subtle)]">
         <div className="flex items-center gap-2">
           <FileText size={16} className="text-emerald-400" />
-          <h2 className="text-sm font-semibold text-white">NCA Documents</h2>
+          <h2 className="text-sm font-semibold text-slate-200">
+            NCA Documents
+          </h2>
         </div>
         <p className="text-xs text-slate-500 mt-1">
           {completedDocs.size}/{NCA_DOCUMENT_TYPES.length} documents generated
@@ -50,7 +52,7 @@ export function DocumentSelectorPanel({
           <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
             Category A — Debris Mitigation
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {debrisDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -69,7 +71,7 @@ export function DocumentSelectorPanel({
           <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
             Category B — Cybersecurity
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {cyberDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -88,7 +90,7 @@ export function DocumentSelectorPanel({
           <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
             Category C — General Compliance
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {generalDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
@@ -104,7 +106,7 @@ export function DocumentSelectorPanel({
       </div>
 
       {/* Generate Full Package button */}
-      <div className="px-3 py-3 border-t border-dark-border">
+      <div className="px-3 py-3 border-t border-[var(--glass-border-subtle)]">
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}

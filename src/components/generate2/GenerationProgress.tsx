@@ -52,7 +52,7 @@ export function GenerationProgress({
         >
           {/* ASTRA avatar */}
           <div className="relative">
-            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl glass-elevated border border-emerald-500/20 flex items-center justify-center">
               <Zap size={24} className="text-emerald-400" />
             </div>
             <motion.div
@@ -64,10 +64,10 @@ export function GenerationProgress({
 
           {/* Title */}
           <div className="text-center">
-            <h3 className="text-lg font-medium text-white">
+            <h3 className="text-lg font-medium text-slate-100">
               ASTRA is generating your document
             </h3>
-            <p className="text-sm text-white/45 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               {phase === "init"
                 ? "Preparing assessment data..."
                 : phase === "finalizing"
@@ -131,14 +131,14 @@ export function GenerationProgress({
           {/* Overall progress bar */}
           <div className="w-full">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-caption text-white/30">
+              <span className="text-caption text-slate-500">
                 Overall Progress
               </span>
               <span className="text-caption font-medium text-emerald-400">
                 {progress}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+            <div className="h-1.5 rounded-full glass-surface overflow-hidden">
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 animate={{ width: `${progress}%` }}
@@ -176,9 +176,9 @@ function PhaseRow({
       transition={{ duration: 0.25 }}
       className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
         isActive
-          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
+          ? "glass-elevated glass-accent"
           : isCompleted
-            ? "bg-emerald-500/[0.03]"
+            ? "glass-surface"
             : ""
       }`}
     >
@@ -200,7 +200,7 @@ function PhaseRow({
             <Loader2 size={18} className="text-emerald-400" />
           </motion.div>
         ) : (
-          <Icon size={18} className="text-white/25" />
+          <Icon size={18} className="text-slate-600" />
         )}
       </div>
 
@@ -211,8 +211,8 @@ function PhaseRow({
             isActive
               ? "text-emerald-400"
               : isCompleted
-                ? "text-white/45"
-                : "text-white/25"
+                ? "text-slate-400"
+                : "text-slate-600"
           }`}
         >
           {title}
@@ -223,7 +223,7 @@ function PhaseRow({
               initial={false}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-white/45 mt-0.5"
+              className="text-xs text-slate-500 mt-0.5"
             >
               {subtitle}
             </motion.p>

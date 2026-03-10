@@ -56,11 +56,13 @@ export function DocumentPreviewPanel({
   if (panelState === "empty" || !selectedType || !meta) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-8">
-        <FileText size={48} className="text-slate-700 mb-4" />
-        <h3 className="text-lg font-medium text-slate-400">
+        <div className="w-16 h-16 rounded-2xl glass-elevated flex items-center justify-center mb-5">
+          <FileText size={28} className="text-slate-500" />
+        </div>
+        <h3 className="text-lg font-medium text-slate-300">
           Select a document type
         </h3>
-        <p className="text-sm text-slate-600 mt-2 max-w-md">
+        <p className="text-sm text-slate-500 mt-2 max-w-md">
           Choose an NCA document from the left panel to preview its readiness
           and generate submission-ready content.
         </p>
@@ -72,7 +74,7 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col h-full">
         <div className="px-6 pt-6 pb-2">
-          <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
+          <h3 className="text-lg font-semibold text-slate-100">{meta.title}</h3>
           <p className="text-sm text-slate-400 mt-1">{meta.articleRef}</p>
         </div>
         <div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -92,20 +94,22 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-dark-border flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--glass-border-subtle)] flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
+            <h3 className="text-lg font-semibold text-slate-100">
+              {meta.title}
+            </h3>
             <p className="text-sm text-slate-400">{meta.articleRef}</p>
           </div>
           <div className="flex items-center gap-2">
             {actionRequiredCount > 0 && (
-              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <AlertTriangle size={12} />
                 {actionRequiredCount} Action Required
               </span>
             )}
             {evidencePlaceholderCount > 0 && (
-              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <BookOpen size={12} />
                 {evidencePlaceholderCount} Evidence
               </span>
@@ -124,7 +128,7 @@ export function DocumentPreviewPanel({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {documentContent.map((section, idx) => (
             <div key={idx} className="mb-8">
-              <h4 className="text-base font-semibold text-white mb-3 pb-2 border-b border-dark-border">
+              <h4 className="text-base font-semibold text-slate-100 mb-3 pb-2 border-b border-[var(--glass-border-subtle)]">
                 {section.title}
               </h4>
               <div className="space-y-2">
@@ -136,7 +140,7 @@ export function DocumentPreviewPanel({
                       return (
                         <p
                           key={blockIdx}
-                          className="text-sm text-amber-300 bg-amber-500/10 px-3 py-2 rounded border border-amber-500/20"
+                          className="text-sm text-amber-300 bg-amber-500/10 px-3 py-2 rounded-lg border border-amber-500/20"
                         >
                           {text}
                         </p>
@@ -146,7 +150,7 @@ export function DocumentPreviewPanel({
                       return (
                         <p
                           key={blockIdx}
-                          className="text-sm text-emerald-300 bg-emerald-500/10 px-3 py-2 rounded border border-emerald-500/20"
+                          className="text-sm text-emerald-300 bg-emerald-500/10 px-3 py-2 rounded-lg border border-emerald-500/20"
                         >
                           {text}
                         </p>
@@ -191,15 +195,15 @@ export function DocumentPreviewPanel({
                     return (
                       <div
                         key={blockIdx}
-                        className="overflow-x-auto rounded-lg border border-dark-border my-2"
+                        className="overflow-x-auto rounded-lg border border-[var(--glass-border-subtle)] my-2 glass-surface"
                       >
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-dark-card">
+                            <tr className="glass-elevated">
                               {block.headers.map((h, i) => (
                                 <th
                                   key={i}
-                                  className="px-3 py-2 text-left text-slate-400 font-medium border-b border-dark-border"
+                                  className="px-3 py-2 text-left text-slate-400 font-medium border-b border-[var(--glass-border-subtle)]"
                                 >
                                   {h}
                                 </th>
@@ -210,7 +214,7 @@ export function DocumentPreviewPanel({
                             {block.rows.map((row, rowIdx) => (
                               <tr
                                 key={rowIdx}
-                                className="border-b border-dark-border/50"
+                                className="border-b border-[var(--glass-border-subtle)]"
                               >
                                 {row.map((cell, cellIdx) => (
                                   <td
@@ -251,7 +255,7 @@ export function DocumentPreviewPanel({
                     return (
                       <div
                         key={blockIdx}
-                        className={`text-sm px-3 py-2 rounded border ${alertColors[block.severity]}`}
+                        className={`text-sm px-3 py-2 rounded-lg border ${alertColors[block.severity]}`}
                       >
                         {block.message}
                       </div>
@@ -259,7 +263,10 @@ export function DocumentPreviewPanel({
                   }
                   if (block.type === "divider") {
                     return (
-                      <hr key={blockIdx} className="border-dark-border my-3" />
+                      <hr
+                        key={blockIdx}
+                        className="border-[var(--glass-border-subtle)] my-3"
+                      />
                     );
                   }
                   return null;
@@ -276,7 +283,7 @@ export function DocumentPreviewPanel({
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
+        <h3 className="text-lg font-semibold text-slate-100">{meta.title}</h3>
         <p className="text-sm text-slate-400 mt-1">{meta.description}</p>
         <p className="text-xs text-slate-500 mt-1">
           {meta.articleRef} | {meta.estimatedSections} sections
@@ -285,11 +292,11 @@ export function DocumentPreviewPanel({
 
       {/* Readiness card */}
       {readiness && (
-        <div className="bg-dark-card border border-dark-border rounded-xl p-4 mb-6">
+        <div className="glass-elevated border border-[var(--glass-border-medium)] rounded-xl p-4 mb-6">
           <div className="flex items-center gap-4">
             <ReadinessRing score={readiness.score} size={56} strokeWidth={4} />
             <div>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-slate-200">
                 Data Readiness:{" "}
                 <span
                   className={
