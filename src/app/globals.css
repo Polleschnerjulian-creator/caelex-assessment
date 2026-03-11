@@ -720,6 +720,21 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 .caelex-v2 {
   color-scheme: dark;
 
+  /* ─── Caelex Design Tokens (dark) ─── */
+  --cx-bg-base: #0b0f1a;
+  --cx-bg-surface: #111827;
+  --cx-bg-elevated: #1f2937;
+  --cx-bg-recessed: rgba(255, 255, 255, 0.04);
+  --cx-bg-hover: rgba(255, 255, 255, 0.04);
+  --cx-text-primary: #f9fafb;
+  --cx-text-secondary: #9ca3af;
+  --cx-text-tertiary: #4b5563;
+  --cx-border-default: rgba(255, 255, 255, 0.08);
+  --cx-border-subtle: rgba(255, 255, 255, 0.04);
+  --cx-success: #22c55e;
+  --cx-warning: #f59e0b;
+  --cx-danger: #ef4444;
+
   /* ─── Background Surfaces (5-tier elevation) ─── */
   --bg-base: #0a0a0f;
   --bg-surface-1: #111118;
@@ -1255,6 +1270,21 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 
 .light .caelex-v2 {
   color-scheme: light;
+
+  /* ─── Caelex Design Tokens ─── */
+  --cx-bg-base: #ffffff;
+  --cx-bg-surface: #f8f9fa;
+  --cx-bg-elevated: #ffffff;
+  --cx-bg-recessed: #f1f3f5;
+  --cx-bg-hover: #f1f3f5;
+  --cx-text-primary: #1a1a1a;
+  --cx-text-secondary: #6b7280;
+  --cx-text-tertiary: #9ca3af;
+  --cx-border-default: rgba(0, 0, 0, 0.08);
+  --cx-border-subtle: rgba(0, 0, 0, 0.04);
+  --cx-success: #22c55e;
+  --cx-warning: #f59e0b;
+  --cx-danger: #ef4444;
 
   /* ─── Background Surfaces ─── */
   --bg-base: #ecedf1;

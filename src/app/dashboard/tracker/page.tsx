@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -195,95 +195,122 @@ const STATUS_CONFIG: Record<
 > = {
   not_started: {
     label: "Not Started",
-    color: "text-slate-400 dark:text-slate-500",
+    color: "text-[#9CA3AF]",
   },
-  in_progress: { label: "In Progress", color: "text-amber-500" },
+  in_progress: { label: "In Progress", color: "text-[#F59E0B]" },
   under_review: { label: "Under Review", color: "text-blue-500" },
-  compliant: { label: "Compliant", color: "text-emerald-500" },
-  not_applicable: { label: "N/A", color: "text-slate-400 dark:text-slate-600" },
+  compliant: { label: "Compliant", color: "text-[#22C55E]" },
+  not_applicable: { label: "N/A", color: "text-[#9CA3AF]" },
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  CRITICAL: "text-red-500",
-  HIGH: "text-amber-500",
-  MEDIUM: "text-slate-500",
-  LOW: "text-slate-400",
-  CONDITIONAL: "text-emerald-500",
+  CRITICAL: "text-[#EF4444]",
+  HIGH: "text-[#F59E0B]",
+  MEDIUM: "text-[#6B7280]",
+  LOW: "text-[#9CA3AF]",
+  CONDITIONAL: "text-[#22C55E]",
 };
 
-// ─── Score display ───
+// ─── Color helpers ───
 
-function ScoreValue({
-  score,
-  size = "md",
-}: {
-  score: number | null;
-  size?: "sm" | "md" | "lg";
-}) {
-  if (score == null)
-    return <span className="text-slate-300 dark:text-slate-600">—</span>;
-  const color =
-    score >= 75
-      ? "text-emerald-500"
-      : score >= 50
-        ? "text-amber-500"
-        : score >= 25
-          ? "text-orange-500"
-          : "text-red-500";
-  const sizeClass =
-    size === "lg"
-      ? "text-[48px]"
-      : size === "md"
-        ? "text-[20px]"
-        : "text-[13px]";
+function scoreColor(score: number): string {
+  if (score > 60) return "#22C55E";
+  if (score > 30) return "#F59E0B";
+  return "#EF4444";
+}
+
+function scoreTailwind(score: number): string {
+  if (score > 60) return "text-[#22C55E]";
+  if (score > 30) return "text-[#F59E0B]";
+  return "text-[#EF4444]";
+}
+
+function barTailwind(score: number): string {
+  if (score > 60) return "bg-[#22C55E]";
+  if (score > 30) return "bg-[#F59E0B]";
+  return "bg-[#EF4444]";
+}
+
+// ─── Readiness Ring (Fix #3) ───
+
+function ReadinessRing({ score }: { score: number }) {
+  const size = 80;
+  const strokeWidth = 4;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const color = scoreColor(score);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
   return (
-    <span
-      className={`${color} ${sizeClass} font-semibold tabular-nums tracking-tight`}
-    >
-      {score}
-      <span
-        className={
-          size === "lg"
-            ? "text-[24px]"
-            : size === "md"
-              ? "text-[13px]"
-              : "text-[10px]"
-        }
-      >
-        %
-      </span>
-    </span>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="rgba(0,0,0,0.04)"
+          strokeWidth={strokeWidth}
+          className="dark:stroke-white/[0.06]"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={mounted ? offset : circumference}
+          strokeLinecap="round"
+          style={{
+            transition:
+              "stroke-dashoffset 600ms cubic-bezier(0.4, 0.0, 0.2, 1.0)",
+          }}
+          className="motion-reduce:transition-none"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="text-[20px] font-semibold tabular-nums tracking-tight"
+          style={{ color: "var(--cx-text-primary, #1A1A1A)" }}
+        >
+          {score}%
+        </span>
+      </div>
+    </div>
   );
 }
 
-// ─── Thin progress bar ───
+// ─── Progress Bar (Fix #6) ───
 
-function ProgressBar({
-  value,
-  className = "",
-}: {
-  value: number;
-  className?: string;
-}) {
+function ProgressBar({ value }: { value: number }) {
   return (
     <div
-      className={`h-[3px] rounded-full bg-black/[0.04] dark:bg-white/[0.06] overflow-hidden ${className}`}
+      className="rounded-[2px] overflow-hidden"
+      style={{
+        width: 80,
+        height: 4,
+        background: "rgba(0,0,0,0.04)",
+      }}
     >
       <div
-        className={`h-full rounded-full transition-all duration-700 ${
-          value >= 75
-            ? "bg-emerald-500"
-            : value >= 50
-              ? "bg-amber-500"
-              : value > 0
-                ? "bg-orange-500"
-                : "bg-transparent"
-        }`}
+        className={`h-full rounded-[2px] transition-all duration-700 ${barTailwind(value)}`}
         style={{ width: `${value}%` }}
       />
     </div>
   );
 }
+
+// Table header style constant (Fix #1)
+const thClass = "pb-4 font-medium text-[12px] uppercase tracking-[0.05em]";
+const thColor = { color: "var(--cx-text-tertiary, #9CA3AF)" };
 
 // ─── Main Component ───
 
@@ -471,527 +498,906 @@ export default function TrackerPage() {
   const overallScore = unifiedStatus?.overallScore ?? 0;
   const totalReqs = REGULATIONS.reduce((s, r) => s + r.requirementCount, 0);
 
+  // Footer summary counts
+  const compliantCount = Object.values(unifiedStatus?.regulations ?? {}).filter(
+    (r) => r.hasAssessment && (r.score ?? 0) >= 75,
+  ).length;
+  const inProgressCount = Object.values(
+    unifiedStatus?.regulations ?? {},
+  ).filter(
+    (r) => r.hasAssessment && (r.score ?? 0) >= 1 && (r.score ?? 0) < 75,
+  ).length;
+  const pendingCount = REGULATIONS.length - (unifiedStatus?.assessedCount ?? 0);
+
   // ─── Loading ───
   if (loading) {
     return (
       <div className="h-screen bg-[var(--bg-base,#f8fafc)] dark:bg-[#0B0F1A] flex items-center justify-center">
-        <Loader2 className="w-5 h-5 text-slate-300 dark:text-slate-700 animate-spin" />
+        <Loader2 className="w-5 h-5 text-[#9CA3AF] animate-spin" />
       </div>
     );
   }
 
   // ─── Render ───
   return (
-    <div className="h-screen bg-[var(--bg-base,#f8fafc)] dark:bg-[#0B0F1A] overflow-y-auto">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
-        {/* ═══ Header ═══ */}
-        <header className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 mb-2">
-              Compliance
-            </p>
-            <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight leading-none">
-              Regulatory Tracker
-            </h1>
-          </div>
-          <div className="flex items-baseline gap-6">
-            <div className="text-right">
-              <ScoreValue score={overallScore} size="lg" />
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+    <div
+      className="h-screen overflow-y-auto"
+      style={{
+        background:
+          "radial-gradient(ellipse at 20% 0%, rgba(232,93,58,0.03) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(59,130,246,0.03) 0%, transparent 50%), var(--bg-base, #F8F9FA)",
+      }}
+    >
+      {/* Dark mode override */}
+      <style>{`.dark .tracker-ambient { background: #0B0F1A !important; }`}</style>
+      <div className="tracker-ambient h-full overflow-y-auto">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
+          {/* ═══ Header (Fix #3: Readiness Ring) ═══ */}
+          <header className="flex items-end justify-between mb-10">
+            <div>
+              <p
+                className="text-[11px] font-medium uppercase tracking-[0.2em] mb-2"
+                style={{ color: "var(--cx-text-tertiary, #9CA3AF)" }}
+              >
+                Compliance
+              </p>
+              <h1
+                className="text-[28px] font-semibold tracking-tight leading-none"
+                style={{ color: "var(--cx-text-primary, #1A1A1A)" }}
+              >
+                Regulatory Tracker
+              </h1>
+            </div>
+            <div className="flex flex-col items-center">
+              <ReadinessRing score={overallScore} />
+              <p
+                className="text-[13px] mt-2 text-center"
+                style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+              >
                 {unifiedStatus?.assessedCount ?? 0} of {REGULATIONS.length}{" "}
                 assessed · {totalReqs}+ requirements
               </p>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* ═══ Navigation ═══ */}
-        <nav className="flex items-center gap-1 mb-8 border-b border-black/[0.06] dark:border-white/[0.06] pb-px overflow-x-auto">
-          <button
-            onClick={() => setSelectedRegulation("all")}
-            className={`relative px-4 py-2.5 text-[13px] font-medium transition-colors whitespace-nowrap ${
-              selectedRegulation === "all"
-                ? "text-slate-900 dark:text-white"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-            }`}
+          {/* ═══ Pill Tabs (Fix #4) ═══ */}
+          <nav
+            className="mb-8 overflow-x-auto"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
           >
-            Overview
-            {selectedRegulation === "all" && (
-              <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-slate-900 dark:bg-white rounded-full" />
-            )}
-          </button>
-          {REGULATIONS.map((reg) => {
-            const score = unifiedStatus?.regulations[reg.id]?.score;
-            return (
+            <style>{`nav::-webkit-scrollbar { display: none; }`}</style>
+            <div
+              className="inline-flex items-center gap-[2px] p-[3px] rounded-[6px]"
+              style={{ background: "var(--cx-bg-recessed, #F1F3F5)" }}
+            >
+              {/* Overview tab */}
               <button
-                key={reg.id}
-                onClick={() => setSelectedRegulation(reg.id)}
-                className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors whitespace-nowrap ${
-                  selectedRegulation === reg.id
-                    ? "text-slate-900 dark:text-white"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-                }`}
-              >
-                {reg.abbrev}
-                {score != null && (
-                  <span
-                    className={`text-[11px] tabular-nums ${
-                      score >= 75
-                        ? "text-emerald-500"
-                        : score >= 50
-                          ? "text-amber-500"
-                          : "text-slate-400 dark:text-slate-500"
-                    }`}
-                  >
-                    {score}
-                  </span>
-                )}
-                {selectedRegulation === reg.id && (
-                  <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-slate-900 dark:bg-white rounded-full" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* ═══ Content ═══ */}
-        {selectedRegulation === "all" ? (
-          /* ─── Overview Table ─── */
-          <div>
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 dark:text-slate-500">
-                  <th className="pb-3 pl-0 font-medium">Regulation</th>
-                  <th className="pb-3 font-medium hidden md:table-cell">
-                    Category
-                  </th>
-                  <th className="pb-3 font-medium hidden lg:table-cell">
-                    Reference
-                  </th>
-                  <th className="pb-3 font-medium text-right w-[80px]">
-                    Score
-                  </th>
-                  <th className="pb-3 font-medium hidden sm:table-cell w-[140px]">
-                    Progress
-                  </th>
-                  <th className="pb-3 font-medium text-right w-[60px]">Reqs</th>
-                  <th className="pb-3 font-medium text-right w-[40px]"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                {REGULATIONS.map((reg) => {
-                  const status = unifiedStatus?.regulations[reg.id];
-                  const score = status?.score;
-                  return (
-                    <tr
-                      key={reg.id}
-                      onClick={() => setSelectedRegulation(reg.id)}
-                      className="group cursor-pointer transition-colors hover:bg-black/[0.015] dark:hover:bg-white/[0.02]"
-                    >
-                      <td className="py-4 pr-4">
-                        <p className="text-[14px] font-medium text-slate-800 dark:text-slate-100 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                          {reg.name}
-                        </p>
-                      </td>
-                      <td className="py-4 pr-4 hidden md:table-cell">
-                        <span className="text-[12px] text-slate-400 dark:text-slate-500">
-                          {reg.category}
-                        </span>
-                      </td>
-                      <td className="py-4 pr-4 hidden lg:table-cell">
-                        <span className="text-[12px] text-slate-400 dark:text-slate-600">
-                          {reg.description}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right">
-                        <ScoreValue score={score ?? null} size="sm" />
-                      </td>
-                      <td className="py-4 px-4 hidden sm:table-cell">
-                        {score != null ? (
-                          <ProgressBar value={score} />
-                        ) : (
-                          <span className="text-[11px] text-slate-300 dark:text-slate-700">
-                            not assessed
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 text-right">
-                        <span className="text-[12px] tabular-nums text-slate-400 dark:text-slate-500">
-                          {reg.requirementCount}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right">
-                        <ChevronRight
-                          size={14}
-                          className="text-slate-300 dark:text-slate-700 group-hover:text-slate-400 dark:group-hover:text-slate-500 transition-colors inline-block"
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            {/* Summary row */}
-            <div className="mt-6 pt-6 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
-              <p className="text-[12px] text-slate-400 dark:text-slate-500">
-                {REGULATIONS.length} regulatory frameworks · {totalReqs}+ total
-                requirements
-              </p>
-              <div className="flex items-center gap-6 text-[12px] text-slate-400 dark:text-slate-500">
-                <span>
-                  <span className="text-emerald-500 font-medium">
-                    {
-                      Object.values(unifiedStatus?.regulations ?? {}).filter(
-                        (r) => r.hasAssessment && (r.score ?? 0) >= 75,
-                      ).length
-                    }
-                  </span>{" "}
-                  compliant
-                </span>
-                <span>
-                  <span className="text-amber-500 font-medium">
-                    {
-                      Object.values(unifiedStatus?.regulations ?? {}).filter(
-                        (r) =>
-                          r.hasAssessment &&
-                          (r.score ?? 0) >= 25 &&
-                          (r.score ?? 0) < 75,
-                      ).length
-                    }
-                  </span>{" "}
-                  in progress
-                </span>
-                <span>
-                  <span className="text-slate-500 font-medium">
-                    {REGULATIONS.length - (unifiedStatus?.assessedCount ?? 0)}
-                  </span>{" "}
-                  pending
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : selectedRegulation === "eu-space-act" ? (
-          /* ─── EU Space Act ─── */
-          <div>
-            {/* Sub-header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSelectedRegulation("all")}
-                  className="text-[12px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-                >
-                  Overview
-                </button>
-                <ChevronRight
-                  size={12}
-                  className="text-slate-300 dark:text-slate-700"
-                />
-                <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
-                  EU Space Act
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <ScoreValue
-                  score={
-                    unifiedStatus?.regulations["eu-space-act"]?.score ?? null
-                  }
-                  size="md"
-                />
-              </div>
-            </div>
-
-            {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b border-black/[0.04] dark:border-white/[0.04]">
-              <div className="relative">
-                <Search
-                  size={14}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600"
-                />
-                <input
-                  type="text"
-                  placeholder="Search articles..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="bg-transparent border border-black/[0.06] dark:border-white/[0.06] rounded-lg pl-9 pr-4 py-2 text-[13px] text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 w-[260px] focus:outline-none focus:border-slate-300 dark:focus:border-slate-500 transition-colors"
-                />
-              </div>
-              <select
-                value={moduleFilter}
-                onChange={(e) =>
-                  setModuleFilter(e.target.value as ComplianceModule | "all")
+                onClick={() => setSelectedRegulation("all")}
+                className="px-[14px] py-[6px] text-[13px] font-medium rounded-[4px] whitespace-nowrap transition-all duration-200"
+                style={
+                  selectedRegulation === "all"
+                    ? {
+                        background: "var(--cx-bg-elevated, #FFFFFF)",
+                        color: "var(--cx-text-primary, #1A1A1A)",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                      }
+                    : {
+                        color: "var(--cx-text-secondary, #6B7280)",
+                      }
                 }
-                className="bg-transparent border border-black/[0.06] dark:border-white/[0.06] rounded-lg px-3 py-2 text-[12px] text-slate-600 dark:text-slate-400 focus:outline-none"
               >
-                <option value="all">All Modules</option>
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.shortName}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as ArticleStatusType | "all")
-                }
-                className="bg-transparent border border-black/[0.06] dark:border-white/[0.06] rounded-lg px-3 py-2 text-[12px] text-slate-600 dark:text-slate-400 focus:outline-none"
-              >
-                <option value="all">All Statuses</option>
-                {(Object.keys(STATUS_CONFIG) as ArticleStatusType[]).map(
-                  (s) => (
-                    <option key={s} value={s}>
-                      {STATUS_CONFIG[s].label}
-                    </option>
-                  ),
-                )}
-              </select>
-              <div className="flex-1" />
-              <span className="text-[12px] text-slate-400 dark:text-slate-500 tabular-nums hidden md:block">
-                {filteredArticles.length} articles
-              </span>
-              <div
-                className="flex rounded-lg overflow-hidden border border-black/[0.06] dark:border-white/[0.06]"
-                role="tablist"
-              >
-                <button
-                  role="tab"
-                  aria-selected={euView === "articles"}
-                  onClick={() => setEuView("articles")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                    euView === "articles"
-                      ? "bg-black/[0.04] dark:bg-white/[0.06] text-slate-700 dark:text-white"
-                      : "text-slate-400 dark:text-slate-500"
-                  }`}
-                >
-                  <LayoutList size={13} /> Articles
-                </button>
-                <button
-                  role="tab"
-                  aria-selected={euView === "checklist"}
-                  onClick={() => setEuView("checklist")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                    euView === "checklist"
-                      ? "bg-black/[0.04] dark:bg-white/[0.06] text-slate-700 dark:text-white"
-                      : "text-slate-400 dark:text-slate-500"
-                  }`}
-                >
-                  <CheckSquare size={13} /> Checklist
-                </button>
-              </div>
-              <button
-                onClick={handleExport}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-              >
-                <Download size={13} /> Export
+                Overview
               </button>
-            </div>
 
-            {/* Module bar */}
-            <div className="flex gap-4 mb-6 overflow-x-auto pb-1">
-              {modules.map((mod) => {
-                const p = moduleProgress[mod.id] || { total: 0, compliant: 0 };
-                const pct =
-                  p.total > 0 ? Math.round((p.compliant / p.total) * 100) : 0;
-                const isActive = moduleFilter === mod.id;
+              {/* Regulation tabs */}
+              {REGULATIONS.map((reg) => {
+                const score = unifiedStatus?.regulations[reg.id]?.score;
+                const isActive = selectedRegulation === reg.id;
+                const hasScore = score != null && score > 0;
                 return (
                   <button
-                    key={mod.id}
-                    onClick={() =>
-                      setModuleFilter(moduleFilter === mod.id ? "all" : mod.id)
+                    key={reg.id}
+                    onClick={() => setSelectedRegulation(reg.id)}
+                    className="flex items-center gap-1.5 px-[14px] py-[6px] text-[13px] font-medium rounded-[4px] whitespace-nowrap transition-all duration-200"
+                    style={
+                      isActive
+                        ? {
+                            background: "var(--cx-bg-elevated, #FFFFFF)",
+                            color: "var(--cx-text-primary, #1A1A1A)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                          }
+                        : { color: "var(--cx-text-secondary, #6B7280)" }
                     }
-                    className={`flex-shrink-0 text-center transition-colors ${
-                      isActive ? "opacity-100" : "opacity-50 hover:opacity-75"
-                    }`}
                   >
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
-                      {mod.number}
-                    </p>
-                    <p
-                      className={`text-[16px] font-semibold tabular-nums ${
-                        pct >= 75
-                          ? "text-emerald-500"
-                          : pct > 0
-                            ? "text-slate-700 dark:text-white"
-                            : "text-slate-300 dark:text-slate-700"
-                      }`}
-                    >
-                      {pct}%
-                    </p>
-                    <ProgressBar value={pct} className="w-12 mt-1" />
+                    {reg.abbrev}
+                    {score != null && (
+                      <span
+                        className="text-[11px] font-semibold tabular-nums rounded-full min-w-[18px] text-center"
+                        style={
+                          hasScore && isActive
+                            ? {
+                                background: scoreColor(score),
+                                color: "#FFFFFF",
+                                padding: "1px 6px",
+                              }
+                            : score === 0 || score == null
+                              ? {
+                                  color: "var(--cx-text-tertiary, #9CA3AF)",
+                                  padding: "1px 6px",
+                                }
+                              : {
+                                  background: "var(--cx-bg-recessed, #F1F3F5)",
+                                  color: "var(--cx-text-secondary, #6B7280)",
+                                  padding: "1px 6px",
+                                }
+                        }
+                      >
+                        {score}
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
+          </nav>
 
-            {/* Articles */}
-            {euView === "articles" ? (
-              <div>
-                {Object.entries(groupedArticles).map(
-                  ([group, groupArticles]) => (
-                    <div key={group}>
-                      <button
-                        onClick={() => toggleGroupCollapse(group)}
-                        aria-expanded={!collapsedGroups.has(group)}
-                        className="flex items-center gap-2 w-full text-left py-3 mt-4 mb-1"
-                      >
-                        {collapsedGroups.has(group) ? (
-                          <ChevronRight
-                            size={12}
-                            className="text-slate-400 dark:text-slate-600"
-                          />
-                        ) : (
-                          <ChevronDown
-                            size={12}
-                            className="text-slate-400 dark:text-slate-600"
-                          />
-                        )}
-                        <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">
-                          {group}
-                        </span>
-                        <span className="text-[11px] text-slate-300 dark:text-slate-600 ml-auto tabular-nums">
-                          {groupArticles.length}
-                        </span>
-                      </button>
-                      {!collapsedGroups.has(group) && (
-                        <div className="divide-y divide-black/[0.03] dark:divide-white/[0.03]">
-                          {groupArticles.map((article) => {
-                            const status =
-                              articleStatuses[article.id]?.status ||
-                              "not_started";
-                            const cfg = STATUS_CONFIG[status];
-                            const exp = expandedArticles.has(article.id);
-                            return (
-                              <div key={article.id}>
-                                <button
-                                  onClick={() =>
-                                    toggleArticleExpand(article.id)
-                                  }
-                                  aria-expanded={exp}
-                                  className="w-full py-3 flex items-center gap-4 text-left group/row transition-colors hover:bg-black/[0.01] dark:hover:bg-white/[0.01]"
-                                >
-                                  <div
-                                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                      status === "compliant"
-                                        ? "bg-emerald-500"
-                                        : status === "in_progress"
-                                          ? "bg-amber-500"
-                                          : status === "under_review"
-                                            ? "bg-blue-500"
-                                            : "bg-slate-300 dark:bg-slate-700"
-                                    }`}
-                                  />
-                                  <span className="text-[12px] text-slate-400 dark:text-slate-500 w-[48px] flex-shrink-0 tabular-nums">
-                                    {article.number}
-                                  </span>
-                                  <span className="text-[13px] text-slate-700 dark:text-slate-200 flex-1 truncate">
-                                    {article.title}
-                                  </span>
-                                  <span className="hidden md:inline text-[11px] text-slate-400 dark:text-slate-600">
-                                    {article.moduleLabel}
-                                  </span>
-                                  <span
-                                    className={`text-[11px] font-medium w-[80px] text-right ${cfg.color}`}
-                                  >
-                                    {cfg.label}
-                                  </span>
-                                  <ChevronRight
-                                    size={14}
-                                    className={`text-slate-300 dark:text-slate-700 flex-shrink-0 transition-transform duration-200 ${exp ? "rotate-90" : ""}`}
-                                  />
-                                </button>
-                                {exp && (
-                                  <div className="pb-4 pl-[70px] pr-4">
-                                    <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-3">
-                                      {article.summary}
-                                    </p>
-                                    {article.operatorAction !== "None" && (
-                                      <div className="mb-3 py-2.5 px-3 border-l-2 border-amber-500/40 bg-amber-500/[0.03]">
-                                        <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400 mb-0.5">
-                                          Required Action
-                                        </p>
-                                        <p className="text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                                          {article.operatorAction}
-                                        </p>
-                                      </div>
-                                    )}
-                                    <div className="flex flex-wrap gap-1.5 mb-3">
-                                      {article.appliesTo.map((op) => (
-                                        <span
-                                          key={op}
-                                          className="text-[10px] px-2 py-0.5 rounded text-slate-400 dark:text-slate-500 bg-black/[0.03] dark:bg-white/[0.03]"
-                                        >
-                                          {op}
-                                        </span>
-                                      ))}
-                                    </div>
-                                    {article.exemptions && (
-                                      <p className="text-[12px] text-slate-400 dark:text-slate-500 mb-3 italic">
-                                        {article.exemptions}
-                                      </p>
-                                    )}
-                                    {/* Status selector */}
-                                    <div className="flex flex-wrap gap-1.5 pt-3 border-t border-black/[0.04] dark:border-white/[0.04]">
-                                      {(
-                                        Object.keys(
-                                          STATUS_CONFIG,
-                                        ) as ArticleStatusType[]
-                                      ).map((s) => {
-                                        const sc = STATUS_CONFIG[s];
-                                        return (
-                                          <button
-                                            key={s}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              updateArticleStatus(
-                                                article.id,
-                                                s,
-                                              );
-                                            }}
-                                            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                                              status === s
-                                                ? `${sc.color} bg-black/[0.04] dark:bg-white/[0.06]`
-                                                : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
-                                            }`}
-                                          >
-                                            {sc.label}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ),
-                )}
-                {filteredArticles.length === 0 && (
-                  <div className="py-16 text-center">
-                    <p className="text-[13px] text-slate-400 dark:text-slate-500">
-                      No articles match your filters
-                    </p>
-                    <button
-                      onClick={() => {
-                        setSearch("");
-                        setModuleFilter("all");
-                        setStatusFilter("all");
-                      }}
-                      className="text-[12px] text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 mt-2 underline underline-offset-2"
+          {/* ═══ Content ═══ */}
+          {selectedRegulation === "all" ? (
+            /* ─── Overview Table ─── */
+            <div>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr
+                    style={{
+                      borderBottom: "1px solid rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <th className={`${thClass} text-left pl-0`} style={thColor}>
+                      Regulation
+                    </th>
+                    <th
+                      className={`${thClass} text-left hidden md:table-cell`}
+                      style={thColor}
                     >
-                      Clear filters
-                    </button>
-                  </div>
-                )}
+                      Category
+                    </th>
+                    <th
+                      className={`${thClass} text-left hidden lg:table-cell`}
+                      style={thColor}
+                    >
+                      Reference
+                    </th>
+                    <th
+                      className={`${thClass} text-right w-[70px]`}
+                      style={thColor}
+                    >
+                      Score
+                    </th>
+                    <th
+                      className={`${thClass} hidden sm:table-cell w-[120px]`}
+                      style={thColor}
+                    >
+                      Progress
+                    </th>
+                    <th
+                      className={`${thClass} text-right w-[60px]`}
+                      style={thColor}
+                    >
+                      Reqs
+                    </th>
+                    <th className={`${thClass} w-[32px]`} style={thColor}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {REGULATIONS.map((reg) => {
+                    const status = unifiedStatus?.regulations[reg.id];
+                    const score = status?.score;
+                    const assessed = status?.hasAssessment ?? false;
+
+                    return (
+                      <tr
+                        key={reg.id}
+                        onClick={() => setSelectedRegulation(reg.id)}
+                        className="group cursor-pointer"
+                        style={{
+                          height: 56,
+                          borderBottom: "1px solid rgba(0,0,0,0.08)",
+                          transition:
+                            "background 0.15s ease, opacity 0.15s ease",
+                          opacity: assessed ? 1 : 0.45,
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "var(--cx-bg-hover, #F1F3F5)";
+                          if (!assessed)
+                            (e.currentTarget as HTMLElement).style.opacity =
+                              "0.75";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "";
+                          if (!assessed)
+                            (e.currentTarget as HTMLElement).style.opacity =
+                              "0.45";
+                        }}
+                      >
+                        <td className="pr-4">
+                          <p
+                            className="text-[14px] font-medium transition-colors"
+                            style={{
+                              color: "var(--cx-text-primary, #1A1A1A)",
+                            }}
+                          >
+                            {reg.name}
+                          </p>
+                        </td>
+                        <td className="pr-4 hidden md:table-cell">
+                          {/* Fix #5: Category pill badges */}
+                          <span
+                            className="inline-flex items-center px-[10px] py-[2px] text-[12px] font-medium rounded-full"
+                            style={{
+                              background: "var(--cx-bg-recessed, #F1F3F5)",
+                              color: "var(--cx-text-secondary, #6B7280)",
+                            }}
+                          >
+                            {reg.category}
+                          </span>
+                        </td>
+                        <td className="pr-4 hidden lg:table-cell">
+                          <span
+                            className="text-[12px]"
+                            style={{
+                              color: "var(--cx-text-tertiary, #9CA3AF)",
+                            }}
+                          >
+                            {reg.description}
+                          </span>
+                        </td>
+                        <td className="text-right">
+                          {score != null ? (
+                            <span
+                              className={`text-[13px] font-semibold tabular-nums ${scoreTailwind(score)}`}
+                            >
+                              {score}%
+                            </span>
+                          ) : (
+                            <span
+                              className="text-[13px]"
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            >
+                              —
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 hidden sm:table-cell">
+                          {score != null ? (
+                            <ProgressBar value={score} />
+                          ) : (
+                            <span
+                              className="text-[12px] italic"
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            >
+                              —
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-right">
+                          <span
+                            className="text-[12px] tabular-nums"
+                            style={{
+                              color: "var(--cx-text-secondary, #6B7280)",
+                            }}
+                          >
+                            {reg.requirementCount}
+                          </span>
+                        </td>
+                        <td className="text-right pr-0">
+                          <ChevronRight
+                            size={14}
+                            className="inline-block transition-all duration-150 group-hover:translate-x-[2px]"
+                            style={{
+                              color: "var(--cx-text-tertiary, #9CA3AF)",
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Fix #8: Footer with colored status dots */}
+              <div
+                className="mt-6 pt-6 flex items-center justify-between"
+                style={{
+                  borderTop: "1px solid rgba(0,0,0,0.08)",
+                }}
+              >
+                <p
+                  className="text-[12px]"
+                  style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                >
+                  {REGULATIONS.length} regulatory frameworks · {totalReqs}+
+                  total requirements
+                </p>
+                <div className="flex items-center gap-5 text-[12px]">
+                  <span
+                    className="flex items-center gap-1.5"
+                    style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                  >
+                    <span
+                      className="inline-block rounded-full"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        background: "#22C55E",
+                      }}
+                    />
+                    <span className="font-medium" style={{ color: "#22C55E" }}>
+                      {compliantCount}
+                    </span>{" "}
+                    compliant
+                  </span>
+                  <span
+                    className="flex items-center gap-1.5"
+                    style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                  >
+                    <span
+                      className="inline-block rounded-full"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        background: "#F59E0B",
+                      }}
+                    />
+                    <span className="font-medium" style={{ color: "#F59E0B" }}>
+                      {inProgressCount}
+                    </span>{" "}
+                    in progress
+                  </span>
+                  <span
+                    className="flex items-center gap-1.5"
+                    style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                  >
+                    <span
+                      className="inline-block rounded-full"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        background: "#9CA3AF",
+                      }}
+                    />
+                    <span
+                      className="font-medium"
+                      style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                    >
+                      {pendingCount}
+                    </span>{" "}
+                    pending
+                  </span>
+                </div>
               </div>
-            ) : (
-              /* Checklist */
-              <div className="space-y-8">
-                {(["pre_authorization", "ongoing", "end_of_life"] as const).map(
-                  (phase) => {
+            </div>
+          ) : selectedRegulation === "eu-space-act" ? (
+            /* ─── EU Space Act ─── */
+            <div>
+              {/* Sub-header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedRegulation("all")}
+                    className="text-[12px] hover:underline"
+                    style={{
+                      color: "var(--cx-text-secondary, #6B7280)",
+                    }}
+                  >
+                    Overview
+                  </button>
+                  <ChevronRight
+                    size={12}
+                    style={{ color: "var(--cx-text-tertiary, #9CA3AF)" }}
+                  />
+                  <span
+                    className="text-[12px] font-medium"
+                    style={{
+                      color: "var(--cx-text-primary, #1A1A1A)",
+                    }}
+                  >
+                    EU Space Act
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  {(() => {
+                    const s = unifiedStatus?.regulations["eu-space-act"]?.score;
+                    return s != null ? (
+                      <span
+                        className={`text-[20px] font-semibold tabular-nums ${scoreTailwind(s)}`}
+                      >
+                        {s}%
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+
+              {/* Toolbar */}
+              <div
+                className="flex flex-wrap items-center gap-3 mb-6 pb-6"
+                style={{
+                  borderBottom: "1px solid rgba(0,0,0,0.04)",
+                }}
+              >
+                <div className="relative">
+                  <Search
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2"
+                    style={{
+                      color: "var(--cx-text-tertiary, #9CA3AF)",
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search articles..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-transparent rounded-lg pl-9 pr-4 py-2 text-[13px] w-[260px] focus:outline-none transition-colors"
+                    style={{
+                      border: "1px solid rgba(0,0,0,0.06)",
+                      color: "var(--cx-text-primary, #1A1A1A)",
+                    }}
+                  />
+                </div>
+                <select
+                  value={moduleFilter}
+                  onChange={(e) =>
+                    setModuleFilter(e.target.value as ComplianceModule | "all")
+                  }
+                  className="bg-transparent rounded-lg px-3 py-2 text-[12px] focus:outline-none"
+                  style={{
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    color: "var(--cx-text-secondary, #6B7280)",
+                  }}
+                >
+                  <option value="all">All Modules</option>
+                  {modules.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.shortName}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={statusFilter}
+                  onChange={(e) =>
+                    setStatusFilter(e.target.value as ArticleStatusType | "all")
+                  }
+                  className="bg-transparent rounded-lg px-3 py-2 text-[12px] focus:outline-none"
+                  style={{
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    color: "var(--cx-text-secondary, #6B7280)",
+                  }}
+                >
+                  <option value="all">All Statuses</option>
+                  {(Object.keys(STATUS_CONFIG) as ArticleStatusType[]).map(
+                    (s) => (
+                      <option key={s} value={s}>
+                        {STATUS_CONFIG[s].label}
+                      </option>
+                    ),
+                  )}
+                </select>
+                <div className="flex-1" />
+                <span
+                  className="text-[12px] tabular-nums hidden md:block"
+                  style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                >
+                  {filteredArticles.length} articles
+                </span>
+                <div
+                  className="inline-flex items-center gap-[2px] p-[3px] rounded-[6px]"
+                  style={{
+                    background: "var(--cx-bg-recessed, #F1F3F5)",
+                  }}
+                  role="tablist"
+                >
+                  <button
+                    role="tab"
+                    aria-selected={euView === "articles"}
+                    onClick={() => setEuView("articles")}
+                    className="flex items-center gap-1.5 px-[14px] py-[6px] text-[12px] font-medium rounded-[4px] transition-all duration-200"
+                    style={
+                      euView === "articles"
+                        ? {
+                            background: "var(--cx-bg-elevated, #FFFFFF)",
+                            color: "var(--cx-text-primary, #1A1A1A)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                          }
+                        : {
+                            color: "var(--cx-text-secondary, #6B7280)",
+                          }
+                    }
+                  >
+                    <LayoutList size={13} /> Articles
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={euView === "checklist"}
+                    onClick={() => setEuView("checklist")}
+                    className="flex items-center gap-1.5 px-[14px] py-[6px] text-[12px] font-medium rounded-[4px] transition-all duration-200"
+                    style={
+                      euView === "checklist"
+                        ? {
+                            background: "var(--cx-bg-elevated, #FFFFFF)",
+                            color: "var(--cx-text-primary, #1A1A1A)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                          }
+                        : {
+                            color: "var(--cx-text-secondary, #6B7280)",
+                          }
+                    }
+                  >
+                    <CheckSquare size={13} /> Checklist
+                  </button>
+                </div>
+                <button
+                  onClick={handleExport}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] transition-colors hover:opacity-70"
+                  style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                >
+                  <Download size={13} /> Export
+                </button>
+              </div>
+
+              {/* Module bar */}
+              <div className="flex gap-4 mb-6 overflow-x-auto pb-1">
+                {modules.map((mod) => {
+                  const p = moduleProgress[mod.id] || {
+                    total: 0,
+                    compliant: 0,
+                  };
+                  const pct =
+                    p.total > 0 ? Math.round((p.compliant / p.total) * 100) : 0;
+                  const isActive = moduleFilter === mod.id;
+                  return (
+                    <button
+                      key={mod.id}
+                      onClick={() =>
+                        setModuleFilter(
+                          moduleFilter === mod.id ? "all" : mod.id,
+                        )
+                      }
+                      className="flex-shrink-0 text-center transition-opacity"
+                      style={{ opacity: isActive ? 1 : 0.45 }}
+                      onMouseEnter={(e) => {
+                        if (!isActive)
+                          (e.currentTarget as HTMLElement).style.opacity =
+                            "0.75";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive)
+                          (e.currentTarget as HTMLElement).style.opacity =
+                            "0.45";
+                      }}
+                    >
+                      <p
+                        className="text-[10px] font-medium uppercase tracking-wider mb-1"
+                        style={{
+                          color: "var(--cx-text-tertiary, #9CA3AF)",
+                        }}
+                      >
+                        {mod.number}
+                      </p>
+                      <p
+                        className={`text-[16px] font-semibold tabular-nums ${
+                          pct >= 75 ? "text-[#22C55E]" : pct > 0 ? "" : ""
+                        }`}
+                        style={{
+                          color:
+                            pct >= 75
+                              ? "#22C55E"
+                              : pct > 0
+                                ? "var(--cx-text-primary, #1A1A1A)"
+                                : "var(--cx-text-tertiary, #9CA3AF)",
+                        }}
+                      >
+                        {pct}%
+                      </p>
+                      <div
+                        className="mt-1 rounded-[2px] overflow-hidden"
+                        style={{
+                          width: 48,
+                          height: 4,
+                          background: "rgba(0,0,0,0.04)",
+                        }}
+                      >
+                        <div
+                          className={`h-full rounded-[2px] transition-all duration-500 ${pct > 0 ? barTailwind(pct) : ""}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Articles / Checklist */}
+              {euView === "articles" ? (
+                <div>
+                  {Object.entries(groupedArticles).map(
+                    ([group, groupArticles]) => (
+                      <div key={group}>
+                        <button
+                          onClick={() => toggleGroupCollapse(group)}
+                          aria-expanded={!collapsedGroups.has(group)}
+                          className="flex items-center gap-2 w-full text-left py-3 mt-4 mb-1"
+                        >
+                          {collapsedGroups.has(group) ? (
+                            <ChevronRight
+                              size={12}
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            />
+                          ) : (
+                            <ChevronDown
+                              size={12}
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            />
+                          )}
+                          <span
+                            className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                            style={{
+                              color: "var(--cx-text-tertiary, #9CA3AF)",
+                            }}
+                          >
+                            {group}
+                          </span>
+                          <span
+                            className="text-[11px] ml-auto tabular-nums"
+                            style={{
+                              color: "var(--cx-text-tertiary, #9CA3AF)",
+                            }}
+                          >
+                            {groupArticles.length}
+                          </span>
+                        </button>
+                        {!collapsedGroups.has(group) && (
+                          <div>
+                            {groupArticles.map((article) => {
+                              const status =
+                                articleStatuses[article.id]?.status ||
+                                "not_started";
+                              const cfg = STATUS_CONFIG[status];
+                              const exp = expandedArticles.has(article.id);
+                              return (
+                                <div
+                                  key={article.id}
+                                  style={{
+                                    borderBottom: "1px solid rgba(0,0,0,0.04)",
+                                  }}
+                                >
+                                  <button
+                                    onClick={() =>
+                                      toggleArticleExpand(article.id)
+                                    }
+                                    aria-expanded={exp}
+                                    className="w-full py-3 flex items-center gap-4 text-left group/row transition-colors"
+                                    style={{ minHeight: 48 }}
+                                    onMouseEnter={(e) => {
+                                      (
+                                        e.currentTarget as HTMLElement
+                                      ).style.background =
+                                        "var(--cx-bg-hover, #F1F3F5)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      (
+                                        e.currentTarget as HTMLElement
+                                      ).style.background = "";
+                                    }}
+                                  >
+                                    <div
+                                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                      style={{
+                                        background:
+                                          status === "compliant"
+                                            ? "#22C55E"
+                                            : status === "in_progress"
+                                              ? "#F59E0B"
+                                              : status === "under_review"
+                                                ? "#3B82F6"
+                                                : "#D1D5DB",
+                                      }}
+                                    />
+                                    <span
+                                      className="text-[12px] w-[48px] flex-shrink-0 tabular-nums"
+                                      style={{
+                                        color:
+                                          "var(--cx-text-secondary, #6B7280)",
+                                      }}
+                                    >
+                                      {article.number}
+                                    </span>
+                                    <span
+                                      className="text-[13px] flex-1 truncate"
+                                      style={{
+                                        color:
+                                          "var(--cx-text-primary, #1A1A1A)",
+                                      }}
+                                    >
+                                      {article.title}
+                                    </span>
+                                    <span
+                                      className="hidden md:inline text-[11px]"
+                                      style={{
+                                        color:
+                                          "var(--cx-text-tertiary, #9CA3AF)",
+                                      }}
+                                    >
+                                      {article.moduleLabel}
+                                    </span>
+                                    <span
+                                      className={`text-[11px] font-medium w-[80px] text-right ${cfg.color}`}
+                                    >
+                                      {cfg.label}
+                                    </span>
+                                    <ChevronRight
+                                      size={14}
+                                      className={`flex-shrink-0 transition-all duration-150 group-hover/row:translate-x-[2px] ${exp ? "rotate-90" : ""}`}
+                                      style={{
+                                        color:
+                                          "var(--cx-text-tertiary, #9CA3AF)",
+                                      }}
+                                    />
+                                  </button>
+                                  {exp && (
+                                    <div className="pb-4 pl-[70px] pr-4">
+                                      <p
+                                        className="text-[13px] leading-relaxed mb-3"
+                                        style={{
+                                          color:
+                                            "var(--cx-text-secondary, #6B7280)",
+                                        }}
+                                      >
+                                        {article.summary}
+                                      </p>
+                                      {article.operatorAction !== "None" && (
+                                        <div
+                                          className="mb-3 py-2.5 px-3"
+                                          style={{
+                                            borderLeft:
+                                              "2px solid rgba(245,158,11,0.4)",
+                                            background: "rgba(245,158,11,0.03)",
+                                          }}
+                                        >
+                                          <p className="text-[11px] font-medium text-[#F59E0B] mb-0.5">
+                                            Required Action
+                                          </p>
+                                          <p
+                                            className="text-[12px] leading-relaxed"
+                                            style={{
+                                              color:
+                                                "var(--cx-text-secondary, #6B7280)",
+                                            }}
+                                          >
+                                            {article.operatorAction}
+                                          </p>
+                                        </div>
+                                      )}
+                                      <div className="flex flex-wrap gap-1.5 mb-3">
+                                        {article.appliesTo.map((op) => (
+                                          <span
+                                            key={op}
+                                            className="text-[10px] px-2 py-0.5 rounded"
+                                            style={{
+                                              background: "rgba(0,0,0,0.03)",
+                                              color:
+                                                "var(--cx-text-tertiary, #9CA3AF)",
+                                            }}
+                                          >
+                                            {op}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      {article.exemptions && (
+                                        <p
+                                          className="text-[12px] italic mb-3"
+                                          style={{
+                                            color:
+                                              "var(--cx-text-tertiary, #9CA3AF)",
+                                          }}
+                                        >
+                                          {article.exemptions}
+                                        </p>
+                                      )}
+                                      <div
+                                        className="flex flex-wrap gap-1.5 pt-3"
+                                        style={{
+                                          borderTop:
+                                            "1px solid rgba(0,0,0,0.04)",
+                                        }}
+                                      >
+                                        {(
+                                          Object.keys(
+                                            STATUS_CONFIG,
+                                          ) as ArticleStatusType[]
+                                        ).map((s) => {
+                                          const sc = STATUS_CONFIG[s];
+                                          return (
+                                            <button
+                                              key={s}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateArticleStatus(
+                                                  article.id,
+                                                  s,
+                                                );
+                                              }}
+                                              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                                                status === s ? sc.color : ""
+                                              }`}
+                                              style={
+                                                status === s
+                                                  ? {
+                                                      background:
+                                                        "rgba(0,0,0,0.04)",
+                                                    }
+                                                  : {
+                                                      color:
+                                                        "var(--cx-text-tertiary, #9CA3AF)",
+                                                    }
+                                              }
+                                            >
+                                              {sc.label}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  )}
+                  {filteredArticles.length === 0 && (
+                    <div className="py-16 text-center">
+                      <p
+                        className="text-[13px]"
+                        style={{
+                          color: "var(--cx-text-secondary, #6B7280)",
+                        }}
+                      >
+                        No articles match your filters
+                      </p>
+                      <button
+                        onClick={() => {
+                          setSearch("");
+                          setModuleFilter("all");
+                          setStatusFilter("all");
+                        }}
+                        className="text-[12px] mt-2 underline underline-offset-2"
+                        style={{
+                          color: "var(--cx-text-secondary, #6B7280)",
+                        }}
+                      >
+                        Clear filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Checklist */
+                <div className="space-y-8">
+                  {(
+                    ["pre_authorization", "ongoing", "end_of_life"] as const
+                  ).map((phase) => {
                     const items = checklistItems.filter(
                       (i) => i.phase === phase,
                     );
@@ -1012,21 +1418,48 @@ export default function TrackerPage() {
                       <div key={phase}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">
+                            <span
+                              className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            >
                               {label}
                             </span>
-                            <span className="text-[11px] text-slate-300 dark:text-slate-600 tabular-nums">
+                            <span
+                              className="text-[11px] tabular-nums"
+                              style={{
+                                color: "var(--cx-text-tertiary, #9CA3AF)",
+                              }}
+                            >
                               {done}/{items.length}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <ProgressBar value={pct} className="w-20" />
-                            <span className="text-[11px] tabular-nums text-slate-400 dark:text-slate-500">
+                            <div
+                              className="rounded-[2px] overflow-hidden"
+                              style={{
+                                width: 80,
+                                height: 4,
+                                background: "rgba(0,0,0,0.04)",
+                              }}
+                            >
+                              <div
+                                className={`h-full rounded-[2px] transition-all duration-500 ${pct > 0 ? barTailwind(pct) : ""}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span
+                              className="text-[11px] tabular-nums"
+                              style={{
+                                color: "var(--cx-text-secondary, #6B7280)",
+                              }}
+                            >
                               {pct}%
                             </span>
                           </div>
                         </div>
-                        <div className="divide-y divide-black/[0.03] dark:divide-white/[0.03]">
+                        <div>
                           {items.map((item) => {
                             const isDone =
                               checklistStatuses[item.id]?.completed || false;
@@ -1034,16 +1467,23 @@ export default function TrackerPage() {
                               <div
                                 key={item.id}
                                 className="py-3 flex items-start gap-3"
+                                style={{
+                                  borderBottom: "1px solid rgba(0,0,0,0.04)",
+                                }}
                               >
                                 <button
                                   onClick={() =>
                                     toggleChecklist(item.id, !isDone)
                                   }
-                                  className={`mt-0.5 w-[18px] h-[18px] rounded border-[1.5px] flex items-center justify-center transition-all flex-shrink-0 ${
-                                    isDone
-                                      ? "bg-emerald-500 border-emerald-500"
-                                      : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
-                                  }`}
+                                  className="mt-0.5 w-[18px] h-[18px] rounded flex items-center justify-center transition-all flex-shrink-0"
+                                  style={{
+                                    border: isDone
+                                      ? "1.5px solid #22C55E"
+                                      : "1.5px solid #D1D5DB",
+                                    background: isDone
+                                      ? "#22C55E"
+                                      : "transparent",
+                                  }}
                                 >
                                   {isDone && (
                                     <Check
@@ -1055,20 +1495,26 @@ export default function TrackerPage() {
                                 </button>
                                 <div className="flex-1 min-w-0">
                                   <p
-                                    className={`text-[13px] leading-relaxed ${
-                                      isDone
-                                        ? "line-through text-slate-400 dark:text-slate-600"
-                                        : "text-slate-700 dark:text-slate-200"
-                                    }`}
+                                    className={`text-[13px] leading-relaxed ${isDone ? "line-through" : ""}`}
+                                    style={{
+                                      color: isDone
+                                        ? "var(--cx-text-tertiary, #9CA3AF)"
+                                        : "var(--cx-text-primary, #1A1A1A)",
+                                    }}
                                   >
                                     {item.requirement}
                                   </p>
-                                  <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-0.5">
+                                  <p
+                                    className="text-[11px] mt-0.5"
+                                    style={{
+                                      color: "var(--cx-text-tertiary, #9CA3AF)",
+                                    }}
+                                  >
                                     {item.articles} · {item.moduleLabel}
                                   </p>
                                 </div>
                                 <span
-                                  className={`text-[10px] font-medium flex-shrink-0 ${PRIORITY_COLORS[item.priority] || "text-slate-400"}`}
+                                  className={`text-[10px] font-medium flex-shrink-0 ${PRIORITY_COLORS[item.priority] || ""}`}
                                 >
                                   {item.priority}
                                 </span>
@@ -1078,103 +1524,156 @@ export default function TrackerPage() {
                         </div>
                       </div>
                     );
-                  },
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* ─── Other Regulation Detail ─── */
-          (() => {
-            const reg = REGULATIONS.find((r) => r.id === selectedRegulation)!;
-            const status = unifiedStatus?.regulations[reg.id];
-            return (
-              <div>
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-3 mb-8">
-                  <button
-                    onClick={() => setSelectedRegulation("all")}
-                    className="text-[12px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-                  >
-                    Overview
-                  </button>
-                  <ChevronRight
-                    size={12}
-                    className="text-slate-300 dark:text-slate-700"
-                  />
-                  <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
-                    {reg.name}
-                  </span>
+                  })}
                 </div>
-
-                {/* Regulation header */}
-                <div className="flex items-start justify-between mb-8">
-                  <div>
-                    <h2 className="text-[22px] font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
-                      {reg.name}
-                    </h2>
-                    <p className="text-[13px] text-slate-400 dark:text-slate-500">
-                      {reg.description} · {reg.requirementCount} requirements
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    {status?.score != null ? (
-                      <ScoreValue score={status.score} size="lg" />
-                    ) : (
-                      <span className="text-[13px] text-slate-400 dark:text-slate-500">
-                        Not assessed
-                      </span>
-                    )}
-                    {status?.lastAssessedAt && (
-                      <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1">
-                        Last assessed{" "}
-                        {new Date(status.lastAssessedAt).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 mb-8">
-                  {reg.assessmentPath && (
-                    <Link
-                      href={reg.assessmentPath}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[13px] font-medium hover:opacity-90 transition-opacity"
+              )}
+            </div>
+          ) : (
+            /* ─── Other Regulation Detail ─── */
+            (() => {
+              const reg = REGULATIONS.find((r) => r.id === selectedRegulation)!;
+              const status = unifiedStatus?.regulations[reg.id];
+              return (
+                <div>
+                  {/* Breadcrumb */}
+                  <div className="flex items-center gap-3 mb-8">
+                    <button
+                      onClick={() => setSelectedRegulation("all")}
+                      className="text-[12px] hover:underline"
+                      style={{
+                        color: "var(--cx-text-secondary, #6B7280)",
+                      }}
                     >
-                      {status?.hasAssessment
-                        ? "Re-run Assessment"
-                        : "Run Assessment"}
-                      <ArrowUpRight size={14} />
-                    </Link>
-                  )}
-                  {reg.modulePath &&
-                    reg.modulePath !== "/dashboard/tracker" && (
-                      <Link
-                        href={reg.modulePath}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-black/[0.08] dark:border-white/[0.08] text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                      Overview
+                    </button>
+                    <ChevronRight
+                      size={12}
+                      style={{
+                        color: "var(--cx-text-tertiary, #9CA3AF)",
+                      }}
+                    />
+                    <span
+                      className="text-[12px] font-medium"
+                      style={{
+                        color: "var(--cx-text-primary, #1A1A1A)",
+                      }}
+                    >
+                      {reg.name}
+                    </span>
+                  </div>
+
+                  {/* Regulation header */}
+                  <div className="flex items-start justify-between mb-8">
+                    <div>
+                      <h2
+                        className="text-[22px] font-semibold tracking-tight mb-1"
+                        style={{
+                          color: "var(--cx-text-primary, #1A1A1A)",
+                        }}
                       >
-                        View Module
+                        {reg.name}
+                      </h2>
+                      <p
+                        className="text-[13px]"
+                        style={{
+                          color: "var(--cx-text-secondary, #6B7280)",
+                        }}
+                      >
+                        {reg.description} · {reg.requirementCount} requirements
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {status?.score != null ? (
+                        <ReadinessRing score={status.score} />
+                      ) : (
+                        <span
+                          className="text-[13px]"
+                          style={{
+                            color: "var(--cx-text-tertiary, #9CA3AF)",
+                          }}
+                        >
+                          Not assessed
+                        </span>
+                      )}
+                      {status?.lastAssessedAt && (
+                        <p
+                          className="text-[11px] mt-1"
+                          style={{
+                            color: "var(--cx-text-tertiary, #9CA3AF)",
+                          }}
+                        >
+                          Last assessed{" "}
+                          {new Date(status.lastAssessedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 mb-8">
+                    {reg.assessmentPath && (
+                      <Link
+                        href={reg.assessmentPath}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] text-[13px] font-medium hover:opacity-90 transition-opacity"
+                        style={{
+                          background: "var(--cx-text-primary, #1A1A1A)",
+                          color: "#FFFFFF",
+                        }}
+                      >
+                        {status?.hasAssessment
+                          ? "Re-run Assessment"
+                          : "Run Assessment"}
                         <ArrowUpRight size={14} />
                       </Link>
                     )}
-                </div>
-
-                {/* Empty state */}
-                {!status?.hasAssessment && (
-                  <div className="py-20 text-center border border-dashed border-black/[0.06] dark:border-white/[0.06] rounded-lg">
-                    <p className="text-[14px] text-slate-500 dark:text-slate-400 mb-1">
-                      No assessment data yet
-                    </p>
-                    <p className="text-[12px] text-slate-400 dark:text-slate-600">
-                      Run the assessment to evaluate compliance against{" "}
-                      {reg.requirementCount} requirements
-                    </p>
+                    {reg.modulePath &&
+                      reg.modulePath !== "/dashboard/tracker" && (
+                        <Link
+                          href={reg.modulePath}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] text-[13px] font-medium transition-colors hover:opacity-80"
+                          style={{
+                            border: "1px solid rgba(0,0,0,0.08)",
+                            color: "var(--cx-text-secondary, #6B7280)",
+                          }}
+                        >
+                          View Module
+                          <ArrowUpRight size={14} />
+                        </Link>
+                      )}
                   </div>
-                )}
-              </div>
-            );
-          })()
-        )}
+
+                  {/* Empty state */}
+                  {!status?.hasAssessment && (
+                    <div
+                      className="py-20 text-center rounded-[6px]"
+                      style={{
+                        border: "1px dashed rgba(0,0,0,0.08)",
+                      }}
+                    >
+                      <p
+                        className="text-[14px] mb-1"
+                        style={{
+                          color: "var(--cx-text-secondary, #6B7280)",
+                        }}
+                      >
+                        No assessment data yet
+                      </p>
+                      <p
+                        className="text-[12px]"
+                        style={{
+                          color: "var(--cx-text-tertiary, #9CA3AF)",
+                        }}
+                      >
+                        Run the assessment to evaluate compliance against{" "}
+                        {reg.requirementCount} requirements
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
+          )}
+        </div>
       </div>
     </div>
   );
