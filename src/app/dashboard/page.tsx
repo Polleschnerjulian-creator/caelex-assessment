@@ -26,12 +26,19 @@ import {
   FileUp,
   FileBarChart,
   CalendarDays,
+  Shield,
+  Globe,
+  Satellite,
+  Activity,
+  ArrowUpRight,
+  Sparkles,
+  Target,
+  Bell,
 } from "lucide-react";
 import { articles } from "@/data/articles";
 import { modules } from "@/data/modules";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import GlassCard from "@/components/ui/GlassCard";
 
 // Dynamic imports for chart components (to avoid SSR issues with Recharts)
 const ComplianceDonutChart = dynamic(
@@ -59,16 +66,7 @@ const ComplianceScoreCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="rounded-2xl p-6 animate-pulse">
-        <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-full bg-[var(--surface-sunken)]" />
-          <div className="flex-1 space-y-3">
-            <div className="h-4 bg-[var(--surface-sunken)] rounded w-32" />
-            <div className="h-8 bg-[var(--surface-sunken)] rounded w-20" />
-            <div className="h-3 bg-[var(--surface-sunken)] rounded w-48" />
-          </div>
-        </div>
-      </div>
+      <div className="animate-pulse rounded-2xl h-32 bg-white/10" />
     ),
   },
 );
@@ -99,17 +97,6 @@ interface Deadline {
 }
 
 // ─── Constants ───
-
-const moduleRoutes: Record<string, string> = {
-  authorization: "/dashboard/modules/authorization",
-  registration: "/dashboard/modules/registration",
-  environmental: "/dashboard/modules/environmental",
-  cybersecurity: "/dashboard/modules/cybersecurity",
-  debris: "/dashboard/modules/debris",
-  insurance: "/dashboard/modules/insurance",
-  supervision: "/dashboard/modules/supervision",
-  regulatory: "/dashboard/modules/supervision",
-};
 
 const CHART_COLORS = {
   emerald: "#10B981",
@@ -241,254 +228,269 @@ const DEMO_RISK_HEATMAP = [
   { module: "Regist", risk: "medium" },
 ];
 
+// ─── Glass Panel Styles ───
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
+
+const glassPanelDark: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.04)",
+  backdropFilter: "blur(40px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(40px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+  overflow: "hidden",
+};
+
 // ─── Helper Components ───
 
 function ChartSkeleton() {
   return (
-    <div className="h-[280px] w-full flex items-center justify-center">
-      <Loader2 className="w-6 h-6 text-[var(--text-disabled)] animate-spin" />
+    <div className="h-[240px] w-full flex items-center justify-center">
+      <Loader2 className="w-5 h-5 text-slate-400 dark:text-slate-600 animate-spin" />
     </div>
   );
 }
 
-// Border-top colors for each KPI card position
-const KPI_TOP_COLORS = [
-  "rgba(74, 98, 232, 0.4)", // Compliance Score — accent blue
-  "rgba(90, 173, 255, 0.4)", // Articles — info blue
-  "rgba(167, 139, 250, 0.4)", // Documents — purple
-  "rgba(245, 166, 35, 0.4)", // Days — warning amber
-];
+function GlassPanel({
+  children,
+  className = "",
+  style,
+  animate = true,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  animate?: boolean;
+  delay?: number;
+}) {
+  const [isDark, setIsDark] = useState(false);
 
-function KPICard({
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const panelStyle = isDark ? glassPanelDark : glassPanel;
+
+  if (!animate) {
+    return (
+      <div className={className} style={{ ...panelStyle, ...style }}>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        delay: 0.05 + delay * 0.06,
+        duration: 0.5,
+        ease: [0.22, 0.61, 0.36, 1],
+      }}
+      className={className}
+      style={{ ...panelStyle, ...style }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function KPIMetric({
   value,
   label,
   trend,
   trendValue,
-  sparklineData,
-  sparklineColor,
+  icon: Icon,
+  sparkData,
+  sparkColor,
   delay = 0,
 }: {
   value: string | number;
   label: string;
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
-  sparklineData?: number[];
-  sparklineColor?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  sparkData?: number[];
+  sparkColor?: string;
   delay?: number;
 }) {
   const TrendIcon =
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
   const trendColor =
     trend === "up"
-      ? "text-[var(--status-success)]"
+      ? "text-emerald-500"
       : trend === "down"
-        ? "text-[var(--status-danger)]"
-        : "text-[var(--text-tertiary)]";
+        ? "text-red-400"
+        : "text-slate-400 dark:text-slate-500";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        delay: 0.1 + delay * 0.07,
-        duration: 0.5,
-        ease: [0.22, 0.61, 0.36, 1],
-      }}
-      className="
-        relative overflow-hidden rounded-[var(--radius-lg)] p-6
-        glass-elevated
-        hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)]
-        transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]
-        group
-      "
-      style={{
-        borderTopColor: KPI_TOP_COLORS[delay] || KPI_TOP_COLORS[0],
-        borderTopWidth: "2px",
-      }}
+    <GlassPanel
+      delay={delay}
+      className="p-5 group hover:-translate-y-0.5 transition-transform duration-300"
     >
-      {/* Label row */}
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
-          {label}
-        </p>
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-8 h-8 rounded-xl bg-white/50 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center">
+          <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        </div>
         {trend && trendValue && (
           <div className={`flex items-center gap-1 ${trendColor}`}>
-            <TrendIcon className="w-3 h-3" aria-hidden="true" />
+            <TrendIcon className="w-3 h-3" />
             <span className="text-[11px] font-medium">{trendValue}</span>
-            <span className="sr-only">
-              Trend:{" "}
-              {trend === "up"
-                ? "increasing"
-                : trend === "down"
-                  ? "decreasing"
-                  : "stable"}
-            </span>
           </div>
         )}
       </div>
-
-      {/* Hero number */}
-      <p className="text-[48px] font-semibold text-[var(--text-primary)] leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)]">
+      <p className="text-[32px] font-semibold text-slate-900 dark:text-white leading-none tracking-tight mb-1">
         {value}
       </p>
-
-      {/* Sparkline */}
-      {sparklineData && sparklineData.length > 0 && (
-        <div className="mt-4">
+      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {label}
+      </p>
+      {sparkData && sparkData.length > 0 && (
+        <div className="mt-3">
           <Sparkline
-            data={sparklineData}
-            color={sparklineColor || CHART_COLORS.emerald}
-            height={28}
+            data={sparkData}
+            color={sparkColor || CHART_COLORS.emerald}
+            height={24}
           />
         </div>
       )}
-    </motion.div>
+    </GlassPanel>
   );
 }
 
-function SectionHeader({
-  title,
-  action,
-}: {
-  title: string;
-  action?: React.ReactNode;
-}) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em]">
-        {title}
-      </h2>
-      {action}
-    </div>
+    <h3 className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 tracking-[-0.01em] mb-3">
+      {children}
+    </h3>
   );
 }
 
-function EmptyState({
+function QuickAction({
   icon: Icon,
-  title,
-  description,
-  action,
+  label,
+  href,
+  accent,
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
+  label: string;
+  href: string;
+  accent?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-      <div className="w-12 h-12 rounded-full bg-[var(--bg-surface-3)] flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-[var(--text-tertiary)]" />
+    <Link
+      href={href}
+      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] hover:bg-white/70 dark:hover:bg-white/[0.06] transition-all duration-200 group/qa"
+    >
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{
+          background: accent || "rgba(16, 185, 129, 0.1)",
+          color: accent ? accent.replace("0.1)", "0.8)") : "#10B981",
+        }}
+      >
+        <Icon className="w-4 h-4 text-current" />
       </div>
-      <h3 className="text-[14px] font-medium text-[var(--text-secondary)] mb-1">
-        {title}
-      </h3>
-      <p className="text-[12px] text-[var(--text-tertiary)] mb-4 max-w-[240px]">
-        {description}
-      </p>
-      {action}
-    </div>
+      <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300 group-hover/qa:text-slate-900 dark:group-hover/qa:text-white transition-colors">
+        {label}
+      </span>
+      <ArrowUpRight className="w-3 h-3 text-slate-400 dark:text-slate-500 ml-auto opacity-0 group-hover/qa:opacity-100 transition-opacity" />
+    </Link>
   );
 }
 
-function DeadlineItem({
+function DeadlineRow({
   deadline,
   t,
 }: {
   deadline: Deadline;
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
-  const priorityColors = {
-    critical:
-      "bg-[var(--status-danger-bg)] text-[var(--status-danger)] border-[var(--status-danger-border)]",
-    high: "bg-[var(--status-warning-bg)] text-[var(--status-warning)] border-[var(--status-warning-border)]",
-    medium:
-      "bg-[var(--accent-primary-soft)] text-[var(--accent-300)] border-[rgba(74,98,232,0.15)]",
-    low: "bg-[var(--status-success-bg)] text-[var(--status-success)] border-[var(--status-success-border)]",
-  };
-
   const dotColors = {
-    critical: "bg-[var(--status-danger)]",
-    high: "bg-[var(--status-warning)]",
-    medium: "bg-[var(--accent-400)]",
-    low: "bg-[var(--status-success)]",
+    critical: "bg-red-500",
+    high: "bg-amber-500",
+    medium: "bg-blue-500",
+    low: "bg-emerald-500",
   };
-
   const dueDate = new Date(deadline.dueDate);
-  const today = new Date();
-  const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / 86400000);
+  const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
 
   return (
-    <div className="flex items-center gap-3 py-2.5">
+    <div className="flex items-center gap-3 py-2.5 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0">
       <div
-        aria-hidden="true"
         className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColors[deadline.priority]}`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-[var(--text-secondary)] truncate">
+        <p className="text-[12px] text-slate-700 dark:text-slate-300 truncate">
           {deadline.title}
         </p>
-        <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-          {daysUntil > 0
-            ? t("common.days", { count: daysUntil })
-            : t("common.overdue")}
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+          {daysUntil > 0 ? `${daysUntil} days` : "Overdue"}
         </p>
       </div>
       <span
-        className={`text-[11px] font-medium tracking-[0.04em] px-2 py-0.5 rounded-[var(--radius-xs)] border ${priorityColors[deadline.priority]}`}
+        className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+          deadline.priority === "critical"
+            ? "bg-red-500/10 text-red-500 border border-red-500/20"
+            : deadline.priority === "high"
+              ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+              : deadline.priority === "medium"
+                ? "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+        }`}
       >
-        {t(`common.${deadline.priority}`)}
+        {deadline.priority}
       </span>
     </div>
   );
 }
 
-function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
-  const riskColors = {
-    critical: "bg-[var(--status-danger)]",
-    high: "bg-[rgba(232,84,84,0.5)]",
-    medium: "bg-[rgba(245,166,35,0.5)]",
-    low: "bg-[rgba(61,214,140,0.5)]",
+function RiskCell({ module, risk }: { module: string; risk: string }) {
+  const colors: Record<string, string> = {
+    critical: "bg-red-500",
+    high: "bg-red-500/50",
+    medium: "bg-amber-500/50",
+    low: "bg-emerald-500/50",
   };
-
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center gap-1">
       <div
-        className={`w-10 h-10 rounded-[var(--radius-sm)] ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
+        className={`w-9 h-9 rounded-lg ${colors[risk] || "bg-slate-500/20"} flex items-center justify-center`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-[10px] text-[var(--text-primary)] font-medium">
+        <span className="text-[9px] font-bold text-white">
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-[10px] text-[var(--text-tertiary)]">{module}</span>
-      <span className="sr-only">{risk} risk</span>
+      <span className="text-[9px] text-slate-400 dark:text-slate-500">
+        {module}
+      </span>
     </div>
   );
 }
 
-function QuickActionButton({
-  icon: Icon,
-  label,
-  href,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-[var(--radius-md)] bg-[var(--fill-subtle)] hover:bg-[var(--fill-light)] border border-[var(--separator)] hover:border-[var(--fill-strong)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] group"
-    >
-      <Icon className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--accent-400)] transition-colors duration-[var(--duration-fast)]" />
-      <span className="text-[10px] font-medium tracking-[0.02em] text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors duration-[var(--duration-fast)]">
-        {label}
-      </span>
-    </Link>
-  );
-}
-
-function ActivityItem({
+function ActivityRow({
   activity,
 }: {
   activity: {
@@ -502,36 +504,27 @@ function ActivityItem({
     document: FileText,
     assessment: ClipboardList,
     compliance: CheckCircle,
-    default: BarChart3,
+    default: Activity,
   };
   const Icon = iconMap[activity.entityType] || iconMap.default;
-
-  const timeAgo = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    if (mins < 60) return `${mins}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
-  };
+  const diff = Date.now() - new Date(activity.timestamp).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  const timeAgo =
+    mins < 60 ? `${mins}m` : hours < 24 ? `${hours}h` : `${days}d`;
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-[var(--separator)] last:border-0">
-      <div
-        className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0"
-        aria-hidden="true"
-      >
-        <Icon className="w-4 h-4 text-[var(--text-tertiary)]" />
+    <div className="flex items-center gap-3 py-2 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0">
+      <div className="w-7 h-7 rounded-lg bg-white/50 dark:bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+        <Icon className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-[var(--text-secondary)] truncate">
-          {activity.description || activity.action.replace(/_/g, " ")}
-        </p>
-        <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-          {timeAgo(activity.timestamp)}
-        </p>
-      </div>
+      <p className="flex-1 text-[11px] text-slate-600 dark:text-slate-400 truncate">
+        {activity.description || activity.action.replace(/_/g, " ")}
+      </p>
+      <span className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+        {timeAgo}
+      </span>
     </div>
   );
 }
@@ -563,6 +556,11 @@ function DashboardContent() {
     (new Date("2030-01-01").getTime() - Date.now()) / 86400000,
   );
 
+  // Greeting based on time of day
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {
@@ -572,18 +570,15 @@ function DashboardContent() {
           fetch("/api/documents/dashboard"),
           fetch("/api/audit?limit=10").catch(() => null),
         ]);
-
         if (articlesRes.ok) {
           const data = await articlesRes.json();
           setArticleStatuses(data);
           setHasData(Object.keys(data).length > 0);
         }
-
         if (docsRes.ok) {
           const data = await docsRes.json();
           setDocumentCount(data.stats?.total ?? 0);
         }
-
         if (activityRes?.ok) {
           const data = await activityRes.json();
           setRecentActivity(data.logs || []);
@@ -601,9 +596,7 @@ function DashboardContent() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("caelex-pending-assessment");
-      if (stored) {
-        setPendingAssessment(JSON.parse(stored));
-      }
+      if (stored) setPendingAssessment(JSON.parse(stored));
     } catch {}
   }, []);
 
@@ -641,9 +634,7 @@ function DashboardContent() {
   // Calculate module progress
   const moduleProgress = useMemo(() => {
     const progress: Record<string, { total: number; compliant: number }> = {};
-    for (const mod of modules) {
-      progress[mod.id] = { total: 0, compliant: 0 };
-    }
+    for (const mod of modules) progress[mod.id] = { total: 0, compliant: 0 };
     for (const article of articles) {
       const status = articleStatuses[article.id]?.status;
       if (status && status !== "not_applicable" && progress[article.module]) {
@@ -784,7 +775,7 @@ function DashboardContent() {
     : DEMO_RADAR_DATA;
 
   // Import handlers
-  const handleImport = async () => {
+  const handleImport = useCallback(async () => {
     if (!selectedOperator) return;
     setImporting(true);
     try {
@@ -807,16 +798,16 @@ function DashboardContent() {
     } finally {
       setImporting(false);
     }
-  };
+  }, [selectedOperator]);
 
-  const handleDismissPendingAssessment = () => {
+  const handleDismissPendingAssessment = useCallback(() => {
     try {
       localStorage.removeItem("caelex-pending-assessment");
     } catch {}
     setPendingAssessment(null);
-  };
+  }, []);
 
-  const handleImportFromLocalStorage = async () => {
+  const handleImportFromLocalStorage = useCallback(async () => {
     if (!pendingAssessment) return;
     setImporting(true);
     try {
@@ -844,93 +835,114 @@ function DashboardContent() {
     } finally {
       setImporting(false);
     }
-  };
+  }, [pendingAssessment]);
 
+  // Loading state
   if (loading) {
     return (
-      <div
-        className="min-h-screen"
-        role="status"
-        aria-live="polite"
-        aria-label="Loading dashboard"
-      >
-        <div className="space-y-6 max-w-[1360px]">
-          <div className="h-8 animate-v2-skeleton rounded-[var(--radius-sm)] w-1/3" />
-          <div className="h-4 animate-v2-skeleton rounded-[var(--radius-sm)] w-1/2" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+      <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-4 overflow-hidden">
+        <div className="animate-pulse space-y-4 h-full">
+          <div className="h-10 bg-white/30 dark:bg-white/5 rounded-2xl w-1/3" />
+          <div className="grid grid-cols-4 gap-3">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-36 animate-v2-skeleton rounded-[var(--radius-lg)]"
+                className="h-32 bg-white/30 dark:bg-white/5 rounded-2xl"
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-3 gap-3 flex-1">
+            {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-[340px] animate-v2-skeleton rounded-[var(--radius-lg)]"
+                className="h-64 bg-white/30 dark:bg-white/5 rounded-2xl"
               />
             ))}
           </div>
-          <span className="sr-only">Loading dashboard data...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] overflow-y-auto">
       {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-4 right-4 z-50"
           >
-            <div
-              role="status"
-              className="bg-[var(--accent-success-soft)] border border-[var(--accent-success)] rounded-[var(--v2-radius-md)] px-4 py-3 flex items-center gap-3 shadow-[var(--v2-shadow-md)]"
-            >
-              <CheckCircle
-                className="w-5 h-5 text-[var(--accent-success)]"
-                aria-hidden="true"
-              />
-              <span className="text-body-lg text-[var(--text-primary)] font-medium">
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-xl">
+              <CheckCircle className="w-5 h-5 text-emerald-500" />
+              <span className="text-[13px] text-emerald-600 dark:text-emerald-400 font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
                 onClick={() => setShowSuccessToast(false)}
-                aria-label="Dismiss notification"
-                className="text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
+                className="text-emerald-500 hover:text-emerald-600 ml-2"
               >
-                <X className="w-4 h-4" aria-hidden="true" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-[1360px]">
-        {/* Pending Assessment Banner */}
-        {pendingAssessment && (
+      <div className="p-4 lg:p-5 space-y-4">
+        {/* ─── Header: Greeting + Ambient Status ─── */}
+        <div className="flex items-end justify-between">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-xl p-6"
+            transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
           >
-            <div className="flex items-start gap-4">
-              <ClipboardList
-                className="w-5 h-5 text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
-                aria-hidden="true"
-              />
+            <p className="text-[13px] text-slate-500 dark:text-slate-400 mb-0.5">
+              {greeting}, {firstName}
+            </p>
+            <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight leading-none">
+              {t("dashboard.commandCenter")}
+            </h1>
+          </motion.div>
+
+          {/* Ambient status pills */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="hidden md:flex items-center gap-2"
+          >
+            {!hasData && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                  Demo Mode
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.06]">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                {daysUntilEnforcement}d to enforcement
+              </span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ─── Pending Assessment Banner ─── */}
+        {pendingAssessment && (
+          <GlassPanel delay={0} className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <ClipboardList className="w-5 h-5 text-blue-500" />
+              </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-body-lg font-medium text-[var(--text-primary)] mb-1">
+                <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-body text-[var(--text-secondary)]">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -938,366 +950,300 @@ function DashboardContent() {
                 <button
                   onClick={handleImportFromLocalStorage}
                   disabled={importing}
-                  className="bg-[var(--accent-primary)] text-white text-small font-medium px-4 py-2 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="bg-blue-500 text-white text-[12px] font-medium px-4 py-2 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  {importing ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : null}
+                  {importing && <Loader2 size={12} className="animate-spin" />}
                   {importing
                     ? t("common.importing")
                     : t("dashboard.importAssessment")}
                 </button>
                 <button
                   onClick={handleDismissPendingAssessment}
-                  aria-label="Dismiss assessment notification"
-                  className="text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] p-1"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
                 >
-                  <X size={16} aria-hidden="true" />
+                  <X size={14} />
                 </button>
               </div>
             </div>
-          </motion.div>
+          </GlassPanel>
         )}
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
-          className="mb-10"
-        >
-          <h1 className="text-[32px] font-semibold text-[var(--text-primary)] tracking-[-0.02em] leading-tight mb-1">
-            {t("dashboard.welcomeBack", { name: firstName })}
-          </h1>
-          <p className="text-[14px] text-[var(--text-tertiary)]">
-            {t("dashboard.commandCenter")}
-          </p>
-        </motion.div>
-
-        {/* Compliance Score Card */}
-        <ComplianceScoreCard />
-
-        {/* Demo Mode Banner */}
-        {!hasData && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-[var(--radius-md)] bg-[var(--status-warning-bg)] border border-[var(--status-warning-border)]"
-          >
-            <div className="w-2 h-2 rounded-full bg-[var(--status-warning)] animate-pulse" />
-            <p className="text-[12px] text-[var(--status-warning)]">
-              {t("dashboard.demoMode")}
-            </p>
-            <Link
-              href="/assessment"
-              className="ml-auto text-[12px] text-[var(--status-warning)] hover:text-[var(--text-primary)] underline underline-offset-2 transition-colors duration-[var(--duration-fast)]"
-            >
-              {t("dashboard.startAssessmentLink")}
-            </Link>
-          </motion.div>
-        )}
-
-        {/* ROW 1: KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <KPICard
+        {/* ─── ROW 1: KPI Metrics ─── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <KPIMetric
             value={`${progressPercent}%`}
-            label={t("dashboard.overallCompliance")}
+            label="Compliance Score"
             trend={progressPercent > 0 ? "up" : "neutral"}
             trendValue={progressPercent > 0 ? "+5%" : "—"}
-            sparklineData={
+            icon={Shield}
+            sparkData={
               hasData
                 ? [10, 15, 22, 28, 35, progressPercent]
                 : [10, 18, 28, 35, 42, 48]
             }
-            sparklineColor={CHART_COLORS.green}
+            sparkColor={CHART_COLORS.green}
             delay={0}
           />
-          <KPICard
-            value={hasData ? stats.applicable : "52"}
-            label={t("dashboard.applicableArticles")}
+          <KPIMetric
+            value={hasData ? stats.applicable : 52}
+            label="Tracked Articles"
             trend="neutral"
-            sparklineData={[45, 48, 50, 51, 52, 52]}
-            sparklineColor={CHART_COLORS.emerald}
+            icon={FileText}
+            sparkData={[45, 48, 50, 51, 52, 52]}
+            sparkColor={CHART_COLORS.emerald}
             delay={1}
           />
-          <KPICard
+          <KPIMetric
             value={documentCount}
-            label={t("dashboard.documentsUploaded")}
+            label="Documents"
             trend={documentCount > 0 ? "up" : "neutral"}
             trendValue={documentCount > 0 ? "+3" : "—"}
-            sparklineData={[0, 2, 5, 8, 12, documentCount]}
-            sparklineColor={CHART_COLORS.cyan}
+            icon={FileBarChart}
+            sparkData={[0, 2, 5, 8, 12, documentCount]}
+            sparkColor={CHART_COLORS.cyan}
             delay={2}
           />
-          <KPICard
+          <KPIMetric
             value={daysUntilEnforcement}
-            label={t("dashboard.daysTo2030")}
+            label="Days to 2030"
             trend="down"
-            trendValue={t("dashboard.dailyTrend")}
-            sparklineData={[1500, 1480, 1460, 1440, 1425, daysUntilEnforcement]}
-            sparklineColor={CHART_COLORS.amber}
+            trendValue="-1/day"
+            icon={Clock}
+            sparkData={[1500, 1480, 1460, 1440, 1425, daysUntilEnforcement]}
+            sparkColor={CHART_COLORS.amber}
             delay={3}
           />
         </div>
 
-        {/* No Data CTA */}
+        {/* ─── No Data CTA ─── */}
         {!hasData && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.45,
-              duration: 0.4,
-              ease: [0.22, 0.61, 0.36, 1],
-            }}
-            className="bg-[var(--bg-surface-2)] border border-dashed border-[var(--fill-medium)] rounded-[var(--radius-lg)] p-8 text-center mb-10"
-          >
-            <h2 className="text-[16px] font-semibold text-[var(--text-primary)] mb-2">
+          <GlassPanel delay={4} className="p-6 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-6 h-6 text-blue-500" />
+            </div>
+            <h2 className="text-[15px] font-semibold text-slate-800 dark:text-white mb-1">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-[13px] text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
+            <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="
-                  bg-[var(--accent-500)] text-white font-medium text-[14px] px-6 py-2.5 rounded-[var(--radius-sm)]
-                  shadow-[0_2px_8px_rgba(74,98,232,0.25),0_0_0_1px_rgba(74,98,232,0.3)]
-                  hover:bg-[var(--accent-400)] hover:shadow-[0_4px_12px_rgba(74,98,232,0.35)]
-                  transition-all duration-[var(--duration-fast)] flex items-center gap-2
-                "
+                className="bg-emerald-500 text-white font-medium text-[13px] px-5 py-2.5 rounded-xl hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
               >
-                <PlayCircle size={16} aria-hidden="true" />
+                <PlayCircle size={15} />
                 {t("dashboard.runAssessmentAction")}
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="
-                  border border-[var(--fill-strong)] text-[var(--text-secondary)] font-medium text-[14px] px-6 py-2.5
-                  rounded-[var(--radius-sm)] hover:bg-[var(--fill-light)] hover:border-[var(--fill-heavy)]
-                  transition-all duration-[var(--duration-fast)]
-                "
+                className="border border-black/[0.08] dark:border-white/[0.1] text-slate-600 dark:text-slate-300 font-medium text-[13px] px-5 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.06] transition-all"
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
             </div>
-          </motion.div>
+          </GlassPanel>
         )}
 
-        {/* ROW 2: Compliance Overview + Module Progress */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.complianceOverview")} />
+        {/* ─── Compliance Score Card ─── */}
+        <GlassPanel delay={5}>
+          <ComplianceScoreCard />
+        </GlassPanel>
+
+        {/* ─── ROW 2: Charts — Donut + Module Progress ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <GlassPanel delay={6} className="p-5">
+            <SectionLabel>{t("dashboard.complianceOverview")}</SectionLabel>
             <ComplianceDonutChart
               data={complianceSegments}
               totalScore={hasData ? progressPercent : 48}
               isDemo={!hasData}
             />
-          </GlassCard>
-
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.moduleProgress")} />
+          </GlassPanel>
+          <GlassPanel delay={7} className="p-5">
+            <SectionLabel>{t("dashboard.moduleProgress")}</SectionLabel>
             <ModuleProgressChart data={moduleChartData} isDemo={!hasData} />
-          </GlassCard>
+          </GlassPanel>
         </div>
 
-        {/* ROW 3: Timeline + Radar */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.complianceTimeline")} />
+        {/* ─── ROW 3: Timeline + Radar ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <GlassPanel delay={8} className="p-5">
+            <SectionLabel>{t("dashboard.complianceTimeline")}</SectionLabel>
             <ComplianceTimelineChart
               data={DEMO_TIMELINE_DATA}
               isDemo={!hasData}
             />
-          </GlassCard>
-
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.regulatoryCoverage")} />
+          </GlassPanel>
+          <GlassPanel delay={9} className="p-5">
+            <SectionLabel>{t("dashboard.regulatoryCoverage")}</SectionLabel>
             <RegulatoryRadarChart data={radarData} isDemo={!hasData} />
-          </GlassCard>
+          </GlassPanel>
         </div>
 
-        {/* ROW 4: Recent Activity */}
-        <GlassCard hover={false} className="p-6 mb-10">
-          <SectionHeader
-            title={t("dashboard.recentActivity")}
-            action={
+        {/* ─── ROW 4: Activity + Deadlines + Quick Actions ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Recent Activity */}
+          <GlassPanel delay={10} className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <SectionLabel>{t("dashboard.recentActivity")}</SectionLabel>
               <Link
                 href="/dashboard/audit-center"
-                className="text-[12px] text-[var(--accent-300)] hover:text-[var(--accent-200)] flex items-center gap-1 transition-colors duration-[var(--duration-fast)]"
+                className="text-[11px] text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center gap-0.5"
               >
-                {t("common.viewAll")}{" "}
-                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                All <ChevronRight className="w-3 h-3" />
               </Link>
-            }
-          />
-          {recentActivity.length > 0 ? (
-            <div className="divide-y divide-[var(--separator)]">
-              {recentActivity.slice(0, 5).map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} />
-              ))}
             </div>
-          ) : (
-            <EmptyState
-              icon={BarChart3}
-              title={t("dashboard.noActivityYet")}
-              description={t("dashboard.startAssessment")}
-              action={
-                <Link
-                  href="/assessment"
-                  className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
-                >
-                  {t("dashboard.runAssessmentAction")}
-                </Link>
-              }
-            />
-          )}
-        </GlassCard>
+            {recentActivity.length > 0 ? (
+              <div>
+                {recentActivity.slice(0, 6).map((a) => (
+                  <ActivityRow key={a.id} activity={a} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Activity className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  {t("dashboard.noActivityYet")}
+                </p>
+              </div>
+            )}
+          </GlassPanel>
 
-        {/* ROW 5: Deadlines, Risk Heatmap, Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Upcoming Deadlines */}
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.upcomingDeadlines")} />
-            <div className="space-y-1">
-              {DEMO_DEADLINES.slice(0, 5).map((deadline) => (
-                <DeadlineItem key={deadline.id} deadline={deadline} t={t} />
+          {/* Deadlines + Risk */}
+          <GlassPanel delay={11} className="p-5">
+            <SectionLabel>{t("dashboard.upcomingDeadlines")}</SectionLabel>
+            <div>
+              {DEMO_DEADLINES.slice(0, 4).map((d) => (
+                <DeadlineRow key={d.id} deadline={d} t={t} />
               ))}
             </div>
-          </GlassCard>
 
-          {/* Risk Heatmap */}
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.riskHeatmap")} />
-            <div className="grid grid-cols-4 gap-3 mt-2">
-              {DEMO_RISK_HEATMAP.map((item, i) => (
-                <RiskHeatmapCell
-                  key={i}
-                  module={item.module}
-                  risk={item.risk}
-                />
-              ))}
+            {/* Mini Risk Heatmap */}
+            <div className="mt-4 pt-4 border-t border-black/[0.04] dark:border-white/[0.06]">
+              <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-2.5">
+                Risk Heatmap
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {DEMO_RISK_HEATMAP.map((item, i) => (
+                  <RiskCell key={i} module={item.module} risk={item.risk} />
+                ))}
+              </div>
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[var(--separator)]">
-              {(["critical", "high", "medium", "low"] as const).map(
-                (level, i) => (
-                  <div key={level} className="flex items-center gap-1.5">
-                    <div
-                      aria-hidden="true"
-                      className={`w-2.5 h-2.5 rounded-sm ${
-                        i === 0
-                          ? "bg-[var(--status-danger)]"
-                          : i === 1
-                            ? "bg-[rgba(232,84,84,0.5)]"
-                            : i === 2
-                              ? "bg-[rgba(245,166,35,0.5)]"
-                              : "bg-[rgba(61,214,140,0.5)]"
-                      }`}
-                    />
-                    <span className="text-[10px] text-[var(--text-tertiary)]">
-                      {t(`common.${level}`)}
-                    </span>
-                  </div>
-                ),
-              )}
-            </div>
-          </GlassCard>
+          </GlassPanel>
 
           {/* Quick Actions */}
-          <GlassCard hover={false} className="p-6">
-            <SectionHeader title={t("dashboard.quickActions")} />
-            <div className="grid grid-cols-2 gap-3 mt-1">
-              <QuickActionButton
+          <GlassPanel delay={12} className="p-5">
+            <SectionLabel>{t("dashboard.quickActions")}</SectionLabel>
+            <div className="space-y-2">
+              <QuickAction
                 icon={Zap}
-                label={t("dashboard.runAssessmentAction")}
+                label="Run Assessment"
                 href="/assessment"
+                accent="rgba(16, 185, 129, 0.1)"
               />
-              <QuickActionButton
+              <QuickAction
                 icon={FileUp}
-                label={t("dashboard.uploadDoc")}
+                label="Upload Document"
                 href="/dashboard/documents"
+                accent="rgba(59, 130, 246, 0.1)"
               />
-              <QuickActionButton
+              <QuickAction
                 icon={FileBarChart}
-                label={t("dashboard.generateReport")}
-                href="/dashboard/tracker"
+                label="Generate Report"
+                href="/dashboard/generate"
+                accent="rgba(139, 92, 246, 0.1)"
               />
-              <QuickActionButton
+              <QuickAction
                 icon={CalendarDays}
-                label={t("dashboard.viewTimeline")}
+                label="View Timeline"
                 href="/dashboard/timeline"
+                accent="rgba(245, 158, 11, 0.1)"
+              />
+              <QuickAction
+                icon={Globe}
+                label="Regulatory Feed"
+                href="/dashboard/regulatory-feed"
+                accent="rgba(6, 182, 212, 0.1)"
+              />
+              <QuickAction
+                icon={Target}
+                label="NCA Portal"
+                href="/dashboard/nca-portal"
+                accent="rgba(236, 72, 153, 0.1)"
               />
             </div>
-          </GlassCard>
+          </GlassPanel>
         </div>
 
-        {/* Import Modal */}
-        <AnimatePresence>
-          {showImportModal && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-              onClick={() => setShowImportModal(false)}
-            >
-              <motion.div
-                role="dialog"
-                aria-label={t("dashboard.selectOperatorType")}
-                aria-modal="true"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[var(--bg-surface-4)] border border-[var(--fill-strong)] rounded-[var(--radius-2xl)] p-8 max-w-[400px] w-full shadow-[var(--shadow-xl)]"
-              >
-                <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
-                  {t("dashboard.selectOperatorType")}
-                </h2>
-                <p className="text-body text-[var(--text-secondary)] mb-6">
-                  {t("dashboard.selectOperatorDescription")}
-                </p>
-                <label htmlFor="operator-type-select" className="sr-only">
-                  {t("dashboard.selectOperatorType")}
-                </label>
-                <select
-                  id="operator-type-select"
-                  value={selectedOperator}
-                  onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-[var(--border-focus)]"
-                >
-                  <option value="">
-                    {t("dashboard.selectOperatorPlaceholder")}
-                  </option>
-                  <option value="SCO">{t("dashboard.operatorSCO")}</option>
-                  <option value="LO">{t("dashboard.operatorLO")}</option>
-                  <option value="LSO">{t("dashboard.operatorLSO")}</option>
-                  <option value="TCO">{t("dashboard.operatorTCO")}</option>
-                  <option value="ISOS">{t("dashboard.operatorISOS")}</option>
-                  <option value="PDP">{t("dashboard.operatorPDP")}</option>
-                </select>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-[var(--border-default)] text-[var(--text-secondary)] py-2.5 rounded-lg text-body hover:bg-[var(--surface-sunken)] transition-all"
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleImport}
-                    disabled={!selectedOperator || importing}
-                    className="flex-1 bg-[var(--accent-primary)] text-white py-2.5 rounded-lg font-medium text-body hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50"
-                  >
-                    {importing ? t("common.importing") : t("common.import")}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Bottom spacing */}
+        <div className="h-4" />
       </div>
+
+      {/* ─── Import Modal ─── */}
+      <AnimatePresence>
+        {showImportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            onClick={() => setShowImportModal(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-label={t("dashboard.selectOperatorType")}
+              aria-modal="true"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-[400px] w-full p-6"
+              style={{
+                ...glassPanelDark,
+                background: "rgba(255,255,255,0.85)",
+              }}
+            >
+              <h2 className="text-[17px] font-semibold text-slate-900 mb-1">
+                {t("dashboard.selectOperatorType")}
+              </h2>
+              <p className="text-[12px] text-slate-500 mb-5">
+                {t("dashboard.selectOperatorDescription")}
+              </p>
+              <select
+                value={selectedOperator}
+                onChange={(e) => setSelectedOperator(e.target.value)}
+                className="w-full bg-white/60 border border-black/10 text-slate-900 rounded-xl px-4 py-3 text-[13px] mb-5 focus:outline-none focus:border-blue-500"
+              >
+                <option value="">
+                  {t("dashboard.selectOperatorPlaceholder")}
+                </option>
+                <option value="SCO">{t("dashboard.operatorSCO")}</option>
+                <option value="LO">{t("dashboard.operatorLO")}</option>
+                <option value="LSO">{t("dashboard.operatorLSO")}</option>
+                <option value="TCO">{t("dashboard.operatorTCO")}</option>
+                <option value="ISOS">{t("dashboard.operatorISOS")}</option>
+                <option value="PDP">{t("dashboard.operatorPDP")}</option>
+              </select>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="flex-1 border border-black/10 text-slate-600 py-2.5 rounded-xl text-[13px] hover:bg-white/60 transition-all"
+                >
+                  {t("common.cancel")}
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={!selectedOperator || importing}
+                  className="flex-1 bg-blue-500 text-white py-2.5 rounded-xl font-medium text-[13px] hover:bg-blue-600 transition-all disabled:opacity-50"
+                >
+                  {importing ? t("common.importing") : t("common.import")}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1308,19 +1254,17 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen" role="status" aria-live="polite">
-          <div className="animate-pulse space-y-6 max-w-[1360px]">
-            <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
-            <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+        <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-4">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-white/30 dark:bg-white/5 rounded-2xl w-1/3" />
+            <div className="grid grid-cols-4 gap-3">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-32 bg-[var(--surface-sunken)] rounded-xl"
+                  className="h-32 bg-white/30 dark:bg-white/5 rounded-2xl"
                 />
               ))}
             </div>
-            <span className="sr-only">Loading dashboard...</span>
           </div>
         </div>
       }

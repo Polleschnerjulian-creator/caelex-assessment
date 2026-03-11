@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import Link from "next/link";
 import {
   Code2,
   Copy,
@@ -15,6 +16,8 @@ import {
   Plus,
   X,
   Eye,
+  ArrowLeft,
+  Settings,
 } from "lucide-react";
 
 interface WidgetConfigData {
@@ -58,6 +61,28 @@ const WIDGET_TYPES = [
   },
 ];
 
+// ─── Glass Panel Styles ───
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 16,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+};
+
+const glassPanelDark: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.04)",
+  backdropFilter: "blur(40px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(40px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  borderRadius: 16,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+};
+
 export default function WidgetSettingsPage() {
   const { organization } = useOrganization();
   const { t } = useLanguage();
@@ -70,11 +95,26 @@ export default function WidgetSettingsPage() {
   const [copied, setCopied] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [newDomain, setNewDomain] = useState("");
+  const [isDark, setIsDark] = useState(false);
 
   // Form state
   const [widgetType, setWidgetType] = useState("quick_check");
   const [theme, setTheme] = useState("dark");
   const [domains, setDomains] = useState<string[]>([]);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const panelStyle = isDark ? glassPanelDark : glassPanel;
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -180,254 +220,307 @@ export default function WidgetSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-          {t("widget.title")}
-        </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          {t("widget.subtitle")}
-        </p>
-      </div>
-
-      {/* API Key Section */}
-      {!config ? (
-        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-          <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4">
-            {t("widget.setup")}
-          </h2>
-          <p className="text-sm text-[var(--text-secondary)] mb-6">
-            Create a widget configuration to embed Caelex compliance tools on
-            external websites. This will generate a dedicated widget API key.
-          </p>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        {/* Header area */}
+        <div className="px-8 pt-6 pb-0">
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex items-center gap-1.5 text-[12px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors mb-3"
           >
-            {creating ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Plus size={16} />
-            )}
-            Create Widget Configuration
-          </button>
+            <ArrowLeft size={12} />
+            Back to Settings
+          </Link>
+          <div className="flex items-center gap-2 text-[12px] text-slate-400 dark:text-slate-500 mb-1">
+            <Settings size={12} />
+            <span>/</span>
+            <span className="text-slate-700 dark:text-white font-medium">
+              {t("widget.title")}
+            </span>
+          </div>
+          <h2 className="text-[20px] font-semibold leading-tight text-slate-800 dark:text-white">
+            {t("widget.title")}
+          </h2>
+          <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1">
+            {t("widget.subtitle")}
+          </p>
         </div>
-      ) : (
-        <>
-          {/* New API Key Alert */}
-          {newApiKey && (
-            <div className="bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)] rounded-xl p-4">
-              <p className="text-sm font-medium text-[var(--accent-warning)] mb-2">
-                Widget API Key (save this — it won&apos;t be shown again):
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-[var(--surface-raised)] p-2 rounded border border-[var(--accent-warning)] text-[var(--accent-warning)] font-mono break-all">
-                  {newApiKey}
-                </code>
-                <button
-                  onClick={() => copyToClipboard(newApiKey, "key")}
-                  className="p-2 text-[var(--accent-warning)] hover:text-[var(--accent-warning)]"
-                >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                </button>
-              </div>
-            </div>
-          )}
 
-          {/* Widget Type */}
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Code2 size={20} />
-              {t("widget.widgetType")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {WIDGET_TYPES.map((wt) => (
-                <button
-                  key={wt.value}
-                  onClick={() => setWidgetType(wt.value)}
-                  className={`p-4 rounded-lg border text-left transition-colors ${
-                    widgetType === wt.value
-                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
-                      : "border-[var(--border-default)] hover:border-[var(--border-default)]"
-                  }`}
-                >
-                  <p className="font-medium text-sm text-[var(--text-primary)]">
-                    {wt.label}
-                  </p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">
-                    {wt.description}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Theme */}
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Palette size={20} />
-              {t("widget.theme")}
-            </h2>
-            <div className="flex gap-3">
-              {["dark", "light"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTheme(t)}
-                  className={`px-6 py-3 rounded-lg border text-sm font-medium transition-colors ${
-                    theme === t
-                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                      : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
-                  }`}
-                >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Allowed Domains */}
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Globe size={20} />
-              {t("widget.allowedDomains")}
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-4">
-              Restrict which domains can embed your widget (CORS whitelist).
-              Leave empty to allow all origins.
-            </p>
-            <div className="flex gap-2 mb-3">
-              <input
-                type="url"
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                placeholder="https://example.com"
-                className="flex-1 px-3 py-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
-              />
-              <button
-                onClick={addDomain}
-                className="px-4 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {domains.map((d) => (
-                <div
-                  key={d}
-                  className="flex items-center justify-between px-3 py-2 bg-[var(--surface-sunken)] rounded-lg"
-                >
-                  <span className="text-sm text-[var(--text-secondary)] font-mono">
-                    {d}
-                  </span>
-                  <button
-                    onClick={() => removeDomain(d)}
-                    className="text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              {domains.length === 0 && (
-                <p className="text-xs text-[var(--text-tertiary)] italic">
-                  No domain restrictions — all origins allowed
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {saving && <Loader2 size={16} className="animate-spin" />}
-              {t("widget.save")}
-            </button>
-          </div>
-
-          {/* Embed Code */}
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Code2 size={20} />
-              {t("widget.embedCode")}
-            </h2>
-            <div className="relative">
-              <pre className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-4 text-xs text-[var(--text-secondary)] font-mono overflow-x-auto">
-                {embedCode}
-              </pre>
-              <button
-                onClick={() => copyToClipboard(embedCode, "embed")}
-                className="absolute top-3 right-3 p-1.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
-              >
-                {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Live Preview */}
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Eye size={20} />
-              {t("widget.preview")}
-            </h2>
-            <div className="flex justify-center p-8 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]">
-              <div className="text-center text-sm text-[var(--text-secondary)]">
-                <Code2 size={32} className="mx-auto mb-3 opacity-50" />
-                <p>Widget preview available when running locally.</p>
-                <p className="text-xs mt-1">
-                  The widget renders in Shadow DOM and requires the built JS
-                  file.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Analytics */}
-          {analytics && (
-            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
-              <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <BarChart3 size={20} />
-                {t("widget.analytics")}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {[
-                  { label: "Impressions", value: analytics.impressions },
-                  { label: "Completions", value: analytics.completions },
-                  { label: "CTA Clicks", value: analytics.ctaClicks },
-                  {
-                    label: "Conversion",
-                    value: `${analytics.conversionRate}%`,
-                  },
-                  { label: "CTA Rate", value: `${analytics.ctaRate}%` },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="p-3 bg-[var(--surface-sunken)] rounded-lg text-center"
-                  >
-                    <p className="text-2xl font-semibold text-[var(--text-primary)]">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
-                      {stat.label}
-                    </p>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="max-w-[900px] space-y-5">
+            {!config ? (
+              /* Setup card */
+              <div className="rounded-2xl p-8" style={panelStyle}>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800/5 dark:bg-white/[0.06] flex items-center justify-center">
+                    <Code2
+                      size={18}
+                      className="text-slate-600 dark:text-slate-400"
+                    />
                   </div>
-                ))}
+                  <div className="flex-1">
+                    <h3 className="text-[16px] font-semibold text-slate-800 dark:text-white mb-1">
+                      {t("widget.setup")}
+                    </h3>
+                    <p className="text-[13px] text-slate-500 dark:text-slate-400 mb-5 max-w-[480px]">
+                      Create a widget configuration to embed Caelex compliance
+                      tools on external websites. This will generate a dedicated
+                      widget API key.
+                    </p>
+                    <button
+                      onClick={handleCreate}
+                      disabled={creating}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50"
+                    >
+                      {creating ? (
+                        <Loader2 size={15} className="animate-spin" />
+                      ) : (
+                        <Plus size={15} />
+                      )}
+                      Create Widget Configuration
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            ) : (
+              <>
+                {/* New API Key Alert */}
+                {newApiKey && (
+                  <div className="rounded-2xl p-4 bg-amber-50/80 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+                    <p className="text-[13px] font-medium text-amber-700 dark:text-amber-400 mb-2">
+                      Widget API Key (save this — it won&apos;t be shown again):
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-[12px] bg-black/5 dark:bg-black/30 p-2.5 rounded-xl border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-300 font-mono break-all">
+                        {newApiKey}
+                      </code>
+                      <button
+                        onClick={() => copyToClipboard(newApiKey, "key")}
+                        className="p-2 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+                      >
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Two-column layout for type + theme */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {/* Widget Type */}
+                  <div className="rounded-2xl p-5" style={panelStyle}>
+                    <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                      <Code2 size={14} className="text-slate-400" />
+                      {t("widget.widgetType")}
+                    </h3>
+                    <div className="space-y-2">
+                      {WIDGET_TYPES.map((wt) => (
+                        <button
+                          key={wt.value}
+                          onClick={() => setWidgetType(wt.value)}
+                          className={`w-full p-3 rounded-xl text-left transition-all duration-150 border ${
+                            widgetType === wt.value
+                              ? "bg-white/70 dark:bg-white/[0.06] border-emerald-400/40 dark:border-emerald-500/30 shadow-sm"
+                              : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] hover:bg-white/50 dark:hover:bg-white/[0.04]"
+                          }`}
+                        >
+                          <p className="font-medium text-[13px] text-slate-800 dark:text-white">
+                            {wt.label}
+                          </p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {wt.description}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Theme */}
+                  <div className="rounded-2xl p-5" style={panelStyle}>
+                    <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                      <Palette size={14} className="text-slate-400" />
+                      {t("widget.theme")}
+                    </h3>
+                    <div className="flex gap-2">
+                      {["dark", "light"].map((themeOption) => (
+                        <button
+                          key={themeOption}
+                          onClick={() => setTheme(themeOption)}
+                          className={`flex-1 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-150 border ${
+                            theme === themeOption
+                              ? "bg-white/70 dark:bg-white/[0.06] border-emerald-400/40 dark:border-emerald-500/30 text-slate-800 dark:text-white shadow-sm"
+                              : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/[0.04]"
+                          }`}
+                        >
+                          {themeOption.charAt(0).toUpperCase() +
+                            themeOption.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Save */}
+                    <div className="mt-5 pt-4 border-t border-black/[0.04] dark:border-white/[0.04]">
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50"
+                      >
+                        {saving && (
+                          <Loader2 size={14} className="animate-spin" />
+                        )}
+                        {t("widget.save")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Allowed Domains */}
+                <div className="rounded-2xl p-5" style={panelStyle}>
+                  <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                    <Globe size={14} className="text-slate-400" />
+                    {t("widget.allowedDomains")}
+                  </h3>
+                  <p className="text-[12px] text-slate-400 dark:text-slate-500 mb-4">
+                    Restrict which domains can embed your widget (CORS
+                    whitelist). Leave empty to allow all origins.
+                  </p>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="url"
+                      value={newDomain}
+                      onChange={(e) => setNewDomain(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && addDomain()}
+                      placeholder="https://example.com"
+                      className="flex-1 px-4 py-2.5 bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-[13px] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors"
+                    />
+                    <button
+                      onClick={addDomain}
+                      className="px-4 py-2.5 bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 rounded-xl transition-colors"
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {domains.map((d) => (
+                      <div
+                        key={d}
+                        className="flex items-center justify-between px-3.5 py-2.5 bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] rounded-xl"
+                      >
+                        <span className="text-[12px] text-slate-600 dark:text-slate-400 font-mono">
+                          {d}
+                        </span>
+                        <button
+                          onClick={() => removeDomain(d)}
+                          className="text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    {domains.length === 0 && (
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 italic px-1">
+                        No domain restrictions — all origins allowed
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Embed Code */}
+                <div className="rounded-2xl p-5" style={panelStyle}>
+                  <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                    <Code2 size={14} className="text-slate-400" />
+                    {t("widget.embedCode")}
+                  </h3>
+                  <div className="relative">
+                    <pre className="bg-white/40 dark:bg-black/20 border border-black/[0.04] dark:border-white/[0.06] rounded-xl p-4 text-[12px] text-slate-600 dark:text-slate-400 font-mono overflow-x-auto">
+                      {embedCode}
+                    </pre>
+                    <button
+                      onClick={() => copyToClipboard(embedCode, "embed")}
+                      className="absolute top-3 right-3 p-1.5 bg-white/60 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                    >
+                      {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div className="rounded-2xl p-5" style={panelStyle}>
+                  <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                    <Eye size={14} className="text-slate-400" />
+                    {t("widget.preview")}
+                  </h3>
+                  <div className="flex justify-center p-8 bg-white/30 dark:bg-black/10 rounded-xl border border-black/[0.04] dark:border-white/[0.04]">
+                    <div className="text-center">
+                      <Code2
+                        size={28}
+                        className="mx-auto mb-3 text-slate-300 dark:text-slate-600"
+                      />
+                      <p className="text-[13px] text-slate-500 dark:text-slate-400">
+                        Widget preview available when running locally.
+                      </p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                        The widget renders in Shadow DOM and requires the built
+                        JS file.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Analytics */}
+                {analytics && (
+                  <div className="rounded-2xl p-5" style={panelStyle}>
+                    <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                      <BarChart3 size={14} className="text-slate-400" />
+                      {t("widget.analytics")}
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      {[
+                        {
+                          label: "Impressions",
+                          value: analytics.impressions,
+                        },
+                        {
+                          label: "Completions",
+                          value: analytics.completions,
+                        },
+                        { label: "CTA Clicks", value: analytics.ctaClicks },
+                        {
+                          label: "Conversion",
+                          value: `${analytics.conversionRate}%`,
+                        },
+                        {
+                          label: "CTA Rate",
+                          value: `${analytics.ctaRate}%`,
+                        },
+                      ].map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="p-3.5 bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] rounded-xl text-center"
+                        >
+                          <p className="text-[20px] font-semibold text-slate-800 dark:text-white">
+                            {stat.value}
+                          </p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {stat.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -102,9 +102,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   const isEphemerisPage = pathname.startsWith("/dashboard/ephemeris");
 
+  const isSettingsPage = pathname.startsWith("/dashboard/settings");
+
   const isFullscreenPage =
+    pathname === "/dashboard" ||
     pathname === "/dashboard/generate" ||
     pathname === "/dashboard/mission-control" ||
+    isSettingsPage ||
     isEphemerisPage;
 
   const contentMargin = sidebarCollapsed ? 96 : 284; // sidebar width + 24px gap

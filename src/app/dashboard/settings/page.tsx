@@ -26,6 +26,12 @@ import {
   Fingerprint,
   Trash2,
   Settings,
+  Sparkles,
+  Webhook,
+  Calendar,
+  Puzzle,
+  Download,
+  LockKeyhole,
 } from "lucide-react";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
@@ -34,6 +40,12 @@ import { MfaSetupCard } from "@/components/settings/MfaSetupCard";
 import { PasskeyManagementCard } from "@/components/settings/PasskeyManagementCard";
 import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
 import { LanguageSettingsCard } from "@/components/settings/LanguageSettingsCard";
+import { AstraPreferencesCard } from "@/components/settings/AstraPreferencesCard";
+import { DataExportCard } from "@/components/settings/DataExportCard";
+import { CalendarSyncCard } from "@/components/settings/CalendarSyncCard";
+import { IntegrationsCard } from "@/components/settings/IntegrationsCard";
+import { SsoSettingsCard } from "@/components/settings/SsoSettingsCard";
+import { WebhookSettingsCard } from "@/components/settings/WebhookSettingsCard";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -88,12 +100,18 @@ type SectionId =
   | "notifications"
   | "appearance"
   | "language"
+  | "astra-ai"
   | "api-keys"
   | "widget"
+  | "webhooks"
+  | "calendar"
+  | "integrations"
   | "organization"
+  | "sso"
   | "security"
   | "mfa"
   | "passkeys"
+  | "data-export"
   | "danger";
 
 interface NavItem {
@@ -127,6 +145,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: Languages,
   },
   {
+    id: "astra-ai",
+    label: "Astra AI",
+    labelKey: "settings.astraAi",
+    icon: Sparkles,
+  },
+  {
     id: "api-keys",
     label: "API Keys",
     labelKey: "settings.apiKeys",
@@ -143,10 +167,34 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/settings/widget",
   },
   {
+    id: "webhooks",
+    label: "Webhooks",
+    labelKey: "settings.webhooks",
+    icon: Webhook,
+  },
+  {
+    id: "calendar",
+    label: "Calendar Sync",
+    labelKey: "settings.calendarSync",
+    icon: Calendar,
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    labelKey: "settings.integrations",
+    icon: Puzzle,
+  },
+  {
     id: "organization",
     label: "Organization",
     labelKey: "settings.organization",
     icon: Building2,
+  },
+  {
+    id: "sso",
+    label: "Single Sign-On",
+    labelKey: "settings.sso",
+    icon: LockKeyhole,
   },
   {
     id: "security",
@@ -165,6 +213,12 @@ const NAV_ITEMS: NavItem[] = [
     label: "Passkeys",
     labelKey: "settings.passkeys",
     icon: Fingerprint,
+  },
+  {
+    id: "data-export",
+    label: "Data Export",
+    labelKey: "settings.dataExport",
+    icon: Download,
   },
   {
     id: "danger",
@@ -627,6 +681,18 @@ export default function SettingsPage() {
         return <MfaSetupCard />;
       case "passkeys":
         return <PasskeyManagementCard />;
+      case "astra-ai":
+        return <AstraPreferencesCard />;
+      case "webhooks":
+        return <WebhookSettingsCard />;
+      case "calendar":
+        return <CalendarSyncCard />;
+      case "integrations":
+        return <IntegrationsCard />;
+      case "sso":
+        return <SsoSettingsCard />;
+      case "data-export":
+        return <DataExportCard />;
       case "danger":
         return <DeleteAccountCard />;
       default:
@@ -636,21 +702,119 @@ export default function SettingsPage() {
 
   const currentNav = NAV_ITEMS.find((item) => item.id === activeSection);
 
+  // Group nav items for visual separation
+  const generalItems = NAV_ITEMS.filter((i) =>
+    ["account", "notifications", "appearance", "language", "astra-ai"].includes(
+      i.id,
+    ),
+  );
+  const integrationsItems = NAV_ITEMS.filter((i) =>
+    ["api-keys", "widget", "webhooks", "calendar", "integrations"].includes(
+      i.id,
+    ),
+  );
+  const orgItems = NAV_ITEMS.filter((i) =>
+    ["organization", "sso"].includes(i.id),
+  );
+  const securityItems = NAV_ITEMS.filter((i) =>
+    ["security", "mfa", "passkeys"].includes(i.id),
+  );
+  const dataItems = NAV_ITEMS.filter((i) => ["data-export"].includes(i.id));
+  const dangerItems = NAV_ITEMS.filter((i) => i.isDanger);
+
+  const renderNavItem = (item: NavItem) => {
+    const Icon = item.icon;
+    const label =
+      t(item.labelKey) !== item.labelKey ? t(item.labelKey) : item.label;
+
+    if (item.isLink && item.href) {
+      return (
+        <Link
+          key={item.id}
+          href={item.href}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-150 group hover:bg-white/50 dark:hover:bg-white/[0.04]"
+        >
+          <Icon
+            size={15}
+            className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors shrink-0"
+          />
+          <span className="text-[13px] text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-white transition-colors flex-1">
+            {label}
+          </span>
+          <ChevronRight
+            size={13}
+            className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors"
+          />
+        </Link>
+      );
+    }
+
+    const isActive = activeSection === item.id;
+    return (
+      <button
+        key={item.id}
+        onClick={() => setActiveSection(item.id)}
+        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-150 ${
+          isActive
+            ? item.isDanger
+              ? "bg-red-500/10 dark:bg-red-500/8"
+              : "bg-white/70 dark:bg-white/[0.06] shadow-sm"
+            : "hover:bg-white/50 dark:hover:bg-white/[0.04]"
+        }`}
+      >
+        <Icon
+          size={15}
+          className={`shrink-0 transition-colors ${
+            isActive
+              ? item.isDanger
+                ? "text-red-500"
+                : "text-slate-800 dark:text-white"
+              : "text-slate-400"
+          }`}
+        />
+        <span
+          className={`text-[13px] transition-colors ${
+            isActive
+              ? item.isDanger
+                ? "text-red-600 dark:text-red-400 font-medium"
+                : "text-slate-800 dark:text-white font-medium"
+              : "text-slate-500 dark:text-slate-400"
+          }`}
+        >
+          {label}
+        </span>
+      </button>
+    );
+  };
+
+  const sectionLabel =
+    currentNav &&
+    (t(currentNav.labelKey) !== currentNav.labelKey
+      ? t(currentNav.labelKey)
+      : currentNav.label);
+
   return (
-    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
       {/* ── Left Sidebar ── */}
-      <div className="w-[260px] shrink-0 flex flex-col" style={panelStyle}>
+      <div
+        className="w-[272px] shrink-0 flex flex-col border-r border-black/[0.06] dark:border-white/[0.06]"
+        style={{
+          ...panelStyle,
+          borderRadius: 0,
+          borderRight: "none",
+        }}
+      >
         {/* Header */}
-        <div className="px-4 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-slate-800 dark:bg-white flex items-center justify-center">
-              <Settings size={14} className="text-white dark:text-slate-900" />
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 dark:from-white/10 dark:to-white/5 flex items-center justify-center shadow-sm">
+              <Settings size={15} className="text-white dark:text-white/80" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-slate-800 dark:text-white">
+              <h1 className="text-[14px] font-semibold text-slate-800 dark:text-white leading-tight">
                 {t("settings.accountSettings")}
               </h1>
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                 {t("settings.manageAccount")}
               </p>
             </div>
@@ -658,89 +822,66 @@ export default function SettingsPage() {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-2 py-3">
-          <div className="space-y-0.5">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
+        <div className="flex-1 overflow-y-auto px-3 pb-3">
+          {/* General */}
+          <div className="mb-1">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400/70 dark:text-slate-500/70">
+              General
+            </p>
+            <div className="space-y-0.5">{generalItems.map(renderNavItem)}</div>
+          </div>
 
-              // Link items
-              if (item.isLink && item.href) {
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group bg-transparent hover:bg-white/40 dark:hover:bg-white/[0.04] border border-transparent hover:border-white/40 dark:hover:border-white/[0.06]"
-                  >
-                    <Icon
-                      size={16}
-                      className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors"
-                    />
-                    <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-white transition-colors flex-1">
-                      {t(item.labelKey) !== item.labelKey
-                        ? t(item.labelKey)
-                        : item.label}
-                    </span>
-                    <ChevronRight
-                      size={14}
-                      className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors"
-                    />
-                  </Link>
-                );
-              }
+          {/* Integrations */}
+          <div className="mb-1 mt-2">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400/70 dark:text-slate-500/70">
+              Integrations
+            </p>
+            <div className="space-y-0.5">
+              {integrationsItems.map(renderNavItem)}
+            </div>
+          </div>
 
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-all duration-200 border ${
-                    isActive
-                      ? item.isDanger
-                        ? "bg-red-500/10 dark:bg-red-500/10 border-red-400/30 dark:border-red-500/20 shadow-sm"
-                        : "bg-white/60 dark:bg-white/[0.06] border-emerald-400/40 dark:border-emerald-500/30 shadow-sm"
-                      : "bg-transparent border-transparent hover:bg-white/40 dark:hover:bg-white/[0.04] hover:border-white/40 dark:hover:border-white/[0.06]"
-                  }`}
-                >
-                  <Icon
-                    size={16}
-                    className={
-                      isActive
-                        ? item.isDanger
-                          ? "text-red-500"
-                          : "text-emerald-500"
-                        : "text-slate-400"
-                    }
-                  />
-                  <span
-                    className={`text-sm transition-colors ${
-                      isActive
-                        ? item.isDanger
-                          ? "text-red-600 dark:text-red-400 font-medium"
-                          : "text-slate-800 dark:text-white font-medium"
-                        : "text-slate-600 dark:text-slate-400"
-                    }`}
-                  >
-                    {t(item.labelKey) !== item.labelKey
-                      ? t(item.labelKey)
-                      : item.label}
-                  </span>
-                </button>
-              );
-            })}
+          {/* Organization */}
+          <div className="mb-1 mt-2">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400/70 dark:text-slate-500/70">
+              Organization
+            </p>
+            <div className="space-y-0.5">{orgItems.map(renderNavItem)}</div>
+          </div>
+
+          {/* Security */}
+          <div className="mb-1 mt-2">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400/70 dark:text-slate-500/70">
+              Security
+            </p>
+            <div className="space-y-0.5">
+              {securityItems.map(renderNavItem)}
+            </div>
+          </div>
+
+          {/* Data & Privacy */}
+          <div className="mt-3 pt-3 border-t border-black/[0.04] dark:border-white/[0.04]">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400/70 dark:text-slate-500/70">
+              Data & Privacy
+            </p>
+            <div className="space-y-0.5">
+              {dataItems.map(renderNavItem)}
+              {dangerItems.map(renderNavItem)}
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer — user */}
         <div className="px-4 py-3 border-t border-black/[0.06] dark:border-white/[0.06]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-white/[0.08] flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-400">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-white/[0.08] dark:to-white/[0.04] flex items-center justify-center text-[11px] font-semibold text-slate-600 dark:text-slate-400">
               {session?.user?.name?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+              <p className="text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                 {session?.user?.name || "User"}
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
                 {session?.user?.email || ""}
               </p>
             </div>
@@ -749,31 +890,67 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Main Content ── */}
-      <div className="flex-1 min-w-0 flex flex-col" style={panelStyle}>
-        {/* Content Header */}
-        <div className="px-6 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
-          <div className="flex items-center gap-2">
-            {currentNav && (
-              <currentNav.icon
-                size={16}
-                className={
-                  currentNav.isDanger ? "text-red-500" : "text-emerald-500"
-                }
-              />
-            )}
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-white">
-              {currentNav
-                ? t(currentNav.labelKey) !== currentNav.labelKey
-                  ? t(currentNav.labelKey)
-                  : currentNav.label
-                : ""}
-            </h2>
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        {/* Breadcrumb-style header integrated with content */}
+        <div className="px-8 pt-6 pb-0">
+          <div className="flex items-center gap-2 text-[12px] text-slate-400 dark:text-slate-500 mb-1">
+            <Settings size={12} />
+            <span>/</span>
+            <span
+              className={
+                currentNav?.isDanger
+                  ? "text-red-500 dark:text-red-400 font-medium"
+                  : "text-slate-700 dark:text-white font-medium"
+              }
+            >
+              {sectionLabel}
+            </span>
           </div>
+          <h2
+            className={`text-[20px] font-semibold leading-tight ${
+              currentNav?.isDanger
+                ? "text-red-600 dark:text-red-400"
+                : "text-slate-800 dark:text-white"
+            }`}
+          >
+            {sectionLabel}
+          </h2>
+          <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1">
+            {activeSection === "account" &&
+              "View and update your profile information"}
+            {activeSection === "notifications" &&
+              "Configure how and when you receive alerts"}
+            {activeSection === "appearance" &&
+              "Customize theme and display preferences"}
+            {activeSection === "language" && "Set your preferred language"}
+            {activeSection === "astra-ai" &&
+              "Configure how the AI compliance copilot works for you"}
+            {activeSection === "webhooks" &&
+              "Send real-time compliance events to external endpoints"}
+            {activeSection === "calendar" &&
+              "Sync compliance deadlines with your calendar app"}
+            {activeSection === "integrations" &&
+              "Connect Caelex with your existing tools"}
+            {activeSection === "organization" &&
+              "Manage your team and organization"}
+            {activeSection === "sso" &&
+              "Configure enterprise Single Sign-On for your team"}
+            {activeSection === "security" &&
+              "Sessions, passwords, and access control"}
+            {activeSection === "mfa" &&
+              "Add an extra layer of security to your account"}
+            {activeSection === "passkeys" &&
+              "Use biometrics or hardware keys to sign in"}
+            {activeSection === "data-export" &&
+              "Download all your data in machine-readable format"}
+            {activeSection === "danger" &&
+              "Permanently delete your account and all data"}
+          </p>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <div className="max-w-[640px]">{renderSection()}</div>
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="max-w-[680px]">{renderSection()}</div>
         </div>
       </div>
     </div>
