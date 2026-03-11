@@ -15,16 +15,10 @@ export async function syncSpacecraftToEntities(
 
   for (const sc of spacecraft) {
     // Check if entity already exists for this spacecraft
-    const existing = await (
-      prisma as unknown as {
-        operatorEntity: {
-          findFirst: (args: Record<string, unknown>) => Promise<unknown>;
-        };
-      }
-    ).operatorEntity.findFirst({
+    const existing = await prisma.operatorEntity.findFirst({
       where: {
         organizationId: sc.organizationId,
-        identifiers: { path: ["noradId"], equals: sc.noradId },
+        identifiers: { path: ["noradId"], equals: sc.noradId ?? "" },
       },
     });
 
@@ -34,13 +28,7 @@ export async function syncSpacecraftToEntities(
     }
 
     const entity = spacecraftToEntity(sc);
-    await (
-      prisma as unknown as {
-        operatorEntity: {
-          create: (args: Record<string, unknown>) => Promise<unknown>;
-        };
-      }
-    ).operatorEntity.create({
+    await prisma.operatorEntity.create({
       data: {
         organizationId: entity.organizationId,
         operatorType: "SCO",
