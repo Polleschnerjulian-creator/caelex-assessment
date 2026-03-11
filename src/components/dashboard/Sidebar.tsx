@@ -36,6 +36,7 @@ import {
   Calendar,
   Satellite,
   Activity,
+  Network,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -822,6 +823,14 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Shield
+              </NavItem>
+              <NavItem
+                href="/dashboard/nexus"
+                icon={<Network size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Asset Register
               </NavItem>
             </div>
           </div>
