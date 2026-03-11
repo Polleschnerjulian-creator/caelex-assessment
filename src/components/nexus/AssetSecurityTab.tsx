@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   Package,
   Users,
-  Loader2,
 } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 

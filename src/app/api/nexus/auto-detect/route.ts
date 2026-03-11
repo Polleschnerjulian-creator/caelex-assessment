@@ -5,7 +5,7 @@ import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { autoDetectDependencies } from "@/lib/nexus/dependency-service.server";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

@@ -177,7 +177,7 @@ export async function getDependenciesForAsset(
  */
 export async function getImpactAnalysis(
   assetId: string,
-  organizationId: string,
+  _organizationId: string,
 ): Promise<ImpactAnalysisResult[]> {
   const results: ImpactAnalysisResult[] = [];
   const visited = new Set<string>();

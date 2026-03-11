@@ -5,7 +5,7 @@ import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { getPatchComplianceRate } from "@/lib/nexus/vulnerability-service.server";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
