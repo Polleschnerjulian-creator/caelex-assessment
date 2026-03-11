@@ -1487,7 +1487,11 @@ model IncidentAsset {
   noradId   String?
   assetName String
 
+  nexusAssetId String?
+  nexusAsset   Asset?  @relation(fields: [nexusAssetId], references: [id])
+
   @@index([incidentId])
+  @@index([nexusAssetId])
 }
 
 model IncidentAttachment {
@@ -2543,12 +2547,15 @@ model Organization {
   optimizationResults OptimizationResult[]
 
   // Ephemeris Universal: generic operator entities
-  operatorEntities    OperatorEntity[]
-  entityDependencies  EntityDependency[]
+  operatorEntities   OperatorEntity[]
+  entityDependencies EntityDependency[]
 
   // Shield: Conjunction Assessment & Collision Avoidance
-  conjunctionEvents     ConjunctionEvent[]
-  caConfig              CAConfig?
+  conjunctionEvents ConjunctionEvent[]
+  caConfig          CAConfig?
+
+  // NEXUS: Space Asset Register
+  assets Asset[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -2692,6 +2699,7 @@ model Spacecraft {
   registrations       SpaceObjectRegistration[]
   orbitalData         OrbitalData[]
   optimizationResults OptimizationResult[]
+  assets              Asset[]
 
   @@index([organizationId])
   @@index([cosparId])
@@ -2724,9 +2732,10 @@ model OperatorEntity {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization          Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  dependenciesAsSource  EntityDependency[] @relation("DependencySource")
-  dependenciesAsTarget  EntityDependency[] @relation("DependencyTarget")
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dependenciesAsSource EntityDependency[] @relation("DependencySource")
+  dependenciesAsTarget EntityDependency[] @relation("DependencyTarget")
+  assets               Asset[]
 
   @@index([organizationId])
   @@index([operatorType])
@@ -2738,17 +2747,17 @@ model OperatorEntity {
 // ============================================
 
 model EntityDependency {
-  id              String             @id @default(cuid())
-  organizationId  String
-  sourceEntityId  String             // The entity that DEPENDS on another
-  targetEntityId  String             // The entity being DEPENDED upon
-  dependencyType  DependencyType
-  strength        DependencyStrength @default(MEDIUM)
-  description     String?            // e.g., "KSAT Svalbard provides TT&C for Eutelsat-7B"
-  metadata        Json?              // Type-specific metadata
-  isActive        Boolean            @default(true)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id             String             @id @default(cuid())
+  organizationId String
+  sourceEntityId String // The entity that DEPENDS on another
+  targetEntityId String // The entity being DEPENDED upon
+  dependencyType DependencyType
+  strength       DependencyStrength @default(MEDIUM)
+  description    String? // e.g., "KSAT Svalbard provides TT&C for Eutelsat-7B"
+  metadata       Json? // Type-specific metadata
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   sourceEntity OperatorEntity @relation("DependencySource", fields: [sourceEntityId], references: [id], onDelete: Cascade)
@@ -2762,22 +2771,22 @@ model EntityDependency {
 }
 
 enum DependencyType {
-  TTC_PROVIDER        // TCO -> SCO: ground station tracks satellite
-  LAUNCH_PROVIDER     // LO -> SCO: launcher deploys satellite
-  LAUNCH_SITE         // LSO -> LO: site hosts launch vehicle
-  CAPACITY_SOURCE     // CAP -> SCO: capacity sourced from satellite
-  DATA_SOURCE         // PDP -> SCO: data sourced from satellite
-  SERVICING_TARGET    // ISOS -> SCO: servicer targets satellite
-  DATA_PROVIDER       // PDP -> CAP: data feeds into capacity service
-  GROUND_NETWORK      // TCO -> TCO: ground station network dependency
-  INSURANCE_SHARED    // Any -> Any: shared insurance pool
+  TTC_PROVIDER // TCO -> SCO: ground station tracks satellite
+  LAUNCH_PROVIDER // LO -> SCO: launcher deploys satellite
+  LAUNCH_SITE // LSO -> LO: site hosts launch vehicle
+  CAPACITY_SOURCE // CAP -> SCO: capacity sourced from satellite
+  DATA_SOURCE // PDP -> SCO: data sourced from satellite
+  SERVICING_TARGET // ISOS -> SCO: servicer targets satellite
+  DATA_PROVIDER // PDP -> CAP: data feeds into capacity service
+  GROUND_NETWORK // TCO -> TCO: ground station network dependency
+  INSURANCE_SHARED // Any -> Any: shared insurance pool
 }
 
 enum DependencyStrength {
   CRITICAL // Total dependency - target failure = source failure
-  HIGH     // Strong dependency - target failure severely impacts source
-  MEDIUM   // Moderate dependency - target failure degrades source
-  LOW      // Weak dependency - target failure has minor impact on source
+  HIGH // Strong dependency - target failure severely impacts source
+  MEDIUM // Moderate dependency - target failure degrades source
+  LOW // Weak dependency - target failure has minor impact on source
 }
 
 enum OperatorType {
@@ -3766,6 +3775,7 @@ model ComplianceEvidence {
 
   // ACE: Requirement mappings (coverage tracking)
   requirementMappings EvidenceRequirementMapping[]
+  assetRequirements   AssetRequirement[]
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -6110,8 +6120,8 @@ model CrossVerification {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model VerityAttestation {
-  id             String  @id @default(cuid())
-  attestationId  String  @unique
+  id             String        @id @default(cuid())
+  attestationId  String        @unique
   operatorId     String
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -6420,48 +6430,351 @@ enum CADecision {
   COORDINATE
 }
 
+// ═══════════════════════════════════════════════════════════
+// NEXUS — Space Asset Register
+// ═══════════════════════════════════════════════════════════
+
+enum AssetType {
+  SPACECRAFT
+  PAYLOAD
+  PROPULSION
+  CONSTELLATION_ELEMENT
+  GROUND_STATION
+  ANTENNA
+  MISSION_CONTROL
+  DATA_CENTER
+  LAUNCH_PAD
+  TTC_UPLINK
+  TTC_DOWNLINK
+  PAYLOAD_DATA_LINK
+  INTER_SATELLITE_LINK
+  GROUND_NETWORK
+  FLIGHT_SOFTWARE
+  GROUND_SOFTWARE
+  DATA_PROCESSING
+  CLOUD_INFRASTRUCTURE
+  ENCRYPTION_SYSTEM
+  MONITORING_SYSTEM
+  THIRD_PARTY_SERVICE
+  LAUNCH_SERVICE
+  INSURANCE_PROVIDER
+  FREQUENCY_ALLOCATION
+}
+
+enum AssetCategory {
+  SPACE_SEGMENT
+  GROUND_SEGMENT
+  LINK_SEGMENT
+  SOFTWARE_DATA
+  ORGANISATIONAL
+}
+
+enum AssetCriticality {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AssetOperationalStatus {
+  ACTIVE
+  STANDBY
+  MAINTENANCE
+  DECOMMISSIONED
+  PLANNED
+}
+
+enum DataClassification {
+  PUBLIC
+  INTERNAL
+  CONFIDENTIAL
+  RESTRICTED
+}
+
+enum ComplianceStatus {
+  NOT_ASSESSED
+  COMPLIANT
+  PARTIAL
+  NON_COMPLIANT
+  NOT_APPLICABLE
+}
+
+enum NexusDependencyType {
+  REQUIRES
+  COMMUNICATES_WITH
+  CONTROLLED_BY
+  PROCESSES_DATA_FROM
+  POWERED_BY
+  BACKS_UP
+}
+
+enum NexusDependencyStrength {
+  HARD
+  SOFT
+  REDUNDANT
+}
+
+enum SupplierType {
+  MANUFACTURER
+  SOFTWARE_VENDOR
+  SERVICE_PROVIDER
+  COMPONENT_SUPPLIER
+  CLOUD_PROVIDER
+}
+
+enum VulnerabilityStatus {
+  OPEN
+  IN_PROGRESS
+  MITIGATED
+  RESOLVED
+  ACCEPTED
+  FALSE_POSITIVE
+}
+
+enum PersonnelRole {
+  OPERATOR
+  ADMINISTRATOR
+  VIEWER
+  MAINTENANCE
+  VENDOR_ACCESS
+}
+
+enum PersonnelAccessLevel {
+  FULL
+  READ_ONLY
+  PHYSICAL_ONLY
+  REMOTE_ONLY
+}
+
+// ── NEXUS: Central Asset Registry ──
+
+model Asset {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name        String
+  assetType   AssetType
+  category    AssetCategory
+  description String?       @db.Text
+  externalId  String?
+
+  criticality        AssetCriticality       @default(MEDIUM)
+  dataClassification DataClassification     @default(INTERNAL)
+  operationalStatus  AssetOperationalStatus @default(ACTIVE)
+
+  nis2Relevant       Boolean @default(false)
+  euSpaceActRelevant Boolean @default(false)
+  nis2Subsector      String?
+
+  location         String?
+  jurisdiction     String?
+  manufacturer     String?
+  commissionedDate DateTime?
+  expectedEolDate  DateTime?
+
+  complianceScore Float?
+  riskScore       Float?
+  lastAssessedAt  DateTime?
+
+  spacecraftId     String?
+  spacecraft       Spacecraft?     @relation(fields: [spacecraftId], references: [id])
+  operatorEntityId String?
+  operatorEntity   OperatorEntity? @relation(fields: [operatorEntityId], references: [id])
+
+  metadata  Json?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+
+  requirements     AssetRequirement[]
+  dependenciesFrom AssetDependency[]    @relation("NexusDependencySource")
+  dependenciesTo   AssetDependency[]    @relation("NexusDependencyTarget")
+  suppliers        AssetSupplier[]
+  vulnerabilities  AssetVulnerability[]
+  personnel        AssetPersonnel[]
+  incidentAssets   IncidentAsset[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([organizationId, assetType])
+  @@index([organizationId, criticality])
+  @@index([organizationId, complianceScore])
+  @@index([spacecraftId])
+  @@index([operatorEntityId])
+  @@index([isDeleted])
+}
+
+model AssetRequirement {
+  id      String @id @default(cuid())
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  regulationFramework String
+  requirementId       String
+  requirementLabel    String
+
+  status ComplianceStatus @default(NOT_ASSESSED)
+
+  evidenceId    String?
+  evidence      ComplianceEvidence? @relation(fields: [evidenceId], references: [id])
+  evidenceFiles String[]
+
+  assessedAt     DateTime?
+  assessedBy     String?
+  nextReviewDate DateTime?
+  notes          String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([assetId, regulationFramework, requirementId])
+  @@index([assetId])
+  @@index([status])
+}
+
+model AssetDependency {
+  id            String @id @default(cuid())
+  sourceAssetId String
+  sourceAsset   Asset  @relation("NexusDependencySource", fields: [sourceAssetId], references: [id], onDelete: Cascade)
+  targetAssetId String
+  targetAsset   Asset  @relation("NexusDependencyTarget", fields: [targetAssetId], references: [id], onDelete: Cascade)
+
+  dependencyType NexusDependencyType
+  strength       NexusDependencyStrength @default(HARD)
+  description    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sourceAssetId, targetAssetId, dependencyType])
+  @@index([sourceAssetId])
+  @@index([targetAssetId])
+}
+
+model AssetSupplier {
+  id      String @id @default(cuid())
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  supplierName String
+  supplierType SupplierType
+  jurisdiction String?
+
+  riskLevel            AssetCriticality @default(MEDIUM)
+  certifications       String[]
+  lastAssessed         DateTime?
+  contractExpiry       DateTime?
+  singlePointOfFailure Boolean          @default(false)
+  alternativeAvailable Boolean          @default(false)
+
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([riskLevel])
+}
+
+model AssetVulnerability {
+  id      String @id @default(cuid())
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  cveId     String?
+  title     String
+  severity  AssetCriticality
+  cvssScore Float?
+
+  status       VulnerabilityStatus @default(OPEN)
+  discoveredAt DateTime            @default(now())
+  mitigatedAt  DateTime?
+  resolvedAt   DateTime?
+
+  affectedComponent String?
+  patchAvailable    Boolean @default(false)
+  patchApplied      Boolean @default(false)
+  patchVersion      String?
+  workaround        String? @db.Text
+
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([severity])
+  @@index([status])
+  @@index([discoveredAt])
+}
+
+model AssetPersonnel {
+  id      String @id @default(cuid())
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  personName       String
+  role             PersonnelRole
+  accessLevel      PersonnelAccessLevel
+  mfaEnabled       Boolean              @default(false)
+  lastTraining     DateTime?
+  trainingRequired Boolean              @default(true)
+  clearanceLevel   String?
+
+  accessGrantedAt DateTime  @default(now())
+  accessExpiresAt DateTime?
+  isActive        Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([isActive])
+}
+
 model ConjunctionEvent {
-  id                  String              @id @default(cuid())
-  organizationId      String
-  spacecraftId        String
-  noradId             String
-  threatNoradId       String
-  threatObjectName    String?
-  threatObjectType    String
-  conjunctionId       String
-  status              ConjunctionStatus   @default(NEW)
-  riskTier            RiskTier
+  id               String            @id @default(cuid())
+  organizationId   String
+  spacecraftId     String
+  noradId          String
+  threatNoradId    String
+  threatObjectName String?
+  threatObjectType String
+  conjunctionId    String
+  status           ConjunctionStatus @default(NEW)
+  riskTier         RiskTier
 
-  peakPc              Float
-  peakPcAt            DateTime
-  latestPc            Float
-  latestMissDistance  Float
-  tca                 DateTime
-  relativeSpeed       Float?
+  peakPc             Float
+  peakPcAt           DateTime
+  latestPc           Float
+  latestMissDistance Float
+  tca                DateTime
+  relativeSpeed      Float?
 
-  decision            CADecision?
-  decisionBy          String?
-  decisionAt          DateTime?
-  decisionRationale   String?             @db.Text
+  decision          CADecision?
+  decisionBy        String?
+  decisionAt        DateTime?
+  decisionRationale String?     @db.Text
 
-  maneuverPlan        Json?
-  maneuverExecutedAt  DateTime?
-  maneuverVerified    Boolean             @default(false)
-  fuelConsumedPct     Float?
+  maneuverPlan       Json?
+  maneuverExecutedAt DateTime?
+  maneuverVerified   Boolean   @default(false)
+  fuelConsumedPct    Float?
 
-  ncaNotified         Boolean             @default(false)
+  ncaNotified         Boolean   @default(false)
   ncaNotifiedAt       DateTime?
-  reportGenerated     Boolean             @default(false)
+  reportGenerated     Boolean   @default(false)
   verityAttestationId String?
 
-  closedAt            DateTime?
-  closedReason        String?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  closedAt     DateTime?
+  closedReason String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  cdmRecords          CDMRecord[]
-  escalationLog       CAEscalationLog[]
+  organization  Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cdmRecords    CDMRecord[]
+  escalationLog CAEscalationLog[]
 
   @@unique([organizationId, conjunctionId])
   @@index([organizationId, status])
@@ -6472,68 +6785,68 @@ model ConjunctionEvent {
 }
 
 model CDMRecord {
-  id                    String            @id @default(cuid())
-  conjunctionEventId    String
-  cdmId                 String            @unique
-  creationDate          DateTime
-  tca                   DateTime
-  missDistance           Float
-  relativeSpeed         Float?
-  collisionProbability  Float
-  probabilityMethod     String?
+  id                   String   @id @default(cuid())
+  conjunctionEventId   String
+  cdmId                String   @unique
+  creationDate         DateTime
+  tca                  DateTime
+  missDistance         Float
+  relativeSpeed        Float?
+  collisionProbability Float
+  probabilityMethod    String?
 
-  sat1StateVector       Json?
-  sat1Covariance        Json?
-  sat2StateVector       Json?
-  sat2Covariance        Json?
-  sat2Maneuverable      String?
+  sat1StateVector  Json?
+  sat1Covariance   Json?
+  sat2StateVector  Json?
+  sat2Covariance   Json?
+  sat2Maneuverable String?
 
-  rawCdm                Json
-  riskTier              RiskTier
-  createdAt             DateTime          @default(now())
+  rawCdm    Json
+  riskTier  RiskTier
+  createdAt DateTime @default(now())
 
-  conjunctionEvent      ConjunctionEvent  @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
+  conjunctionEvent ConjunctionEvent @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
 
   @@index([conjunctionEventId, creationDate])
 }
 
 model CAEscalationLog {
-  id                    String            @id @default(cuid())
-  conjunctionEventId    String
-  previousTier          RiskTier
-  newTier               RiskTier
-  previousStatus        ConjunctionStatus
-  newStatus             ConjunctionStatus
-  triggeredBy           String
-  details               String?
-  createdAt             DateTime          @default(now())
+  id                 String            @id @default(cuid())
+  conjunctionEventId String
+  previousTier       RiskTier
+  newTier            RiskTier
+  previousStatus     ConjunctionStatus
+  newStatus          ConjunctionStatus
+  triggeredBy        String
+  details            String?
+  createdAt          DateTime          @default(now())
 
-  conjunctionEvent      ConjunctionEvent  @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
+  conjunctionEvent ConjunctionEvent @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
 
   @@index([conjunctionEventId, createdAt])
 }
 
 model CAConfig {
-  id                    String            @id @default(cuid())
-  organizationId        String            @unique
+  id             String @id @default(cuid())
+  organizationId String @unique
 
-  emergencyPcThreshold  Float             @default(0.001)
-  highPcThreshold       Float             @default(0.0001)
-  elevatedPcThreshold   Float             @default(0.00001)
-  monitorPcThreshold    Float             @default(0.0000001)
+  emergencyPcThreshold Float @default(0.001)
+  highPcThreshold      Float @default(0.0001)
+  elevatedPcThreshold  Float @default(0.00001)
+  monitorPcThreshold   Float @default(0.0000001)
 
-  notifyOnTier          RiskTier          @default(HIGH)
-  emergencyEmailAll     Boolean           @default(true)
+  notifyOnTier      RiskTier @default(HIGH)
+  emergencyEmailAll Boolean  @default(true)
 
-  autoCloseAfterTcaHours Int              @default(24)
+  autoCloseAfterTcaHours Int @default(24)
 
-  ncaAutoNotify         Boolean           @default(false)
-  ncaJurisdiction       String?
+  ncaAutoNotify   Boolean @default(false)
+  ncaJurisdiction String?
 
-  defaultAssigneeId     String?
+  defaultAssigneeId String?
 
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }

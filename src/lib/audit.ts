@@ -102,7 +102,21 @@ export type AuditAction =
   | "ace_requirement_seeded"
   | "ace_coverage_changed"
   | "ace_gap_detected"
-  | "ace_chain_verified";
+  | "ace_chain_verified"
+  | "nexus_asset_created"
+  | "nexus_asset_updated"
+  | "nexus_asset_deleted"
+  | "nexus_requirement_assessed"
+  | "nexus_requirement_synced"
+  | "nexus_dependency_added"
+  | "nexus_dependency_removed"
+  | "nexus_vulnerability_added"
+  | "nexus_vulnerability_updated"
+  | "nexus_supplier_added"
+  | "nexus_supplier_updated"
+  | "nexus_personnel_added"
+  | "nexus_personnel_updated"
+  | "nexus_scores_recalculated";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -142,7 +156,13 @@ export type AuditEntityType =
   | "assure_milestone"
   | "investment_readiness_score"
   | "regulatory_requirement"
-  | "evidence_requirement_mapping";
+  | "evidence_requirement_mapping"
+  | "nexus_asset"
+  | "nexus_requirement"
+  | "nexus_dependency"
+  | "nexus_vulnerability"
+  | "nexus_supplier"
+  | "nexus_personnel";
 
 export interface AuditLogEntry {
   userId: string;
