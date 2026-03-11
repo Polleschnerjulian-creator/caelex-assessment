@@ -33,8 +33,10 @@ export async function syncSpacecraftToEntities(
         organizationId: entity.organizationId,
         operatorType: "SCO",
         name: entity.name,
-        identifiers: entity.identifiers as unknown as Record<string, unknown>,
-        metadata: entity.metadata,
+        identifiers:
+          entity.identifiers as unknown as import("@prisma/client").Prisma.InputJsonValue,
+        metadata:
+          entity.metadata as unknown as import("@prisma/client").Prisma.InputJsonValue,
         jurisdictions: entity.jurisdictions,
         status: entity.status,
       },
