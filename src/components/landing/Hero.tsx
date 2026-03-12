@@ -55,12 +55,12 @@ export default function Hero() {
             <div>
               <h1 className="font-medium tracking-[-0.03em] leading-[1.05]">
                 <span className="text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/60 block mb-1">
-                  The World&apos;s Space
+                  The World&apos;s First
                 </span>
                 <span className="text-[clamp(2.5rem,6vw,5rem)] text-white block">
-                  Regulatory Intelligence
+                  Space Compliance
                   <br />
-                  Platform.
+                  OS.
                 </span>
               </h1>
             </div>
