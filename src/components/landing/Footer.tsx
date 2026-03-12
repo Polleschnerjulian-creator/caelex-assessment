@@ -3,16 +3,41 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CaelexIcon } from "@/components/ui/Logo";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, MapPin } from "lucide-react";
 
 interface FooterProps {
   theme?: "light" | "dark";
 }
 
-const productLinks = [
-  { label: "Caelex Comply", href: "/platform" },
-  { label: "Assessment", href: "/assessment" },
-  { label: "Dashboard", href: "/dashboard" },
+const platformLinks = [
+  { label: "Comply", href: "/platform" },
+  { label: "Shield", href: "/platform" },
+  { label: "Sentinel", href: "/blog/agentic-system" },
+  { label: "Ephemeris", href: "/platform" },
+  { label: "Verity", href: "/platform" },
+  { label: "HUB", href: "/dashboard/hub" },
+  { label: "Assure", href: "/assure/dashboard" },
+  { label: "Academy", href: "/academy/dashboard" },
+];
+
+const solutionLinks = [
+  { label: "Regulatory Compliance", href: "/platform" },
+  { label: "Risk Assessment", href: "/assessment" },
+  { label: "Document Generation", href: "/platform" },
+  { label: "Compliance Monitoring", href: "/platform" },
+  { label: "Due Diligence", href: "/assure/dashboard" },
+  { label: "NCA Submissions", href: "/platform" },
+  { label: "Audit & Evidence", href: "/platform" },
+];
+
+const industryLinks = [
+  { label: "Satellite Operators", href: "/platform" },
+  { label: "Launch Providers", href: "/platform" },
+  { label: "Space Agencies", href: "/platform" },
+  { label: "Defense & Security", href: "/platform" },
+  { label: "Insurance & Finance", href: "/assure/dashboard" },
+  { label: "Space Startups", href: "/assessment" },
+  { label: "Legal & Consulting", href: "/platform" },
 ];
 
 const resourceLinks = [
@@ -21,6 +46,8 @@ const resourceLinks = [
   { label: "Glossary", href: "/glossary" },
   { label: "Modules", href: "/modules" },
   { label: "Jurisdictions", href: "/jurisdictions" },
+  { label: "API Documentation", href: "/docs/api" },
+  { label: "Changelog", href: "/blog" },
 ];
 
 const companyLinks = [
@@ -29,6 +56,7 @@ const companyLinks = [
   { label: "Governance", href: "/governance" },
   { label: "Contact", href: "/contact" },
   { label: "Careers", href: "/careers" },
+  { label: "Partners", href: "/contact" },
 ];
 
 const legalLinks = [
@@ -119,6 +147,16 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       setSubscribing(false);
     }
   };
+
+  const linkStyle = `text-body transition-colors ${
+    isLight
+      ? "text-[#4B5563] hover:text-[#111827]"
+      : "text-white/45 hover:text-white"
+  }`;
+
+  const headingStyle = `text-caption uppercase tracking-wider mb-4 ${
+    isLight ? "text-[#6B7280]" : "text-white/45"
+  }`;
 
   return (
     <footer
@@ -241,9 +279,9 @@ export default function Footer({ theme = "dark" }: FooterProps) {
         </div>
       </div>
 
-      {/* Main Footer */}
+      {/* Main Footer — Expanded */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 md:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-8 lg:gap-6">
           {/* Brand Column */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
@@ -261,10 +299,24 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             <p
               className={`text-body leading-relaxed mb-4 ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
             >
-              Space Regulatory Compliance Platform.
+              The world&apos;s space regulatory
               <br />
-              EU Space Act · NIS2 · National Laws
+              intelligence platform.
             </p>
+
+            {/* Headquarters */}
+            <div className="flex items-center gap-1.5 mb-4">
+              <MapPin
+                size={12}
+                className={isLight ? "text-[#9CA3AF]" : "text-white/25"}
+                aria-hidden="true"
+              />
+              <span
+                className={`text-small ${isLight ? "text-[#9CA3AF]" : "text-white/25"}`}
+              >
+                Frankfurt am Main, Germany
+              </span>
+            </div>
 
             <a
               href="mailto:cs@caelex.eu"
@@ -310,70 +362,99 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             </div>
           </div>
 
-          {/* Link columns */}
-          {[
-            {
-              title: "Product",
-              links: productLinks,
-              ariaLabel: "Product links",
-            },
-            {
-              title: "Legal",
-              links: legalLinks,
-              ariaLabel: "Legal links",
-              hasCookieSettings: true,
-            },
-            {
-              title: "Resources",
-              links: resourceLinks,
-              ariaLabel: "Resource links",
-            },
-            {
-              title: "Company",
-              links: companyLinks,
-              ariaLabel: "Company links",
-            },
-          ].map(({ title, links, ariaLabel, hasCookieSettings }) => (
-            <nav key={title} aria-label={ariaLabel}>
-              <h3
-                className={`text-caption uppercase tracking-wider mb-4 ${isLight ? "text-[#6B7280]" : "text-white/45"}`}
-              >
-                {title}
-              </h3>
-              <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={`text-body transition-colors ${
-                        isLight
-                          ? "text-[#4B5563] hover:text-[#111827]"
-                          : "text-white/45 hover:text-white"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                {hasCookieSettings && (
-                  <li>
-                    <button
-                      onClick={() =>
-                        window.dispatchEvent(new Event("show-cookie-consent"))
-                      }
-                      className={`text-body transition-colors ${
-                        isLight
-                          ? "text-[#4B5563] hover:text-[#111827]"
-                          : "text-white/45 hover:text-white"
-                      }`}
-                    >
-                      Cookie Settings
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </nav>
-          ))}
+          {/* Platform */}
+          <nav aria-label="Platform links">
+            <h3 className={headingStyle}>Platform</h3>
+            <ul className="space-y-2.5">
+              {platformLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Solutions */}
+          <nav aria-label="Solution links">
+            <h3 className={headingStyle}>Solutions</h3>
+            <ul className="space-y-2.5">
+              {solutionLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Industries */}
+          <nav aria-label="Industry links">
+            <h3 className={headingStyle}>Industries</h3>
+            <ul className="space-y-2.5">
+              {industryLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Resources */}
+          <nav aria-label="Resource links">
+            <h3 className={headingStyle}>Resources</h3>
+            <ul className="space-y-2.5">
+              {resourceLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Company */}
+          <nav aria-label="Company links">
+            <h3 className={headingStyle}>Company</h3>
+            <ul className="space-y-2.5">
+              {companyLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Legal */}
+          <nav aria-label="Legal links">
+            <h3 className={headingStyle}>Legal</h3>
+            <ul className="space-y-2.5">
+              {legalLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new Event("show-cookie-consent"))
+                  }
+                  className={linkStyle}
+                >
+                  Cookie Settings
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
 
@@ -408,6 +489,8 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                 },
                 { label: "EUSPA", href: "https://www.euspa.europa.eu/" },
                 { label: "ESA", href: "https://www.esa.int/" },
+                { label: "UNOOSA", href: "https://www.unoosa.org/" },
+                { label: "ITU", href: "https://www.itu.int/" },
               ].map(({ label, href }) => (
                 <a
                   key={label}
