@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 export async function getUserOrgId(userId: string): Promise<string | null> {
   const membership = await prisma.organizationMember.findFirst({
     where: { userId },
-    orderBy: { createdAt: "asc" },
+    orderBy: { joinedAt: "asc" },
     select: { organizationId: true },
   });
   return membership?.organizationId ?? null;
