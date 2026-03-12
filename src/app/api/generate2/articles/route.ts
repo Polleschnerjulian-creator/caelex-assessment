@@ -60,6 +60,9 @@ const ARTICLE_RANGES: Record<
   INSURANCE_COMPLIANCE: [
     { start: 47, end: 50, label: "Insurance (Art. 47-50)" },
   ],
+  HAZARD_REPORT: [
+    { start: 58, end: 73, label: "Safety & Hazard Analysis (Art. 58-73)" },
+  ],
 };
 
 export async function GET(request: NextRequest) {
