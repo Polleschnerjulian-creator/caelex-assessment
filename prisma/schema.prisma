@@ -4583,6 +4583,7 @@ enum NCADocumentType {
   AUTHORIZATION_APPLICATION // C1: Authorization Application Package
   ENVIRONMENTAL_FOOTPRINT // C2: Environmental Footprint Declaration
   INSURANCE_COMPLIANCE // C3: Insurance Compliance Report
+  HAZARD_REPORT // D1: CNES/FSOA Hazard Report
 }
 
 enum NCADocumentStatus {
