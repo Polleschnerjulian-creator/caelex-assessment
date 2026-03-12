@@ -6,8 +6,16 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.organizationId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No organization" }, { status: 403 });
     }
 
     const entityId = request.nextUrl.searchParams.get("entityId");
@@ -20,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     const dependencies = await prisma.entityDependency.findMany({
       where: {
-        organizationId: session.user.organizationId,
+        organizationId: membership.organizationId,
         isActive: true,
         OR: [{ sourceEntityId: entityId }, { targetEntityId: entityId }],
       },
@@ -49,8 +57,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.organizationId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No organization" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -77,13 +93,13 @@ export async function POST(request: NextRequest) {
       prisma.operatorEntity.findFirst({
         where: {
           id: sourceEntityId,
-          organizationId: session.user.organizationId,
+          organizationId: membership.organizationId,
         },
       }),
       prisma.operatorEntity.findFirst({
         where: {
           id: targetEntityId,
-          organizationId: session.user.organizationId,
+          organizationId: membership.organizationId,
         },
       }),
     ]);
@@ -122,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     const dependency = await prisma.entityDependency.create({
       data: {
-        organizationId: session.user.organizationId,
+        organizationId: membership.organizationId,
         sourceEntityId,
         targetEntityId,
         dependencyType,

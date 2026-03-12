@@ -24,15 +24,6 @@ interface HistoryRecord {
   calculatedAt: Date;
 }
 
-function getHistoryModel() {
-  const db = prisma as unknown as Record<string, unknown>;
-  return db["satelliteComplianceStateHistory"] as
-    | {
-        findMany: (args: Record<string, unknown>) => Promise<HistoryRecord[]>;
-      }
-    | undefined;
-}
-
 function toHistoryPoint(record: HistoryRecord): HistoryPoint {
   const moduleScores: Partial<Record<ModuleKey, number>> = {};
   if (record.moduleScores && typeof record.moduleScores === "object") {
@@ -96,28 +87,6 @@ export async function GET(request: NextRequest) {
       90,
     );
 
-    const historyModel = getHistoryModel();
-    if (!historyModel) {
-      return NextResponse.json({
-        data: {
-          anomalies: [],
-          scannedSatellites: 0,
-          scannedDataPoints: 0,
-          summary: {
-            totalAnomalies: 0,
-            criticalCount: 0,
-            highCount: 0,
-            mediumCount: 0,
-            lowCount: 0,
-            byType: {},
-            byMethod: {},
-          },
-          generatedAt: new Date().toISOString(),
-        },
-        meta: { note: "History model not yet available." },
-      });
-    }
-
     // Fetch org's spacecraft
     const spacecraft = await prisma.spacecraft.findMany({
       where: {
@@ -154,7 +123,7 @@ export async function GET(request: NextRequest) {
     // Load compliance history
     const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
 
-    const records = await historyModel.findMany({
+    const records = await prisma.satelliteComplianceStateHistory.findMany({
       where: {
         operatorId: membership.organizationId,
         noradId: { in: noradIds },
@@ -261,29 +230,6 @@ export async function POST(request: NextRequest) {
       90,
     );
 
-    const historyModel = getHistoryModel();
-    if (!historyModel) {
-      return NextResponse.json({
-        data: {
-          anomalies: [],
-          scannedSatellites: 0,
-          scannedDataPoints: 0,
-          summary: {
-            totalAnomalies: 0,
-            criticalCount: 0,
-            highCount: 0,
-            mediumCount: 0,
-            lowCount: 0,
-            byType: {},
-            byMethod: {},
-          },
-          generatedAt: new Date().toISOString(),
-        },
-        alerts: { generated: 0 },
-        meta: { note: "History model not yet available." },
-      });
-    }
-
     // Fetch org's spacecraft
     const spacecraft = await prisma.spacecraft.findMany({
       where: {
@@ -320,7 +266,7 @@ export async function POST(request: NextRequest) {
 
     const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
 
-    const records = await historyModel.findMany({
+    const records = await prisma.satelliteComplianceStateHistory.findMany({
       where: {
         operatorId: membership.organizationId,
         noradId: { in: noradIds },

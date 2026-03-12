@@ -356,7 +356,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           {/* Solutions */}
           <nav aria-label="Solutions">
             <h3 className={headingStyle}>Solutions</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1.5">
               {solutionLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
@@ -370,7 +370,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           {/* Industries */}
           <nav aria-label="Industries">
             <h3 className={headingStyle}>Industries</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1.5">
               {industryLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
@@ -384,7 +384,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           {/* Capabilities */}
           <nav aria-label="Capabilities">
             <h3 className={headingStyle}>Capabilities</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1.5">
               {capabilityLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
@@ -398,7 +398,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           {/* Documents */}
           <nav aria-label="Documents">
             <h3 className={headingStyle}>Documents</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1.5">
               {documentLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>

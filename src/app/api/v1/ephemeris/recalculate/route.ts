@@ -67,42 +67,69 @@ export async function POST(request: NextRequest) {
     });
 
     // Persist the state (upsert SatelliteComplianceState)
-    const db = prisma as unknown as Record<string, unknown>;
-    const stateModel = db["satelliteComplianceState"] as
-      | {
-          upsert: (args: Record<string, unknown>) => Promise<unknown>;
-        }
-      | undefined;
+    const stateJson = JSON.parse(JSON.stringify(toPublicState(internalState)));
+    const moduleScores = JSON.parse(JSON.stringify(internalState.modules));
+    const dataSources = JSON.parse(JSON.stringify(internalState.dataSources));
 
-    if (stateModel) {
-      const stateJson = JSON.parse(
-        JSON.stringify(toPublicState(internalState)),
-      );
-      await stateModel.upsert({
-        where: {
-          noradId_operatorId: {
-            noradId: norad_id,
-            operatorId: membership.organizationId,
-          },
-        },
-        update: {
-          stateJson,
-          overallScore: internalState.overallScore,
-          horizonDays: internalState.complianceHorizon.daysUntilFirstBreach,
-          dataFreshness: internalState.dataFreshness,
-          calculatedAt: new Date(),
-        },
-        create: {
+    await prisma.satelliteComplianceState.upsert({
+      where: {
+        noradId_operatorId: {
           noradId: norad_id,
-          satelliteName: spacecraft.name,
           operatorId: membership.organizationId,
-          stateJson,
-          overallScore: internalState.overallScore,
-          horizonDays: internalState.complianceHorizon.daysUntilFirstBreach,
-          dataFreshness: internalState.dataFreshness,
         },
-      });
-    }
+      },
+      update: {
+        stateJson,
+        satelliteName: spacecraft.name,
+        overallScore: internalState.overallScore,
+        moduleScores,
+        dataSources,
+        horizonDays: internalState.complianceHorizon.daysUntilFirstBreach,
+        horizonRegulation:
+          internalState.complianceHorizon.firstBreachRegulation,
+        horizonConfidence: internalState.complianceHorizon.confidence,
+        dataFreshness: internalState.dataFreshness,
+        calculatedAt: new Date(),
+      },
+      create: {
+        noradId: norad_id,
+        satelliteName: spacecraft.name,
+        operatorId: membership.organizationId,
+        stateJson,
+        overallScore: internalState.overallScore,
+        moduleScores,
+        dataSources,
+        horizonDays: internalState.complianceHorizon.daysUntilFirstBreach,
+        horizonRegulation:
+          internalState.complianceHorizon.firstBreachRegulation,
+        horizonConfidence: internalState.complianceHorizon.confidence,
+        dataFreshness: internalState.dataFreshness,
+      },
+    });
+
+    // Append to history (matches cron behavior)
+    const horizonDays = internalState.complianceHorizon.daysUntilFirstBreach;
+    const { forecastP10, forecastP50, forecastP90 } = deriveForecastPercentiles(
+      horizonDays,
+      internalState.complianceHorizon.confidence,
+    );
+
+    await prisma.satelliteComplianceStateHistory.create({
+      data: {
+        noradId: norad_id,
+        operatorId: membership.organizationId,
+        stateJson: JSON.parse(JSON.stringify(toPublicState(internalState))),
+        overallScore: internalState.overallScore,
+        moduleScores: JSON.parse(JSON.stringify(internalState.modules)),
+        horizonDays,
+        horizonRegulation:
+          internalState.complianceHorizon.firstBreachRegulation,
+        dataFreshness: internalState.dataFreshness,
+        forecastP10,
+        forecastP50,
+        forecastP90,
+      },
+    });
 
     // Also regenerate forecast
     const forecast = await generateForecast(
@@ -143,4 +170,43 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+/**
+ * Derive P10/P50/P90 forecast percentiles from compliance horizon.
+ * Uses confidence-based multipliers:
+ *   HIGH   → ±10% band around nominal
+ *   MEDIUM → ±30% band
+ *   LOW    → ±50% band
+ */
+function deriveForecastPercentiles(
+  horizonDays: number | null,
+  confidence: string,
+): {
+  forecastP10: number | null;
+  forecastP50: number | null;
+  forecastP90: number | null;
+} {
+  if (horizonDays === null) {
+    return { forecastP10: null, forecastP50: null, forecastP90: null };
+  }
+
+  let spread: number;
+  switch (confidence) {
+    case "HIGH":
+      spread = 0.1;
+      break;
+    case "MEDIUM":
+      spread = 0.3;
+      break;
+    default:
+      spread = 0.5;
+      break;
+  }
+
+  return {
+    forecastP10: Math.round(horizonDays * (1 - spread)),
+    forecastP50: horizonDays,
+    forecastP90: Math.round(horizonDays * (1 + spread)),
+  };
 }

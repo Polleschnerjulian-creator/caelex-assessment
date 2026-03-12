@@ -16,18 +16,6 @@ export async function generateCascadeAlerts(
   orgId: string,
   cascade: CascadeResult,
 ): Promise<number> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const alertModel = db["satelliteAlert"] as
-    | {
-        findFirst: (
-          args: Record<string, unknown>,
-        ) => Promise<{ id: string } | null>;
-        create: (args: Record<string, unknown>) => Promise<unknown>;
-      }
-    | undefined;
-
-  if (!alertModel) return 0;
-
   let generated = 0;
   const propagationSummary = cascade.propagationPath
     .map((level, i) => `L${i}: ${level.join(", ")}`)
@@ -40,7 +28,7 @@ export async function generateCascadeAlerts(
     const dedupeKey = `${sat.noradId}_CASCADE_${cascade.trigger}`;
 
     // Check if active alert already exists for this cascade trigger
-    const existing = await alertModel.findFirst({
+    const existing = await prisma.satelliteAlert.findFirst({
       where: {
         noradId: sat.noradId,
         operatorId: orgId,
@@ -71,7 +59,7 @@ export async function generateCascadeAlerts(
       .join("\n");
 
     try {
-      await alertModel.create({
+      await prisma.satelliteAlert.create({
         data: {
           noradId: sat.noradId,
           operatorId: orgId,

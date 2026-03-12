@@ -26,23 +26,8 @@ export async function GET(request: NextRequest) {
     const noradId = request.nextUrl.searchParams.get("norad_id");
     const severityFilter = request.nextUrl.searchParams.get("severity");
 
-    // Access SatelliteAlert model (may not be in generated Prisma client yet)
-    const db = prisma as unknown as Record<string, unknown>;
-    const alertModel = db["satelliteAlert"] as
-      | {
-          findMany: (args: Record<string, unknown>) => Promise<unknown[]>;
-        }
-      | undefined;
-
-    if (!alertModel) {
-      // Prisma client hasn't been regenerated with new models yet
-      return NextResponse.json({
-        data: [],
-        meta: { note: "Alert model not yet available. Run prisma generate." },
-      });
-    }
-
-    const where: Record<string, unknown> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: Record<string, any> = {
       operatorId: membership.organizationId,
       resolvedAt: null, // Only active alerts
     };
@@ -54,11 +39,11 @@ export async function GET(request: NextRequest) {
       where["severity"] = severityFilter.toUpperCase();
     }
 
-    const alerts = await alertModel.findMany({
+    const alerts = await prisma.satelliteAlert.findMany({
       where,
       orderBy: [
         { severity: "asc" }, // CRITICAL first
-        { createdAt: "desc" },
+        { triggeredAt: "desc" },
       ],
     });
 

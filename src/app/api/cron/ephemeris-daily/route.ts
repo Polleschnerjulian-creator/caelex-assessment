@@ -270,19 +270,9 @@ async function fetchPreviousScore(
   orgId: string,
   noradId: string,
 ): Promise<{ score: number; entityId: string | null } | null> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const stateModel = db["satelliteComplianceState"] as
-    | {
-        findUnique: (
-          args: Record<string, unknown>,
-        ) => Promise<{ overallScore: number; noradId: string } | null>;
-      }
-    | undefined;
-
-  if (!stateModel) return null;
-
-  const result = await stateModel.findUnique({
+  const result = await prisma.satelliteComplianceState.findUnique({
     where: { noradId_operatorId: { noradId, operatorId: orgId } },
+    select: { overallScore: true, noradId: true },
   });
 
   if (!result) return null;
@@ -304,21 +294,12 @@ async function persistState(
   satelliteName: string,
   state: Awaited<ReturnType<typeof calculateSatelliteComplianceState>>,
 ): Promise<void> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const stateModel = db["satelliteComplianceState"] as
-    | {
-        upsert: (args: Record<string, unknown>) => Promise<unknown>;
-      }
-    | undefined;
-
-  if (!stateModel) return;
-
   const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
 
   const moduleScores = JSON.parse(JSON.stringify(state.modules));
   const dataSources = JSON.parse(JSON.stringify(state.dataSources));
 
-  await stateModel.upsert({
+  await prisma.satelliteComplianceState.upsert({
     where: {
       noradId_operatorId: { noradId, operatorId: orgId },
     },
@@ -355,15 +336,6 @@ async function appendHistory(
   noradId: string,
   state: Awaited<ReturnType<typeof calculateSatelliteComplianceState>>,
 ): Promise<void> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const historyModel = db["satelliteComplianceStateHistory"] as
-    | {
-        create: (args: Record<string, unknown>) => Promise<unknown>;
-      }
-    | undefined;
-
-  if (!historyModel) return;
-
   const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
 
   // Serialize active alerts
@@ -381,7 +353,7 @@ async function appendHistory(
 
   const moduleScores = JSON.parse(JSON.stringify(state.modules));
 
-  await historyModel.create({
+  await prisma.satelliteComplianceStateHistory.create({
     data: {
       noradId,
       operatorId: orgId,
@@ -451,29 +423,11 @@ async function processAlerts(
   satelliteName: string,
   state: Awaited<ReturnType<typeof calculateSatelliteComplianceState>>,
 ): Promise<AlertProcessResult> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const alertModel = db["satelliteAlert"] as
-    | {
-        findMany: (args: Record<string, unknown>) => Promise<
-          Array<{
-            id: string;
-            dedupeKey: string;
-            severity: string;
-            type: string;
-          }>
-        >;
-        create: (args: Record<string, unknown>) => Promise<unknown>;
-        update: (args: Record<string, unknown>) => Promise<unknown>;
-      }
-    | undefined;
-
-  if (!alertModel) return { created: 0, resolved: 0 };
-
   let created = 0;
   let resolved = 0;
 
   // Get current active alerts for this satellite
-  const activeAlerts = await alertModel.findMany({
+  const activeAlerts = await prisma.satelliteAlert.findMany({
     where: { noradId, operatorId: orgId, resolvedAt: null },
   });
 
@@ -488,14 +442,14 @@ async function processAlerts(
 
     if (!existing) {
       // New alert
-      await alertModel.create({
+      await prisma.satelliteAlert.create({
         data: {
           noradId,
           operatorId: orgId,
           type: condition.type,
           severity: condition.severity,
           title: condition.title,
-          message: condition.message,
+          description: condition.message,
           regulationRef: condition.regulationRef,
           dedupeKey: condition.dedupeKey,
         },
@@ -522,12 +476,11 @@ async function processAlerts(
       severityRank(existing.severity as AlertSeverity)
     ) {
       // Severity upgrade
-      await alertModel.update({
+      await prisma.satelliteAlert.update({
         where: { id: existing.id },
         data: {
           severity: condition.severity,
-          message: condition.message,
-          updatedAt: new Date(),
+          description: condition.message,
         },
       });
     }
@@ -539,7 +492,7 @@ async function processAlerts(
   // Resolve alerts that no longer apply
   // Only resolve if the condition is significantly better (hysteresis)
   for (const [, alert] of activeByKey) {
-    await alertModel.update({
+    await prisma.satelliteAlert.update({
       where: { id: alert.id },
       data: { resolvedAt: new Date() },
     });

@@ -7,14 +7,19 @@ import { buildDependencyGraph } from "@/lib/ephemeris/cross-type/dependency-grap
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user?.organizationId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const graph = await buildDependencyGraph(
-      session.user.organizationId,
-      prisma,
-    );
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No organization" }, { status: 403 });
+    }
+
+    const graph = await buildDependencyGraph(membership.organizationId, prisma);
 
     return NextResponse.json({ graph });
   } catch (error) {

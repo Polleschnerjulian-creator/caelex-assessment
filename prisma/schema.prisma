@@ -2570,6 +2570,10 @@ model Organization {
   hubProjects       HubProject[]
   hubCalendarEvents HubCalendarEvent[]
 
+  // Hazard Report (CNES/FSOA Template Nr. 20)
+  hazardEntries       HazardEntry[]
+  hazardReportVersions HazardReportVersion[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -2713,6 +2717,7 @@ model Spacecraft {
   orbitalData         OrbitalData[]
   optimizationResults OptimizationResult[]
   assets              Asset[]
+  hazardEntries       HazardEntry[]
 
   @@index([organizationId])
   @@index([cosparId])
@@ -7035,4 +7040,155 @@ model HubCalendarEvent {
 
   @@index([organizationId, date])
   @@index([creatorId])
+}
+
+// ============================================
+// HAZARD REPORT (CNES/FSOA Template Nr. 20)
+// ============================================
+
+enum HazardType {
+  COLLISION
+  REENTRY
+  EXPLOSION
+  CONTROL_LOSS
+  TOXICITY
+  DEBRIS_GENERATION
+  CYBER
+}
+
+enum HazardSeverity {
+  CATASTROPHIC // score: 4
+  CRITICAL // score: 3
+  MARGINAL // score: 2
+  NEGLIGIBLE // score: 1
+}
+
+enum HazardMitigationStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum AcceptanceStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MitigationType {
+  TECHNICAL
+  OPERATIONAL
+  PROCEDURAL
+}
+
+enum SourceModule {
+  SHIELD
+  DEBRIS
+  INCIDENTS
+  EPHEMERIS
+  MANUAL
+}
+
+enum TargetNCA {
+  CNES
+  RDI
+  MINISTRY_LU
+  BELSPO
+}
+
+model HazardEntry {
+  id             String         @id @default(cuid())
+  organizationId String
+  spacecraftId   String
+  hazardId       String // e.g. "G01", "G02"
+  hazardType     HazardType
+  sourceModule   SourceModule
+  sourceRecordId String? // FK to source record in Shield/Debris/etc.
+  title          String
+  description    String         @db.Text
+  severity       HazardSeverity
+  likelihood     Int // 1-5
+  riskIndex      Int // severity_score × likelihood, computed
+  mitigations    HazardMitigation[]
+
+  mitigationStatus HazardMitigationStatus @default(OPEN)
+  residualRisk     String?          @db.Text
+  regulatoryRefs   String[] // e.g. ["FSOA Art. 34", "ECSS-Q-ST-40-02C Task 4"]
+
+  acceptanceStatus    AcceptanceStatus @default(PENDING)
+  acceptedBy          String?
+  acceptedAt          DateTime?
+  verityAttestationId String?
+
+  // Predictive Hazard Intelligence
+  isPredicted          Boolean   @default(false)
+  predictedBreachDate  DateTime? // When the threshold will be exceeded
+  forecastConfidence   String?   // HIGH, MEDIUM, LOW
+  forecastSourceDate   DateTime? // When the forecast was calculated
+
+  // FMECA operator input (Chapter 4.4)
+  fmecaNotes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  spacecraft     Spacecraft            @relation(fields: [spacecraftId], references: [id], onDelete: Cascade)
+  reportVersions HazardReportVersion[] @relation("HazardReportHazards")
+
+  @@unique([spacecraftId, hazardId])
+  @@index([organizationId])
+  @@index([spacecraftId, hazardType])
+  @@index([spacecraftId, acceptanceStatus])
+  @@index([mitigationStatus])
+  @@index([isPredicted])
+}
+
+model HazardMitigation {
+  id            String         @id @default(cuid())
+  hazardEntryId String
+  type          MitigationType
+  description   String         @db.Text
+  implementedAt DateTime?
+  verifiedBy    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  hazardEntry HazardEntry @relation(fields: [hazardEntryId], references: [id], onDelete: Cascade)
+
+  @@index([hazardEntryId])
+}
+
+model HazardReportVersion {
+  id             String    @id @default(cuid())
+  organizationId String
+  spacecraftId   String
+  version        Int // Auto-incremented per spacecraft
+  targetNCA      TargetNCA
+  language       String    @default("en")
+  milestone      String?   // SRR, PDR, CDR, FRR, etc.
+
+  // PDF storage
+  fileHash   String // SHA-256 of the PDF buffer
+  fileSize   Int
+  storagePath String? // R2/S3 path if stored remotely
+  pdfData    Bytes? // Inline storage for small reports
+
+  // Verity report-level attestation
+  verityAttestationId String?
+  reportSignature     String? // Hex signature of the report hash
+
+  // Snapshot of hazard IDs at generation time
+  hazardSnapshotIds String[]
+
+  // Metadata
+  generatedBy String
+  generatedAt DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  hazards      HazardEntry[] @relation("HazardReportHazards")
+
+  @@unique([spacecraftId, version])
+  @@index([organizationId])
+  @@index([spacecraftId])
 }

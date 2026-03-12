@@ -16,18 +16,6 @@ export async function generateAnomalyAlerts(
   orgId: string,
   report: AnomalyReport,
 ): Promise<number> {
-  const db = prisma as unknown as Record<string, unknown>;
-  const alertModel = db["satelliteAlert"] as
-    | {
-        findFirst: (
-          args: Record<string, unknown>,
-        ) => Promise<{ id: string } | null>;
-        create: (args: Record<string, unknown>) => Promise<unknown>;
-      }
-    | undefined;
-
-  if (!alertModel) return 0;
-
   let generated = 0;
 
   for (const anomaly of report.anomalies) {
@@ -38,7 +26,7 @@ export async function generateAnomalyAlerts(
     const dedupeKey = `${anomaly.noradId}_ANOMALY_${anomaly.type}`;
 
     // Check if active alert already exists for this anomaly type
-    const existing = await alertModel.findFirst({
+    const existing = await prisma.satelliteAlert.findFirst({
       where: {
         noradId: anomaly.noradId,
         operatorId: orgId,
@@ -68,7 +56,7 @@ export async function generateAnomalyAlerts(
       .join("\n");
 
     try {
-      await alertModel.create({
+      await prisma.satelliteAlert.create({
         data: {
           noradId: anomaly.noradId,
           operatorId: orgId,

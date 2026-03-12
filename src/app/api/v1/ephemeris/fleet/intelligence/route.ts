@@ -32,26 +32,6 @@ interface HistoryRecord {
   calculatedAt: Date;
 }
 
-function getComplianceStateModel() {
-  const db = prisma as unknown as Record<string, unknown>;
-  return db["satelliteComplianceState"] as
-    | {
-        findMany: (
-          args: Record<string, unknown>,
-        ) => Promise<ComplianceStateRecord[]>;
-      }
-    | undefined;
-}
-
-function getHistoryModel() {
-  const db = prisma as unknown as Record<string, unknown>;
-  return db["satelliteComplianceStateHistory"] as
-    | {
-        findMany: (args: Record<string, unknown>) => Promise<HistoryRecord[]>;
-      }
-    | undefined;
-}
-
 function parseModuleScores(raw: unknown): Partial<Record<ModuleKey, number>> {
   const result: Partial<Record<ModuleKey, number>> = {};
   if (!raw || typeof raw !== "object") return result;
@@ -107,15 +87,12 @@ export async function GET(request: NextRequest) {
     const includeBenchmark =
       request.nextUrl.searchParams.get("include_benchmark") !== "false";
 
-    const stateModel = getComplianceStateModel();
-    const historyModel = getHistoryModel();
-
     // ── Load current compliance states ──────────────────────────────────
 
     let snapshots: SatelliteSnapshot[] = [];
 
-    if (stateModel) {
-      const states = await stateModel.findMany({
+    {
+      const states = await prisma.satelliteComplianceState.findMany({
         where: { operatorId: membership.organizationId },
       });
 
@@ -137,36 +114,23 @@ export async function GET(request: NextRequest) {
       );
 
       // Count alerts per satellite
-      const alertModel = (prisma as unknown as Record<string, unknown>)[
-        "satelliteAlert"
-      ] as
-        | {
-            count: (args: Record<string, unknown>) => Promise<number>;
-            groupBy: (
-              args: Record<string, unknown>,
-            ) => Promise<Array<{ noradId: string; _count: { id: number } }>>;
-          }
-        | undefined;
-
       const alertCounts = new Map<string, number>();
-      if (alertModel) {
-        try {
-          const noradIds = states.map((s) => s.noradId);
-          const grouped = await alertModel.groupBy({
-            by: ["noradId"],
-            where: {
-              noradId: { in: noradIds },
-              operatorId: membership.organizationId,
-              resolvedAt: null,
-            },
-            _count: { id: true },
-          });
-          for (const g of grouped) {
-            alertCounts.set(g.noradId, g._count.id);
-          }
-        } catch {
-          // groupBy may not be available — skip alert counts
+      try {
+        const noradIds = states.map((s) => s.noradId);
+        const grouped = await prisma.satelliteAlert.groupBy({
+          by: ["noradId"],
+          where: {
+            noradId: { in: noradIds },
+            operatorId: membership.organizationId,
+            resolvedAt: null,
+          },
+          _count: { id: true },
+        });
+        for (const g of grouped) {
+          alertCounts.set(g.noradId, g._count.id);
         }
+      } catch {
+        // groupBy may not be available — skip alert counts
       }
 
       snapshots = states.map((state) => ({
@@ -185,11 +149,11 @@ export async function GET(request: NextRequest) {
 
     let historyData: SatelliteHistoryData[] | undefined;
 
-    if (historyModel && snapshots.length > 0) {
+    if (snapshots.length > 0) {
       const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
       const noradIds = snapshots.map((s) => s.noradId);
 
-      const records = await historyModel.findMany({
+      const records = await prisma.satelliteComplianceStateHistory.findMany({
         where: {
           operatorId: membership.organizationId,
           noradId: { in: noradIds },
@@ -226,10 +190,10 @@ export async function GET(request: NextRequest) {
 
     let benchmark = null;
 
-    if (includeBenchmark && stateModel) {
+    if (includeBenchmark) {
       try {
         // Load aggregated data from ALL operators (anonymized)
-        const allStates = await stateModel.findMany({
+        const allStates = await prisma.satelliteComplianceState.findMany({
           where: {}, // All operators
         });
 

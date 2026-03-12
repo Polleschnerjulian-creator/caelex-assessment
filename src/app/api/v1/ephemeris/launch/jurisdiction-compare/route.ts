@@ -44,17 +44,7 @@ export async function POST(request: NextRequest) {
     const orgId = membership.organizationId;
 
     // Look up entity
-    const db = prisma as unknown as {
-      operatorEntity: {
-        findFirst: (args: Record<string, unknown>) => Promise<{
-          id: string;
-          name: string;
-          identifiers: Record<string, unknown>;
-        } | null>;
-      };
-    };
-
-    const entity = await db.operatorEntity.findFirst({
+    const entity = await prisma.operatorEntity.findFirst({
       where: {
         id: body.entityId,
         organizationId: orgId,

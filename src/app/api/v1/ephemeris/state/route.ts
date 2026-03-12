@@ -90,19 +90,7 @@ async function readCachedState(
   noradId: string,
 ): Promise<Record<string, unknown> | null> {
   try {
-    const db = prisma as unknown as Record<string, unknown>;
-    const stateModel = db["satelliteComplianceState"] as
-      | {
-          findUnique: (args: Record<string, unknown>) => Promise<{
-            stateJson: unknown;
-            calculatedAt: Date;
-          } | null>;
-        }
-      | undefined;
-
-    if (!stateModel) return null;
-
-    const state = await stateModel.findUnique({
+    const state = await prisma.satelliteComplianceState.findUnique({
       where: { noradId_operatorId: { noradId, operatorId: orgId } },
       select: { stateJson: true, calculatedAt: true },
     });

@@ -5,11 +5,19 @@ import { autoDetectDependencies } from "@/lib/ephemeris/cross-type/auto-detect";
 
 export async function POST() {
   const session = await auth();
-  if (!session?.user?.organizationId) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = session.user.organizationId;
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId: session.user.id },
+    select: { organizationId: true },
+  });
+  if (!membership) {
+    return NextResponse.json({ error: "No organization" }, { status: 403 });
+  }
+
+  const orgId = membership.organizationId;
 
   try {
     const result = await autoDetectDependencies(orgId, prisma);

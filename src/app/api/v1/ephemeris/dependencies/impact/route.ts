@@ -7,8 +7,16 @@ import { propagateImpact } from "@/lib/ephemeris/cross-type/impact-propagation";
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.organizationId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No organization" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -23,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const result = await propagateImpact(
       entityId,
-      session.user.organizationId,
+      membership.organizationId,
       scoreDelta,
       affectedModules ?? [],
       prisma,

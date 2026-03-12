@@ -165,22 +165,7 @@ async function readCachedStates(
   const result = new Map<string, Record<string, unknown>>();
 
   try {
-    const db = prisma as unknown as Record<string, unknown>;
-    const stateModel = db["satelliteComplianceState"] as
-      | {
-          findMany: (args: Record<string, unknown>) => Promise<
-            Array<{
-              noradId: string;
-              stateJson: unknown;
-              calculatedAt: Date;
-            }>
-          >;
-        }
-      | undefined;
-
-    if (!stateModel) return result;
-
-    const states = await stateModel.findMany({
+    const states = await prisma.satelliteComplianceState.findMany({
       where: { operatorId: orgId },
       select: {
         noradId: true,
@@ -213,26 +198,7 @@ async function readCachedStates(
  */
 async function readLoEntities(orgId: string): Promise<OperatorEntityInput[]> {
   try {
-    const db = prisma as unknown as {
-      operatorEntity: {
-        findMany: (args: Record<string, unknown>) => Promise<
-          Array<{
-            id: string;
-            organizationId: string;
-            operatorType: string;
-            name: string;
-            identifiers: Record<string, unknown>;
-            metadata: Record<string, unknown>;
-            jurisdictions: string[];
-            status: string;
-          }>
-        >;
-      };
-    };
-
-    if (!db.operatorEntity) return [];
-
-    const entities = await db.operatorEntity.findMany({
+    const entities = await prisma.operatorEntity.findMany({
       where: {
         organizationId: orgId,
         operatorType: "LO",
@@ -246,7 +212,7 @@ async function readLoEntities(orgId: string): Promise<OperatorEntityInput[]> {
       name: e.name,
       identifiers:
         e.identifiers as unknown as OperatorEntityInput["identifiers"],
-      metadata: e.metadata,
+      metadata: (e.metadata as Record<string, unknown>) ?? {},
       jurisdictions: e.jurisdictions,
       status: e.status as OperatorEntityInput["status"],
     }));

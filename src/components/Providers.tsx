@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { KeyboardShortcutsProvider } from "@/components/providers/KeyboardShortcutsProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import PageTransition from "@/components/PageTransition";
 
 /**
  * Always wraps children in SessionProvider so useSession() never crashes.
@@ -19,7 +20,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <AuthWrapper>
       <ThemeProvider>
-        <KeyboardShortcutsProvider>{children}</KeyboardShortcutsProvider>
+        <KeyboardShortcutsProvider>
+          <PageTransition>{children}</PageTransition>
+        </KeyboardShortcutsProvider>
       </ThemeProvider>
     </AuthWrapper>
   );

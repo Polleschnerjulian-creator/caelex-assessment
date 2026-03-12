@@ -4,15 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { safeLog } from "@/lib/verity/utils/redaction";
 import { calculateSatelliteComplianceState } from "@/lib/ephemeris/core/satellite-compliance-state";
 import { runWhatIfScenario } from "@/lib/ephemeris/simulation/what-if-engine";
+import { SCENARIO_HANDLERS } from "@/lib/ephemeris/simulation/handlers";
 import type { WhatIfScenario } from "@/lib/ephemeris/core/types";
-
-const VALID_SCENARIO_TYPES = [
-  "JURISDICTION_CHANGE",
-  "ORBIT_RAISE",
-  "FUEL_BURN",
-  "THRUSTER_FAILURE",
-  "EOL_EXTENSION",
-] as const;
 
 /**
  * POST /api/v1/ephemeris/what-if
@@ -23,7 +16,7 @@ const VALID_SCENARIO_TYPES = [
  * {
  *   norad_id: string,
  *   scenario: {
- *     type: "JURISDICTION_CHANGE" | "ORBIT_RAISE" | "FUEL_BURN" | "THRUSTER_FAILURE" | "EOL_EXTENSION",
+ *     type: string (any registered scenario type from SCENARIO_HANDLERS),
  *     parameters: { ... }
  *   }
  * }
@@ -60,14 +53,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      !VALID_SCENARIO_TYPES.includes(
-        scenario.type as (typeof VALID_SCENARIO_TYPES)[number],
-      )
-    ) {
+    if (!(scenario.type in SCENARIO_HANDLERS)) {
       return NextResponse.json(
         {
-          error: `Invalid scenario type: ${scenario.type}. Valid types: ${VALID_SCENARIO_TYPES.join(", ")}`,
+          error: `Invalid scenario type: ${scenario.type}. There are ${Object.keys(SCENARIO_HANDLERS).length} valid scenario types registered.`,
         },
         { status: 400 },
       );

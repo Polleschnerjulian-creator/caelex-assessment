@@ -54,22 +54,7 @@ export async function GET(request: NextRequest) {
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: last 30 days
     const toDate = toParam ? new Date(toParam) : new Date();
 
-    // Access SatelliteComplianceStateHistory model
-    const db = prisma as unknown as Record<string, unknown>;
-    const historyModel = db["satelliteComplianceStateHistory"] as
-      | {
-          findMany: (args: Record<string, unknown>) => Promise<unknown[]>;
-        }
-      | undefined;
-
-    if (!historyModel) {
-      return NextResponse.json({
-        data: [],
-        meta: { note: "History model not yet available. Run prisma generate." },
-      });
-    }
-
-    const history = await historyModel.findMany({
+    const history = await prisma.satelliteComplianceStateHistory.findMany({
       where: {
         noradId,
         operatorId: membership.organizationId,
@@ -87,7 +72,7 @@ export async function GET(request: NextRequest) {
         noradId,
         from: fromDate.toISOString(),
         to: toDate.toISOString(),
-        count: (history as unknown[]).length,
+        count: history.length,
       },
     });
   } catch (error) {

@@ -718,27 +718,7 @@ async function loadISOSAlerts(
   missionId: string,
 ): Promise<SatelliteAlertType[]> {
   try {
-    const db = prisma as unknown as Record<string, unknown>;
-    if (!db.satelliteAlert) return [];
-
-    const alertModel = db.satelliteAlert as {
-      findMany: (args: Record<string, unknown>) => Promise<
-        Array<{
-          id: string;
-          noradId: string;
-          type: string;
-          severity: string;
-          title: string;
-          description: string;
-          regulationRef: string | null;
-          triggeredAt: Date;
-          resolvedAt: Date | null;
-          acknowledged: boolean;
-        }>
-      >;
-    };
-
-    const alerts = await alertModel.findMany({
+    const alerts = await prisma.satelliteAlert.findMany({
       where: {
         operatorId: orgId,
         noradId: missionId,

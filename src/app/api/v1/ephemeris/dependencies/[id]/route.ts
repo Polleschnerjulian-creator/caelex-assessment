@@ -9,8 +9,16 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.organizationId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No organization" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -19,7 +27,7 @@ export async function DELETE(
     const dependency = await prisma.entityDependency.findFirst({
       where: {
         id,
-        organizationId: session.user.organizationId,
+        organizationId: membership.organizationId,
       },
     });
 
