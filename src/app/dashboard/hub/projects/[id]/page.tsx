@@ -13,6 +13,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import ProjectForm from "@/components/hub/ProjectForm";
+import { TaskForm } from "@/components/hub/TaskForm";
 import { csrfHeaders } from "@/lib/csrf-client";
 
 // ——— Types ———
@@ -134,7 +135,8 @@ export default function ProjectDetailPage({
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
-  const [tasksLoaded, setTasksLoaded] = useState(false);
+  const [taskError, setTaskError] = useState<string | null>(null);
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
 
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -175,21 +177,23 @@ export default function ProjectDetailPage({
   // ——— Fetch tasks ———
 
   const fetchTasks = useCallback(async () => {
-    if (!id || tasksLoaded) return;
+    if (!id) return;
     setLoadingTasks(true);
+    setTaskError(null);
     try {
       const res = await fetch(`/api/v1/hub/tasks?projectId=${id}`);
       const data = await res.json();
       if (res.ok) {
         setTasks((data as { tasks: Task[] }).tasks ?? []);
-        setTasksLoaded(true);
+      } else {
+        setTaskError("Failed to load tasks");
       }
     } catch {
-      // silently fail
+      setTaskError("Network error — could not load tasks");
     } finally {
       setLoadingTasks(false);
     }
-  }, [id, tasksLoaded]);
+  }, [id]);
 
   useEffect(() => {
     void fetchTasks();
@@ -390,34 +394,24 @@ export default function ProjectDetailPage({
                   Tasks
                 </h2>
                 <button
-                  onClick={async () => {
-                    const title = prompt("Task title:");
-                    if (!title?.trim()) return;
-                    try {
-                      const res = await fetch("/api/v1/hub/tasks", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                          ...csrfHeaders(),
-                        },
-                        body: JSON.stringify({
-                          projectId: id,
-                          title: title.trim(),
-                        }),
-                      });
-                      if (res.ok) {
-                        setTasksLoaded(false);
-                        void fetchTasks();
-                      }
-                    } catch {
-                      // no-op
-                    }
-                  }}
+                  onClick={() => setTaskFormOpen(true)}
                   className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium bg-[#1d1d1f] hover:bg-[#000000] text-white rounded-full transition-colors"
                 >
                   <Plus size={13} /> New Task
                 </button>
               </div>
+
+              {taskError && (
+                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 mb-4 flex items-center justify-between">
+                  <p className="text-[13px] text-red-600">{taskError}</p>
+                  <button
+                    onClick={() => void fetchTasks()}
+                    className="text-[13px] text-red-600 hover:text-red-700 font-medium transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
 
               <div className="bg-white rounded-2xl border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
                 {loadingTasks ? (
@@ -639,6 +633,21 @@ export default function ProjectDetailPage({
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* New task modal */}
+      <TaskForm
+        open={taskFormOpen}
+        onClose={() => setTaskFormOpen(false)}
+        onCreated={() => {
+          setTaskFormOpen(false);
+          void fetchTasks();
+        }}
+        projectId={id}
+        projects={[
+          { id: project.id, name: project.name, color: project.color ?? null },
+        ]}
+        members={project.members.map((m) => m.user)}
+      />
 
       {/* Edit project modal */}
       <ProjectForm

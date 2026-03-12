@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const { projectId, name, color } = parsed.data;
 
-    const member = await isProjectMember(projectId, session.user.id);
+    const member = await isProjectMember(projectId, session.user.id, orgId);
     if (!member) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

@@ -19,7 +19,7 @@ interface TaskItem {
   dueDate?: string | null;
   project: { id: string; name: string; color: string | null };
   assignee?: { id: string; name: string | null; image: string | null } | null;
-  creator: { id: string; name: string | null; image: string | null };
+  creator: { id: string; name: string | null; image: string | null } | null;
   taskLabels: { label: { id: string; name: string; color: string } }[];
   _count: { comments: number };
 }
@@ -94,6 +94,8 @@ export default function HubTasksPage() {
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("hub-tasks-view");
@@ -115,6 +117,7 @@ export default function HubTasksPage() {
 
   const fetchTasks = useCallback(async () => {
     try {
+      setFetchError(null);
       const params = new URLSearchParams();
       if (filters.projectId) params.set("projectId", filters.projectId);
       if (filters.status) params.set("status", filters.status);
@@ -127,7 +130,7 @@ export default function HubTasksPage() {
       const data = await res.json();
       setTasks(Array.isArray(data) ? data : (data.tasks ?? []));
     } catch {
-      // silently fail
+      setFetchError("Failed to load tasks — please try again");
     }
   }, [filters]);
 
@@ -138,7 +141,7 @@ export default function HubTasksPage() {
       const data = await res.json();
       setProjects(Array.isArray(data) ? data : (data.projects ?? []));
     } catch {
-      // silently fail
+      setFetchError("Failed to load projects — please try again");
     }
   }, []);
 
@@ -148,24 +151,27 @@ export default function HubTasksPage() {
       await Promise.all([fetchTasks(), fetchProjects()]);
       setLoading(false);
     }
-    loadAll();
+    void loadAll();
   }, [fetchTasks, fetchProjects]);
 
   async function handleReorder(
     updates: { id: string; status: string; position: number }[],
   ) {
     try {
-      await fetch("/api/v1/hub/tasks/reorder", {
+      setReorderError(null);
+      const res = await fetch("/api/v1/hub/tasks/reorder", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           ...csrfHeaders(),
         },
-        body: JSON.stringify({ updates }),
+        body: JSON.stringify({ tasks: updates }),
       });
+      if (!res.ok) throw new Error("Reorder failed");
       await fetchTasks();
     } catch {
-      // silently fail
+      setReorderError("Failed to save task order — please refresh");
+      await fetchTasks();
     }
   }
 
@@ -281,6 +287,33 @@ export default function HubTasksPage() {
           onChange={setFilters}
         />
       </div>
+
+      {/* Error banners */}
+      {fetchError && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 flex items-center justify-between">
+          <p className="text-[13px] text-red-600">{fetchError}</p>
+          <button
+            onClick={() => {
+              setFetchError(null);
+              void Promise.all([fetchTasks(), fetchProjects()]);
+            }}
+            className="text-[13px] text-red-600 hover:text-red-700 font-medium transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {reorderError && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 flex items-center justify-between">
+          <p className="text-[13px] text-amber-700">{reorderError}</p>
+          <button
+            onClick={() => setReorderError(null)}
+            className="text-[13px] text-amber-700 hover:text-amber-800 font-medium transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
@@ -429,7 +462,7 @@ export default function HubTasksPage() {
         onClose={() => setFormOpen(false)}
         onCreated={() => {
           setFormOpen(false);
-          fetchTasks();
+          void fetchTasks();
         }}
         projects={projects}
         members={members}

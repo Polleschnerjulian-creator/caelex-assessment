@@ -68,7 +68,7 @@ export function TaskForm({
       setDueDate("");
     }
     setError(null);
-  }, [initialData, open, projectId, projects]);
+  }, [initialData, open, projectId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserOrgId, isProjectMember } from "@/lib/hub/queries";
 import { reorderTasksSchema } from "@/lib/hub/validations";
 
 export async function PATCH(request: NextRequest) {
@@ -40,14 +40,14 @@ export async function PATCH(request: NextRequest) {
 
     const { tasks } = parsed.data;
 
-    // Verify all tasks belong to the user's org
+    // Verify all tasks belong to the user's org and same project
     const taskIds = tasks.map((t) => t.id);
     const existingTasks = await prisma.hubTask.findMany({
       where: {
         id: { in: taskIds },
         project: { organizationId: orgId },
       },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
 
     if (existingTasks.length !== taskIds.length) {
@@ -55,6 +55,22 @@ export async function PATCH(request: NextRequest) {
         { error: "One or more tasks not found or not accessible" },
         { status: 404 },
       );
+    }
+
+    // Ensure all tasks belong to the same project
+    const projectIds = new Set(existingTasks.map((t) => t.projectId));
+    if (projectIds.size !== 1) {
+      return NextResponse.json(
+        { error: "All tasks must belong to the same project" },
+        { status: 400 },
+      );
+    }
+
+    // Check project membership
+    const projectId = [...projectIds][0];
+    const member = await isProjectMember(projectId, session.user.id, orgId);
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Batch update using a transaction

@@ -33,7 +33,7 @@ export async function POST(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id);
+    const admin = await isProjectAdmin(id, session.user.id, orgId);
     if (!admin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -60,6 +60,12 @@ export async function POST(
       );
     }
 
+    // Check if member already exists to determine response status
+    const existing = await prisma.hubProjectMember.findUnique({
+      where: { projectId_userId: { projectId: id, userId } },
+      select: { id: true },
+    });
+
     const member = await prisma.hubProjectMember.upsert({
       where: { projectId_userId: { projectId: id, userId } },
       update: { role: role ?? "MEMBER" },
@@ -71,7 +77,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ member }, { status: 201 });
+    return NextResponse.json({ member }, { status: existing ? 200 : 201 });
   } catch (err) {
     console.error("[hub/projects/[id]/members] POST error:", err);
     return NextResponse.json(

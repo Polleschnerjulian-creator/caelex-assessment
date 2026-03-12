@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserOrgId, isProjectMember } from "@/lib/hub/queries";
 import { createCommentSchema } from "@/lib/hub/validations";
 
 export async function GET(
@@ -33,13 +33,22 @@ export async function GET(
       );
     }
 
-    // Verify task is in user's org
+    // Verify task is in user's org and check project membership
     const task = await prisma.hubTask.findFirst({
       where: { id, project: { organizationId: orgId } },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    const member = await isProjectMember(
+      task.projectId,
+      session.user.id,
+      orgId,
+    );
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const comments = await prisma.hubTaskComment.findMany({
@@ -86,13 +95,22 @@ export async function POST(
       );
     }
 
-    // Verify task exists in user's org
+    // Verify task exists in user's org and check project membership
     const task = await prisma.hubTask.findFirst({
       where: { id, project: { organizationId: orgId } },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    const member = await isProjectMember(
+      task.projectId,
+      session.user.id,
+      orgId,
+    );
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();

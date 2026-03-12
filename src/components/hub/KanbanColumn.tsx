@@ -19,7 +19,7 @@ interface TaskItem {
   dueDate?: string | null;
   project: { id: string; name: string; color: string | null };
   assignee?: { id: string; name: string | null; image: string | null } | null;
-  creator: { id: string; name: string | null; image: string | null };
+  creator: { id: string; name: string | null; image: string | null } | null;
   taskLabels: { label: { id: string; name: string; color: string } }[];
   _count: { comments: number };
 }

@@ -32,7 +32,7 @@ export async function DELETE(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id);
+    const admin = await isProjectAdmin(id, session.user.id, orgId);
     if (!admin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

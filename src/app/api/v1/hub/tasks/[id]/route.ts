@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserOrgId, isProjectMember } from "@/lib/hub/queries";
 import { updateTaskSchema } from "@/lib/hub/validations";
 
 export async function GET(
@@ -56,11 +56,24 @@ export async function GET(
         taskLabels: {
           include: { label: true },
         },
+        _count: {
+          select: { comments: true },
+        },
       },
     });
 
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    // Check project membership
+    const member = await isProjectMember(
+      task.project.id,
+      session.user.id,
+      orgId,
+    );
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json({ task });
@@ -100,10 +113,20 @@ export async function PATCH(
     // Verify task is in user's org
     const existing = await prisma.hubTask.findFirst({
       where: { id, project: { organizationId: orgId } },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
     if (!existing) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    // Check project membership
+    const member = await isProjectMember(
+      existing.projectId,
+      session.user.id,
+      orgId,
+    );
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -116,6 +139,20 @@ export async function PATCH(
     }
 
     const { labelIds, ...taskData } = parsed.data;
+
+    // Validate assigneeId belongs to the organization
+    if (taskData.assigneeId) {
+      const assigneeInOrg = await prisma.organizationMember.findFirst({
+        where: { userId: taskData.assigneeId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!assigneeInOrg) {
+        return NextResponse.json(
+          { error: "Assignee is not a member of this organization" },
+          { status: 400 },
+        );
+      }
+    }
 
     const task = await prisma.hubTask.update({
       where: { id },
@@ -191,10 +228,20 @@ export async function DELETE(
     // Verify task is in user's org
     const existing = await prisma.hubTask.findFirst({
       where: { id, project: { organizationId: orgId } },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
     if (!existing) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    // Check project membership
+    const member = await isProjectMember(
+      existing.projectId,
+      session.user.id,
+      orgId,
+    );
+    if (!member) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await prisma.hubTask.delete({ where: { id } });

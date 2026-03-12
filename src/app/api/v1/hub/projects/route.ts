@@ -30,7 +30,13 @@ export async function GET(request: NextRequest) {
     }
 
     const projects = await prisma.hubProject.findMany({
-      where: { organizationId: orgId },
+      where: {
+        organizationId: orgId,
+        OR: [
+          { ownerId: session.user.id },
+          { members: { some: { userId: session.user.id } } },
+        ],
+      },
       include: {
         owner: {
           select: { id: true, name: true, image: true },
@@ -41,6 +47,7 @@ export async function GET(request: NextRequest) {
               select: { id: true, name: true, image: true },
             },
           },
+          take: 20,
         },
         _count: {
           select: { tasks: true },

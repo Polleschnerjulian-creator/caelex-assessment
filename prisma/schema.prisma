@@ -6908,7 +6908,7 @@ model HubProject {
   tasks        HubTask[]
   labels       HubLabel[]
 
-  @@index([organizationId])
+  @@index([organizationId, status])
   @@index([ownerId])
 }
 
@@ -6920,7 +6920,7 @@ model HubProjectMember {
   joinedAt  DateTime      @default(now())
 
   project HubProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User       @relation("HubProjectMembers", fields: [userId], references: [id])
+  user    User       @relation("HubProjectMembers", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@index([userId])
@@ -6934,15 +6934,15 @@ model HubTask {
   status      HubTaskStatus   @default(TODO)
   priority    HubTaskPriority @default(MEDIUM)
   assigneeId  String?
-  creatorId   String
+  creatorId   String?
   dueDate     DateTime?
   position    Int             @default(0)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   project    HubProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee   User?            @relation("HubTaskAssignee", fields: [assigneeId], references: [id])
-  creator    User             @relation("HubTaskCreator", fields: [creatorId], references: [id])
+  assignee   User?            @relation("HubTaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creator    User?            @relation("HubTaskCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   comments   HubTaskComment[]
   taskLabels HubTaskLabel[]
 
@@ -6955,22 +6955,25 @@ model HubTask {
 model HubTaskComment {
   id        String   @id @default(cuid())
   taskId    String
-  authorId  String
+  authorId  String?
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   task   HubTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  author User    @relation("HubTaskComments", fields: [authorId], references: [id])
+  author User?   @relation("HubTaskComments", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([taskId])
+  @@index([authorId])
 }
 
 model HubLabel {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   projectId String
   name      String
   color     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   project HubProject     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tasks   HubTaskLabel[]
@@ -6986,4 +6989,5 @@ model HubTaskLabel {
   label HubLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([taskId, labelId])
+  @@index([labelId])
 }

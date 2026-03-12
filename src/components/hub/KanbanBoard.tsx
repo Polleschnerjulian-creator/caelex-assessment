@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
   closestCorners,
@@ -22,7 +22,7 @@ interface TaskItem {
   dueDate?: string | null;
   project: { id: string; name: string; color: string | null };
   assignee?: { id: string; name: string | null; image: string | null } | null;
-  creator: { id: string; name: string | null; image: string | null };
+  creator: { id: string; name: string | null; image: string | null } | null;
   taskLabels: { label: { id: string; name: string; color: string } }[];
   _count: { comments: number };
 }
@@ -50,23 +50,23 @@ export function KanbanBoard({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localTasks, setLocalTasks] = useState<TaskItem[]>(tasks);
 
-  // Keep localTasks in sync when parent tasks prop changes
-  // (simple approach: update when task count or ids change)
-  const taskIds = tasks.map((t) => t.id).join(",");
-  const localTaskIds = localTasks.map((t) => t.id).join(",");
-  if (taskIds !== localTaskIds) {
+  // Sync localTasks when parent tasks prop changes (proper useEffect, not render-body setState)
+  useEffect(() => {
     setLocalTasks(tasks);
-  }
+  }, [tasks]);
 
   const activeTask = activeId
     ? localTasks.find((t) => t.id === activeId)
     : null;
 
-  function getColumnTasks(columnId: string): TaskItem[] {
-    return localTasks
-      .filter((t) => t.status === columnId)
-      .sort((a, b) => a.position - b.position);
-  }
+  const getColumnTasks = useCallback(
+    (columnId: string): TaskItem[] => {
+      return localTasks
+        .filter((t) => t.status === columnId)
+        .sort((a, b) => a.position - b.position);
+    },
+    [localTasks],
+  );
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
@@ -81,16 +81,16 @@ export function KanbanBoard({
     const activeTaskId = active.id as string;
     const overId = over.id as string;
 
-    const activeTask = localTasks.find((t) => t.id === activeTaskId);
-    if (!activeTask) return;
+    const draggedTask = localTasks.find((t) => t.id === activeTaskId);
+    if (!draggedTask) return;
 
     // Determine target column: either a column id or get the status of the task being dropped on
     const isColumnId = COLUMNS.some((c) => c.id === overId);
     const targetColumnId = isColumnId
       ? overId
-      : (localTasks.find((t) => t.id === overId)?.status ?? activeTask.status);
+      : (localTasks.find((t) => t.id === overId)?.status ?? draggedTask.status);
 
-    const sourceColumnId = activeTask.status;
+    const sourceColumnId = draggedTask.status;
 
     if (sourceColumnId === targetColumnId) {
       // Same column reorder
@@ -121,68 +121,61 @@ export function KanbanBoard({
 
       onReorder(updates);
     } else {
-      // Moving to a different column
-      const targetColumnTasks = getColumnTasks(targetColumnId);
-      const newPosition = isColumnId
-        ? targetColumnTasks.length
-        : targetColumnTasks.findIndex((t) => t.id === overId);
-
-      const insertPosition =
-        newPosition === -1 ? targetColumnTasks.length : newPosition;
-
-      setLocalTasks((prev) => {
-        // Remove from source, insert into target
-        const withoutActive = prev.filter((t) => t.id !== activeTaskId);
-        const newTargetTasks = withoutActive
-          .filter((t) => t.status === targetColumnId)
-          .sort((a, b) => a.position - b.position);
-
-        newTargetTasks.splice(insertPosition, 0, {
-          ...activeTask,
-          status: targetColumnId,
-        });
-
-        const updates = newTargetTasks.map((t, idx) => ({
-          ...t,
-          status: targetColumnId,
-          position: idx,
-        }));
-
-        const otherTasks = withoutActive.filter(
-          (t) => t.status !== targetColumnId,
-        );
-        return [...otherTasks, ...updates];
-      });
-
-      // Build updates for all affected tasks
+      // Moving to a different column — compute updates from a single source of truth
       const withoutActive = localTasks.filter((t) => t.id !== activeTaskId);
-      const newTargetTasks = withoutActive
+      const targetColumnTasks = withoutActive
         .filter((t) => t.status === targetColumnId)
         .sort((a, b) => a.position - b.position);
-      newTargetTasks.splice(insertPosition, 0, {
-        ...activeTask,
+
+      const rawPosition = isColumnId
+        ? targetColumnTasks.length
+        : targetColumnTasks.findIndex((t) => t.id === overId);
+      const insertPosition =
+        rawPosition === -1 ? targetColumnTasks.length : rawPosition;
+
+      // Insert the moved task into target column
+      targetColumnTasks.splice(insertPosition, 0, {
+        ...draggedTask,
         status: targetColumnId,
       });
 
+      // Reindex source column
       const updatedSourceTasks = withoutActive
         .filter((t) => t.status === sourceColumnId)
         .sort((a, b) => a.position - b.position);
 
+      // Build the full updates array from the computed state
       const updates: { id: string; status: string; position: number }[] = [
-        { id: activeTaskId, status: targetColumnId, position: insertPosition },
-        ...newTargetTasks
-          .filter((t) => t.id !== activeTaskId)
-          .map((t, idx) => ({
-            id: t.id,
-            status: targetColumnId,
-            position: idx >= insertPosition ? idx + 1 : idx,
-          })),
+        ...targetColumnTasks.map((t, idx) => ({
+          id: t.id,
+          status: targetColumnId,
+          position: idx,
+        })),
         ...updatedSourceTasks.map((t, idx) => ({
           id: t.id,
           status: sourceColumnId,
           position: idx,
         })),
       ];
+
+      // Optimistic update using the same computed data
+      setLocalTasks((prev) => {
+        const otherTasks = prev.filter(
+          (t) =>
+            t.status !== targetColumnId &&
+            t.status !== sourceColumnId &&
+            t.id !== activeTaskId,
+        );
+        return [
+          ...otherTasks,
+          ...targetColumnTasks.map((t, idx) => ({
+            ...t,
+            status: targetColumnId,
+            position: idx,
+          })),
+          ...updatedSourceTasks.map((t, idx) => ({ ...t, position: idx })),
+        ];
+      });
 
       onReorder(updates);
     }

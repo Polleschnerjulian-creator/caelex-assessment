@@ -41,7 +41,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Label not found" }, { status: 404 });
     }
 
-    const admin = await isProjectAdmin(label.projectId, session.user.id);
+    const admin = await isProjectAdmin(label.projectId, session.user.id, orgId);
     if (!admin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

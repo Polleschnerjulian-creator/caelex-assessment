@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const createProjectSchema = z.object({
   name: z.string().min(1).max(100).trim(),
-  description: z.string().max(5000).trim().optional(),
+  description: z.string().max(5000).trim().nullable().optional(),
   color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
@@ -27,7 +27,7 @@ export const updateProjectSchema = z.object({
 export const createTaskSchema = z.object({
   projectId: z.string().cuid(),
   title: z.string().min(1).max(200).trim(),
-  description: z.string().max(5000).trim().optional(),
+  description: z.string().max(5000).trim().nullable().optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   assigneeId: z.string().cuid().nullable().optional(),
@@ -46,13 +46,15 @@ export const updateTaskSchema = z.object({
 });
 
 export const reorderTasksSchema = z.object({
-  tasks: z.array(
-    z.object({
-      id: z.string().cuid(),
-      status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]),
-      position: z.number().int().min(0),
-    }),
-  ),
+  tasks: z
+    .array(
+      z.object({
+        id: z.string().cuid(),
+        status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]),
+        position: z.number().int().min(0),
+      }),
+    )
+    .max(500),
 });
 
 // ─── Comments ────────────────────────────────────────────────────────────────

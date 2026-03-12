@@ -18,14 +18,14 @@ interface TaskItem {
   dueDate?: string | null;
   project: { id: string; name: string; color: string | null };
   assignee?: { id: string; name: string | null; image: string | null } | null;
-  creator: { id: string; name: string | null; image: string | null };
+  creator: { id: string; name: string | null; image: string | null } | null;
   taskLabels: { label: { id: string; name: string; color: string } }[];
-  _count: { comments: number };
+  _count?: { comments: number };
   comments?: {
     id: string;
     content: string;
     createdAt: string;
-    author: { id: string; name: string | null; image: string | null };
+    author: { id: string; name: string | null; image: string | null } | null;
   }[];
 }
 
@@ -59,6 +59,15 @@ function formatDateTime(dateStr: string): string {
   });
 }
 
+function toDateInputValue(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toISOString().split("T")[0];
+  } catch {
+    return "";
+  }
+}
+
 export function TaskDetailDrawer({
   taskId,
   onClose,
@@ -67,26 +76,32 @@ export function TaskDetailDrawer({
 }: TaskDetailDrawerProps) {
   const [task, setTask] = useState<TaskItem | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [descDraft, setDescDraft] = useState("");
+  const [dueDateDraft, setDueDateDraft] = useState("");
   const [newComment, setNewComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
+  const [patchError, setPatchError] = useState<string | null>(null);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const fetchTask = useCallback(async (id: string) => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/v1/hub/tasks/${id}`);
       if (!res.ok) throw new Error("Failed to fetch task");
       const data = await res.json();
-      setTask(data);
-      setTitleDraft(data.title ?? "");
-      setDescDraft(data.description ?? "");
+      const taskData = data.task ?? data;
+      setTask(taskData);
+      setTitleDraft(taskData.title ?? "");
+      setDescDraft(taskData.description ?? "");
+      setDueDateDraft(toDateInputValue(taskData.dueDate));
     } catch {
-      // silently fail
+      setError("Failed to load task");
     } finally {
       setLoading(false);
     }
@@ -95,6 +110,7 @@ export function TaskDetailDrawer({
   useEffect(() => {
     if (taskId) {
       fetchTask(taskId);
+      setPatchError(null);
     } else {
       setTask(null);
     }
@@ -108,6 +124,7 @@ export function TaskDetailDrawer({
 
   async function patchField(field: string, value: unknown) {
     if (!task) return;
+    setPatchError(null);
     try {
       const res = await fetch(`/api/v1/hub/tasks/${task.id}`, {
         method: "PATCH",
@@ -117,12 +134,19 @@ export function TaskDetailDrawer({
         },
         body: JSON.stringify({ [field]: value }),
       });
-      if (!res.ok) throw new Error("Failed to update task");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          (data as { error?: string }).error ?? "Failed to update",
+        );
+      }
       const updated = await res.json();
-      setTask(updated);
+      const updatedTask = updated.task ?? updated;
+      setTask(updatedTask);
+      setDueDateDraft(toDateInputValue(updatedTask.dueDate));
       onUpdated();
-    } catch {
-      // silently fail
+    } catch (err) {
+      setPatchError(err instanceof Error ? err.message : "Failed to update");
     }
   }
 
@@ -139,9 +163,18 @@ export function TaskDetailDrawer({
     }
   }
 
+  async function handleDueDateBlur() {
+    if (!task) return;
+    const currentValue = toDateInputValue(task.dueDate);
+    if (dueDateDraft !== currentValue) {
+      await patchField("dueDate", dueDateDraft || null);
+    }
+  }
+
   async function handleSendComment() {
     if (!task || !newComment.trim()) return;
     setSendingComment(true);
+    setPatchError(null);
     try {
       const res = await fetch(`/api/v1/hub/tasks/${task.id}/comments`, {
         method: "POST",
@@ -151,16 +184,25 @@ export function TaskDetailDrawer({
         },
         body: JSON.stringify({ content: newComment.trim() }),
       });
-      if (!res.ok) throw new Error("Failed to post comment");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          (data as { error?: string }).error ?? "Failed to post comment",
+        );
+      }
       setNewComment("");
       await fetchTask(task.id);
       onUpdated();
-    } catch {
-      // silently fail
+    } catch (err) {
+      setPatchError(
+        err instanceof Error ? err.message : "Failed to post comment",
+      );
     } finally {
       setSendingComment(false);
     }
   }
+
+  const commentCount = task?.comments?.length ?? task?._count?.comments ?? 0;
 
   return (
     <AnimatePresence>
@@ -208,8 +250,28 @@ export function TaskDetailDrawer({
                 </div>
               )}
 
-              {!loading && task && (
+              {!loading && error && (
+                <div className="px-5 py-8 text-center">
+                  <p className="text-[13px] text-red-600">{error}</p>
+                  <button
+                    type="button"
+                    onClick={() => taskId && fetchTask(taskId)}
+                    className="mt-3 text-[13px] text-[#1d1d1f] font-medium hover:underline"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {!loading && !error && task && (
                 <div className="px-5 py-4 space-y-5">
+                  {/* Inline error banner */}
+                  {patchError && (
+                    <p className="text-[13px] text-red-600 bg-red-50 rounded-xl px-3 py-2">
+                      {patchError}
+                    </p>
+                  )}
+
                   {/* Editable title */}
                   <div>
                     {editingTitle ? (
@@ -325,7 +387,7 @@ export function TaskDetailDrawer({
                     />
                   </div>
 
-                  {/* Due date */}
+                  {/* Due date — controlled input */}
                   <div>
                     <label className="block text-[12px] text-[#86868b] mb-1.5">
                       <span className="flex items-center gap-1">
@@ -335,20 +397,15 @@ export function TaskDetailDrawer({
                     </label>
                     <input
                       type="date"
-                      defaultValue={
-                        task.dueDate
-                          ? new Date(task.dueDate).toISOString().split("T")[0]
-                          : ""
-                      }
-                      onBlur={(e) =>
-                        patchField("dueDate", e.target.value || null)
-                      }
+                      value={dueDateDraft}
+                      onChange={(e) => setDueDateDraft(e.target.value)}
+                      onBlur={handleDueDateBlur}
                       className="bg-white rounded-xl px-3 py-2 text-[14px] text-[#1d1d1f] border border-[#e5e5ea] focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 focus:outline-none transition-colors"
                     />
                   </div>
 
                   {/* Labels */}
-                  {task.taskLabels.length > 0 && (
+                  {task.taskLabels && task.taskLabels.length > 0 && (
                     <div>
                       <label className="block text-[12px] text-[#86868b] mb-1.5">
                         <span className="flex items-center gap-1">
@@ -396,10 +453,9 @@ export function TaskDetailDrawer({
                       />
                       <span className="text-[13px] font-medium text-[#1d1d1f]">
                         Comments
-                        {(task._count.comments > 0 ||
-                          (task.comments?.length ?? 0) > 0) && (
+                        {commentCount > 0 && (
                           <span className="ml-1 text-[#86868b]">
-                            ({task.comments?.length ?? task._count.comments})
+                            ({commentCount})
                           </span>
                         )}
                       </span>
@@ -411,12 +467,12 @@ export function TaskDetailDrawer({
                         task.comments.map((comment) => (
                           <div key={comment.id} className="flex gap-2.5">
                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0 mt-0.5">
-                              {getInitial(comment.author.name)}
+                              {getInitial(comment.author?.name ?? null)}
                             </span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-baseline gap-2">
                                 <span className="text-[13px] font-medium text-[#1d1d1f]">
-                                  {comment.author.name ?? "Unknown"}
+                                  {comment.author?.name ?? "Deleted user"}
                                 </span>
                                 <span className="text-[11px] text-[#86868b]/60">
                                   {formatDateTime(comment.createdAt)}
@@ -463,7 +519,7 @@ export function TaskDetailDrawer({
                 </div>
               )}
 
-              {!loading && !task && taskId && (
+              {!loading && !error && !task && taskId && (
                 <div className="flex items-center justify-center h-32">
                   <p className="text-[13px] text-[#86868b]">Task not found.</p>
                 </div>
