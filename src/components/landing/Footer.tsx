@@ -3,13 +3,47 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CaelexIcon } from "@/components/ui/Logo";
-import { ArrowRight, CheckCircle, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 
 interface FooterProps {
   theme?: "light" | "dark";
 }
 
-const platformLinks = [
+const solutionLinks = [
+  { label: "Regulatory Compliance", href: "/platform" },
+  { label: "Authorization & Licensing", href: "/platform" },
+  { label: "Risk Assessment", href: "/assessment" },
+  { label: "Cybersecurity & NIS2", href: "/platform" },
+  { label: "Debris Mitigation", href: "/platform" },
+  { label: "Environmental Impact", href: "/platform" },
+  { label: "Insurance Requirements", href: "/platform" },
+  { label: "Spectrum & ITU Filing", href: "/platform" },
+  { label: "Export Control (ITAR/EAR)", href: "/platform" },
+  { label: "Document Generation", href: "/platform" },
+  { label: "Compliance Monitoring", href: "/platform" },
+  { label: "NCA Submissions", href: "/platform" },
+  { label: "Audit & Evidence", href: "/platform" },
+  { label: "Due Diligence", href: "/assure/dashboard" },
+  { label: "Investor Readiness", href: "/assure/dashboard" },
+  { label: "Stakeholder Network", href: "/platform" },
+];
+
+const industryLinks = [
+  { label: "Spacecraft Operators", href: "/platform" },
+  { label: "Launch Providers", href: "/platform" },
+  { label: "Launch Site Operators", href: "/platform" },
+  { label: "In-Space Service Operators", href: "/platform" },
+  { label: "Collision Avoidance Providers", href: "/platform" },
+  { label: "Positional Data Providers", href: "/platform" },
+  { label: "Third Country Operators", href: "/platform" },
+  { label: "Space Agencies & Government", href: "/platform" },
+  { label: "Defense & Security", href: "/platform" },
+  { label: "Insurance & Finance", href: "/assure/dashboard" },
+  { label: "Legal & Consulting", href: "/platform" },
+  { label: "Space Startups", href: "/assessment" },
+];
+
+const capabilityLinks = [
   { label: "Comply", href: "/platform" },
   { label: "Shield", href: "/platform" },
   { label: "Sentinel", href: "/blog/agentic-system" },
@@ -18,48 +52,24 @@ const platformLinks = [
   { label: "HUB", href: "/dashboard/hub" },
   { label: "Assure", href: "/assure/dashboard" },
   { label: "Academy", href: "/academy/dashboard" },
+  { label: "Astra AI", href: "/platform" },
+  { label: "Mission Control", href: "/platform" },
+  { label: "Digital Twin", href: "/platform" },
+  { label: "Regulatory Feed", href: "/platform" },
 ];
 
-const solutionLinks = [
-  { label: "Regulatory Compliance", href: "/platform" },
-  { label: "Risk Assessment", href: "/assessment" },
-  { label: "Document Generation", href: "/platform" },
-  { label: "Compliance Monitoring", href: "/platform" },
-  { label: "Due Diligence", href: "/assure/dashboard" },
-  { label: "NCA Submissions", href: "/platform" },
-  { label: "Audit & Evidence", href: "/platform" },
-];
-
-const industryLinks = [
-  { label: "Satellite Operators", href: "/platform" },
-  { label: "Launch Providers", href: "/platform" },
-  { label: "Space Agencies", href: "/platform" },
-  { label: "Defense & Security", href: "/platform" },
-  { label: "Insurance & Finance", href: "/assure/dashboard" },
-  { label: "Space Startups", href: "/assessment" },
-  { label: "Legal & Consulting", href: "/platform" },
-];
-
-const resourceLinks = [
+const documentLinks = [
   { label: "Guides", href: "/guides" },
   { label: "Blog", href: "/blog" },
   { label: "Glossary", href: "/glossary" },
   { label: "Modules", href: "/modules" },
   { label: "Jurisdictions", href: "/jurisdictions" },
   { label: "API Documentation", href: "/docs/api" },
-  { label: "Changelog", href: "/blog" },
-];
-
-const companyLinks = [
   { label: "About", href: "/about" },
   { label: "Security", href: "/security" },
   { label: "Governance", href: "/governance" },
   { label: "Contact", href: "/contact" },
   { label: "Careers", href: "/careers" },
-  { label: "Partners", href: "/contact" },
-];
-
-const legalLinks = [
   { label: "Impressum", href: "/legal/impressum" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
@@ -154,8 +164,8 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       : "text-white/45 hover:text-white"
   }`;
 
-  const headingStyle = `text-caption uppercase tracking-wider mb-4 ${
-    isLight ? "text-[#6B7280]" : "text-white/45"
+  const headingStyle = `text-micro uppercase tracking-[0.15em] mb-6 ${
+    isLight ? "text-[#9CA3AF]" : "text-white/25"
   }`;
 
   return (
@@ -279,12 +289,12 @@ export default function Footer({ theme = "dark" }: FooterProps) {
         </div>
       </div>
 
-      {/* Main Footer — Expanded */}
+      {/* Main Footer — Palantir-style: brand left, 4 long columns right */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-8 lg:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 md:gap-8">
           {/* Brand Column */}
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-5">
               <CaelexIcon
                 size={24}
                 className={isLight ? "text-[#111827]" : "text-white"}
@@ -297,87 +307,58 @@ export default function Footer({ theme = "dark" }: FooterProps) {
               </span>
             </div>
             <p
-              className={`text-body leading-relaxed mb-4 ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
+              className={`text-body leading-relaxed mb-2 ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
             >
-              The world&apos;s space regulatory
+              © {new Date().getFullYear()} Caelex.
               <br />
-              intelligence platform.
+              All rights reserved.
             </p>
 
-            {/* Headquarters */}
-            <div className="flex items-center gap-1.5 mb-4">
-              <MapPin
-                size={12}
-                className={isLight ? "text-[#9CA3AF]" : "text-white/25"}
-                aria-hidden="true"
-              />
-              <span
-                className={`text-small ${isLight ? "text-[#9CA3AF]" : "text-white/25"}`}
-              >
-                Frankfurt am Main, Germany
-              </span>
-            </div>
-
-            <a
-              href="mailto:cs@caelex.eu"
-              className={`text-body block mb-6 transition-colors ${
+            <button
+              onClick={() =>
+                window.dispatchEvent(new Event("show-cookie-consent"))
+              }
+              className={`text-body transition-colors mb-8 ${
                 isLight
                   ? "text-[#4B5563] hover:text-[#111827]"
                   : "text-white/45 hover:text-white"
               }`}
             >
-              cs@caelex.eu
-            </a>
+              Cookie Settings
+            </button>
 
             {/* Social Links */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2.5">
               {[
                 {
                   href: "https://linkedin.com/company/caelex",
-                  Icon: LinkedInIcon,
                   label: "LinkedIn",
                 },
-                { href: "https://x.com/caboracaelex", Icon: XIcon, label: "X" },
+                { href: "https://x.com/caboracaelex", label: "X" },
                 {
                   href: "https://instagram.com/caelex.eu",
-                  Icon: InstagramIcon,
                   label: "Instagram",
                 },
-              ].map(({ href, Icon, label }) => (
+              ].map(({ href, label }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-11 h-11 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center transition-all ${
+                  className={`text-body uppercase tracking-wide transition-colors ${
                     isLight
-                      ? "bg-white border-[#E5E7EB] text-[#6B7280] hover:text-[#111827] hover:border-[#D1D5DB]"
-                      : "bg-white/[0.06] border-white/10 text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20"
+                      ? "text-[#4B5563] hover:text-[#111827]"
+                      : "text-white/45 hover:text-white"
                   }`}
-                  aria-label={`Follow Caelex on ${label}`}
                 >
-                  <Icon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                  {label}
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Platform */}
-          <nav aria-label="Platform links">
-            <h3 className={headingStyle}>Platform</h3>
-            <ul className="space-y-2.5">
-              {platformLinks.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className={linkStyle}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
           {/* Solutions */}
-          <nav aria-label="Solution links">
+          <nav aria-label="Solutions">
             <h3 className={headingStyle}>Solutions</h3>
             <ul className="space-y-2.5">
               {solutionLinks.map((link) => (
@@ -391,7 +372,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           </nav>
 
           {/* Industries */}
-          <nav aria-label="Industry links">
+          <nav aria-label="Industries">
             <h3 className={headingStyle}>Industries</h3>
             <ul className="space-y-2.5">
               {industryLinks.map((link) => (
@@ -404,11 +385,11 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             </ul>
           </nav>
 
-          {/* Resources */}
-          <nav aria-label="Resource links">
-            <h3 className={headingStyle}>Resources</h3>
+          {/* Capabilities */}
+          <nav aria-label="Capabilities">
+            <h3 className={headingStyle}>Capabilities</h3>
             <ul className="space-y-2.5">
-              {resourceLinks.map((link) => (
+              {capabilityLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
                     {link.label}
@@ -418,11 +399,11 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             </ul>
           </nav>
 
-          {/* Company */}
-          <nav aria-label="Company links">
-            <h3 className={headingStyle}>Company</h3>
+          {/* Documents */}
+          <nav aria-label="Documents">
+            <h3 className={headingStyle}>Documents</h3>
             <ul className="space-y-2.5">
-              {companyLinks.map((link) => (
+              {documentLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
                     {link.label}
@@ -431,96 +412,6 @@ export default function Footer({ theme = "dark" }: FooterProps) {
               ))}
             </ul>
           </nav>
-
-          {/* Legal */}
-          <nav aria-label="Legal links">
-            <h3 className={headingStyle}>Legal</h3>
-            <ul className="space-y-2.5">
-              {legalLinks.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className={linkStyle}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <button
-                  onClick={() =>
-                    window.dispatchEvent(new Event("show-cookie-consent"))
-                  }
-                  className={linkStyle}
-                >
-                  Cookie Settings
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div
-        className={`border-t ${isLight ? "border-[#E5E7EB]" : "border-white/[0.06]"}`}
-      >
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Copyright */}
-            <div className="flex items-center gap-4">
-              <span
-                className={`text-small ${isLight ? "text-[#6B7280]" : "text-white/25"}`}
-              >
-                © {new Date().getFullYear()} Caelex. All rights reserved.
-              </span>
-            </div>
-
-            {/* External Links */}
-            <nav
-              aria-label="External regulatory links"
-              className="flex flex-wrap items-center justify-center gap-4 md:gap-6"
-            >
-              {[
-                {
-                  label: "EU Space Act",
-                  href: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
-                },
-                {
-                  label: "NIS2 Directive",
-                  href: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
-                },
-                { label: "EUSPA", href: "https://www.euspa.europa.eu/" },
-                { label: "ESA", href: "https://www.esa.int/" },
-                { label: "UNOOSA", href: "https://www.unoosa.org/" },
-                { label: "ITU", href: "https://www.itu.int/" },
-              ].map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`text-small sm:text-caption transition-colors ${
-                    isLight
-                      ? "text-[#6B7280] hover:text-[#111827]"
-                      : "text-white/25 hover:text-white/45"
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          {/* Disclaimer */}
-          <p
-            className={`text-caption sm:text-micro text-center md:text-left mt-6 max-w-[900px] leading-relaxed ${
-              isLight ? "text-[#4B5563]" : "text-white/45"
-            }`}
-          >
-            This platform provides regulatory guidance based on the EU Space Act
-            (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space
-            laws across European jurisdictions. Information provided does not
-            constitute legal advice. For binding compliance decisions, consult
-            qualified legal professionals.
-          </p>
         </div>
       </div>
     </footer>
