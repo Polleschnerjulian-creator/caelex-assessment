@@ -29,7 +29,7 @@ const PRIORITIES = [
 ];
 
 const selectClass =
-  "glass-surface rounded-lg px-2.5 py-1.5 text-small text-slate-300 border border-white/10 hover:border-white/20 focus:border-blue-500/50 focus:outline-none transition-colors bg-transparent cursor-pointer";
+  "bg-white rounded-lg px-2.5 py-1.5 text-[13px] text-[#1d1d1f] border border-[#e5e5ea] hover:border-[#1d1d1f]/15 focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 focus:outline-none transition-colors cursor-pointer";
 
 export function TaskFilters({
   projects,
@@ -59,11 +59,11 @@ export function TaskFilters({
         onChange={(e) => set("projectId", e.target.value)}
         className={selectClass}
       >
-        <option value="" className="bg-navy-900 text-slate-400">
+        <option value="" className="text-[#86868b]">
           All Projects
         </option>
         {projects.map((p) => (
-          <option key={p.id} value={p.id} className="bg-navy-900">
+          <option key={p.id} value={p.id}>
             {p.name}
           </option>
         ))}
@@ -75,11 +75,11 @@ export function TaskFilters({
         onChange={(e) => set("status", e.target.value)}
         className={selectClass}
       >
-        <option value="" className="bg-navy-900 text-slate-400">
+        <option value="" className="text-[#86868b]">
           All Statuses
         </option>
         {STATUSES.map((s) => (
-          <option key={s.id} value={s.id} className="bg-navy-900">
+          <option key={s.id} value={s.id}>
             {s.label}
           </option>
         ))}
@@ -91,11 +91,11 @@ export function TaskFilters({
         onChange={(e) => set("priority", e.target.value)}
         className={selectClass}
       >
-        <option value="" className="bg-navy-900 text-slate-400">
+        <option value="" className="text-[#86868b]">
           All Priorities
         </option>
         {PRIORITIES.map((p) => (
-          <option key={p.id} value={p.id} className="bg-navy-900">
+          <option key={p.id} value={p.id}>
             {p.label}
           </option>
         ))}
@@ -107,11 +107,11 @@ export function TaskFilters({
         onChange={(e) => set("assigneeId", e.target.value)}
         className={selectClass}
       >
-        <option value="" className="bg-navy-900 text-slate-400">
+        <option value="" className="text-[#86868b]">
           All Assignees
         </option>
         {members.map((m) => (
-          <option key={m.id} value={m.id} className="bg-navy-900">
+          <option key={m.id} value={m.id}>
             {m.name ?? "Unknown"}
           </option>
         ))}
@@ -122,7 +122,7 @@ export function TaskFilters({
         <button
           type="button"
           onClick={clearAll}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-small text-slate-400 hover:text-slate-200 glass-surface border border-white/10 hover:border-white/20 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[13px] text-[#86868b] hover:text-[#1d1d1f] bg-[#f5f5f7] border border-[#e5e5ea] hover:border-[#1d1d1f]/15 transition-colors"
         >
           <X size={11} strokeWidth={2} />
           Clear

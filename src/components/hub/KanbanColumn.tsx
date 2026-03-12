@@ -74,11 +74,11 @@ export function KanbanColumn({
   const taskIds = tasks.map((t) => t.id);
 
   return (
-    <div className="flex-1 min-w-[250px] flex flex-col bg-white/[0.02] rounded-xl border border-white/5">
+    <div className="flex-1 min-w-[250px] flex flex-col bg-[#f5f5f7] rounded-2xl border border-[#e5e5ea]">
       {/* Column header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/5">
-        <span className="text-small font-medium text-slate-300">{label}</span>
-        <span className="text-caption bg-white/5 rounded px-1.5 py-0.5 text-slate-500">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[#e5e5ea]">
+        <span className="text-[13px] font-medium text-[#1d1d1f]">{label}</span>
+        <span className="text-[11px] bg-white rounded px-1.5 py-0.5 text-[#86868b] font-medium">
           {tasks.length}
         </span>
       </div>

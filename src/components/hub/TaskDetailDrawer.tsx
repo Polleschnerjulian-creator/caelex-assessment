@@ -68,7 +68,6 @@ export function TaskDetailDrawer({
   const [task, setTask] = useState<TaskItem | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Editable fields
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [descDraft, setDescDraft] = useState("");
@@ -87,7 +86,7 @@ export function TaskDetailDrawer({
       setTitleDraft(data.title ?? "");
       setDescDraft(data.description ?? "");
     } catch {
-      // silently fail; drawer stays open with no data
+      // silently fail
     } finally {
       setLoading(false);
     }
@@ -180,7 +179,7 @@ export function TaskDetailDrawer({
           {/* Drawer panel */}
           <motion.div
             key="drawer-panel"
-            className="fixed right-0 top-0 h-full z-50 w-[480px] max-w-full glass-floating border-l border-white/10 shadow-glass-elevated flex flex-col"
+            className="fixed right-0 top-0 h-full z-50 w-[480px] max-w-full bg-white border-l border-[#e5e5ea] shadow-[0_4px_24px_rgba(0,0,0,0.08),0_12px_48px_rgba(0,0,0,0.12)] flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -188,14 +187,14 @@ export function TaskDetailDrawer({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
-              <span className="text-caption text-slate-500 font-medium uppercase tracking-wider">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5ea] flex-shrink-0">
+              <span className="text-[12px] text-[#86868b] font-medium uppercase tracking-wider">
                 Task Details
               </span>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-500 hover:text-slate-300 transition-colors"
+                className="text-[#86868b] hover:text-[#1d1d1f] transition-colors"
               >
                 <X size={16} strokeWidth={2} />
               </button>
@@ -205,7 +204,7 @@ export function TaskDetailDrawer({
             <div className="flex-1 overflow-y-auto">
               {loading && (
                 <div className="flex items-center justify-center h-32">
-                  <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#e5e5ea] border-t-[#1d1d1f] rounded-full animate-spin" />
                 </div>
               )}
 
@@ -229,24 +228,24 @@ export function TaskDetailDrawer({
                             setTitleDraft(task.title);
                           }
                         }}
-                        className="w-full text-title font-semibold text-slate-100 bg-transparent border-b border-blue-500/50 focus:outline-none pb-1"
+                        className="w-full text-[17px] font-semibold text-[#1d1d1f] bg-transparent border-b-2 border-[#1d1d1f]/30 focus:outline-none pb-1"
                       />
                     ) : (
                       <h2
-                        className="text-title font-semibold text-slate-100 cursor-pointer hover:text-white transition-colors"
+                        className="text-[17px] font-semibold text-[#1d1d1f] cursor-pointer hover:text-[#000000] transition-colors"
                         onClick={() => setEditingTitle(true)}
                       >
                         {task.title}
                       </h2>
                     )}
-                    <p className="text-caption text-slate-600 mt-1">
+                    <p className="text-[11px] text-[#86868b]/60 mt-1">
                       Click title to edit
                     </p>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1.5">
+                    <label className="block text-[12px] text-[#86868b] mb-1.5">
                       Description
                     </label>
                     <textarea
@@ -255,13 +254,13 @@ export function TaskDetailDrawer({
                       onBlur={handleDescBlur}
                       placeholder="Add a description..."
                       rows={3}
-                      className="w-full glass-surface rounded-lg px-3 py-2 text-body text-slate-300 placeholder:text-slate-600 border border-white/10 focus:border-blue-500/50 focus:outline-none transition-colors resize-none"
+                      className="w-full bg-white rounded-xl px-3 py-2 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b]/50 border border-[#e5e5ea] focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 focus:outline-none transition-colors resize-none"
                     />
                   </div>
 
                   {/* Status */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1.5">
+                    <label className="block text-[12px] text-[#86868b] mb-1.5">
                       Status
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -271,10 +270,10 @@ export function TaskDetailDrawer({
                           type="button"
                           onClick={() => patchField("status", s.id)}
                           className={[
-                            "px-3 py-1.5 rounded-lg text-small border transition-colors",
+                            "px-3 py-1.5 rounded-lg text-[13px] border transition-colors",
                             task.status === s.id
-                              ? "bg-blue-500/20 border-blue-500/50 text-blue-300"
-                              : "glass-surface border-white/10 text-slate-400 hover:border-white/20",
+                              ? "bg-[#f5f5f7] border-[#1d1d1f]/20 text-[#1d1d1f] font-medium"
+                              : "bg-white border-[#e5e5ea] text-[#86868b] hover:border-[#1d1d1f]/15",
                           ].join(" ")}
                         >
                           {s.label}
@@ -285,7 +284,7 @@ export function TaskDetailDrawer({
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1.5">
+                    <label className="block text-[12px] text-[#86868b] mb-1.5">
                       Priority
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -295,17 +294,17 @@ export function TaskDetailDrawer({
                           type="button"
                           onClick={() => patchField("priority", p)}
                           className={[
-                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-small border transition-colors",
+                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] border transition-colors",
                             task.priority === p
-                              ? "bg-blue-500/20 border-blue-500/50 text-slate-200"
-                              : "glass-surface border-white/10 text-slate-400 hover:border-white/20",
+                              ? "bg-[#f5f5f7] border-[#1d1d1f]/20 text-[#1d1d1f]"
+                              : "bg-white border-[#e5e5ea] text-[#86868b] hover:border-[#1d1d1f]/15",
                           ].join(" ")}
                         >
                           <PriorityIcon
                             priority={p as "URGENT" | "HIGH" | "MEDIUM" | "LOW"}
                             size={12}
                           />
-                          <span className="text-caption capitalize">
+                          <span className="text-[12px] capitalize">
                             {p.charAt(0) + p.slice(1).toLowerCase()}
                           </span>
                         </button>
@@ -315,7 +314,7 @@ export function TaskDetailDrawer({
 
                   {/* Assignee */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1.5">
+                    <label className="block text-[12px] text-[#86868b] mb-1.5">
                       Assignee
                     </label>
                     <MemberPicker
@@ -328,7 +327,7 @@ export function TaskDetailDrawer({
 
                   {/* Due date */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1.5">
+                    <label className="block text-[12px] text-[#86868b] mb-1.5">
                       <span className="flex items-center gap-1">
                         <Calendar size={11} strokeWidth={2} />
                         Due Date
@@ -344,14 +343,14 @@ export function TaskDetailDrawer({
                       onBlur={(e) =>
                         patchField("dueDate", e.target.value || null)
                       }
-                      className="glass-surface rounded-lg px-3 py-2 text-body text-slate-200 border border-white/10 focus:border-blue-500/50 focus:outline-none transition-colors bg-transparent"
+                      className="bg-white rounded-xl px-3 py-2 text-[14px] text-[#1d1d1f] border border-[#e5e5ea] focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 focus:outline-none transition-colors"
                     />
                   </div>
 
                   {/* Labels */}
                   {task.taskLabels.length > 0 && (
                     <div>
-                      <label className="block text-caption text-slate-500 mb-1.5">
+                      <label className="block text-[12px] text-[#86868b] mb-1.5">
                         <span className="flex items-center gap-1">
                           <Tag size={11} strokeWidth={2} />
                           Labels
@@ -371,7 +370,7 @@ export function TaskDetailDrawer({
 
                   {/* Project */}
                   <div>
-                    <label className="block text-caption text-slate-500 mb-1">
+                    <label className="block text-[12px] text-[#86868b] mb-1">
                       Project
                     </label>
                     <div className="flex items-center gap-2">
@@ -381,25 +380,25 @@ export function TaskDetailDrawer({
                           backgroundColor: task.project.color ?? "#6B7280",
                         }}
                       />
-                      <span className="text-small text-slate-300">
+                      <span className="text-[13px] text-[#1d1d1f]">
                         {task.project.name}
                       </span>
                     </div>
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-white/5 pt-2">
+                  <div className="border-t border-[#e5e5ea] pt-2">
                     <div className="flex items-center gap-1.5 mb-3">
                       <MessageSquare
                         size={13}
                         strokeWidth={2}
-                        className="text-slate-500"
+                        className="text-[#86868b]"
                       />
-                      <span className="text-small font-medium text-slate-400">
+                      <span className="text-[13px] font-medium text-[#1d1d1f]">
                         Comments
                         {(task._count.comments > 0 ||
                           (task.comments?.length ?? 0) > 0) && (
-                          <span className="ml-1 text-slate-600">
+                          <span className="ml-1 text-[#86868b]">
                             ({task.comments?.length ?? task._count.comments})
                           </span>
                         )}
@@ -411,26 +410,26 @@ export function TaskDetailDrawer({
                       {task.comments && task.comments.length > 0 ? (
                         task.comments.map((comment) => (
                           <div key={comment.id} className="flex gap-2.5">
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-caption font-semibold flex-shrink-0 mt-0.5">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0 mt-0.5">
                               {getInitial(comment.author.name)}
                             </span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-baseline gap-2">
-                                <span className="text-small font-medium text-slate-300">
+                                <span className="text-[13px] font-medium text-[#1d1d1f]">
                                   {comment.author.name ?? "Unknown"}
                                 </span>
-                                <span className="text-caption text-slate-600">
+                                <span className="text-[11px] text-[#86868b]/60">
                                   {formatDateTime(comment.createdAt)}
                                 </span>
                               </div>
-                              <p className="text-small text-slate-400 mt-0.5 leading-relaxed">
+                              <p className="text-[13px] text-[#86868b] mt-0.5 leading-relaxed">
                                 {comment.content}
                               </p>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-small text-slate-600">
+                        <p className="text-[13px] text-[#86868b]/60">
                           No comments yet.
                         </p>
                       )}
@@ -449,13 +448,13 @@ export function TaskDetailDrawer({
                             handleSendComment();
                           }
                         }}
-                        className="flex-1 glass-surface rounded-lg px-3 py-2 text-small text-slate-200 placeholder:text-slate-600 border border-white/10 focus:border-blue-500/50 focus:outline-none transition-colors"
+                        className="flex-1 bg-white rounded-xl px-3 py-2 text-[13px] text-[#1d1d1f] placeholder:text-[#86868b]/50 border border-[#e5e5ea] focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 focus:outline-none transition-colors"
                       />
                       <button
                         type="button"
                         onClick={handleSendComment}
                         disabled={sendingComment || !newComment.trim()}
-                        className="px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-3 py-2 rounded-xl bg-[#1d1d1f] hover:bg-[#000000] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <Send size={13} strokeWidth={2} />
                       </button>
@@ -466,7 +465,7 @@ export function TaskDetailDrawer({
 
               {!loading && !task && taskId && (
                 <div className="flex items-center justify-center h-32">
-                  <p className="text-small text-slate-500">Task not found.</p>
+                  <p className="text-[13px] text-[#86868b]">Task not found.</p>
                 </div>
               )}
             </div>

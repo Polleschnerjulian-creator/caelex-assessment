@@ -12,8 +12,6 @@ import {
   Trash2,
   UserPlus,
 } from "lucide-react";
-import { glassItemVariants } from "@/components/ui/GlassMotion";
-import GlassCard from "@/components/ui/GlassCard";
 import ProjectForm from "@/components/hub/ProjectForm";
 import { csrfHeaders } from "@/lib/csrf-client";
 
@@ -68,18 +66,18 @@ const tabContentVariants = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    TODO: "bg-slate-500/20 text-slate-400",
-    IN_PROGRESS: "bg-blue-500/20 text-blue-400",
-    IN_REVIEW: "bg-amber-500/20 text-amber-400",
-    DONE: "bg-green-500/20 text-green-400",
-    ACTIVE: "bg-blue-500/20 text-blue-400",
-    ARCHIVED: "bg-slate-500/20 text-slate-400",
-    ON_HOLD: "bg-amber-500/20 text-amber-400",
-    COMPLETED: "bg-green-500/20 text-green-400",
+    TODO: "bg-[#f5f5f7] text-[#86868b]",
+    IN_PROGRESS: "bg-blue-50 text-blue-600",
+    IN_REVIEW: "bg-amber-50 text-amber-600",
+    DONE: "bg-green-50 text-green-600",
+    ACTIVE: "bg-blue-50 text-blue-600",
+    ARCHIVED: "bg-[#f5f5f7] text-[#86868b]",
+    ON_HOLD: "bg-amber-50 text-amber-600",
+    COMPLETED: "bg-green-50 text-green-600",
   };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-caption uppercase tracking-wide font-medium ${map[status] ?? "bg-slate-500/20 text-slate-400"}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wide font-medium ${map[status] ?? "bg-[#f5f5f7] text-[#86868b]"}`}
     >
       {status.replace(/_/g, " ")}
     </span>
@@ -88,14 +86,14 @@ function StatusBadge({ status }: { status: string }) {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const map: Record<string, string> = {
-    LOW: "text-slate-400",
-    MEDIUM: "text-blue-400",
-    HIGH: "text-amber-400",
-    URGENT: "text-red-400",
+    LOW: "text-[#86868b]",
+    MEDIUM: "text-blue-500",
+    HIGH: "text-amber-500",
+    URGENT: "text-red-500",
   };
   return (
     <span
-      className={`text-caption font-medium ${map[priority] ?? "text-slate-400"}`}
+      className={`text-[11px] font-medium ${map[priority] ?? "text-[#86868b]"}`}
     >
       {priority}
     </span>
@@ -104,12 +102,12 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function RoleBadge({ role }: { role: string }) {
   const map: Record<string, string> = {
-    ADMIN: "bg-blue-500/20 text-blue-400",
-    MEMBER: "bg-slate-500/20 text-slate-400",
+    ADMIN: "bg-blue-50 text-blue-600",
+    MEMBER: "bg-[#f5f5f7] text-[#86868b]",
   };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-caption uppercase tracking-wide font-medium ${map[role] ?? "bg-slate-500/20 text-slate-400"}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wide font-medium ${map[role] ?? "bg-[#f5f5f7] text-[#86868b]"}`}
     >
       {role}
     </span>
@@ -187,13 +185,12 @@ export default function ProjectDetailPage({
         setTasksLoaded(true);
       }
     } catch {
-      // silently fail; user can retry via tab switch
+      // silently fail
     } finally {
       setLoadingTasks(false);
     }
   }, [id, tasksLoaded]);
 
-  // Fetch tasks on initial load (Tasks is default tab)
   useEffect(() => {
     void fetchTasks();
   }, [fetchTasks]);
@@ -272,10 +269,10 @@ export default function ProjectDetailPage({
   if (loadingProject) {
     return (
       <div className="p-6 space-y-4 max-w-[1200px]">
-        <div className="h-6 w-48 glass-surface rounded animate-pulse" />
-        <div className="h-12 w-full glass-surface rounded-xl animate-pulse" />
-        <div className="h-10 w-full glass-surface rounded-xl animate-pulse" />
-        <div className="h-64 w-full glass-surface rounded-xl animate-pulse" />
+        <div className="h-6 w-48 bg-[#f5f5f7] rounded-lg animate-pulse" />
+        <div className="h-12 w-full bg-[#f5f5f7] rounded-2xl animate-pulse" />
+        <div className="h-10 w-full bg-[#f5f5f7] rounded-2xl animate-pulse" />
+        <div className="h-64 w-full bg-[#f5f5f7] rounded-2xl animate-pulse" />
       </div>
     );
   }
@@ -283,18 +280,18 @@ export default function ProjectDetailPage({
   if (projectError) {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <AlertTriangle size={32} className="text-red-400" />
-        <p className="text-body text-red-400">{projectError}</p>
+        <AlertTriangle size={32} className="text-red-500" />
+        <p className="text-[14px] text-red-600">{projectError}</p>
         <div className="flex gap-3">
           <button
             onClick={() => router.push("/dashboard/hub/projects")}
-            className="flex items-center gap-1.5 px-4 py-2 text-body text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors border border-[var(--glass-border)]"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-[#1d1d1f] rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] transition-colors"
           >
             <ChevronLeft size={16} /> Back
           </button>
           <button
             onClick={fetchProject}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-body rounded-lg transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#1d1d1f] hover:bg-[#000000] text-white text-[14px] font-medium rounded-full transition-colors"
           >
             Retry
           </button>
@@ -310,14 +307,10 @@ export default function ProjectDetailPage({
   return (
     <div className="p-6 space-y-6 max-w-[1200px]">
       {/* Breadcrumb */}
-      <motion.div
-        variants={glassItemVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <div>
         <button
           onClick={() => router.push("/dashboard/hub/projects")}
-          className="flex items-center gap-1.5 text-small text-slate-400 hover:text-white transition-colors mb-4"
+          className="flex items-center gap-1.5 text-[13px] text-[#86868b] hover:text-[#1d1d1f] transition-colors mb-4"
         >
           <ChevronLeft size={14} /> Projects
         </button>
@@ -331,11 +324,11 @@ export default function ProjectDetailPage({
               aria-hidden="true"
             />
             <div className="min-w-0">
-              <h1 className="text-display-sm font-bold text-white leading-tight">
+              <h1 className="text-[24px] font-bold text-[#1d1d1f] leading-tight">
                 {project.name}
               </h1>
               {project.description && (
-                <p className="text-body text-slate-400 mt-1 max-w-2xl">
+                <p className="text-[14px] text-[#86868b] mt-1 max-w-2xl">
                   {project.description}
                 </p>
               )}
@@ -346,44 +339,38 @@ export default function ProjectDetailPage({
           </div>
           <button
             onClick={() => setEditFormOpen(true)}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-small text-slate-400 hover:text-white rounded-lg hover:bg-white/5 border border-[var(--glass-border)] transition-colors"
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-[#1d1d1f] rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] transition-colors"
           >
             <Pencil size={13} /> Edit
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Tab bar */}
-      <motion.div
-        variants={glassItemVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <GlassCard hover={false} className="p-1">
-          <div className="relative flex">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => switchTab(tab)}
-                className={`relative flex-1 px-3 py-2 text-small font-medium rounded-md transition-colors z-10 ${
-                  activeTab === tab
-                    ? "text-white"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {activeTab === tab && (
-                  <motion.div
-                    layoutId="hub-project-tab-indicator"
-                    className="absolute inset-0 bg-white/[0.08] rounded-md border border-white/10"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{tab}</span>
-              </button>
-            ))}
-          </div>
-        </GlassCard>
-      </motion.div>
+      <div className="bg-[#f5f5f7] rounded-xl p-1">
+        <div className="relative flex">
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => switchTab(tab)}
+              className={`relative flex-1 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors z-10 ${
+                activeTab === tab
+                  ? "text-[#1d1d1f]"
+                  : "text-[#86868b] hover:text-[#1d1d1f]"
+              }`}
+            >
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="hub-project-tab-indicator"
+                  className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{tab}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Tab content */}
       <AnimatePresence mode="wait" custom={tabDirection}>
@@ -399,7 +386,9 @@ export default function ProjectDetailPage({
           {activeTab === "Tasks" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-title font-semibold text-white">Tasks</h2>
+                <h2 className="text-[17px] font-semibold text-[#1d1d1f]">
+                  Tasks
+                </h2>
                 <button
                   onClick={async () => {
                     const title = prompt("Task title:");
@@ -424,38 +413,38 @@ export default function ProjectDetailPage({
                       // no-op
                     }
                   }}
-                  className="flex items-center gap-1.5 px-3 py-2 text-small bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium bg-[#1d1d1f] hover:bg-[#000000] text-white rounded-full transition-colors"
                 >
                   <Plus size={13} /> New Task
                 </button>
               </div>
 
-              <div className="glass-elevated rounded-xl border border-[var(--glass-border)]">
+              <div className="bg-white rounded-2xl border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
                 {loadingTasks ? (
                   <div className="p-4 space-y-2">
                     {[0, 1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="h-12 bg-white/[0.03] rounded animate-pulse"
+                        className="h-12 bg-[#f5f5f7] rounded-lg animate-pulse"
                       />
                     ))}
                   </div>
                 ) : tasks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <p className="text-body text-slate-400">No tasks yet.</p>
-                    <p className="text-small text-slate-500 mt-1">
+                    <p className="text-[14px] text-[#86868b]">No tasks yet.</p>
+                    <p className="text-[13px] text-[#86868b]/60 mt-1">
                       Create the first task for this project.
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-[var(--glass-border)]">
+                  <div className="divide-y divide-[#e5e5ea]">
                     {tasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#f5f5f7] transition-colors"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-body text-slate-200 truncate">
+                          <p className="text-[14px] text-[#1d1d1f] truncate">
                             {task.title}
                           </p>
                         </div>
@@ -464,7 +453,7 @@ export default function ProjectDetailPage({
                           <StatusBadge status={task.status} />
                           {task.assignee && (
                             <div
-                              className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center overflow-hidden flex-shrink-0"
+                              className="w-6 h-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center overflow-hidden flex-shrink-0"
                               title={task.assignee.name ?? undefined}
                             >
                               {task.assignee.image ? (
@@ -496,7 +485,9 @@ export default function ProjectDetailPage({
           {activeTab === "Members" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-title font-semibold text-white">Members</h2>
+                <h2 className="text-[17px] font-semibold text-[#1d1d1f]">
+                  Members
+                </h2>
               </div>
 
               {/* Add member form */}
@@ -509,12 +500,12 @@ export default function ProjectDetailPage({
                   value={memberInput}
                   onChange={(e) => setMemberInput(e.target.value)}
                   placeholder="User ID to add…"
-                  className="flex-1 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-body text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                  className="flex-1 bg-white border border-[#e5e5ea] rounded-xl px-3 py-2 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b]/50 focus:outline-none focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={addingMember || !memberInput.trim()}
-                  className="flex items-center gap-1.5 px-3 py-2 text-small bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium bg-[#1d1d1f] hover:bg-[#000000] text-white rounded-full transition-colors disabled:opacity-50"
                 >
                   {addingMember ? (
                     <Loader2 size={13} className="animate-spin" />
@@ -525,22 +516,24 @@ export default function ProjectDetailPage({
                 </button>
               </form>
               {memberError && (
-                <p className="text-small text-red-400">{memberError}</p>
+                <p className="text-[13px] text-red-600">{memberError}</p>
               )}
 
-              <div className="glass-elevated rounded-xl border border-[var(--glass-border)]">
+              <div className="bg-white rounded-2xl border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
                 {project.members.length === 0 ? (
                   <div className="flex items-center justify-center py-12">
-                    <p className="text-body text-slate-400">No members yet.</p>
+                    <p className="text-[14px] text-[#86868b]">
+                      No members yet.
+                    </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-[var(--glass-border)]">
+                  <div className="divide-y divide-[#e5e5ea]">
                     {project.members.map(({ user, role }) => (
                       <div
                         key={user.id}
                         className="flex items-center gap-3 px-4 py-3"
                       >
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center overflow-hidden flex-shrink-0">
                           {user.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -549,7 +542,7 @@ export default function ProjectDetailPage({
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <span className="text-small font-medium">
+                            <span className="text-[12px] font-medium">
                               {user.name
                                 ? user.name.charAt(0).toUpperCase()
                                 : "?"}
@@ -557,10 +550,10 @@ export default function ProjectDetailPage({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-body text-slate-200 truncate">
+                          <p className="text-[14px] text-[#1d1d1f] truncate">
                             {user.name ?? "Unknown user"}
                           </p>
-                          <p className="text-caption text-slate-500 truncate">
+                          <p className="text-[12px] text-[#86868b] truncate">
                             {user.id}
                           </p>
                         </div>
@@ -576,52 +569,54 @@ export default function ProjectDetailPage({
           {/* ——— Settings tab ——— */}
           {activeTab === "Settings" && (
             <div className="space-y-6">
-              <h2 className="text-title font-semibold text-white">Settings</h2>
+              <h2 className="text-[17px] font-semibold text-[#1d1d1f]">
+                Settings
+              </h2>
 
               {/* Edit project */}
-              <div className="glass-elevated rounded-xl border border-[var(--glass-border)] p-5 space-y-4">
-                <h3 className="text-body-lg font-semibold text-white">
+              <div className="bg-white rounded-2xl border border-[#e5e5ea] p-5 space-y-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                <h3 className="text-[15px] font-semibold text-[#1d1d1f]">
                   Project Details
                 </h3>
-                <p className="text-small text-slate-400">
+                <p className="text-[13px] text-[#86868b]">
                   Update the project name, description, and accent color.
                 </p>
                 <button
                   onClick={() => setEditFormOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-body text-slate-200 bg-white/5 hover:bg-white/10 border border-[var(--glass-border)] rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-[#1d1d1f] bg-[#f5f5f7] hover:bg-[#e8e8ed] rounded-full transition-colors"
                 >
                   <Pencil size={14} /> Edit Project
                 </button>
               </div>
 
               {/* Danger zone */}
-              <div className="glass-elevated rounded-xl border border-red-500/20 p-5 space-y-4">
-                <h3 className="text-body-lg font-semibold text-red-400">
+              <div className="bg-white rounded-2xl border border-red-100 p-5 space-y-4">
+                <h3 className="text-[15px] font-semibold text-red-600">
                   Danger Zone
                 </h3>
-                <p className="text-small text-slate-400">
+                <p className="text-[13px] text-[#86868b]">
                   Permanently delete this project and all its tasks. This action
                   cannot be undone.
                 </p>
 
                 {deleteError && (
-                  <p className="text-small text-red-400">{deleteError}</p>
+                  <p className="text-[13px] text-red-600">{deleteError}</p>
                 )}
 
                 {!deleteConfirm ? (
                   <button
                     onClick={() => setDeleteConfirm(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 text-body text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-full transition-colors"
                   >
                     <Trash2 size={14} /> Delete Project
                   </button>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <p className="text-small text-red-300">Are you sure?</p>
+                    <p className="text-[13px] text-red-600">Are you sure?</p>
                     <button
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-body text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors disabled:opacity-50"
                     >
                       {deleting ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -633,7 +628,7 @@ export default function ProjectDetailPage({
                     <button
                       onClick={() => setDeleteConfirm(false)}
                       disabled={deleting}
-                      className="px-4 py-2 text-body text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                      className="px-4 py-2.5 text-[14px] font-medium text-[#86868b] hover:text-[#1d1d1f] rounded-full hover:bg-[#f5f5f7] transition-colors"
                     >
                       Cancel
                     </button>

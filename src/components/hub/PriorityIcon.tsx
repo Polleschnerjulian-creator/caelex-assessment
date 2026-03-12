@@ -12,10 +12,10 @@ const PRIORITY_CONFIG: Record<
   Priority,
   { icon: React.ElementType; colorClass: string; label: string }
 > = {
-  URGENT: { icon: AlertTriangle, colorClass: "text-red-400", label: "Urgent" },
-  HIGH: { icon: ArrowUp, colorClass: "text-orange-400", label: "High" },
-  MEDIUM: { icon: Minus, colorClass: "text-blue-400", label: "Medium" },
-  LOW: { icon: ArrowDown, colorClass: "text-slate-400", label: "Low" },
+  URGENT: { icon: AlertTriangle, colorClass: "text-red-500", label: "Urgent" },
+  HIGH: { icon: ArrowUp, colorClass: "text-orange-500", label: "High" },
+  MEDIUM: { icon: Minus, colorClass: "text-blue-500", label: "Medium" },
+  LOW: { icon: ArrowDown, colorClass: "text-[#86868b]", label: "Low" },
 };
 
 export function PriorityIcon({

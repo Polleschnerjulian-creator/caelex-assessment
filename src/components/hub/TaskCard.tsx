@@ -51,14 +51,14 @@ export function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
     <div
       onClick={onClick}
       className={[
-        "glass-surface rounded-lg p-3 cursor-pointer hover:bg-white/[0.03] transition-all",
-        isDragging ? "opacity-50 ring-2 ring-blue-500" : "",
+        "bg-white rounded-xl p-3 cursor-pointer border border-[#e5e5ea] hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all",
+        isDragging ? "opacity-50 ring-2 ring-[#1d1d1f]" : "",
       ]
         .filter(Boolean)
         .join(" ")}
     >
       {/* Title */}
-      <p className="text-small font-medium text-slate-200 line-clamp-1 mb-2">
+      <p className="text-[13px] font-medium text-[#1d1d1f] line-clamp-1 mb-2">
         {task.title}
       </p>
 
@@ -74,13 +74,13 @@ export function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
         ))}
 
         {extraLabels > 0 && (
-          <span className="text-caption text-slate-500">+{extraLabels}</span>
+          <span className="text-[11px] text-[#86868b]">+{extraLabels}</span>
         )}
 
         <div className="flex-1" />
 
         {task._count.comments > 0 && (
-          <span className="inline-flex items-center gap-0.5 text-caption text-slate-500">
+          <span className="inline-flex items-center gap-0.5 text-[11px] text-[#86868b]">
             <MessageSquare size={10} strokeWidth={2} />
             {task._count.comments}
           </span>
@@ -88,7 +88,7 @@ export function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
 
         {task.assignee && (
           <span
-            className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 text-caption font-semibold flex-shrink-0"
+            className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0"
             title={task.assignee.name ?? undefined}
           >
             {getInitial(task.assignee.name)}
@@ -99,10 +99,10 @@ export function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
       {/* Due date */}
       {task.dueDate && (
         <div
-          className={`flex items-center gap-1 mt-2 ${overdue ? "text-red-400" : "text-slate-500"}`}
+          className={`flex items-center gap-1 mt-2 ${overdue ? "text-red-500" : "text-[#86868b]"}`}
         >
           <Calendar size={10} strokeWidth={2} />
-          <span className="text-caption">{formatDate(task.dueDate)}</span>
+          <span className="text-[11px]">{formatDate(task.dueDate)}</span>
         </div>
       )}
     </div>

@@ -66,14 +66,14 @@ export function MemberPicker({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="glass-surface inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-body text-slate-300 border border-white/10 hover:border-white/20 transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[14px] text-[#1d1d1f] bg-white border border-[#e5e5ea] hover:border-[#1d1d1f]/15 transition-colors"
       >
         {selectedMember ? (
           <>
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 text-caption font-semibold flex-shrink-0">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0">
               {getInitial(selectedMember.name)}
             </span>
-            <span className="text-body text-slate-200">
+            <span className="text-[14px] text-[#1d1d1f]">
               {selectedMember.name ?? "Unknown"}
             </span>
             <span
@@ -86,34 +86,34 @@ export function MemberPicker({
                   onChange(null);
                 }
               }}
-              className="ml-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+              className="ml-1 text-[#86868b] hover:text-[#1d1d1f] transition-colors cursor-pointer"
               aria-label="Clear selection"
             >
               <X size={12} strokeWidth={2} />
             </span>
           </>
         ) : (
-          <span className="text-slate-500">{placeholder}</span>
+          <span className="text-[#86868b]">{placeholder}</span>
         )}
       </button>
 
       {open && (
-        <div className="glass-floating absolute z-50 mt-1 min-w-[180px] rounded-lg border border-white/10 py-1 shadow-glass-elevated">
+        <div className="absolute z-50 mt-1 min-w-[180px] bg-white rounded-xl border border-[#e5e5ea] py-1 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_12px_48px_rgba(0,0,0,0.12)]">
           {members.map((member) => (
             <button
               key={member.id}
               type="button"
               onClick={() => handleSelect(member.id)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-body text-slate-300 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-2 text-[14px] text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors text-left"
             >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-caption font-semibold flex-shrink-0">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0">
                 {getInitial(member.name)}
               </span>
               <span>{member.name ?? "Unknown"}</span>
             </button>
           ))}
           {members.length === 0 && (
-            <p className="px-3 py-2 text-caption text-slate-500">No members</p>
+            <p className="px-3 py-2 text-[12px] text-[#86868b]">No members</p>
           )}
         </div>
       )}

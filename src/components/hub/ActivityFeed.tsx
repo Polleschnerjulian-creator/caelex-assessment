@@ -15,14 +15,14 @@ interface ActivityFeedProps {
 function getStatusBadgeClasses(status: string): string {
   switch (status.toUpperCase()) {
     case "IN_PROGRESS":
-      return "bg-blue-500/20 text-blue-400";
+      return "bg-blue-50 text-blue-600";
     case "IN_REVIEW":
-      return "bg-amber-500/20 text-amber-400";
+      return "bg-amber-50 text-amber-600";
     case "DONE":
-      return "bg-emerald-500/20 text-emerald-400";
+      return "bg-green-50 text-green-600";
     case "TODO":
     default:
-      return "bg-slate-500/20 text-slate-400";
+      return "bg-[#f5f5f7] text-[#86868b]";
   }
 }
 
@@ -65,16 +65,18 @@ function relativeTime(dateStr: string): string {
 
 export default function ActivityFeed({ tasks }: ActivityFeedProps) {
   return (
-    <div className="glass-elevated rounded-xl border border-[var(--glass-border)] overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[var(--glass-border)]">
-        <h2 className="text-title font-semibold text-white">Recent Activity</h2>
+      <div className="px-5 py-4 border-b border-[#e5e5ea]">
+        <h2 className="text-[17px] font-semibold text-[#1d1d1f]">
+          Recent Activity
+        </h2>
       </div>
 
       {/* List */}
       {tasks.length === 0 ? (
         <div className="px-5 py-10 text-center">
-          <p className="text-small text-slate-500">No recent activity</p>
+          <p className="text-[13px] text-[#86868b]">No recent activity</p>
         </div>
       ) : (
         <ul>
@@ -85,8 +87,8 @@ export default function ActivityFeed({ tasks }: ActivityFeedProps) {
             return (
               <li
                 key={task.id}
-                className={`flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors ${
-                  !isLast ? "border-b border-[var(--glass-border)]" : ""
+                className={`flex items-center gap-3 px-5 py-3 hover:bg-[#f5f5f7] transition-colors ${
+                  !isLast ? "border-b border-[#e5e5ea]" : ""
                 }`}
               >
                 {/* Colored project dot */}
@@ -98,10 +100,10 @@ export default function ActivityFeed({ tasks }: ActivityFeedProps) {
 
                 {/* Middle: title + project */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-small text-slate-200 truncate">
+                  <p className="text-[13px] text-[#1d1d1f] truncate">
                     {task.title}
                   </p>
-                  <p className="text-caption text-slate-500 truncate">
+                  <p className="text-[12px] text-[#86868b] truncate">
                     {task.project.name}
                   </p>
                 </div>
@@ -109,11 +111,11 @@ export default function ActivityFeed({ tasks }: ActivityFeedProps) {
                 {/* Right: status badge + time */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span
-                    className={`text-caption font-medium px-2 py-0.5 rounded-full ${getStatusBadgeClasses(task.status)}`}
+                    className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${getStatusBadgeClasses(task.status)}`}
                   >
                     {formatStatus(task.status)}
                   </span>
-                  <span className="text-caption text-slate-600 tabular-nums w-12 text-right">
+                  <span className="text-[11px] text-[#86868b]/60 tabular-nums w-12 text-right">
                     {relativeTime(task.updatedAt)}
                   </span>
                 </div>

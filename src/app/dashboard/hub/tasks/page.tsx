@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, LayoutGrid, List, ChevronUp, ChevronDown } from "lucide-react";
-import { GlassMotion } from "@/components/ui/GlassMotion";
 import { KanbanBoard } from "@/components/hub/KanbanBoard";
 import { TaskForm } from "@/components/hub/TaskForm";
 import { TaskDetailDrawer } from "@/components/hub/TaskDetailDrawer";
@@ -96,7 +95,6 @@ export default function HubTasksPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
-  // Load view preference from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("hub-tasks-view");
     if (stored === "kanban" || stored === "list") {
@@ -109,7 +107,6 @@ export default function HubTasksPage() {
     localStorage.setItem("hub-tasks-view", v);
   }
 
-  // Derive unique members from all projects
   const members = Array.from(
     new Map(
       projects.flatMap((p) => p.members ?? []).map((m) => [m.user.id, m.user]),
@@ -211,226 +208,220 @@ export default function HubTasksPage() {
 
   function SortIcon({ col }: { col: SortKey }) {
     if (sortKey !== col)
-      return <ChevronUp size={12} strokeWidth={2} className="text-slate-600" />;
+      return (
+        <ChevronUp size={12} strokeWidth={2} className="text-[#86868b]/40" />
+      );
     return sortDir === "asc" ? (
-      <ChevronUp size={12} strokeWidth={2} className="text-blue-400" />
+      <ChevronUp size={12} strokeWidth={2} className="text-[#1d1d1f]" />
     ) : (
-      <ChevronDown size={12} strokeWidth={2} className="text-blue-400" />
+      <ChevronDown size={12} strokeWidth={2} className="text-[#1d1d1f]" />
     );
   }
 
   return (
     <div className="flex flex-col h-full min-h-screen p-6 gap-5">
-      <GlassMotion>
-        {/* Page header */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h1 className="text-display-sm font-semibold text-slate-100">
-              Tasks
-            </h1>
-            <p className="text-small text-slate-500 mt-0.5">
-              Manage and track your team&apos;s work
-            </p>
-          </div>
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h1 className="text-[24px] font-semibold text-[#1d1d1f]">Tasks</h1>
+          <p className="text-[13px] text-[#86868b] mt-0.5">
+            Manage and track your team&apos;s work
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {/* View toggle */}
-            <div className="glass-surface flex items-center rounded-lg border border-white/10 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => handleViewChange("kanban")}
-                className={[
-                  "flex items-center gap-1.5 px-3 py-1.5 text-small transition-colors",
-                  view === "kanban"
-                    ? "bg-blue-500/20 text-blue-300"
-                    : "text-slate-500 hover:text-slate-300",
-                ].join(" ")}
-              >
-                <LayoutGrid size={13} strokeWidth={2} />
-                Kanban
-              </button>
-              <button
-                type="button"
-                onClick={() => handleViewChange("list")}
-                className={[
-                  "flex items-center gap-1.5 px-3 py-1.5 text-small transition-colors",
-                  view === "list"
-                    ? "bg-blue-500/20 text-blue-300"
-                    : "text-slate-500 hover:text-slate-300",
-                ].join(" ")}
-              >
-                <List size={13} strokeWidth={2} />
-                List
-              </button>
-            </div>
-
-            {/* New Task */}
+        <div className="flex items-center gap-3">
+          {/* View toggle */}
+          <div className="flex items-center rounded-lg border border-[#e5e5ea] overflow-hidden bg-[#f5f5f7]">
             <button
               type="button"
-              onClick={() => setFormOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-small font-medium bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+              onClick={() => handleViewChange("kanban")}
+              className={[
+                "flex items-center gap-1.5 px-3 py-1.5 text-[13px] transition-colors",
+                view === "kanban"
+                  ? "bg-white text-[#1d1d1f] shadow-sm"
+                  : "text-[#86868b] hover:text-[#1d1d1f]",
+              ].join(" ")}
             >
-              <Plus size={14} strokeWidth={2} />
-              New Task
+              <LayoutGrid size={13} strokeWidth={2} />
+              Kanban
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange("list")}
+              className={[
+                "flex items-center gap-1.5 px-3 py-1.5 text-[13px] transition-colors",
+                view === "list"
+                  ? "bg-white text-[#1d1d1f] shadow-sm"
+                  : "text-[#86868b] hover:text-[#1d1d1f]",
+              ].join(" ")}
+            >
+              <List size={13} strokeWidth={2} />
+              List
             </button>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="mb-4">
-          <TaskFilters
-            projects={projects.map((p) => ({ id: p.id, name: p.name }))}
-            members={members}
-            filters={filters}
-            onChange={setFilters}
+          {/* New Task */}
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-[14px] font-medium bg-[#1d1d1f] hover:bg-[#000000] text-white transition-colors"
+          >
+            <Plus size={14} strokeWidth={2} />
+            New Task
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-1">
+        <TaskFilters
+          projects={projects.map((p) => ({ id: p.id, name: p.name }))}
+          members={members}
+          filters={filters}
+          onChange={setFilters}
+        />
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="w-6 h-6 border-2 border-[#e5e5ea] border-t-[#1d1d1f] rounded-full animate-spin" />
+        </div>
+      ) : view === "kanban" ? (
+        <div className="flex-1 overflow-hidden">
+          <KanbanBoard
+            tasks={tasks}
+            onTaskClick={(id) => setSelectedTaskId(id)}
+            onReorder={handleReorder}
           />
         </div>
-
-        {/* Content */}
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          </div>
-        ) : view === "kanban" ? (
-          <div className="flex-1 overflow-hidden">
-            <KanbanBoard
-              tasks={tasks}
-              onTaskClick={(id) => setSelectedTaskId(id)}
-              onReorder={handleReorder}
-            />
-          </div>
-        ) : (
-          /* List view */
-          <div className="glass-surface rounded-xl border border-white/10 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/5">
-                  {(
-                    [
-                      { key: "title", label: "Title" },
-                      { key: "project", label: "Project" },
-                      { key: "status", label: "Status" },
-                      { key: "priority", label: "Priority" },
-                      { key: "dueDate", label: "Due Date" },
-                    ] as { key: SortKey; label: string }[]
-                  ).map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => handleSort(col.key)}
-                      className="text-left px-4 py-2.5 text-caption text-slate-500 font-medium cursor-pointer hover:text-slate-300 transition-colors select-none"
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {col.label}
-                        <SortIcon col={col.key} />
-                      </span>
-                    </th>
-                  ))}
-                  <th className="text-left px-4 py-2.5 text-caption text-slate-500 font-medium">
-                    Assignee
+      ) : (
+        /* List view */
+        <div className="bg-white rounded-2xl border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[#e5e5ea]">
+                {(
+                  [
+                    { key: "title", label: "Title" },
+                    { key: "project", label: "Project" },
+                    { key: "status", label: "Status" },
+                    { key: "priority", label: "Priority" },
+                    { key: "dueDate", label: "Due Date" },
+                  ] as { key: SortKey; label: string }[]
+                ).map((col) => (
+                  <th
+                    key={col.key}
+                    onClick={() => handleSort(col.key)}
+                    className="text-left px-4 py-2.5 text-[12px] text-[#86868b] font-medium cursor-pointer hover:text-[#1d1d1f] transition-colors select-none"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      <SortIcon col={col.key} />
+                    </span>
                   </th>
+                ))}
+                <th className="text-left px-4 py-2.5 text-[12px] text-[#86868b] font-medium">
+                  Assignee
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedTasks.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-10 text-center text-[13px] text-[#86868b]"
+                  >
+                    No tasks found.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {sortedTasks.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-4 py-10 text-center text-small text-slate-600"
-                    >
-                      No tasks found.
+              ) : (
+                sortedTasks.map((task) => (
+                  <tr
+                    key={task.id}
+                    onClick={() => setSelectedTaskId(task.id)}
+                    className="border-b border-[#f5f5f7] hover:bg-[#f5f5f7] cursor-pointer transition-colors"
+                  >
+                    {/* Title */}
+                    <td className="px-4 py-2.5 max-w-[280px]">
+                      <span className="text-[13px] text-[#1d1d1f] line-clamp-1 font-medium">
+                        {task.title}
+                      </span>
+                    </td>
+
+                    {/* Project */}
+                    <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: task.project.color ?? "#6B7280",
+                          }}
+                        />
+                        <span className="text-[13px] text-[#86868b]">
+                          {task.project.name}
+                        </span>
+                      </span>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-2.5">
+                      <span className="text-[13px] text-[#86868b]">
+                        {STATUS_LABELS[task.status] ?? task.status}
+                      </span>
+                    </td>
+
+                    {/* Priority */}
+                    <td className="px-4 py-2.5">
+                      <PriorityIcon
+                        priority={
+                          task.priority as "URGENT" | "HIGH" | "MEDIUM" | "LOW"
+                        }
+                        size={12}
+                        showLabel
+                      />
+                    </td>
+
+                    {/* Due Date */}
+                    <td className="px-4 py-2.5">
+                      {task.dueDate ? (
+                        <span
+                          className={`text-[13px] ${
+                            isOverdue(task.dueDate)
+                              ? "text-red-500"
+                              : "text-[#86868b]"
+                          }`}
+                        >
+                          {formatDate(task.dueDate)}
+                        </span>
+                      ) : (
+                        <span className="text-[13px] text-[#86868b]/30">—</span>
+                      )}
+                    </td>
+
+                    {/* Assignee */}
+                    <td className="px-4 py-2.5">
+                      {task.assignee ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[10px] font-semibold flex-shrink-0">
+                            {getInitial(task.assignee.name)}
+                          </span>
+                          <span className="text-[13px] text-[#86868b]">
+                            {task.assignee.name ?? "Unknown"}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-[13px] text-[#86868b]/30">—</span>
+                      )}
                     </td>
                   </tr>
-                ) : (
-                  sortedTasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      onClick={() => setSelectedTaskId(task.id)}
-                      className="border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors"
-                    >
-                      {/* Title */}
-                      <td className="px-4 py-2.5 max-w-[280px]">
-                        <span className="text-small text-slate-200 line-clamp-1 font-medium">
-                          {task.title}
-                        </span>
-                      </td>
-
-                      {/* Project */}
-                      <td className="px-4 py-2.5">
-                        <span className="inline-flex items-center gap-1.5">
-                          <span
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{
-                              backgroundColor: task.project.color ?? "#6B7280",
-                            }}
-                          />
-                          <span className="text-small text-slate-400">
-                            {task.project.name}
-                          </span>
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-4 py-2.5">
-                        <span className="text-small text-slate-400">
-                          {STATUS_LABELS[task.status] ?? task.status}
-                        </span>
-                      </td>
-
-                      {/* Priority */}
-                      <td className="px-4 py-2.5">
-                        <PriorityIcon
-                          priority={
-                            task.priority as
-                              | "URGENT"
-                              | "HIGH"
-                              | "MEDIUM"
-                              | "LOW"
-                          }
-                          size={12}
-                          showLabel
-                        />
-                      </td>
-
-                      {/* Due Date */}
-                      <td className="px-4 py-2.5">
-                        {task.dueDate ? (
-                          <span
-                            className={`text-small ${
-                              isOverdue(task.dueDate)
-                                ? "text-red-400"
-                                : "text-slate-500"
-                            }`}
-                          >
-                            {formatDate(task.dueDate)}
-                          </span>
-                        ) : (
-                          <span className="text-small text-slate-700">—</span>
-                        )}
-                      </td>
-
-                      {/* Assignee */}
-                      <td className="px-4 py-2.5">
-                        {task.assignee ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 text-caption font-semibold flex-shrink-0">
-                              {getInitial(task.assignee.name)}
-                            </span>
-                            <span className="text-small text-slate-400">
-                              {task.assignee.name ?? "Unknown"}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="text-small text-slate-700">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </GlassMotion>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Task Form modal */}
       <TaskForm

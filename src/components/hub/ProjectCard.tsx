@@ -18,16 +18,16 @@ interface ProjectCardProps {
 function getStatusBadgeClasses(status: string): string {
   switch (status.toUpperCase()) {
     case "ACTIVE":
-      return "bg-blue-500/20 text-blue-400";
+      return "bg-blue-50 text-blue-600";
     case "DONE":
     case "COMPLETED":
-      return "bg-green-500/20 text-green-400";
+      return "bg-green-50 text-green-600";
     case "ARCHIVED":
-      return "bg-slate-500/20 text-slate-400";
+      return "bg-[#f5f5f7] text-[#86868b]";
     case "ON_HOLD":
-      return "bg-amber-500/20 text-amber-400";
+      return "bg-amber-50 text-amber-600";
     default:
-      return "bg-slate-500/20 text-slate-400";
+      return "bg-[#f5f5f7] text-[#86868b]";
   }
 }
 
@@ -56,7 +56,7 @@ export default function ProjectCard({
   return (
     <Link
       href={`/dashboard/hub/projects/${id}`}
-      className="block glass-elevated glass-interactive rounded-xl p-5 border border-[var(--glass-border)] hover:border-[var(--glass-border-hover)] transition-all duration-200 group"
+      className="block bg-white rounded-2xl p-5 border border-[#e5e5ea] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-all duration-200 group"
     >
       {/* Top row: dot + name + status */}
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -66,12 +66,12 @@ export default function ProjectCard({
             style={{ backgroundColor: accentColor }}
             aria-hidden="true"
           />
-          <span className="text-body-lg font-semibold text-white truncate">
+          <span className="text-[15px] font-semibold text-[#1d1d1f] truncate">
             {name}
           </span>
         </div>
         <span
-          className={`flex-shrink-0 text-caption uppercase tracking-wide font-medium px-2 py-0.5 rounded-full ${getStatusBadgeClasses(status)}`}
+          className={`flex-shrink-0 text-[11px] uppercase tracking-wide font-medium px-2 py-0.5 rounded-full ${getStatusBadgeClasses(status)}`}
         >
           {formatStatus(status)}
         </span>
@@ -79,7 +79,7 @@ export default function ProjectCard({
 
       {/* Description */}
       {description && (
-        <p className="text-small text-slate-400 line-clamp-2 mb-4 ml-4">
+        <p className="text-[13px] text-[#86868b] line-clamp-2 mb-4 ml-4">
           {description}
         </p>
       )}
@@ -88,14 +88,14 @@ export default function ProjectCard({
       {/* Progress bar */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-caption text-slate-500">
+          <span className="text-[12px] text-[#86868b]">
             {doneCount}/{taskCount} tasks
           </span>
-          <span className="text-caption text-slate-500">{progress}%</span>
+          <span className="text-[12px] text-[#86868b]">{progress}%</span>
         </div>
-        <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+        <div className="h-1 rounded-full bg-[#f5f5f7] overflow-hidden">
           <div
-            className="h-full rounded-full bg-blue-500 transition-all duration-300"
+            className="h-full rounded-full bg-[#1d1d1f] transition-all duration-300"
             style={{ width: `${progress}%` }}
             aria-label={`${progress}% complete`}
           />
@@ -108,7 +108,7 @@ export default function ProjectCard({
           {visibleMembers.map(({ user }) => (
             <div
               key={user.id}
-              className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center ring-2 ring-[var(--navy-900)] overflow-hidden flex-shrink-0"
+              className="w-6 h-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center ring-2 ring-white overflow-hidden flex-shrink-0"
               title={user.name ?? undefined}
             >
               {user.image ? (
@@ -126,7 +126,7 @@ export default function ProjectCard({
             </div>
           ))}
           {overflowCount > 0 && (
-            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center ring-2 ring-[var(--navy-900)] flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-[#f5f5f7] text-[#86868b] flex items-center justify-center ring-2 ring-white flex-shrink-0">
               <span className="text-[9px] font-medium leading-none">
                 +{overflowCount}
               </span>

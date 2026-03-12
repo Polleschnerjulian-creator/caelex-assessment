@@ -1,9 +1,6 @@
 "use client";
 
 import { FolderKanban, ListTodo, Timer, CheckCircle2 } from "lucide-react";
-import GlassCard from "@/components/ui/GlassCard";
-import { GlassStagger, glassItemVariants } from "@/components/ui/GlassMotion";
-import { motion } from "framer-motion";
 
 interface DashboardStatsProps {
   stats: {
@@ -47,33 +44,33 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
   const cards = statCards(stats);
 
   return (
-    <GlassStagger className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <GlassCard key={card.label} hover className="p-5">
-            <motion.div
-              variants={glassItemVariants}
-              className="flex flex-col gap-3"
-            >
-              <Icon size={20} className="text-blue-400" />
+          <div
+            key={card.label}
+            className="bg-white rounded-2xl border border-[#e5e5ea] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-shadow"
+          >
+            <div className="flex flex-col gap-3">
+              <Icon size={20} className="text-[#1d1d1f]" />
               <div>
-                <p className="text-display-sm font-bold text-white leading-none">
+                <p className="text-display-sm font-bold text-[#1d1d1f] leading-none">
                   {card.value}
                 </p>
-                <p className="text-caption text-slate-400 uppercase tracking-wider mt-1">
+                <p className="text-caption text-[#86868b] uppercase tracking-wider mt-1">
                   {card.label}
                 </p>
                 {card.sublabel && (
-                  <p className="text-caption text-slate-600 mt-0.5">
+                  <p className="text-caption text-[#86868b]/60 mt-0.5">
                     {card.sublabel}
                   </p>
                 )}
               </div>
-            </motion.div>
-          </GlassCard>
+            </div>
+          </div>
         );
       })}
-    </GlassStagger>
+    </div>
   );
 }

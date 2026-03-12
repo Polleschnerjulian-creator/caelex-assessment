@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Search, Plus, FolderOpen } from "lucide-react";
-import { GlassMotion, GlassStagger } from "@/components/ui/GlassMotion";
-import { motion } from "framer-motion";
-import { glassItemVariants } from "@/components/ui/GlassMotion";
 import ProjectCard from "@/components/hub/ProjectCard";
 import ProjectForm from "@/components/hub/ProjectForm";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -64,51 +61,44 @@ export default function HubProjectsPage() {
   return (
     <div className="p-6 space-y-6 max-w-[1400px]">
       {/* Header */}
-      <motion.div
-        variants={glassItemVariants}
-        initial="hidden"
-        animate="visible"
-        className="flex items-start justify-between gap-4"
-      >
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-display-sm font-bold text-white">Projects</h1>
-          <p className="text-body text-slate-400 mt-1">
+          <h1 className="text-[24px] font-bold text-[#1d1d1f]">Projects</h1>
+          <p className="text-[14px] text-[#86868b] mt-1">
             HUB — manage your team projects and tasks
           </p>
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-body font-medium rounded-lg transition-colors flex-shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#1d1d1f] hover:bg-[#000000] text-white text-[14px] font-medium rounded-full transition-colors flex-shrink-0"
         >
           <Plus size={16} />
           New Project
         </button>
-      </motion.div>
+      </div>
 
       {/* Search bar */}
-      <GlassMotion>
-        <div className="relative max-w-sm">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects…"
-            className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg pl-8 pr-3 py-2 text-body text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
-          />
-        </div>
-      </GlassMotion>
+      <div className="relative max-w-sm">
+        <Search
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] pointer-events-none"
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search projects…"
+          className="w-full bg-white border border-[#e5e5ea] rounded-xl pl-8 pr-3 py-2 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b]/50 focus:outline-none focus:border-[#1d1d1f]/30 focus:ring-1 focus:ring-[#1d1d1f]/10 transition-colors"
+        />
+      </div>
 
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 flex items-center justify-between">
-          <p className="text-small text-red-400">{error}</p>
+        <div className="rounded-xl border border-red-100 bg-red-50 p-4 flex items-center justify-between">
+          <p className="text-[13px] text-red-600">{error}</p>
           <button
             onClick={fetchProjects}
-            className="text-small text-red-400 hover:text-white transition-colors"
+            className="text-[13px] text-red-600 hover:text-red-700 font-medium transition-colors"
           >
             Retry
           </button>
@@ -121,7 +111,7 @@ export default function HubProjectsPage() {
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="glass-surface rounded-xl h-44 animate-pulse border border-[var(--glass-border)]"
+              className="bg-[#f5f5f7] rounded-2xl h-44 animate-pulse border border-[#e5e5ea]"
             />
           ))}
         </div>
@@ -129,50 +119,47 @@ export default function HubProjectsPage() {
 
       {/* Empty state */}
       {!loading && !error && filtered.length === 0 && (
-        <GlassMotion>
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-4">
-              <FolderOpen size={28} className="text-blue-400" />
-            </div>
-            <h3 className="text-title font-semibold text-white mb-2">
-              {search ? "No projects match your search" : "No projects yet"}
-            </h3>
-            <p className="text-body text-slate-400 mb-6 max-w-xs">
-              {search
-                ? "Try a different search term."
-                : "Create your first project to start organising tasks for your team."}
-            </p>
-            {!search && (
-              <button
-                onClick={() => setFormOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-body font-medium rounded-lg transition-colors"
-              >
-                <Plus size={16} />
-                Create Project
-              </button>
-            )}
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#f5f5f7] flex items-center justify-center mb-4">
+            <FolderOpen size={28} className="text-[#1d1d1f]" />
           </div>
-        </GlassMotion>
+          <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-2">
+            {search ? "No projects match your search" : "No projects yet"}
+          </h3>
+          <p className="text-[14px] text-[#86868b] mb-6 max-w-xs">
+            {search
+              ? "Try a different search term."
+              : "Create your first project to start organising tasks for your team."}
+          </p>
+          {!search && (
+            <button
+              onClick={() => setFormOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1d1d1f] hover:bg-[#000000] text-white text-[14px] font-medium rounded-full transition-colors"
+            >
+              <Plus size={16} />
+              Create Project
+            </button>
+          )}
+        </div>
       )}
 
       {/* Project grid */}
       {!loading && !error && filtered.length > 0 && (
-        <GlassStagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((project) => (
-            <GlassMotion key={project.id}>
-              <ProjectCard
-                id={project.id}
-                name={project.name}
-                description={project.description}
-                color={project.color}
-                status={project.status}
-                taskCount={project._count.tasks}
-                taskStatusCounts={project.taskStatusCounts}
-                members={project.members}
-              />
-            </GlassMotion>
+            <ProjectCard
+              key={project.id}
+              id={project.id}
+              name={project.name}
+              description={project.description}
+              color={project.color}
+              status={project.status}
+              taskCount={project._count.tasks}
+              taskStatusCounts={project.taskStatusCounts}
+              members={project.members}
+            />
           ))}
-        </GlassStagger>
+        </div>
       )}
 
       {/* New project modal */}
