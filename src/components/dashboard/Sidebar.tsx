@@ -828,6 +828,14 @@ export default function Sidebar({
                 Shield
               </NavItem>
               <NavItem
+                href="/dashboard/hazards"
+                icon={<AlertTriangle size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Hazard Analysis
+              </NavItem>
+              <NavItem
                 href="/dashboard/nexus"
                 icon={<Network size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
