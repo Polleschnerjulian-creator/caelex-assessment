@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId, isProjectAdmin } from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 import { addMemberSchema } from "@/lib/hub/validations";
 
 export async function POST(
@@ -33,9 +33,13 @@ export async function POST(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id, orgId);
-    if (!admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Verify project belongs to user's org
+    const project = await prisma.hubProject.findFirst({
+      where: { id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     const body = await request.json();

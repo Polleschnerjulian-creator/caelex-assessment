@@ -96,6 +96,9 @@ export default function HubTasksPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
+  const [members, setMembers] = useState<
+    { id: string; name: string | null; image: string | null }[]
+  >([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("hub-tasks-view");
@@ -109,11 +112,16 @@ export default function HubTasksPage() {
     localStorage.setItem("hub-tasks-view", v);
   }
 
-  const members = Array.from(
-    new Map(
-      projects.flatMap((p) => p.members ?? []).map((m) => [m.user.id, m.user]),
-    ).values(),
-  );
+  const fetchMembers = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/hub/members");
+      if (!res.ok) return;
+      const data = await res.json();
+      setMembers(data.members ?? []);
+    } catch {
+      // silent
+    }
+  }, []);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -148,11 +156,11 @@ export default function HubTasksPage() {
   useEffect(() => {
     async function loadAll() {
       setLoading(true);
-      await Promise.all([fetchTasks(), fetchProjects()]);
+      await Promise.all([fetchTasks(), fetchProjects(), fetchMembers()]);
       setLoading(false);
     }
     void loadAll();
-  }, [fetchTasks, fetchProjects]);
+  }, [fetchTasks, fetchProjects, fetchMembers]);
 
   async function handleReorder(
     updates: { id: string; status: string; position: number }[],

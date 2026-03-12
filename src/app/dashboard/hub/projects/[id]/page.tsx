@@ -146,6 +146,25 @@ export default function ProjectDetailPage({
   const [memberInput, setMemberInput] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [memberError, setMemberError] = useState<string | null>(null);
+  const [orgMembers, setOrgMembers] = useState<
+    { id: string; name: string | null; image: string | null }[]
+  >([]);
+
+  // ——— Fetch org members ———
+
+  useEffect(() => {
+    async function loadOrgMembers() {
+      try {
+        const res = await fetch("/api/v1/hub/members");
+        if (!res.ok) return;
+        const data = await res.json();
+        setOrgMembers(data.members ?? []);
+      } catch {
+        // silent
+      }
+    }
+    void loadOrgMembers();
+  }, []);
 
   // ——— Fetch project ———
 
@@ -646,7 +665,7 @@ export default function ProjectDetailPage({
         projects={[
           { id: project.id, name: project.name, color: project.color ?? null },
         ]}
-        members={project.members.map((m) => m.user)}
+        members={orgMembers}
       />
 
       {/* Edit project modal */}

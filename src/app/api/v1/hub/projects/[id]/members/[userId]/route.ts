@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId, isProjectAdmin } from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 
 export async function DELETE(
   request: NextRequest,
@@ -32,14 +32,9 @@ export async function DELETE(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id, orgId);
-    if (!admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Prevent removing the project owner
-    const project = await prisma.hubProject.findUnique({
-      where: { id },
+    // Verify project belongs to user's org and prevent removing the owner
+    const project = await prisma.hubProject.findFirst({
+      where: { id, organizationId: orgId },
       select: { ownerId: true },
     });
     if (!project) {

@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId, isProjectMember } from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 import { reorderTasksSchema } from "@/lib/hub/validations";
 
 export async function PATCH(request: NextRequest) {
@@ -64,13 +64,6 @@ export async function PATCH(request: NextRequest) {
         { error: "All tasks must belong to the same project" },
         { status: 400 },
       );
-    }
-
-    // Check project membership
-    const projectId = [...projectIds][0];
-    const member = await isProjectMember(projectId, session.user.id, orgId);
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Batch update using a transaction

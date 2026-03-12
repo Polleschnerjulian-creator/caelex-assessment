@@ -7,9 +7,12 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
-import { createLabelSchema } from "@/lib/hub/validations";
 
-export async function POST(request: NextRequest) {
+/**
+ * Returns all members of the current user's organization.
+ * Used for assignee dropdowns and shared workspace views.
+ */
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -29,33 +32,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const parsed = createLabelSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 },
-      );
-    }
-
-    const { projectId, name, color } = parsed.data;
-
-    // Verify project belongs to user's org
-    const project = await prisma.hubProject.findFirst({
-      where: { id: projectId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    }
-
-    const label = await prisma.hubLabel.create({
-      data: { projectId, name, color },
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId: orgId },
+      include: {
+        user: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+      },
+      orderBy: { joinedAt: "asc" },
     });
 
-    return NextResponse.json({ label }, { status: 201 });
+    return NextResponse.json({
+      members: members.map((m) => ({
+        id: m.user.id,
+        name: m.user.name,
+        image: m.user.image,
+        email: m.user.email,
+        role: m.role,
+      })),
+    });
   } catch (err) {
-    console.error("[hub/labels] POST error:", err);
+    console.error("[hub/members] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

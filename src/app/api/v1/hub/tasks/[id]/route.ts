@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId, isProjectMember } from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 import { updateTaskSchema } from "@/lib/hub/validations";
 
 export async function GET(
@@ -66,16 +66,6 @@ export async function GET(
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    // Check project membership
-    const member = await isProjectMember(
-      task.project.id,
-      session.user.id,
-      orgId,
-    );
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     return NextResponse.json({ task });
   } catch (err) {
     console.error("[hub/tasks/[id]] GET error:", err);
@@ -117,16 +107,6 @@ export async function PATCH(
     });
     if (!existing) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    // Check project membership
-    const member = await isProjectMember(
-      existing.projectId,
-      session.user.id,
-      orgId,
-    );
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -232,16 +212,6 @@ export async function DELETE(
     });
     if (!existing) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    // Check project membership
-    const member = await isProjectMember(
-      existing.projectId,
-      session.user.id,
-      orgId,
-    );
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await prisma.hubTask.delete({ where: { id } });

@@ -1,8 +1,9 @@
 /**
  * HUB Users Seed Script
  *
- * Creates or updates Julian and Niklas, ensuring both are
- * in the same organization and added to all HUB projects.
+ * Ensures Julian and Niklas are in the SAME organization.
+ * Uses Julian's existing org (first by joinedAt) or creates one.
+ * Removes stale org memberships, adds both to all HUB projects.
  *
  * Run with: npx tsx prisma/seed-hub-users.ts
  */
@@ -21,19 +22,18 @@ const USERS = [
   {
     name: "Niklas",
     email: "niklas@caelex.eu",
-    role: "user" as const,
+    role: "admin" as const,
   },
 ];
 
 const DEFAULT_PASSWORD = "Caelex2026!";
-const ORG_NAME = "Caelex";
 
 async function main() {
   console.log("\n🚀 Seeding HUB users...\n");
 
   const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
-  // Upsert users
+  // 1. Upsert users (both admin)
   const users = [];
   for (const u of USERS) {
     const user = await prisma.user.upsert({
@@ -51,43 +51,62 @@ async function main() {
     console.log(`✅ ${user.name} (${user.email}) — ${user.id}`);
   }
 
-  // Ensure organization exists
-  let org = await prisma.organization.findFirst({
-    where: { name: ORG_NAME },
+  const [julian, niklas] = users;
+
+  // 2. Find Julian's PRIMARY org (first by joinedAt — same logic as getUserOrgId)
+  const julianMembership = await prisma.organizationMember.findFirst({
+    where: { userId: julian.id },
+    orderBy: { joinedAt: "asc" },
+    include: { organization: true },
   });
 
-  if (!org) {
-    org = await prisma.organization.create({
-      data: {
-        name: ORG_NAME,
-        slug: "caelex",
-      },
-    });
-    console.log(`\n🏢 Created organization "${ORG_NAME}" — ${org.id}`);
+  let org;
+  if (julianMembership) {
+    org = julianMembership.organization;
+    console.log(`\n🏢 Using Julian's existing org: "${org.name}" — ${org.id}`);
   } else {
-    console.log(`\n🏢 Organization "${ORG_NAME}" exists — ${org.id}`);
-  }
-
-  // Add both users to the organization
-  for (const user of users) {
-    await prisma.organizationMember.upsert({
-      where: {
-        organizationId_userId: {
-          organizationId: org.id,
-          userId: user.id,
-        },
-      },
-      update: {},
-      create: {
+    // No org exists — create one
+    org = await prisma.organization.create({
+      data: { name: "Caelex", slug: "caelex" },
+    });
+    await prisma.organizationMember.create({
+      data: {
         organizationId: org.id,
-        userId: user.id,
-        role: user.role === "admin" ? "OWNER" : "MEMBER",
+        userId: julian.id,
+        role: "OWNER",
       },
     });
-    console.log(`   → ${user.name} added to org`);
+    console.log(`\n🏢 Created org "Caelex" — ${org.id}`);
   }
 
-  // Add both users to all HUB projects in the org
+  // 3. Add Niklas to Julian's org (upsert)
+  await prisma.organizationMember.upsert({
+    where: {
+      organizationId_userId: {
+        organizationId: org.id,
+        userId: niklas.id,
+      },
+    },
+    update: { role: "OWNER" },
+    create: {
+      organizationId: org.id,
+      userId: niklas.id,
+      role: "OWNER",
+    },
+  });
+  console.log(`   → Niklas added to "${org.name}" as OWNER`);
+
+  // 4. Remove Niklas from any OTHER orgs so getUserOrgId returns the shared one
+  const niklasOtherMemberships = await prisma.organizationMember.findMany({
+    where: { userId: niklas.id, organizationId: { not: org.id } },
+    include: { organization: true },
+  });
+  for (const m of niklasOtherMemberships) {
+    await prisma.organizationMember.delete({ where: { id: m.id } });
+    console.log(`   → Removed Niklas from "${m.organization.name}"`);
+  }
+
+  // 5. Add both users to ALL HUB projects in the shared org
   const projects = await prisma.hubProject.findMany({
     where: { organizationId: org.id },
     select: { id: true, name: true },
@@ -102,7 +121,7 @@ async function main() {
             userId: user.id,
           },
         },
-        update: {},
+        update: { role: "ADMIN" },
         create: {
           projectId: project.id,
           userId: user.id,
@@ -110,10 +129,10 @@ async function main() {
         },
       });
     }
-    console.log(`   → Both users added to project "${project.name}"`);
+    console.log(`   → Both users → project "${project.name}"`);
   }
 
-  console.log("\n✅ Done!\n");
+  console.log("\n✅ Done! Both users share org and all projects.\n");
 }
 
 main()

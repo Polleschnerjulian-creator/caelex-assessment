@@ -29,14 +29,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // All org members see all org projects (shared workspace)
     const projects = await prisma.hubProject.findMany({
-      where: {
-        organizationId: orgId,
-        OR: [
-          { ownerId: session.user.id },
-          { members: { some: { userId: session.user.id } } },
-        ],
-      },
+      where: { organizationId: orgId },
       include: {
         owner: {
           select: { id: true, name: true, image: true },
@@ -117,6 +112,12 @@ export async function POST(request: NextRequest) {
 
     const { name, description, color } = parsed.data;
 
+    // Get all org members to auto-add them to the new project
+    const orgMembers = await prisma.organizationMember.findMany({
+      where: { organizationId: orgId },
+      select: { userId: true },
+    });
+
     const project = await prisma.hubProject.create({
       data: {
         name,
@@ -125,10 +126,10 @@ export async function POST(request: NextRequest) {
         organizationId: orgId,
         ownerId: session.user.id,
         members: {
-          create: {
-            userId: session.user.id,
-            role: "ADMIN",
-          },
+          create: orgMembers.map((m) => ({
+            userId: m.userId,
+            role: m.userId === session.user.id ? "ADMIN" : "MEMBER",
+          })),
         },
       },
       include: {

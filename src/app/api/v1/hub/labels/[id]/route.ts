@@ -6,7 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { getUserOrgId, isProjectAdmin } from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 
 export async function DELETE(
   request: NextRequest,
@@ -32,18 +32,13 @@ export async function DELETE(
       );
     }
 
-    // Look up label to get projectId
+    // Look up label and verify it belongs to user's org
     const label = await prisma.hubLabel.findFirst({
       where: { id, project: { organizationId: orgId } },
-      select: { id: true, projectId: true },
+      select: { id: true },
     });
     if (!label) {
       return NextResponse.json({ error: "Label not found" }, { status: 404 });
-    }
-
-    const admin = await isProjectAdmin(label.projectId, session.user.id, orgId);
-    if (!admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await prisma.hubLabel.delete({ where: { id } });

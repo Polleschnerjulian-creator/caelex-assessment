@@ -6,11 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import {
-  getUserOrgId,
-  isProjectAdmin,
-  isProjectMember,
-} from "@/lib/hub/queries";
+import { getUserOrgId } from "@/lib/hub/queries";
 import { updateProjectSchema } from "@/lib/hub/validations";
 
 export async function GET(
@@ -35,12 +31,6 @@ export async function GET(
         { error: "No organization found" },
         { status: 404 },
       );
-    }
-
-    // Check membership: only project members/owner can view
-    const member = await isProjectMember(id, session.user.id, orgId);
-    if (!member) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     const project = await prisma.hubProject.findFirst({
@@ -101,9 +91,13 @@ export async function PATCH(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id, orgId);
-    if (!admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Verify project belongs to user's org
+    const projectExists = await prisma.hubProject.findFirst({
+      where: { id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!projectExists) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -170,9 +164,13 @@ export async function DELETE(
       );
     }
 
-    const admin = await isProjectAdmin(id, session.user.id, orgId);
-    if (!admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Verify project belongs to user's org
+    const projectToDelete = await prisma.hubProject.findFirst({
+      where: { id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!projectToDelete) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     await prisma.hubProject.delete({ where: { id } });
