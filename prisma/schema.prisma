@@ -85,6 +85,7 @@ model User {
   hubCreatedTasks    HubTask[]          @relation("HubTaskCreator")
   hubTaskComments    HubTaskComment[]   @relation("HubTaskComments")
   hubTimeEntries     HubTimeEntry[]     @relation("HubTimeEntries")
+  hubCalendarEvents  HubCalendarEvent[] @relation("HubCalendarEvents")
 
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage Int       @default(0)
@@ -2566,7 +2567,8 @@ model Organization {
   assets Asset[]
 
   // HUB: Project Management
-  hubProjects HubProject[]
+  hubProjects       HubProject[]
+  hubCalendarEvents HubCalendarEvent[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -7013,4 +7015,24 @@ model HubTimeEntry {
   @@index([userId, date])
   @@index([projectId, date])
   @@index([taskId])
+}
+
+model HubCalendarEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  title          String
+  description    String?
+  date           DateTime @db.Date
+  startTime      String?  // HH:mm format, null = all-day
+  endTime        String?  // HH:mm format
+  color          String   @default("#3B82F6")
+  creatorId      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator      User         @relation("HubCalendarEvents", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, date])
+  @@index([creatorId])
 }

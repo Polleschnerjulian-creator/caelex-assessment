@@ -92,6 +92,48 @@ export const updateTimeEntrySchema = z.object({
   description: z.string().max(500).trim().nullable().optional(),
 });
 
+// ─── Calendar Events ──────────────────────────────────────────────────────────
+
+export const createCalendarEventSchema = z.object({
+  title: z.string().min(1).max(200).trim(),
+  description: z.string().max(2000).trim().nullable().optional(),
+  date: z.coerce.date(),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "HH:mm format")
+    .nullable()
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "HH:mm format")
+    .nullable()
+    .optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
+    .optional(),
+});
+
+export const updateCalendarEventSchema = z.object({
+  title: z.string().min(1).max(200).trim().optional(),
+  description: z.string().max(2000).trim().nullable().optional(),
+  date: z.coerce.date().optional(),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "HH:mm format")
+    .nullable()
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "HH:mm format")
+    .nullable()
+    .optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
+    .optional(),
+});
+
 // ─── Members ─────────────────────────────────────────────────────────────────
 
 export const addMemberSchema = z.object({
