@@ -1,9 +1,26 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CaelexIcon } from "@/components/ui/Logo";
+
+// Only apply transition on public/landing pages
+const EXCLUDED_PREFIXES = [
+  "/dashboard",
+  "/assure",
+  "/login",
+  "/signup",
+  "/assessment",
+  "/supplier",
+  "/academy",
+  "/verity",
+  "/testdemo1",
+  "/onboarding",
+];
+
+function isLandingRoute(path: string) {
+  return !EXCLUDED_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
 
 export default function PageTransition({
   children,
@@ -12,36 +29,44 @@ export default function PageTransition({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "covering" | "revealing">("idle");
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const safetyRef = useRef<NodeJS.Timeout | null>(null);
 
-  // When pathname changes while overlay is visible → hide overlay
+  // When pathname changes during "covering" → start reveal
   useEffect(() => {
-    if (showOverlay) {
-      const timer = setTimeout(() => setShowOverlay(false), 300);
-      return () => clearTimeout(timer);
+    if (phase === "covering") {
+      // Small delay to ensure the cover is fully opaque before revealing
+      timeoutRef.current = setTimeout(() => setPhase("revealing"), 100);
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      };
     }
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Safety: always hide after 2.5s no matter what
+  // Safety timeout — never stay stuck
   useEffect(() => {
-    if (showOverlay) {
-      safetyRef.current = setTimeout(() => setShowOverlay(false), 2500);
+    if (phase !== "idle") {
+      safetyRef.current = setTimeout(() => setPhase("idle"), 2000);
       return () => {
         if (safetyRef.current) clearTimeout(safetyRef.current);
       };
     }
-  }, [showOverlay]);
+  }, [phase]);
 
-  // Intercept internal link clicks
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+  // Intercept clicks on internal links (landing pages only)
+  const handleClick = useCallback(
+    (e: MouseEvent) => {
+      if (!isLandingRoute(pathname)) return;
+      if (phase !== "idle") return;
+
       const anchor = (e.target as HTMLElement).closest("a");
       if (!anchor) return;
 
       const href = anchor.getAttribute("href");
       if (!href) return;
 
+      // Skip external, hash, mailto, tel, new-tab, modifier keys
       if (
         href.startsWith("http") ||
         href.startsWith("#") ||
@@ -54,49 +79,50 @@ export default function PageTransition({
       )
         return;
 
-      if (href === pathname || showOverlay) return;
+      // Skip if same page
+      if (href === pathname) return;
 
       e.preventDefault();
-      setShowOverlay(true);
+      setPhase("covering");
 
-      // Navigate after overlay fades in
-      setTimeout(() => router.push(href), 350);
-    };
+      // Navigate after cover animation completes
+      setTimeout(() => router.push(href), 400);
+    },
+    [pathname, phase, router],
+  );
 
+  useEffect(() => {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
-  }, [pathname, showOverlay, router]);
+  }, [handleClick]);
 
   return (
     <>
       {children}
 
-      <AnimatePresence>
-        {showOverlay && (
+      <AnimatePresence
+        onExitComplete={() => {
+          if (phase === "revealing") setPhase("idle");
+        }}
+      >
+        {phase !== "idle" && (
           <motion.div
-            key="page-transition"
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f0f0f0]"
-            initial={{ x: "100%" }}
-            animate={{ x: "0%" }}
-            exit={{ x: "-100%" }}
+            key="page-cover"
+            className="fixed inset-0 z-[9999] bg-black"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{
-              duration: 0.5,
-              ease: [0.76, 0, 0.24, 1],
+              duration: phase === "covering" ? 0.35 : 0.4,
+              ease: [0.4, 0, 0.2, 1],
             }}
-          >
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{
-                duration: 0.35,
-                delay: 0.1,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
-            >
-              <CaelexIcon size={44} className="text-black" />
-            </motion.div>
-          </motion.div>
+            onAnimationComplete={() => {
+              // When reveal animation done → go idle
+              if (phase === "revealing") {
+                setPhase("idle");
+              }
+            }}
+          />
         )}
       </AnimatePresence>
     </>
