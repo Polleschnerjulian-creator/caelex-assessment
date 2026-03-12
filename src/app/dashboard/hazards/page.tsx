@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   AlertTriangle,
-  RefreshCw,
   Loader2,
   CheckCircle2,
   Clock,
@@ -14,7 +13,7 @@ import {
   Download,
   Zap,
 } from "lucide-react";
-import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import Card, { CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { GlassMotion, GlassStagger } from "@/components/ui/GlassMotion";
 import { motion } from "framer-motion";
@@ -511,7 +510,7 @@ export default function HazardsPage() {
                           {/* Action bar */}
                           <div className="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.01]">
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
