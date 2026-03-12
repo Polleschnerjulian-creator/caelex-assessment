@@ -26,6 +26,16 @@ const solutionLinks = [
   { label: "Due Diligence", href: "/assure/dashboard" },
   { label: "Investor Readiness", href: "/assure/dashboard" },
   { label: "Stakeholder Network", href: "/platform" },
+  { label: "Mission Timeline Planning", href: "/platform" },
+  { label: "Incident Management", href: "/platform" },
+  { label: "Authorization Workflow", href: "/platform" },
+  { label: "Registration Management", href: "/platform" },
+  { label: "Compliance Forecasting", href: "/platform" },
+  { label: "Supply Chain Security", href: "/platform" },
+  { label: "Satellite Tracking", href: "/platform" },
+  { label: "Training & Certification", href: "/academy/dashboard" },
+  { label: "Data Room Management", href: "/assure/dashboard" },
+  { label: "Regulatory Arbitrage", href: "/platform" },
 ];
 
 const industryLinks = [
@@ -44,18 +54,28 @@ const industryLinks = [
 ];
 
 const capabilityLinks = [
-  { label: "Comply", href: "/platform" },
-  { label: "Shield", href: "/platform" },
-  { label: "Sentinel", href: "/blog/agentic-system" },
-  { label: "Ephemeris", href: "/platform" },
-  { label: "Verity", href: "/platform" },
-  { label: "HUB", href: "/dashboard/hub" },
-  { label: "Assure", href: "/assure/dashboard" },
-  { label: "Academy", href: "/academy/dashboard" },
-  { label: "Astra AI", href: "/platform" },
-  { label: "Mission Control", href: "/platform" },
-  { label: "Digital Twin", href: "/platform" },
-  { label: "Regulatory Feed", href: "/platform" },
+  { label: "AI-Powered Analysis", href: "/platform" },
+  { label: "Real-Time Monitoring", href: "/platform" },
+  { label: "Document Automation", href: "/platform" },
+  { label: "Cryptographic Attestation", href: "/platform" },
+  { label: "Zero-Knowledge Proofs", href: "/platform" },
+  { label: "Autonomous Agents", href: "/blog/agentic-system" },
+  { label: "Orbital Mechanics Engine", href: "/platform" },
+  { label: "Predictive Compliance", href: "/platform" },
+  { label: "Multi-Jurisdiction Mapping", href: "/jurisdictions" },
+  { label: "Hash-Chain Audit Trail", href: "/platform" },
+  { label: "Anomaly Detection", href: "/platform" },
+  { label: "Risk Classification", href: "/platform" },
+  { label: "Natural Language Processing", href: "/platform" },
+  { label: "Regulatory Graph Engine", href: "/platform" },
+  { label: "Compliance Scoring", href: "/platform" },
+  { label: "Automated Gap Analysis", href: "/platform" },
+  { label: "Cross-Regulation Mapping", href: "/platform" },
+  { label: "Evidence Collection", href: "/platform" },
+  { label: "Deadline Cascade Modeling", href: "/platform" },
+  { label: "Scenario Simulation", href: "/platform" },
+  { label: "Multi-Tenant Encryption", href: "/security" },
+  { label: "Webhook & API Integration", href: "/docs/api" },
 ];
 
 const documentLinks = [
@@ -412,6 +432,30 @@ export default function Footer({ theme = "dark" }: FooterProps) {
               ))}
             </ul>
           </nav>
+        </div>
+      </div>
+
+      {/* Legal Disclaimer */}
+      <div
+        className={`border-t ${isLight ? "border-[#E5E7EB]" : "border-white/[0.06]"}`}
+      >
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6">
+          <p
+            className={`text-caption sm:text-micro leading-relaxed max-w-[1000px] ${
+              isLight ? "text-[#9CA3AF]" : "text-white/25"
+            }`}
+          >
+            This platform provides regulatory guidance and compliance tooling
+            based on the EU Space Act (COM(2025) 335), NIS2 Directive (EU
+            2022/2555), and national space laws across European jurisdictions.
+            Information and outputs provided by Caelex — including assessments,
+            generated documents, risk scores, and AI-assisted analysis — do not
+            constitute legal advice and should not be relied upon as a
+            substitute for professional legal counsel. For binding compliance
+            decisions, regulatory filings, and formal submissions, always
+            consult qualified legal professionals with jurisdiction-specific
+            expertise.
+          </p>
         </div>
       </div>
     </footer>
