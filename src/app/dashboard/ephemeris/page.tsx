@@ -2,10 +2,24 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  ChevronDown,
+  ChevronUp,
+  GitBranch,
+  Loader2,
+  RefreshCw,
+  Satellite,
+  Shield,
+} from "lucide-react";
+import GlassCard from "@/components/ui/GlassCard";
+import { GlassStagger, glassItemVariants } from "@/components/ui/GlassMotion";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "./components/alerts-sidebar";
 import DependencyGraphView from "./components/dependency-graph-view";
-import { useEphemerisTheme } from "./theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,11 +45,6 @@ interface FleetState {
 }
 
 type TypeFilter = "ALL" | "SCO" | "LO";
-
-const TYPE_BADGE_COLORS: Record<string, string> = {
-  SCO: "#3B82F6",
-  LO: "#F59E0B",
-};
 
 interface FleetIntelligence {
   fleetScore: number;
@@ -90,30 +99,43 @@ interface BenchmarkData {
   } | null;
 }
 
-// ─── Color Helpers (theme-aware — see ./theme.ts) ────────────────────────────
+// ─── Color Helpers (Tailwind class-based) ────────────────────────────────────
 
-import type { EphemerisColors } from "./theme";
-
-function riskColor(category: string, C: EphemerisColors): string {
+function riskColorClass(category: string): string {
   switch (category) {
     case "NOMINAL":
-      return C.nominal;
+      return "text-emerald-400";
     case "WATCH":
-      return C.watch;
+      return "text-amber-400";
     case "WARNING":
-      return C.warning;
+      return "text-orange-400";
     case "CRITICAL":
-      return C.critical;
+      return "text-red-400";
     default:
-      return C.textTertiary;
+      return "text-slate-500";
   }
 }
 
-function scoreColor(score: number, C: EphemerisColors): string {
-  if (score >= 85) return C.nominal;
-  if (score >= 70) return C.watch;
-  if (score >= 50) return C.warning;
-  return C.critical;
+function riskBgClass(category: string): string {
+  switch (category) {
+    case "NOMINAL":
+      return "bg-emerald-500";
+    case "WATCH":
+      return "bg-amber-500";
+    case "WARNING":
+      return "bg-orange-500";
+    case "CRITICAL":
+      return "bg-red-500";
+    default:
+      return "bg-slate-500";
+  }
+}
+
+function scoreColorClass(score: number): string {
+  if (score >= 85) return "text-emerald-400";
+  if (score >= 70) return "text-amber-400";
+  if (score >= 50) return "text-orange-400";
+  return "text-red-400";
 }
 
 function scoreRisk(score: number): string {
@@ -129,42 +151,68 @@ function trendArrow(delta: number): string {
   return "→";
 }
 
-function trendColor(delta: number, C: EphemerisColors): string {
-  if (delta > 0.5) return C.nominal;
-  if (delta < -0.5) return C.critical;
-  return C.textTertiary;
+function trendColorClass(delta: number): string {
+  if (delta > 0.5) return "text-emerald-400";
+  if (delta < -0.5) return "text-red-400";
+  return "text-slate-500";
 }
 
-function severityColor(severity: string, C: EphemerisColors): string {
+function severityColorClass(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return C.critical;
+      return "text-red-400";
     case "HIGH":
-      return C.warning;
+      return "text-orange-400";
     case "MEDIUM":
-      return C.watch;
+      return "text-amber-400";
     default:
-      return C.textTertiary;
+      return "text-slate-500";
   }
 }
 
-// ─── Sortable Column ──────────────────────────────────────────────────────────
+function freshnessColorClass(freshness: string): string {
+  switch (freshness) {
+    case "LIVE":
+      return "text-emerald-400";
+    case "RECENT":
+      return "text-slate-400";
+    case "STALE":
+      return "text-amber-400";
+    default:
+      return "text-red-400";
+  }
+}
+
+function horizonColorClass(days: number | null): string {
+  if (days === null) return "text-slate-500";
+  if (days < 90) return "text-red-400";
+  if (days < 365) return "text-amber-400";
+  return "text-slate-200";
+}
+
+// ─── Sort ─────────────────────────────────────────────────────────────────────
 
 type SortKey = "name" | "score" | "horizon" | "risk" | "alerts";
 type SortDir = "asc" | "desc";
 
+const TAB_ITEMS = [
+  { key: "fleet" as const, label: "Fleet", icon: Satellite },
+  { key: "alerts" as const, label: "Alerts", icon: AlertTriangle },
+  { key: "intelligence" as const, label: "Intelligence", icon: BarChart3 },
+  { key: "dependencies" as const, label: "Dependencies", icon: GitBranch },
+] as const;
+
+type TabKey = (typeof TAB_ITEMS)[number]["key"];
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function EphemerisDashboard() {
-  const COLORS = useEphemerisTheme();
   const [fleet, setFleet] = useState<FleetState[]>([]);
   const [intel, setIntel] = useState<FleetIntelligence | null>(null);
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<
-    "fleet" | "alerts" | "intelligence" | "dependencies"
-  >("fleet");
+  const [activeTab, setActiveTab] = useState<TabKey>("fleet");
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [lastCalc, setLastCalc] = useState<string | null>(null);
@@ -174,7 +222,6 @@ export default function EphemerisDashboard() {
     setLoading(true);
     setError(null);
     try {
-      // Load fleet data first (fast — reads from DB cache)
       const fleetRes = await fetch("/api/v1/ephemeris/fleet", {
         headers: csrfHeaders(),
       });
@@ -190,10 +237,8 @@ export default function EphemerisDashboard() {
       }
 
       setLastCalc(new Date().toISOString());
-      // Show fleet immediately, then load intelligence in background
       setLoading(false);
 
-      // Load intelligence + benchmark (slower, non-blocking)
       const intelRes = await fetch(
         "/api/v1/ephemeris/fleet/intelligence?include_benchmark=true&lookback_days=90",
         { headers: csrfHeaders() },
@@ -236,7 +281,6 @@ export default function EphemerisDashboard() {
   ).length;
   const criticalCount = fleet.filter((f) => f.overallScore < 50).length;
 
-  // Fleet score delta from intelligence
   const fleetDelta = intel?.trend?.shortTermDelta ?? 0;
 
   // Filter + sort fleet
@@ -279,7 +323,6 @@ export default function EphemerisDashboard() {
     }
   };
 
-  // Find weakest module for each satellite
   const weakestModule = (
     sat: FleetState,
   ): { name: string; score: number } | null => {
@@ -291,37 +334,6 @@ export default function EphemerisDashboard() {
     return worst;
   };
 
-  // ─── Styles ───────────────────────────────────────────────────────────
-
-  const mono: React.CSSProperties = {
-    fontFamily: "'IBM Plex Mono', 'Fira Code', monospace",
-  };
-  const sans: React.CSSProperties = {
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  };
-
-  const cellStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    fontSize: "12px",
-    borderBottom: `1px solid ${COLORS.border}`,
-    color: COLORS.textSecondary,
-    ...mono,
-  };
-
-  const headerCellStyle: React.CSSProperties = {
-    ...cellStyle,
-    fontSize: "10px",
-    fontWeight: 500,
-    color: COLORS.textMuted,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-    cursor: "pointer",
-    userSelect: "none" as const,
-    ...sans,
-  };
-
-  // ─── Render ───────────────────────────────────────────────────────────
-
   // Collect all alerts for sidebar
   const allAlerts = fleet.flatMap((f) =>
     (f.activeAlerts ?? []).map((a) => ({
@@ -331,1349 +343,859 @@ export default function EphemerisDashboard() {
     })),
   );
 
+  const SortIcon = ({ field }: { field: SortKey }) => {
+    if (sortKey !== field) return null;
+    return sortDir === "asc" ? (
+      <ChevronUp size={12} className="inline ml-0.5" />
+    ) : (
+      <ChevronDown size={12} className="inline ml-0.5" />
+    );
+  };
+
+  // ─── Render ───────────────────────────────────────────────────────────
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <div
-        style={{
-          flex: 1,
-          background: COLORS.bg,
-          minHeight: "100vh",
-          color: COLORS.textPrimary,
-        }}
-      >
-        {/* ── Top Bar ──────────────────────────────────────────────────── */}
-        <div
-          style={{
-            height: 48,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 24px",
-            borderBottom: `1px solid ${COLORS.border}`,
-            background: COLORS.sunken,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: COLORS.brand,
-                letterSpacing: "0.05em",
-                ...sans,
-              }}
-            >
-              EPHEMERIS
-            </span>
-            <span style={{ fontSize: 12, color: COLORS.textTertiary, ...sans }}>
-              Fleet Command
-            </span>
-            <span style={{ fontSize: 10, color: COLORS.textMuted, ...mono }}>
-              v3.1.0
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {lastCalc && (
-              <span style={{ fontSize: 10, color: COLORS.textMuted, ...mono }}>
-                Last calculated:{" "}
-                {new Date(lastCalc).toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZoneName: "short",
-                })}
-              </span>
-            )}
-            <button
-              onClick={loadAll}
-              disabled={loading}
-              style={{
-                fontSize: 11,
-                padding: "4px 12px",
-                background: COLORS.elevated,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 4,
-                color: COLORS.textSecondary,
-                cursor: loading ? "wait" : "pointer",
-                ...sans,
-              }}
-            >
-              {loading ? "↻ ..." : "↻ Recalculate"}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Fleet Metrics Strip ──────────────────────────────────────── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr 1fr",
-            borderBottom: `1px solid ${COLORS.border}`,
-            background: COLORS.sunken,
-          }}
-        >
-          {/* Fleet Score */}
-          <div
-            style={{
-              padding: "12px 24px",
-              borderRight: `1px solid ${COLORS.border}`,
-            }}
+    <div className="flex min-h-screen">
+      <div className="flex-1 min-h-screen">
+        {/* ── Page Content ─────────────────────────────────────────── */}
+        <div className="p-6 space-y-6 max-w-[1600px]">
+          {/* ── Header ───────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="flex items-start justify-between"
           >
-            <div
-              style={{
-                fontSize: 10,
-                color: COLORS.textMuted,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                marginBottom: 4,
-                ...sans,
-              }}
-            >
-              Fleet Score
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: scoreColor(intel?.fleetScore ?? 0, COLORS),
-                  ...mono,
-                }}
-              >
-                {intel?.fleetScore ?? "—"}
-              </span>
-              {fleetDelta !== 0 && (
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: trendColor(fleetDelta, COLORS),
-                    ...mono,
-                  }}
-                >
-                  {trendArrow(fleetDelta)} {fleetDelta > 0 ? "+" : ""}
-                  {fleetDelta.toFixed(1)}
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted, ...sans }}>
-              7d trend
-            </div>
-          </div>
-
-          {/* Fleet Horizon */}
-          <div
-            style={{
-              padding: "12px 24px",
-              borderRight: `1px solid ${COLORS.border}`,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                color: COLORS.textMuted,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                marginBottom: 4,
-                ...sans,
-              }}
-            >
-              Fleet Horizon
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  ...mono,
-                  color:
-                    (intel?.horizon.earliestBreachDays ?? 999) < 90
-                      ? COLORS.critical
-                      : (intel?.horizon.earliestBreachDays ?? 999) < 365
-                        ? COLORS.warning
-                        : COLORS.textPrimary,
-                }}
-              >
-                {intel?.horizon.earliestBreachDays ?? "∞"}
-              </span>
-              <span
-                style={{ fontSize: 12, color: COLORS.textTertiary, ...sans }}
-              >
-                days
-              </span>
-            </div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted, ...sans }}>
-              first breach
-            </div>
-          </div>
-
-          {/* Satellites */}
-          <div
-            style={{
-              padding: "12px 24px",
-              borderRight: `1px solid ${COLORS.border}`,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                color: COLORS.textMuted,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                marginBottom: 4,
-                ...sans,
-              }}
-            >
-              Entities
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: COLORS.textPrimary,
-                  ...mono,
-                }}
-              >
-                {nominalCount}/{fleet.length}
-              </span>
-              <span style={{ fontSize: 12, color: COLORS.nominal, ...sans }}>
-                nominal
-              </span>
-            </div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted, ...sans }}>
-              {watchCount > 0 && (
-                <span style={{ color: COLORS.watch }}>{watchCount} watch </span>
-              )}
-              {warningCount > 0 && (
-                <span style={{ color: COLORS.warning }}>
-                  {warningCount} warning{" "}
-                </span>
-              )}
-              {criticalCount > 0 && (
-                <span style={{ color: COLORS.critical }}>
-                  {criticalCount} critical
-                </span>
-              )}
-              {watchCount === 0 &&
-                warningCount === 0 &&
-                criticalCount === 0 &&
-                "all clear"}
-            </div>
-          </div>
-
-          {/* Active Alerts */}
-          <div style={{ padding: "12px 24px" }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: COLORS.textMuted,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                marginBottom: 4,
-                ...sans,
-              }}
-            >
-              Active Alerts
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  ...mono,
-                  color:
-                    criticalAlerts > 0
-                      ? COLORS.critical
-                      : totalAlerts > 0
-                        ? COLORS.warning
-                        : COLORS.textPrimary,
-                }}
-              >
-                {totalAlerts}
-              </span>
-            </div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted, ...sans }}>
-              {criticalAlerts > 0 && (
-                <span style={{ color: COLORS.critical }}>
-                  {criticalAlerts} critical
-                </span>
-              )}
-              {criticalAlerts === 0 && totalAlerts > 0 && "no critical"}
-              {totalAlerts === 0 && "none"}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Tab Bar ──────────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            gap: 0,
-            borderBottom: `1px solid ${COLORS.border}`,
-            background: COLORS.sunken,
-            padding: "0 24px",
-          }}
-        >
-          {(["fleet", "alerts", "intelligence", "dependencies"] as const).map(
-            (tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "10px 20px",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color:
-                    activeTab === tab ? COLORS.textPrimary : COLORS.textMuted,
-                  borderBottom:
-                    activeTab === tab
-                      ? `2px solid ${COLORS.brand}`
-                      : "2px solid transparent",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textTransform: "capitalize",
-                  ...sans,
-                }}
-              >
-                {tab === "alerts"
-                  ? `Alerts (${totalAlerts})`
-                  : tab === "dependencies"
-                    ? "Dependencies"
-                    : tab}
-              </button>
-            ),
-          )}
-        </div>
-
-        {/* ── Error ────────────────────────────────────────────────────── */}
-        {error && (
-          <div
-            style={{
-              margin: "16px 24px",
-              padding: "8px 16px",
-              background: "#2d1215",
-              border: `1px solid ${COLORS.critical}33`,
-              borderRadius: 4,
-              fontSize: 12,
-              color: COLORS.critical,
-              ...mono,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* ── Tab Content ──────────────────────────────────────────────── */}
-        <div style={{ padding: "0 24px 24px" }}>
-          {/* FLEET TAB */}
-          {activeTab === "fleet" && (
             <div>
-              {loading && fleet.length === 0 ? (
-                <div
-                  style={{
-                    padding: "64px 0",
-                    textAlign: "center",
-                    color: COLORS.textMuted,
-                    fontSize: 12,
-                    ...sans,
-                  }}
-                >
-                  Loading fleet data...
-                </div>
-              ) : fleet.length === 0 ? (
-                <div
-                  style={{
-                    padding: "64px 0",
-                    textAlign: "center",
-                    color: COLORS.textMuted,
-                    fontSize: 12,
-                    ...sans,
-                  }}
-                >
-                  No entities registered. Add spacecraft or launch vehicles to
-                  your organization.
-                </div>
-              ) : (
-                <>
-                  {/* Type filter bar */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "10px 0 6px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 10,
-                        color: COLORS.textMuted,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        ...sans,
-                      }}
-                    >
-                      Type
-                    </span>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) =>
-                        setTypeFilter(e.target.value as TypeFilter)
-                      }
-                      style={{
-                        fontSize: 11,
-                        padding: "3px 8px",
-                        background: COLORS.elevated,
-                        border: `1px solid ${COLORS.border}`,
-                        borderRadius: 4,
-                        color: COLORS.textSecondary,
-                        cursor: "pointer",
-                        outline: "none",
-                        ...sans,
-                      }}
-                    >
-                      <option value="ALL">All ({fleet.length})</option>
-                      <option value="SCO">
-                        SCO — Spacecraft (
-                        {
-                          fleet.filter(
-                            (f) => (f.operatorType ?? "SCO") === "SCO",
-                          ).length
-                        }
-                        )
-                      </option>
-                      <option value="LO">
-                        LO — Launch Vehicle (
-                        {fleet.filter((f) => f.operatorType === "LO").length})
-                      </option>
-                    </select>
-                    {typeFilter !== "ALL" && (
-                      <button
-                        onClick={() => setTypeFilter("ALL")}
-                        style={{
-                          fontSize: 10,
-                          padding: "2px 6px",
-                          background: "transparent",
-                          border: `1px solid ${COLORS.border}`,
-                          borderRadius: 3,
-                          color: COLORS.textMuted,
-                          cursor: "pointer",
-                          ...sans,
-                        }}
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      marginTop: 1,
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "center",
-                            width: 52,
-                          }}
-                        >
-                          Type
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "left",
-                            width: 90,
-                          }}
-                          onClick={() => toggleSort("name")}
-                        >
-                          ID{" "}
-                          {sortKey === "name"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                        <th
-                          style={{ ...headerCellStyle, textAlign: "left" }}
-                          onClick={() => toggleSort("name")}
-                        >
-                          Name{" "}
-                          {sortKey === "name"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "right",
-                            width: 70,
-                          }}
-                          onClick={() => toggleSort("score")}
-                        >
-                          Score{" "}
-                          {sortKey === "score"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "right",
-                            width: 80,
-                          }}
-                          onClick={() => toggleSort("horizon")}
-                        >
-                          Horizon{" "}
-                          {sortKey === "horizon"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "center",
-                            width: 80,
-                          }}
-                          onClick={() => toggleSort("risk")}
-                        >
-                          Risk{" "}
-                          {sortKey === "risk"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                        <th style={{ ...headerCellStyle, textAlign: "left" }}>
-                          Weakest Module
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "center",
-                            width: 60,
-                          }}
-                        >
-                          Freshness
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            textAlign: "center",
-                            width: 60,
-                          }}
-                          onClick={() => toggleSort("alerts")}
-                        >
-                          Alerts{" "}
-                          {sortKey === "alerts"
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : ""}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedFleet.map((sat) => {
-                        const risk = scoreRisk(sat.overallScore);
-                        const wm = weakestModule(sat);
-                        return (
-                          <tr
-                            key={sat.noradId}
-                            style={{ cursor: "pointer" }}
-                            onMouseEnter={(e) => {
-                              (
-                                e.currentTarget as HTMLTableRowElement
-                              ).style.background = COLORS.elevated;
-                            }}
-                            onMouseLeave={(e) => {
-                              (
-                                e.currentTarget as HTMLTableRowElement
-                              ).style.background = "transparent";
-                            }}
-                            onClick={() => {
-                              window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
-                            }}
-                          >
-                            <td
-                              style={{
-                                ...cellStyle,
-                                textAlign: "center",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  display: "inline-block",
-                                  padding: "1px 6px",
-                                  borderRadius: 3,
-                                  fontSize: 9,
-                                  fontWeight: 700,
-                                  letterSpacing: "0.04em",
-                                  color: "#fff",
-                                  backgroundColor:
-                                    TYPE_BADGE_COLORS[
-                                      sat.operatorType ?? "SCO"
-                                    ] ?? COLORS.textMuted,
-                                  ...sans,
-                                }}
-                              >
-                                {sat.operatorType ?? "SCO"}
-                              </span>
-                            </td>
-                            <td
-                              style={{
-                                ...cellStyle,
-                                color: COLORS.textMuted,
-                                fontSize: 11,
-                              }}
-                            >
-                              {sat.noradId}
-                            </td>
-                            <td
-                              style={{
-                                ...cellStyle,
-                                color: COLORS.textPrimary,
-                                fontWeight: 500,
-                              }}
-                            >
-                              {sat.satelliteName}
-                            </td>
-                            <td
-                              style={{
-                                ...cellStyle,
-                                textAlign: "right",
-                                color: scoreColor(sat.overallScore, COLORS),
-                                fontWeight: 600,
-                              }}
-                            >
-                              {sat.overallScore}
-                            </td>
-                            <td style={{ ...cellStyle, textAlign: "right" }}>
-                              {sat.complianceHorizon.daysUntilFirstBreach !==
-                              null ? (
-                                <span
-                                  style={{
-                                    color:
-                                      sat.complianceHorizon
-                                        .daysUntilFirstBreach < 90
-                                        ? COLORS.critical
-                                        : sat.complianceHorizon
-                                              .daysUntilFirstBreach < 365
-                                          ? COLORS.warning
-                                          : COLORS.textSecondary,
-                                  }}
-                                >
-                                  {sat.complianceHorizon.daysUntilFirstBreach}d
-                                </span>
-                              ) : (
-                                <span style={{ color: COLORS.textMuted }}>
-                                  ∞
-                                </span>
-                              )}
-                            </td>
-                            <td style={{ ...cellStyle, textAlign: "center" }}>
-                              <span
-                                style={{
-                                  color: riskColor(risk, COLORS),
-                                  fontSize: 11,
-                                }}
-                              >
-                                ● {risk.slice(0, 4)}
-                              </span>
-                            </td>
-                            <td style={{ ...cellStyle, fontSize: 11 }}>
-                              {wm ? (
-                                <span>
-                                  <span style={{ color: COLORS.textTertiary }}>
-                                    {wm.name}
-                                  </span>
-                                  <span
-                                    style={{
-                                      color: scoreColor(wm.score, COLORS),
-                                      marginLeft: 6,
-                                    }}
-                                  >
-                                    ({wm.score})
-                                  </span>
-                                </span>
-                              ) : (
-                                <span style={{ color: COLORS.textMuted }}>
-                                  —
-                                </span>
-                              )}
-                            </td>
-                            <td
-                              style={{
-                                ...cellStyle,
-                                textAlign: "center",
-                                fontSize: 10,
-                              }}
-                            >
-                              <span
-                                style={{
-                                  color:
-                                    sat.dataFreshness === "LIVE"
-                                      ? COLORS.nominal
-                                      : sat.dataFreshness === "RECENT"
-                                        ? COLORS.textTertiary
-                                        : sat.dataFreshness === "STALE"
-                                          ? COLORS.warning
-                                          : COLORS.critical,
-                                }}
-                              >
-                                ● {sat.dataFreshness}
-                              </span>
-                            </td>
-                            <td style={{ ...cellStyle, textAlign: "center" }}>
-                              {(sat.activeAlerts?.length ?? 0) > 0 ? (
-                                <span
-                                  style={{
-                                    color: sat.activeAlerts?.some(
-                                      (a) => a.severity === "CRITICAL",
-                                    )
-                                      ? COLORS.critical
-                                      : COLORS.warning,
-                                  }}
-                                >
-                                  {sat.activeAlerts.length}
-                                </span>
-                              ) : (
-                                <span style={{ color: COLORS.textMuted }}>
-                                  —
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                  <div
-                    style={{
-                      padding: "8px 12px",
-                      fontSize: 10,
-                      color: COLORS.textMuted,
-                      ...sans,
-                    }}
-                  >
-                    Showing {sortedFleet.length} of {fleet.length} entities
-                  </div>
-                </>
+              <h1 className="text-display-sm font-bold text-white">
+                Ephemeris
+              </h1>
+              <p className="text-body text-slate-400 mt-1">
+                Fleet compliance forecasting & intelligence
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {lastCalc && (
+                <span className="text-caption text-slate-500 font-mono">
+                  {new Date(lastCalc).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZoneName: "short",
+                  })}
+                </span>
               )}
-            </div>
-          )}
-
-          {/* ALERTS TAB */}
-          {activeTab === "alerts" && (
-            <div style={{ marginTop: 16 }}>
-              {(() => {
-                const allAlerts = fleet
-                  .flatMap((s) =>
-                    (s.activeAlerts ?? []).map((a) => ({
-                      ...a,
-                      noradId: s.noradId,
-                      satelliteName: s.satelliteName,
-                    })),
-                  )
-                  .sort((a, b) => {
-                    const order: Record<string, number> = {
-                      CRITICAL: 0,
-                      HIGH: 1,
-                      MEDIUM: 2,
-                      LOW: 3,
-                      ANOMALY: 1,
-                    };
-                    return (order[a.severity] ?? 4) - (order[b.severity] ?? 4);
-                  });
-
-                if (allAlerts.length === 0) {
-                  return (
-                    <div
-                      style={{
-                        padding: "64px 0",
-                        textAlign: "center",
-                        color: COLORS.textMuted,
-                        fontSize: 12,
-                        ...sans,
-                      }}
-                    >
-                      No active alerts. All systems nominal.
-                    </div>
-                  );
-                }
-
-                return (
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            width: 80,
-                            textAlign: "left",
-                          }}
-                        >
-                          Severity
-                        </th>
-                        <th
-                          style={{
-                            ...headerCellStyle,
-                            width: 100,
-                            textAlign: "left",
-                          }}
-                        >
-                          Satellite
-                        </th>
-                        <th style={{ ...headerCellStyle, textAlign: "left" }}>
-                          Title
-                        </th>
-                        <th style={{ ...headerCellStyle, textAlign: "left" }}>
-                          Description
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allAlerts.map((alert, i) => (
-                        <tr
-                          key={`${alert.noradId}-${alert.id ?? i}`}
-                          style={{ cursor: "pointer" }}
-                          onMouseEnter={(e) => {
-                            (
-                              e.currentTarget as HTMLTableRowElement
-                            ).style.background = COLORS.elevated;
-                          }}
-                          onMouseLeave={(e) => {
-                            (
-                              e.currentTarget as HTMLTableRowElement
-                            ).style.background = "transparent";
-                          }}
-                          onClick={() => {
-                            window.location.href = `/dashboard/ephemeris/${alert.noradId}`;
-                          }}
-                        >
-                          <td style={{ ...cellStyle }}>
-                            <span
-                              style={{
-                                color: severityColor(alert.severity, COLORS),
-                                fontSize: 11,
-                                fontWeight: 600,
-                              }}
-                            >
-                              ● {alert.severity}
-                            </span>
-                          </td>
-                          <td style={{ ...cellStyle, fontSize: 11 }}>
-                            {alert.satelliteName}
-                          </td>
-                          <td
-                            style={{ ...cellStyle, color: COLORS.textPrimary }}
-                          >
-                            {alert.title}
-                          </td>
-                          <td
-                            style={{
-                              ...cellStyle,
-                              fontSize: 11,
-                              color: COLORS.textTertiary,
-                              maxWidth: 400,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {alert.description}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                );
-              })()}
-            </div>
-          )}
-
-          {/* INTELLIGENCE TAB */}
-          {activeTab === "intelligence" && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-                marginTop: 16,
-              }}
-            >
-              {/* Panel 1: Risk Distribution */}
-              <div
-                style={{
-                  background: COLORS.elevated,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 4,
-                  padding: 16,
-                }}
+              <button
+                onClick={loadAll}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg text-small text-slate-300 hover:bg-[var(--glass-bg-hover)] hover:border-[var(--glass-border-hover)] transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: COLORS.textMuted,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                    ...sans,
-                  }}
-                >
-                  Risk Distribution
-                </div>
-                {(["NOMINAL", "WATCH", "WARNING", "CRITICAL"] as const).map(
-                  (cat) => {
-                    const count =
-                      cat === "NOMINAL"
-                        ? nominalCount
-                        : cat === "WATCH"
-                          ? watchCount
-                          : cat === "WARNING"
-                            ? warningCount
-                            : criticalCount;
-                    const pct =
-                      fleet.length > 0 ? (count / fleet.length) * 100 : 0;
-                    return (
-                      <div
-                        key={cat}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          marginBottom: 6,
-                        }}
-                      >
+                <RefreshCw
+                  size={14}
+                  className={loading ? "animate-spin" : ""}
+                />
+                {loading ? "Calculating..." : "Recalculate"}
+              </button>
+            </div>
+          </motion.div>
+
+          {/* ── Metrics Strip ────────────────────────────────────── */}
+          <GlassStagger>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {/* Fleet Score */}
+              <motion.div variants={glassItemVariants}>
+                <GlassCard hover className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-caption text-slate-400 uppercase tracking-wider">
+                        Fleet Score
+                      </p>
+                      <div className="flex items-baseline gap-2 mt-1">
                         <span
-                          style={{
-                            fontSize: 10,
-                            color: COLORS.textMuted,
-                            width: 60,
-                            ...sans,
-                          }}
+                          className={`text-display-sm font-bold tabular-nums ${scoreColorClass(intel?.fleetScore ?? 0)}`}
                         >
-                          {cat}
+                          {intel?.fleetScore ?? "—"}
                         </span>
-                        <div
-                          style={{
-                            flex: 1,
-                            height: 14,
-                            background: COLORS.sunken,
-                            borderRadius: 2,
-                            overflow: "hidden",
-                          }}
+                        {fleetDelta !== 0 && (
+                          <span
+                            className={`text-small font-mono ${trendColorClass(fleetDelta)}`}
+                          >
+                            {trendArrow(fleetDelta)} {fleetDelta > 0 ? "+" : ""}
+                            {fleetDelta.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-caption text-slate-500 mt-0.5">
+                        7d trend
+                      </p>
+                    </div>
+                    <div className="ml-3 flex-shrink-0 text-emerald-500">
+                      <Shield size={20} strokeWidth={1.5} />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              {/* Fleet Horizon */}
+              <motion.div variants={glassItemVariants}>
+                <GlassCard hover className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-caption text-slate-400 uppercase tracking-wider">
+                        Fleet Horizon
+                      </p>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span
+                          className={`text-display-sm font-bold tabular-nums ${horizonColorClass(intel?.horizon.earliestBreachDays ?? null)}`}
                         >
-                          <div
-                            style={{
-                              width: `${pct}%`,
-                              height: "100%",
-                              background: riskColor(cat, COLORS),
-                              borderRadius: 2,
-                              transition: "width 0.3s",
-                            }}
+                          {intel?.horizon.earliestBreachDays ?? "∞"}
+                        </span>
+                        <span className="text-small text-slate-400">days</span>
+                      </div>
+                      <p className="text-caption text-slate-500 mt-0.5">
+                        first breach
+                      </p>
+                    </div>
+                    <div className="ml-3 flex-shrink-0 text-amber-500">
+                      <Activity size={20} strokeWidth={1.5} />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              {/* Entities */}
+              <motion.div variants={glassItemVariants}>
+                <GlassCard hover className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-caption text-slate-400 uppercase tracking-wider">
+                        Entities
+                      </p>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-display-sm font-bold text-white tabular-nums">
+                          {nominalCount}/{fleet.length}
+                        </span>
+                        <span className="text-small text-emerald-400">
+                          nominal
+                        </span>
+                      </div>
+                      <p className="text-caption text-slate-500 mt-0.5">
+                        {watchCount > 0 && (
+                          <span className="text-amber-400">
+                            {watchCount} watch{" "}
+                          </span>
+                        )}
+                        {warningCount > 0 && (
+                          <span className="text-orange-400">
+                            {warningCount} warning{" "}
+                          </span>
+                        )}
+                        {criticalCount > 0 && (
+                          <span className="text-red-400">
+                            {criticalCount} critical
+                          </span>
+                        )}
+                        {watchCount === 0 &&
+                          warningCount === 0 &&
+                          criticalCount === 0 &&
+                          "all clear"}
+                      </p>
+                    </div>
+                    <div className="ml-3 flex-shrink-0 text-blue-500">
+                      <Satellite size={20} strokeWidth={1.5} />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              {/* Active Alerts */}
+              <motion.div variants={glassItemVariants}>
+                <GlassCard hover className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-caption text-slate-400 uppercase tracking-wider">
+                        Active Alerts
+                      </p>
+                      <p
+                        className={`text-display-sm font-bold mt-1 tabular-nums ${
+                          criticalAlerts > 0
+                            ? "text-red-400"
+                            : totalAlerts > 0
+                              ? "text-amber-400"
+                              : "text-white"
+                        }`}
+                      >
+                        {totalAlerts}
+                      </p>
+                      <p className="text-caption text-slate-500 mt-0.5">
+                        {criticalAlerts > 0 && (
+                          <span className="text-red-400">
+                            {criticalAlerts} critical
+                          </span>
+                        )}
+                        {criticalAlerts === 0 &&
+                          totalAlerts > 0 &&
+                          "no critical"}
+                        {totalAlerts === 0 && "none"}
+                      </p>
+                    </div>
+                    <div
+                      className={`ml-3 flex-shrink-0 ${criticalAlerts > 0 ? "text-red-500" : "text-slate-500"}`}
+                    >
+                      <AlertTriangle size={20} strokeWidth={1.5} />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          </GlassStagger>
+
+          {/* ── Tab Bar ──────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex gap-1 border-b border-[var(--glass-border)]"
+          >
+            {TAB_ITEMS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-small font-medium transition-all duration-200 border-b-2 -mb-px ${
+                  activeTab === key
+                    ? "border-emerald-500 text-white"
+                    : "border-transparent text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                <Icon size={14} />
+                {label}
+                {key === "alerts" && totalAlerts > 0 && (
+                  <span
+                    className={`text-caption px-1.5 py-0.5 rounded-full ${
+                      criticalAlerts > 0
+                        ? "bg-red-500/20 text-red-400"
+                        : "bg-amber-500/20 text-amber-400"
+                    }`}
+                  >
+                    {totalAlerts}
+                  </span>
+                )}
+              </button>
+            ))}
+          </motion.div>
+
+          {/* ── Error Banner ─────────────────────────────────────── */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <p className="text-small text-red-400">{error}</p>
+                </div>
+                <button
+                  onClick={loadAll}
+                  className="text-small text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Retry
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Tab Content ──────────────────────────────────────── */}
+          <AnimatePresence mode="wait">
+            {/* FLEET TAB */}
+            {activeTab === "fleet" && (
+              <motion.div
+                key="fleet"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {loading && fleet.length === 0 ? (
+                  <div className="flex items-center justify-center py-20">
+                    <Loader2
+                      size={24}
+                      className="animate-spin text-slate-500"
+                    />
+                  </div>
+                ) : fleet.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <div className="w-16 h-16 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] flex items-center justify-center mb-4">
+                      <Satellite
+                        size={28}
+                        className="text-slate-500"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <h3 className="text-subtitle font-medium text-slate-300 mb-1">
+                      No entities registered
+                    </h3>
+                    <p className="text-body text-slate-500">
+                      Add spacecraft or launch vehicles to your organization.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Type filter bar */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-caption text-slate-500 uppercase tracking-wider">
+                        Type
+                      </span>
+                      <select
+                        value={typeFilter}
+                        onChange={(e) =>
+                          setTypeFilter(e.target.value as TypeFilter)
+                        }
+                        className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-1.5 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                      >
+                        <option value="ALL">All ({fleet.length})</option>
+                        <option value="SCO">
+                          SCO — Spacecraft (
+                          {
+                            fleet.filter(
+                              (f) => (f.operatorType ?? "SCO") === "SCO",
+                            ).length
+                          }
+                          )
+                        </option>
+                        <option value="LO">
+                          LO — Launch Vehicle (
+                          {fleet.filter((f) => f.operatorType === "LO").length})
+                        </option>
+                      </select>
+                      {typeFilter !== "ALL" && (
+                        <button
+                          onClick={() => setTypeFilter("ALL")}
+                          className="text-caption px-2 py-1 rounded border border-[var(--glass-border)] text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Fleet Table */}
+                    <div className="glass-elevated rounded-[var(--radius-lg)] overflow-hidden border border-[var(--glass-border)]">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-body">
+                          <thead>
+                            <tr className="border-b border-[var(--glass-border)]">
+                              <th className="px-4 py-3 text-center text-caption text-slate-400 uppercase tracking-wider w-14">
+                                Type
+                              </th>
+                              <th
+                                className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none w-20"
+                                onClick={() => toggleSort("name")}
+                              >
+                                ID
+                                <SortIcon field="name" />
+                              </th>
+                              <th
+                                className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none"
+                                onClick={() => toggleSort("name")}
+                              >
+                                Name
+                                <SortIcon field="name" />
+                              </th>
+                              <th
+                                className="px-4 py-3 text-right text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none w-20"
+                                onClick={() => toggleSort("score")}
+                              >
+                                Score
+                                <SortIcon field="score" />
+                              </th>
+                              <th
+                                className="px-4 py-3 text-right text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none w-24"
+                                onClick={() => toggleSort("horizon")}
+                              >
+                                Horizon
+                                <SortIcon field="horizon" />
+                              </th>
+                              <th
+                                className="px-4 py-3 text-center text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none w-24"
+                                onClick={() => toggleSort("risk")}
+                              >
+                                Risk
+                                <SortIcon field="risk" />
+                              </th>
+                              <th className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider">
+                                Weakest Module
+                              </th>
+                              <th className="px-4 py-3 text-center text-caption text-slate-400 uppercase tracking-wider w-20">
+                                Freshness
+                              </th>
+                              <th
+                                className="px-4 py-3 text-center text-caption text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none w-16"
+                                onClick={() => toggleSort("alerts")}
+                              >
+                                Alerts
+                                <SortIcon field="alerts" />
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[var(--glass-border)]">
+                            {sortedFleet.map((sat) => {
+                              const risk = scoreRisk(sat.overallScore);
+                              const wm = weakestModule(sat);
+                              return (
+                                <tr
+                                  key={sat.noradId}
+                                  className="cursor-pointer hover:bg-white/[0.03] transition-colors"
+                                  onClick={() => {
+                                    window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
+                                  }}
+                                >
+                                  <td className="px-4 py-3 text-center">
+                                    <span
+                                      className={`inline-flex items-center px-1.5 py-0.5 rounded text-micro font-bold tracking-wider text-white ${
+                                        sat.operatorType === "LO"
+                                          ? "bg-amber-500"
+                                          : "bg-blue-500"
+                                      }`}
+                                    >
+                                      {sat.operatorType ?? "SCO"}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-small text-slate-500 font-mono">
+                                    {sat.noradId}
+                                  </td>
+                                  <td className="px-4 py-3 text-body font-medium text-slate-200">
+                                    {sat.satelliteName}
+                                  </td>
+                                  <td
+                                    className={`px-4 py-3 text-right font-semibold tabular-nums font-mono ${scoreColorClass(sat.overallScore)}`}
+                                  >
+                                    {sat.overallScore}
+                                  </td>
+                                  <td className="px-4 py-3 text-right font-mono">
+                                    {sat.complianceHorizon
+                                      .daysUntilFirstBreach !== null ? (
+                                      <span
+                                        className={horizonColorClass(
+                                          sat.complianceHorizon
+                                            .daysUntilFirstBreach,
+                                        )}
+                                      >
+                                        {
+                                          sat.complianceHorizon
+                                            .daysUntilFirstBreach
+                                        }
+                                        d
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-500">∞</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    <span
+                                      className={`text-small ${riskColorClass(risk)}`}
+                                    >
+                                      <span className="mr-1">●</span>
+                                      {risk.slice(0, 4)}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-small">
+                                    {wm ? (
+                                      <span>
+                                        <span className="text-slate-400">
+                                          {wm.name}
+                                        </span>
+                                        <span
+                                          className={`ml-1.5 ${scoreColorClass(wm.score)}`}
+                                        >
+                                          ({wm.score})
+                                        </span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-600">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    <span
+                                      className={`text-caption ${freshnessColorClass(sat.dataFreshness)}`}
+                                    >
+                                      <span className="mr-1">●</span>
+                                      {sat.dataFreshness}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    {(sat.activeAlerts?.length ?? 0) > 0 ? (
+                                      <span
+                                        className={
+                                          sat.activeAlerts?.some(
+                                            (a) => a.severity === "CRITICAL",
+                                          )
+                                            ? "text-red-400 font-semibold"
+                                            : "text-amber-400"
+                                        }
+                                      >
+                                        {sat.activeAlerts.length}
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-600">—</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="px-4 py-2.5 border-t border-[var(--glass-border)]">
+                        <span className="text-caption text-slate-500">
+                          Showing {sortedFleet.length} of {fleet.length}{" "}
+                          entities
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+
+            {/* ALERTS TAB */}
+            {activeTab === "alerts" && (
+              <motion.div
+                key="alerts"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {(() => {
+                  const sortedAlerts = fleet
+                    .flatMap((s) =>
+                      (s.activeAlerts ?? []).map((a) => ({
+                        ...a,
+                        noradId: s.noradId,
+                        satelliteName: s.satelliteName,
+                      })),
+                    )
+                    .sort((a, b) => {
+                      const order: Record<string, number> = {
+                        CRITICAL: 0,
+                        HIGH: 1,
+                        MEDIUM: 2,
+                        LOW: 3,
+                        ANOMALY: 1,
+                      };
+                      return (
+                        (order[a.severity] ?? 4) - (order[b.severity] ?? 4)
+                      );
+                    });
+
+                  if (sortedAlerts.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                          <Shield
+                            size={28}
+                            className="text-emerald-400"
+                            strokeWidth={1.5}
                           />
                         </div>
-                        <span
-                          style={{
-                            fontSize: 11,
-                            color: COLORS.textSecondary,
-                            width: 60,
-                            textAlign: "right",
-                            ...mono,
-                          }}
-                        >
-                          {count} ({pct.toFixed(1)}%)
-                        </span>
+                        <h3 className="text-subtitle font-medium text-slate-300 mb-1">
+                          No active alerts
+                        </h3>
+                        <p className="text-body text-slate-500">
+                          All systems nominal.
+                        </p>
                       </div>
                     );
-                  },
-                )}
-              </div>
+                  }
 
-              {/* Panel 2: Weakest Links */}
-              <div
-                style={{
-                  background: COLORS.elevated,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 4,
-                  padding: 16,
-                }}
+                  return (
+                    <div className="glass-elevated rounded-[var(--radius-lg)] overflow-hidden border border-[var(--glass-border)]">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-body">
+                          <thead>
+                            <tr className="border-b border-[var(--glass-border)]">
+                              <th className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider w-24">
+                                Severity
+                              </th>
+                              <th className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider w-32">
+                                Entity
+                              </th>
+                              <th className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider">
+                                Title
+                              </th>
+                              <th className="px-4 py-3 text-left text-caption text-slate-400 uppercase tracking-wider">
+                                Description
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[var(--glass-border)]">
+                            {sortedAlerts.map((alert, i) => (
+                              <tr
+                                key={`${alert.noradId}-${alert.id ?? i}`}
+                                className="cursor-pointer hover:bg-white/[0.03] transition-colors"
+                                onClick={() => {
+                                  window.location.href = `/dashboard/ephemeris/${alert.noradId}`;
+                                }}
+                              >
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`text-small font-semibold ${severityColorClass(alert.severity)}`}
+                                  >
+                                    <span className="mr-1">●</span>
+                                    {alert.severity}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-small text-slate-300">
+                                  {alert.satelliteName}
+                                </td>
+                                <td className="px-4 py-3 text-body text-slate-200">
+                                  {alert.title}
+                                </td>
+                                <td className="px-4 py-3 text-small text-slate-400 max-w-[400px] truncate">
+                                  {alert.description}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            )}
+
+            {/* INTELLIGENCE TAB */}
+            {activeTab === "intelligence" && (
+              <motion.div
+                key="intelligence"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 gap-4 lg:grid-cols-2"
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: COLORS.textMuted,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                    ...sans,
-                  }}
-                >
-                  Weakest Links
-                </div>
-                {(intel?.weakestLinks ?? []).map((link, i) => (
-                  <Link
-                    key={link.noradId}
-                    href={`/dashboard/ephemeris/${link.noradId}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "6px 0",
-                      borderBottom:
-                        i < 2 ? `1px solid ${COLORS.border}` : "none",
-                      textDecoration: "none",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: COLORS.textMuted,
-                        width: 16,
-                        ...mono,
-                      }}
-                    >
-                      {i + 1}.
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: COLORS.textPrimary,
-                        flex: 1,
-                        ...mono,
-                      }}
-                    >
-                      {link.name}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: scoreColor(link.score, COLORS),
-                        fontWeight: 600,
-                        ...mono,
-                      }}
-                    >
-                      {link.score}
-                    </span>
-                    <span
-                      style={{ fontSize: 10, color: COLORS.nominal, ...mono }}
-                    >
-                      +{link.fleetImpact.toFixed(1)}pts
-                    </span>
-                    {link.weakestModule && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          color: COLORS.textTertiary,
-                          ...sans,
-                        }}
-                      >
-                        {link.weakestModule} ({link.weakestModuleScore})
-                      </span>
+                {/* Panel 1: Risk Distribution */}
+                <GlassCard hover={false} className="p-5">
+                  <h3 className="text-title font-semibold text-slate-200 mb-1">
+                    Risk Distribution
+                  </h3>
+                  <p className="text-small text-slate-400 mb-4">
+                    Fleet entities by risk category
+                  </p>
+                  <div className="space-y-2.5">
+                    {(["NOMINAL", "WATCH", "WARNING", "CRITICAL"] as const).map(
+                      (cat) => {
+                        const count =
+                          cat === "NOMINAL"
+                            ? nominalCount
+                            : cat === "WATCH"
+                              ? watchCount
+                              : cat === "WARNING"
+                                ? warningCount
+                                : criticalCount;
+                        const pct =
+                          fleet.length > 0 ? (count / fleet.length) * 100 : 0;
+                        return (
+                          <div key={cat} className="flex items-center gap-3">
+                            <span className="text-caption text-slate-500 w-16 uppercase tracking-wider">
+                              {cat}
+                            </span>
+                            <div className="flex-1 h-2 bg-navy-800 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${riskBgClass(cat)}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-small text-slate-300 w-16 text-right tabular-nums font-mono">
+                              {count} ({pct.toFixed(0)}%)
+                            </span>
+                          </div>
+                        );
+                      },
                     )}
-                  </Link>
-                ))}
-                {(!intel?.weakestLinks || intel.weakestLinks.length === 0) && (
-                  <div
-                    style={{ fontSize: 11, color: COLORS.textMuted, ...sans }}
-                  >
-                    No data yet
                   </div>
-                )}
-              </div>
+                </GlassCard>
 
-              {/* Panel 3: Fleet Trend */}
-              <div
-                style={{
-                  background: COLORS.elevated,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 4,
-                  padding: 16,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: COLORS.textMuted,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                    ...sans,
-                  }}
-                >
-                  Fleet Trend
-                </div>
-                {intel?.trend ? (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        gap: 8,
-                        marginBottom: 12,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 700,
-                          color: trendColor(intel.trend.longTermDelta, COLORS),
-                          ...mono,
-                        }}
-                      >
-                        {trendArrow(intel.trend.longTermDelta)}{" "}
-                        {intel.trend.direction}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          color: COLORS.textMuted,
-                          ...sans,
-                        }}
-                      >
-                        {intel.trend.trendStrength}
-                      </span>
+                {/* Panel 2: Weakest Links */}
+                <GlassCard hover={false} className="p-5">
+                  <h3 className="text-title font-semibold text-slate-200 mb-1">
+                    Weakest Links
+                  </h3>
+                  <p className="text-small text-slate-400 mb-4">
+                    Entities with highest fleet impact potential
+                  </p>
+                  {(intel?.weakestLinks ?? []).length > 0 ? (
+                    <div className="space-y-0 divide-y divide-[var(--glass-border)]">
+                      {(intel?.weakestLinks ?? []).map((link, i) => (
+                        <Link
+                          key={link.noradId}
+                          href={`/dashboard/ephemeris/${link.noradId}`}
+                          className="flex items-center gap-3 py-2.5 hover:bg-white/[0.02] transition-colors -mx-2 px-2 rounded"
+                        >
+                          <span className="text-small text-slate-500 w-5 tabular-nums">
+                            {i + 1}.
+                          </span>
+                          <span className="text-body text-slate-200 flex-1 truncate">
+                            {link.name}
+                          </span>
+                          <span
+                            className={`text-body font-semibold tabular-nums font-mono ${scoreColorClass(link.score)}`}
+                          >
+                            {link.score}
+                          </span>
+                          <span className="text-caption text-emerald-400 font-mono">
+                            +{link.fleetImpact.toFixed(1)}pts
+                          </span>
+                          {link.weakestModule && (
+                            <span className="text-caption text-slate-500">
+                              {link.weakestModule} ({link.weakestModuleScore})
+                            </span>
+                          )}
+                        </Link>
+                      ))}
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 12,
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            color: COLORS.textMuted,
-                            ...sans,
-                          }}
+                  ) : (
+                    <p className="text-small text-slate-500">No data yet</p>
+                  )}
+                </GlassCard>
+
+                {/* Panel 3: Fleet Trend */}
+                <GlassCard hover={false} className="p-5">
+                  <h3 className="text-title font-semibold text-slate-200 mb-1">
+                    Fleet Trend
+                  </h3>
+                  <p className="text-small text-slate-400 mb-4">
+                    Score trajectory over time
+                  </p>
+                  {intel?.trend ? (
+                    <div>
+                      <div className="flex items-baseline gap-3 mb-4">
+                        <span
+                          className={`text-heading-lg font-bold ${trendColorClass(intel.trend.longTermDelta)}`}
                         >
-                          7d Delta
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 600,
-                            color: trendColor(
-                              intel.trend.shortTermDelta,
-                              COLORS,
-                            ),
-                            ...mono,
-                          }}
-                        >
-                          {intel.trend.shortTermDelta > 0 ? "+" : ""}
-                          {intel.trend.shortTermDelta}
-                        </div>
+                          {trendArrow(intel.trend.longTermDelta)}{" "}
+                          {intel.trend.direction}
+                        </span>
+                        <span className="text-caption text-slate-500 uppercase tracking-wider">
+                          {intel.trend.trendStrength}
+                        </span>
                       </div>
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            color: COLORS.textMuted,
-                            ...sans,
-                          }}
-                        >
-                          30d Delta
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-caption text-slate-500 mb-1">
+                            7d Delta
+                          </p>
+                          <p
+                            className={`text-heading font-semibold tabular-nums font-mono ${trendColorClass(intel.trend.shortTermDelta)}`}
+                          >
+                            {intel.trend.shortTermDelta > 0 ? "+" : ""}
+                            {intel.trend.shortTermDelta}
+                          </p>
                         </div>
-                        <div
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 600,
-                            color: trendColor(
-                              intel.trend.longTermDelta,
-                              COLORS,
-                            ),
-                            ...mono,
-                          }}
-                        >
-                          {intel.trend.longTermDelta > 0 ? "+" : ""}
-                          {intel.trend.longTermDelta}
+                        <div>
+                          <p className="text-caption text-slate-500 mb-1">
+                            30d Delta
+                          </p>
+                          <p
+                            className={`text-heading font-semibold tabular-nums font-mono ${trendColorClass(intel.trend.longTermDelta)}`}
+                          >
+                            {intel.trend.longTermDelta > 0 ? "+" : ""}
+                            {intel.trend.longTermDelta}
+                          </p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div
-                    style={{ fontSize: 11, color: COLORS.textMuted, ...sans }}
-                  >
-                    Insufficient history data
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <p className="text-small text-slate-500">
+                      Insufficient history data
+                    </p>
+                  )}
+                </GlassCard>
 
-              {/* Panel 4: Industry Benchmark */}
-              <div
-                style={{
-                  background: COLORS.elevated,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 4,
-                  padding: 16,
-                }}
+                {/* Panel 4: Industry Benchmark */}
+                <GlassCard hover={false} className="p-5">
+                  <h3 className="text-title font-semibold text-slate-200 mb-1">
+                    Industry Benchmark
+                  </h3>
+                  <p className="text-small text-slate-400 mb-4">
+                    Your fleet vs. industry peers
+                  </p>
+                  {benchmark?.operatorRanking ? (
+                    <div className="space-y-3">
+                      {[
+                        {
+                          label: "Your Fleet Score",
+                          value: benchmark.operatorRanking.score,
+                          cls: "text-slate-200 font-semibold",
+                        },
+                        {
+                          label: "Industry Average",
+                          value: benchmark.overall.averageScore,
+                          cls: "text-slate-400",
+                        },
+                        {
+                          label: "Percentile",
+                          value: benchmark.operatorRanking.rank,
+                          cls: "text-blue-400 font-semibold",
+                        },
+                        {
+                          label: "vs Average",
+                          value: `${benchmark.operatorRanking.vsAverage > 0 ? "+" : ""}${benchmark.operatorRanking.vsAverage}`,
+                          cls:
+                            trendColorClass(
+                              benchmark.operatorRanking.vsAverage,
+                            ) + " font-semibold",
+                        },
+                      ].map(({ label, value, cls }) => (
+                        <div
+                          key={label}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-small text-slate-400">
+                            {label}
+                          </span>
+                          <span
+                            className={`text-body tabular-nums font-mono ${cls}`}
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="mt-4 pt-3 border-t border-[var(--glass-border)]">
+                        <span className="text-caption text-slate-500">
+                          Compared to {benchmark.overall.operatorCount}{" "}
+                          operators
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-small text-slate-500">
+                      Benchmark available when 5+ operators are in the system.
+                    </p>
+                  )}
+                </GlassCard>
+              </motion.div>
+            )}
+
+            {/* DEPENDENCIES TAB */}
+            {activeTab === "dependencies" && (
+              <motion.div
+                key="dependencies"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: COLORS.textMuted,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                    ...sans,
-                  }}
-                >
-                  Industry Benchmark
-                </div>
-                {benchmark?.operatorRanking ? (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: COLORS.textTertiary,
-                          ...sans,
-                        }}
-                      >
-                        Your Fleet Score
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: COLORS.textPrimary,
-                          ...mono,
-                        }}
-                      >
-                        {benchmark.operatorRanking.score}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: COLORS.textTertiary,
-                          ...sans,
-                        }}
-                      >
-                        Industry Average
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 14,
-                          color: COLORS.textSecondary,
-                          ...mono,
-                        }}
-                      >
-                        {benchmark.overall.averageScore}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: COLORS.textTertiary,
-                          ...sans,
-                        }}
-                      >
-                        Percentile
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: COLORS.accent,
-                          ...mono,
-                        }}
-                      >
-                        {benchmark.operatorRanking.rank}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: COLORS.textTertiary,
-                          ...sans,
-                        }}
-                      >
-                        vs Average
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: trendColor(
-                            benchmark.operatorRanking.vsAverage,
-                            COLORS,
-                          ),
-                          ...mono,
-                        }}
-                      >
-                        {benchmark.operatorRanking.vsAverage > 0 ? "+" : ""}
-                        {benchmark.operatorRanking.vsAverage}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: COLORS.textMuted,
-                        marginTop: 8,
-                        ...sans,
-                      }}
-                    >
-                      Compared to {benchmark.overall.operatorCount} operators
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    style={{ fontSize: 11, color: COLORS.textMuted, ...sans }}
-                  >
-                    Benchmark available when 5+ operators are in the system.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* DEPENDENCIES TAB */}
-          {activeTab === "dependencies" && <DependencyGraphView />}
+                <DependencyGraphView />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+
+      {/* ── Alerts Sidebar ──────────────────────────────────────── */}
       <AlertsSidebar alerts={allAlerts} />
     </div>
   );
