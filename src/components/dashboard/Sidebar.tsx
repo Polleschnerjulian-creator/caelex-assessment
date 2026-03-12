@@ -37,6 +37,9 @@ import {
   Satellite,
   Activity,
   Network,
+  LayoutGrid,
+  FolderKanban,
+  CheckSquare,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -929,6 +932,37 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 {t("sidebar.complianceNetwork") || "Compliance Network"}
+              </NavItem>
+            </div>
+          </div>
+
+          {/* HUB */}
+          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
+            <SectionHeader collapsed={collapsed}>HUB</SectionHeader>
+            <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/hub"
+                icon={<LayoutGrid size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem
+                href="/dashboard/hub/projects"
+                icon={<FolderKanban size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Projects
+              </NavItem>
+              <NavItem
+                href="/dashboard/hub/tasks"
+                icon={<CheckSquare size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Tasks
               </NavItem>
             </div>
           </div>
