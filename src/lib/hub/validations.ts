@@ -75,6 +75,23 @@ export const createLabelSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color"),
 });
 
+// ─── Time Entries ─────────────────────────────────────────────────────────────
+
+export const createTimeEntrySchema = z.object({
+  projectId: z.string().cuid(),
+  taskId: z.string().cuid().nullable().optional(),
+  date: z.coerce.date(),
+  hours: z.number().min(0.25).max(24),
+  description: z.string().max(500).trim().nullable().optional(),
+});
+
+export const updateTimeEntrySchema = z.object({
+  taskId: z.string().cuid().nullable().optional(),
+  date: z.coerce.date().optional(),
+  hours: z.number().min(0.25).max(24).optional(),
+  description: z.string().max(500).trim().nullable().optional(),
+});
+
 // ─── Members ─────────────────────────────────────────────────────────────────
 
 export const addMemberSchema = z.object({

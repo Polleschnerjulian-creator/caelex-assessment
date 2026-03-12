@@ -964,6 +964,22 @@ export default function Sidebar({
               >
                 Tasks
               </NavItem>
+              <NavItem
+                href="/dashboard/hub/calendar"
+                icon={<Calendar size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Calendar
+              </NavItem>
+              <NavItem
+                href="/dashboard/hub/timesheet"
+                icon={<Clock size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Timesheet
+              </NavItem>
             </div>
           </div>
 
