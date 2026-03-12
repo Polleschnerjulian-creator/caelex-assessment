@@ -243,4 +243,16 @@ export const SECTION_DEFINITIONS: Record<NCADocumentType, SectionDefinition[]> =
       { number: 7, title: "Premium Estimates" },
       { number: 8, title: "Recommendations" },
     ],
+
+    // Category D — Safety (generated via dedicated Hazard Analysis module)
+    HAZARD_REPORT: [
+      { number: 1, title: "Document Cover & Classification" },
+      { number: 2, title: "Mission Overview" },
+      { number: 3, title: "Safety Requirements" },
+      { number: 4, title: "Hazard Log & Risk Matrix" },
+      { number: 5, title: "Quantitative Risk Assessment" },
+      { number: 6, title: "Mitigation Measures" },
+      { number: 7, title: "Deorbit & Disposal" },
+      { number: 8, title: "Hazard Acceptance & Open Items" },
+    ],
   };

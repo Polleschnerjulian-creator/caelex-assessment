@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FileText, Package, ExternalLink } from "lucide-react";
 import { DocumentTypeCard } from "./DocumentTypeCard";
 import { NCA_DOCUMENT_TYPES } from "@/lib/generate/types";
 import type { NCADocumentType, ReadinessResult } from "@/lib/generate/types";
@@ -24,6 +25,7 @@ export function DocumentSelectorPanel({
 }: DocumentSelectorPanelProps) {
   const readinessMap = new Map(readiness.map((r) => [r.documentType, r]));
 
+  const router = useRouter();
   const debrisDocs = NCA_DOCUMENT_TYPES.filter((d) => d.category === "debris");
   const cyberDocs = NCA_DOCUMENT_TYPES.filter(
     (d) => d.category === "cybersecurity",
@@ -31,6 +33,7 @@ export function DocumentSelectorPanel({
   const generalDocs = NCA_DOCUMENT_TYPES.filter(
     (d) => d.category === "general",
   );
+  const safetyDocs = NCA_DOCUMENT_TYPES.filter((d) => d.category === "safety");
 
   return (
     <div className="flex flex-col h-full">
@@ -103,6 +106,44 @@ export function DocumentSelectorPanel({
             ))}
           </div>
         </div>
+
+        {/* Category D — Safety */}
+        {safetyDocs.length > 0 && (
+          <div>
+            <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-400 px-1 mb-2">
+              Category D — Safety
+            </h3>
+            <div className="space-y-1">
+              {safetyDocs.map((meta) => (
+                <button
+                  key={meta.id}
+                  onClick={() => router.push("/dashboard/hazards")}
+                  className="w-full text-left px-3 py-2.5 rounded-lg border border-black/[0.06] hover:bg-slate-50 transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-slate-400">
+                          {meta.code}
+                        </span>
+                        <span className="text-sm font-medium text-slate-800">
+                          {meta.shortTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {meta.description}
+                      </p>
+                    </div>
+                    <ExternalLink
+                      size={14}
+                      className="text-slate-400 group-hover:text-emerald-500 transition-colors flex-shrink-0 ml-2"
+                    />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Generate Full Package button */}

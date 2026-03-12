@@ -248,4 +248,14 @@ export const READINESS_SCHEMAS: Record<NCADocumentType, ReadinessSchema> = {
       { source: "spacecraft", field: "length>=1", weight: 1 },
     ],
   },
+
+  // ── Category D: Safety ──
+
+  HAZARD_REPORT: {
+    documentType: "HAZARD_REPORT",
+    fields: [
+      { source: "spacecraft", field: "length>=1", weight: 3 },
+      { source: "organization", field: "name", weight: 3 },
+    ],
+  },
 };

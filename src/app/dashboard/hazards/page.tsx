@@ -117,10 +117,10 @@ export default function HazardsPage() {
 
   const fetchSpacecraft = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/spacecraft");
+      const res = await fetch("/api/satellites/fleet");
       if (!res.ok) throw new Error("Failed to load spacecraft");
       const data = await res.json();
-      const craft: Spacecraft[] = data.spacecraft || data || [];
+      const craft: Spacecraft[] = data.spacecraft || [];
       setSpacecraftList(
         craft.map((s) => ({
           spacecraft: s,

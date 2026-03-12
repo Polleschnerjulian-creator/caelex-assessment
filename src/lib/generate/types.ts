@@ -27,7 +27,8 @@ export type NCADocumentType =
   | "COMPLIANCE_MATRIX"
   | "AUTHORIZATION_APPLICATION"
   | "ENVIRONMENTAL_FOOTPRINT"
-  | "INSURANCE_COMPLIANCE";
+  | "INSURANCE_COMPLIANCE"
+  | "HAZARD_REPORT";
 
 export type NCADocumentStatus =
   | "DRAFT"
@@ -44,7 +45,11 @@ export type NCAPackageStatus =
 
 // ─── Category & Priority ───
 
-export type DocumentCategory = "debris" | "cybersecurity" | "general";
+export type DocumentCategory =
+  | "debris"
+  | "cybersecurity"
+  | "general"
+  | "safety";
 export type DocumentPriority = "P0" | "P1" | "P2";
 
 export interface DocumentTypeMeta {
@@ -291,6 +296,19 @@ export const NCA_DOCUMENT_TYPES: DocumentTypeMeta[] = [
     articleRef: "Art. 47-50",
     description:
       "Insurance compliance report analyzing TPL requirements, coverage gaps, and jurisdiction-specific obligations",
+    estimatedSections: 8,
+  },
+  // Category D — Safety
+  {
+    id: "HAZARD_REPORT",
+    code: "D1",
+    title: "CNES/FSOA Hazard Report",
+    shortTitle: "Hazard Report",
+    category: "safety",
+    priority: "P0",
+    articleRef: "CNES/FSOA Template Nr. 20",
+    description:
+      "8-chapter hazard report with risk matrix, FMECA analysis, mitigation measures, and Verity attestation. Generated from Hazard Analysis module data.",
     estimatedSections: 8,
   },
 ];
