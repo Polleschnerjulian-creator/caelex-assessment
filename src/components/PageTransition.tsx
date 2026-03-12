@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CaelexIcon } from "@/components/ui/Logo";
 
 // Only apply transition on public/landing pages
 const EXCLUDED_PREFIXES = [
@@ -108,7 +109,7 @@ export default function PageTransition({
         {phase !== "idle" && (
           <motion.div
             key="page-cover"
-            className="fixed inset-0 z-[9999] bg-black"
+            className="fixed inset-0 z-[9999] bg-white flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -117,12 +118,20 @@ export default function PageTransition({
               ease: [0.4, 0, 0.2, 1],
             }}
             onAnimationComplete={() => {
-              // When reveal animation done → go idle
               if (phase === "revealing") {
                 setPhase("idle");
               }
             }}
-          />
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <CaelexIcon size={40} className="text-black" />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

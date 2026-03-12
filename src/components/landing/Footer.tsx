@@ -144,11 +144,11 @@ export default function Footer({ theme = "dark" }: FooterProps) {
     }
   };
 
-  const linkStyle = `text-body-lg transition-colors ${
+  const linkStyle = `text-body-lg transition-all duration-200 ${
     isLight
-      ? "text-[#1d1d1f] hover:text-[#6e6e73]"
-      : "text-white/60 hover:text-white"
-  }`;
+      ? "text-[#1d1d1f] hover:text-[#6e6e73] hover:translate-x-1"
+      : "text-white/60 hover:text-white hover:translate-x-1"
+  } inline-block`;
 
   const headingStyle = `text-micro uppercase tracking-[0.2em] mb-8 ${
     isLight ? "text-[#86868b]" : "text-white/25"
