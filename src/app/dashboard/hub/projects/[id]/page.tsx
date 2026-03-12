@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ProjectForm from "@/components/hub/ProjectForm";
 import { TaskForm } from "@/components/hub/TaskForm";
+import { TaskDetailDrawer } from "@/components/hub/TaskDetailDrawer";
 import { csrfHeaders } from "@/lib/csrf-client";
 
 // ——— Types ———
@@ -138,6 +139,7 @@ export default function ProjectDetailPage({
   const [taskError, setTaskError] = useState<string | null>(null);
   const [taskFormOpen, setTaskFormOpen] = useState(false);
 
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -454,7 +456,8 @@ export default function ProjectDetailPage({
                     {tasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#f5f5f7] transition-colors"
+                        onClick={() => setSelectedTaskId(task.id)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#f5f5f7] transition-colors cursor-pointer"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-[14px] text-[#1d1d1f] truncate">
@@ -682,6 +685,15 @@ export default function ProjectDetailPage({
           description: project.description,
           color: project.color,
         }}
+      />
+
+      {/* Task detail drawer */}
+      <TaskDetailDrawer
+        taskId={selectedTaskId}
+        onClose={() => setSelectedTaskId(null)}
+        onUpdated={() => void fetchTasks()}
+        onDeleted={() => void fetchTasks()}
+        members={orgMembers}
       />
     </div>
   );

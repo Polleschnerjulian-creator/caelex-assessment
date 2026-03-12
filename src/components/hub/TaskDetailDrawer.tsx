@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, MessageSquare, Calendar, Tag } from "lucide-react";
+import { X, Send, MessageSquare, Calendar, Tag, Trash2 } from "lucide-react";
 import { PriorityIcon } from "./PriorityIcon";
 import { LabelBadge } from "./LabelBadge";
 import { MemberPicker } from "./MemberPicker";
@@ -33,6 +33,7 @@ interface TaskDetailDrawerProps {
   taskId: string | null;
   onClose: () => void;
   onUpdated: () => void;
+  onDeleted?: () => void;
   members: { id: string; name: string | null; image: string | null }[];
 }
 
@@ -72,6 +73,7 @@ export function TaskDetailDrawer({
   taskId,
   onClose,
   onUpdated,
+  onDeleted,
   members,
 }: TaskDetailDrawerProps) {
   const [task, setTask] = useState<TaskItem | null>(null);
@@ -85,6 +87,8 @@ export function TaskDetailDrawer({
   const [newComment, setNewComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
   const [patchError, setPatchError] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -111,10 +115,36 @@ export function TaskDetailDrawer({
     if (taskId) {
       fetchTask(taskId);
       setPatchError(null);
+      setDeleteConfirm(false);
     } else {
       setTask(null);
     }
   }, [taskId, fetchTask]);
+
+  async function handleDelete() {
+    if (!task) return;
+    setDeleting(true);
+    setPatchError(null);
+    try {
+      const res = await fetch(`/api/v1/hub/tasks/${task.id}`, {
+        method: "DELETE",
+        headers: { ...csrfHeaders() },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          (data as { error?: string }).error ?? "Failed to delete",
+        );
+      }
+      onClose();
+      onDeleted ? onDeleted() : onUpdated();
+    } catch (err) {
+      setPatchError(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setDeleting(false);
+      setDeleteConfirm(false);
+    }
+  }
 
   useEffect(() => {
     if (editingTitle && titleInputRef.current) {
@@ -441,6 +471,40 @@ export function TaskDetailDrawer({
                         {task.project.name}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Delete task */}
+                  <div className="border-t border-[#e5e5ea] pt-4">
+                    {!deleteConfirm ? (
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirm(true)}
+                        className="flex items-center gap-1.5 px-3 py-2 text-[13px] text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={13} strokeWidth={2} />
+                        Delete task
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete()}
+                          disabled={deleting}
+                          className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 size={13} strokeWidth={2} />
+                          {deleting ? "Deleting…" : "Confirm"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirm(false)}
+                          disabled={deleting}
+                          className="px-3 py-2 text-[13px] text-[#86868b] hover:text-[#1d1d1f] transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Divider */}

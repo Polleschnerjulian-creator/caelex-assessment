@@ -481,6 +481,7 @@ export default function HubTasksPage() {
         taskId={selectedTaskId}
         onClose={() => setSelectedTaskId(null)}
         onUpdated={fetchTasks}
+        onDeleted={fetchTasks}
         members={members}
       />
     </div>

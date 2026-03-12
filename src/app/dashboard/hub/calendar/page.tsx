@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { TaskDetailDrawer } from "@/components/hub/TaskDetailDrawer";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -119,6 +120,12 @@ export default function HubCalendarPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
+  // Task detail drawer
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [orgMembers, setOrgMembers] = useState<
+    { id: string; name: string | null; image: string | null }[]
+  >([]);
+
   // Event form
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -173,6 +180,20 @@ export default function HubCalendarPage() {
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const res = await fetch("/api/v1/hub/members");
+        if (!res.ok) return;
+        const data = await res.json();
+        setOrgMembers(data.members ?? []);
+      } catch {
+        // silent
+      }
+    }
+    void loadMembers();
+  }, []);
 
   // ─── Group by date ───────────────────────────────────────────────────────
 
@@ -630,7 +651,8 @@ export default function HubCalendarPage() {
                     {selectedTasks.map((t) => (
                       <div
                         key={t.id}
-                        className="bg-white rounded-xl border border-[#e5e5ea] p-3 shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+                        onClick={() => setSelectedTaskId(t.id)}
+                        className="bg-white rounded-xl border border-[#e5e5ea] p-3 shadow-[0_1px_4px_rgba(0,0,0,0.04)] cursor-pointer hover:border-[#1d1d1f]/20 transition-colors"
                       >
                         <div className="flex items-start gap-2">
                           <span
@@ -753,6 +775,15 @@ export default function HubCalendarPage() {
           )}
         </div>
       </div>
+
+      {/* ─── Task detail drawer ───────────────────────────────────────────── */}
+      <TaskDetailDrawer
+        taskId={selectedTaskId}
+        onClose={() => setSelectedTaskId(null)}
+        onUpdated={() => void fetchData()}
+        onDeleted={() => void fetchData()}
+        members={orgMembers}
+      />
 
       {/* ─── Event form modal ─────────────────────────────────────────────── */}
       {showEventForm && (
