@@ -254,6 +254,14 @@ export const rateLimiters = redis
         limiter: Ratelimit.slidingWindow(30, "1 h"),
         prefix: "ratelimit:nexus",
       }),
+
+      // HUB: Project management dashboard
+      hub: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:hub",
+      }),
     }
   : null;
 
@@ -352,6 +360,7 @@ const fallbackLimiters = {
   sentinel_expensive: new InMemoryRateLimiter(3, 3600000),
   verity_public: new InMemoryRateLimiter(10, 3600000),
   nexus: new InMemoryRateLimiter(15, 3600000),
+  hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
 };
 
 // ─── Public API ───
@@ -381,7 +390,8 @@ export type RateLimitType =
   | "sentinel_read"
   | "sentinel_expensive"
   | "verity_public"
-  | "nexus";
+  | "nexus"
+  | "hub";
 
 /**
  * Check rate limit for an identifier.
