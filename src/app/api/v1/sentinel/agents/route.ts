@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 }
 
 const PatchSchema = z.object({
-  agent_id: z.string().uuid(),
+  agent_id: z.string().min(1),
   status: z.enum(["ACTIVE", "REVOKED"]),
 });
 
