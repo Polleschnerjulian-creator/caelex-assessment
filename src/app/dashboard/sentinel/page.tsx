@@ -273,6 +273,44 @@ export default function SentinelDashboard() {
     }
   };
 
+  const activateAgent = async (agentId: string) => {
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/sentinel/agents", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ agent_id: agentId, status: "ACTIVE" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to activate agent");
+        return;
+      }
+      await fetchAgents();
+    } catch {
+      setError("Network error while activating agent.");
+    }
+  };
+
+  const revokeAgent = async (agentId: string) => {
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/sentinel/agents", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ agent_id: agentId, status: "REVOKED" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to revoke agent");
+        return;
+      }
+      await fetchAgents();
+    } catch {
+      setError("Network error while revoking agent.");
+    }
+  };
+
   const currentAgent = agents.find((a) => a.id === selectedAgent);
 
   // ─────────────────────────────────────────────────────────────────────
@@ -471,6 +509,30 @@ export default function SentinelDashboard() {
               >
                 {currentAgent.status}
               </Badge>
+            }
+            action={
+              currentAgent.status === "PENDING" ? (
+                <button
+                  onClick={() => activateAgent(currentAgent.id)}
+                  className="text-micro text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-medium"
+                >
+                  Activate agent
+                </button>
+              ) : currentAgent.status === "ACTIVE" ? (
+                <button
+                  onClick={() => revokeAgent(currentAgent.id)}
+                  className="text-micro text-[var(--accent-danger)] hover:text-[var(--accent-danger)] font-medium"
+                >
+                  Revoke
+                </button>
+              ) : currentAgent.status === "REVOKED" ? (
+                <button
+                  onClick={() => activateAgent(currentAgent.id)}
+                  className="text-micro text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-medium"
+                >
+                  Reactivate
+                </button>
+              ) : null
             }
           />
           <StatCard
