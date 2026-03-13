@@ -111,7 +111,7 @@ export default function AcademyLandingPage() {
       <nav className={glass.nav}>
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/academy" className="flex items-center gap-3">
-            <CaelexIcon size={22} className="text-[#111827]" />
+            <CaelexIcon size={28} className="text-[#111827]" />
             <div className="flex flex-col">
               <span className="text-[13px] font-medium text-[#111827] tracking-[-0.02em] leading-none">
                 caelex

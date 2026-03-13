@@ -270,7 +270,7 @@ export default function OnboardingOverlay() {
                       aria-hidden="true"
                     >
                       <CaelexIcon
-                        size={32}
+                        size={38}
                         className="text-[var(--accent-primary)]"
                       />
                     </div>

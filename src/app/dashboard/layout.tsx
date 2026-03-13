@@ -197,8 +197,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           <img
             src="/images/logo-black.png"
             alt=""
-            width={22}
-            height={22}
+            width={30}
+            height={30}
             style={{ objectFit: "contain" }}
           />
         </button>

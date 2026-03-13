@@ -15,11 +15,11 @@ function CaelexLogo({ size = 28 }: { size?: number }) {
         height: size,
         backgroundColor: "white",
         maskImage: "url(/images/logo-black.png)",
-        maskSize: "contain",
+        maskSize: "140%",
         maskRepeat: "no-repeat",
         maskPosition: "center",
         WebkitMaskImage: "url(/images/logo-black.png)",
-        WebkitMaskSize: "contain",
+        WebkitMaskSize: "140%",
         WebkitMaskRepeat: "no-repeat",
         WebkitMaskPosition: "center",
       }}

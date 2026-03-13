@@ -153,7 +153,7 @@ export default function AcademySidebar({
         {/* Header / Branding */}
         <div className="h-16 flex items-center px-6 border-b border-white/[0.06]">
           <Link href="/academy/dashboard" className="flex items-center gap-3">
-            <CaelexIcon size={22} className="text-emerald-400" />
+            <CaelexIcon size={28} className="text-emerald-400" />
             <div className="flex flex-col">
               <span className="text-[13px] font-medium text-white/90 tracking-[-0.02em] leading-none">
                 caelex

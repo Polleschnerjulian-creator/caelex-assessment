@@ -22,11 +22,11 @@ function CaelexLogo({
         height: size,
         backgroundColor: color,
         maskImage: "url(/images/logo-black.png)",
-        maskSize: "contain",
+        maskSize: "140%",
         maskRepeat: "no-repeat",
         maskPosition: "center",
         WebkitMaskImage: "url(/images/logo-black.png)",
-        WebkitMaskSize: "contain",
+        WebkitMaskSize: "140%",
         WebkitMaskRepeat: "no-repeat",
         WebkitMaskPosition: "center",
       }}

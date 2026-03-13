@@ -344,7 +344,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           <div className="col-span-2">
             <div className="flex items-center gap-2.5 mb-6">
               <CaelexIcon
-                size={22}
+                size={28}
                 className={isLight ? "text-[#1d1d1f]" : "text-white"}
                 aria-hidden="true"
               />

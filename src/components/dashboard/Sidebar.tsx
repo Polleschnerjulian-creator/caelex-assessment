@@ -625,13 +625,13 @@ export default function Sidebar({
               href="/"
               className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px]"
             >
-              <CaelexIcon size={24} className="text-[var(--text-primary)]" />
+              <CaelexIcon size={28} className="text-[var(--text-primary)]" />
             </Link>
           ) : (
             <div className="flex items-center w-full">
               <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
                 <CaelexIcon
-                  size={28}
+                  size={32}
                   className="text-[var(--text-primary)] flex-shrink-0"
                 />
                 <span

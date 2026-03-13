@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caelex Platform Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Georgia&family=Helvetica+Neue&display=swap');
+
+  :root {
+    --navy: #0A1628;
+    --navy-mid: #1B2A4A;
+    --navy-light: #2D4470;
+    --accent: #0066CC;
+    --accent-light: #E8F0FE;
+    --gold: #C4A14A;
+    --text: #1A1A1A;
+    --text-secondary: #4A4A4A;
+    --text-light: #6B6B6B;
+    --border: #D4D4D4;
+    --bg-subtle: #F7F8FA;
+    --white: #FFFFFF;
+    --success: #0A7B3E;
+    --warning: #B85C00;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    background: white;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(165deg, var(--navy) 0%, #0D1F3C 60%, var(--navy-mid) 100%);
+    color: white;
+    padding: 0;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 80%;
+    background: radial-gradient(ellipse, rgba(0,102,204,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cover-top {
+    padding: 48px 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-logo {
+    font-size: 14pt;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    font-weight: 300;
+    opacity: 0.7;
+  }
+
+  .cover-date {
+    font-size: 9pt;
+    opacity: 0.5;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .cover-content {
+    padding: 0 64px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .cover-label {
+    font-size: 9pt;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .cover-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 38pt;
+    font-weight: 400;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    max-width: 680px;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    font-weight: 300;
+    opacity: 0.65;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .cover-divider {
+    width: 80px;
+    height: 2px;
+    background: var(--gold);
+    margin: 28px 0;
+  }
+
+  .cover-bottom {
+    padding: 40px 64px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    opacity: 0.4;
+    letter-spacing: 1px;
+  }
+
+  /* ── Page Structure ── */
+  .page {
+    min-height: 100vh;
+    padding: 52px 64px 48px;
+    page-break-after: always;
+    position: relative;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 8px;
+    margin-bottom: 36px;
+  }
+
+  .page-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 11pt;
+    color: var(--navy);
+    font-weight: 400;
+  }
+
+  .page-number {
+    font-size: 8pt;
+    color: var(--text-light);
+  }
+
+  /* ── Section Headers ── */
+  .section-number {
+    font-size: 9pt;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22pt;
+    color: var(--navy);
+    font-weight: 400;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .section-subtitle {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+    max-width: 520px;
+  }
+
+  .section-divider {
+    width: 48px;
+    height: 2px;
+    background: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  /* ── Content ── */
+  h3 {
+    font-size: 12pt;
+    color: var(--navy);
+    font-weight: 600;
+    margin: 24px 0 10px;
+  }
+
+  h4 {
+    font-size: 10pt;
+    color: var(--navy-mid);
+    font-weight: 600;
+    margin: 16px 0 6px;
+  }
+
+  p {
+    font-size: 10pt;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .lead {
+    font-size: 11pt;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  /* ── Key Insight Box ── */
+  .insight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .insight-box .insight-label {
+    font-size: 8pt;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .insight-box p {
+    font-size: 9.5pt;
+    color: var(--navy);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* ── Exhibit / Figure Boxes ── */
+  .exhibit {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .exhibit-header {
+    background: var(--bg-subtle);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .exhibit-label {
+    font-size: 8pt;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .exhibit-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .exhibit-body {
+    padding: 16px;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin: 0;
+  }
+
+  thead th {
+    background: var(--navy);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8pt;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #E8E8E8;
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--bg-subtle);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .td-bold {
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  /* ── KPI Row ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .kpi-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--navy);
+    padding: 16px;
+    text-align: center;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .kpi-value {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 28pt;
+    color: var(--navy);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .kpi-label {
+    font-size: 8pt;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .kpi-sub {
+    font-size: 8pt;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* ── Two Column ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin: 16px 0;
+  }
+
+  .col-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 4px;
+  }
+
+  .col-card h4 {
+    margin-top: 0;
+    font-size: 10pt;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .col-card p {
+    font-size: 9pt;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  /* ── Module Card Grid ── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .module-card {
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 4px;
+    border-left: 3px solid var(--navy);
+  }
+
+  .module-card.accent {
+    border-left-color: var(--accent);
+  }
+
+  .module-card.gold {
+    border-left-color: var(--gold);
+  }
+
+  .module-name {
+    font-weight: 600;
+    font-size: 9.5pt;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+
+  .module-ref {
+    font-size: 7.5pt;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .module-desc {
+    font-size: 8.5pt;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* ── Bullet Lists ── */
+  ul {
+    margin: 6px 0 12px 18px;
+    font-size: 9.5pt;
+    line-height: 1.6;
+  }
+
+  ul li {
+    margin-bottom: 3px;
+    color: var(--text);
+  }
+
+  /* ── Tag / Badge ── */
+  .tag {
+    display: inline-block;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-right: 4px;
+  }
+
+  .tag-navy { background: var(--navy); color: white; }
+  .tag-accent { background: var(--accent); color: white; }
+  .tag-gold { background: var(--gold); color: white; }
+  .tag-outline { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+
+  /* ── Architecture Diagram ── */
+  .arch-layer {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .arch-layer-header {
+    background: var(--navy);
+    color: white;
+    padding: 8px 14px;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .arch-layer-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .arch-chip {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 8pt;
+    color: var(--text-secondary);
+  }
+
+  /* ── Pricing Table ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .pricing-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .pricing-card.featured {
+    border: 2px solid var(--accent);
+    position: relative;
+  }
+
+  .pricing-card.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--accent);
+    color: white;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 3px 0;
+  }
+
+  .pricing-header {
+    padding: 24px 16px 12px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pricing-card.featured .pricing-header {
+    padding-top: 32px;
+  }
+
+  .pricing-name {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .pricing-price {
+    font-family: Georgia, serif;
+    font-size: 24pt;
+    color: var(--navy);
+    margin: 8px 0 4px;
+  }
+
+  .pricing-price span {
+    font-size: 10pt;
+    color: var(--text-light);
+  }
+
+  .pricing-billing {
+    font-size: 8pt;
+    color: var(--text-light);
+  }
+
+  .pricing-body {
+    padding: 16px;
+    text-align: left;
+  }
+
+  .pricing-body li {
+    font-size: 8.5pt;
+    list-style: none;
+    margin-left: 0;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .pricing-body li::before {
+    content: '✓ ';
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  /* ── Process Flow ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-step {
+    flex: 1;
+    min-width: 120px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 12px;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-step:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+
+  .flow-step:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .flow-num {
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .flow-label {
+    font-size: 7.5pt;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .flow-arrow {
+    font-size: 14pt;
+    color: var(--border);
+    margin: 0 -4px;
+    z-index: 1;
+  }
+
+  /* ── Competitive Matrix ── */
+  .matrix-header th {
+    text-align: center;
+    padding: 8px;
+  }
+
+  .matrix-header th:first-child {
+    text-align: left;
+  }
+
+  .check { color: var(--success); font-weight: 700; text-align: center; }
+  .cross { color: #CC3333; text-align: center; }
+  .partial { color: var(--warning); text-align: center; }
+
+  /* ── Footer ── */
+  .page-footer {
+    position: absolute;
+    bottom: 24px;
+    left: 64px;
+    right: 64px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7pt;
+    color: var(--text-light);
+    border-top: 1px solid #E8E8E8;
+    padding-top: 8px;
+  }
+
+  /* ── Spacers ── */
+  .mt-sm { margin-top: 12px; }
+  .mt-md { margin-top: 20px; }
+  .mt-lg { margin-top: 32px; }
+  .mb-sm { margin-bottom: 12px; }
+  .mb-md { margin-bottom: 20px; }
+
+  /* ── Three Column ── */
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 14px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .stat-value {
+    font-family: Georgia, serif;
+    font-size: 20pt;
+    color: var(--navy);
+  }
+
+  .stat-label {
+    font-size: 8pt;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER PAGE ═══════════════ -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-logo">CAELEX</div>
+    <div class="cover-date">
+      Confidential<br>
+      March 2026
+    </div>
+  </div>
+  <div class="cover-content">
+    <div class="cover-label">Platform Analysis & Strategic Overview</div>
+    <h1 class="cover-title">Caelex: The Operating System for Space Regulatory Compliance</h1>
+    <div class="cover-divider"></div>
+    <p class="cover-subtitle">A comprehensive analysis of Europe's first full-stack compliance platform for the space industry, covering product architecture, feature landscape, competitive positioning, and market opportunity.</p>
+  </div>
+  <div class="cover-bottom">
+    <span>PREPARED FOR INTERNAL REVIEW</span>
+    <span>CAELEX GMBH &middot; BERLIN, GERMANY</span>
+  </div>
+</div>
+
+<!-- ═══════════════ TABLE OF CONTENTS ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Table of Contents</span>
+    <span class="page-number">i</span>
+  </div>
+
+  <div class="section-number">Contents</div>
+  <div class="section-title">Document Structure</div>
+  <div class="section-divider"></div>
+
+  <table style="border: none;">
+    <tbody>
+      <tr><td class="td-bold" style="width: 40px;">01</td><td class="td-bold">Executive Summary</td><td style="text-align:right; color: var(--text-light);">3</td></tr>
+      <tr><td class="td-bold">02</td><td class="td-bold">What is Caelex?</td><td style="text-align:right; color: var(--text-light);">4</td></tr>
+      <tr><td class="td-bold">03</td><td class="td-bold">Platform at a Glance</td><td style="text-align:right; color: var(--text-light);">5</td></tr>
+      <tr><td class="td-bold">04</td><td class="td-bold">Core Compliance Modules</td><td style="text-align:right; color: var(--text-light);">6-7</td></tr>
+      <tr><td class="td-bold">05</td><td class="td-bold">Assessment Engines</td><td style="text-align:right; color: var(--text-light);">8</td></tr>
+      <tr><td class="td-bold">06</td><td class="td-bold">ASTRA AI Copilot</td><td style="text-align:right; color: var(--text-light);">9</td></tr>
+      <tr><td class="td-bold">07</td><td class="td-bold">Assure: Investor Readiness Platform</td><td style="text-align:right; color: var(--text-light);">10</td></tr>
+      <tr><td class="td-bold">08</td><td class="td-bold">Advanced Capabilities</td><td style="text-align:right; color: var(--text-light);">11</td></tr>
+      <tr><td class="td-bold">09</td><td class="td-bold">Technical Architecture</td><td style="text-align:right; color: var(--text-light);">12</td></tr>
+      <tr><td class="td-bold">10</td><td class="td-bold">Security & Enterprise Features</td><td style="text-align:right; color: var(--text-light);">13</td></tr>
+      <tr><td class="td-bold">11</td><td class="td-bold">Competitive Positioning</td><td style="text-align:right; color: var(--text-light);">14</td></tr>
+      <tr><td class="td-bold">12</td><td class="td-bold">Market Opportunity & Pricing</td><td style="text-align:right; color: var(--text-light);">15</td></tr>
+      <tr><td class="td-bold">13</td><td class="td-bold">Roadmap & Strategic Outlook</td><td style="text-align:right; color: var(--text-light);">16</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 1: EXECUTIVE SUMMARY ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">3</span>
+  </div>
+
+  <div class="section-number">01</div>
+  <div class="section-title">Executive Summary</div>
+  <div class="section-divider"></div>
+
+  <p class="lead">Caelex is Europe's first full-stack SaaS platform for space regulatory compliance, transforming how satellite operators, launch providers, and space service companies navigate the rapidly evolving EU regulatory landscape.</p>
+
+  <div class="insight-box">
+    <div class="insight-label">Core Thesis</div>
+    <p>The EU Space Act (COM(2025) 335) creates mandatory compliance obligations for 2,000+ European space companies by 2030. Caelex replaces &euro;50-500k/year consulting engagements with a &euro;449-1,199/month SaaS platform that maps 119 regulatory articles into actionable digital workflows.</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value">119</div>
+      <div class="kpi-label">EU Space Act Articles</div>
+      <div class="kpi-sub">Fully mapped & tracked</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">15</div>
+      <div class="kpi-label">Compliance Modules</div>
+      <div class="kpi-sub">End-to-end coverage</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">10</div>
+      <div class="kpi-label">Jurisdictions</div>
+      <div class="kpi-sub">European space laws</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">161</div>
+      <div class="kpi-label">Database Models</div>
+      <div class="kpi-sub">Enterprise-grade depth</div>
+    </div>
+  </div>
+
+  <h3>Key Platform Pillars</h3>
+
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Compliance Engine</h4>
+      <p>Proprietary mapping of EU Space Act, NIS2, and 10 national space laws into structured workflows. 32 server-only compliance engines power real-time obligation tracking, gap analysis, and automated reporting.</p>
+    </div>
+    <div class="col-card">
+      <h4>ASTRA AI Copilot</h4>
+      <p>AI-powered compliance advisor built on Claude Sonnet 4.6 with 22+ specialized regulatory tools. Provides contextual guidance across all modules with full conversation memory.</p>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Assure Platform</h4>
+      <p>Dedicated investor readiness suite generating Regulatory Readiness Scores (RRS) and Regulatory Credit Ratings (RCR), with encrypted data rooms and cryptographic attestations.</p>
+    </div>
+    <div class="col-card">
+      <h4>Stakeholder Network</h4>
+      <p>Multi-party collaboration across legal counsel, insurers, auditors, NCAs, launch providers, and suppliers. Secure data rooms with granular access, watermarking, and audit trails.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 2: WHAT IS CAELEX ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">4</span>
+  </div>
+
+  <div class="section-number">02</div>
+  <div class="section-title">What is Caelex?</div>
+  <div class="section-subtitle">The regulatory operating system built for the European space industry</div>
+  <div class="section-divider"></div>
+
+  <p>Caelex is a Berlin-based SaaS company (founded 2025) that has built the first dedicated regulatory compliance platform for the European space sector. As the EU Space Act introduces the most comprehensive space legislation in European history, Caelex provides the digital infrastructure operators need to achieve and maintain compliance.</p>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 1</span>
+      <span class="exhibit-title">The Regulatory Challenge Caelex Solves</span>
+    </div>
+    <div class="exhibit-body">
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">119</div>
+          <div class="flow-label">EU Space Act<br>Articles</div>
+        </div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-step">
+          <div class="flow-num">51</div>
+          <div class="flow-label">NIS2 Space<br>Requirements</div>
+        </div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-step">
+          <div class="flow-num">10</div>
+          <div class="flow-label">National<br>Jurisdictions</div>
+        </div>
+        <div class="flow-arrow">=</div>
+        <div class="flow-step" style="background: var(--navy); border-color: var(--navy);">
+          <div class="flow-num" style="color: white;">1</div>
+          <div class="flow-label" style="color: rgba(255,255,255,0.7);">Unified<br>Platform</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Target Market Segments</h3>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 2</span>
+      <span class="exhibit-title">Primary Customer Segments & Pain Points</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>Description</th>
+            <th>Primary Pain Point</th>
+            <th>Market Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">Satellite Operators</td>
+            <td>Small to mega-constellation operators (10-10,000+ satellites)</td>
+            <td>Multi-regulation compliance across operator types</td>
+            <td>~800 companies</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Launch Providers</td>
+            <td>Vertical launch, rideshare, and suborbital providers</td>
+            <td>Authorization complexity across 10 jurisdictions</td>
+            <td>~200 companies</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Space Services</td>
+            <td>Ground stations, in-space services, debris remediation</td>
+            <td>Export control, supply chain, cybersecurity</td>
+            <td>~600 companies</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Enterprise / Government</td>
+            <td>Large aerospace, telecom, defense contractors</td>
+            <td>Multi-jurisdiction, multi-entity management</td>
+            <td>~400 companies</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">Market Timing</div>
+    <p>150+ new European space startups have been founded since 2020. The EU Space Act enforcement deadline of 2030 creates a regulatory cliff that makes compliance tooling a non-optional purchase for every affected entity.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 3: PLATFORM AT A GLANCE ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">5</span>
+  </div>
+
+  <div class="section-number">03</div>
+  <div class="section-title">Platform at a Glance</div>
+  <div class="section-subtitle">End-to-end compliance infrastructure across four product pillars</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 3</span>
+      <span class="exhibit-title">Caelex Product Architecture</span>
+    </div>
+    <div class="exhibit-body">
+      <div class="arch-layer">
+        <div class="arch-layer-header">Product Layer &mdash; User-Facing Applications</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip"><strong>Dashboard</strong> &middot; 15 Modules</div>
+          <div class="arch-chip"><strong>Assure</strong> &middot; Investor Platform</div>
+          <div class="arch-chip"><strong>Assessment</strong> &middot; 4 Wizards</div>
+          <div class="arch-chip"><strong>Academy</strong> &middot; Training</div>
+          <div class="arch-chip"><strong>ASTRA</strong> &middot; AI Copilot</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: var(--navy-mid);">Intelligence Layer &mdash; Engines & Analytics</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">32 Compliance Engines</div>
+          <div class="arch-chip">Ephemeris Forecasting</div>
+          <div class="arch-chip">Jurisdiction Scoring</div>
+          <div class="arch-chip">RRS/RCR Rating</div>
+          <div class="arch-chip">Regulatory Feed</div>
+          <div class="arch-chip">Risk Analytics</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: var(--navy-light);">Infrastructure Layer &mdash; Security, Data & Integration</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">AES-256-GCM Encryption</div>
+          <div class="arch-chip">Hash-Chained Audit Logs</div>
+          <div class="arch-chip">Multi-Tenant RBAC</div>
+          <div class="arch-chip">REST API (v1)</div>
+          <div class="arch-chip">Webhooks</div>
+          <div class="arch-chip">SAML/OIDC SSO</div>
+          <div class="arch-chip">MFA/WebAuthn</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Platform Scale</h3>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value">400+</div>
+      <div class="kpi-label">API Routes</div>
+      <div class="kpi-sub">56 API domains</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">153</div>
+      <div class="kpi-label">Page Routes</div>
+      <div class="kpi-sub">Full application</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">17</div>
+      <div class="kpi-label">Cron Jobs</div>
+      <div class="kpi-sub">Automated operations</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">22+</div>
+      <div class="kpi-label">AI Tools</div>
+      <div class="kpi-sub">ASTRA compliance tools</div>
+    </div>
+  </div>
+
+  <h3>Operator Type Classification</h3>
+  <p>Caelex classifies operators into 7 types defined by the EU Space Act, each triggering different regulatory obligations:</p>
+
+  <div class="exhibit">
+    <div class="exhibit-body" style="padding: 12px 16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Operator Type</th>
+            <th>Regime</th>
+            <th>Key Obligations</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">SCO</td><td>Space Craft Operator</td><td><span class="tag tag-navy">Standard</span></td><td>Full authorization, registration, debris, insurance</td></tr>
+          <tr><td class="td-bold">LO</td><td>Launch Operator</td><td><span class="tag tag-navy">Standard</span></td><td>Launch authorization, environmental, liability</td></tr>
+          <tr><td class="td-bold">LSO</td><td>Launch Site Operator</td><td><span class="tag tag-navy">Standard</span></td><td>Site authorization, environmental, safety</td></tr>
+          <tr><td class="td-bold">ISOS</td><td>In-Space Operations & Services</td><td><span class="tag tag-navy">Standard</span></td><td>Activity authorization, debris, coordination</td></tr>
+          <tr><td class="td-bold">CAP</td><td>Capacity Provider</td><td><span class="tag tag-accent">Light</span></td><td>Simplified obligations, data sharing</td></tr>
+          <tr><td class="td-bold">PDP</td><td>Platform/Data Provider</td><td><span class="tag tag-accent">Light</span></td><td>Data governance, cybersecurity</td></tr>
+          <tr><td class="td-bold">TCO</td><td>Third-Country Operator</td><td><span class="tag tag-gold">Special</span></td><td>EU market access, reciprocity requirements</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 4-5: CORE COMPLIANCE MODULES ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">6</span>
+  </div>
+
+  <div class="section-number">04</div>
+  <div class="section-title">Core Compliance Modules</div>
+  <div class="section-subtitle">15 specialized modules covering the full space regulatory lifecycle</div>
+  <div class="section-divider"></div>
+
+  <h3>Tier 1: Essential Modules <span class="tag tag-navy">Essentials+</span></h3>
+  <p>The foundational 8 modules covering EU Space Act core obligations, available on all paid plans.</p>
+
+  <div class="module-grid">
+    <div class="module-card">
+      <div class="module-name">Authorization & Licensing</div>
+      <div class="module-ref">Art. 5-9, 32-39, 105-108</div>
+      <div class="module-desc">Multi-NCA workflow management with pathway selection (EUSPA registration, national authorization, Commission decision). Timeline tracking, document preparation, and NCA correspondence logging.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Registration & URSO</div>
+      <div class="module-ref">Art. 24 (Union Register of Space Objects)</div>
+      <div class="module-desc">Space object data validation and submission management for the EU Union Register. Status tracking, automated data quality checks, and registration lifecycle management.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Cybersecurity & NIS2</div>
+      <div class="module-ref">Art. 74-95, NIS2 Art. 21-23</div>
+      <div class="module-desc">Risk analysis framework with ENISA controls mapping (3.1.1-3.1.2). ISO 27001 and NIST CSF alignment, incident response procedures, and 72-hour reporting workflows.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Debris Mitigation & Safety</div>
+      <div class="module-ref">Art. 10-12, 58-72, 101-103</div>
+      <div class="module-desc">UN COPUOS and IADC guidelines compliance. End-of-life planning (25-year deorbit rule), collision avoidance procedures, passivation tracking, and disposal verification.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Environmental Compliance</div>
+      <div class="module-ref">Art. 96-100</div>
+      <div class="module-desc">Environmental Footprint Declaration management. Launch site assessment, protected area compliance, lifecycle impact analysis, and REACH regulation mapping.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Insurance & Liability</div>
+      <div class="module-ref">Art. 44-51</div>
+      <div class="module-desc">Third-party liability requirements by jurisdiction. Coverage minimums tracking, financial guarantee management, insurance binding workflows, and claims documentation.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Supervision & Reporting</div>
+      <div class="module-ref">Art. 26-31, 40-43, 52-57, 73</div>
+      <div class="module-desc">Ongoing supervisory obligations with automated incident reporting. Regular compliance reporting, NCA inspection readiness, and deadline management.</div>
+    </div>
+    <div class="module-card">
+      <div class="module-name">Regulatory Intelligence</div>
+      <div class="module-ref">Art. 104, 114-119</div>
+      <div class="module-desc">AI-powered monitoring of delegated and implementing acts. National law change tracking, regulatory feed with alerts, and impact assessment on existing compliance.</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">7</span>
+  </div>
+
+  <div class="section-number">04</div>
+  <div class="section-title">Core Compliance Modules (continued)</div>
+  <div class="section-divider"></div>
+
+  <h3>Tier 2: Advanced Modules <span class="tag tag-accent">Professional+</span></h3>
+  <p>Extended modules for multi-jurisdiction operations, international regulations, and advanced orbital compliance.</p>
+
+  <div class="module-grid">
+    <div class="module-card accent">
+      <div class="module-name">NIS2 Directive Compliance</div>
+      <div class="module-ref">EU 2022/2555 &middot; 51 Requirements</div>
+      <div class="module-desc">Essential/Important entity classification, 51-requirement compliance matrix, incident management with EU timeline enforcement, and supply chain security assessment.</div>
+    </div>
+    <div class="module-card accent">
+      <div class="module-name">COPUOS & IADC Guidelines</div>
+      <div class="module-ref">UN Space Sustainability Standards</div>
+      <div class="module-desc">Space sustainability guidelines implementation, debris mitigation standards tracking, and international best practice alignment with cross-reference to EU obligations.</div>
+    </div>
+    <div class="module-card accent">
+      <div class="module-name">Export Control</div>
+      <div class="module-ref">ITAR / EAR / EU Dual-Use</div>
+      <div class="module-desc">ITAR (US) and EAR compliance for dual-use technology. EU dual-use regulation mapping, licensing requirement tracking, and technology transfer management.</div>
+    </div>
+    <div class="module-card accent">
+      <div class="module-name">Spectrum & ITU Management</div>
+      <div class="module-ref">ITU Radio Regulations / Art. 15</div>
+      <div class="module-desc">ITU Radio Regulations compliance, frequency coordination workflow, interference mitigation tracking, and EU Space Act Art. 15 alignment.</div>
+    </div>
+    <div class="module-card accent">
+      <div class="module-name">UK Space Industry Act</div>
+      <div class="module-ref">SIA 2018 / UKSA Framework</div>
+      <div class="module-desc">Post-Brexit UK Space Agency specific requirements, UK licensing pathways, and standalone UK framework compliance with cross-reference to EU obligations.</div>
+    </div>
+    <div class="module-card accent">
+      <div class="module-name">US Regulatory</div>
+      <div class="module-ref">FAA / FCC / NOAA</div>
+      <div class="module-desc">FAA launch licensing, FCC satellite licensing, NOAA remote sensing compliance, and US market access pathway management for European operators.</div>
+    </div>
+  </div>
+
+  <h3>Tier 3: Mission Operations <span class="tag tag-gold">Enterprise</span></h3>
+
+  <div class="module-grid">
+    <div class="module-card gold">
+      <div class="module-name">Digital Twin & Ephemeris</div>
+      <div class="module-ref">Orbital Mechanics / CelesTrak TLE</div>
+      <div class="module-desc">3D satellite tracking and visualization, orbital decay modeling, fuel depletion forecasting, compliance state prediction, what-if scenario simulation, and fleet constellation management.</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">Module Architecture</div>
+    <p>Each module operates as a self-contained compliance unit with its own assessment engine, requirement tracker, evidence vault, and reporting pipeline. Modules share a common article-status tracking system that feeds into the unified compliance dashboard.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 6: ASSESSMENT ENGINES ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">8</span>
+  </div>
+
+  <div class="section-number">05</div>
+  <div class="section-title">Assessment Engines</div>
+  <div class="section-subtitle">Four specialized assessment wizards delivering instant regulatory classification</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 4</span>
+      <span class="exhibit-title">Assessment Flow: From Classification to Compliance Roadmap</span>
+    </div>
+    <div class="exhibit-body">
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-label">Operator<br>Classification</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-label">Regime<br>Determination</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-label">Article<br>Mapping</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">4</div>
+          <div class="flow-label">Gap<br>Analysis</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background: var(--accent-light); border-color: var(--accent);">
+          <div class="flow-num" style="color: var(--navy);">5</div>
+          <div class="flow-label">Compliance<br>Roadmap</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 5</span>
+      <span class="exhibit-title">Four Assessment Engines &mdash; Regulatory Coverage Matrix</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Assessment</th>
+            <th>Regulation</th>
+            <th>Scope</th>
+            <th>Key Output</th>
+            <th>Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">EU Space Act</td>
+            <td>COM(2025) 335</td>
+            <td>119 articles, 7 operator types, 8 modules</td>
+            <td>Compliance profile + obligation matrix</td>
+            <td><span class="tag tag-navy">Free</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">NIS2 Directive</td>
+            <td>EU 2022/2555</td>
+            <td>51 requirements, Annex I Sector 11 (Space)</td>
+            <td>Entity classification + cybersecurity obligations</td>
+            <td><span class="tag tag-navy">Free</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">National Space Law</td>
+            <td>10 jurisdictions</td>
+            <td>Germany, France, UK, Luxembourg, NL, +5</td>
+            <td>Jurisdiction matching + favorability scoring</td>
+            <td><span class="tag tag-accent">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Unified Assessment</td>
+            <td>All regulations</td>
+            <td>Cross-regulation aggregation</td>
+            <td>Master roadmap + risk prioritization</td>
+            <td><span class="tag tag-accent">Paid</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Jurisdiction Favorability Scoring</h3>
+  <p>A unique capability: Caelex scores each of 10 European jurisdictions (0-100) based on regulatory burden, licensing complexity, authorization timelines, and operator-type restrictions. This helps operators choose optimal jurisdiction for registration.</p>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 6</span>
+      <span class="exhibit-title">Supported National Space Law Jurisdictions</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Jurisdiction</th>
+            <th>Primary Law</th>
+            <th>National Authority</th>
+            <th>Key Characteristic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">Germany</td><td>SatDSiG</td><td>DLR / BMWi</td><td>Strong satellite data security requirements</td></tr>
+          <tr><td class="td-bold">France</td><td>LOS (Loi relative aux op&eacute;rations spatiales)</td><td>CNES</td><td>Comprehensive technical requirements</td></tr>
+          <tr><td class="td-bold">United Kingdom</td><td>Space Industry Act 2018</td><td>UKSA / CAA</td><td>Post-Brexit standalone framework</td></tr>
+          <tr><td class="td-bold">Luxembourg</td><td>LSA / Law 2020</td><td>LSA</td><td>Space resources / commercial-friendly</td></tr>
+          <tr><td class="td-bold">Netherlands</td><td>SAA 2007</td><td>NSO</td><td>Proportionate approach</td></tr>
+          <tr><td class="td-bold">Belgium</td><td>Space Activities Act</td><td>BISA</td><td>ESA headquarters alignment</td></tr>
+          <tr><td class="td-bold">Austria</td><td>Austrian Outer Space Act</td><td>FFG</td><td>Small satellite focus</td></tr>
+          <tr><td class="td-bold">Denmark</td><td>Outer Space Act</td><td>DTU Space</td><td>Arctic / polar orbit expertise</td></tr>
+          <tr><td class="td-bold">Italy</td><td>National Space Law</td><td>ASI</td><td>Large national program integration</td></tr>
+          <tr><td class="td-bold">Norway</td><td>Space Activities Act</td><td>NOSA</td><td>Non-EU but EEA aligned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 7: ASTRA AI ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">9</span>
+  </div>
+
+  <div class="section-number">06</div>
+  <div class="section-title">ASTRA AI Copilot</div>
+  <div class="section-subtitle">Compliance intelligence embedded at every workflow touchpoint</div>
+  <div class="section-divider"></div>
+
+  <p class="lead">ASTRA (Autonomous Space-regulatory Technical Reasoning Assistant) is Caelex's AI-powered compliance copilot, built on Anthropic's Claude Sonnet 4.6 with a custom tool-use architecture that enables deep regulatory reasoning.</p>
+
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Architecture</h4>
+      <ul>
+        <li>Claude Sonnet 4.6 foundation model</li>
+        <li>22+ specialized compliance tools</li>
+        <li>Tool-use loop (max 10 iterations)</li>
+        <li>Context-aware conversation memory</li>
+        <li>Auto-summarization for long sessions</li>
+        <li>Real-time compliance data integration</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <h4>Deployment Modes</h4>
+      <ul>
+        <li><strong>Dashboard Widget:</strong> Compact chat (380&times;520px) accessible from any page</li>
+        <li><strong>Expanded View:</strong> Full-screen alongside sidebar for deep analysis</li>
+        <li><strong>Ephemeris Forge:</strong> Integrated into mission planning tools</li>
+        <li><strong>Standalone Page:</strong> Dedicated full-page interface</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 7</span>
+      <span class="exhibit-title">ASTRA Tool Categories &mdash; 22+ Specialized Compliance Tools</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Tools</th>
+            <th>Capabilities</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">Regulatory Lookup</td>
+            <td>Article search, requirement matching, cross-reference</td>
+            <td>Instant lookup across 119 EU Space Act articles with contextual interpretation</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Compliance Assessment</td>
+            <td>Gap analysis, status check, obligation mapping</td>
+            <td>Real-time compliance status across all active modules and requirements</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Jurisdiction Analysis</td>
+            <td>Jurisdiction compare, favorability score, law lookup</td>
+            <td>Cross-jurisdiction comparison with favorability scoring and NCA data</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Document Generation</td>
+            <td>Report draft, compliance summary, evidence packaging</td>
+            <td>Automated generation of compliance reports and submission documents</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Ephemeris Intelligence</td>
+            <td>Orbital state, decay forecast, what-if simulation</td>
+            <td>Satellite tracking and compliance state prediction with scenario modeling</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Risk & Advisory</td>
+            <td>Risk assessment, timeline planning, deadline alerts</td>
+            <td>Proactive compliance risk identification and mitigation recommendations</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">AI Differentiation</div>
+    <p>Unlike generic AI assistants, ASTRA operates within the full compliance context: it can query real-time article status, check assessment results, access ephemeris data, and reference jurisdiction-specific requirements. This makes it a genuine compliance co-pilot rather than a document-chat interface.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 8: ASSURE ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">10</span>
+  </div>
+
+  <div class="section-number">07</div>
+  <div class="section-title">Assure: Investor Readiness Platform</div>
+  <div class="section-subtitle">Transforming regulatory compliance into a fundraising asset</div>
+  <div class="section-divider"></div>
+
+  <p class="lead">Assure is a dedicated SaaS module that helps space startups present their compliance posture to investors, turning regulatory readiness into a competitive advantage during fundraising.</p>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 8</span>
+      <span class="exhibit-title">Assure Platform: Core Capabilities</span>
+    </div>
+    <div class="exhibit-body">
+      <div class="module-grid">
+        <div class="module-card">
+          <div class="module-name">Investment Readiness Score (IRS)</div>
+          <div class="module-desc">Multi-component scoring across regulatory, financial, technical, and market dimensions. Weighted composite score with trend tracking.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Regulatory Readiness Score (RRS)</div>
+          <div class="module-desc">Deep compliance assessment (0-100) measuring coverage across all applicable regulations. Daily automated recalculation.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Regulatory Credit Rating (RCR)</div>
+          <div class="module-desc">Enterprise-grade credit-style rating (A-F) for compliance maturity. Benchmarked against peer companies at similar stage.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Company Profile Builder</div>
+          <div class="module-desc">8-section comprehensive profile: leadership, financials, technology, market, team, traction, regulatory, and risk assessment.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Encrypted Data Rooms</div>
+          <div class="module-desc">AES-256-GCM encrypted document sharing. 4 access levels (View, Comment, Contribute, Full). Time-limited access with watermarking.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Cryptographic Attestations</div>
+          <div class="module-desc">SHA-256 hash-chained, tamper-evident compliance attestations. Verifiable by third parties without account creation.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Peer Benchmarking</div>
+          <div class="module-desc">Anonymous comparison against companies at similar stage, jurisdiction, and operator type. Percentile ranking across compliance dimensions.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-name">Investor Network</div>
+          <div class="module-desc">Cap table management, investor milestone tracking, update distribution, and secure communication channels.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">Strategic Value</div>
+    <p>Assure creates a unique flywheel: startups use Caelex for compliance, Assure generates investor-facing attestations that validate their regulatory maturity, and investors gain standardized compliance due diligence &mdash; reducing fundraising friction across the entire space startup ecosystem.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 9: ADVANCED CAPABILITIES ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">11</span>
+  </div>
+
+  <div class="section-number">08</div>
+  <div class="section-title">Advanced Capabilities</div>
+  <div class="section-subtitle">Mission operations, stakeholder network, and compliance academy</div>
+  <div class="section-divider"></div>
+
+  <h3>Mission Control: 3D Satellite Tracking</h3>
+  <p>Real-time orbital visualization and compliance state monitoring powered by Three.js and CelesTrak TLE data.</p>
+
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Visualization</h4>
+      <ul>
+        <li>3D globe with real-time satellite positions</li>
+        <li>Orbital path projection and forecasting</li>
+        <li>Fleet constellation management view</li>
+        <li>Ground track and coverage visualization</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <h4>Compliance Intelligence</h4>
+      <ul>
+        <li>Orbital decay monitoring (25-year rule)</li>
+        <li>Fuel depletion forecasting</li>
+        <li>Subsystem degradation alerts</li>
+        <li>What-if scenario simulation</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Stakeholder Collaboration Network</h3>
+  <p>Multi-party ecosystem connecting all actors in the space regulatory value chain.</p>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 9</span>
+      <span class="exhibit-title">Stakeholder Network: Supported Roles & Access Models</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Stakeholder</th>
+            <th>Use Case</th>
+            <th>Access Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">Legal Counsel</td><td>Authorization review, regulatory advisory</td><td>Org member (RBAC)</td></tr>
+          <tr><td class="td-bold">Insurers</td><td>Risk assessment, TPL coverage binding</td><td>Data room access</td></tr>
+          <tr><td class="td-bold">Auditors</td><td>Compliance verification, evidence review</td><td>Token-gated portal</td></tr>
+          <tr><td class="td-bold">Suppliers</td><td>LCA data submission, certifications</td><td>Token-gated portal</td></tr>
+          <tr><td class="td-bold">NCAs</td><td>Authorization submissions, inspections</td><td>Dedicated NCA portal</td></tr>
+          <tr><td class="td-bold">Launch Providers</td><td>Mission parameters, rideshare coordination</td><td>Data room access</td></tr>
+          <tr><td class="td-bold">Consultants</td><td>Framework development, gap analysis</td><td>Org member (RBAC)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Academy: Training & Certification</h3>
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Course Catalog</h4>
+      <ul>
+        <li>EU Space Act Fundamentals (4h, Beginner)</li>
+        <li>NIS2 for Space Operators (3h, Intermediate)</li>
+        <li>Cross-Regulatory Compliance (5h, Advanced)</li>
+        <li>Space Debris Mitigation (2.5h, Intermediate)</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <h4>Interactive Features</h4>
+      <ul>
+        <li>Compliance simulations using real regulatory engine</li>
+        <li>Sandbox mode for operator profile experimentation</li>
+        <li>Progress tracking with learning streaks</li>
+        <li>Badges, certifications, and instructor classrooms</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 10: TECH ARCHITECTURE ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">12</span>
+  </div>
+
+  <div class="section-number">09</div>
+  <div class="section-title">Technical Architecture</div>
+  <div class="section-subtitle">Enterprise-grade infrastructure built on modern cloud-native technologies</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 10</span>
+      <span class="exhibit-title">Technology Stack Overview</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">Frontend</td><td>Next.js 15 (App Router), TypeScript, Tailwind CSS</td><td>Server-rendered React application</td></tr>
+          <tr><td class="td-bold">UI/UX</td><td>Framer Motion, Recharts, Three.js, Lucide Icons</td><td>Animations, charts, 3D visualization</td></tr>
+          <tr><td class="td-bold">Backend</td><td>Next.js API Routes (serverless), Node.js 20+</td><td>400+ REST endpoints on Vercel Edge</td></tr>
+          <tr><td class="td-bold">Database</td><td>PostgreSQL (Neon Serverless), Prisma ORM</td><td>161 models, 6,500-line schema</td></tr>
+          <tr><td class="td-bold">AI</td><td>Anthropic Claude Sonnet 4.6 (@anthropic-ai/sdk)</td><td>ASTRA copilot with 22+ tools</td></tr>
+          <tr><td class="td-bold">Auth</td><td>NextAuth v5 (Credentials, Google, SAML/OIDC)</td><td>Multi-provider, MFA, WebAuthn</td></tr>
+          <tr><td class="td-bold">Payments</td><td>Stripe (Checkout, Portal, Webhooks)</td><td>Subscription billing</td></tr>
+          <tr><td class="td-bold">Storage</td><td>Cloudflare R2 / S3-compatible (AWS SDK)</td><td>Document vault, evidence files</td></tr>
+          <tr><td class="td-bold">Caching</td><td>Upstash Redis (sliding window)</td><td>Rate limiting (19 tiers), session cache</td></tr>
+          <tr><td class="td-bold">Email</td><td>Resend (primary), Nodemailer SMTP (fallback)</td><td>Transactional & notification emails</td></tr>
+          <tr><td class="td-bold">Monitoring</td><td>Sentry, LogSnag, Vercel Analytics</td><td>Error tracking, event logging, analytics</td></tr>
+          <tr><td class="td-bold">PDF</td><td>@react-pdf/renderer, jsPDF</td><td>Client & server PDF generation</td></tr>
+          <tr><td class="td-bold">CI/CD</td><td>GitHub Actions, Vercel auto-deploy</td><td>CodeQL, TruffleHog, OWASP scanning</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Operational Automation</h3>
+  <p>17 scheduled cron jobs automate compliance monitoring, data synchronization, and proactive alerting.</p>
+
+  <div class="three-col">
+    <div class="stat-card">
+      <div class="stat-value">17</div>
+      <div class="stat-label">Cron Jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">19</div>
+      <div class="stat-label">Rate Limit Tiers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">32</div>
+      <div class="stat-label">Compliance Engines</div>
+    </div>
+  </div>
+
+  <p style="font-size: 8.5pt; color: var(--text-secondary);">Key cron operations include: daily compliance snapshots (1 AM), CelesTrak TLE synchronization (5 AM), ephemeris forecasting (6 AM), regulatory feed updates (7 AM), RRS/RCR computation (7-7:30 AM), deadline reminders (8 AM), and document expiry checks (9 AM).</p>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 11: SECURITY ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">13</span>
+  </div>
+
+  <div class="section-number">10</div>
+  <div class="section-title">Security & Enterprise Features</div>
+  <div class="section-subtitle">Defense-in-depth security architecture for regulatory data protection</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 11</span>
+      <span class="exhibit-title">Security Architecture: Five Layers of Defense</span>
+    </div>
+    <div class="exhibit-body">
+      <div class="arch-layer">
+        <div class="arch-layer-header">Layer 1 &mdash; Authentication & Access</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">Bcrypt (12 rounds)</div>
+          <div class="arch-chip">TOTP MFA</div>
+          <div class="arch-chip">WebAuthn/FIDO2</div>
+          <div class="arch-chip">SAML/OIDC SSO</div>
+          <div class="arch-chip">5-level RBAC</div>
+          <div class="arch-chip">Session Management</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: var(--navy-mid);">Layer 2 &mdash; Encryption & Data Protection</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">AES-256-GCM (data at rest)</div>
+          <div class="arch-chip">Scrypt key derivation</div>
+          <div class="arch-chip">Per-tenant encryption keys</div>
+          <div class="arch-chip">TLS 1.3 (in transit)</div>
+          <div class="arch-chip">PDF watermarking</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: var(--navy-light);">Layer 3 &mdash; Audit & Integrity</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">SHA-256 hash-chained audit logs</div>
+          <div class="arch-chip">Tamper-evident records</div>
+          <div class="arch-chip">HMAC-SHA256 webhook signing</div>
+          <div class="arch-chip">Cryptographic attestations</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: #4A6FA5;">Layer 4 &mdash; Threat Detection</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">Brute force detection (5/15min)</div>
+          <div class="arch-chip">Honey token traps</div>
+          <div class="arch-chip">4-layer IP resolution</div>
+          <div class="arch-chip">Rate limiting (19 tiers)</div>
+          <div class="arch-chip">CSP headers</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-header" style="background: #6B8CC4;">Layer 5 &mdash; CI/CD Security</div>
+        <div class="arch-layer-body">
+          <div class="arch-chip">CodeQL static analysis</div>
+          <div class="arch-chip">TruffleHog secret scanning</div>
+          <div class="arch-chip">OWASP dependency checks</div>
+          <div class="arch-chip">Pre-commit hooks</div>
+          <div class="arch-chip">HSTS (2yr preload)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Multi-Tenancy & Access Control</h3>
+  <div class="exhibit">
+    <div class="exhibit-body" style="padding: 12px 16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Permissions</th>
+            <th>Typical User</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">Owner</td><td>Full admin, billing, user management, delete org</td><td>Founder / CEO</td></tr>
+          <tr><td class="td-bold">Admin</td><td>User management, settings, all modules</td><td>Compliance Director</td></tr>
+          <tr><td class="td-bold">Manager</td><td>Module access, reporting, team oversight</td><td>Team Lead</td></tr>
+          <tr><td class="td-bold">Member</td><td>Module access, evidence upload, assessment</td><td>Compliance Officer</td></tr>
+          <tr><td class="td-bold">Viewer</td><td>Read-only access to assigned modules</td><td>External auditor</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 12: COMPETITIVE ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">14</span>
+  </div>
+
+  <div class="section-number">11</div>
+  <div class="section-title">Competitive Positioning</div>
+  <div class="section-subtitle">Unique market position at the intersection of RegTech and SpaceTech</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 12</span>
+      <span class="exhibit-title">Competitive Comparison Matrix</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead class="matrix-header">
+          <tr>
+            <th>Capability</th>
+            <th>Caelex</th>
+            <th>Traditional<br>Consulting</th>
+            <th>Generic GRC<br>Platforms</th>
+            <th>Emerging Space<br>Compliance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-bold">EU Space Act (119 articles)</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="partial">~</td></tr>
+          <tr><td class="td-bold">NIS2 Space Scope</td><td class="check">&#10003;</td><td class="partial">~</td><td class="check">&#10003;</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">10 Jurisdictions</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">AI Compliance Copilot</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="partial">~</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">Investor Readiness (Assure)</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">Orbital Compliance (Ephemeris)</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="partial">~</td></tr>
+          <tr><td class="td-bold">Multi-Stakeholder Network</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="partial">~</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">Cryptographic Attestations</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+          <tr><td class="td-bold">Real-Time Compliance Dashboard</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td></tr>
+          <tr><td class="td-bold">Self-Service (no consultant needed)</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Strategic Advantages</h3>
+
+  <div class="two-col">
+    <div class="col-card">
+      <h4>vs. Traditional Consulting</h4>
+      <ul>
+        <li><strong>Speed:</strong> Weeks vs. months for initial assessment</li>
+        <li><strong>Cost:</strong> &euro;449-1,199/mo vs. &euro;50-500k/year</li>
+        <li><strong>Transparency:</strong> Real-time status vs. periodic reports</li>
+        <li><strong>Scale:</strong> Unlimited team members vs. single contacts</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <h4>vs. Generic GRC Platforms</h4>
+      <ul>
+        <li><strong>Domain:</strong> Space-specific, not horizontal compliance</li>
+        <li><strong>Depth:</strong> Article-level tracking, not framework checklists</li>
+        <li><strong>Intelligence:</strong> ASTRA AI with 22+ space-specific tools</li>
+        <li><strong>Ecosystem:</strong> Multi-stakeholder, not single-user</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">Competitive Moat</div>
+    <p>Caelex's primary moat is regulatory depth: the proprietary mapping of 119 EU Space Act articles across 7 operator types and 10 jurisdictions is a knowledge asset that would take competitors 12-18 months to replicate. Combined with the Assure investor platform and ASTRA AI, this creates a multi-layered competitive advantage.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 13: MARKET & PRICING ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">15</span>
+  </div>
+
+  <div class="section-number">12</div>
+  <div class="section-title">Market Opportunity & Pricing</div>
+  <div class="section-subtitle">Positioned to capture the compliance spend of 2,000+ European space companies</div>
+  <div class="section-divider"></div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value">&euro;100M+</div>
+      <div class="kpi-label">Addressable Market</div>
+      <div class="kpi-sub">Annual compliance spend</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">2,000+</div>
+      <div class="kpi-label">Target Companies</div>
+      <div class="kpi-sub">European space sector</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">2030</div>
+      <div class="kpi-label">Enforcement Deadline</div>
+      <div class="kpi-sub">EU Space Act mandatory</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">150+</div>
+      <div class="kpi-label">New Startups</div>
+      <div class="kpi-sub">Since 2020 in Europe</div>
+    </div>
+  </div>
+
+  <h3>Pricing Strategy</h3>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <div class="pricing-name">Essentials</div>
+        <div class="pricing-price">&euro;449<span>/mo</span></div>
+        <div class="pricing-billing">&euro;374/mo billed annually</div>
+      </div>
+      <div class="pricing-body">
+        <ul style="margin: 0; padding: 0;">
+          <li>8 core compliance modules</li>
+          <li>EU Space Act assessment</li>
+          <li>1 jurisdiction</li>
+          <li>5 team members</li>
+          <li>Basic ASTRA AI access</li>
+          <li>Standard support</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-header">
+        <div class="pricing-name">Professional</div>
+        <div class="pricing-price">&euro;1,199<span>/mo</span></div>
+        <div class="pricing-billing">&euro;999/mo billed annually</div>
+      </div>
+      <div class="pricing-body">
+        <ul style="margin: 0; padding: 0;">
+          <li>All 15 compliance modules</li>
+          <li>All assessment engines</li>
+          <li>10 jurisdictions</li>
+          <li>Unlimited team members</li>
+          <li>Full ASTRA AI + Ephemeris</li>
+          <li>API access + webhooks</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <div class="pricing-name">Enterprise</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-billing">Annual contract</div>
+      </div>
+      <div class="pricing-body">
+        <ul style="margin: 0; padding: 0;">
+          <li>Everything in Professional</li>
+          <li>Assure investor platform</li>
+          <li>SSO (SAML/OIDC)</li>
+          <li>Dedicated data rooms</li>
+          <li>NCA portal integration</li>
+          <li>Custom compliance engines</li>
+          <li>Dedicated success manager</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-label">Unit Economics</div>
+    <p>At &euro;999/mo (Professional annual), Caelex delivers ~90% cost reduction vs. traditional consulting (&euro;12k/year vs. &euro;50-500k/year) while providing continuous, real-time compliance monitoring instead of periodic consultant reviews. This pricing enables rapid adoption across the 150+ European space startups where compliance is a mandatory cost.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 14: ROADMAP ═══════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-title">Caelex Platform Analysis</span>
+    <span class="page-number">16</span>
+  </div>
+
+  <div class="section-number">13</div>
+  <div class="section-title">Roadmap & Strategic Outlook</div>
+  <div class="section-subtitle">Expanding from compliance tooling to the regulatory infrastructure layer for space</div>
+  <div class="section-divider"></div>
+
+  <div class="exhibit">
+    <div class="exhibit-header">
+      <span class="exhibit-label">Exhibit 13</span>
+      <span class="exhibit-title">Strategic Roadmap: Platform Evolution</span>
+    </div>
+    <div class="exhibit-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Focus Area</th>
+            <th>Key Initiatives</th>
+            <th>Strategic Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">Current</td>
+            <td>Core Compliance Platform</td>
+            <td>15 modules, 4 assessments, ASTRA AI, Assure</td>
+            <td>Foundation: capture early adopters</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Near-Term</td>
+            <td>Enterprise & Integration</td>
+            <td>
+              &bull; Full SAML/OIDC SSO<br>
+              &bull; NCA portal direct submission<br>
+              &bull; Supply chain security module<br>
+              &bull; GDPR breach reporting
+            </td>
+            <td>Enterprise readiness: unlock large contracts</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Mid-Term</td>
+            <td>Ecosystem & Intelligence</td>
+            <td>
+              &bull; Integration marketplace (webhooks+)<br>
+              &bull; Advanced analytics dashboard<br>
+              &bull; Custom workflow engine<br>
+              &bull; Sustainability reporting module
+            </td>
+            <td>Platform effects: increase switching costs</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Long-Term</td>
+            <td>Regulatory Infrastructure</td>
+            <td>
+              &bull; Verity certificate management<br>
+              &bull; Cross-border compliance passporting<br>
+              &bull; Regulatory API marketplace<br>
+              &bull; Industry benchmarking data products
+            </td>
+            <td>Infrastructure layer: become the standard</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Strategic Thesis</h3>
+
+  <div class="two-col">
+    <div class="col-card" style="border-top: 3px solid var(--navy);">
+      <h4>Phase 1: Tool &rarr; Platform</h4>
+      <p>Caelex has already crossed the threshold from single-purpose compliance tool to multi-module platform with assessment engines, AI copilot, investor readiness, and stakeholder collaboration. The 161-model database and 400+ API routes reflect genuine platform depth.</p>
+    </div>
+    <div class="col-card" style="border-top: 3px solid var(--accent);">
+      <h4>Phase 2: Platform &rarr; Infrastructure</h4>
+      <p>The next evolution is becoming the regulatory infrastructure layer for European space: the system-of-record that NCAs, insurers, investors, and operators all rely on. Cryptographic attestations, data rooms, and the stakeholder network are early building blocks of this vision.</p>
+    </div>
+  </div>
+
+  <div class="insight-box" style="margin-top: 24px;">
+    <div class="insight-label">Conclusion</div>
+    <p>Caelex occupies a unique position as the only full-stack space compliance platform in Europe. With mandatory enforcement approaching in 2030 and 2,000+ companies needing compliance infrastructure, the platform is well-positioned to become the regulatory operating system for the European space industry &mdash; replacing fragmented consulting engagements with a unified, AI-powered digital compliance layer.</p>
+  </div>
+
+  <div class="mt-lg" style="text-align: center; padding: 24px 0; border-top: 1px solid var(--border);">
+    <p style="font-size: 9pt; color: var(--text-light); margin: 0;">
+      This document was prepared for internal review purposes.<br>
+      &copy; 2026 Caelex GmbH. All rights reserved. Confidential.
+    </p>
+  </div>
+
+  <div class="page-footer">
+    <span>Caelex Platform Analysis</span>
+    <span>Confidential &middot; March 2026</span>
+  </div>
+</div>
+
+</body>
+</html>

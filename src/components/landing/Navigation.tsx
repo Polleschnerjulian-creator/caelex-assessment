@@ -77,7 +77,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 aria-label="Caelex — Go to homepage"
               >
                 <Logo
-                  size={28}
+                  size={34}
                   className={`transition-colors duration-700 ${showDarkText ? "text-[#111827]" : "text-white"}`}
                 />
               </Link>
