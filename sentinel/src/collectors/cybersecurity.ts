@@ -1,5 +1,6 @@
 import { BaseCollector } from "./base-collector.js";
 import { MockSIEM } from "../simulator/mock-siem.js";
+import type { ScenarioRunner } from "../simulator/scenario-engine.js";
 import type {
   CollectorOutput,
   CronSchedule,
@@ -12,9 +13,11 @@ export class CybersecurityCollector extends BaseCollector {
 
   private siem: MockSIEM;
 
-  constructor(_config: SentinelConfig) {
+  constructor(config: SentinelConfig, scenario?: ScenarioRunner) {
     super();
-    this.siem = new MockSIEM();
+    // Pass scenario + first satellite's noradId for cyber state lookup
+    const noradId = config.sentinel.satellites[0]?.norad_id;
+    this.siem = new MockSIEM(scenario, noradId);
   }
 
   getSchedule(): CronSchedule {

@@ -1,4 +1,5 @@
 import { GROUND_STATIONS, type GroundStationState } from "./seed-data.js";
+import type { ScenarioRunner } from "./scenario-engine.js";
 
 /**
  * Simulated Ground Station Management System.
@@ -8,12 +9,17 @@ import { GROUND_STATIONS, type GroundStationState } from "./seed-data.js";
  * - Success rate: 92–99%
  * - Signal margin: 3–12 dB
  * - Availability: 95–99.9%
+ *
+ * When a ScenarioRunner is provided, ground station data remains stable
+ * (no random drift) for deterministic scenario testing.
  */
 export class MockGroundStation {
   private stations: GroundStationState[];
   private dayStartTime: number;
+  private scenario?: ScenarioRunner;
 
-  constructor() {
+  constructor(scenario?: ScenarioRunner) {
+    this.scenario = scenario;
     this.stations = GROUND_STATIONS.map((s) => ({ ...s }));
     this.dayStartTime = startOfDay(Date.now());
   }

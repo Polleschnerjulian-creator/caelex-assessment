@@ -1,0 +1,52 @@
+id: fuel-depletion
+name: "LEO Fuel Depletion Scenario"
+
+satellites:
+  - noradId: "58421"
+    name: "CAELEX-SAT-1"
+    orbitType: LEO
+    initial:
+      altitudeKm: 550
+      inclinationDeg: 97.6
+      eccentricity: 0.0002
+      fuelPct: 45
+      thrusterStatus: 1
+      batterySOC: 0.95
+      solarArrayPowerPct: 98
+      patchCompliancePct: 96
+      mfaAdoptionPct: 99
+      unpatchedCriticalVulns: 0
+      incidentResponseMttrMin: 600
+    degradation:
+      fuelPerDayPct: 0.18
+      fuelPerManeuverPct: 1.2
+      maneuverIntervalDays: 8
+      solarDegradationPerYearPct: 2.5
+      altitudeDecayKmPerDay: 0.015
+    events:
+      - label: "Extra collision avoidance maneuver"
+        trigger:
+          type: AFTER_DAYS
+          days: 45
+        action:
+          type: MANEUVER
+          fuelCostPct: 2.5
+
+      - label: "Increased maneuver frequency"
+        trigger:
+          type: WHEN_BELOW
+          metric: fuelPct
+          value: 30
+        action:
+          type: MULTIPLY_RATE
+          metric: fuelPerDayPct
+          multiplier: 1.5
+
+      - label: "Emergency debris avoidance"
+        trigger:
+          type: WHEN_BELOW
+          metric: fuelPct
+          value: 22
+        action:
+          type: MANEUVER
+          fuelCostPct: 1.5

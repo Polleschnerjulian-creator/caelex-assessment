@@ -1,3 +1,5 @@
+import type { ScenarioRunner } from "./scenario-engine.js";
+
 /**
  * Simulated SIEM / Security Operations Center.
  *
@@ -6,8 +8,17 @@
  * - Vulnerability counts drift realistically
  * - Patch compliance: 85–98%
  * - MFA adoption: 90–100%
+ *
+ * When a ScenarioRunner is provided, uses scenario-driven cyber state.
  */
 export class MockSIEM {
+  private scenario?: ScenarioRunner;
+  private scenarioNoradId?: string;
+
+  constructor(scenario?: ScenarioRunner, scenarioNoradId?: string) {
+    this.scenario = scenario;
+    this.scenarioNoradId = scenarioNoradId;
+  }
   // Persistent state that drifts over time
   private criticalVulns = Math.floor(Math.random() * 2);
   private highVulns = 2 + Math.floor(Math.random() * 4);
@@ -24,6 +35,40 @@ export class MockSIEM {
 
   readPosture(): Record<string, unknown> {
     this.tickCount++;
+
+    // Scenario mode: return scenario-driven cyber metrics
+    if (this.scenario && this.scenarioNoradId) {
+      const scenarioState = this.scenario.getState(this.scenarioNoradId);
+      if (scenarioState) {
+        return {
+          incidents_30d: scenarioState.unpatchedCriticalVulns > 0 ? 2 : 0,
+          incidents_by_severity: {
+            critical: 0,
+            high: scenarioState.unpatchedCriticalVulns > 0 ? 1 : 0,
+            medium: 0,
+            low: scenarioState.unpatchedCriticalVulns > 0 ? 1 : 0,
+          },
+          mttd_minutes: 30,
+          mttr_minutes: scenarioState.incidentResponseMttrMin,
+          reportable_incidents:
+            scenarioState.unpatchedCriticalVulns > 0 ? 1 : 0,
+          critical_vulns_unpatched: scenarioState.unpatchedCriticalVulns,
+          high_vulns_unpatched: 0,
+          patch_compliance_pct: round2(scenarioState.patchCompliancePct),
+          days_since_last_vuln_scan: 3,
+          mfa_adoption_pct: round2(scenarioState.mfaAdoptionPct),
+          privileged_accounts: 10,
+          last_access_review: daysAgoISO(7),
+          backup_status: "VERIFIED",
+          last_backup_test: daysAgoISO(3),
+          encryption_at_rest: "AES-256",
+          encryption_in_transit: "TLS-1.3",
+          last_pentest_date: daysAgoISO(30),
+          security_training_pct: 92,
+        };
+      }
+    }
+
     this.evolve();
 
     // Generate incident counts for the last 30 days

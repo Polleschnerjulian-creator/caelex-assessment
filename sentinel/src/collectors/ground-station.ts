@@ -1,5 +1,6 @@
 import { BaseCollector } from "./base-collector.js";
 import { MockGroundStation } from "../simulator/mock-ground-station.js";
+import type { ScenarioRunner } from "../simulator/scenario-engine.js";
 import type {
   CollectorOutput,
   CronSchedule,
@@ -12,9 +13,9 @@ export class GroundStationCollector extends BaseCollector {
 
   private gs: MockGroundStation;
 
-  constructor(_config: SentinelConfig) {
+  constructor(_config: SentinelConfig, scenario?: ScenarioRunner) {
     super();
-    this.gs = new MockGroundStation();
+    this.gs = new MockGroundStation(scenario);
   }
 
   getSchedule(): CronSchedule {

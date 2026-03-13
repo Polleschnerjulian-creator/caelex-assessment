@@ -1,4 +1,5 @@
 import { type SatelliteState, createInitialState } from "./seed-data.js";
+import type { ScenarioRunner } from "./scenario-engine.js";
 
 /**
  * Simulated Mission Control / Flight Dynamics System.
@@ -9,10 +10,17 @@ import { type SatelliteState, createInitialState } from "./seed-data.js";
  * - Occasional thruster degradation events
  * - Conjunction assessments (2–5/month, ~0.5 maneuvers/month)
  * - Rare safe-mode events
+ *
+ * When a ScenarioRunner is provided, uses scenario-driven state instead.
  */
 export class MockMissionControl {
   private states = new Map<string, SatelliteState>();
   private tickCount = 0;
+  private scenario?: ScenarioRunner;
+
+  constructor(scenario?: ScenarioRunner) {
+    this.scenario = scenario;
+  }
 
   initialize(
     satellites: Array<{
@@ -40,14 +48,37 @@ export class MockMissionControl {
   /**
    * Advance the simulation and return current telemetry.
    * Called every 15 minutes by the orbit collector.
+   *
+   * If a ScenarioRunner is present and has state for this noradId,
+   * returns scenario-driven values overlaid onto the base state.
    */
   readTelemetry(noradId: string): SatelliteState | null {
     const state = this.states.get(noradId);
     if (!state) return null;
 
     this.tickCount++;
-    this.evolve(state);
 
+    // Scenario mode: overlay scenario state onto the satellite state
+    if (this.scenario) {
+      const scenarioState = this.scenario.getState(noradId);
+      if (scenarioState) {
+        state.altitude_km = scenarioState.altitudeKm;
+        state.semi_major_axis_km = 6371 + scenarioState.altitudeKm;
+        state.eccentricity = scenarioState.eccentricity;
+        state.inclination_deg = scenarioState.inclinationDeg;
+        state.remaining_fuel_kg =
+          state.initial_fuel_kg * (scenarioState.fuelPct / 100);
+        state.thruster_status =
+          scenarioState.thrusterStatus === 1 ? "NOMINAL" : "FAILED";
+        state.battery_soc_pct = scenarioState.batterySOC * 100;
+        state.solar_array_power_w =
+          (scenarioState.solarArrayPowerPct / 100) * 1000; // Assume 1000W max
+        return { ...state };
+      }
+    }
+
+    // Default random evolution
+    this.evolve(state);
     return { ...state };
   }
 

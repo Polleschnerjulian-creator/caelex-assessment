@@ -1,5 +1,6 @@
 import { BaseCollector } from "./base-collector.js";
 import { MockMissionControl } from "../simulator/mock-mission-control.js";
+import type { ScenarioRunner } from "../simulator/scenario-engine.js";
 import type {
   CollectorOutput,
   CronSchedule,
@@ -13,9 +14,9 @@ export class OrbitDebrisCollector extends BaseCollector {
   private mc: MockMissionControl;
   private satellites: SentinelConfig["sentinel"]["satellites"];
 
-  constructor(config: SentinelConfig) {
+  constructor(config: SentinelConfig, scenario?: ScenarioRunner) {
     super();
-    this.mc = new MockMissionControl();
+    this.mc = new MockMissionControl(scenario);
     this.satellites = config.sentinel.satellites;
     this.mc.initialize(this.satellites);
   }

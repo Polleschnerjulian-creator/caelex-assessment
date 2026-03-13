@@ -13,6 +13,10 @@ import { OrbitDebrisCollector } from "./collectors/orbit-debris.js";
 import { CybersecurityCollector } from "./collectors/cybersecurity.js";
 import { GroundStationCollector } from "./collectors/ground-station.js";
 import { DocumentWatchCollector } from "./collectors/document-watch.js";
+import {
+  ScenarioRunner,
+  loadScenarioProfile,
+} from "./simulator/scenario-engine.js";
 import type { BaseCollector } from "./collectors/base-collector.js";
 import type { CollectorOutput } from "./types/collector-types.js";
 import type { EvidencePacket } from "./types/evidence-packet.js";
@@ -56,19 +60,34 @@ async function main(): Promise<void> {
   // --- Step 5: Register with Caelex (best-effort) ---
   await tryRegister(config, sentinelId, keys.publicKeyPem);
 
+  // --- Step 5b: Load Scenario (if configured) ---
+  let scenarioRunner: ScenarioRunner | undefined;
+  const scenarioPath = process.env["SENTINEL_SCENARIO"];
+  if (config.mode === "simulator" && scenarioPath) {
+    try {
+      const profile = loadScenarioProfile(scenarioPath);
+      scenarioRunner = new ScenarioRunner(profile);
+      console.log(
+        `[boot] Scenario loaded: ${profile.name} (${profile.satellites.length} satellite(s))`,
+      );
+    } catch (err) {
+      console.warn("[boot] Failed to load scenario, continuing without:", err);
+    }
+  }
+
   // --- Step 6: Initialize Collectors ---
   const collectors: BaseCollector[] = [];
 
   if (config.collectors.orbit_debris.enabled) {
-    collectors.push(new OrbitDebrisCollector(config));
+    collectors.push(new OrbitDebrisCollector(config, scenarioRunner));
     console.log("[boot] Collector: Orbit & Debris ✓");
   }
   if (config.collectors.cybersecurity.enabled) {
-    collectors.push(new CybersecurityCollector(config));
+    collectors.push(new CybersecurityCollector(config, scenarioRunner));
     console.log("[boot] Collector: Cybersecurity ✓");
   }
   if (config.collectors.ground_station.enabled) {
-    collectors.push(new GroundStationCollector(config));
+    collectors.push(new GroundStationCollector(config, scenarioRunner));
     console.log("[boot] Collector: Ground Station ✓");
   }
   if (config.collectors.document_watch.enabled) {
@@ -94,6 +113,11 @@ async function main(): Promise<void> {
 
   async function runCollectionCycle(collector: BaseCollector): Promise<void> {
     if (shuttingDown) return;
+
+    // Advance scenario state if present
+    if (scenarioRunner) {
+      scenarioRunner.tick();
+    }
 
     console.log(`[collect] Running ${collector.name}...`);
     try {

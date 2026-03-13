@@ -38,3 +38,8 @@ dashboard:
 
 # "simulator" for demo/testing, "production" for real data sources
 mode: simulator
+
+# Optional: path to scenario YAML profile for controlled simulation.
+# Set via SENTINEL_SCENARIO env var or uncomment below.
+# simulator:
+#   scenario: "./src/simulator/scenarios/fuel-depletion.yaml"

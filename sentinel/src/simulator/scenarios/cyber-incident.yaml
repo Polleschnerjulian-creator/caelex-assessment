@@ -1,0 +1,64 @@
+id: cyber-incident
+name: "GEO Satellite — Cyber Incident & Recovery"
+
+satellites:
+  - noradId: "99001"
+    name: "CAELEX-GEO-1"
+    orbitType: GEO
+    initial:
+      altitudeKm: 35786
+      inclinationDeg: 0.05
+      eccentricity: 0.0001
+      fuelPct: 72
+      thrusterStatus: 1
+      batterySOC: 0.92
+      solarArrayPowerPct: 96
+      patchCompliancePct: 96
+      mfaAdoptionPct: 99
+      unpatchedCriticalVulns: 0
+      incidentResponseMttrMin: 600
+    degradation:
+      fuelPerDayPct: 0.005
+      fuelPerManeuverPct: 0.1
+      maneuverIntervalDays: 30
+      solarDegradationPerYearPct: 1.5
+      altitudeDecayKmPerDay: 0.0
+    events:
+      - label: "Major cyber incident"
+        trigger:
+          type: AFTER_DAYS
+          days: 30
+        action:
+          type: CYBER_INCIDENT
+          patchDrop: 31
+          vulnsAdded: 3
+          mttrSpike: 2400
+
+      - label: "Patch recovery begins"
+        trigger:
+          type: AFTER_DAYS
+          days: 35
+        action:
+          type: RECOVERY
+          metric: patchCompliancePct
+          recoveryPerDay: 4
+          target: 96
+
+      - label: "MTTR recovery begins"
+        trigger:
+          type: AFTER_DAYS
+          days: 35
+        action:
+          type: RECOVERY
+          metric: incidentResponseMttrMin
+          recoveryPerDay: -200
+          target: 600
+
+      - label: "Vulnerabilities patched"
+        trigger:
+          type: AFTER_DAYS
+          days: 44
+        action:
+          type: SET
+          metric: unpatchedCriticalVulns
+          value: 0

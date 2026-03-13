@@ -15,7 +15,7 @@ export function hashContent(data: unknown): string {
  * This ensures the same object always produces the same hash
  * regardless of property insertion order.
  */
-function canonicalize(value: unknown): string {
+export function canonicalize(value: unknown): string {
   if (value === null || value === undefined) return "null";
   if (typeof value === "string") return JSON.stringify(value);
   if (typeof value === "number" || typeof value === "boolean")
