@@ -207,6 +207,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/supplier/",
   "/api/v1/webhooks",
   "/api/v1/compliance/", // API v1 uses API key auth, not CSRF
+  "/api/v1/sentinel/", // Sentinel agents use Bearer token auth, not browser sessions
   "/api/auth/callback/", // Only OAuth callbacks are exempt — login/signup/other auth endpoints require CSRF
   "/api/auth/session", // NextAuth session endpoint (GET-like, read-only)
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
