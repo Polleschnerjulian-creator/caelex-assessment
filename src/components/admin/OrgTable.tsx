@@ -174,6 +174,9 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                         <p className="text-caption text-slate-500 dark:text-white/45 font-mono">
                           {org.slug}
                         </p>
+                        <p className="text-micro text-slate-400 dark:text-white/30 font-mono truncate">
+                          {org.id}
+                        </p>
                       </div>
                     </div>
                   </td>

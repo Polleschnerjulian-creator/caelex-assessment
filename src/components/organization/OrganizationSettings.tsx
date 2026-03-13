@@ -226,6 +226,15 @@ export function OrganizationSettings({
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">
+              Organization ID
+            </label>
+            <div className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/45 font-mono text-sm cursor-default select-all">
+              {organization.id}
+            </div>
+          </div>
+
+          <div>
             <label
               htmlFor="org-slug"
               className="block text-sm font-medium text-white/70 mb-1.5"

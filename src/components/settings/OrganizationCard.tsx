@@ -584,6 +584,11 @@ export function OrganizationCard() {
             <p className="text-subtitle text-slate-900 dark:text-white">
               {displayName}
             </p>
+            {organization?.id && (
+              <p className="text-caption text-slate-400 dark:text-white/30 font-mono mt-0.5">
+                ID: {organization.id}
+              </p>
+            )}
           </div>
 
           {/* Current Plan */}
