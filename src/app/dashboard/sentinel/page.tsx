@@ -18,6 +18,10 @@ import {
   Activity,
   Database,
   FileCheck,
+  Key,
+  Eye,
+  EyeOff,
+  Loader2,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -141,6 +145,9 @@ export default function SentinelDashboard() {
   const [showSetup, setShowSetup] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [generatedOrgId, setGeneratedOrgId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const fetchAgents = useCallback(async () => {
     setError(null);
@@ -243,6 +250,29 @@ export default function SentinelDashboard() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const generateToken = async () => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/sentinel/tokens", {
+        method: "POST",
+        headers: csrfHeaders(),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to generate token");
+        return;
+      }
+      const data = await res.json();
+      setGeneratedToken(data.token);
+      setGeneratedOrgId(data.organization_id);
+    } catch {
+      setError("Network error while generating token.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const currentAgent = agents.find((a) => a.id === selectedAgent);
 
   // ─────────────────────────────────────────────────────────────────────
@@ -305,6 +335,10 @@ export default function SentinelDashboard() {
                   <SetupGuide
                     onCopy={copyToClipboard}
                     copiedField={copiedField}
+                    onGenerateToken={generateToken}
+                    isGenerating={isGenerating}
+                    generatedToken={generatedToken}
+                    generatedOrgId={generatedOrgId}
                   />
                 </motion.div>
               )}
@@ -375,6 +409,10 @@ export default function SentinelDashboard() {
                 <SetupGuide
                   onCopy={copyToClipboard}
                   copiedField={copiedField}
+                  onGenerateToken={generateToken}
+                  isGenerating={isGenerating}
+                  generatedToken={generatedToken}
+                  generatedOrgId={generatedOrgId}
                 />
               </CardContent>
             </Card>
@@ -881,12 +919,138 @@ function MiniDetail({
   );
 }
 
-function SetupGuide({
+function TokenGenerator({
+  onGenerate,
+  isGenerating,
+  token,
+  orgId,
   onCopy,
   copiedField,
 }: {
+  onGenerate: () => void;
+  isGenerating: boolean;
+  token: string | null;
+  orgId: string | null;
   onCopy: (text: string, field: string) => void;
   copiedField: string | null;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  if (!token) {
+    return (
+      <div className="mt-2">
+        <button
+          onClick={onGenerate}
+          disabled={isGenerating}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:opacity-50 text-white text-body font-medium transition-colors"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Key size={14} />
+              Generate Token
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 space-y-3">
+      <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+        <div className="flex items-start gap-2 mb-3">
+          <AlertTriangle
+            size={16}
+            className="text-amber-400 flex-shrink-0 mt-0.5"
+          />
+          <p className="text-small text-amber-300">
+            Copy this token now — it will not be shown again after you leave
+            this page.
+          </p>
+        </div>
+
+        {/* Token field */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 relative">
+            <input
+              type={visible ? "text" : "password"}
+              value={token}
+              readOnly
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg font-mono text-small text-[var(--text-primary)] select-all"
+            />
+          </div>
+          <button
+            onClick={() => setVisible(!visible)}
+            className="p-2 rounded-lg border border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            title={visible ? "Hide token" : "Show token"}
+          >
+            {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+          </button>
+          <button
+            onClick={() => onCopy(token, "generated-token")}
+            className="p-2 rounded-lg border border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            title="Copy token"
+          >
+            {copiedField === "generated-token" ? (
+              <CheckCircle2
+                size={14}
+                className="text-[var(--accent-primary)]"
+              />
+            ) : (
+              <Copy size={14} />
+            )}
+          </button>
+        </div>
+
+        {/* Org ID */}
+        {orgId && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-micro text-[var(--text-tertiary)]">
+              Organization ID:
+            </span>
+            <code className="text-micro font-mono text-[var(--text-secondary)]">
+              {orgId}
+            </code>
+            <button
+              onClick={() => onCopy(orgId, "generated-org-id")}
+              className="p-1 rounded text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+              title="Copy org ID"
+            >
+              {copiedField === "generated-org-id" ? (
+                <CheckCircle2
+                  size={10}
+                  className="text-[var(--accent-primary)]"
+                />
+              ) : (
+                <Copy size={10} />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SetupGuide({
+  onCopy,
+  copiedField,
+  onGenerateToken,
+  isGenerating,
+  generatedToken,
+  generatedOrgId,
+}: {
+  onCopy: (text: string, field: string) => void;
+  copiedField: string | null;
+  onGenerateToken: () => void;
+  isGenerating: boolean;
+  generatedToken: string | null;
+  generatedOrgId: string | null;
 }) {
   return (
     <div className="space-y-6 pt-4 border-t border-[var(--border-subtle)]">
@@ -899,7 +1063,21 @@ function SetupGuide({
         <SetupStep
           number={1}
           title="Generate a Sentinel token"
-          description="Create an API token for your agent in your organization settings, or use the register endpoint."
+          description={
+            generatedToken
+              ? undefined
+              : "Create a token to authenticate your Sentinel agent with the platform."
+          }
+          customContent={
+            <TokenGenerator
+              onGenerate={onGenerateToken}
+              isGenerating={isGenerating}
+              token={generatedToken}
+              orgId={generatedOrgId}
+              onCopy={onCopy}
+              copiedField={copiedField}
+            />
+          }
         />
 
         <SetupStep
@@ -958,6 +1136,7 @@ function SetupStep({
   code,
   onCopy,
   copiedField,
+  customContent,
 }: {
   number: number;
   title: string;
@@ -965,6 +1144,7 @@ function SetupStep({
   code?: string;
   onCopy?: (text: string, field: string) => void;
   copiedField?: string | null;
+  customContent?: React.ReactNode;
 }) {
   const fieldId = `step-${number}`;
 
@@ -982,6 +1162,7 @@ function SetupStep({
             {description}
           </p>
         )}
+        {customContent}
         {code && (
           <div className="mt-2 relative group">
             <pre className="text-micro font-mono text-[var(--text-secondary)] bg-[var(--surface-sunken)] rounded-lg p-3 overflow-x-auto border border-[var(--border-subtle)]">
