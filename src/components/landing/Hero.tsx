@@ -28,6 +28,8 @@ export default function Hero() {
           muted
           loop
           playsInline
+          aria-hidden="true"
+          role="presentation"
           className="absolute inset-0 w-full h-full object-cover scale-[1.08] origin-top-left"
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />

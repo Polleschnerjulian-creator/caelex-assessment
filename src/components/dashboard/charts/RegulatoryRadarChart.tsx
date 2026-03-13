@@ -62,42 +62,44 @@ export default function RegulatoryRadarChart({
         </div>
       )}
 
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-          <PolarGrid stroke="var(--fill-heavy)" />
-          <PolarAngleAxis
-            dataKey="category"
-            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-          />
-          <PolarRadiusAxis
-            angle={90}
-            domain={[0, 100]}
-            tick={{ fill: "var(--text-tertiary)", fontSize: 9 }}
-            tickFormatter={(value) => `${value}%`}
-            axisLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          {/* Target (100%) ring */}
-          <Radar
-            name="Target"
-            dataKey="fullMark"
-            stroke="var(--fill-heavy)"
-            fill="transparent"
-            strokeDasharray="4 4"
-          />
-          {/* Actual coverage */}
-          <Radar
-            name="Coverage"
-            dataKey="value"
-            stroke="#10B981"
-            strokeWidth={2}
-            fill="#10B981"
-            fillOpacity={0.25}
-            animationBegin={0}
-            animationDuration={800}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+      <div role="img" aria-label="Regulatory coverage radar chart">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
+            <PolarGrid stroke="var(--fill-heavy)" />
+            <PolarAngleAxis
+              dataKey="category"
+              tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+            />
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, 100]}
+              tick={{ fill: "var(--text-tertiary)", fontSize: 9 }}
+              tickFormatter={(value) => `${value}%`}
+              axisLine={false}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            {/* Target (100%) ring */}
+            <Radar
+              name="Target"
+              dataKey="fullMark"
+              stroke="var(--fill-heavy)"
+              fill="transparent"
+              strokeDasharray="4 4"
+            />
+            {/* Actual coverage */}
+            <Radar
+              name="Coverage"
+              dataKey="value"
+              stroke="#10B981"
+              strokeWidth={2}
+              fill="#10B981"
+              fillOpacity={0.25}
+              animationBegin={0}
+              animationDuration={800}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </motion.div>
   );
 }

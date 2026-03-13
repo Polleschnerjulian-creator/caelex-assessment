@@ -49,27 +49,29 @@ export default function ComplianceDonutChart({
       transition={{ duration: 0.5 }}
       className="relative h-[280px] w-full"
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={70}
-            outerRadius={100}
-            paddingAngle={2}
-            dataKey="value"
-            strokeWidth={0}
-            animationBegin={0}
-            animationDuration={800}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div role="img" aria-label="Overall compliance score donut chart">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={2}
+              dataKey="value"
+              strokeWidth={0}
+              animationBegin={0}
+              animationDuration={800}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Center Score */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

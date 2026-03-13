@@ -154,6 +154,7 @@ const documentLinks = [
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
   { label: "Cookie Policy", href: "/legal/cookies" },
+  { label: "Accessibility", href: "/legal/barrierefreiheit" },
 ];
 
 const socialLinks = [
@@ -251,7 +252,9 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                 aria-live="polite"
               >
                 <CheckCircle size={16} aria-hidden="true" />
-                <span>You&apos;re subscribed! We&apos;ll be in touch.</span>
+                <span>
+                  Please check your email to confirm your subscription.
+                </span>
               </div>
             ) : (
               <form

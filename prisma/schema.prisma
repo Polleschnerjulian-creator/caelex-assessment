@@ -4327,20 +4327,25 @@ model ChurnIntervention {
 // ─── Newsletter Subscriptions ───
 
 enum NewsletterStatus {
+  PENDING
   ACTIVE
   UNSUBSCRIBED
 }
 
 model NewsletterSubscription {
-  id             String           @id @default(cuid())
-  email          String           @unique
-  status         NewsletterStatus @default(ACTIVE)
-  source         String           @default("footer")
-  subscribedAt   DateTime         @default(now())
-  unsubscribedAt DateTime?
+  id                String           @id @default(cuid())
+  email             String           @unique
+  status            NewsletterStatus @default(PENDING)
+  source            String           @default("footer")
+  confirmationToken String?          @unique
+  tokenExpiresAt    DateTime?
+  confirmedAt       DateTime?
+  subscribedAt      DateTime         @default(now())
+  unsubscribedAt    DateTime?
   // @@index([email]) — removed: redundant with @unique
 
   @@index([status])
+  @@index([confirmationToken])
 }
 
 // ─── Demo Requests ───

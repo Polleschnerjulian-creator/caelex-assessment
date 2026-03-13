@@ -215,6 +215,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-white dark:bg-white/[0.06] border border-[#E5E7EB] dark:border-white/[0.10] text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#6B7280] rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-[#111827] dark:focus:border-white/[0.25] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 dark:focus:ring-white/10 transition-all"

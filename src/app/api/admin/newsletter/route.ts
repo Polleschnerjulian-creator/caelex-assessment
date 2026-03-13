@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Build filter
     const where: Prisma.NewsletterSubscriptionWhereInput = {
       ...(status && {
-        status: status.toUpperCase() as "ACTIVE" | "UNSUBSCRIBED",
+        status: status.toUpperCase() as "PENDING" | "ACTIVE" | "UNSUBSCRIBED",
       }),
     };
 
@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
         orderBy: { subscribedAt: "desc" },
       });
 
-      const csvHeader = "id,email,status,source,subscribedAt,unsubscribedAt";
+      const csvHeader =
+        "id,email,status,source,subscribedAt,confirmedAt,unsubscribedAt";
       const csvRows = subscribers.map((sub) =>
         [
           sub.id,
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
           sub.status,
           sub.source,
           sub.subscribedAt.toISOString(),
+          sub.confirmedAt ? sub.confirmedAt.toISOString() : "",
           sub.unsubscribedAt ? sub.unsubscribedAt.toISOString() : "",
         ].join(","),
       );

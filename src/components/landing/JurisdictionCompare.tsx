@@ -83,7 +83,7 @@ export default function JurisdictionCompare() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="text-caption text-white/25">03 / 14</span>
+        <span className="text-caption text-white/40">03 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -94,14 +94,14 @@ export default function JurisdictionCompare() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block text-caption text-white/45 tracking-widest uppercase mb-4">
+          <span className="inline-block text-caption text-white/60 tracking-widest uppercase mb-4">
             Jurisdiction Comparison
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
             Where should you{" "}
-            <span className="text-white/45">apply for authorization?</span>
+            <span className="text-white/60">apply for authorization?</span>
           </h2>
-          <p className="text-subtitle text-white/45 max-w-[600px] mx-auto">
+          <p className="text-subtitle text-white/60 max-w-[600px] mx-auto">
             Compare processing times, insurance requirements, and favorability
             scores across 10 European jurisdictions.
           </p>
@@ -132,7 +132,7 @@ export default function JurisdictionCompare() {
                   <div className="text-subtitle font-medium text-white">
                     {jurisdiction.name}
                   </div>
-                  <div className="text-micro text-white/45">
+                  <div className="text-micro text-white/60">
                     {jurisdiction.law}
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export default function JurisdictionCompare() {
               {/* Stats */}
               <div className="space-y-2 text-small">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/45 flex items-center gap-1.5">
+                  <span className="text-white/60 flex items-center gap-1.5">
                     <Clock size={12} aria-hidden="true" />
                     Processing
                   </span>
@@ -150,7 +150,7 @@ export default function JurisdictionCompare() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/45 flex items-center gap-1.5">
+                  <span className="text-white/60 flex items-center gap-1.5">
                     <Euro size={12} aria-hidden="true" />
                     Min Insurance
                   </span>
@@ -159,7 +159,7 @@ export default function JurisdictionCompare() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/45 flex items-center gap-1.5">
+                  <span className="text-white/60 flex items-center gap-1.5">
                     <Globe size={12} aria-hidden="true" />
                     Language
                   </span>
@@ -170,7 +170,7 @@ export default function JurisdictionCompare() {
               {/* Favorability Score */}
               <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-micro text-white/45 uppercase tracking-wider">
+                  <span className="text-micro text-white/60 uppercase tracking-wider">
                     Favorability
                   </span>
                   <span className="text-body font-medium text-emerald-400">
@@ -219,7 +219,7 @@ export default function JurisdictionCompare() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="text-center"
         >
-          <p className="text-body text-white/45 mb-4">
+          <p className="text-body text-white/60 mb-4">
             Also covering: Belgium, Austria, Denmark, Italy, Norway
           </p>
           <Link

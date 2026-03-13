@@ -1,0 +1,5 @@
+Contact: mailto:security@caelex.eu
+Expires: 2027-03-13T00:00:00.000Z
+Preferred-Languages: en, de
+Canonical: https://caelex.eu/.well-known/security.txt
+Policy: https://caelex.eu/security

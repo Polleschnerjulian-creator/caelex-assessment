@@ -235,6 +235,7 @@ export default function SignupPage() {
                 </label>
                 <input
                   type="text"
+                  autoComplete="organization"
                   value={organization}
                   onChange={(e) => setOrganization(e.target.value)}
                   placeholder="Optional"
@@ -265,6 +266,7 @@ export default function SignupPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"

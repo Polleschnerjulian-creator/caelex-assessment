@@ -100,83 +100,85 @@ export default function ComplianceTimelineChart({
         </div>
       )}
 
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={data}
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="colorOverall" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorEU" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorUS" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorUK" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--fill-light)" />
-          <XAxis
-            dataKey="month"
-            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-            axisLine={{ stroke: "var(--fill-heavy)" }}
-            tickLine={false}
-          />
-          <YAxis
-            domain={[0, 100]}
-            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-            axisLine={{ stroke: "var(--fill-heavy)" }}
-            tickLine={false}
-            tickFormatter={(value) => `${value}%`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend content={<CustomLegend />} />
-          <Area
-            type="monotone"
-            dataKey="overall"
-            stroke="#10B981"
-            strokeWidth={2}
-            fill="url(#colorOverall)"
-            animationBegin={0}
-            animationDuration={1000}
-          />
-          <Area
-            type="monotone"
-            dataKey="eu"
-            stroke="#06B6D4"
-            strokeWidth={1.5}
-            fill="url(#colorEU)"
-            animationBegin={200}
-            animationDuration={1000}
-          />
-          <Area
-            type="monotone"
-            dataKey="us"
-            stroke="#22C55E"
-            strokeWidth={1.5}
-            fill="url(#colorUS)"
-            animationBegin={400}
-            animationDuration={1000}
-          />
-          <Area
-            type="monotone"
-            dataKey="uk"
-            stroke="#F59E0B"
-            strokeWidth={1.5}
-            fill="url(#colorUK)"
-            animationBegin={600}
-            animationDuration={1000}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div role="img" aria-label="Compliance score timeline chart">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="colorOverall" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorEU" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorUS" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorUK" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--fill-light)" />
+            <XAxis
+              dataKey="month"
+              tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+              axisLine={{ stroke: "var(--fill-heavy)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={[0, 100]}
+              tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+              axisLine={{ stroke: "var(--fill-heavy)" }}
+              tickLine={false}
+              tickFormatter={(value) => `${value}%`}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend content={<CustomLegend />} />
+            <Area
+              type="monotone"
+              dataKey="overall"
+              stroke="#10B981"
+              strokeWidth={2}
+              fill="url(#colorOverall)"
+              animationBegin={0}
+              animationDuration={1000}
+            />
+            <Area
+              type="monotone"
+              dataKey="eu"
+              stroke="#06B6D4"
+              strokeWidth={1.5}
+              fill="url(#colorEU)"
+              animationBegin={200}
+              animationDuration={1000}
+            />
+            <Area
+              type="monotone"
+              dataKey="us"
+              stroke="#22C55E"
+              strokeWidth={1.5}
+              fill="url(#colorUS)"
+              animationBegin={400}
+              animationDuration={1000}
+            />
+            <Area
+              type="monotone"
+              dataKey="uk"
+              stroke="#F59E0B"
+              strokeWidth={1.5}
+              fill="url(#colorUK)"
+              animationBegin={600}
+              animationDuration={1000}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </motion.div>
   );
 }

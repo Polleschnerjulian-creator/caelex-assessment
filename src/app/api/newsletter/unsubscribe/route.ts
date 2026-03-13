@@ -82,6 +82,8 @@ export async function GET(request: NextRequest) {
       data: {
         status: "UNSUBSCRIBED",
         unsubscribedAt: new Date(),
+        confirmationToken: null,
+        tokenExpiresAt: null,
       },
     });
 

@@ -1,10 +1,14 @@
 /**
  * Newsletter Subscription API
  *
- * POST /api/newsletter — Subscribe an email to the newsletter
+ * POST /api/newsletter — Subscribe an email to the newsletter (double opt-in)
  * DELETE /api/newsletter — Unsubscribe an email from the newsletter
  *
  * Public endpoint. Rate limited: 5 requests/hour per IP.
+ *
+ * Double opt-in flow (required by German law: UWG §7, DSGVO Art. 7):
+ * 1. User submits email → status set to PENDING, confirmation email sent
+ * 2. User clicks confirmation link → status set to ACTIVE
  */
 
 import { prisma } from "@/lib/prisma";
@@ -12,6 +16,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { randomUUID } from "crypto";
+import { sendNewsletterConfirmation } from "@/lib/email/templates/newsletter-confirmation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,40 +51,96 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, source } = parsed.data;
+    const normalizedEmail = email.toLowerCase();
 
     // Check if subscription already exists
     const existing = await prisma.newsletterSubscription.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (existing) {
       if (existing.status === "ACTIVE") {
-        // Idempotent: already subscribed
-        return NextResponse.json({ success: true });
+        // Already confirmed — don't leak this info, just show same message
+        return NextResponse.json({
+          success: true,
+          message: "Please check your email to confirm your subscription.",
+        });
       }
 
-      // Reactivate unsubscribed email
+      if (existing.status === "PENDING") {
+        // Re-send confirmation email with a fresh token
+        const token = randomUUID();
+        const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        await prisma.newsletterSubscription.update({
+          where: { id: existing.id },
+          data: {
+            confirmationToken: token,
+            tokenExpiresAt,
+            source,
+          },
+        });
+
+        // Send confirmation email (fire-and-forget, don't block response)
+        sendNewsletterConfirmation(normalizedEmail, token).catch((err) => {
+          logger.error("Failed to send newsletter confirmation email", err);
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: "Please check your email to confirm your subscription.",
+        });
+      }
+
+      // UNSUBSCRIBED — re-subscribe with double opt-in
+      const token = randomUUID();
+      const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
       await prisma.newsletterSubscription.update({
         where: { id: existing.id },
         data: {
-          status: "ACTIVE",
+          status: "PENDING",
+          confirmationToken: token,
+          tokenExpiresAt,
           unsubscribedAt: null,
+          confirmedAt: null,
           source,
         },
       });
 
-      return NextResponse.json({ success: true });
+      sendNewsletterConfirmation(normalizedEmail, token).catch((err) => {
+        logger.error("Failed to send newsletter confirmation email", err);
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Please check your email to confirm your subscription.",
+      });
     }
 
-    // Create new subscription
+    // Create new subscription in PENDING state
+    const token = randomUUID();
+    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     await prisma.newsletterSubscription.create({
       data: {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         source,
+        status: "PENDING",
+        confirmationToken: token,
+        tokenExpiresAt,
       },
     });
 
-    return NextResponse.json({ success: true });
+    // Send confirmation email
+    sendNewsletterConfirmation(normalizedEmail, token).catch((err) => {
+      logger.error("Failed to send newsletter confirmation email", err);
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Please check your email to confirm your subscription.",
+    });
   } catch (error) {
     logger.error("Newsletter subscribe error", error);
     return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
@@ -109,13 +171,15 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Use deleteMany-style update to avoid leaking whether the email exists
+    // Use updateMany-style update to avoid leaking whether the email exists
     // Always return the same success response regardless of email existence
     await prisma.newsletterSubscription.updateMany({
       where: { email: email.toLowerCase(), status: "ACTIVE" },
       data: {
         status: "UNSUBSCRIBED",
         unsubscribedAt: new Date(),
+        confirmationToken: null,
+        tokenExpiresAt: null,
       },
     });
 

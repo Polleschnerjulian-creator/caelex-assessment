@@ -73,52 +73,54 @@ export default function ModuleProgressChart({
         </div>
       )}
 
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={sortedData}
-          layout="vertical"
-          margin={{ top: 5, right: 45, left: 0, bottom: 5 }}
-        >
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-            axisLine={{ stroke: "var(--fill-heavy)" }}
-            tickLine={false}
-          />
-          <YAxis
-            type="category"
-            dataKey="shortName"
-            width={80}
-            tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ fill: "var(--fill-light)" }}
-          />
-          <Bar
-            dataKey="progress"
-            radius={[0, 4, 4, 0]}
-            animationBegin={0}
-            animationDuration={800}
-            label={{
-              position: "right",
-              fill: "var(--text-tertiary)",
-              fontSize: 11,
-              formatter: (value) => `${value}%`,
-            }}
+      <div role="img" aria-label="Module compliance progress chart">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={sortedData}
+            layout="vertical"
+            margin={{ top: 5, right: 45, left: 0, bottom: 5 }}
           >
-            {sortedData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={getStatusColor(entry.status, entry.progress)}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+              axisLine={{ stroke: "var(--fill-heavy)" }}
+              tickLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="shortName"
+              width={80}
+              tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "var(--fill-light)" }}
+            />
+            <Bar
+              dataKey="progress"
+              radius={[0, 4, 4, 0]}
+              animationBegin={0}
+              animationDuration={800}
+              label={{
+                position: "right",
+                fill: "var(--text-tertiary)",
+                fontSize: 11,
+                formatter: (value) => `${value}%`,
+              }}
+            >
+              {sortedData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={getStatusColor(entry.status, entry.progress)}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </motion.div>
   );
 }
