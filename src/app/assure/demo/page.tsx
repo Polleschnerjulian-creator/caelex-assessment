@@ -38,7 +38,7 @@ function IRSDashboardIllustration() {
           </span>
           <span className="text-body-lg text-white/40">/100</span>
         </motion.div>
-        <p className="text-caption text-white/30 mt-1">
+        <p className="text-caption text-white/50 mt-1">
           Investment Readiness Score
         </p>
       </div>
@@ -77,7 +77,7 @@ function RCRRatingIllustration() {
         transition={{ duration: 0.7, type: "spring", bounce: 0.35 }}
         className="glass-elevated rounded-2xl border border-emerald-500/20 px-12 py-8 text-center"
       >
-        <p className="text-micro text-white/30 uppercase tracking-widest mb-2">
+        <p className="text-micro text-white/50 uppercase tracking-widest mb-2">
           Regulatory Credit Rating
         </p>
         <span className="text-display-lg font-bold text-emerald-400">A-</span>
@@ -98,7 +98,7 @@ function RCRRatingIllustration() {
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <span>Peer percentile: 84th</span>
         </div>
-        <span className="text-white/10">|</span>
+        <span className="text-white/30">|</span>
         <span>Rating watch: None</span>
       </motion.div>
     </div>
@@ -144,7 +144,7 @@ function DataRoomIllustration() {
             className={`h-2 w-2 rounded-full flex-shrink-0 ${statusColors[folder.status]}`}
           />
           <span className="text-small text-white/70 flex-1">{folder.name}</span>
-          <span className="text-micro text-white/30">
+          <span className="text-micro text-white/50">
             {statusLabels[folder.status]}
           </span>
         </motion.div>
@@ -177,7 +177,7 @@ function RiskHeatmapIllustration() {
     <div className="space-y-3">
       <div className="flex items-end gap-1">
         <div className="flex flex-col items-center mr-2">
-          <span className="text-micro text-white/20 rotate-0 mb-1">
+          <span className="text-micro text-white/40 rotate-0 mb-1">
             Likelihood
           </span>
         </div>
@@ -200,9 +200,9 @@ function RiskHeatmapIllustration() {
             </div>
           ))}
           <div className="flex justify-between mt-1 px-1">
-            <span className="text-micro text-white/20">Low</span>
-            <span className="text-micro text-white/20">Impact</span>
-            <span className="text-micro text-white/20">High</span>
+            <span className="text-micro text-white/40">Low</span>
+            <span className="text-micro text-white/40">Impact</span>
+            <span className="text-micro text-white/40">High</span>
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@ function RiskHeatmapIllustration() {
         initial={false}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.5 }}
-        className="flex items-center justify-center gap-4 text-micro text-white/30 pt-2"
+        className="flex items-center justify-center gap-4 text-micro text-white/50 pt-2"
       >
         <div className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-sm bg-emerald-500/30" />
@@ -242,11 +242,11 @@ function ComplyIntegrationIllustration() {
           transition={{ duration: 0.5 }}
           className="flex-1 rounded-xl bg-white/[0.04] border border-white/[0.08] p-5 text-center"
         >
-          <p className="text-micro text-white/30 uppercase tracking-wider mb-2">
+          <p className="text-micro text-white/50 uppercase tracking-wider mb-2">
             Caelex Comply
           </p>
           <span className="text-display-sm font-bold text-white/80">87%</span>
-          <p className="text-micro text-white/30 mt-1">Compliance Coverage</p>
+          <p className="text-micro text-white/50 mt-1">Compliance Coverage</p>
         </motion.div>
 
         {/* Animated connecting line */}
@@ -278,11 +278,11 @@ function ComplyIntegrationIllustration() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="flex-1 rounded-xl bg-white/[0.04] border border-emerald-500/20 p-5 text-center"
         >
-          <p className="text-micro text-white/30 uppercase tracking-wider mb-2">
+          <p className="text-micro text-white/50 uppercase tracking-wider mb-2">
             Caelex Assure
           </p>
           <span className="text-display-sm font-bold text-emerald-400">A-</span>
-          <p className="text-micro text-white/30 mt-1">Regulatory Rating</p>
+          <p className="text-micro text-white/50 mt-1">Regulatory Rating</p>
         </motion.div>
       </div>
 
@@ -384,7 +384,7 @@ export default function DemoTourPage() {
               />
               <p
                 className={`text-micro mt-2 transition-colors duration-300 hidden sm:block ${
-                  i === currentChapter ? "text-emerald-400" : "text-white/30"
+                  i === currentChapter ? "text-emerald-400" : "text-white/50"
                 }`}
               >
                 {ch.title}
@@ -462,7 +462,7 @@ export default function DemoTourPage() {
             </button>
 
             {/* Counter */}
-            <span className="text-caption text-white/30">
+            <span className="text-caption text-white/50">
               {currentChapter + 1} of {DEMO_CHAPTERS.length}
             </span>
 

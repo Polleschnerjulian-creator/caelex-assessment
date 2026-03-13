@@ -65,7 +65,7 @@ export default function WhatYouGet() {
                 </h3>
 
                 {/* Body */}
-                <p className="text-body-lg text-white/25 leading-[1.7]">
+                <p className="text-body-lg text-white/60 leading-[1.7]">
                   {card.body}
                 </p>
 

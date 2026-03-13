@@ -19,7 +19,7 @@ const monoDisplay: Record<string, { label: string; opacity: string }> = {
   mandatory_ongoing: { label: "Ongoing", opacity: "text-white/90" },
   design_technical: { label: "Technical", opacity: "text-white/70" },
   conditional_simplified: { label: "Conditional", opacity: "text-white/70" },
-  informational: { label: "Info", opacity: "text-white/45" },
+  informational: { label: "Info", opacity: "text-white/50" },
 };
 
 export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
@@ -54,10 +54,10 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
       transition={{ delay: 0.3 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/50">
           Applicable Articles
         </span>
-        <span className="text-caption text-white/45">
+        <span className="text-caption text-white/50">
           {articles.length} articles
         </span>
       </div>
@@ -122,7 +122,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
                       </p>
                       {article.operator_action &&
                         article.operator_action !== "none" && (
-                          <p className="text-caption text-white/45 mt-2 italic">
+                          <p className="text-caption text-white/50 mt-2 italic">
                             Action: {article.operator_action}
                           </p>
                         )}
@@ -162,7 +162,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-caption text-white/45 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-caption text-white/50 hover:text-white transition-colors"
         >
           View full regulation on EUR-Lex
           <ExternalLink className="w-3 h-3" aria-hidden="true" />

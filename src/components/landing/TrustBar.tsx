@@ -48,12 +48,12 @@ export default function TrustBar() {
                 transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
                 className="flex items-center gap-2.5"
               >
-                <Icon size={14} className="text-white/25" aria-hidden="true" />
+                <Icon size={14} className="text-white/40" aria-hidden="true" />
                 <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5">
                   <span className="text-small sm:text-caption text-white/45 tracking-wide">
                     {item.label}
                   </span>
-                  <span className="text-caption sm:text-micro text-white/25">
+                  <span className="text-caption sm:text-micro text-white/50">
                     {item.detail}
                   </span>
                 </div>

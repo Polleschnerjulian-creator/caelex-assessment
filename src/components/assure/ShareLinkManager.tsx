@@ -150,7 +150,7 @@ function ShareLinkRow({
           <span className="text-body font-medium text-slate-800 dark:text-white/80 truncate max-w-[200px]">
             {link.label}
           </span>
-          <span className="text-micro text-slate-400 dark:text-white/30 mt-0.5">
+          <span className="text-micro text-slate-500 dark:text-white/50 mt-0.5">
             {getGranularityLabel(link.granularity)}
           </span>
         </div>
@@ -183,7 +183,7 @@ function ShareLinkRow({
         <span className="text-body text-slate-700 dark:text-white/60">
           {link.viewCount}
           {link.maxViews ? (
-            <span className="text-slate-400 dark:text-white/30">
+            <span className="text-slate-500 dark:text-white/50">
               /{link.maxViews}
             </span>
           ) : null}
@@ -207,7 +207,7 @@ function ShareLinkRow({
           <button
             onClick={handleCopy}
             disabled={!isActive}
-            className="p-1.5 rounded-md text-slate-400 dark:text-white/30 hover:text-emerald-500 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-md text-slate-500 dark:text-white/50 hover:text-emerald-500 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             title="Copy share link"
           >
             {copied ? (
@@ -223,7 +223,7 @@ function ShareLinkRow({
               href={shareUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-md text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+              className="p-1.5 rounded-md text-slate-500 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
               title="Open share link"
             >
               <ExternalLink className="w-4 h-4" />
@@ -234,7 +234,7 @@ function ShareLinkRow({
           {isActive && (
             <button
               onClick={() => onRevoke(link.id)}
-              className="p-1.5 rounded-md text-slate-400 dark:text-white/30 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+              className="p-1.5 rounded-md text-slate-500 dark:text-white/50 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
               title="Revoke link"
             >
               <Ban className="w-4 h-4" />
@@ -247,7 +247,7 @@ function ShareLinkRow({
             className={`p-1.5 rounded-md transition-all ${
               confirmDelete
                 ? "text-red-500 bg-red-50 dark:bg-red-500/10"
-                : "text-slate-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-50 dark:hover:bg-white/5"
+                : "text-slate-500 dark:text-white/50 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-50 dark:hover:bg-white/5"
             }`}
             title={
               confirmDelete ? "Click again to confirm delete" : "Delete link"
@@ -337,7 +337,7 @@ export default function ShareLinkManager({
         <GlassCard hover={false} className="p-10">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-4">
-              <ExternalLink className="w-6 h-6 text-slate-400 dark:text-white/30" />
+              <ExternalLink className="w-6 h-6 text-slate-500 dark:text-white/50" />
             </div>
             <h3 className="text-body-lg font-medium text-slate-700 dark:text-white/70 mb-1">
               No Share Links Yet

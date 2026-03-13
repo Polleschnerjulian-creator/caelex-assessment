@@ -15,7 +15,7 @@ const statusIcons: Record<
 > = {
   pending: {
     icon: <Square size={12} />,
-    color: "text-white/20",
+    color: "text-white/40",
   },
   generating: {
     icon: <Loader2 size={12} className="animate-spin" />,
@@ -81,7 +81,7 @@ export default function AstraBulkProgress({
                 className={`flex-shrink-0 ${
                   item.checked
                     ? "text-cyan-400"
-                    : "text-white/20 hover:text-white/45"
+                    : "text-white/40 hover:text-white/60"
                 } ${isGenerating || isDone ? "cursor-not-allowed" : ""}`}
               >
                 {item.checked ? (

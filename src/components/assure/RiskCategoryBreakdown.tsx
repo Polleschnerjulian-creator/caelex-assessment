@@ -146,17 +146,17 @@ export default function RiskCategoryBreakdown({
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/5">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-white/20" />
-          <span className="text-micro text-white/30">Count</span>
+          <span className="text-micro text-white/50">Count</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-white/50" />
-          <span className="text-micro text-white/30">Avg Score</span>
+          <span className="text-micro text-white/50">Avg Score</span>
         </div>
       </div>
 
       {categories.length === 0 && (
         <div className="text-center py-6">
-          <p className="text-body text-white/30">No risk data available.</p>
+          <p className="text-body text-white/50">No risk data available.</p>
         </div>
       )}
     </GlassCard>

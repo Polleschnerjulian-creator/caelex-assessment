@@ -98,7 +98,7 @@ export default function RegulatoryCoverage() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="text-caption text-white/25">02 / 14</span>
+        <span className="text-caption text-white/40">02 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -162,7 +162,7 @@ export default function RegulatoryCoverage() {
                       <div className="text-heading font-light text-white mb-0.5">
                         {stat.value}
                       </div>
-                      <div className="text-micro text-white/25 uppercase tracking-wider">
+                      <div className="text-micro text-white/50 uppercase tracking-wider">
                         {stat.label}
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function RegulatoryCoverage() {
         >
           <div>
             <div className="text-display font-light text-white">170+</div>
-            <div className="text-micro text-white/25 uppercase tracking-wider">
+            <div className="text-micro text-white/50 uppercase tracking-wider">
               Total Requirements
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-display font-light text-white">8</div>
-            <div className="text-micro text-white/25 uppercase tracking-wider">
+            <div className="text-micro text-white/50 uppercase tracking-wider">
               Compliance Modules
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-display font-light text-white">2030</div>
-            <div className="text-micro text-white/25 uppercase tracking-wider">
+            <div className="text-micro text-white/50 uppercase tracking-wider">
               Key Deadline
             </div>
           </div>

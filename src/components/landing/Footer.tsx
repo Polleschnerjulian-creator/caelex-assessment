@@ -211,7 +211,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
   } inline-block`;
 
   const headingStyle = `text-micro uppercase tracking-[0.2em] mb-8 ${
-    isLight ? "text-[#86868b]" : "text-white/25"
+    isLight ? "text-[#86868b]" : "text-white/50"
   }`;
 
   const separatorStyle = `w-full h-px ${isLight ? "bg-[#d2d2d7]" : "bg-white/[0.08]"}`;
@@ -478,7 +478,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8">
           <p
             className={`text-small leading-relaxed max-w-[1000px] ${
-              isLight ? "text-[#86868b]" : "text-white/25"
+              isLight ? "text-[#86868b]" : "text-white/40"
             }`}
           >
             This platform provides regulatory guidance and compliance tooling

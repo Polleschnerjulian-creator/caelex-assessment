@@ -86,7 +86,7 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
       {/* Status & Info */}
       <div className="space-y-1.5 mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-micro text-white/30">Status:</span>
+          <span className="text-micro text-white/50">Status:</span>
           <span
             className={`text-micro font-medium px-1.5 py-0.5 rounded ${status.color}`}
           >
@@ -94,14 +94,14 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-micro text-white/30">Pages:</span>
+          <span className="text-micro text-white/50">Pages:</span>
           <span className="text-micro text-white/45">
             ~{meta.estimatedPages} (estimated)
           </span>
         </div>
         {meta.articlesReferenced.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-micro text-white/30">References:</span>
+            <span className="text-micro text-white/50">References:</span>
             <span className="text-micro text-white/45">
               {meta.articlesReferenced.join(", ")}
             </span>

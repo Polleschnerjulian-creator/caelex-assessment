@@ -117,7 +117,7 @@ export default function ValueProposition() {
                       <h3 className="text-subtitle font-medium text-white/90 mb-2">
                         {point.title}
                       </h3>
-                      <p className="text-body text-white/45 leading-[1.7]">
+                      <p className="text-body text-white/60 leading-[1.7]">
                         {point.description}
                       </p>
                     </div>
@@ -161,7 +161,7 @@ export default function ValueProposition() {
                       <h3 className="text-subtitle font-medium text-white/90 mb-2">
                         {solution.title}
                       </h3>
-                      <p className="text-body text-white/45 leading-[1.7]">
+                      <p className="text-body text-white/60 leading-[1.7]">
                         {solution.description}
                       </p>
                     </div>

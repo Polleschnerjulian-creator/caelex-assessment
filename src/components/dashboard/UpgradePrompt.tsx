@@ -107,7 +107,7 @@ export default function UpgradePrompt({
                   </div>
 
                   {/* Recommended Plan */}
-                  <div className="p-4 rounded-xl bg-[var(--accent-info-soft)]0/10 border border-[var(--accent-primary)]/30">
+                  <div className="p-4 rounded-xl bg-[var(--accent-info-soft)]/10 border border-[var(--accent-primary)]/30">
                     <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-wider mb-1">
                       Recommended
                     </p>
@@ -154,7 +154,7 @@ export default function UpgradePrompt({
                 <div className="flex gap-3">
                   <button
                     onClick={handleUpgrade}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 bg-[var(--accent-info-soft)] hover:bg-blue-600 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
                   >
                     Upgrade Now
                     <ArrowRight size={16} />

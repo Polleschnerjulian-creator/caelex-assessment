@@ -56,7 +56,7 @@ export default function DataRoomChecklist({ items }: DataRoomChecklistProps) {
           <span className="text-body font-medium text-white/70">
             {totalUploaded} of {items.length} documents uploaded
           </span>
-          <span className="text-small text-white/30 ml-2">
+          <span className="text-small text-white/50 ml-2">
             ({completedRequired}/{totalRequired} required)
           </span>
         </div>
@@ -108,7 +108,7 @@ export default function DataRoomChecklist({ items }: DataRoomChecklistProps) {
                   <span className="text-body font-medium text-white/70">
                     {folder}
                   </span>
-                  <span className="text-micro text-white/25 ml-auto">
+                  <span className="text-micro text-white/40 ml-auto">
                     {folderComplete}/{folderItems.length}
                   </span>
                 </div>
@@ -133,7 +133,7 @@ export default function DataRoomChecklist({ items }: DataRoomChecklistProps) {
                       ) : (
                         <Circle
                           size={16}
-                          className="text-white/15 flex-shrink-0"
+                          className="text-white/30 flex-shrink-0"
                         />
                       )}
 

@@ -114,7 +114,7 @@ export default function BenchmarkTrafficLights({
                     <span className="text-display-sm font-bold text-white block leading-none">
                       {item.value}
                     </span>
-                    <span className="text-micro text-white/30 mt-0.5 block">
+                    <span className="text-micro text-white/50 mt-0.5 block">
                       Benchmark: {item.benchmark}
                     </span>
                   </div>
@@ -135,7 +135,7 @@ export default function BenchmarkTrafficLights({
       {items.length === 0 && (
         <GlassCard hover={false} className="p-8">
           <div className="text-center">
-            <p className="text-body text-white/30">
+            <p className="text-body text-white/50">
               No benchmark data available.
             </p>
           </div>

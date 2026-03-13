@@ -66,7 +66,7 @@ export default function UseCases() {
                   <span className="font-mono text-[11px] text-white/50">
                     {scenario.from}
                   </span>
-                  <span className="text-white/20">→</span>
+                  <span className="text-white/40">→</span>
                   <span className="font-mono text-[11px] text-white/50">
                     {scenario.to}
                   </span>
@@ -79,7 +79,7 @@ export default function UseCases() {
                   {scenario.description}
                 </p>
 
-                <p className="font-mono text-[11px] text-white/30 border-t border-white/[0.06] pt-4">
+                <p className="font-mono text-[11px] text-white/50 border-t border-white/[0.06] pt-4">
                   {scenario.regulation}
                 </p>
               </motion.div>

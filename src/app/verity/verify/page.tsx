@@ -42,7 +42,7 @@ export default function PublicVerifyPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-white dark:bg-[#0A0F1E] flex items-center justify-center">
-          <p className="text-slate-400 dark:text-white/30">Loading...</p>
+          <p className="text-slate-400 dark:text-white/50">Loading...</p>
         </div>
       }
     >
@@ -191,7 +191,7 @@ function VerifyPageContent() {
             href="/api/v1/verity/public-key"
             target="_blank"
             rel="noopener"
-            className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+            className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
           >
             <Key className="w-3.5 h-3.5" />
             Public Key
@@ -259,7 +259,7 @@ function VerifyPageContent() {
           disabled={
             loading || (mode === "json" ? !jsonInput.trim() : !idInput.trim())
           }
-          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-white/30 text-white font-medium py-3 rounded-xl transition-colors"
+          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-white/50 text-white font-medium py-3 rounded-xl transition-colors"
         >
           {loading ? "Verifying..." : "Verify"}
         </button>
@@ -341,7 +341,7 @@ function VerifyPageContent() {
                         <p className="text-small text-slate-600 dark:text-white/70">
                           {claim.claim_statement}
                         </p>
-                        <p className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
+                        <p className="text-caption text-slate-400 dark:text-white/50 mt-0.5">
                           {claim.regulation_ref.replace(/_/g, " ")} · Trust:{" "}
                           {claim.trust_level}
                         </p>
@@ -362,7 +362,7 @@ function VerifyPageContent() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {result.issuer && (
                   <div>
-                    <p className="text-caption text-slate-400 dark:text-white/30">
+                    <p className="text-caption text-slate-400 dark:text-white/50">
                       Issuer
                     </p>
                     <p className="text-small text-slate-600 dark:text-white/70">
@@ -372,7 +372,7 @@ function VerifyPageContent() {
                 )}
                 {result.issuer_key_id && (
                   <div>
-                    <p className="text-caption text-slate-400 dark:text-white/30">
+                    <p className="text-caption text-slate-400 dark:text-white/50">
                       Key ID
                     </p>
                     <p className="text-small text-slate-600 dark:text-white/70 font-mono">
@@ -382,7 +382,7 @@ function VerifyPageContent() {
                 )}
                 {result.algorithm && (
                   <div>
-                    <p className="text-caption text-slate-400 dark:text-white/30">
+                    <p className="text-caption text-slate-400 dark:text-white/50">
                       Algorithm
                     </p>
                     <p className="text-small text-slate-600 dark:text-white/70">
@@ -392,7 +392,7 @@ function VerifyPageContent() {
                 )}
                 {result.verified_at && (
                   <div>
-                    <p className="text-caption text-slate-400 dark:text-white/30">
+                    <p className="text-caption text-slate-400 dark:text-white/50">
                       Verified At
                     </p>
                     <p className="text-small text-slate-600 dark:text-white/70">
@@ -459,7 +459,7 @@ function VerifyPageContent() {
 
         {/* Footer */}
         <div className="mt-10 text-center">
-          <p className="text-caption text-slate-400 dark:text-white/20">
+          <p className="text-caption text-slate-400 dark:text-white/40">
             Powered by{" "}
             <Link
               href="/"

@@ -32,7 +32,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
       {criticalAlerts.length > 3 && (
         <Link
           href="/dashboard/alerts"
-          className="flex items-center justify-center gap-2 py-2 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+          className="flex items-center justify-center gap-2 py-2 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
         >
           <Bell className="w-4 h-4" />
           View {criticalAlerts.length - 3} more alerts
@@ -92,7 +92,7 @@ function AlertItem({
             {onDismiss && (
               <button
                 onClick={() => onDismiss(alert.id)}
-                className="flex-shrink-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+                className="flex-shrink-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

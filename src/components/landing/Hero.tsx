@@ -54,7 +54,7 @@ export default function Hero() {
             {/* Left: Headline */}
             <div>
               <h1 className="font-medium tracking-[-0.03em] leading-[1.05]">
-                <span className="text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/60 block mb-1">
+                <span className="text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/80 block mb-1">
                   The World&apos;s First
                 </span>
                 <span className="text-[clamp(2.5rem,6vw,5rem)] text-white block">
@@ -99,7 +99,7 @@ export default function Hero() {
                   {module}
                   {i < MODULES.length - 1 && (
                     <span
-                      className="ml-3 md:ml-4 text-white/30"
+                      className="ml-3 md:ml-4 text-white/40"
                       aria-hidden="true"
                     >
                       ·

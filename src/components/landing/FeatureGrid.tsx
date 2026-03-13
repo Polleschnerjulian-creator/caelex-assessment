@@ -74,7 +74,7 @@ export default function FeatureGrid() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/25">08 / 12</span>
+        <span className="text-caption text-white/40">08 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -111,7 +111,7 @@ export default function FeatureGrid() {
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
                   <Icon
                     size={18}
-                    className="text-white/45"
+                    className="text-white/60"
                     aria-hidden="true"
                   />
                 </div>
@@ -128,7 +128,7 @@ export default function FeatureGrid() {
 
                 {/* Highlight */}
                 <div className="pt-4 border-t border-white/[0.06]">
-                  <p className="text-micro text-white/25 leading-[1.5]">
+                  <p className="text-micro text-white/50 leading-[1.5]">
                     {feature.highlight}
                   </p>
                 </div>

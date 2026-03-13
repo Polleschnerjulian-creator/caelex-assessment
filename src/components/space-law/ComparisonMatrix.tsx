@@ -137,7 +137,7 @@ function DesktopTable({
             <tr className="bg-slate-100 dark:bg-white/[0.04]">
               <th
                 scope="col"
-                className="sticky left-0 z-10 bg-slate-100 dark:bg-white/[0.04] px-5 py-3.5 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.08] min-w-[200px]"
+                className="sticky left-0 z-10 bg-slate-100 dark:bg-white/[0.04] px-5 py-3.5 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/50 border-b border-slate-200 dark:border-white/[0.08] min-w-[200px]"
               >
                 Criterion
               </th>
@@ -151,7 +151,7 @@ function DesktopTable({
                     <span className="text-base leading-none">
                       {j.flagEmoji}
                     </span>
-                    <span className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45">
+                    <span className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/50">
                       {j.countryCode}
                     </span>
                   </div>
@@ -201,7 +201,7 @@ function GroupRows({
           colSpan={jurisdictions.length + 1}
           className="px-5 py-2.5 bg-slate-100 dark:bg-white/[0.02] border-b border-slate-200 dark:border-white/[0.06]"
         >
-          <div className="flex items-center gap-2 text-slate-500 dark:text-white/45">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-white/50">
             <span aria-hidden="true">{group.icon}</span>
             <span className="text-micro uppercase tracking-[0.2em]">
               {group.label}
@@ -254,13 +254,13 @@ function GroupRows({
                       </span>
                       <ScoreDots score={val.score} />
                       {val.notes && (
-                        <span className="text-micro text-slate-400 dark:text-white/25 leading-snug mt-0.5">
+                        <span className="text-micro text-slate-500 dark:text-white/50 leading-snug mt-0.5">
                           {val.notes}
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-caption text-slate-300 dark:text-white/20">
+                    <span className="text-caption text-slate-500 dark:text-white/40">
                       &mdash;
                     </span>
                   )}
@@ -288,7 +288,7 @@ function MobileCards({
       {groups.map((group) => (
         <div key={group.category} className="space-y-2">
           {/* Category header */}
-          <div className="flex items-center gap-2 text-slate-500 dark:text-white/45 px-1 pt-3 pb-1">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-white/50 px-1 pt-3 pb-1">
             <span aria-hidden="true">{group.icon}</span>
             <span className="text-micro uppercase tracking-[0.2em]">
               {group.label}
@@ -318,7 +318,7 @@ function MobileCards({
                         <span className="text-sm leading-none">
                           {j.flagEmoji}
                         </span>
-                        <span className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider">
+                        <span className="text-caption text-slate-500 dark:text-white/50 uppercase tracking-wider">
                           {j.countryCode}
                         </span>
                       </div>
@@ -330,7 +330,7 @@ function MobileCards({
                           <ScoreDots score={val.score} />
                         </div>
                       ) : (
-                        <span className="text-caption text-slate-300 dark:text-white/20">
+                        <span className="text-caption text-slate-500 dark:text-white/40">
                           &mdash;
                         </span>
                       )}
@@ -366,10 +366,10 @@ export default function ComparisonMatrixView({
     >
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
-        <span className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+        <span className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/50">
           Comparison Matrix
         </span>
-        <span className="text-caption text-slate-500 dark:text-white/45">
+        <span className="text-caption text-slate-500 dark:text-white/50">
           {matrix.criteria.length} criteria &middot; {jurisdictions.length}{" "}
           jurisdictions
         </span>

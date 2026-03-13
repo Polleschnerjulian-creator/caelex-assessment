@@ -96,7 +96,7 @@ export default function StakeholderCard({
               {statusConfig.label}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-micro text-slate-500 dark:text-white/40">
+          <div className="flex items-center gap-1 text-micro text-slate-500 dark:text-white/50">
             <Clock size={10} aria-hidden="true" />
             {formatRelativeTime(engagement.lastAccessAt)}
           </div>

@@ -230,7 +230,7 @@ function SourceBadge({ source }: { source: AstraSource }) {
       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.03] border ${confidenceColor} transition-colors cursor-pointer group`}
       title={`${source.regulation} ${source.article}${source.title ? ` - ${source.title}` : ""}`}
     >
-      <span className="text-micro text-white/45 group-hover:text-white/70 transition-colors">
+      <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
         {source.regulation}
       </span>
       <span className="text-micro font-medium text-cyan-400">
@@ -239,7 +239,7 @@ function SourceBadge({ source }: { source: AstraSource }) {
       {source.url && (
         <ExternalLink
           size={9}
-          className="text-white/30 group-hover:text-white/70"
+          className="text-white/50 group-hover:text-white/70"
         />
       )}
     </a>
@@ -311,7 +311,7 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
         </div>
         {scoreDiff !== 0 && (
           <>
-            <ArrowRight size={12} className="text-white/20" />
+            <ArrowRight size={12} className="text-white/40" />
             <div className="flex items-center gap-2">
               <span className="text-micro text-white/45">Projected:</span>
               <span
@@ -336,7 +336,7 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
           {impact.affectedArticles.map((article, idx) => (
             <span
               key={idx}
-              className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/45"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/50"
             >
               {article}
             </span>
@@ -402,7 +402,7 @@ export default function AstraMessageBubble({
         {/* AI-generated indicator + Confidence (for ASTRA messages) */}
         {isAstra && (
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] text-white/25 font-medium uppercase tracking-wider">
+            <span className="text-[9px] text-white/40 font-medium uppercase tracking-wider">
               AI-generated
             </span>
             {confidence && <ConfidenceBadge level={confidence} />}
@@ -423,7 +423,7 @@ export default function AstraMessageBubble({
         {/* Sources */}
         {isAstra && sources.length > 0 && (
           <div className="mt-3 pt-2 border-t border-white/[0.06]">
-            <p className="text-[9px] text-white/30 mb-1.5">Sources:</p>
+            <p className="text-[9px] text-white/50 mb-1.5">Sources:</p>
             <div className="flex flex-wrap gap-1.5">
               {sources.map((source, idx) => (
                 <SourceBadge key={idx} source={source} />
@@ -447,7 +447,7 @@ export default function AstraMessageBubble({
         {/* Actions */}
         {isAstra && actions.length > 0 && (
           <div className="mt-3 pt-2 border-t border-white/[0.06]">
-            <p className="text-[9px] text-white/30 mb-1.5">
+            <p className="text-[9px] text-white/50 mb-1.5">
               Suggested Actions:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -485,7 +485,7 @@ export default function AstraMessageBubble({
         {/* Timestamp */}
         <p
           className={`text-[9px] mt-1.5 ${
-            isAstra ? "text-white/20" : "text-cyan-400/30"
+            isAstra ? "text-white/40" : "text-cyan-400/30"
           }`}
         >
           {message.timestamp.toLocaleTimeString("de-DE", {

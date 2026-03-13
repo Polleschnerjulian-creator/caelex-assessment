@@ -69,7 +69,7 @@ export default function AstraInteractiveInput({
                       isSelected
                         ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-300"
                         : submitted
-                          ? "bg-white/[0.02] border border-white/[0.04] text-white/20 cursor-not-allowed"
+                          ? "bg-white/[0.02] border border-white/[0.04] text-white/40 cursor-not-allowed"
                           : "bg-white/[0.05] border border-white/10 text-white/70 hover:bg-white/[0.08] hover:text-white hover:border-white/20"
                     }
                   `}
@@ -94,7 +94,7 @@ export default function AstraInteractiveInput({
               options.find((o) => o.type === "text_input")?.label ||
               "Eingabe..."
             }
-            className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-caption text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/30"
+            className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-caption text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/30"
           />
           <button
             onClick={handleTextSubmit}

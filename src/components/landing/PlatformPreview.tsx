@@ -244,7 +244,7 @@ function DashboardTab() {
                 className={`text-micro px-2 py-0.5 rounded-full flex-shrink-0 ${
                   mod.progress > 0
                     ? "bg-emerald-500/10 text-emerald-400/60"
-                    : "bg-white/[0.04] text-white/25"
+                    : "bg-white/[0.04] text-white/50"
                 }`}
               >
                 {mod.status}
@@ -385,7 +385,7 @@ export default function PlatformPreview() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/25">05 / 12</span>
+        <span className="text-caption text-white/40">05 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">

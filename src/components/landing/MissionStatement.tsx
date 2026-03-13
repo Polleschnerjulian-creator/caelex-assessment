@@ -28,7 +28,7 @@ export default function MissionStatement() {
               const chars = word.split("");
               const isHighlight = HIGHLIGHT_WORDS.has(word);
               const colorClass = isHighlight
-                ? "text-[#C0C5CF]"
+                ? "text-[#6B7280]"
                 : "text-[#111827]";
 
               const wordElement = (

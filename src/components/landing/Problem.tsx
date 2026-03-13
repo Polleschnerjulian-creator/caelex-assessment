@@ -33,7 +33,7 @@ export default function Problem() {
             {paragraphs.map((paragraph, index) => (
               <ScrollReveal key={index} delay={index * 0.1}>
                 <div className="border-l border-white/12 pl-6 mb-8 hover:border-white/[0.15] transition-all duration-500">
-                  <p className="text-title text-white/45 leading-[1.8]">
+                  <p className="text-title text-white/60 leading-[1.8]">
                     {paragraph}
                   </p>
                 </div>

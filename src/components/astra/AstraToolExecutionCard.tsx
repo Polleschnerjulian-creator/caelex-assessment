@@ -40,7 +40,7 @@ export default function AstraToolExecutionCard({
         </span>
         <ChevronDown
           size={12}
-          className={`text-white/30 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          className={`text-white/40 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -57,7 +57,7 @@ export default function AstraToolExecutionCard({
                   {humanizeToolName(call.name)}
                 </span>
                 {Object.keys(call.input).length > 0 && (
-                  <span className="text-micro text-white/30 ml-1.5">
+                  <span className="text-micro text-white/50 ml-1.5">
                     (
                     {Object.entries(call.input)
                       .slice(0, 3)

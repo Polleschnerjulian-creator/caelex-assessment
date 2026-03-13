@@ -30,7 +30,7 @@ export default function FinalCTA() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/25">12 / 12</span>
+        <span className="text-caption text-white/40">12 / 12</span>
       </motion.div>
 
       <div className="max-w-[700px] text-center">
@@ -109,7 +109,7 @@ export default function FinalCTA() {
               />
             </Link>
           </div>
-          <span className="text-small sm:text-caption text-white/25">
+          <span className="text-small sm:text-caption text-white/40">
             No credit card required. Free compliance assessment.
           </span>
         </motion.div>
@@ -121,7 +121,7 @@ export default function FinalCTA() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-12 pt-10 border-t border-white/[0.06]"
         >
-          <p className="text-body text-white/25 mb-4">
+          <p className="text-body text-white/50 mb-4">
             Need a custom deployment or have compliance questions?
           </p>
           <a
@@ -129,7 +129,7 @@ export default function FinalCTA() {
             className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
           >
             <span>Talk to our team</span>
-            <span className="text-white/25">cs@caelex.eu</span>
+            <span className="text-white/60">cs@caelex.eu</span>
           </a>
         </motion.div>
       </div>

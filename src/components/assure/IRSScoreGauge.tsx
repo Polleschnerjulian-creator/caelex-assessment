@@ -182,7 +182,7 @@ export default function IRSScoreGauge({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className="text-white/10"
+          className="text-white/20"
         />
 
         {/* Filled arc with animation */}

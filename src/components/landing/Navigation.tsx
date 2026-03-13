@@ -92,7 +92,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     className={`hidden md:block text-body transition-colors duration-700 ${
                       showDarkText
                         ? "text-[#4B5563] hover:text-[#111827]"
-                        : "text-white/45 hover:text-white"
+                        : "text-white/60 hover:text-white"
                     }`}
                   >
                     {label}
@@ -106,7 +106,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     className={`text-body transition-colors duration-700 ${
                       showDarkText
                         ? "text-[#4B5563] hover:text-[#111827]"
-                        : "text-white/45 hover:text-white"
+                        : "text-white/60 hover:text-white"
                     }`}
                   >
                     Log in

@@ -103,7 +103,7 @@ function LinkRow({
           <span className="text-body font-medium text-white/80 truncate max-w-[180px]">
             {link.recipientName}
           </span>
-          <span className="text-micro text-white/30 flex items-center gap-1 mt-0.5">
+          <span className="text-micro text-white/50 flex items-center gap-1 mt-0.5">
             <Mail size={10} />
             {link.recipientEmail}
           </span>
@@ -142,7 +142,7 @@ function LinkRow({
           <button
             onClick={handleCopy}
             disabled={!isLive}
-            className="p-1.5 rounded-md text-white/30 hover:text-emerald-400 hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-md text-white/50 hover:text-emerald-400 hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             title="Copy access link"
           >
             {copied ? (
@@ -157,7 +157,7 @@ function LinkRow({
               href={shareUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-md text-white/30 hover:text-white/50 hover:bg-white/5 transition-all"
+              className="p-1.5 rounded-md text-white/50 hover:text-white/70 hover:bg-white/5 transition-all"
               title="Open link"
             >
               <ExternalLink className="w-4 h-4" />
@@ -167,7 +167,7 @@ function LinkRow({
           {isLive && onRevoke && (
             <button
               onClick={() => onRevoke(link.id)}
-              className="p-1.5 rounded-md text-white/30 hover:text-amber-400 hover:bg-white/5 transition-all"
+              className="p-1.5 rounded-md text-white/50 hover:text-amber-400 hover:bg-white/5 transition-all"
               title="Revoke access"
             >
               <Ban className="w-4 h-4" />
@@ -246,7 +246,7 @@ export default function AccessLinkManager({
         <GlassCard hover={false} className="p-10">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-              <ExternalLink className="w-6 h-6 text-white/20" />
+              <ExternalLink className="w-6 h-6 text-white/40" />
             </div>
             <h3 className="text-body-lg font-medium text-white/70 mb-1">
               No Access Links Yet
