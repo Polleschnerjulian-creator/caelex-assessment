@@ -6,6 +6,13 @@ interface LogoProps {
   className?: string;
 }
 
+// Triskelion arm — three parallel bezier curves that taper from center to tip
+const ARM_PATHS = [
+  "M 29 36 C 24 25, 27.5 13, 30.5 4",
+  "M 32 36 C 27 25, 30 13, 32 4",
+  "M 35 36 C 30 25, 32.5 13, 33.5 4",
+];
+
 export function CaelexIcon({
   size = 24,
   className = "",
@@ -15,11 +22,6 @@ export function CaelexIcon({
   className?: string;
   "aria-hidden"?: boolean | "true" | "false";
 }) {
-  // Scale factor based on size (designed at 64px base)
-  const scale = size / 64;
-  const strokeWidth = Math.max(4 * scale, 2);
-  const dotRadius = Math.max(4 * scale, 2);
-
   return (
     <svg
       viewBox="0 0 64 64"
@@ -29,25 +31,19 @@ export function CaelexIcon({
       fill="none"
       aria-hidden={ariaHidden ?? "true"}
     >
-      <path
-        d="M 32 12 L 32 36"
-        stroke="currentColor"
-        strokeWidth={strokeWidth / scale}
-        strokeLinecap="round"
-      />
-      <path
-        d="M 32 36 L 52 52"
-        stroke="currentColor"
-        strokeWidth={strokeWidth / scale}
-        strokeLinecap="round"
-      />
-      <path
-        d="M 32 36 L 12 52"
-        stroke="currentColor"
-        strokeWidth={strokeWidth / scale}
-        strokeLinecap="round"
-      />
-      <circle cx="32" cy="36" r={dotRadius / scale} fill="currentColor" />
+      {[0, 120, 240].map((angle) => (
+        <g key={angle} transform={`rotate(${angle} 32 36)`}>
+          {ARM_PATHS.map((d, i) => (
+            <path
+              key={i}
+              d={d}
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
+      ))}
     </svg>
   );
 }

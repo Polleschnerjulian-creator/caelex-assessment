@@ -21,26 +21,29 @@ export default async function Image() {
     >
       {/* Top: Logo mark + wordmark */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <svg width="32" height="32" viewBox="0 0 32 32">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
           <path
-            d="M 16 6 L 16 16"
+            d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
             stroke="white"
-            strokeWidth="3"
+            strokeWidth="2.5"
             strokeLinecap="round"
           />
-          <path
-            d="M 16 16 L 24 23"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 16 16 L 8 23"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <circle cx="16" cy="16" r="3" fill="white" />
+          <g transform="rotate(120 16 18)">
+            <path
+              d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </g>
+          <g transform="rotate(240 16 18)">
+            <path
+              d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </g>
         </svg>
         <span
           style={{

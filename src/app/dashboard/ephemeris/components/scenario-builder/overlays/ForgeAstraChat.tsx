@@ -4,9 +4,14 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Minus, X, Send } from "lucide-react";
 import { useAstra } from "@/components/astra/AstraProvider";
 
-// ─── Caelex Logo (Cube Corner + Dot) ────────────────────────────────────────
+// ─── Caelex Logo (Triskelion) ────────────────────────────────────────────────
 
 function CaelexLogo({ size = 28 }: { size?: number }) {
+  const arms = [
+    "M -1.3 2 C -3.5 -3, -2.2 -8, -0.7 -12",
+    "M 0 2 C -2.2 -3, -0.9 -8, 0 -12",
+    "M 1.3 2 C -0.9 -3, 0.4 -8, 0.7 -12",
+  ];
   return (
     <svg
       width={size}
@@ -15,25 +20,19 @@ function CaelexLogo({ size = 28 }: { size?: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M 0 -10 L 0 3"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 0 3 L 10 10"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 0 3 L -10 10"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle cx="0" cy="3" r="2.5" fill="white" />
+      {[0, 120, 240].map((angle) => (
+        <g key={angle} transform={`rotate(${angle} 0 2)`}>
+          {arms.map((d, i) => (
+            <path
+              key={i}
+              d={d}
+              stroke="white"
+              strokeWidth="0.9"
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
+      ))}
     </svg>
   );
 }

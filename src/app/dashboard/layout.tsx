@@ -195,24 +195,27 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         >
           <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
             <path
-              d="M 0 -10 L 0 3"
+              d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
               stroke="#0F172A"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeLinecap="round"
             />
-            <path
-              d="M 0 3 L 10 10"
-              stroke="#0F172A"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M 0 3 L -10 10"
-              stroke="#0F172A"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <circle cx="0" cy="3" r="2.5" fill="#0F172A" />
+            <g transform="rotate(120 0 2)">
+              <path
+                d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
+                stroke="#0F172A"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </g>
+            <g transform="rotate(240 0 2)">
+              <path
+                d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
+                stroke="#0F172A"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </g>
           </svg>
         </button>
       )}

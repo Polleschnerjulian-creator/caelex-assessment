@@ -17,26 +17,29 @@ export default function Icon() {
         borderRadius: "36px",
       }}
     >
-      <svg width="108" height="108" viewBox="0 0 32 32">
-        <path
-          d="M 16 6 L 16 16"
-          stroke="white"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 16 16 L 24 23"
-          stroke="white"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 16 16 L 8 23"
-          stroke="white"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <circle cx="16" cy="16" r="3" fill="white" />
+      <svg width="108" height="108" viewBox="0 0 32 32" fill="none">
+        {[0, 120, 240].map((a) => (
+          <g key={a} transform={`rotate(${a} 16 18)`}>
+            <path
+              d="M 14.5 18 C 12 12.5, 13.75 6.5, 15.25 2"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 17.5 18 C 15 12.5, 16.25 6.5, 16.75 2"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+            />
+          </g>
+        ))}
       </svg>
     </div>,
     { ...size },
