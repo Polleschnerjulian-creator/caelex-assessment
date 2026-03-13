@@ -6,6 +6,10 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  const logoData = await fetch(
+    new URL("../public/images/logo-white.png", import.meta.url),
+  ).then((res) => res.arrayBuffer());
+
   return new ImageResponse(
     <div
       style={{
@@ -21,30 +25,7 @@ export default async function Image() {
     >
       {/* Top: Logo mark + wordmark */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path
-            d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <g transform="rotate(120 16 18)">
-            <path
-              d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </g>
-          <g transform="rotate(240 16 18)">
-            <path
-              d="M 16 18 C 13.5 12.5, 15 6.5, 16 2"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </g>
-        </svg>
+        <img src={logoData as unknown as string} width={32} height={32} />
         <span
           style={{
             fontSize: "20px",

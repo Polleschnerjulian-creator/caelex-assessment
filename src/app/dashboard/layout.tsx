@@ -193,30 +193,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             boxShadow: "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <svg width={22} height={22} viewBox="-14 -14 28 28" fill="none">
-            <path
-              d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
-              stroke="#0F172A"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <g transform="rotate(120 0 2)">
-              <path
-                d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
-                stroke="#0F172A"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </g>
-            <g transform="rotate(240 0 2)">
-              <path
-                d="M 0 2 C -2.2 -3, -0.9 -8, 0 -12"
-                stroke="#0F172A"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </g>
-          </svg>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-black.png"
+            alt=""
+            width={22}
+            height={22}
+            style={{ objectFit: "contain" }}
+          />
         </button>
       )}
 

@@ -6,13 +6,6 @@ interface LogoProps {
   className?: string;
 }
 
-// Triskelion arm — three parallel bezier curves that taper from center to tip
-const ARM_PATHS = [
-  "M 29 36 C 24 25, 27.5 13, 30.5 4",
-  "M 32 36 C 27 25, 30 13, 32 4",
-  "M 35 36 C 30 25, 32.5 13, 33.5 4",
-];
-
 export function CaelexIcon({
   size = 24,
   className = "",
@@ -23,28 +16,25 @@ export function CaelexIcon({
   "aria-hidden"?: boolean | "true" | "false";
 }) {
   return (
-    <svg
-      viewBox="0 0 64 64"
-      width={size}
-      height={size}
+    <span
+      role="img"
+      aria-hidden={ariaHidden ?? true}
       className={className}
-      fill="none"
-      aria-hidden={ariaHidden ?? "true"}
-    >
-      {[0, 120, 240].map((angle) => (
-        <g key={angle} transform={`rotate(${angle} 32 36)`}>
-          {ARM_PATHS.map((d, i) => (
-            <path
-              key={i}
-              d={d}
-              stroke="currentColor"
-              strokeWidth={1.5}
-              strokeLinecap="round"
-            />
-          ))}
-        </g>
-      ))}
-    </svg>
+      style={{
+        display: "inline-block",
+        width: size,
+        height: size,
+        backgroundColor: "currentColor",
+        maskImage: "url(/images/logo-black.png)",
+        maskSize: "contain",
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskImage: "url(/images/logo-black.png)",
+        WebkitMaskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+      }}
+    />
   );
 }
 
