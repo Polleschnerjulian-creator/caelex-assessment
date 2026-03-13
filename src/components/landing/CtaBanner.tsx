@@ -38,7 +38,7 @@ export default function CtaBanner() {
           {/* Right: Start Assessment — dark card */}
           <Link
             href="/assessment"
-            className="group relative flex flex-col justify-between bg-[#111827] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#1E293B]"
+            className="dark-section group relative flex flex-col justify-between bg-[#111827] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#1E293B]"
           >
             <h3 className="text-[clamp(1.75rem,4vw,2.75rem)] font-normal tracking-[-0.03em] text-white leading-[1.1]">
               Start Assessment
