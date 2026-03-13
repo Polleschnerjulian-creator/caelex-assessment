@@ -16,6 +16,7 @@ const EXCLUDED_ROUTES = [
   "/verity",
   "/testdemo1",
   "/onboarding",
+  "/linkedin-banner",
 ];
 
 export default function PublicLayout({
