@@ -88,7 +88,8 @@ export default function ComplianceTimeline({
       >
         <span
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: C.textMuted,
             letterSpacing: "0.06em",
@@ -134,7 +135,8 @@ export default function ComplianceTimeline({
         </span>
         <span
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 10,
             color: C.textMuted,
             padding: "2px 8px",
@@ -215,7 +217,8 @@ export default function ComplianceTimeline({
                 >
                   <span
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 13,
                       fontWeight: 700,
                       color: sevColor,
@@ -226,7 +229,8 @@ export default function ComplianceTimeline({
                   </span>
                   <span
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 9,
                       fontWeight: 600,
                       letterSpacing: "0.06em",
@@ -241,7 +245,8 @@ export default function ComplianceTimeline({
                   {item.kind === "alert" && (
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 9,
                         fontWeight: 500,
                         letterSpacing: "0.04em",
@@ -284,7 +289,8 @@ export default function ComplianceTimeline({
                 {item.detail && (
                   <div
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 10,
                       color: C.textMuted,
                       marginTop: 4,
@@ -297,7 +303,8 @@ export default function ComplianceTimeline({
                 {/* Date */}
                 <div
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontSize: 9,
                     color: C.textMuted,
                     marginTop: 4,

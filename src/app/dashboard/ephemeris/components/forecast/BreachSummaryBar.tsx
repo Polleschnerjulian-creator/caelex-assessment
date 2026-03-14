@@ -75,7 +75,8 @@ export default function BreachSummaryBar({
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 color: C.textSecondary,
               }}
@@ -84,7 +85,8 @@ export default function BreachSummaryBar({
             </span>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 20,
                 fontWeight: 700,
                 color: severityColor,
@@ -95,7 +97,8 @@ export default function BreachSummaryBar({
             </span>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 color: C.textSecondary,
               }}
@@ -104,7 +107,8 @@ export default function BreachSummaryBar({
             </span>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 color: C.textMuted,
                 marginLeft: 8,
@@ -116,7 +120,8 @@ export default function BreachSummaryBar({
         ) : (
           <span
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 12,
               color: C.nominal,
               fontWeight: 500,
@@ -131,7 +136,8 @@ export default function BreachSummaryBar({
         {/* Confidence badge */}
         <span
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 10,
             fontWeight: 500,
             letterSpacing: "0.06em",
@@ -148,7 +154,8 @@ export default function BreachSummaryBar({
         {hasBreach && (
           <span
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 10,
               fontWeight: 600,
               letterSpacing: "0.06em",

@@ -59,7 +59,8 @@ export default function ForecastHeader({
               key={range}
               onClick={() => onRangeChange(range)}
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: isActive ? 600 : 400,
                 padding: "6px 14px",
@@ -83,7 +84,8 @@ export default function ForecastHeader({
         {calculatedAt && (
           <span
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 10,
               color: C.textMuted,
               letterSpacing: "0.04em",
@@ -99,7 +101,8 @@ export default function ForecastHeader({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             fontWeight: 500,
             padding: "7px 14px",

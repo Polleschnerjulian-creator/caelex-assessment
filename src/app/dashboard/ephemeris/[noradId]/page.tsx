@@ -325,7 +325,8 @@ export default function SatelliteDetailPage({
         <span
           style={{
             color: C.textMuted,
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             letterSpacing: "0.1em",
           }}
@@ -377,7 +378,8 @@ export default function SatelliteDetailPage({
               style={{
                 color: C.textMuted,
                 textDecoration: "none",
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 padding: "6px 12px",
                 borderRadius: 8,
@@ -402,7 +404,8 @@ export default function SatelliteDetailPage({
               </span>
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   color: C.textMuted,
                   letterSpacing: "0.04em",
@@ -416,7 +419,8 @@ export default function SatelliteDetailPage({
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 10,
                 color: C.textMuted,
                 letterSpacing: "0.04em",
@@ -430,7 +434,8 @@ export default function SatelliteDetailPage({
               onClick={recalculate}
               disabled={loading}
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: 500,
                 padding: "7px 16px",
@@ -550,7 +555,8 @@ export default function SatelliteDetailPage({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   fontWeight: isActive ? 600 : 400,
                   letterSpacing: "0.06em",
@@ -672,7 +678,7 @@ function MetricCell({
       />
       <div
         style={{
-          fontFamily: "'IBM Plex Mono', monospace",
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           fontSize: 10,
           color: C.textMuted,
           letterSpacing: "0.1em",
@@ -684,7 +690,7 @@ function MetricCell({
       </div>
       <div
         style={{
-          fontFamily: "'IBM Plex Mono', monospace",
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           fontSize: 28,
           fontWeight: 700,
           color: valueColor,
@@ -697,7 +703,8 @@ function MetricCell({
       {sub && (
         <div
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 10,
             color: C.textMuted,
             marginTop: 6,
@@ -767,7 +774,8 @@ function ModulesTab({
           style={{
             padding: "12px 16px",
             borderBottom: `1px solid ${C.border}`,
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: C.textTertiary,
             letterSpacing: "0.05em",
@@ -804,7 +812,8 @@ function ModulesTab({
               >
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontSize: 12,
                     color: C.textSecondary,
                   }}
@@ -834,7 +843,8 @@ function ModulesTab({
 
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontSize: 13,
                     fontWeight: 600,
                     color: scoreColor(mod.score, C),
@@ -856,7 +866,8 @@ function ModulesTab({
                     <span
                       title={`Verity attested (${highestTrust})`}
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 9,
                         fontWeight: 600,
                         letterSpacing: "0.04em",
@@ -890,7 +901,8 @@ function ModulesTab({
 
                 <span
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontSize: 10,
                     color: riskColor(mod.status, C),
                     textAlign: "right",
@@ -917,7 +929,8 @@ function ModulesTab({
           style={{
             padding: "12px 16px",
             borderBottom: `1px solid ${C.border}`,
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: C.textTertiary,
             letterSpacing: "0.05em",
@@ -943,7 +956,8 @@ function ModulesTab({
                 <th
                   key={h}
                   style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontSize: 10,
                     fontWeight: 500,
                     color: C.textMuted,
@@ -975,7 +989,8 @@ function ModulesTab({
                 >
                   <td
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 11,
                       color: C.textTertiary,
                       padding: "8px 12px",
@@ -994,7 +1009,8 @@ function ModulesTab({
                   </td>
                   <td
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 11,
                       color: C.accent,
                       padding: "8px 12px",
@@ -1015,7 +1031,8 @@ function ModulesTab({
                     />
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 11,
                         color: riskColor(f.status, C),
                       }}
@@ -1025,7 +1042,8 @@ function ModulesTab({
                   </td>
                   <td
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily:
+                        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                       fontSize: 12,
                       fontWeight: 600,
                       color:
@@ -1155,7 +1173,8 @@ function CascadeTab({
       >
         <div
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: C.textTertiary,
             letterSpacing: "0.05em",
@@ -1177,7 +1196,8 @@ function CascadeTab({
           <div>
             <label
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 10,
                 color: C.textMuted,
                 display: "block",
@@ -1192,7 +1212,8 @@ function CascadeTab({
               disabled={loadingNodes}
               style={{
                 width: "100%",
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 12,
                 padding: "8px 12px",
                 borderRadius: 4,
@@ -1224,7 +1245,8 @@ function CascadeTab({
           <div>
             <label
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 10,
                 color: C.textMuted,
                 display: "block",
@@ -1238,7 +1260,8 @@ function CascadeTab({
               onChange={(e) => setChangeType(e.target.value)}
               style={{
                 width: "100%",
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 12,
                 padding: "8px 12px",
                 borderRadius: 4,
@@ -1260,7 +1283,8 @@ function CascadeTab({
             onClick={simulate}
             disabled={simulating || !selectedNode}
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 11,
               padding: "8px 20px",
               borderRadius: 4,
@@ -1282,7 +1306,8 @@ function CascadeTab({
               padding: "8px 12px",
               background: C.sunken,
               borderRadius: 4,
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 11,
               color: C.textTertiary,
             }}
@@ -1315,7 +1340,8 @@ function CascadeTab({
             >
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 10,
                   color: C.textMuted,
                   letterSpacing: "0.08em",
@@ -1326,7 +1352,8 @@ function CascadeTab({
               </div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
                   color:
@@ -1351,7 +1378,8 @@ function CascadeTab({
             >
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 10,
                   color: C.textMuted,
                   letterSpacing: "0.08em",
@@ -1362,7 +1390,8 @@ function CascadeTab({
               </div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
                   color: C.textSecondary,
@@ -1381,7 +1410,8 @@ function CascadeTab({
             >
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 10,
                   color: C.textMuted,
                   letterSpacing: "0.08em",
@@ -1392,7 +1422,8 @@ function CascadeTab({
               </div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
                   color: C.textSecondary,
@@ -1418,7 +1449,8 @@ function CascadeTab({
                 style={{
                   padding: "12px 16px",
                   borderBottom: `1px solid ${C.border}`,
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   color: C.textTertiary,
                   letterSpacing: "0.05em",
@@ -1443,7 +1475,8 @@ function CascadeTab({
                   >
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 11,
                         color: C.accent,
                         minWidth: 160,
@@ -1453,7 +1486,8 @@ function CascadeTab({
                     </span>
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 11,
                         color: C.textMuted,
                       }}
@@ -1462,7 +1496,8 @@ function CascadeTab({
                     </span>
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 11,
                         color: C.textSecondary,
                         minWidth: 160,
@@ -1472,7 +1507,8 @@ function CascadeTab({
                     </span>
                     <span
                       style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontFamily:
+                          "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                         fontSize: 11,
                         color:
                           step.impact < -3
@@ -1506,7 +1542,8 @@ function CascadeTab({
                 style={{
                   padding: "12px 16px",
                   borderBottom: `1px solid ${C.border}`,
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   color: C.textTertiary,
                   letterSpacing: "0.05em",
@@ -1533,7 +1570,8 @@ function CascadeTab({
                       <th
                         key={h}
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 10,
                           fontWeight: 500,
                           color: C.textMuted,
@@ -1564,7 +1602,8 @@ function CascadeTab({
                     >
                       <td
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 12,
                           color: C.textSecondary,
                           padding: "10px 12px",
@@ -1574,7 +1613,8 @@ function CascadeTab({
                       </td>
                       <td
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 12,
                           color: C.textTertiary,
                           padding: "10px 12px",
@@ -1584,7 +1624,8 @@ function CascadeTab({
                       </td>
                       <td
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 12,
                           fontWeight: 600,
                           color:
@@ -1598,7 +1639,8 @@ function CascadeTab({
                       </td>
                       <td
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 12,
                           fontWeight: 600,
                           color:
@@ -1626,7 +1668,8 @@ function CascadeTab({
                         />
                         <span
                           style={{
-                            fontFamily: "'IBM Plex Mono', monospace",
+                            fontFamily:
+                              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                             fontSize: 11,
                             color: severityColor(sat.severity, C),
                           }}
@@ -1636,7 +1679,8 @@ function CascadeTab({
                       </td>
                       <td
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                           fontSize: 10,
                           color: C.textTertiary,
                           padding: "10px 12px",
@@ -1703,7 +1747,8 @@ function DataSourcesTab({
       >
         <span
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: C.textTertiary,
             letterSpacing: "0.05em",
@@ -1713,7 +1758,8 @@ function DataSourcesTab({
         </span>
         <span
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: 11,
             color: freshnessInfo.color,
           }}
@@ -1735,7 +1781,8 @@ function DataSourcesTab({
               <th
                 key={h}
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 10,
                   fontWeight: 500,
                   color: C.textMuted,
@@ -1781,7 +1828,8 @@ function DataSourcesTab({
               </td>
               <td
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 12,
                   color: C.textSecondary,
                   padding: "10px 12px",
@@ -1808,7 +1856,8 @@ function DataSourcesTab({
               </td>
               <td
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   color: C.textTertiary,
                   padding: "10px 12px",
@@ -1820,7 +1869,8 @@ function DataSourcesTab({
               </td>
               <td
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 11,
                   color: src.connected ? C.nominal : C.critical,
                   padding: "10px 12px",

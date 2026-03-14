@@ -49,7 +49,7 @@ function ChartTooltip(props: any) {
     >
       <div
         style={{
-          fontFamily: "'IBM Plex Mono', monospace",
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           fontSize: 10,
           color: C.textMuted,
           letterSpacing: "0.04em",
@@ -98,7 +98,8 @@ function ChartTooltip(props: any) {
             </div>
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: 600,
                 color: C.textPrimary,
@@ -190,7 +191,8 @@ export default function ForecastChart({
           </div>
           <div
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 10,
               color: C.textMuted,
               letterSpacing: "0.03em",
@@ -222,7 +224,8 @@ export default function ForecastChart({
             />
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: 600,
                 color: C.warning,
@@ -262,7 +265,8 @@ export default function ForecastChart({
             tick={{
               fill: C.textMuted,
               fontSize: 10,
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             }}
             axisLine={{ stroke: C.border, strokeOpacity: 0.3 }}
             tickLine={false}
@@ -273,7 +277,8 @@ export default function ForecastChart({
             tick={{
               fill: C.textMuted,
               fontSize: 10,
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             }}
             axisLine={false}
             tickLine={false}
@@ -311,7 +316,8 @@ export default function ForecastChart({
               value: `Threshold ${curve.thresholdValue}${curve.unit}`,
               fill: C.critical,
               fontSize: 9,
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               position: "right",
               offset: 6,
             }}
@@ -329,7 +335,8 @@ export default function ForecastChart({
                 value: "Today",
                 fill: C.textMuted,
                 fontSize: 9,
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 position: "top",
                 offset: 8,
               }}
@@ -407,7 +414,8 @@ export default function ForecastChart({
             />
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 9,
                 color: C.textMuted,
               }}

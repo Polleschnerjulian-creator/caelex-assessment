@@ -139,7 +139,8 @@ export default function ModuleForecastTable({
             <span
               key={col}
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 9,
                 fontWeight: 600,
                 letterSpacing: "0.08em",
@@ -196,7 +197,8 @@ export default function ModuleForecastTable({
             {/* Score */}
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 14,
                 fontWeight: 700,
                 color: sColor,
@@ -219,7 +221,8 @@ export default function ModuleForecastTable({
               />
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 9,
                   color: C.textMuted,
                   letterSpacing: "0.04em",
@@ -233,7 +236,8 @@ export default function ModuleForecastTable({
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 12,
                   fontWeight: 600,
                   color: trendColor,
@@ -243,7 +247,8 @@ export default function ModuleForecastTable({
               </span>
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: 10,
                   color: trendColor,
                 }}
@@ -256,7 +261,8 @@ export default function ModuleForecastTable({
             {/* Breach timing */}
             <span
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: nearestBreach ? 600 : 400,
                 color: nearestBreach

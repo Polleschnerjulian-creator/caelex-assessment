@@ -126,7 +126,7 @@ export default function ForecastTab({
           padding: 60,
           textAlign: "center",
           color: C.textMuted,
-          fontFamily: "'IBM Plex Mono', monospace",
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           fontSize: 12,
           letterSpacing: "0.08em",
         }}
@@ -172,7 +172,8 @@ export default function ForecastTab({
               key={c.metric}
               onClick={() => setSelectedMetric(c.metric)}
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: 11,
                 fontWeight: isActive ? 600 : 400,
                 padding: "7px 14px",
