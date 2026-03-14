@@ -89,6 +89,10 @@
     {
       "path": "/api/cron/ca-digest",
       "schedule": "30 7 * * *"
+    },
+    {
+      "path": "/api/cron/nca-deadlines",
+      "schedule": "0 7 * * *"
     }
   ]
 }

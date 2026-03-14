@@ -266,7 +266,7 @@ export async function getSubmissionPipeline(
       ncaReference: sub.ncaReference,
       slaDeadline: sub.slaDeadline,
       correspondenceCount: sub._count.correspondence,
-      reportTitle: sub.report.title,
+      reportTitle: sub.report?.title ?? null,
       daysInStatus,
       lastActivity: sub.updatedAt,
     };
@@ -377,6 +377,7 @@ export async function assemblePackage(
     insuranceAssessments,
     environmentalAssessments,
     nis2Assessments,
+    ncaDocuments,
   ] = await Promise.all([
     prisma.document.findMany({
       where: { userId },
@@ -418,6 +419,11 @@ export async function assemblePackage(
       orderBy: { updatedAt: "desc" },
       take: 1,
     }),
+    prisma.nCADocument.findMany({
+      where: { organizationId, status: "COMPLETED" },
+      select: { id: true, title: true, documentType: true },
+      orderBy: { updatedAt: "desc" },
+    }),
   ]);
 
   // Build document list with status mapping
@@ -442,6 +448,20 @@ export async function assemblePackage(
     if (!foundTypes.has(doc.documentType)) {
       documents.push({
         sourceType: "generated",
+        sourceId: doc.id,
+        documentType: doc.documentType,
+        title: doc.title,
+        status: "found",
+      });
+      foundTypes.add(doc.documentType);
+    }
+  }
+
+  // Map Generate 2.0 NCADocuments
+  for (const doc of ncaDocuments) {
+    if (!foundTypes.has(doc.documentType)) {
+      documents.push({
+        sourceType: "generated_v2",
         sourceId: doc.id,
         documentType: doc.documentType,
         title: doc.title,
@@ -601,7 +621,7 @@ export async function submitPackage(
   packageId: string,
   userId: string,
   input: {
-    reportId: string;
+    reportId?: string;
     submissionMethod: string;
     coverLetter?: string;
     priority?: SubmissionPriority;
@@ -629,7 +649,7 @@ export async function submitPackage(
   const submission = await prisma.nCASubmission.create({
     data: {
       userId,
-      reportId: input.reportId,
+      reportId: input.reportId || null,
       ncaAuthority: pkg.ncaAuthority,
       ncaAuthorityName: ncaInfo.name,
       ncaPortalUrl: ncaInfo.portalUrl || null,
@@ -646,6 +666,12 @@ export async function submitPackage(
       statusHistory: JSON.stringify(statusHistory),
       packageId,
       priority: input.priority || "NORMAL",
+      slaDeadline: new Date(
+        Date.now() + (ncaInfo.expectedResponseDays || 90) * 86400000,
+      ),
+      estimatedResponseDate: new Date(
+        Date.now() + (ncaInfo.expectedResponseDays || 90) * 86400000,
+      ),
     },
   });
 

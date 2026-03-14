@@ -2256,9 +2256,9 @@ model NCASubmission {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Report Link
-  reportId String
-  report   SupervisionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  // Report Link (optional for package-based submissions)
+  reportId String?
+  report   SupervisionReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   // NCA Information
   ncaAuthority     NCAAuthority // Target NCA

@@ -90,8 +90,10 @@ export function SubmissionHistory({
     const matchesSearch =
       !searchQuery ||
       sub.ncaAuthorityLabel.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sub.report.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sub.report.reportType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      sub.report?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      sub.report?.reportType
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       sub.ncaReference?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = !statusFilter || sub.status === statusFilter;
@@ -188,8 +190,9 @@ export function SubmissionHistory({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-slate-200">
-                          {submission.report.title ||
-                            submission.report.reportType}
+                          {submission.report?.title ||
+                            submission.report?.reportType ||
+                            "Package Submission"}
                         </span>
                         <span
                           className={`px-2 py-0.5 text-xs rounded-full ${bgColor} ${textColor}`}

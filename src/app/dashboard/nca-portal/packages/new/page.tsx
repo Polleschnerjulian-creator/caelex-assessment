@@ -147,15 +147,12 @@ export default function PackageBuilderPage() {
 
     setIsSubmitting(true);
     try {
-      // For now, we need a reportId — in a real flow this would come from supervision
-      // We'll create a placeholder approach
       const res = await fetch(
         `/api/nca-portal/packages/${assemblyResult.package.id}/submit`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            reportId: "portal-submission", // Placeholder — would be selected from reports
             submissionMethod,
             coverLetter: coverLetter || undefined,
           }),

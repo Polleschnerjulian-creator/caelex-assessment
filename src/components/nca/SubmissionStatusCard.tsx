@@ -104,7 +104,9 @@ export function SubmissionStatusCard({
             </div>
             <div>
               <h3 className="font-semibold text-slate-200">
-                {submission.report.title || submission.report.reportType}
+                {submission.report?.title ||
+                  submission.report?.reportType ||
+                  "Package Submission"}
               </h3>
               <p className="text-sm text-slate-400">
                 Submitted to {submission.ncaAuthorityLabel}

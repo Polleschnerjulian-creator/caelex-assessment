@@ -59,6 +59,7 @@ export const NCA_AUTHORITY_INFO: Record<
     portalUrl?: string;
     email?: string;
     description: string;
+    expectedResponseDays?: number;
   }
 > = {
   DE_BMWK: {
@@ -78,6 +79,7 @@ export const NCA_AUTHORITY_INFO: Record<
     country: "France",
     portalUrl: "https://cnes.fr",
     description: "French space agency",
+    expectedResponseDays: 60,
   },
   FR_DGAC: {
     name: "Direction Générale de l'Aviation Civile",
@@ -181,6 +183,7 @@ export const NCA_AUTHORITY_INFO: Record<
     country: "EU",
     portalUrl: "https://www.euspa.europa.eu",
     description: "EU space programme agency",
+    expectedResponseDays: 120,
   },
   EC_DEFIS: {
     name: "European Commission DG DEFIS",
@@ -228,6 +231,12 @@ export async function submitToNCA(
         : undefined,
       status: "SUBMITTED",
       statusHistory: JSON.stringify(statusHistory),
+      slaDeadline: new Date(
+        Date.now() + (ncaInfo.expectedResponseDays || 90) * 86400000,
+      ),
+      estimatedResponseDate: new Date(
+        Date.now() + (ncaInfo.expectedResponseDays || 90) * 86400000,
+      ),
     },
   });
 }
