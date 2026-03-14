@@ -71,6 +71,10 @@
       "schedule": "0 */4 * * *"
     },
     {
+      "path": "/api/cron/sentinel-auto-attest",
+      "schedule": "15 */4 * * *"
+    },
+    {
       "path": "/api/cron/sentinel-heartbeat",
       "schedule": "30 0 * * *"
     },

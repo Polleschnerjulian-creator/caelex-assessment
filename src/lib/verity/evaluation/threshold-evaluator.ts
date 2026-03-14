@@ -16,6 +16,7 @@ export async function evaluateAndAttest(
   prisma: PrismaClient,
   params: {
     operatorId: string;
+    organizationId?: string;
     satelliteNorad: string | null;
     satelliteName: string | null;
     regulationRef: string;
@@ -79,6 +80,7 @@ export async function evaluateAndAttest(
     data: {
       attestationId: attestation.attestation_id,
       operatorId: params.operatorId,
+      organizationId: params.organizationId ?? null,
       satelliteNorad: params.satelliteNorad,
       regulationRef: threshold.regulation_ref,
       dataPoint: threshold.data_point,
