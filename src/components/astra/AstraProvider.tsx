@@ -18,6 +18,7 @@ import type {
   AstraResponse,
   ConfidenceLevel,
 } from "@/lib/astra/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 // ─── Conversation Summary ───
 
@@ -273,7 +274,10 @@ export function AstraProvider({ children }: { children: ReactNode }) {
 
         const response = await fetch("/api/astra/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...csrfHeaders(),
+          },
           body: JSON.stringify(payload),
           signal: abortControllerRef.current.signal,
         });
@@ -404,6 +408,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch(`/api/astra/chat?conversationId=${id}`, {
           method: "DELETE",
+          headers: csrfHeaders(),
         });
         if (!res.ok) return;
         setConversations((prev) => prev.filter((c) => c.id !== id));
