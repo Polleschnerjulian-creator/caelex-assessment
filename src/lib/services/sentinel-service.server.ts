@@ -4,6 +4,7 @@
  */
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import {
   createHash,
   createHmac,
@@ -227,10 +228,102 @@ export async function ingestPacket(
     throw err;
   }
 
+  // 6. Auto-provision Spacecraft + SatelliteComplianceState for new NORAD IDs
+  if (packet.satellite_norad_id) {
+    autoProvisionSpacecraft(
+      agent.organizationId,
+      packet.satellite_norad_id,
+      packet.data.data_point === "orbital_parameters"
+        ? (packet.data.values as Record<string, unknown>)
+        : null,
+    ).catch((err) => logger.error("[sentinel/auto-provision]", err));
+  }
+
   return {
     accepted: true,
     chain_position: packet.integrity.chain_position,
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUTO-PROVISION SPACECRAFT
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Upserts a Spacecraft record when a Sentinel packet arrives with a NORAD ID
+ * that has no matching Spacecraft in the organization. Also ensures an initial
+ * SatelliteComplianceState exists so the satellite appears in the Ephemeris fleet.
+ */
+async function autoProvisionSpacecraft(
+  organizationId: string,
+  noradId: string,
+  orbitalValues: Record<string, unknown> | null,
+): Promise<void> {
+  // Check if spacecraft already exists for this org + norad
+  const existing = await prisma.spacecraft.findFirst({
+    where: { organizationId, noradId },
+    select: { id: true },
+  });
+
+  if (existing) return;
+
+  // Derive orbit type from altitude
+  const altitude = orbitalValues
+    ? typeof orbitalValues.altitude_km === "number"
+      ? orbitalValues.altitude_km
+      : typeof orbitalValues.altitude === "number"
+        ? orbitalValues.altitude
+        : null
+    : null;
+  const inclination = orbitalValues
+    ? typeof orbitalValues.inclination_deg === "number"
+      ? orbitalValues.inclination_deg
+      : typeof orbitalValues.inclination === "number"
+        ? orbitalValues.inclination
+        : null
+    : null;
+
+  let orbitType = "LEO";
+  if (altitude !== null) {
+    if (altitude > 35000) orbitType = "GEO";
+    else if (altitude > 2000) orbitType = "MEO";
+  }
+
+  const spacecraft = await prisma.spacecraft.create({
+    data: {
+      organizationId,
+      name: `SAT-${noradId}`,
+      noradId,
+      missionType: "unknown",
+      orbitType,
+      altitudeKm: altitude,
+      inclinationDeg: inclination,
+      status: "OPERATIONAL",
+      metadata: { autoProvisioned: true, source: "sentinel-ingest" },
+    },
+  });
+
+  logger.info(
+    `[sentinel/auto-provision] Created Spacecraft ${spacecraft.id} for NORAD ${noradId}`,
+  );
+
+  // Ensure SatelliteComplianceState exists for Ephemeris fleet visibility
+  await prisma.satelliteComplianceState.upsert({
+    where: {
+      noradId_operatorId: { noradId, operatorId: organizationId },
+    },
+    create: {
+      noradId,
+      operatorId: organizationId,
+      overallScore: 0,
+      moduleScores: {},
+      dataSources: { sentinel: { active: true } },
+      horizonConfidence: "LOW",
+      dataFreshness: "LIVE",
+      satelliteName: `SAT-${noradId}`,
+    },
+    update: {},
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════
