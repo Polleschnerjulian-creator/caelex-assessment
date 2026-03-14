@@ -30,6 +30,21 @@ vi.mock("@/lib/prisma", () => ({
     supplierDataRequest: {
       findMany: vi.fn(),
     },
+    organizationMember: {
+      findFirst: vi.fn(),
+    },
+    satelliteComplianceState: {
+      findMany: vi.fn(),
+    },
+    sentinelAgent: {
+      count: vi.fn(),
+    },
+    ephemerisForecast: {
+      count: vi.fn(),
+    },
+    nCASubmission: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -56,6 +71,12 @@ import {
 describe("Compliance Scoring Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mocks for space_operations + NCA outcomes queries
+    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.satelliteComplianceState.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.sentinelAgent.count).mockResolvedValue(0);
+    vi.mocked(prisma.ephemerisForecast.count).mockResolvedValue(0);
+    vi.mocked(prisma.nCASubmission.findMany).mockResolvedValue([]);
   });
 
   describe("MODULE_WEIGHTS", () => {
@@ -68,7 +89,7 @@ describe("Compliance Scoring Service", () => {
     });
 
     it("should have authorization as highest weight", () => {
-      expect(MODULE_WEIGHTS.authorization).toBe(0.25);
+      expect(MODULE_WEIGHTS.authorization).toBe(0.22);
       expect(MODULE_WEIGHTS.authorization).toBeGreaterThan(
         MODULE_WEIGHTS.debris,
       );
@@ -78,12 +99,13 @@ describe("Compliance Scoring Service", () => {
     });
 
     it("should have correct individual weights", () => {
-      expect(MODULE_WEIGHTS.authorization).toBe(0.25);
-      expect(MODULE_WEIGHTS.debris).toBe(0.2);
-      expect(MODULE_WEIGHTS.cybersecurity).toBe(0.2);
-      expect(MODULE_WEIGHTS.insurance).toBe(0.15);
-      expect(MODULE_WEIGHTS.environmental).toBe(0.1);
-      expect(MODULE_WEIGHTS.reporting).toBe(0.1);
+      expect(MODULE_WEIGHTS.authorization).toBe(0.22);
+      expect(MODULE_WEIGHTS.debris).toBe(0.17);
+      expect(MODULE_WEIGHTS.cybersecurity).toBe(0.17);
+      expect(MODULE_WEIGHTS.insurance).toBe(0.13);
+      expect(MODULE_WEIGHTS.environmental).toBe(0.08);
+      expect(MODULE_WEIGHTS.reporting).toBe(0.08);
+      expect(MODULE_WEIGHTS.space_operations).toBe(0.15);
     });
   });
 
@@ -188,6 +210,7 @@ describe("Compliance Scoring Service", () => {
       expect(score.breakdown.insurance).toBeDefined();
       expect(score.breakdown.environmental).toBeDefined();
       expect(score.breakdown.reporting).toBeDefined();
+      expect(score.breakdown.space_operations).toBeDefined();
     });
 
     it("should have weighted scores adding up to overall", async () => {
