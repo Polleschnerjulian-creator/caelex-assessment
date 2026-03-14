@@ -25,7 +25,7 @@ export const CHAIN_GENESIS_HASH = "sha256:genesis";
  * Returns the agent record or null.
  */
 export async function authenticateSentinelAgent(token: string) {
-  const tokenHash = hashToken(token);
+  const tokenHash = hashSentinelToken(token);
   const agent = await prisma.sentinelAgent.findUnique({
     where: { token: tokenHash },
   });
@@ -36,7 +36,7 @@ export async function authenticateSentinelAgent(token: string) {
  * Hash a token using HMAC-SHA256 with a server-side secret (SVA-39).
  * Falls back to plain SHA-256 if AUTH_SECRET is not set (dev only).
  */
-function hashToken(raw: string): string {
+export function hashSentinelToken(raw: string): string {
   const secret = process.env.AUTH_SECRET;
   if (secret) {
     return createHmac("sha256", secret).update(raw).digest("hex");
@@ -52,7 +52,7 @@ export function generateSentinelToken(): {
   hashed: string;
 } {
   const raw = `snt_${randomBytes(24).toString("base64url")}`;
-  const hashed = hashToken(raw);
+  const hashed = hashSentinelToken(raw);
   return { raw, hashed };
 }
 

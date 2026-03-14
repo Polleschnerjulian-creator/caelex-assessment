@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { registerSentinelAgent } from "@/lib/services/sentinel-service.server";
+import {
+  registerSentinelAgent,
+  hashSentinelToken,
+} from "@/lib/services/sentinel-service.server";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
@@ -62,9 +65,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash the token for storage/lookup
-    const { createHash } = await import("node:crypto");
-    const tokenHash = createHash("sha256").update(token).digest("hex");
+    // Hash the token for storage/lookup (must match authenticateSentinelAgent)
+    const tokenHash = hashSentinelToken(token);
 
     const result = await registerSentinelAgent({
       ...parsed.data,
