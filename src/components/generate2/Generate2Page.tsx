@@ -18,7 +18,7 @@ import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
-const SECTION_FETCH_TIMEOUT_MS = 120_000; // 2 minutes per section (server maxDuration=300s)
+const SECTION_FETCH_TIMEOUT_MS = 305_000; // 5 min + 5s buffer (matches server maxDuration=300s)
 const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
 const GENERATION_WATCHDOG_MS = 900_000; // 15 minutes max total generation time
 
