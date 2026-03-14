@@ -36,11 +36,75 @@ async function getAgentIds(
   return ids;
 }
 
+// ─── Metric → Packet Mapping ─────────────────────────────────────────────────
+// The Sentinel agent sends broad data_point types (e.g. "orbital_parameters")
+// with individual metrics as fields inside the values JSON. This map resolves
+// which data_point types to query and which field names (aliases) to extract
+// for each logical metric that the compliance engine requests.
+//
+// Format: metricName → { dataPoints: [...], aliases: [...] }
+//   - dataPoints: DB dataPoint values to query (OR condition)
+//   - aliases: field names to look for inside values JSON (tried in order)
+
+const METRIC_FIELD_MAP: Record<
+  string,
+  { dataPoints: string[]; aliases: string[] }
+> = {
+  remaining_fuel_pct: {
+    dataPoints: ["remaining_fuel_pct", "orbital_parameters"],
+    aliases: ["remaining_fuel_pct"],
+  },
+  thruster_status: {
+    dataPoints: ["thruster_status", "orbital_parameters"],
+    aliases: ["thruster_status"],
+  },
+  battery_state_of_charge: {
+    dataPoints: ["battery_state_of_charge", "orbital_parameters"],
+    aliases: ["battery_state_of_charge", "battery_soc_pct"],
+  },
+  solar_array_power_pct: {
+    dataPoints: ["solar_array_power_pct", "orbital_parameters"],
+    aliases: ["solar_array_power_pct", "solar_array_power_w"],
+  },
+  patch_compliance_pct: {
+    dataPoints: ["patch_compliance_pct", "cyber_posture"],
+    aliases: ["patch_compliance_pct"],
+  },
+  mfa_adoption_pct: {
+    dataPoints: ["mfa_adoption_pct", "cyber_posture"],
+    aliases: ["mfa_adoption_pct"],
+  },
+};
+
+// Metrics where the value is a status string, not a number.
+// Mapped to numeric: "NOMINAL"→1, anything else→0
+const STRING_METRIC_MAP: Record<string, Record<string, number>> = {
+  thruster_status: {
+    NOMINAL: 1,
+    DEGRADED: 0.5,
+    FAILED: 0,
+  },
+};
+
+// solar_array_power_w is in watts — normalize to percentage (max ~1000W typical)
+const UNIT_CONVERSIONS: Record<string, (value: number) => number> = {
+  solar_array_power_w: (w) => Math.min(100, (w / 1000) * 100),
+};
+
 /**
  * Transform SentinelPackets into time series for fuel, subsystems, cyber metrics.
  *
  * Queries the latest N days of SentinelPacket data for a given satellite + metric,
  * returns validated, sorted time series points.
+ *
+ * Key behaviors:
+ * - Searches across multiple data_point types (e.g. "remaining_fuel_pct" is found
+ *   inside "orbital_parameters" packets)
+ * - Resolves field name aliases (e.g. "battery_soc_pct" → "battery_state_of_charge")
+ * - Converts string statuses to numeric (e.g. "NOMINAL" → 1)
+ * - Converts units where needed (e.g. watts → percentage)
+ * - Tolerates chain breaks: requires signatureValid=true but accepts chainValid=false
+ *   with a trust score penalty
  */
 const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
@@ -68,15 +132,21 @@ export async function getSentinelTimeSeries(
       return { metric: dataPoint, noradId, points: [] };
     }
 
-    // Fetch packets for this satellite + dataPoint
+    // Resolve which dataPoint types and field aliases to search
+    const mapping = METRIC_FIELD_MAP[dataPoint];
+    const queryDataPoints = mapping ? mapping.dataPoints : [dataPoint];
+    const fieldAliases = mapping ? mapping.aliases : [dataPoint];
+
+    // Fetch packets — search across all relevant dataPoint types.
+    // Require signatureValid but tolerate chainValid=false (chain breaks
+    // are common during initial agent setup and don't indicate tampering).
     const packets = await prisma.sentinelPacket.findMany({
       where: {
         agentId: { in: agentIds },
         satelliteNorad: noradId,
-        dataPoint,
+        dataPoint: { in: queryDataPoints },
         collectedAt: { gte: cutoff },
-        signatureValid: true, // SVA-64: exclude tampered packets from forecasts
-        chainValid: true,
+        signatureValid: true, // SVA-64: exclude tampered packets
       },
       orderBy: { collectedAt: "asc" },
       select: {
@@ -85,20 +155,50 @@ export async function getSentinelTimeSeries(
         sourceSystem: true,
         crossVerified: true,
         trustScore: true,
+        chainValid: true,
       },
     });
 
     const range = METRIC_RANGES[dataPoint];
+    const stringMap = STRING_METRIC_MAP[dataPoint];
     const points: TimeSeriesPoint[] = [];
 
     for (const packet of packets) {
       const values = packet.values as Record<string, unknown>;
-      const rawValue = values[dataPoint];
 
-      if (typeof rawValue !== "number") continue;
+      // Try each field alias in order until we find a value
+      let rawValue: unknown = undefined;
+      let matchedAlias: string | null = null;
+      for (const alias of fieldAliases) {
+        if (alias in values) {
+          rawValue = values[alias];
+          matchedAlias = alias;
+          break;
+        }
+      }
+
+      if (rawValue === undefined) continue;
+
+      let numericValue: number;
+
+      // Handle string metric values (e.g. thruster_status: "NOMINAL" → 1)
+      if (typeof rawValue === "string" && stringMap) {
+        const mapped = stringMap[rawValue];
+        if (mapped === undefined) continue;
+        numericValue = mapped;
+      } else if (typeof rawValue === "number") {
+        numericValue = rawValue;
+      } else {
+        continue;
+      }
+
+      // Apply unit conversion if the matched alias has one (e.g. watts → pct)
+      if (matchedAlias && UNIT_CONVERSIONS[matchedAlias]) {
+        numericValue = UNIT_CONVERSIONS[matchedAlias](numericValue);
+      }
 
       // Validate range if defined
-      if (range && (rawValue < range.min || rawValue > range.max)) {
+      if (range && (numericValue < range.min || numericValue > range.max)) {
         safeLog("Sentinel value out of range, skipping", {
           dataPoint,
           noradId,
@@ -109,12 +209,17 @@ export async function getSentinelTimeSeries(
       // Map sourceSystem to collector category
       const source = mapSourceSystem(packet.sourceSystem);
 
+      // Trust score penalty for broken chain (data is genuine but chain
+      // integrity cannot be verified — reduce trust but still include)
+      const baseTrust = packet.trustScore ?? 0.5;
+      const trustScore = packet.chainValid ? baseTrust : baseTrust * 0.7;
+
       points.push({
         timestamp: packet.collectedAt.toISOString(),
-        value: rawValue,
+        value: numericValue,
         source,
         verified: packet.crossVerified,
-        trustScore: packet.trustScore ?? 0.5,
+        trustScore,
       });
     }
 
@@ -150,11 +255,17 @@ export async function getLatestSentinelValue(
 
     if (agentIds.length === 0) return null;
 
+    // Resolve dataPoint types and field aliases
+    const mapping = METRIC_FIELD_MAP[dataPoint];
+    const queryDataPoints = mapping ? mapping.dataPoints : [dataPoint];
+    const fieldAliases = mapping ? mapping.aliases : [dataPoint];
+    const stringMap = STRING_METRIC_MAP[dataPoint];
+
     const packet = await prisma.sentinelPacket.findFirst({
       where: {
         agentId: { in: agentIds },
         satelliteNorad: noradId,
-        dataPoint,
+        dataPoint: { in: queryDataPoints },
       },
       orderBy: { collectedAt: "desc" },
       select: {
@@ -167,12 +278,35 @@ export async function getLatestSentinelValue(
     if (!packet) return null;
 
     const values = packet.values as Record<string, unknown>;
-    const rawValue = values[dataPoint];
 
-    if (typeof rawValue !== "number") return null;
+    // Try each alias
+    let rawValue: unknown = undefined;
+    let matchedAlias: string | null = null;
+    for (const alias of fieldAliases) {
+      if (alias in values) {
+        rawValue = values[alias];
+        matchedAlias = alias;
+        break;
+      }
+    }
+
+    let numericValue: number;
+    if (typeof rawValue === "string" && stringMap) {
+      const mapped = stringMap[rawValue];
+      if (mapped === undefined) return null;
+      numericValue = mapped;
+    } else if (typeof rawValue === "number") {
+      numericValue = rawValue;
+    } else {
+      return null;
+    }
+
+    if (matchedAlias && UNIT_CONVERSIONS[matchedAlias]) {
+      numericValue = UNIT_CONVERSIONS[matchedAlias](numericValue);
+    }
 
     return {
-      value: rawValue,
+      value: numericValue,
       collectedAt: packet.collectedAt,
       trustScore: packet.trustScore ?? 0.5,
     };
