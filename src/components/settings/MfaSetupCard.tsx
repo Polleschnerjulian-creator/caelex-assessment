@@ -230,34 +230,18 @@ export function MfaSetupCard() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+      <div className="space-y-8">
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-          <Shield
-            className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div>
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-            TWO-FACTOR AUTHENTICATION
-          </h2>
-          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
-            Add an extra layer of security to your account
-          </p>
-        </div>
-      </div>
-
+    <div className="space-y-8">
       <AnimatePresence mode="wait">
         {!isSettingUp && !showDisableConfirm && !showRegenerateBackupCodes ? (
           <motion.div
@@ -265,72 +249,129 @@ export function MfaSetupCard() {
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="space-y-8"
           >
             {status?.enabled ? (
-              <div className="space-y-4">
-                {/* Enabled Status */}
-                <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-body-lg font-medium text-emerald-800 dark:text-emerald-300">
-                      Two-factor authentication is enabled
-                    </p>
-                    <p className="text-small text-emerald-600 dark:text-emerald-400 mt-0.5">
-                      {status.remainingBackupCodes} backup codes remaining
-                    </p>
+              <>
+                {/* Status Section */}
+                <div>
+                  <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                    Status
+                  </p>
+                  <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-[15px] font-medium text-slate-900 dark:text-white">
+                            Two-factor authentication is enabled
+                          </p>
+                          <p className="text-[13px] text-slate-500 dark:text-white/40 mt-0.5">
+                            {status.remainingBackupCodes} backup codes remaining
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Backup Codes Warning */}
+                {/* Low Backup Codes Warning */}
                 {status.remainingBackupCodes <= 3 && (
-                  <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-body text-amber-800 dark:text-amber-300">
-                        Low backup codes
-                      </p>
-                      <p className="text-small text-amber-600 dark:text-amber-400 mt-1">
-                        Consider regenerating your backup codes to ensure you
-                        can always access your account.
-                      </p>
+                  <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                    <div className="flex items-start gap-3 px-5 py-3.5">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[15px] font-medium text-slate-900 dark:text-white">
+                          Low backup codes
+                        </p>
+                        <p className="text-[13px] text-slate-500 dark:text-white/40 mt-1">
+                          Consider regenerating your backup codes to ensure you
+                          can always access your account.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => setShowRegenerateBackupCodes(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Regenerate Backup Codes
-                  </button>
-                  <button
-                    onClick={() => setShowDisableConfirm(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Disable MFA
-                  </button>
+                {/* Actions Section */}
+                <div>
+                  <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                    Actions
+                  </p>
+                  <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+                    <button
+                      onClick={() => setShowRegenerateBackupCodes(true)}
+                      className="flex items-center justify-between px-5 py-3.5 w-full text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RefreshCw className="w-[18px] h-[18px] text-slate-500 dark:text-white/50" />
+                        <span className="text-[15px] text-slate-900 dark:text-white">
+                          Regenerate Backup Codes
+                        </span>
+                      </div>
+                      <svg
+                        className="w-4 h-4 text-slate-400 dark:text-white/25"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setShowDisableConfirm(true)}
+                      className="flex items-center justify-between px-5 py-3.5 w-full text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Trash2 className="w-[18px] h-[18px] text-red-500 dark:text-red-400" />
+                        <span className="text-[15px] text-red-600 dark:text-red-400">
+                          Disable MFA
+                        </span>
+                      </div>
+                      <svg
+                        className="w-4 h-4 text-slate-400 dark:text-white/25"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="space-y-4">
-                <p className="text-body-lg text-slate-600 dark:text-white/70">
-                  Two-factor authentication adds an additional layer of security
-                  by requiring a verification code from your authenticator app
-                  when signing in.
+              <div>
+                <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                  Two-Factor Authentication
                 </p>
-                <button
-                  onClick={startSetup}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
-                >
-                  <Shield className="w-4 h-4" />
-                  Enable Two-Factor Authentication
-                </button>
+                <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                  <div className="px-5 py-5">
+                    <p className="text-[15px] text-slate-600 dark:text-white/60 mb-5">
+                      Two-factor authentication adds an additional layer of
+                      security by requiring a verification code from your
+                      authenticator app when signing in.
+                    </p>
+                    <button
+                      onClick={startSetup}
+                      className="px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                    >
+                      Enable Two-Factor Authentication
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>
@@ -340,71 +381,86 @@ export function MfaSetupCard() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4"
+            className="space-y-8"
           >
-            <div className="p-4 bg-red-50 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
-              <p className="text-body-lg font-medium text-red-800 dark:text-red-300 mb-2">
-                Disable Two-Factor Authentication?
-              </p>
-              <p className="text-body text-red-600 dark:text-red-400">
-                This will make your account less secure. Enter your password to
-                confirm.
-              </p>
-            </div>
-
             <div>
-              <label
-                htmlFor="mfa-disable-password"
-                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
-              >
-                Password
-              </label>
-              <input
-                id="mfa-disable-password"
-                type="password"
-                value={disablePassword}
-                aria-required="true"
-                onChange={(e) => {
-                  setDisablePassword(e.target.value);
-                  setError(null);
-                }}
-                placeholder="Enter your password"
-                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
-              />
-            </div>
-
-            {error && (
-              <p
-                role="alert"
-                className="text-body text-red-500 dark:text-red-400"
-              >
-                {error}
-              </p>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={disableMfa}
-                disabled={isDisabling}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
-              >
-                {isDisabling ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
+              <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
                 Disable MFA
-              </button>
-              <button
-                onClick={() => {
-                  setShowDisableConfirm(false);
-                  setDisablePassword("");
-                  setError(null);
-                }}
-                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-              >
-                Cancel
-              </button>
+              </p>
+              <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                <div className="px-5 py-5 space-y-5">
+                  {/* Warning */}
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/15">
+                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[15px] font-medium text-red-700 dark:text-red-300">
+                        Disable Two-Factor Authentication?
+                      </p>
+                      <p className="text-[13px] text-red-600 dark:text-red-400 mt-1">
+                        This will make your account less secure. Enter your
+                        password to confirm.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Password Input */}
+                  <div>
+                    <label
+                      htmlFor="mfa-disable-password"
+                      className="block text-[13px] font-medium text-slate-500 dark:text-white/40 mb-2"
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="mfa-disable-password"
+                      type="password"
+                      value={disablePassword}
+                      aria-required="true"
+                      onChange={(e) => {
+                        setDisablePassword(e.target.value);
+                        setError(null);
+                      }}
+                      placeholder="Enter your password"
+                      className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  {error && (
+                    <p
+                      role="alert"
+                      className="text-[13px] text-red-500 dark:text-red-400"
+                    >
+                      {error}
+                    </p>
+                  )}
+
+                  {/* Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={disableMfa}
+                      disabled={isDisabling}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-[15px] font-medium transition-colors"
+                    >
+                      {isDisabling ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                      Disable MFA
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDisableConfirm(false);
+                        setDisablePassword("");
+                        setError(null);
+                      }}
+                      className="px-5 py-2.5 rounded-xl text-[15px] font-medium text-slate-600 dark:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         ) : showRegenerateBackupCodes ? (
@@ -413,68 +469,77 @@ export function MfaSetupCard() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4"
+            className="space-y-8"
           >
-            <p className="text-body-lg text-slate-600 dark:text-white/70">
-              Enter your current authenticator code to generate new backup
-              codes. Your old backup codes will be invalidated.
-            </p>
-
             <div>
-              <label
-                htmlFor="mfa-regenerate-code"
-                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
-              >
-                Authenticator Code
-              </label>
-              <input
-                id="mfa-regenerate-code"
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                value={regenerateCode}
-                aria-required="true"
-                onChange={(e) => {
-                  setRegenerateCode(e.target.value.replace(/\D/g, ""));
-                  setError(null);
-                }}
-                placeholder="000000"
-                className="w-full max-w-[200px] bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-widest"
-              />
-            </div>
-
-            {error && (
-              <p
-                role="alert"
-                className="text-body text-red-500 dark:text-red-400"
-              >
-                {error}
+              <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                Regenerate Backup Codes
               </p>
-            )}
+              <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                <div className="px-5 py-5 space-y-5">
+                  <p className="text-[15px] text-slate-600 dark:text-white/60">
+                    Enter your current authenticator code to generate new backup
+                    codes. Your old backup codes will be invalidated.
+                  </p>
 
-            <div className="flex gap-3">
-              <button
-                onClick={regenerateBackupCodes}
-                disabled={regenerating || regenerateCode.length !== 6}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
-              >
-                {regenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                Generate New Codes
-              </button>
-              <button
-                onClick={() => {
-                  setShowRegenerateBackupCodes(false);
-                  setRegenerateCode("");
-                  setError(null);
-                }}
-                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-              >
-                Cancel
-              </button>
+                  <div>
+                    <label
+                      htmlFor="mfa-regenerate-code"
+                      className="block text-[13px] font-medium text-slate-500 dark:text-white/40 mb-2"
+                    >
+                      Authenticator Code
+                    </label>
+                    <input
+                      id="mfa-regenerate-code"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={regenerateCode}
+                      aria-required="true"
+                      onChange={(e) => {
+                        setRegenerateCode(e.target.value.replace(/\D/g, ""));
+                        setError(null);
+                      }}
+                      placeholder="000000"
+                      className="w-full max-w-[200px] bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors font-mono tracking-widest"
+                    />
+                  </div>
+
+                  {error && (
+                    <p
+                      role="alert"
+                      className="text-[13px] text-red-500 dark:text-red-400"
+                    >
+                      {error}
+                    </p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={regenerateBackupCodes}
+                      disabled={regenerating || regenerateCode.length !== 6}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 disabled:opacity-50 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                    >
+                      {regenerating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-4 h-4" />
+                      )}
+                      Generate New Codes
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowRegenerateBackupCodes(false);
+                        setRegenerateCode("");
+                        setError(null);
+                      }}
+                      className="px-5 py-2.5 rounded-xl text-[15px] font-medium text-slate-600 dark:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -483,207 +548,276 @@ export function MfaSetupCard() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
+            className="space-y-8"
           >
-            {setupStep === "qr" && (
-              <>
-                <div className="text-center">
-                  <p className="text-body-lg text-slate-600 dark:text-white/70 mb-4">
-                    Scan this QR code with your authenticator app
-                    <br />
-                    <span className="text-small text-slate-400 dark:text-white/45">
-                      (Google Authenticator, Authy, 1Password, etc.)
-                    </span>
-                  </p>
+            <AnimatePresence mode="wait">
+              {setupStep === "qr" && (
+                <motion.div
+                  key="step-qr"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <div>
+                    <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                      Step 1 — Scan QR Code
+                    </p>
+                    <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                      <div className="px-5 py-6">
+                        <p className="text-[15px] text-slate-600 dark:text-white/60 text-center mb-1">
+                          Scan this QR code with your authenticator app
+                        </p>
+                        <p className="text-[13px] text-slate-400 dark:text-white/30 text-center mb-5">
+                          Google Authenticator, Authy, 1Password, etc.
+                        </p>
 
-                  {qrCodeDataUrl ? (
-                    <div className="inline-block p-4 bg-white rounded-xl shadow-lg">
-                      <img
-                        src={qrCodeDataUrl}
-                        alt="MFA QR Code"
-                        className="w-48 h-48"
-                      />
+                        <div className="flex justify-center">
+                          {qrCodeDataUrl ? (
+                            <div className="p-4 bg-white rounded-2xl shadow-sm">
+                              <img
+                                src={qrCodeDataUrl}
+                                alt="MFA QR Code"
+                                className="w-48 h-48"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center w-56 h-56 bg-black/[0.03] dark:bg-white/[0.06] rounded-2xl">
+                              <Loader2 className="w-8 h-8 text-slate-400 dark:text-white/30 animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="inline-flex items-center justify-center w-56 h-56 bg-slate-100 dark:bg-white/10 rounded-xl">
-                      <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                  </div>
+
+                  {/* Manual Entry Secret */}
+                  {secret && (
+                    <div>
+                      <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                        Manual Entry
+                      </p>
+                      <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                        <div className="flex items-center justify-between px-5 py-3.5">
+                          <code className="flex-1 text-[13px] font-mono text-slate-900 dark:text-white break-all mr-3">
+                            {secret}
+                          </code>
+                          <button
+                            onClick={copySecret}
+                            className="p-2 rounded-lg hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors flex-shrink-0"
+                            aria-label={
+                              secretCopied
+                                ? "Secret copied"
+                                : "Copy secret to clipboard"
+                            }
+                          >
+                            {secretCopied ? (
+                              <Check className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-slate-400 dark:text-white/40" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Manual Entry */}
-                {secret && (
-                  <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
-                    <p className="text-small text-slate-500 dark:text-white/45 mb-2">
-                      Or enter this code manually:
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 p-2 bg-white dark:bg-[--glass-bg-surface] rounded text-small font-mono text-slate-900 dark:text-white break-all">
-                        {secret}
-                      </code>
-                      <button
-                        onClick={copySecret}
-                        className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-                        aria-label={
-                          secretCopied
-                            ? "Secret copied"
-                            : "Copy secret to clipboard"
-                        }
-                      >
-                        {secretCopied ? (
-                          <Check className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-4 h-4 text-slate-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  <button
+                    onClick={() => setSetupStep("verify")}
+                    className="w-full px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                  >
+                    Continue
+                  </button>
 
-                <button
-                  onClick={() => setSetupStep("verify")}
-                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
-                >
-                  Continue
-                </button>
-              </>
-            )}
-
-            {setupStep === "verify" && (
-              <>
-                <div className="text-center">
-                  <QrCode className="w-12 h-12 mx-auto text-emerald-500 mb-4" />
-                  <p className="text-body-lg text-slate-600 dark:text-white/70">
-                    Enter the 6-digit code from your authenticator app
-                  </p>
-                </div>
-
-                <div>
-                  <label htmlFor="mfa-verification-code" className="sr-only">
-                    Enter 6-digit verification code
-                  </label>
-                  <input
-                    id="mfa-verification-code"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verificationCode}
-                    aria-required="true"
-                    onChange={(e) => {
-                      setVerificationCode(e.target.value.replace(/\D/g, ""));
+                  <button
+                    onClick={() => {
+                      setIsSettingUp(false);
+                      setSetupStep("qr");
+                      setQrCodeDataUrl(null);
+                      setSecret(null);
+                      setVerificationCode("");
                       setError(null);
                     }}
-                    placeholder="000000"
-                    className="w-full text-center bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-heading-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-[0.5em]"
-                  />
-                </div>
-
-                {error && (
-                  <p
-                    role="alert"
-                    className="text-body text-red-500 dark:text-red-400 text-center"
+                    className="w-full py-2 text-[15px] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
                   >
-                    {error}
-                  </p>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setSetupStep("qr")}
-                    className="flex-1 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-                  >
-                    Back
+                    Cancel Setup
                   </button>
-                  <button
-                    onClick={verifySetup}
-                    disabled={verifying || verificationCode.length !== 6}
-                    className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
-                  >
-                    {verifying ? (
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                    ) : (
-                      "Verify & Enable"
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
+                </motion.div>
+              )}
 
-            {setupStep === "backup" && (
-              <>
-                <div className="text-center">
-                  <Key className="w-12 h-12 mx-auto text-emerald-500 mb-4" />
-                  <p className="text-body-lg font-medium text-slate-900 dark:text-white mb-2">
-                    Save Your Backup Codes
-                  </p>
-                  <p className="text-body text-slate-500 dark:text-white/45">
-                    Store these codes in a safe place. Each code can only be
-                    used once.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
-                  <div className="grid grid-cols-2 gap-2">
-                    {backupCodes.map((code, index) => (
-                      <code
-                        key={index}
-                        className="p-2 bg-white dark:bg-[--glass-bg-surface] rounded text-center text-body font-mono text-slate-900 dark:text-white"
-                      >
-                        {code}
-                      </code>
-                    ))}
-                  </div>
-                  <button
-                    onClick={copyBackupCodes}
-                    className="w-full mt-3 inline-flex items-center justify-center gap-2 py-2 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-                  >
-                    {backupCodesCopied ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-500" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        Copy All Codes
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                <div className="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
-                  <p className="text-small text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    Keep these codes safe. You won&apos;t be able to see them
-                    again after closing this dialog.
-                  </p>
-                </div>
-
-                <button
-                  onClick={finishSetup}
-                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
+              {setupStep === "verify" && (
+                <motion.div
+                  key="step-verify"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
                 >
-                  I&apos;ve Saved My Codes
-                </button>
-              </>
-            )}
+                  <div>
+                    <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                      Step 2 — Verify Code
+                    </p>
+                    <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                      <div className="px-5 py-6 space-y-5">
+                        <p className="text-[15px] text-slate-600 dark:text-white/60 text-center">
+                          Enter the 6-digit code from your authenticator app
+                        </p>
 
-            {/* Cancel button for setup flow */}
-            {setupStep !== "backup" && (
-              <button
-                onClick={() => {
-                  setIsSettingUp(false);
-                  setSetupStep("qr");
-                  setQrCodeDataUrl(null);
-                  setSecret(null);
-                  setVerificationCode("");
-                  setError(null);
-                }}
-                className="w-full py-2 text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
-              >
-                Cancel Setup
-              </button>
-            )}
+                        <div>
+                          <label
+                            htmlFor="mfa-verification-code"
+                            className="sr-only"
+                          >
+                            Enter 6-digit verification code
+                          </label>
+                          <input
+                            id="mfa-verification-code"
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={verificationCode}
+                            aria-required="true"
+                            onChange={(e) => {
+                              setVerificationCode(
+                                e.target.value.replace(/\D/g, ""),
+                              );
+                              setError(null);
+                            }}
+                            placeholder="000000"
+                            className="w-full text-center bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-3 text-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors font-mono tracking-[0.5em]"
+                          />
+                        </div>
+
+                        {error && (
+                          <p
+                            role="alert"
+                            className="text-[13px] text-red-500 dark:text-red-400 text-center"
+                          >
+                            {error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setSetupStep("qr")}
+                      className="flex-1 py-2.5 rounded-xl text-[15px] font-medium text-slate-600 dark:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={verifySetup}
+                      disabled={verifying || verificationCode.length !== 6}
+                      className="flex-1 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 disabled:opacity-50 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                    >
+                      {verifying ? (
+                        <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                      ) : (
+                        "Verify & Enable"
+                      )}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsSettingUp(false);
+                      setSetupStep("qr");
+                      setQrCodeDataUrl(null);
+                      setSecret(null);
+                      setVerificationCode("");
+                      setError(null);
+                    }}
+                    className="w-full py-2 text-[15px] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+                  >
+                    Cancel Setup
+                  </button>
+                </motion.div>
+              )}
+
+              {setupStep === "backup" && (
+                <motion.div
+                  key="step-backup"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <div>
+                    <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+                      Backup Codes
+                    </p>
+                    <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                      <div className="px-5 py-5 space-y-4">
+                        <div className="text-center">
+                          <p className="text-[15px] font-medium text-slate-900 dark:text-white mb-1">
+                            Save Your Backup Codes
+                          </p>
+                          <p className="text-[13px] text-slate-500 dark:text-white/40">
+                            Store these codes in a safe place. Each code can
+                            only be used once.
+                          </p>
+                        </div>
+
+                        {/* Backup codes grid */}
+                        <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] p-4">
+                          <div className="grid grid-cols-2 gap-2">
+                            {backupCodes.map((code, index) => (
+                              <div
+                                key={index}
+                                className="px-3 py-2 rounded-lg bg-white/80 dark:bg-white/[0.06] text-center text-[14px] font-mono text-slate-900 dark:text-white"
+                              >
+                                {code}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Copy button */}
+                        <button
+                          onClick={copyBackupCodes}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-[15px] font-medium text-slate-600 dark:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                        >
+                          {backupCodesCopied ? (
+                            <>
+                              <Check className="w-4 h-4 text-green-500" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              Copy All Codes
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Warning */}
+                  <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+                    <div className="flex items-start gap-3 px-5 py-3.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-[13px] text-slate-600 dark:text-white/50">
+                        Keep these codes safe. You won&apos;t be able to see
+                        them again after closing this dialog.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={finishSetup}
+                    className="w-full px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                  >
+                    I&apos;ve Saved My Codes
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

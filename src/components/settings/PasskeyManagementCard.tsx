@@ -191,54 +191,26 @@ export function PasskeyManagementCard() {
 
   if (!isWebAuthnSupported) {
     return (
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-            <Fingerprint className="w-5 h-5 text-slate-400 dark:text-white/45" />
-          </div>
-          <div>
-            <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-              PASSKEYS
-            </h2>
-            <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
-              Passwordless sign-in
-            </p>
+      <div className="space-y-8">
+        <div>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+            Passkeys
+          </p>
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+            <div className="px-5 py-5">
+              <p className="text-[15px] text-slate-500 dark:text-white/40">
+                Your browser or device doesn&apos;t support passkeys. Try using
+                a modern browser like Chrome, Safari, or Edge.
+              </p>
+            </div>
           </div>
         </div>
-        <p className="text-body-lg text-slate-500 dark:text-white/45">
-          Your browser or device doesn&apos;t support passkeys. Try using a
-          modern browser like Chrome, Safari, or Edge.
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
-          <Fingerprint className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-            PASSKEYS
-          </h2>
-          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
-            Sign in with Face ID, Touch ID, or security keys
-          </p>
-        </div>
-        {!showRegisterForm && (
-          <button
-            onClick={() => setShowRegisterForm(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Passkey
-          </button>
-        )}
-      </div>
-
+    <div className="space-y-8">
       <AnimatePresence mode="wait">
         {showRegisterForm ? (
           <motion.div
@@ -246,50 +218,56 @@ export function PasskeyManagementCard() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]"
           >
-            <div>
-              <label
-                htmlFor="passkey-device-name"
-                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
-              >
-                Device Name (optional)
-              </label>
-              <input
-                id="passkey-device-name"
-                type="text"
-                value={newDeviceName}
-                onChange={(e) => setNewDeviceName(e.target.value)}
-                placeholder="e.g., MacBook Pro, iPhone"
-                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
-              />
-              <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
-                Give your passkey a name to identify it later
-              </p>
-            </div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+              Add Passkey
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+              <div className="px-5 py-5 space-y-5">
+                <div>
+                  <label
+                    htmlFor="passkey-device-name"
+                    className="block text-[13px] font-medium text-slate-500 dark:text-white/40 mb-2"
+                  >
+                    Device Name (optional)
+                  </label>
+                  <input
+                    id="passkey-device-name"
+                    type="text"
+                    value={newDeviceName}
+                    onChange={(e) => setNewDeviceName(e.target.value)}
+                    placeholder="e.g., MacBook Pro, iPhone"
+                    className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                  />
+                  <p className="text-[12px] text-slate-400 dark:text-white/25 mt-1.5">
+                    Give your passkey a name to identify it later
+                  </p>
+                </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={registerPasskey}
-                disabled={isRegistering}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
-              >
-                {isRegistering ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Fingerprint className="w-4 h-4" />
-                )}
-                {isRegistering ? "Registering..." : "Create Passkey"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowRegisterForm(false);
-                  setNewDeviceName("");
-                }}
-                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-              >
-                Cancel
-              </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={registerPasskey}
+                    disabled={isRegistering}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 disabled:opacity-50 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+                  >
+                    {isRegistering ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Fingerprint className="w-4 h-4" />
+                    )}
+                    {isRegistering ? "Registering..." : "Create Passkey"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowRegisterForm(false);
+                      setNewDeviceName("");
+                    }}
+                    className="px-5 py-2.5 rounded-xl text-[15px] font-medium text-slate-600 dark:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -298,127 +276,147 @@ export function PasskeyManagementCard() {
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="space-y-6"
           >
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
-              </div>
-            ) : passkeys.length === 0 ? (
-              <div className="text-center py-8">
-                <Fingerprint className="w-12 h-12 mx-auto text-slate-300 dark:text-white/20 mb-3" />
-                <p className="text-body-lg text-slate-500 dark:text-white/45 mb-1">
-                  No passkeys registered
+            {/* Passkey List */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider">
+                  Passkeys
                 </p>
-                <p className="text-small text-slate-400 dark:text-white/30">
-                  Add a passkey to sign in without a password using Face ID,
-                  Touch ID, or a security key.
-                </p>
+                <button
+                  onClick={() => setShowRegisterForm(true)}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add
+                </button>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {passkeys.map((passkey) => (
-                  <div
-                    key={passkey.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                      {getDeviceIcon(passkey.deviceType)}
-                    </div>
 
-                    <div className="flex-1 min-w-0">
-                      {editingId === passkey.id ? (
-                        <div className="flex items-center gap-2">
-                          <label
-                            htmlFor={`passkey-rename-${passkey.id}`}
-                            className="sr-only"
-                          >
-                            Rename passkey
-                          </label>
-                          <input
-                            id={`passkey-rename-${passkey.id}`}
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="flex-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded px-2 py-1 text-body text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") renamePasskey(passkey.id);
-                              if (e.key === "Escape") {
-                                setEditingId(null);
-                                setEditName("");
-                              }
-                            }}
-                          />
-                          <button
-                            onClick={() => renamePasskey(passkey.id)}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10"
-                            aria-label="Confirm rename"
-                          >
-                            <Check
-                              className="w-4 h-4 text-emerald-500"
-                              aria-hidden="true"
-                            />
-                          </button>
+              <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
+                  </div>
+                ) : passkeys.length === 0 ? (
+                  <div className="px-5 py-10 text-center">
+                    <Fingerprint className="w-10 h-10 mx-auto text-slate-300 dark:text-white/15 mb-3" />
+                    <p className="text-[15px] text-slate-500 dark:text-white/40 mb-1">
+                      No passkeys registered
+                    </p>
+                    <p className="text-[13px] text-slate-400 dark:text-white/25">
+                      Add a passkey to sign in without a password using Face ID,
+                      Touch ID, or a security key.
+                    </p>
+                  </div>
+                ) : (
+                  passkeys.map((passkey) => (
+                    <div
+                      key={passkey.id}
+                      className="flex items-center justify-between px-5 py-3.5"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center text-slate-500 dark:text-white/50 flex-shrink-0">
+                          {getDeviceIcon(passkey.deviceType)}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          {editingId === passkey.id ? (
+                            <div className="flex items-center gap-2">
+                              <label
+                                htmlFor={`passkey-rename-${passkey.id}`}
+                                className="sr-only"
+                              >
+                                Rename passkey
+                              </label>
+                              <input
+                                id={`passkey-rename-${passkey.id}`}
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="flex-1 bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-lg px-3 py-1.5 text-[15px] text-slate-900 dark:text-white focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter")
+                                    renamePasskey(passkey.id);
+                                  if (e.key === "Escape") {
+                                    setEditingId(null);
+                                    setEditName("");
+                                  }
+                                }}
+                              />
+                              <button
+                                onClick={() => renamePasskey(passkey.id)}
+                                className="p-1.5 rounded-lg hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                                aria-label="Confirm rename"
+                              >
+                                <Check
+                                  className="w-4 h-4 text-green-500"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingId(null);
+                                  setEditName("");
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                                aria-label="Cancel rename"
+                              >
+                                <X
+                                  className="w-4 h-4 text-slate-400 dark:text-white/40"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-[15px] text-slate-900 dark:text-white font-medium truncate">
+                                {passkey.deviceName || "Unnamed Passkey"}
+                              </p>
+                              <p className="text-[12px] text-slate-400 dark:text-white/25">
+                                Added {formatDate(passkey.createdAt)}
+                                {passkey.lastUsedAt &&
+                                  ` \u00B7 Last used ${formatDate(passkey.lastUsedAt)}`}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {editingId !== passkey.id && (
+                        <div className="flex items-center gap-1 flex-shrink-0 ml-3">
                           <button
                             onClick={() => {
-                              setEditingId(null);
-                              setEditName("");
+                              setEditingId(passkey.id);
+                              setEditName(passkey.deviceName || "");
                             }}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10"
-                            aria-label="Cancel rename"
+                            className="p-1.5 rounded-lg text-slate-400 dark:text-white/25 hover:text-slate-600 dark:hover:text-white/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                            title="Rename"
+                            aria-label={`Rename passkey ${passkey.deviceName || "Unnamed Passkey"}`}
                           >
-                            <X
-                              className="w-4 h-4 text-slate-400"
-                              aria-hidden="true"
-                            />
+                            <Edit2 className="w-4 h-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            onClick={() => deletePasskey(passkey.id)}
+                            disabled={deletingId === passkey.id}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                            title="Remove"
+                            aria-label={`Remove passkey ${passkey.deviceName || "Unnamed Passkey"}`}
+                          >
+                            {deletingId === passkey.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
-                      ) : (
-                        <>
-                          <p className="text-body text-slate-900 dark:text-white font-medium truncate">
-                            {passkey.deviceName || "Unnamed Passkey"}
-                          </p>
-                          <p className="text-caption text-slate-400 dark:text-white/30">
-                            Added {formatDate(passkey.createdAt)}
-                            {passkey.lastUsedAt &&
-                              ` • Last used ${formatDate(passkey.lastUsedAt)}`}
-                          </p>
-                        </>
                       )}
                     </div>
-
-                    {editingId !== passkey.id && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setEditingId(passkey.id);
-                            setEditName(passkey.deviceName || "");
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-                          title="Rename"
-                          aria-label={`Rename passkey ${passkey.deviceName || "Unnamed Passkey"}`}
-                        >
-                          <Edit2 className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                        <button
-                          onClick={() => deletePasskey(passkey.id)}
-                          disabled={deletingId === passkey.id}
-                          className="p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                          title="Remove"
-                          aria-label={`Remove passkey ${passkey.deviceName || "Unnamed Passkey"}`}
-                        >
-                          {deletingId === passkey.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
-            )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

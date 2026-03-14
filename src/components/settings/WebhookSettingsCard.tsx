@@ -182,8 +182,8 @@ export function WebhookSettingsCard() {
   if (!orgId) {
     return (
       <div className="py-12 text-center">
-        <Building2 className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
-        <p className="text-[13px] text-slate-500 dark:text-slate-400">
+        <Building2 className="w-8 h-8 text-slate-400 dark:text-white/30 mx-auto mb-3" />
+        <p className="text-[13px] text-slate-500 dark:text-white/40">
           Join or create an organization to manage webhooks.
         </p>
       </div>
@@ -191,56 +191,64 @@ export function WebhookSettingsCard() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* New secret alert */}
+    <div className="space-y-8">
+      {/* Signing secret alert */}
       {newSecret && (
-        <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-slate-800 dark:text-white mb-1">
-                Webhook Signing Secret
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
-                Save this secret — it won&apos;t be shown again. Use it to
-                verify webhook signatures.
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-black/5 dark:bg-black/30 rounded-lg px-3 py-2 text-[11px] font-mono text-amber-700 dark:text-amber-300 overflow-x-auto">
-                  {newSecret}
-                </code>
-                <button
-                  onClick={copySecret}
-                  className="p-2 rounded-lg bg-white/60 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] transition-colors shrink-0"
-                >
-                  {copied ? (
-                    <Check size={14} className="text-emerald-500" />
-                  ) : (
-                    <Copy size={14} className="text-slate-500" />
-                  )}
-                </button>
+        <div>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+            Signing Secret
+          </p>
+          <div className="rounded-2xl bg-amber-50/80 dark:bg-amber-500/[0.06] border border-amber-200/60 dark:border-amber-500/15 overflow-hidden">
+            <div className="flex items-start gap-3 px-5 py-4">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-medium text-slate-800 dark:text-white mb-1">
+                  Webhook Signing Secret
+                </p>
+                <p className="text-[13px] text-slate-500 dark:text-white/40 mb-3">
+                  Save this secret — it won&apos;t be shown again. Use it to
+                  verify webhook signatures.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-black/5 dark:bg-black/30 rounded-xl px-4 py-2.5 text-[13px] font-mono text-amber-700 dark:text-amber-300 overflow-x-auto">
+                    {newSecret}
+                  </code>
+                  <button
+                    onClick={copySecret}
+                    className="p-2.5 rounded-xl bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] transition-colors shrink-0"
+                  >
+                    {copied ? (
+                      <Check size={14} className="text-green-500" />
+                    ) : (
+                      <Copy
+                        size={14}
+                        className="text-slate-500 dark:text-white/40"
+                      />
+                    )}
+                  </button>
+                </div>
               </div>
+              <button
+                onClick={() => setNewSecret(null)}
+                className="text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white p-1 transition-colors"
+              >
+                <X size={14} />
+              </button>
             </div>
-            <button
-              onClick={() => setNewSecret(null)}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1"
-            >
-              <X size={14} />
-            </button>
           </div>
         </div>
       )}
 
-      {/* Header + create */}
+      {/* Header + create button */}
       <div className="flex items-center justify-between">
-        <p className="text-[12px] text-slate-500 dark:text-slate-400">
+        <p className="text-[13px] text-slate-500 dark:text-white/40">
           {webhooks.length} webhook{webhooks.length !== 1 ? "s" : ""} configured
         </p>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[12px] font-medium transition-colors"
+          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
         >
-          <Plus size={13} />
+          <Plus size={15} />
           Add Webhook
         </button>
       </div>
@@ -248,53 +256,61 @@ export function WebhookSettingsCard() {
       {/* Webhook list */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+          <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
         </div>
       ) : webhooks.length === 0 && !showCreate ? (
-        <div className="py-10 text-center rounded-xl bg-white/30 dark:bg-white/[0.02] border border-black/[0.03] dark:border-white/[0.04]">
-          <Webhook className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
-          <p className="text-[13px] text-slate-600 dark:text-slate-400 mb-1">
-            No webhooks yet
-          </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500">
-            Create a webhook to receive real-time compliance events.
-          </p>
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="py-12 text-center px-5">
+            <Webhook className="w-8 h-8 text-slate-400 dark:text-white/30 mx-auto mb-3" />
+            <p className="text-[15px] text-slate-600 dark:text-white/60 mb-1">
+              No webhooks yet
+            </p>
+            <p className="text-[13px] text-slate-400 dark:text-white/30">
+              Create a webhook to receive real-time compliance events.
+            </p>
+          </div>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {webhooks.map((wh) => (
-            <div
-              key={wh.id}
-              className="p-3.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]"
-            >
-              <div className="flex items-start justify-between">
+      ) : webhooks.length > 0 ? (
+        <div>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+            Active Webhooks
+          </p>
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            {webhooks.map((wh) => (
+              <div
+                key={wh.id}
+                className="flex items-center justify-between px-5 py-3.5"
+              >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-0.5">
                     {wh.isActive ? (
                       <CheckCircle2
-                        size={13}
-                        className="text-emerald-500 shrink-0"
+                        size={14}
+                        className="text-green-500 shrink-0"
                       />
                     ) : (
-                      <XCircle size={13} className="text-slate-400 shrink-0" />
+                      <XCircle
+                        size={14}
+                        className="text-slate-400 dark:text-white/30 shrink-0"
+                      />
                     )}
-                    <span className="text-[13px] font-medium text-slate-800 dark:text-white truncate">
+                    <span className="text-[15px] font-medium text-slate-900 dark:text-white truncate">
                       {wh.name}
                     </span>
                   </div>
-                  <p className="text-[11px] font-mono text-slate-400 dark:text-slate-500 truncate pl-5">
+                  <p className="text-[13px] font-mono text-slate-400 dark:text-white/30 truncate pl-[22px]">
                     {wh.url}
                   </p>
-                  <div className="flex items-center gap-3 mt-1.5 pl-5">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center gap-3 mt-1 pl-[22px]">
+                    <span className="text-[13px] text-slate-400 dark:text-white/30">
                       {wh.events.length} event
                       {wh.events.length !== 1 ? "s" : ""}
                     </span>
-                    <span className="text-[10px] text-emerald-500">
+                    <span className="text-[13px] text-green-600 dark:text-green-400">
                       {wh.successCount} delivered
                     </span>
                     {wh.failureCount > 0 && (
-                      <span className="text-[10px] text-red-500">
+                      <span className="text-[13px] text-red-500">
                         {wh.failureCount} failed
                       </span>
                     )}
@@ -303,156 +319,166 @@ export function WebhookSettingsCard() {
                 <button
                   onClick={() => handleDelete(wh.id)}
                   disabled={deleting === wh.id}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                  className="p-2 rounded-xl text-slate-400 dark:text-white/30 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                 >
                   {deleting === wh.id ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : (
-                    <Trash2 size={14} />
+                    <Trash2 size={15} />
                   )}
                 </button>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Create form (inline) */}
+      {/* Create form */}
       {showCreate && (
-        <div className="p-5 rounded-xl bg-white/50 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08]">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-semibold text-slate-800 dark:text-white">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[15px] font-medium text-slate-900 dark:text-white">
               New Webhook
             </h3>
             <button
               onClick={() => setShowCreate(false)}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              className="p-1.5 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white transition-colors"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Slack Notifications"
-                className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">
-                Endpoint URL
-              </label>
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com/webhook"
-                className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-2 block">
-                Events ({selectedEvents.length} selected)
-              </label>
-              <div className="space-y-1 max-h-[240px] overflow-y-auto rounded-xl bg-white/30 dark:bg-white/[0.02] border border-black/[0.03] dark:border-white/[0.04] p-2">
-                {Object.entries(groupedEvents).map(([cat, events]) => {
-                  const isExpanded = expandedCategories.includes(cat);
-                  const catSelected = events.filter((e) =>
-                    selectedEvents.includes(e.event),
-                  ).length;
-                  return (
-                    <div key={cat}>
-                      <button
-                        onClick={() => toggleCategory(cat)}
-                        className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/[0.04] transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleAllInCategory(cat);
-                            }}
-                            className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-white transition-colors ${
-                              catSelected === events.length
-                                ? "bg-emerald-500 border-emerald-500"
-                                : catSelected > 0
-                                  ? "bg-emerald-500/50 border-emerald-500/50"
-                                  : "border-black/[0.15] dark:border-white/[0.15]"
-                            }`}
-                          >
-                            {catSelected > 0 && <Check size={8} />}
-                          </button>
-                          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">
-                            {EVENT_CATEGORIES[cat] || cat}
-                          </span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                            {catSelected}/{events.length}
-                          </span>
-                        </div>
-                        {isExpanded ? (
-                          <ChevronUp size={12} className="text-slate-400" />
-                        ) : (
-                          <ChevronDown size={12} className="text-slate-400" />
-                        )}
-                      </button>
-                      {isExpanded && (
-                        <div className="ml-5 space-y-0.5 pb-1">
-                          {events.map((e) => (
-                            <label
-                              key={e.event}
-                              className="flex items-start gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/40 dark:hover:bg-white/[0.03]"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedEvents.includes(e.event)}
-                                onChange={() => toggleEvent(e.event)}
-                                className="mt-0.5 accent-emerald-500"
-                              />
-                              <div>
-                                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono">
-                                  {e.event}
-                                </p>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                                  {e.description}
-                                </p>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          {/* Name & URL fields */}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+              Details
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+              <div className="px-5 py-3.5">
+                <label className="text-[13px] text-slate-500 dark:text-white/40 mb-1.5 block">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Slack Notifications"
+                  className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="px-5 py-3.5">
+                <label className="text-[13px] text-slate-500 dark:text-white/40 mb-1.5 block">
+                  Endpoint URL
+                </label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com/webhook"
+                  className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                />
               </div>
             </div>
+          </div>
 
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={() => setShowCreate(false)}
-                className="flex-1 py-2.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] text-[13px] text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/[0.04] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={
-                  !name || !url || selectedEvents.length === 0 || creating
-                }
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[13px] font-medium hover:bg-slate-700 dark:hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {creating && <Loader2 size={14} className="animate-spin" />}
-                Create Webhook
-              </button>
+          {/* Event picker */}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+              Events ({selectedEvents.length} selected)
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden max-h-[320px] overflow-y-auto">
+              {Object.entries(groupedEvents).map(([cat, events]) => {
+                const isExpanded = expandedCategories.includes(cat);
+                const catSelected = events.filter((e) =>
+                  selectedEvents.includes(e.event),
+                ).length;
+                return (
+                  <div key={cat}>
+                    {/* Category header row */}
+                    <div className="flex items-center justify-between px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleAllInCategory(cat);
+                          }}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                            catSelected === events.length
+                              ? "bg-slate-500 border-slate-500"
+                              : catSelected > 0
+                                ? "bg-slate-400/50 border-slate-400/50"
+                                : "border-black/[0.15] dark:border-white/[0.15]"
+                          }`}
+                        >
+                          {catSelected > 0 && (
+                            <Check size={10} className="text-white" />
+                          )}
+                        </button>
+                        <span className="text-[15px] font-medium text-slate-900 dark:text-white">
+                          {EVENT_CATEGORIES[cat] || cat}
+                        </span>
+                        <span className="text-[13px] text-slate-400 dark:text-white/30">
+                          {catSelected}/{events.length}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => toggleCategory(cat)}
+                        className="p-1 text-slate-400 dark:text-white/30"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
+                      </button>
+                    </div>
+                    {/* Expanded event rows */}
+                    {isExpanded &&
+                      events.map((e) => (
+                        <label
+                          key={e.event}
+                          className="flex items-center gap-3 px-5 py-3 pl-12 cursor-pointer hover:bg-white/40 dark:hover:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.06]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedEvents.includes(e.event)}
+                            onChange={() => toggleEvent(e.event)}
+                            className="accent-slate-500 w-3.5 h-3.5"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] text-slate-700 dark:text-white/70 font-mono">
+                              {e.event}
+                            </p>
+                            <p className="text-[13px] text-slate-400 dark:text-white/30">
+                              {e.description}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                  </div>
+                );
+              })}
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowCreate(false)}
+              className="flex-1 py-2.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] text-[15px] text-slate-600 dark:text-white/50 hover:bg-white/40 dark:hover:bg-white/[0.04] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={
+                !name || !url || selectedEvents.length === 0 || creating
+              }
+              className="flex-1 py-2.5 rounded-xl bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[15px] font-medium hover:bg-slate-700 dark:hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {creating && <Loader2 size={15} className="animate-spin" />}
+              Create Webhook
+            </button>
           </div>
         </div>
       )}

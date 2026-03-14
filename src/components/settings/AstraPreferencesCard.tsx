@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { Sparkles, MessageSquare, Zap, BookOpen } from "lucide-react";
 
 interface AstraPrefs {
   verbosity: "brief" | "balanced" | "detailed";
@@ -53,166 +52,141 @@ export function AstraPreferencesCard() {
   if (!mounted) return null;
 
   return (
-    <div className="space-y-6">
-      {/* Verbosity */}
+    <div className="space-y-8">
+      {/* Response Detail */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-slate-400" />
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
           Response Detail
-        </h3>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">
-          How detailed should Astra&apos;s answers be?
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {(
-            [
-              {
-                value: "brief",
-                label: "Brief",
-                desc: "Short, to the point",
-              },
-              {
-                value: "balanced",
-                label: "Balanced",
-                desc: "Clear with context",
-              },
-              {
-                value: "detailed",
-                label: "Detailed",
-                desc: "Comprehensive answers",
-              },
-            ] as const
-          ).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => update({ verbosity: opt.value })}
-              className={`p-3 rounded-xl text-left transition-all duration-150 border ${
-                prefs.verbosity === opt.value
-                  ? "bg-white/70 dark:bg-white/[0.06] border-violet-400/40 dark:border-violet-500/30 shadow-sm"
-                  : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] hover:bg-white/50 dark:hover:bg-white/[0.04]"
-              }`}
+
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="px-5 py-4">
+            <p className="text-[13px] text-slate-500 dark:text-white/40 mb-3">
+              How detailed should Astra&apos;s answers be?
+            </p>
+            <div
+              className="flex p-[3px] bg-black/[0.06] dark:bg-white/[0.1] rounded-xl"
+              role="radiogroup"
+              aria-label="Response detail level"
             >
-              <p className="text-[13px] font-medium text-slate-800 dark:text-white">
-                {opt.label}
-              </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                {opt.desc}
-              </p>
-            </button>
-          ))}
+              {(
+                [
+                  { value: "brief", label: "Brief" },
+                  { value: "balanced", label: "Balanced" },
+                  { value: "detailed", label: "Detailed" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={prefs.verbosity === opt.value}
+                  onClick={() => update({ verbosity: opt.value })}
+                  className={`flex-1 px-4 py-2.5 rounded-[10px] text-[14px] font-medium transition-all duration-200 ${
+                    prefs.verbosity === opt.value
+                      ? "bg-white dark:bg-white/[0.15] text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Response Language */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-slate-400" />
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
           Response Language
-        </h3>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">
-          Which language should Astra respond in?
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {(
-            [
-              {
-                value: "system",
-                label: "Follow System",
-                desc: "Uses your app language",
-              },
-              {
-                value: "en",
-                label: "English",
-                desc: "Always respond in English",
-              },
-              {
-                value: "de",
-                label: "Deutsch",
-                desc: "Immer auf Deutsch antworten",
-              },
-            ] as const
-          ).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => update({ responseLanguage: opt.value })}
-              className={`p-3 rounded-xl text-left transition-all duration-150 border ${
-                prefs.responseLanguage === opt.value
-                  ? "bg-white/70 dark:bg-white/[0.06] border-violet-400/40 dark:border-violet-500/30 shadow-sm"
-                  : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] hover:bg-white/50 dark:hover:bg-white/[0.04]"
-              }`}
+
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="px-5 py-4">
+            <p className="text-[13px] text-slate-500 dark:text-white/40 mb-3">
+              Which language should Astra respond in?
+            </p>
+            <div
+              className="flex p-[3px] bg-black/[0.06] dark:bg-white/[0.1] rounded-xl"
+              role="radiogroup"
+              aria-label="Response language"
             >
-              <p className="text-[13px] font-medium text-slate-800 dark:text-white">
-                {opt.label}
-              </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                {opt.desc}
-              </p>
-            </button>
-          ))}
+              {(
+                [
+                  { value: "system", label: "Follow System" },
+                  { value: "en", label: "English" },
+                  { value: "de", label: "Deutsch" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={prefs.responseLanguage === opt.value}
+                  onClick={() => update({ responseLanguage: opt.value })}
+                  className={`flex-1 px-4 py-2.5 rounded-[10px] text-[14px] font-medium transition-all duration-200 ${
+                    prefs.responseLanguage === opt.value
+                      ? "bg-white dark:bg-white/[0.15] text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Default Mode */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-slate-400" />
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
           Default Mode
-        </h3>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">
-          How Astra should approach your questions by default
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              {
-                value: "auto",
-                label: "Auto-Detect",
-                desc: "Astra picks the best mode",
-              },
-              {
-                value: "general",
-                label: "General",
-                desc: "Open Q&A about compliance",
-              },
-              {
-                value: "assessment",
-                label: "Assessment",
-                desc: "Guide through assessments",
-              },
-              {
-                value: "document",
-                label: "Document",
-                desc: "Help draft documents",
-              },
-            ] as const
-          ).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => update({ defaultMode: opt.value })}
-              className={`p-3 rounded-xl text-left transition-all duration-150 border ${
-                prefs.defaultMode === opt.value
-                  ? "bg-white/70 dark:bg-white/[0.06] border-violet-400/40 dark:border-violet-500/30 shadow-sm"
-                  : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] hover:bg-white/50 dark:hover:bg-white/[0.04]"
-              }`}
+
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="px-5 py-4">
+            <p className="text-[13px] text-slate-500 dark:text-white/40 mb-3">
+              How Astra should approach your questions by default
+            </p>
+            <div
+              className="flex p-[3px] bg-black/[0.06] dark:bg-white/[0.1] rounded-xl"
+              role="radiogroup"
+              aria-label="Default mode"
             >
-              <p className="text-[13px] font-medium text-slate-800 dark:text-white">
-                {opt.label}
-              </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                {opt.desc}
-              </p>
-            </button>
-          ))}
+              {(
+                [
+                  { value: "auto", label: "Auto" },
+                  { value: "general", label: "General" },
+                  { value: "assessment", label: "Assessment" },
+                  { value: "document", label: "Document" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={prefs.defaultMode === opt.value}
+                  onClick={() => update({ defaultMode: opt.value })}
+                  className={`flex-1 px-4 py-2.5 rounded-[10px] text-[14px] font-medium transition-all duration-200 ${
+                    prefs.defaultMode === opt.value
+                      ? "bg-white dark:bg-white/[0.15] text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Toggles */}
+      {/* Behavior Toggles */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-slate-400" />
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
           Behavior
-        </h3>
-        <div className="space-y-2">
+        </p>
+
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
           {[
             {
               key: "showSources" as const,
@@ -232,27 +206,29 @@ export function AstraPreferencesCard() {
           ].map((toggle) => (
             <div
               key={toggle.key}
-              className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]"
+              className="flex items-center justify-between px-5 py-3.5"
             >
-              <div>
-                <p className="text-[13px] font-medium text-slate-800 dark:text-white">
+              <div className="mr-4">
+                <p className="text-[15px] font-medium text-slate-800 dark:text-white">
                   {toggle.label}
                 </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                <p className="text-[13px] text-slate-400 dark:text-white/40 mt-0.5">
                   {toggle.desc}
                 </p>
               </div>
               <button
+                role="switch"
+                aria-checked={prefs[toggle.key]}
                 onClick={() => update({ [toggle.key]: !prefs[toggle.key] })}
-                className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${
+                className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-300 flex-shrink-0 ${
                   prefs[toggle.key]
-                    ? "bg-violet-500"
-                    : "bg-slate-300 dark:bg-white/[0.1]"
+                    ? "bg-slate-500 dark:bg-slate-400"
+                    : "bg-black/[0.09] dark:bg-white/[0.16]"
                 }`}
               >
                 <span
-                  className={`absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                    prefs[toggle.key] ? "left-[22px]" : "left-[3px]"
+                  className={`absolute top-[2px] w-[27px] h-[27px] rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                    prefs[toggle.key] ? "left-[22px]" : "left-[2px]"
                   }`}
                 />
               </button>

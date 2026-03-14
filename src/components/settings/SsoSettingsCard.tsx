@@ -183,8 +183,8 @@ export function SsoSettingsCard() {
   if (!orgId) {
     return (
       <div className="py-12 text-center">
-        <Building2 className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
-        <p className="text-[13px] text-slate-500 dark:text-slate-400">
+        <Building2 className="w-8 h-8 text-slate-400 dark:text-white/30 mx-auto mb-3" />
+        <p className="text-[13px] text-slate-500 dark:text-white/40">
           Join or create an organization to configure SSO.
         </p>
       </div>
@@ -194,7 +194,7 @@ export function SsoSettingsCard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+        <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
       </div>
     );
   }
@@ -202,61 +202,72 @@ export function SsoSettingsCard() {
   // Configured view
   if (connection && !showSetup) {
     return (
-      <div className="space-y-5">
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <div className="flex items-center gap-2 mb-2">
-            <Check className="w-4 h-4 text-emerald-500" />
-            <span className="text-[13px] font-medium text-emerald-700 dark:text-emerald-400">
-              SSO Configured
-            </span>
-          </div>
-          <p className="text-[12px] text-emerald-600/80 dark:text-emerald-400/70">
-            Single Sign-On is active via {connection.providerName}.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: "Provider", value: connection.providerName },
-            {
-              label: "Auto-Provision",
-              value: connection.autoProvision ? "Enabled" : "Disabled",
-            },
-            { label: "Default Role", value: connection.defaultRole },
-            {
-              label: "Enforce SSO",
-              value: connection.enforceSSO ? "Yes" : "No",
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]"
-            >
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                {item.label}
+      <div className="space-y-8">
+        {/* Status banner */}
+        <div className="rounded-2xl bg-green-50/60 dark:bg-green-500/[0.06] border border-green-200/50 dark:border-green-500/15 overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-3.5">
+            <Check className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+            <div>
+              <p className="text-[15px] font-medium text-green-800 dark:text-green-300">
+                SSO Configured
               </p>
-              <p className="text-[13px] font-medium text-slate-800 dark:text-white mt-0.5">
-                {item.value}
+              <p className="text-[13px] text-green-600/70 dark:text-green-400/60">
+                Single Sign-On is active via {connection.providerName}.
               </p>
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Configuration details */}
+        <div>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+            Configuration
+          </p>
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            {[
+              { label: "Provider", value: connection.providerName },
+              {
+                label: "Auto-Provision",
+                value: connection.autoProvision ? "Enabled" : "Disabled",
+              },
+              { label: "Default Role", value: connection.defaultRole },
+              {
+                label: "Enforce SSO",
+                value: connection.enforceSSO ? "Yes" : "No",
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between px-5 py-3.5"
+              >
+                <span className="text-[15px] text-slate-500 dark:text-white/40">
+                  {item.label}
+                </span>
+                <span className="text-[15px] font-medium text-slate-900 dark:text-white">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Domains */}
         {connection.domains.length > 0 && (
           <div>
-            <h4 className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
               Verified Domains
-            </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {connection.domains.map((d) => (
-                <span
-                  key={d}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-white/50 dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.06] text-slate-600 dark:text-slate-400 font-mono"
-                >
-                  {d}
-                </span>
-              ))}
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden px-5 py-3.5">
+              <div className="flex flex-wrap gap-2">
+                {connection.domains.map((d) => (
+                  <span
+                    key={d}
+                    className="text-[13px] px-3 py-1.5 rounded-lg bg-white/80 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-slate-600 dark:text-white/50 font-mono"
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -264,10 +275,10 @@ export function SsoSettingsCard() {
         {/* Test result */}
         {connection.lastTestResult && (
           <div
-            className={`p-3 rounded-xl border text-[12px] ${
+            className={`rounded-2xl border overflow-hidden px-5 py-3.5 text-[13px] ${
               connection.lastTestResult === "success"
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+                ? "bg-green-50/60 dark:bg-green-500/[0.06] border-green-200/50 dark:border-green-500/15 text-green-700 dark:text-green-400"
+                : "bg-red-50/60 dark:bg-red-500/[0.06] border-red-200/50 dark:border-red-500/15 text-red-600 dark:text-red-400"
             }`}
           >
             Last test: {connection.lastTestResult}
@@ -276,23 +287,24 @@ export function SsoSettingsCard() {
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
+        {/* Actions */}
+        <div className="flex gap-3">
           <button
             onClick={handleTest}
             disabled={testing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] hover:bg-white/80 dark:hover:bg-white/[0.1] text-[13px] text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] hover:bg-white/60 dark:hover:bg-white/[0.04] text-[15px] text-slate-700 dark:text-white/60 transition-colors disabled:opacity-50"
           >
             {testing ? (
-              <Loader2 size={14} className="animate-spin" />
+              <Loader2 size={15} className="animate-spin" />
             ) : (
-              <Shield size={14} />
+              <Shield size={15} />
             )}
             Test Connection
           </button>
           <button
             onClick={handleDisable}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[15px] text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
           >
             Disable SSO
           </button>
@@ -306,14 +318,14 @@ export function SsoSettingsCard() {
     const requiredFields = provider ? PROVIDER_FIELDS[provider] || [] : [];
 
     return (
-      <div className="space-y-5">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-[14px] font-semibold text-slate-800 dark:text-white">
+          <h3 className="text-[15px] font-medium text-slate-900 dark:text-white">
             Configure SSO
           </h3>
           <button
             onClick={() => setShowSetup(false)}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+            className="p-1.5 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white transition-colors"
           >
             <X size={16} />
           </button>
@@ -321,10 +333,10 @@ export function SsoSettingsCard() {
 
         {/* Provider selection */}
         <div>
-          <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-2 block">
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
             Identity Provider
-          </label>
-          <div className="grid grid-cols-2 gap-2">
+          </p>
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
             {providers.map((p) => (
               <button
                 key={p.value}
@@ -332,114 +344,142 @@ export function SsoSettingsCard() {
                   setProvider(p.value);
                   setFields({});
                 }}
-                className={`p-3 rounded-xl text-left transition-all duration-150 border ${
-                  provider === p.value
-                    ? "bg-white/70 dark:bg-white/[0.06] border-emerald-400/40 dark:border-emerald-500/30 shadow-sm"
-                    : "bg-white/30 dark:bg-white/[0.02] border-black/[0.04] dark:border-white/[0.04] hover:bg-white/50 dark:hover:bg-white/[0.04]"
-                }`}
+                className="w-full flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-white/40 dark:hover:bg-white/[0.02]"
               >
-                <p className="text-[13px] font-medium text-slate-800 dark:text-white">
+                <span className="text-[15px] font-medium text-slate-900 dark:text-white">
                   {p.label}
-                </p>
+                </span>
+                <div
+                  className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-colors ${
+                    provider === p.value
+                      ? "border-slate-500 dark:border-slate-400 bg-slate-500 dark:bg-slate-400"
+                      : "border-black/[0.15] dark:border-white/[0.15]"
+                  }`}
+                >
+                  {provider === p.value && (
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  )}
+                </div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Provider fields */}
-        {provider && (
-          <div className="space-y-3">
-            {requiredFields.map((field) => (
-              <div key={field}>
-                <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">
-                  {FIELD_LABELS[field] || field}
-                </label>
-                {field === "certificate" ? (
-                  <textarea
-                    value={fields[field] || ""}
-                    onChange={(e) =>
-                      setFields({ ...fields, [field]: e.target.value })
-                    }
-                    rows={4}
-                    placeholder="-----BEGIN CERTIFICATE-----"
-                    className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-[12px] font-mono text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors resize-none"
-                  />
-                ) : (
-                  <input
-                    type={field === "clientSecret" ? "password" : "text"}
-                    value={fields[field] || ""}
-                    onChange={(e) =>
-                      setFields({ ...fields, [field]: e.target.value })
-                    }
-                    className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors"
-                  />
-                )}
-              </div>
-            ))}
+        {/* Provider config fields */}
+        {provider && requiredFields.length > 0 && (
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+              Provider Configuration
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+              {requiredFields.map((field) => (
+                <div key={field} className="px-5 py-3.5">
+                  <label className="text-[13px] text-slate-500 dark:text-white/40 mb-1.5 block">
+                    {FIELD_LABELS[field] || field}
+                  </label>
+                  {field === "certificate" ? (
+                    <textarea
+                      value={fields[field] || ""}
+                      onChange={(e) =>
+                        setFields({ ...fields, [field]: e.target.value })
+                      }
+                      rows={4}
+                      placeholder="-----BEGIN CERTIFICATE-----"
+                      className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[13px] font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors resize-none"
+                    />
+                  ) : (
+                    <input
+                      type={field === "clientSecret" ? "password" : "text"}
+                      value={fields[field] || ""}
+                      onChange={(e) =>
+                        setFields({ ...fields, [field]: e.target.value })
+                      }
+                      className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-            {/* Settings */}
-            <div className="pt-2 space-y-2">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
+        {/* Settings toggles */}
+        {provider && (
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+              Settings
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+              {/* Auto-Provision toggle */}
+              <div className="flex items-center justify-between px-5 py-3.5">
                 <div>
-                  <p className="text-[13px] text-slate-800 dark:text-white">
+                  <p className="text-[15px] text-slate-900 dark:text-white">
                     Auto-Provision Users
                   </p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  <p className="text-[13px] text-slate-400 dark:text-white/30">
                     Create accounts on first SSO login
                   </p>
                 </div>
                 <button
+                  role="switch"
+                  aria-checked={autoProvision}
                   onClick={() => setAutoProvision(!autoProvision)}
-                  className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${
+                  className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-300 flex-shrink-0 ${
                     autoProvision
-                      ? "bg-emerald-500"
-                      : "bg-slate-300 dark:bg-white/[0.1]"
+                      ? "bg-slate-500 dark:bg-slate-400"
+                      : "bg-black/[0.09] dark:bg-white/[0.16]"
                   }`}
                 >
                   <span
-                    className={`absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                      autoProvision ? "left-[22px]" : "left-[3px]"
+                    className={`absolute top-[2px] w-[27px] h-[27px] rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                      autoProvision ? "left-[22px]" : "left-[2px]"
                     }`}
                   />
                 </button>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
+
+              {/* Enforce SSO toggle */}
+              <div className="flex items-center justify-between px-5 py-3.5">
                 <div>
-                  <p className="text-[13px] text-slate-800 dark:text-white">
+                  <p className="text-[15px] text-slate-900 dark:text-white">
                     Enforce SSO
                   </p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  <p className="text-[13px] text-slate-400 dark:text-white/30">
                     Block password login for domain users
                   </p>
                 </div>
                 <button
+                  role="switch"
+                  aria-checked={enforceSSO}
                   onClick={() => setEnforceSSO(!enforceSSO)}
-                  className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${
+                  className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-300 flex-shrink-0 ${
                     enforceSSO
-                      ? "bg-emerald-500"
-                      : "bg-slate-300 dark:bg-white/[0.1]"
+                      ? "bg-slate-500 dark:bg-slate-400"
+                      : "bg-black/[0.09] dark:bg-white/[0.16]"
                   }`}
                 >
                   <span
-                    className={`absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                      enforceSSO ? "left-[22px]" : "left-[3px]"
+                    className={`absolute top-[2px] w-[27px] h-[27px] rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                      enforceSSO ? "left-[22px]" : "left-[2px]"
                     }`}
                   />
                 </button>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
+
+              {/* Default Role select */}
+              <div className="flex items-center justify-between px-5 py-3.5">
                 <div>
-                  <p className="text-[13px] text-slate-800 dark:text-white">
+                  <p className="text-[15px] text-slate-900 dark:text-white">
                     Default Role
                   </p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  <p className="text-[13px] text-slate-400 dark:text-white/30">
                     Role assigned to new SSO users
                   </p>
                 </div>
                 <select
                   value={defaultRole}
                   onChange={(e) => setDefaultRole(e.target.value)}
-                  className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-[12px] text-slate-800 dark:text-white focus:outline-none"
+                  className="bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2 text-[15px] text-slate-900 dark:text-white focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
                 >
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
@@ -449,71 +489,85 @@ export function SsoSettingsCard() {
                 </select>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Domains */}
-            <div className="pt-2">
-              <label className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 block flex items-center gap-1.5">
-                <Globe size={12} />
-                Email Domains
-              </label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={newDomain}
-                  onChange={(e) => setNewDomain(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addDomain()}
-                  placeholder="company.com"
-                  className="flex-1 bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2 text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none transition-colors"
-                />
-                <button
-                  onClick={addDomain}
-                  className="px-3 py-2 rounded-xl bg-slate-800 dark:bg-white text-white dark:text-slate-900 transition-colors"
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {domains.map((d) => (
-                  <span
-                    key={d}
-                    className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-white/50 dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.06] text-slate-600 dark:text-slate-400 font-mono"
+        {/* Email domains */}
+        {provider && (
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1 flex items-center gap-1.5">
+              <Globe size={13} />
+              Email Domains
+            </p>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+              <div className="px-5 py-3.5">
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addDomain()}
+                    placeholder="company.com"
+                    className="flex-1 bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                  />
+                  <button
+                    onClick={addDomain}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 transition-colors"
                   >
-                    {d}
-                    <button
-                      onClick={() => setDomains(domains.filter((x) => x !== d))}
-                      className="text-slate-400 hover:text-red-500"
-                    >
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
+                    <Plus size={15} />
+                  </button>
+                </div>
+                {domains.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {domains.map((d) => (
+                      <span
+                        key={d}
+                        className="inline-flex items-center gap-2 text-[13px] px-3 py-1.5 rounded-lg bg-white/80 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-slate-600 dark:text-white/50 font-mono"
+                      >
+                        {d}
+                        <button
+                          onClick={() =>
+                            setDomains(domains.filter((x) => x !== d))
+                          }
+                          className="text-slate-400 dark:text-white/30 hover:text-red-500 transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
+        {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <AlertTriangle size={14} className="text-red-500 shrink-0" />
-            <p className="text-[12px] text-red-600 dark:text-red-400">
-              {error}
-            </p>
+          <div className="rounded-2xl bg-red-50/60 dark:bg-red-500/[0.06] border border-red-200/50 dark:border-red-500/15 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <AlertTriangle size={15} className="text-red-500 shrink-0" />
+              <p className="text-[13px] text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            </div>
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
+        {/* Actions */}
+        <div className="flex gap-3">
           <button
             onClick={() => setShowSetup(false)}
-            className="flex-1 py-2.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] text-[13px] text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/[0.04] transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] text-[15px] text-slate-600 dark:text-white/50 hover:bg-white/40 dark:hover:bg-white/[0.04] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!provider || saving}
-            className="flex-1 py-2.5 rounded-xl bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[13px] font-medium hover:bg-slate-700 dark:hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-xl bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[15px] font-medium hover:bg-slate-700 dark:hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {saving && <Loader2 size={14} className="animate-spin" />}
+            {saving && <Loader2 size={15} className="animate-spin" />}
             Save Configuration
           </button>
         </div>
@@ -521,40 +575,49 @@ export function SsoSettingsCard() {
     );
   }
 
-  // Not configured — show setup prompt
+  // Not configured -- show setup prompt
   return (
-    <div className="space-y-5">
-      <div className="p-5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] text-center">
-        <Shield className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
-        <h3 className="text-[14px] font-semibold text-slate-800 dark:text-white mb-1">
-          Single Sign-On Not Configured
-        </h3>
-        <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4 max-w-sm mx-auto">
-          Enable SSO to let your team sign in with your company&apos;s identity
-          provider. Supports SAML 2.0, OpenID Connect, Azure AD, Okta, and
-          Google Workspace.
-        </p>
-        <button
-          onClick={() => setShowSetup(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[13px] font-medium transition-colors"
-        >
-          <Plus size={15} />
-          Configure SSO
-        </button>
+    <div className="space-y-8">
+      <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+        <div className="py-12 text-center px-5">
+          <Shield className="w-8 h-8 text-slate-400 dark:text-white/30 mx-auto mb-3" />
+          <p className="text-[15px] font-medium text-slate-800 dark:text-white mb-1">
+            Single Sign-On Not Configured
+          </p>
+          <p className="text-[13px] text-slate-500 dark:text-white/40 mb-5 max-w-sm mx-auto">
+            Enable SSO to let your team sign in with your company&apos;s
+            identity provider. Supports SAML 2.0, OpenID Connect, Azure AD,
+            Okta, and Google Workspace.
+          </p>
+          <button
+            onClick={() => setShowSetup(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
+          >
+            <Plus size={15} />
+            Configure SSO
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {providers.map((p) => (
-          <div
-            key={p.value}
-            className="px-3 py-2.5 rounded-xl bg-white/30 dark:bg-white/[0.02] border border-black/[0.03] dark:border-white/[0.04]"
-          >
-            <p className="text-[12px] font-medium text-slate-600 dark:text-slate-400">
-              {p.label}
-            </p>
+      {providers.length > 0 && (
+        <div>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+            Supported Providers
+          </p>
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            {providers.map((p) => (
+              <div
+                key={p.value}
+                className="flex items-center justify-between px-5 py-3.5"
+              >
+                <span className="text-[15px] font-medium text-slate-700 dark:text-white/60">
+                  {p.label}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

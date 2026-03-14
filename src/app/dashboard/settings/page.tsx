@@ -380,18 +380,18 @@ function SecuritySection() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Active Sessions */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-white">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider">
             {t("settings.activeSessions")}
-          </h3>
+          </p>
           {sessions.length > 0 && (
             <button
               onClick={handleRevokeAll}
               disabled={revokingAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
             >
               {revokingAll ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -408,47 +408,32 @@ function SecuritySection() {
             <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
           </div>
         ) : sessions.length === 0 ? (
-          <div className="py-6 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] px-5 py-6 text-center">
+            <p className="text-[15px] text-slate-500 dark:text-slate-400">
               {t("settings.noActiveSessions")}
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
             {sessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]"
-              >
+              <div key={s.id} className="flex items-center gap-3.5 px-5 py-3.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center text-slate-500 dark:text-slate-400">
                   {getDeviceIcon(s.deviceType)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-800 dark:text-white font-medium truncate">
+                  <p className="text-[15px] text-slate-900 dark:text-white truncate">
                     {s.browser}
                     {s.browserVersion ? ` ${s.browserVersion}` : ""} on {s.os}
                     {s.osVersion ? ` ${s.osVersion}` : ""}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {s.ipAddress && (
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        {s.ipAddress}
-                      </span>
-                    )}
-                    {s.city && s.country && (
-                      <span className="text-xs text-slate-400">
-                        {s.city}, {s.country}
-                      </span>
-                    )}
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {formatRelativeTime(s.lastActiveAt)}
-                    </span>
-                  </div>
+                  <p className="text-[13px] text-slate-400 dark:text-white/35 mt-0.5">
+                    {s.ipAddress && `${s.ipAddress} · `}
+                    {s.city && s.country && `${s.city}, ${s.country} · `}
+                    {formatRelativeTime(s.lastActiveAt)}
+                  </p>
                 </div>
                 {s.isCurrent && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium flex-shrink-0">
+                  <span className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400 flex-shrink-0">
                     {t("common.current")}
                   </span>
                 )}
@@ -458,108 +443,106 @@ function SecuritySection() {
         )}
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-black/[0.06] dark:border-white/[0.06]" />
-
       {/* Password Section */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-          <KeyRound className="w-4 h-4 text-slate-400" />
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
           {t("settings.password")}
-        </h3>
+        </p>
 
         {isOAuthOnly === null || sessionsLoading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
           </div>
         ) : isOAuthOnly ? (
-          <div className="p-4 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] px-5 py-4">
+            <p className="text-[15px] text-slate-500 dark:text-slate-400">
               {t("settings.oauthNotice")}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                {t("settings.currentPassword")}
-              </label>
-              <div className="relative">
+          <>
+            <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+              <div className="px-5 py-4">
+                <label className="block text-[13px] text-slate-500 dark:text-white/40 mb-2">
+                  {t("settings.currentPassword")}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      setPasswordError(null);
+                    }}
+                    placeholder={t("settings.enterCurrentPassword")}
+                    className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 pr-10 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-5 py-4">
+                <label className="block text-[13px] text-slate-500 dark:text-white/40 mb-2">
+                  {t("settings.newPassword")}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      setPasswordError(null);
+                    }}
+                    placeholder={t("settings.enterNewPassword")}
+                    className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 pr-10 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-[13px] text-slate-400 dark:text-white/30 mt-1.5">
+                  {t("settings.minChars")}
+                </p>
+              </div>
+
+              <div className="px-5 py-4">
+                <label className="block text-[13px] text-slate-500 dark:text-white/40 mb-2">
+                  {t("settings.confirmNewPassword")}
+                </label>
                 <input
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
+                  type="password"
+                  value={confirmPassword}
                   onChange={(e) => {
-                    setCurrentPassword(e.target.value);
+                    setConfirmPassword(e.target.value);
                     setPasswordError(null);
                   }}
-                  placeholder={t("settings.enterCurrentPassword")}
-                  className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors"
+                  placeholder={t("settings.confirmNewPasswordPlaceholder")}
+                  className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-slate-400 dark:focus:border-white/25 focus:outline-none transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                {t("settings.newPassword")}
-              </label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => {
-                    setNewPassword(e.target.value);
-                    setPasswordError(null);
-                  }}
-                  placeholder={t("settings.enterNewPassword")}
-                  className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                >
-                  {showNewPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-slate-400 mt-1.5">
-                {t("settings.minChars")}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                {t("settings.confirmNewPassword")}
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setPasswordError(null);
-                }}
-                placeholder={t("settings.confirmNewPasswordPlaceholder")}
-                className="w-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-400 dark:focus:border-white/20 focus:outline-none transition-colors"
-              />
             </div>
 
             {passwordError && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <p className="text-sm text-red-600 dark:text-red-400">
+              <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                <p className="text-[14px] text-red-600 dark:text-red-400">
                   {passwordError}
                 </p>
               </div>
@@ -568,7 +551,7 @@ function SecuritySection() {
             <button
               onClick={handleChangePassword}
               disabled={changingPassword}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 text-sm font-medium transition-colors"
+              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-white hover:bg-slate-700 dark:hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 text-[15px] font-medium transition-colors"
             >
               {changingPassword ? (
                 <>
@@ -576,13 +559,10 @@ function SecuritySection() {
                   {t("common.changing")}
                 </>
               ) : (
-                <>
-                  <KeyRound className="w-4 h-4" />
-                  {t("settings.changePassword")}
-                </>
+                t("settings.changePassword")
               )}
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -595,47 +575,49 @@ function AccountSection() {
   const { data: session } = useSession();
   const { t } = useLanguage();
 
+  const fields = [
+    {
+      label: t("settings.name"),
+      value: session?.user?.name || "\u2014",
+    },
+    {
+      label: t("settings.email"),
+      value: session?.user?.email || "\u2014",
+    },
+    {
+      label: t("settings.role"),
+      value: (session?.user as { role?: string })?.role || t("common.user"),
+      capitalize: true,
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {[
-          {
-            label: t("settings.name"),
-            value: session?.user?.name || "\u2014",
-          },
-          {
-            label: t("settings.email"),
-            value: session?.user?.email || "\u2014",
-          },
-          {
-            label: t("settings.role"),
-            value:
-              (session?.user as { role?: string })?.role || t("common.user"),
-            capitalize: true,
-          },
-          { label: t("settings.accountStatus"), isStatus: true },
-        ].map((field) => (
+    <div className="space-y-8">
+      <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+        {fields.map((field) => (
           <div
             key={field.label}
-            className="p-4 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]"
+            className="flex items-center justify-between px-5 py-3.5"
           >
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+            <span className="text-[15px] text-slate-900 dark:text-white">
               {field.label}
-            </p>
-            {"isStatus" in field && field.isStatus ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {t("settings.active")}
-              </span>
-            ) : (
-              <p
-                className={`text-sm font-medium text-slate-800 dark:text-white ${field.capitalize ? "capitalize" : ""}`}
-              >
-                {field.value}
-              </p>
-            )}
+            </span>
+            <span
+              className={`text-[15px] text-slate-500 dark:text-white/45 ${field.capitalize ? "capitalize" : ""}`}
+            >
+              {field.value}
+            </span>
           </div>
         ))}
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <span className="text-[15px] text-slate-900 dark:text-white">
+            {t("settings.accountStatus")}
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="w-[6px] h-[6px] rounded-full bg-emerald-500" />
+            {t("settings.active")}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -891,66 +873,22 @@ export default function SettingsPage() {
 
       {/* ── Main Content ── */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        {/* Breadcrumb-style header integrated with content */}
-        <div className="px-8 pt-6 pb-0">
-          <div className="flex items-center gap-2 text-[12px] text-slate-400 dark:text-slate-500 mb-1">
-            <Settings size={12} />
-            <span>/</span>
-            <span
-              className={
-                currentNav?.isDanger
-                  ? "text-red-500 dark:text-red-400 font-medium"
-                  : "text-slate-700 dark:text-white font-medium"
-              }
-            >
-              {sectionLabel}
-            </span>
-          </div>
+        {/* Section header */}
+        <div className="px-10 pt-10 pb-1">
           <h2
-            className={`text-[20px] font-semibold leading-tight ${
+            className={`text-[28px] font-bold tracking-tight leading-tight ${
               currentNav?.isDanger
                 ? "text-red-600 dark:text-red-400"
-                : "text-slate-800 dark:text-white"
+                : "text-slate-900 dark:text-white"
             }`}
           >
             {sectionLabel}
           </h2>
-          <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1">
-            {activeSection === "account" &&
-              "View and update your profile information"}
-            {activeSection === "notifications" &&
-              "Configure how and when you receive alerts"}
-            {activeSection === "appearance" &&
-              "Customize theme and display preferences"}
-            {activeSection === "language" && "Set your preferred language"}
-            {activeSection === "astra-ai" &&
-              "Configure how the AI compliance copilot works for you"}
-            {activeSection === "webhooks" &&
-              "Send real-time compliance events to external endpoints"}
-            {activeSection === "calendar" &&
-              "Sync compliance deadlines with your calendar app"}
-            {activeSection === "integrations" &&
-              "Connect Caelex with your existing tools"}
-            {activeSection === "organization" &&
-              "Manage your team and organization"}
-            {activeSection === "sso" &&
-              "Configure enterprise Single Sign-On for your team"}
-            {activeSection === "security" &&
-              "Sessions, passwords, and access control"}
-            {activeSection === "mfa" &&
-              "Add an extra layer of security to your account"}
-            {activeSection === "passkeys" &&
-              "Use biometrics or hardware keys to sign in"}
-            {activeSection === "data-export" &&
-              "Download all your data in machine-readable format"}
-            {activeSection === "danger" &&
-              "Permanently delete your account and all data"}
-          </p>
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">
-          <div className="max-w-[680px]">{renderSection()}</div>
+        <div className="flex-1 overflow-y-auto px-10 py-6">
+          <div className="max-w-[640px]">{renderSection()}</div>
         </div>
       </div>
     </div>

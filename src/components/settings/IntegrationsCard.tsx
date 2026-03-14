@@ -112,52 +112,99 @@ const INTEGRATIONS: Integration[] = [
   },
 ];
 
+function StatusBadge({ status }: { status: Integration["status"] }) {
+  if (status === "coming-soon") {
+    return (
+      <span className="text-[13px] text-slate-400 dark:text-white/30">
+        Coming Soon
+      </span>
+    );
+  }
+  if (status === "beta") {
+    return (
+      <span className="text-[13px] font-medium text-slate-500 dark:text-white/50">
+        Beta
+      </span>
+    );
+  }
+  return (
+    <span className="text-[13px] font-medium text-slate-700 dark:text-white/70">
+      Available
+    </span>
+  );
+}
+
 export function IntegrationsCard() {
   return (
-    <div className="space-y-6">
-      <div className="p-4 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
-        <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed">
-          Connect Caelex with your existing tools to streamline compliance
-          workflows. Receive alerts where your team already works, automate task
-          creation, and keep everyone in sync.
+    <div className="space-y-8">
+      {/* Description */}
+      <div>
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+          Overview
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {INTEGRATIONS.map((integration) => (
-          <div
-            key={integration.name}
-            className="p-4 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] hover:bg-white/60 dark:hover:bg-white/[0.05] transition-colors group"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center text-slate-600 dark:text-slate-400">
-                {integration.icon}
-              </div>
-              {integration.status === "coming-soon" ? (
-                <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-slate-500 border border-black/[0.04] dark:border-white/[0.06]">
-                  Coming Soon
-                </span>
-              ) : integration.status === "beta" ? (
-                <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-500 border border-violet-500/20">
-                  Beta
-                </span>
-              ) : (
-                <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  Available
-                </span>
-              )}
-            </div>
-            <h4 className="text-[13px] font-semibold text-slate-800 dark:text-white mb-1 flex items-center gap-1.5">
-              {integration.name}
-              {integration.href && (
-                <ExternalLink size={11} className="text-slate-400" />
-              )}
-            </h4>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
-              {integration.description}
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="px-5 py-3.5">
+            <p className="text-[15px] text-slate-600 dark:text-white/50 leading-relaxed">
+              Connect Caelex with your existing tools to streamline compliance
+              workflows. Receive alerts where your team already works, automate
+              task creation, and keep everyone in sync.
             </p>
           </div>
-        ))}
+        </div>
+      </div>
+
+      {/* Integrations List */}
+      <div>
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+          Integrations
+        </p>
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+          {INTEGRATIONS.map((integration) => (
+            <div
+              key={integration.name}
+              className={`flex items-center justify-between px-5 py-3.5 ${
+                integration.status === "available"
+                  ? "bg-white/40 dark:bg-white/[0.02]"
+                  : ""
+              }`}
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    integration.status === "available"
+                      ? "bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-white/70"
+                      : "bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/30"
+                  }`}
+                >
+                  {integration.icon}
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className={`text-[15px] flex items-center gap-1.5 ${
+                      integration.status === "available"
+                        ? "font-medium text-slate-800 dark:text-white/90"
+                        : "text-slate-700 dark:text-white/60"
+                    }`}
+                  >
+                    {integration.name}
+                    {integration.href && (
+                      <ExternalLink
+                        size={12}
+                        className="text-slate-400 dark:text-white/30"
+                      />
+                    )}
+                  </p>
+                  <p className="text-[13px] text-slate-500 dark:text-white/40">
+                    {integration.description}
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 ml-4">
+                <StatusBadge status={integration.status} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

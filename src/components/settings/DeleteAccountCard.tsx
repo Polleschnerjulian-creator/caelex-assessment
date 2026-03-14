@@ -66,69 +66,63 @@ export function DeleteAccountCard({
 
   return (
     <>
-      {/* Delete Account Card */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-red-200 dark:border-red-500/20 rounded-xl p-6 mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
-            <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <h2 className="text-caption uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
-              DANGER ZONE
-            </h2>
-            <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
-              Permanent account deletion
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 mb-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-body-lg text-red-700 dark:text-red-300 font-medium mb-1">
-                This action is irreversible
-              </p>
-              <p className="text-body text-red-600/80 dark:text-red-400/80">
-                Deleting your account will permanently remove all your data,
-                assessments, documents, and settings. This cannot be undone.
-              </p>
+      <div className="space-y-8">
+        {/* Warning Section */}
+        <div>
+          <p className="text-[13px] font-medium text-red-500 dark:text-red-400/80 uppercase tracking-wider mb-3 px-1">
+            Danger Zone
+          </p>
+          <div className="rounded-2xl bg-red-50/60 dark:bg-red-500/[0.035] border border-red-200/60 dark:border-red-500/[0.12] overflow-hidden">
+            <div className="flex items-start gap-3 px-5 py-3.5">
+              <AlertTriangle className="w-[18px] h-[18px] text-red-500 dark:text-red-400/70 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-[15px] font-medium text-red-700 dark:text-red-300 mb-0.5">
+                  This action is irreversible
+                </p>
+                <p className="text-[13px] text-red-600/70 dark:text-red-400/60 leading-relaxed">
+                  Deleting your account will permanently remove all your data,
+                  assessments, documents, and settings. This cannot be undone.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-body font-medium transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-          Delete Account
-        </button>
+        {/* Delete Button */}
+        <div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-medium transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Account
+          </button>
+        </div>
       </div>
 
       {/* Confirmation Modal */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-account-title"
         >
-          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="w-full max-w-md mx-4 rounded-2xl bg-white dark:bg-[#1c1c1e] shadow-2xl border border-black/[0.08] dark:border-white/[0.08] overflow-hidden">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-[--glass-border-subtle] bg-red-50 dark:bg-red-500/5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <div className="px-6 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/15 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400" />
                 </div>
                 <div>
                   <h3
                     id="delete-account-title"
-                    className="text-title font-medium text-slate-900 dark:text-white"
+                    className="text-[17px] font-semibold text-slate-900 dark:text-white"
                   >
                     Delete Account
                   </h3>
-                  <p className="text-body text-slate-500 dark:text-white/45">
+                  <p className="text-[13px] text-slate-500 dark:text-white/40">
                     {session?.user?.email}
                   </p>
                 </div>
@@ -136,24 +130,33 @@ export function DeleteAccountCard({
             </div>
 
             {/* Body */}
-            <div className="px-6 py-5 space-y-4">
-              <p className="text-body-lg text-slate-600 dark:text-white/70">
+            <div className="px-6 py-4 space-y-4">
+              <p className="text-[15px] text-slate-600 dark:text-white/60">
                 You are about to permanently delete your account. This will:
               </p>
-              <ul className="text-body text-slate-600 dark:text-white/45 space-y-1.5 list-disc list-inside">
-                <li>Delete all your assessments and compliance data</li>
-                <li>Remove all uploaded documents</li>
-                <li>Cancel any active subscriptions</li>
-                <li>Remove you from all organizations</li>
-                <li>Delete all audit logs and history</li>
-              </ul>
+
+              <div className="rounded-xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+                {[
+                  "Delete all your assessments and compliance data",
+                  "Remove all uploaded documents",
+                  "Cancel any active subscriptions",
+                  "Remove you from all organizations",
+                  "Delete all audit logs and history",
+                ].map((item) => (
+                  <div key={item} className="px-4 py-2.5">
+                    <span className="text-[13px] text-slate-600 dark:text-white/50">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
               {/* Password field (for credentials users) */}
               {!isOAuthOnly && (
                 <div>
                   <label
                     htmlFor="delete-account-password"
-                    className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                    className="block text-[13px] font-medium text-slate-600 dark:text-white/50 mb-1.5"
                   >
                     Enter your password
                   </label>
@@ -166,12 +169,12 @@ export function DeleteAccountCard({
                       aria-required="true"
                       autoComplete="current-password"
                       placeholder="Your current password"
-                      className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                      className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 pr-10 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-red-400 dark:focus:border-red-500/50 focus:outline-none transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white/70"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-white/30 dark:hover:text-white/60 transition-colors"
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
@@ -190,10 +193,10 @@ export function DeleteAccountCard({
               <div>
                 <label
                   htmlFor="delete-account-confirmation"
-                  className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                  className="block text-[13px] font-medium text-slate-600 dark:text-white/50 mb-1.5"
                 >
                   Type{" "}
-                  <span className="font-mono text-red-600 dark:text-red-400">
+                  <span className="font-mono text-red-500 dark:text-red-400">
                     DELETE MY ACCOUNT
                   </span>{" "}
                   to confirm
@@ -205,7 +208,7 @@ export function DeleteAccountCard({
                   onChange={(e) => setConfirmation(e.target.value)}
                   aria-required="true"
                   placeholder="DELETE MY ACCOUNT"
-                  className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono"
+                  className="w-full bg-white/80 dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] rounded-xl px-4 py-2.5 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:border-red-400 dark:focus:border-red-500/50 focus:outline-none transition-colors font-mono"
                 />
               </div>
 
@@ -213,9 +216,9 @@ export function DeleteAccountCard({
               {error && (
                 <div
                   role="alert"
-                  className="p-3 rounded-lg bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30"
+                  className="rounded-xl bg-red-50 dark:bg-red-500/[0.08] border border-red-200/60 dark:border-red-500/[0.15] px-4 py-3"
                 >
-                  <p className="text-body text-red-600 dark:text-red-400">
+                  <p className="text-[13px] text-red-600 dark:text-red-400">
                     {error}
                   </p>
                 </div>
@@ -223,7 +226,7 @@ export function DeleteAccountCard({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] flex justify-end gap-3">
+            <div className="px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowModal(false);
@@ -231,14 +234,14 @@ export function DeleteAccountCard({
                   setConfirmation("");
                   setError(null);
                 }}
-                className="px-4 py-2 rounded-lg text-body font-medium text-slate-700 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-[15px] font-medium text-slate-700 dark:text-white/70 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={!canDelete || isDeleting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-body font-medium transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[15px] font-medium transition-colors"
               >
                 {isDeleting ? (
                   <>

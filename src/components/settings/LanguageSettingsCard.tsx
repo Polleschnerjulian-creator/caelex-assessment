@@ -1,61 +1,53 @@
 "use client";
 
-import { Globe } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { LANGUAGES, type Language } from "@/lib/i18n";
 
 export function LanguageSettingsCard() {
   const { language, setLanguage, t } = useLanguage();
 
+  const options = (Object.entries(LANGUAGES) as [Language, string][]).map(
+    ([code, label]) => ({ value: code, label }),
+  );
+
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-          <Globe
-            className="w-5 h-5 text-slate-600 dark:text-white/70"
-            aria-hidden="true"
-          />
-        </div>
-        <div>
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-            {t("settings.language")}
-          </h2>
-          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
-            {t("settings.languageDescription")}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      {/* Language Section */}
+      <div>
+        <p className="text-[13px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-3 px-1">
+          {t("settings.language")}
+        </p>
 
-      <div
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-        role="radiogroup"
-        aria-label="Language selection"
-      >
-        {(Object.entries(LANGUAGES) as [Language, string][]).map(
-          ([code, label]) => (
-            <button
-              key={code}
-              onClick={() => setLanguage(code)}
-              role="radio"
-              aria-checked={language === code}
-              className={`
-                px-4 py-3 rounded-lg border text-body font-medium transition-all text-center
-                ${
-                  language === code
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                    : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/45 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
-                }
-              `}
+        <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
+          <div className="px-5 py-4">
+            <div
+              className="flex p-[3px] bg-black/[0.06] dark:bg-white/[0.1] rounded-xl"
+              role="radiogroup"
+              aria-label="Language selection"
             >
-              {label}
-            </button>
-          ),
-        )}
-      </div>
+              {options.map((opt) => (
+                <button
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={language === opt.value}
+                  onClick={() => setLanguage(opt.value)}
+                  className={`flex-1 px-4 py-2.5 rounded-[10px] text-[14px] font-medium transition-all duration-200 ${
+                    language === opt.value
+                      ? "bg-white dark:bg-white/[0.15] text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-      <p className="text-caption text-slate-400 dark:text-white/30 mt-3">
-        {t("settings.languageNote")}
-      </p>
+        <p className="text-[13px] text-slate-400 dark:text-white/30 mt-3 px-1">
+          {t("settings.languageNote")}
+        </p>
+      </div>
     </div>
   );
 }
