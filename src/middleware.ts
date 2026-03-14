@@ -235,6 +235,8 @@ function validateOrigin(req: NextRequest): boolean {
   if (!requestOrigin) return false;
 
   const allowedOrigins: string[] = [];
+  // Always allow same-origin requests (Host header set by platform, not spoofable)
+  allowedOrigins.push(req.nextUrl.origin);
   if (process.env.NEXT_PUBLIC_APP_URL)
     allowedOrigins.push(process.env.NEXT_PUBLIC_APP_URL);
   if (process.env.VERCEL_URL)
