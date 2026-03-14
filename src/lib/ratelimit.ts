@@ -217,10 +217,10 @@ export const rateLimiters = redis
         prefix: "ratelimit:sentinel_register",
       }),
 
-      // Sentinel ingest: 10 per minute per token (burst-friendly for agents)
+      // Sentinel ingest: 30 per minute per token (agents send 6-7 packets per collection cycle)
       sentinel_ingest: new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(10, "1 m"),
+        limiter: Ratelimit.slidingWindow(30, "1 m"),
         analytics: true,
         prefix: "ratelimit:sentinel_ingest",
       }),
@@ -355,7 +355,7 @@ const fallbackLimiters = {
   assure_public: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
   academy: new InMemoryRateLimiter(15, 60000), // 15/min vs 30/min (Redis)
   sentinel_register: new InMemoryRateLimiter(2, 3600000),
-  sentinel_ingest: new InMemoryRateLimiter(5, 60000),
+  sentinel_ingest: new InMemoryRateLimiter(15, 60000),
   sentinel_read: new InMemoryRateLimiter(30, 60000),
   sentinel_expensive: new InMemoryRateLimiter(3, 3600000),
   verity_public: new InMemoryRateLimiter(10, 3600000),
