@@ -564,13 +564,32 @@ export function Generate2Page() {
     setIsPackageGenerating(true);
     setError(null);
 
+    // Global abort controller for the entire package generation
+    const abortController = new AbortController();
+    generationAbortRef.current = abortController;
+
+    // Package-level watchdog: 2 hours max for all 20 documents
+    const PACKAGE_WATCHDOG_MS = 7_200_000;
+    // Per-document watchdog: 15 minutes max per single document
+    const DOC_WATCHDOG_MS = 900_000;
+
+    const packageWatchdog = setTimeout(() => {
+      console.error("[Generate2] Package watchdog: exceeded 2 hours");
+      abortController.abort();
+    }, PACKAGE_WATCHDOG_MS);
+
     try {
       // 1. Create the package
-      const pkgRes = await fetch("/api/generate2/package", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ language: "en" }),
-      });
+      const pkgRes = await fetchWithTimeout(
+        "/api/generate2/package",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ language: "en" }),
+        },
+        30_000,
+        abortController.signal,
+      );
 
       if (!pkgRes.ok) {
         const err = await pkgRes
@@ -590,6 +609,11 @@ export function Generate2Page() {
       );
 
       for (const docType of typesToGenerate) {
+        // Check if aborted before starting each document
+        if (abortController.signal.aborted) {
+          throw new Error("Package generation was cancelled.");
+        }
+
         const sectionDefs = SECTION_DEFINITIONS[docType];
         setSelectedType(docType);
         setSections(sectionDefs);
@@ -598,146 +622,161 @@ export function Generate2Page() {
         setCompletedSections(0);
         setCurrentSection(0);
 
-        // Init
-        const initRes = await fetch("/api/generate2/documents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({ documentType: docType, packageId }),
-        });
+        // Per-document watchdog — skip this document if it takes too long
+        let docTimedOut = false;
+        const docWatchdog = setTimeout(() => {
+          console.error(
+            `[Generate2] Document watchdog: ${docType} exceeded 15 minutes, skipping`,
+          );
+          docTimedOut = true;
+        }, DOC_WATCHDOG_MS);
 
-        if (!initRes.ok) {
-          console.error(`Failed to init ${docType}, skipping`);
-          continue;
-        }
+        try {
+          // Init
+          const initRes = await fetchWithTimeout(
+            "/api/generate2/documents",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...csrfHeaders(),
+              },
+              body: JSON.stringify({ documentType: docType, packageId }),
+            },
+            30_000,
+            abortController.signal,
+          );
 
-        const { documentId } = await initRes.json();
-        setGenerationPhase("sections");
+          if (!initRes.ok) {
+            console.error(`Failed to init ${docType}, skipping`);
+            continue;
+          }
 
-        // Generate sections
-        const sectionContents: string[] = [];
-        let totalInputTokens = 0;
-        let totalOutputTokens = 0;
-        const startTime = Date.now();
-        let failed = false;
+          const { documentId } = await initRes.json();
+          setGenerationPhase("sections");
 
-        for (let i = 0; i < sectionDefs.length; i++) {
-          setCurrentSection(i);
-          try {
-            let sectionRes: Response | null = null;
-            for (let attempt = 0; attempt < 3; attempt++) {
-              sectionRes = await fetchWithTimeout(
-                `/api/generate2/documents/${documentId}/section`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    ...csrfHeaders(),
-                  },
-                  body: JSON.stringify({
-                    sectionIndex: i,
-                    sectionTitle: sectionDefs[i].title,
-                    sectionNumber: sectionDefs[i].number,
-                  }),
-                },
-                SECTION_FETCH_TIMEOUT_MS,
-              );
-              if (
-                sectionRes.ok ||
-                (sectionRes.status !== 403 && sectionRes.status !== 429)
-              )
-                break;
-              if (attempt < 2)
-                await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
-            }
+          // Generate sections
+          const sectionContents: string[] = [];
+          let totalInputTokens = 0;
+          let totalOutputTokens = 0;
+          const startTime = Date.now();
+          let failed = false;
 
-            if (!sectionRes!.ok) {
-              console.error(
-                `Section ${i + 1} of ${docType} failed, skipping document`,
-              );
+          for (let i = 0; i < sectionDefs.length; i++) {
+            // Check abort + per-doc timeout before each section
+            if (abortController.signal.aborted || docTimedOut) {
               failed = true;
               break;
             }
 
-            const sectionData = await sectionRes!.json();
-            sectionContents.push(sectionData.content);
-            totalInputTokens += sectionData.inputTokens || 0;
-            totalOutputTokens += sectionData.outputTokens || 0;
-            setCompletedSections(i + 1);
-          } catch {
-            console.error(
-              `Section ${i + 1} of ${docType} errored, skipping document`,
-            );
-            failed = true;
-            break;
+            setCurrentSection(i);
+            try {
+              let sectionRes: Response | null = null;
+              for (let attempt = 0; attempt < 3; attempt++) {
+                sectionRes = await fetchWithTimeout(
+                  `/api/generate2/documents/${documentId}/section`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      ...csrfHeaders(),
+                    },
+                    body: JSON.stringify({
+                      sectionIndex: i,
+                      sectionTitle: sectionDefs[i].title,
+                      sectionNumber: sectionDefs[i].number,
+                    }),
+                  },
+                  SECTION_FETCH_TIMEOUT_MS,
+                  abortController.signal,
+                );
+                if (
+                  sectionRes.ok ||
+                  (sectionRes.status !== 403 && sectionRes.status !== 429)
+                )
+                  break;
+                if (attempt < 2)
+                  await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+              }
+
+              if (!sectionRes!.ok) {
+                console.error(
+                  `Section ${i + 1} of ${docType} failed, skipping document`,
+                );
+                failed = true;
+                break;
+              }
+
+              const sectionData = await sectionRes!.json();
+              sectionContents.push(sectionData.content);
+              totalInputTokens += sectionData.inputTokens || 0;
+              totalOutputTokens += sectionData.outputTokens || 0;
+              setCompletedSections(i + 1);
+            } catch (sectionErr) {
+              // If the global abort fired, re-throw to exit the outer loop
+              if (abortController.signal.aborted) {
+                throw sectionErr;
+              }
+              console.error(
+                `Section ${i + 1} of ${docType} errored, skipping document`,
+              );
+              failed = true;
+              break;
+            }
           }
-        }
 
-        if (failed) continue;
+          if (failed) continue;
 
-        // Finalize — non-blocking parse, then background save
-        setGenerationPhase("finalizing");
-        const fullContent = sectionContents.filter(Boolean).join("\n\n");
+          // Finalize — non-blocking parse, then background save
+          setGenerationPhase("finalizing");
+          const fullContent = sectionContents.filter(Boolean).join("\n\n");
 
-        let parsedSections: ParsedSection[];
-        let pkgActionRequired: number;
-        let pkgEvidencePlaceholders: number;
-
-        try {
-          const parsed = await parseContentNonBlocking(
-            fullContent,
-            parseSectionsFromMarkdown,
-          );
-          parsedSections = parsed.parsedSections;
-          pkgActionRequired = parsed.actionRequired;
-          pkgEvidencePlaceholders = parsed.evidencePlaceholders;
-        } catch {
-          parsedSections = [
+          // Save to server — fire-and-forget (server reconstructs from saved sections)
+          fetchWithTimeout(
+            `/api/generate2/documents/${documentId}/complete`,
             {
-              title: "Generated Content",
-              content: [
-                {
-                  type: "text" as const,
-                  value: fullContent.substring(0, 50000),
-                },
-              ],
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...csrfHeaders(),
+              },
+              body: JSON.stringify({
+                mode: "reconstruct",
+                totalInputTokens,
+                totalOutputTokens,
+                generationTimeMs: Date.now() - startTime,
+              }),
             },
-          ];
-          pkgActionRequired = (
-            fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
-          ).length;
-          pkgEvidencePlaceholders = (
-            fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
-          ).length;
+            COMPLETE_FETCH_TIMEOUT_MS,
+          ).catch((err) =>
+            console.error(
+              `[Generate2] Package save failed for ${docType}:`,
+              err,
+            ),
+          );
+
+          setCompletedDocs((prev) => new Set([...prev, docType]));
+        } finally {
+          clearTimeout(docWatchdog);
         }
-
-        // Save to server — lightweight mode (server reconstructs from saved sections)
-        fetchWithTimeout(
-          `/api/generate2/documents/${documentId}/complete`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...csrfHeaders() },
-            body: JSON.stringify({
-              mode: "reconstruct",
-              totalInputTokens,
-              totalOutputTokens,
-              generationTimeMs: Date.now() - startTime,
-            }),
-          },
-          COMPLETE_FETCH_TIMEOUT_MS,
-        ).catch((err) =>
-          console.error(`[Generate2] Package save failed for ${docType}:`, err),
-        );
-
-        setCompletedDocs((prev) => new Set([...prev, docType]));
       }
 
       setPanelState("empty");
     } catch (err) {
       console.error("Package generation failed:", err);
-      setError(
-        err instanceof Error ? err.message : "Package generation failed",
-      );
+      if (abortController.signal.aborted) {
+        setError(
+          "Package generation timed out. Already generated documents have been saved.",
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Package generation failed",
+        );
+      }
+      setPanelState("pre-generation");
     } finally {
+      clearTimeout(packageWatchdog);
+      generationAbortRef.current = null;
       setIsPackageGenerating(false);
     }
   }
