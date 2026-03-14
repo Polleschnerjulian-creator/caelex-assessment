@@ -31,6 +31,7 @@ export interface ComplianceScore {
     insurance: ModuleScore;
     environmental: ModuleScore;
     reporting: ModuleScore;
+    space_operations: ModuleScore;
   };
   recommendations: Recommendation[];
   lastCalculated: Date;
@@ -69,12 +70,13 @@ export interface Recommendation {
 // ============================================================================
 
 const MODULE_WEIGHTS = {
-  authorization: 0.25, // Art. 6-27 - Core requirement
-  debris: 0.2, // Art. 55-73 - Safety critical
-  cybersecurity: 0.2, // Art. 74-95 - NIS2 alignment
-  insurance: 0.15, // Art. 28-32 - Liability coverage
-  environmental: 0.1, // Art. 96-100 - EFD requirement
-  reporting: 0.1, // Art. 33-54 - Ongoing compliance
+  authorization: 0.22, // Art. 6-27 - Core requirement
+  debris: 0.17, // Art. 55-73 - Safety critical
+  cybersecurity: 0.17, // Art. 74-95 - NIS2 alignment
+  insurance: 0.13, // Art. 28-32 - Liability coverage
+  environmental: 0.08, // Art. 96-100 - EFD requirement
+  reporting: 0.08, // Art. 33-54 - Ongoing compliance
+  space_operations: 0.15, // Satellite fleet health & monitoring
 };
 
 // ============================================================================
@@ -95,6 +97,7 @@ export async function calculateComplianceScore(
     insuranceData,
     environmentalData,
     reportingData,
+    spaceOperationsData,
   ] = await Promise.all([
     getAuthorizationData(userId),
     getDebrisData(userId),
@@ -102,6 +105,7 @@ export async function calculateComplianceScore(
     getInsuranceData(userId),
     getEnvironmentalData(userId),
     getReportingData(userId),
+    getSpaceOperationsData(userId),
   ]);
 
   // Calculate individual module scores
@@ -111,6 +115,7 @@ export async function calculateComplianceScore(
   const insurance = calculateInsuranceScore(insuranceData);
   const environmental = calculateEnvironmentalScore(environmentalData);
   const reporting = calculateReportingScore(reportingData);
+  const space_operations = calculateSpaceOperationsScore(spaceOperationsData);
 
   // Calculate overall score
   const breakdown = {
@@ -120,6 +125,7 @@ export async function calculateComplianceScore(
     insurance,
     environmental,
     reporting,
+    space_operations,
   };
 
   const overall = Math.round(
@@ -257,7 +263,52 @@ async function getReportingData(userId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  return { supervisionConfig, incidents, reports };
+  const ncaSubmissions = await prisma.nCASubmission.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      status: true,
+      rejectedAt: true,
+      followUpRequired: true,
+      followUpDeadline: true,
+      originalSubmissionId: true,
+      createdAt: true,
+    },
+  });
+
+  return { supervisionConfig, incidents, reports, ncaSubmissions };
+}
+
+async function getSpaceOperationsData(userId: string) {
+  // Find user's org
+  const orgMember = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organizationId: true },
+  });
+
+  if (!orgMember?.organizationId) {
+    return { satelliteStates: [], activeAgents: 0, activeForecasts: 0 };
+  }
+
+  const orgId = orgMember.organizationId;
+
+  const [satelliteStates, activeAgents, activeForecasts] = await Promise.all([
+    prisma.satelliteComplianceState.findMany({
+      where: { operatorId: orgId },
+      select: { overallScore: true, horizonDays: true },
+    }),
+    prisma.sentinelAgent.count({
+      where: { organizationId: orgId, status: "ACTIVE" },
+    }),
+    prisma.ephemerisForecast.count({
+      where: {
+        operatorId: orgId,
+        expiresAt: { gt: new Date() },
+      },
+    }),
+  ]);
+
+  return { satelliteStates, activeAgents, activeForecasts };
 }
 
 // ============================================================================
@@ -738,6 +789,15 @@ function calculateReportingScore(data: {
     category: string;
   }>;
   reports: Array<{ status: string }>;
+  ncaSubmissions: Array<{
+    id: string;
+    status: string;
+    rejectedAt: Date | null;
+    followUpRequired: boolean;
+    followUpDeadline: Date | null;
+    originalSubmissionId: string | null;
+    createdAt: Date;
+  }>;
 }): ModuleScore {
   const factors: ScoringFactor[] = [];
   let totalPoints = 0;
@@ -749,8 +809,8 @@ function calculateReportingScore(data: {
     id: "nca_config",
     name: "NCA Configuration",
     description: "Supervision and NCA reporting configured",
-    maxPoints: 30,
-    earnedPoints: data.supervisionConfig ? 30 : 0,
+    maxPoints: 25,
+    earnedPoints: data.supervisionConfig ? 25 : 0,
     isCritical: false,
     articleRef: "Art. 33-37",
   };
@@ -764,8 +824,8 @@ function calculateReportingScore(data: {
     id: "incident_notifications",
     name: "Incident Notifications",
     description: "Incidents reported to NCA within deadlines",
-    maxPoints: 40,
-    earnedPoints: 40, // Start with full points
+    maxPoints: 30,
+    earnedPoints: 30, // Start with full points
     isCritical: true,
     articleRef: "Art. 38-42",
   };
@@ -782,7 +842,7 @@ function calculateReportingScore(data: {
 
   incidentNotificationFactor.earnedPoints = Math.max(
     0,
-    40 - overdueIncidents.length * 20,
+    30 - overdueIncidents.length * 15,
   );
 
   factors.push(incidentNotificationFactor);
@@ -794,7 +854,7 @@ function calculateReportingScore(data: {
     id: "report_submissions",
     name: "Report Submissions",
     description: "Required reports submitted to NCA",
-    maxPoints: 30,
+    maxPoints: 20,
     earnedPoints: 0,
     isCritical: false,
     articleRef: "Art. 43-54",
@@ -807,15 +867,75 @@ function calculateReportingScore(data: {
 
   if (totalReports > 0) {
     reportFactor.earnedPoints = Math.round(
-      (submittedReports / totalReports) * 30,
+      (submittedReports / totalReports) * 20,
     );
   } else {
-    reportFactor.earnedPoints = 30; // Full points if no reports required yet
+    reportFactor.earnedPoints = 20; // Full points if no reports required yet
   }
 
   factors.push(reportFactor);
   totalPoints += reportFactor.maxPoints;
   earnedPoints += reportFactor.earnedPoints;
+
+  // Factor 4: NCA Outcomes (25 points)
+  const ncaOutcomesFactor: ScoringFactor = {
+    id: "nca_outcomes",
+    name: "NCA Submission Outcomes",
+    description: "Track record of NCA submission approvals and rejections",
+    maxPoints: 25,
+    earnedPoints: 0,
+    isCritical: false,
+    articleRef: "Art. 6-27",
+  };
+
+  // Filter to actionable submissions (exclude DRAFT and WITHDRAWN)
+  const actionableSubmissions = data.ncaSubmissions.filter(
+    (s) => s.status !== "DRAFT" && s.status !== "WITHDRAWN",
+  );
+
+  if (actionableSubmissions.length === 0) {
+    ncaOutcomesFactor.earnedPoints = 12; // Neutral — no submissions yet
+  } else {
+    const approved = actionableSubmissions.filter(
+      (s) => s.status === "APPROVED",
+    ).length;
+
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // IDs of submissions that have been re-submitted
+    const resubmittedIds = new Set(
+      data.ncaSubmissions
+        .filter((s) => s.originalSubmissionId)
+        .map((s) => s.originalSubmissionId),
+    );
+
+    // Recent rejections not yet re-submitted
+    const recentRejections = data.ncaSubmissions.filter(
+      (s) =>
+        s.status === "REJECTED" &&
+        s.rejectedAt &&
+        s.rejectedAt > thirtyDaysAgo &&
+        !resubmittedIds.has(s.id),
+    ).length;
+
+    // Overdue information requests
+    const overdueInfoRequests = data.ncaSubmissions.filter(
+      (s) =>
+        s.status === "INFORMATION_REQUESTED" &&
+        s.followUpDeadline &&
+        s.followUpDeadline < now,
+    ).length;
+
+    const baseScore = (approved / actionableSubmissions.length) * 25;
+    const penalty = recentRejections * 5 + overdueInfoRequests * 3;
+    ncaOutcomesFactor.earnedPoints = Math.round(
+      Math.max(0, Math.min(25, baseScore - penalty)),
+    );
+  }
+
+  factors.push(ncaOutcomesFactor);
+  totalPoints += ncaOutcomesFactor.maxPoints;
+  earnedPoints += ncaOutcomesFactor.earnedPoints;
 
   const score =
     totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
@@ -827,6 +947,99 @@ function calculateReportingScore(data: {
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 33-54"],
+  };
+}
+
+function calculateSpaceOperationsScore(data: {
+  satelliteStates: Array<{ overallScore: number; horizonDays: number | null }>;
+  activeAgents: number;
+  activeForecasts: number;
+}): ModuleScore {
+  const factors: ScoringFactor[] = [];
+  let totalPoints = 0;
+  let earnedPoints = 0;
+
+  // Factor 1: Fleet Health (40 points)
+  const fleetHealthFactor: ScoringFactor = {
+    id: "fleet_health",
+    name: "Fleet Health",
+    description: "Average satellite compliance score across fleet",
+    maxPoints: 40,
+    earnedPoints: 20, // Default neutral if no satellites
+    isCritical: false,
+    articleRef: "Art. 55-73",
+  };
+
+  if (data.satelliteStates.length > 0) {
+    const avgScore =
+      data.satelliteStates.reduce((sum, s) => sum + s.overallScore, 0) /
+      data.satelliteStates.length;
+
+    if (avgScore >= 70) fleetHealthFactor.earnedPoints = 40;
+    else if (avgScore >= 50) fleetHealthFactor.earnedPoints = 30;
+    else if (avgScore >= 30) fleetHealthFactor.earnedPoints = 20;
+    else fleetHealthFactor.earnedPoints = 10;
+  }
+
+  factors.push(fleetHealthFactor);
+  totalPoints += fleetHealthFactor.maxPoints;
+  earnedPoints += fleetHealthFactor.earnedPoints;
+
+  // Factor 2: Compliance Horizon (35 points)
+  const horizonFactor: ScoringFactor = {
+    id: "compliance_horizon",
+    name: "Compliance Horizon",
+    description: "Shortest time until a satellite breaches a threshold",
+    maxPoints: 35,
+    earnedPoints: 17, // Default neutral if no data
+    isCritical: false,
+    articleRef: "Art. 64-72",
+  };
+
+  const horizons = data.satelliteStates
+    .map((s) => s.horizonDays)
+    .filter((d): d is number => d !== null);
+
+  if (horizons.length > 0) {
+    const shortestHorizon = Math.min(...horizons);
+    if (shortestHorizon > 180) horizonFactor.earnedPoints = 35;
+    else if (shortestHorizon > 90) horizonFactor.earnedPoints = 25;
+    else if (shortestHorizon > 30) horizonFactor.earnedPoints = 15;
+    else horizonFactor.earnedPoints = 5;
+  }
+
+  factors.push(horizonFactor);
+  totalPoints += horizonFactor.maxPoints;
+  earnedPoints += horizonFactor.earnedPoints;
+
+  // Factor 3: Active Monitoring (25 points)
+  const monitoringFactor: ScoringFactor = {
+    id: "active_monitoring",
+    name: "Active Monitoring",
+    description: "Sentinel agents and ephemeris forecasts active",
+    maxPoints: 25,
+    earnedPoints: 0,
+    isCritical: false,
+    articleRef: "Art. 33-37",
+  };
+
+  if (data.activeAgents > 0) monitoringFactor.earnedPoints += 15;
+  if (data.activeForecasts > 0) monitoringFactor.earnedPoints += 10;
+
+  factors.push(monitoringFactor);
+  totalPoints += monitoringFactor.maxPoints;
+  earnedPoints += monitoringFactor.earnedPoints;
+
+  const score =
+    totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+
+  return {
+    score,
+    weight: MODULE_WEIGHTS.space_operations,
+    weightedScore: score * MODULE_WEIGHTS.space_operations,
+    status: getModuleStatus(score),
+    factors,
+    articleReferences: ["Art. 55-73", "Art. 33-37"],
   };
 }
 

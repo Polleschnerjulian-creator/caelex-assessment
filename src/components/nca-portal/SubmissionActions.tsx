@@ -152,9 +152,25 @@ export default function SubmissionActions({
           {currentStatus === "REJECTED" ||
           currentStatus === "INFORMATION_REQUESTED" ? (
             <button
-              onClick={() =>
-                handleStatusUpdate("SUBMITTED", "Resubmitted with updates")
-              }
+              onClick={async () => {
+                setIsUpdating(true);
+                try {
+                  const res = await fetch(
+                    `/api/nca/submissions/${submissionId}/resend`,
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({}),
+                    },
+                  );
+                  if (!res.ok) throw new Error("Failed to resend submission");
+                  onUpdate();
+                } catch (error) {
+                  console.error("Failed to resend submission:", error);
+                } finally {
+                  setIsUpdating(false);
+                }
+              }}
               disabled={isUpdating}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors disabled:opacity-50"
             >
