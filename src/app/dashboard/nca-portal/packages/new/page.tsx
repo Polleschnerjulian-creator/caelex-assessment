@@ -16,19 +16,31 @@ import NCAInfoCard from "@/components/nca-portal/NCAInfoCard";
 import PackageCompletenessBar from "@/components/nca-portal/PackageCompletenessBar";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 
-// NCA authority data for the picker
+// NCA authority data for the picker — mirrors NCA_AUTHORITY_INFO from nca-submission-service
 const NCA_OPTIONS = [
   {
     authority: "DE_BMWK",
-    name: "Federal Ministry for Economic Affairs",
+    name: "Federal Ministry for Economic Affairs and Climate Action",
     country: "Germany",
     description: "German national authority for space activities",
+  },
+  {
+    authority: "DE_DLR",
+    name: "German Aerospace Center (DLR)",
+    country: "Germany",
+    description: "German space agency and research center",
   },
   {
     authority: "FR_CNES",
     name: "Centre National d'Études Spatiales",
     country: "France",
     description: "French space agency",
+  },
+  {
+    authority: "FR_DGAC",
+    name: "Direction Générale de l'Aviation Civile",
+    country: "France",
+    description: "French civil aviation authority with space oversight",
   },
   {
     authority: "IT_ASI",
@@ -61,10 +73,10 @@ const NCA_OPTIONS = [
     description: "Austrian space activities authority",
   },
   {
-    authority: "LU_LSA",
-    name: "Luxembourg Space Agency",
-    country: "Luxembourg",
-    description: "Luxembourg space agency",
+    authority: "PL_POLSA",
+    name: "Polish Space Agency",
+    country: "Poland",
+    description: "Polish space agency",
   },
   {
     authority: "SE_SNSA",
@@ -79,10 +91,59 @@ const NCA_OPTIONS = [
     description: "Danish national space institute",
   },
   {
+    authority: "FI_BF",
+    name: "Business Finland",
+    country: "Finland",
+    description: "Finnish space activities authority",
+  },
+  {
+    authority: "PT_FCT",
+    name: "Fundação para a Ciência e a Tecnologia",
+    country: "Portugal",
+    description: "Portuguese science and technology foundation",
+  },
+  {
+    authority: "IE_EI",
+    name: "Enterprise Ireland",
+    country: "Ireland",
+    description: "Irish enterprise development agency",
+  },
+  {
+    authority: "LU_LSA",
+    name: "Luxembourg Space Agency",
+    country: "Luxembourg",
+    description: "Luxembourg space agency",
+  },
+  {
+    authority: "CZ_CSO",
+    name: "Czech Space Office",
+    country: "Czech Republic",
+    description: "Czech national space office",
+  },
+  {
+    authority: "RO_ROSA",
+    name: "Romanian Space Agency",
+    country: "Romania",
+    description: "Romanian space agency",
+  },
+  {
+    authority: "GR_HSA",
+    name: "Hellenic Space Agency",
+    country: "Greece",
+    description: "Greek space agency",
+  },
+  {
     authority: "EUSPA",
     name: "EU Agency for the Space Programme",
     country: "EU",
     description: "EU space programme agency",
+  },
+  {
+    authority: "EC_DEFIS",
+    name: "European Commission DG DEFIS",
+    country: "EU",
+    description:
+      "European Commission Directorate-General for Defence Industry and Space",
   },
 ];
 

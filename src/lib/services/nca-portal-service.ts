@@ -378,6 +378,7 @@ export async function assemblePackage(
     environmentalAssessments,
     nis2Assessments,
     ncaDocuments,
+    verityAttestations,
   ] = await Promise.all([
     prisma.document.findMany({
       where: { userId },
@@ -424,6 +425,22 @@ export async function assemblePackage(
       select: { id: true, title: true, documentType: true },
       orderBy: { updatedAt: "desc" },
     }),
+    prisma.verityAttestation.findMany({
+      where: {
+        organizationId,
+        result: true,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        regulationRef: true,
+        claimStatement: true,
+        dataPoint: true,
+        issuedAt: true,
+      },
+      orderBy: { issuedAt: "desc" },
+    }),
   ]);
 
   // Build document list with status mapping
@@ -468,6 +485,21 @@ export async function assemblePackage(
         status: "found",
       });
       foundTypes.add(doc.documentType);
+    }
+  }
+
+  // Map Verity attestations as machine-verifiable evidence
+  for (const att of verityAttestations) {
+    const attType = `verity_${att.regulationRef.replace(/\./g, "_")}`;
+    if (!foundTypes.has(attType)) {
+      documents.push({
+        sourceType: "verity",
+        sourceId: att.id,
+        documentType: attType,
+        title: `Verity Attestation: ${att.claimStatement.slice(0, 80)}`,
+        status: "found",
+      });
+      foundTypes.add(attType);
     }
   }
 
@@ -822,26 +854,8 @@ export async function getActiveSubmissions(userId: string) {
   });
 }
 
-// ─── Update Priority ───
-
-export async function updatePriority(
-  id: string,
-  userId: string,
-  priority: SubmissionPriority,
-) {
-  const submission = await prisma.nCASubmission.findFirst({
-    where: { id, userId },
-  });
-
-  if (!submission) {
-    throw new Error("Submission not found");
-  }
-
-  return prisma.nCASubmission.update({
-    where: { id },
-    data: { priority },
-  });
-}
+// ─── Update Priority (delegated to nca-submission-service) ───
+export { updatePriority } from "./nca-submission-service";
 
 // ─── Submission With Full Detail ───
 

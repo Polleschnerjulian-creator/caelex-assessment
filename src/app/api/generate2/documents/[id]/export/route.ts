@@ -60,9 +60,11 @@ export async function POST(
       : doc.content) as unknown as ReportSection[];
 
     if (format === "docx") {
-      // DOCX export will be added in Phase 2
       return NextResponse.json(
-        { error: "DOCX export coming in Phase 2" },
+        {
+          error: "DOCX export is not yet available. Please use PDF format.",
+          supportedFormats: ["pdf"],
+        },
         { status: 501 },
       );
     }
