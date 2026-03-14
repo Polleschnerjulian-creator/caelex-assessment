@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { getCurrentF107 } from "@/lib/ephemeris/data/solar-flux-adapter";
+import {
+  fetchLatestKpIndex,
+  fetchNOAAScales,
+  fetchPredictedSolarCycle,
+  processSpaceWeatherData,
+} from "@/lib/services/space-weather-service.server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -46,9 +52,15 @@ export async function GET(req: Request) {
   }
 
   try {
-    logger.info("[Solar Flux] Starting F10.7 polling...");
+    logger.info("[Solar Flux] Starting F10.7 + space weather polling...");
 
-    const f107 = await getCurrentF107();
+    // Fetch all data sources in parallel
+    const [f107, kpIndex, scales, predictions] = await Promise.all([
+      getCurrentF107(),
+      fetchLatestKpIndex(),
+      fetchNOAAScales(),
+      fetchPredictedSolarCycle(),
+    ]);
 
     // Use start of current month as observedAt (NOAA reports monthly values)
     const now = new Date();
@@ -56,7 +68,7 @@ export async function GET(req: Request) {
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
     );
 
-    // Upsert to dedup by observedAt + source
+    // Upsert F10.7 to dedup by observedAt + source
     await prisma.solarFluxRecord.upsert({
       where: {
         observedAt_source: {
@@ -66,18 +78,31 @@ export async function GET(req: Request) {
       },
       update: {
         f107,
+        kpIndex,
       },
       create: {
         f107,
+        kpIndex,
         observedAt,
         source: "NOAA_SWPC",
       },
     });
 
+    // Process space weather: events, alerts, predicted solar cycle
+    const weatherResult = await processSpaceWeatherData(
+      prisma,
+      kpIndex,
+      scales,
+      predictions,
+    );
+
     const duration = Date.now() - startTime;
 
     logger.info("[Solar Flux] Polling complete", {
       f107,
+      kpIndex,
+      scales,
+      weatherResult,
       observedAt: observedAt.toISOString(),
       duration: `${duration}ms`,
     });
@@ -85,6 +110,9 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: true,
       f107,
+      kpIndex,
+      scales,
+      weatherResult,
       observedAt: observedAt.toISOString(),
       duration: `${duration}ms`,
       processedAt: new Date().toISOString(),

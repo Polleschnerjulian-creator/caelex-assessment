@@ -41,6 +41,7 @@ export function predictOrbitalDecay(
   f107: number,
   areaToMass: number = DEFAULT_AREA_TO_MASS,
   dragCoefficient: number = DEFAULT_DRAG_COEFFICIENT,
+  kpIndex: number = 3,
 ): OrbitalDecayForecast {
   const altitudeKm = elements.altitudeKm;
 
@@ -55,6 +56,7 @@ export function predictOrbitalDecay(
     f107,
     areaToMass,
     dragCoefficient,
+    kpIndex,
   );
 
   // Calculate estimated lifetime
@@ -169,6 +171,7 @@ function simulateDecay(
   f107: number,
   areaToMass: number,
   cd: number,
+  kpIndex: number,
 ): DecaySimulationResult {
   const now = new Date();
   const altitudeCurve: ForecastPoint[] = [];
@@ -188,7 +191,13 @@ function simulateDecay(
       day + subDay <= FORECAST_HORIZON_DAYS;
       subDay++
     ) {
-      const decayRate = computeDailyDecayKm(currentAlt, f107, areaToMass, cd);
+      const decayRate = computeDailyDecayKm(
+        currentAlt,
+        f107,
+        areaToMass,
+        cd,
+        kpIndex,
+      );
       currentAlt -= decayRate;
 
       if (currentAlt <= DESTRUCTION_ALTITUDE_KM && reentryDayOffset === null) {
@@ -239,11 +248,12 @@ function computeDailyDecayKm(
   f107: number,
   areaToMass: number,
   cd: number,
+  kpIndex: number = 3,
 ): number {
   if (altKm <= DESTRUCTION_ALTITUDE_KM) return 0;
   if (altKm > 1000) return 0; // No drag above 1000 km
 
-  const density = getAtmosphericDensity(altKm, f107);
+  const density = getAtmosphericDensity(altKm, f107, kpIndex);
   if (density <= 0) return 0;
 
   // Semi-major axis in meters
@@ -289,7 +299,11 @@ function computeCumulativeDecay(
  * Get atmospheric density at altitude using exponential layer model.
  * ρ(h) = ρ₀ × exp(-(h - h₀) / H) with solar flux scaling.
  */
-function getAtmosphericDensity(altKm: number, f107: number): number {
+function getAtmosphericDensity(
+  altKm: number,
+  f107: number,
+  kpIndex: number = 3,
+): number {
   if (altKm < ATMOSPHERIC_LAYERS[0]!.baseAlt) {
     // Below model range — use lowest layer extrapolation
     const layer = ATMOSPHERIC_LAYERS[0]!;
@@ -316,7 +330,11 @@ function getAtmosphericDensity(altKm: number, f107: number): number {
   // Solar flux scaling: density increases with higher solar activity
   const solarScale = 1 + F107_DENSITY_SCALING * (f107 - F107_REFERENCE);
 
-  return rho * Math.max(solarScale, 0.1); // Floor at 10% to prevent negative
+  // Kp geomagnetic scaling: thermospheric heating increases density
+  // Kp=0 → 1.0x, Kp=9 → 1.3x (30% increase at extreme storm)
+  const kpScale = 1 + (kpIndex / 9) * 0.3;
+
+  return rho * Math.max(solarScale, 0.1) * kpScale;
 }
 
 function buildHighOrbitForecast(

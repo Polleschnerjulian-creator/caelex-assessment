@@ -6390,14 +6390,32 @@ model OrbitalData {
 }
 
 model SolarFluxRecord {
-  id         String   @id @default(cuid())
-  f107       Float
-  observedAt DateTime
-  source     String   @default("NOAA_SWPC")
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  f107        Float
+  kpIndex     Float?
+  isPredicted Boolean  @default(false)
+  observedAt  DateTime
+  source      String   @default("NOAA_SWPC")
+  createdAt   DateTime @default(now())
 
   @@unique([observedAt, source])
   @@index([observedAt])
+  @@index([isPredicted, observedAt])
+}
+
+model SpaceWeatherEvent {
+  id          String    @id @default(cuid())
+  eventType   String    // GEOMAGNETIC_STORM, SOLAR_RADIATION, RADIO_BLACKOUT
+  severity    String    // G1-G5, S1-S5, R1-R5
+  kpIndex     Float?
+  startedAt   DateTime
+  endedAt     DateTime?
+  description String?
+  source      String    @default("NOAA_SWPC")
+  createdAt   DateTime  @default(now())
+
+  @@index([eventType, startedAt])
+  @@index([severity])
 }
 
 model OptimizationResult {

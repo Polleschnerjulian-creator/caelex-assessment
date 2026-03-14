@@ -2039,6 +2039,53 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       summary: `${filtered.length} evidence gap(s) found. ${filtered.filter((g) => g.criticality === "critical").length} critical, ${filtered.filter((g) => g.criticality === "high").length} high priority. ${filtered.filter((g) => g.evidenceExpired).length} with expired evidence.`,
     };
   },
+
+  // ─── Audit Tools ───
+
+  audit_document: async (input: Record<string, unknown>) => {
+    const { auditDocument } =
+      await import("@/lib/services/document-audit-service.server");
+
+    const documentId = input.documentId as string;
+    if (!documentId) {
+      return { error: "documentId is required" };
+    }
+
+    const doc = await prisma.nCADocument.findUnique({
+      where: { id: documentId },
+      select: { id: true, documentType: true, content: true, title: true },
+    });
+
+    if (!doc) {
+      return { error: `Document ${documentId} not found` };
+    }
+
+    // Parse content into sections
+    let sections: Array<{ title: string; content: string }> = [];
+    if (typeof doc.content === "string") {
+      try {
+        const parsed = JSON.parse(doc.content);
+        if (Array.isArray(parsed)) {
+          sections = parsed;
+        } else if (parsed.sections && Array.isArray(parsed.sections)) {
+          sections = parsed.sections;
+        }
+      } catch {
+        // Treat entire content as a single section
+        sections = [{ title: doc.title || "Document", content: doc.content }];
+      }
+    }
+
+    const result = auditDocument(sections, doc.documentType);
+
+    return {
+      documentId: doc.id,
+      documentType: doc.documentType,
+      title: doc.title,
+      ...result,
+      summary: `Audit score: ${result.overallScore}/100. Regulation coverage: ${result.regulationCoverage.score}%, Threshold consistency: ${result.thresholdConsistency.score}%, Section completeness: ${result.sectionCompleteness.score}%. ${result.recommendations.length} recommendation(s).`,
+    };
+  },
 };
 
 // ─── Export ───

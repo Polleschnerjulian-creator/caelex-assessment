@@ -1074,6 +1074,25 @@ export const getEvidenceGaps: AstraToolDefinition = {
   },
 };
 
+// ─── Audit Tools ───
+
+export const auditDocument: AstraToolDefinition = {
+  name: "audit_document",
+  description:
+    "Audits a generated document for regulation coverage, threshold consistency, and section completeness. Returns a structured audit report with an overall score and specific recommendations. Use when the user asks to audit, review, or check a compliance document.",
+  input_schema: {
+    type: "object",
+    properties: {
+      documentId: {
+        type: "string",
+        description:
+          "The ID of the NCA document to audit. Use list_documents or get_submission_detail to find document IDs.",
+      },
+    },
+    required: ["documentId"],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1127,6 +1146,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   queryComplianceTwin,
   runWhatifScenario,
   getEvidenceGaps,
+
+  // Audit Tools
+  auditDocument,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1165,6 +1187,7 @@ export const TOOL_CATEGORIES = {
     "generate_environmental_report",
     "generate_insurance_report",
     "generate_nis2_report",
+    "audit_document",
   ],
   knowledge: [
     "search_regulation",
