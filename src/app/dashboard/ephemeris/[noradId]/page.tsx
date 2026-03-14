@@ -5,18 +5,13 @@ import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "../components/alerts-sidebar";
 import { useEphemerisTheme, type EphemerisColors } from "../theme";
-import {
-  Line,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  ResponsiveContainer,
-  ComposedChart,
-} from "recharts";
 import EphemerisForge from "../components/scenario-builder/EphemerisForge";
+import ForecastTab from "../components/forecast/ForecastTab";
+import type {
+  ForecastData,
+  SatelliteAlert,
+  HistoryPoint,
+} from "../components/forecast/types";
 
 // ─── Color Helpers (theme-aware — see ../theme.ts) ──────────────────────────
 
@@ -114,49 +109,6 @@ interface SatelliteState {
   calculatedAt: string;
 }
 
-interface ForecastPoint {
-  date: string;
-  nominal: number;
-  bestCase: number;
-  worstCase: number;
-  isHistorical: boolean;
-}
-
-interface ForecastCurve {
-  regulationRef: string;
-  regulationName: string;
-  metric: string;
-  unit: string;
-  thresholdValue: number;
-  dataPoints: ForecastPoint[];
-  crossingDate: string | null;
-  crossingDaysFromNow: number | null;
-  confidence: string;
-}
-
-interface ComplianceEvent {
-  id: string;
-  date: string;
-  daysFromNow: number;
-  regulationRef: string;
-  regulationName: string;
-  eventType: string;
-  severity: string;
-  description: string;
-  recommendedAction: string;
-}
-
-interface ForecastData {
-  forecastCurves: ForecastCurve[];
-  complianceEvents: ComplianceEvent[];
-  horizonDays: number | null;
-}
-
-interface HistoryPoint {
-  date: string;
-  score: number;
-}
-
 // ─── Module Labels ────────────────────────────────────────────────────────────
 
 const MODULE_LABELS: Record<string, string> = {
@@ -192,6 +144,8 @@ export default function SatelliteDetailPage({
   const [state, setState] = useState<SatelliteState | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
+  const [alerts, setAlerts] = useState<SatelliteAlert[]>([]);
+  const [recalculating, setRecalculating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("forecast");
   const [verityAttestations, setVerityAttestations] = useState<
@@ -230,19 +184,24 @@ export default function SatelliteDetailPage({
       }
       setLoading(false);
 
-      // Then load forecast + history + attestations in parallel (non-blocking)
-      const [forecastRes, historyRes, attestRes] = await Promise.all([
-        fetch(`/api/v1/ephemeris/forecast?norad_id=${noradId}`, {
-          headers: csrfHeaders(),
-        }),
-        fetch(
-          `/api/v1/ephemeris/history?norad_id=${noradId}&lookback_days=30`,
-          { headers: csrfHeaders() },
-        ),
-        fetch(`/api/v1/verity/attestation/list?status=VALID&limit=100`).catch(
-          () => null,
-        ),
-      ]);
+      // Then load forecast + history + alerts + attestations in parallel (non-blocking)
+      const [forecastRes, historyRes, alertsRes, attestRes] = await Promise.all(
+        [
+          fetch(`/api/v1/ephemeris/forecast?norad_id=${noradId}`, {
+            headers: csrfHeaders(),
+          }),
+          fetch(
+            `/api/v1/ephemeris/history?norad_id=${noradId}&lookback_days=30`,
+            { headers: csrfHeaders() },
+          ),
+          fetch(`/api/v1/ephemeris/alerts?norad_id=${noradId}`, {
+            headers: csrfHeaders(),
+          }).catch(() => null),
+          fetch(`/api/v1/verity/attestation/list?status=VALID&limit=100`).catch(
+            () => null,
+          ),
+        ],
+      );
 
       if (forecastRes.ok) {
         const d = await forecastRes.json();
@@ -252,11 +211,24 @@ export default function SatelliteDetailPage({
         const d = await historyRes.json();
         if (Array.isArray(d.data)) {
           setHistory(
-            d.data.map((h: { calculatedAt: string; overallScore: number }) => ({
-              date: h.calculatedAt,
-              score: h.overallScore,
-            })),
+            d.data.map(
+              (h: {
+                calculatedAt: string;
+                overallScore: number;
+                moduleScores?: Record<string, { score: number }>;
+              }) => ({
+                calculatedAt: h.calculatedAt,
+                overallScore: h.overallScore,
+                moduleScores: h.moduleScores,
+              }),
+            ),
           );
+        }
+      }
+      if (alertsRes?.ok) {
+        const d = await alertsRes.json();
+        if (Array.isArray(d.data)) {
+          setAlerts(d.data);
         }
       }
       if (attestRes?.ok) {
@@ -290,7 +262,7 @@ export default function SatelliteDetailPage({
   }, [loadData]);
 
   const recalculate = async () => {
-    setLoading(true);
+    setRecalculating(true);
     try {
       const res = await fetch("/api/v1/ephemeris/recalculate", {
         method: "POST",
@@ -301,7 +273,7 @@ export default function SatelliteDetailPage({
     } catch {
       // Silent
     } finally {
-      setLoading(false);
+      setRecalculating(false);
     }
   };
 
@@ -311,11 +283,11 @@ export default function SatelliteDetailPage({
 
   const trend7d = useMemo(() => {
     if (history.length < 2) return null;
-    const current = history[history.length - 1]!.score;
+    const current = history[history.length - 1]!.overallScore;
     const weekAgo =
       history.length >= 8
-        ? history[history.length - 8]!.score
-        : history[0]!.score;
+        ? history[history.length - 8]!.overallScore
+        : history[0]!.overallScore;
     return Math.round((current - weekAgo) * 10) / 10;
   }, [history]);
 
@@ -612,7 +584,20 @@ export default function SatelliteDetailPage({
           {activeTab === "forecast" && (
             <ForecastTab
               forecast={forecast}
-              events={forecast?.complianceEvents ?? []}
+              modules={state?.modules ?? null}
+              historyData={history}
+              alerts={alerts}
+              noradId={noradId}
+              calculatedAt={state?.calculatedAt ?? null}
+              horizonDays={horizonDays}
+              horizonRegulation={
+                state?.complianceHorizon.firstBreachRegulation ?? null
+              }
+              horizonConfidence={
+                state?.complianceHorizon.confidence ?? "MEDIUM"
+              }
+              isRecalculating={recalculating}
+              onRecalculate={recalculate}
               C={C}
             />
           )}
@@ -720,678 +705,6 @@ function MetricCell({
           }}
         >
           {sub}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Custom Chart Tooltip ─────────────────────────────────────────────────────
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ChartTooltip(props: any) {
-  const { active, payload, label, C } = props as {
-    active?: boolean;
-    payload?: Array<{
-      name: string;
-      value: number | [number, number];
-      color: string;
-    }>;
-    label?: string;
-    C: EphemerisColors;
-  };
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div
-      style={{
-        background: C.sunken,
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        border: `1px solid ${C.borderActive}`,
-        borderRadius: 12,
-        padding: "12px 16px",
-        boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${C.border}`,
-        minWidth: 160,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 10,
-          color: C.textMuted,
-          letterSpacing: "0.06em",
-          marginBottom: 10,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </div>
-      {payload
-        .filter((p) => p.name !== "band" && p.name !== "Glow")
-        .map((p) => (
-          <div
-            key={p.name}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 16,
-              padding: "3px 0",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: p.color,
-                  boxShadow: `0 0 6px ${p.color}`,
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 11,
-                  color: C.textTertiary,
-                }}
-              >
-                {p.name}
-              </span>
-            </div>
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 12,
-                fontWeight: 600,
-                color: C.textPrimary,
-              }}
-            >
-              {typeof p.value === "number" ? p.value.toFixed(1) : ""}
-            </span>
-          </div>
-        ))}
-    </div>
-  );
-}
-
-// ─── Forecast Tab ─────────────────────────────────────────────────────────────
-
-function ForecastTab({
-  forecast,
-  events,
-  C,
-}: {
-  forecast: ForecastData | null;
-  events: ComplianceEvent[];
-  C: EphemerisColors;
-}) {
-  const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
-  const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
-
-  // Auto-select first metric when forecast data loads
-  useEffect(() => {
-    if (selectedMetric === null && forecast?.forecastCurves[0]?.metric) {
-      setSelectedMetric(forecast.forecastCurves[0].metric);
-    }
-  }, [forecast, selectedMetric]);
-
-  const curve = forecast?.forecastCurves.find(
-    (c) => c.metric === selectedMetric,
-  );
-
-  // Transform data points for Recharts
-  const chartData = useMemo(() => {
-    if (!curve) return [];
-    return curve.dataPoints.map((pt) => ({
-      date: new Date(pt.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      fullDate: pt.date,
-      nominal: Math.round(pt.nominal * 100) / 100,
-      bestCase: Math.round(pt.bestCase * 100) / 100,
-      worstCase: Math.round(pt.worstCase * 100) / 100,
-      isHistorical: pt.isHistorical,
-      // Band for area fill (P10 to P90)
-      band: [
-        Math.round(pt.worstCase * 100) / 100,
-        Math.round(pt.bestCase * 100) / 100,
-      ] as [number, number],
-    }));
-  }, [curve]);
-
-  if (!forecast || forecast.forecastCurves.length === 0) {
-    return (
-      <div
-        style={{
-          padding: 60,
-          textAlign: "center",
-          color: C.textMuted,
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 12,
-          letterSpacing: "0.1em",
-        }}
-      >
-        NO FORECAST DATA AVAILABLE
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      {/* ── Curve Selector (pill buttons) ─────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          marginBottom: 24,
-          flexWrap: "wrap",
-        }}
-      >
-        {forecast.forecastCurves.map((c) => {
-          const isActive = selectedMetric === c.metric;
-          const hasBreach = c.crossingDaysFromNow !== null;
-          return (
-            <button
-              key={c.metric}
-              onClick={() => setSelectedMetric(c.metric)}
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                fontWeight: isActive ? 600 : 400,
-                padding: "8px 18px",
-                borderRadius: 20,
-                border: `1px solid ${isActive ? C.accent + "50" : C.border}`,
-                background: isActive
-                  ? `linear-gradient(135deg, ${C.accent}18 0%, ${C.accent}08 100%)`
-                  : "transparent",
-                color: isActive ? C.accent : C.textTertiary,
-                cursor: "pointer",
-                transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: isActive
-                  ? `0 0 20px ${C.accent}15, inset 0 1px 0 rgba(255,255,255,0.06)`
-                  : "none",
-              }}
-            >
-              {c.regulationName}
-              {hasBreach && (
-                <span
-                  style={{
-                    marginLeft: 10,
-                    padding: "2px 8px",
-                    borderRadius: 10,
-                    background: `${C.warning}20`,
-                    color: C.warning,
-                    fontSize: 10,
-                    fontWeight: 700,
-                  }}
-                >
-                  {c.crossingDaysFromNow}d
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Chart Container ───────────────────────────────────────────────── */}
-      {curve && (
-        <div
-          style={{
-            position: "relative",
-            background: C.elevated,
-            border: `1px solid ${C.border}`,
-            borderRadius: 16,
-            padding: "24px 24px 12px 12px",
-            marginBottom: 24,
-            overflow: "hidden",
-          }}
-        >
-          {/* Subtle radial gradient glow behind chart */}
-          <div
-            style={{
-              position: "absolute",
-              top: "-20%",
-              left: "30%",
-              width: "40%",
-              height: "60%",
-              background: `radial-gradient(ellipse, ${C.accent}08 0%, transparent 70%)`,
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Chart header */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              padding: "0 12px 20px",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: C.textPrimary,
-                  marginBottom: 4,
-                }}
-              >
-                {curve.regulationName}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  color: C.textMuted,
-                }}
-              >
-                Unit: {curve.unit} · Confidence: {curve.confidence}
-              </div>
-            </div>
-            {curve.crossingDaysFromNow !== null && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "8px 16px",
-                  borderRadius: 12,
-                  background: `${C.warning}12`,
-                  border: `1px solid ${C.warning}25`,
-                }}
-              >
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: C.warning,
-                    boxShadow: `0 0 8px ${C.warning}`,
-                    animation: "pulse 2s ease-in-out infinite",
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: C.warning,
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  BREACH IN {curve.crossingDaysFromNow}d
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Recharts with gradient fills and glow lines */}
-          <ResponsiveContainer width="100%" height={340}>
-            <ComposedChart data={chartData}>
-              <defs>
-                {/* Gradient fill under nominal line */}
-                <linearGradient
-                  id="nominalGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor={C.accent} stopOpacity={0.15} />
-                  <stop offset="50%" stopColor={C.accent} stopOpacity={0.05} />
-                  <stop offset="100%" stopColor={C.accent} stopOpacity={0} />
-                </linearGradient>
-                {/* Glow filter for nominal line */}
-                <filter id="lineGlow">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-
-              <CartesianGrid
-                stroke={C.border}
-                strokeOpacity={0.4}
-                strokeDasharray="1 6"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tick={{
-                  fill: C.textMuted,
-                  fontSize: 10,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                }}
-                axisLine={{ stroke: C.border, strokeOpacity: 0.3 }}
-                tickLine={false}
-                interval="preserveStartEnd"
-                dy={8}
-              />
-              <YAxis
-                tick={{
-                  fill: C.textMuted,
-                  fontSize: 10,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                }}
-                axisLine={false}
-                tickLine={false}
-                width={45}
-                dx={-4}
-              />
-              <Tooltip
-                content={(props) => <ChartTooltip {...props} C={C} />}
-                cursor={{
-                  stroke: C.accent,
-                  strokeWidth: 1,
-                  strokeOpacity: 0.2,
-                  strokeDasharray: "4 4",
-                }}
-              />
-
-              {/* Confidence band with gradient fill */}
-              <Area
-                dataKey="band"
-                fill="url(#nominalGradient)"
-                stroke="none"
-                animationDuration={1200}
-                animationEasing="ease-out"
-                isRange
-              />
-
-              {/* Threshold line */}
-              <ReferenceLine
-                y={curve.thresholdValue}
-                stroke={C.critical}
-                strokeDasharray="8 4"
-                strokeOpacity={0.4}
-                strokeWidth={1.5}
-                label={{
-                  value: `${curve.thresholdValue}${curve.unit}`,
-                  fill: C.critical,
-                  fontSize: 10,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  position: "right",
-                  offset: 8,
-                }}
-              />
-
-              {/* Worst case (P10) — subtle */}
-              <Line
-                type="monotone"
-                dataKey="worstCase"
-                stroke={C.critical}
-                strokeWidth={1}
-                strokeOpacity={0.2}
-                strokeDasharray="4 3"
-                dot={false}
-                name="P10 (Worst)"
-                animationDuration={1000}
-              />
-
-              {/* Best case (P90) — subtle */}
-              <Line
-                type="monotone"
-                dataKey="bestCase"
-                stroke={C.nominal}
-                strokeWidth={1}
-                strokeOpacity={0.2}
-                strokeDasharray="4 3"
-                dot={false}
-                name="P90 (Best)"
-                animationDuration={1000}
-              />
-
-              {/* Nominal (P50) — main line with glow filter */}
-              <Line
-                type="monotone"
-                dataKey="nominal"
-                stroke={C.accent}
-                strokeWidth={2.5}
-                dot={false}
-                name="Nominal (P50)"
-                animationDuration={1200}
-                animationEasing="ease-out"
-                style={{ filter: "url(#lineGlow)" }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-
-          {/* Chart legend */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 24,
-              padding: "12px 0 4px",
-            }}
-          >
-            {[
-              { label: "Nominal (P50)", color: C.accent, dash: false },
-              { label: "Best Case (P90)", color: C.nominal, dash: true },
-              { label: "Worst Case (P10)", color: C.critical, dash: true },
-            ].map((item) => (
-              <div
-                key={item.label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <div
-                  style={{
-                    width: 16,
-                    height: 2,
-                    background: item.color,
-                    opacity: item.dash ? 0.4 : 1,
-                    borderRadius: 1,
-                    boxShadow: item.dash ? "none" : `0 0 6px ${item.color}60`,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 10,
-                    color: C.textMuted,
-                  }}
-                >
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Compliance Events ─────────────────────────────────────────────── */}
-      {events.length > 0 && (
-        <div
-          style={{
-            background: C.elevated,
-            border: `1px solid ${C.border}`,
-            borderRadius: 16,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "16px 20px",
-              borderBottom: `1px solid ${C.border}`,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                fontWeight: 600,
-                color: C.textPrimary,
-              }}
-            >
-              Compliance Events
-            </span>
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                color: C.textMuted,
-                padding: "3px 10px",
-                borderRadius: 10,
-                background: `${C.textMuted}12`,
-              }}
-            >
-              {events.length}
-            </span>
-          </div>
-
-          <div style={{ padding: "4px 0" }}>
-            {events.map((ev) => {
-              const sevColor = severityColor(ev.severity, C);
-              const isHovered = hoveredEvent === ev.id;
-              return (
-                <div
-                  key={ev.id}
-                  onMouseEnter={() => setHoveredEvent(ev.id)}
-                  onMouseLeave={() => setHoveredEvent(null)}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "72px 100px 1fr auto",
-                    alignItems: "center",
-                    gap: 16,
-                    padding: "14px 20px",
-                    borderBottom: `1px solid ${C.border}`,
-                    background: isHovered ? C.sunken : "transparent",
-                    transition: "background 0.15s ease",
-                    cursor: "default",
-                    position: "relative",
-                  }}
-                >
-                  {/* Left accent bar */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      top: "20%",
-                      bottom: "20%",
-                      width: 3,
-                      borderRadius: "0 2px 2px 0",
-                      background: sevColor,
-                      opacity: isHovered ? 1 : 0.4,
-                      transition: "opacity 0.15s ease",
-                    }}
-                  />
-
-                  {/* Days countdown */}
-                  <div
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: sevColor,
-                      letterSpacing: "-0.02em",
-                    }}
-                  >
-                    {ev.daysFromNow}
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        opacity: 0.7,
-                      }}
-                    >
-                      d
-                    </span>
-                  </div>
-
-                  {/* Severity + Regulation */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
-                        fontSize: 10,
-                        fontWeight: 600,
-                        letterSpacing: "0.06em",
-                        color: sevColor,
-                        padding: "2px 8px",
-                        borderRadius: 8,
-                        background: `${sevColor}15`,
-                        width: "fit-content",
-                      }}
-                    >
-                      {ev.severity}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
-                        fontSize: 10,
-                        color: C.accent,
-                      }}
-                    >
-                      {ev.regulationName}
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: C.textSecondary,
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {ev.description}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: C.textMuted,
-                        marginTop: 4,
-                      }}
-                    >
-                      {ev.recommendedAction}
-                    </div>
-                  </div>
-
-                  {/* Date */}
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 10,
-                      color: C.textMuted,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {new Date(ev.date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "2-digit",
-                    })}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
     </div>
