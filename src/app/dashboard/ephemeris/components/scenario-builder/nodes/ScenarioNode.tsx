@@ -125,7 +125,7 @@ function ScenarioNode({ id, data }: NodeProps) {
 
       {/* Parameters — zoom-adaptive */}
       {showParams && definition.parameterDefs.length > 0 && (
-        <div style={paramsContainerStyle}>
+        <div className="nodrag nopan nowheel" style={paramsContainerStyle}>
           {definition.parameterDefs.map((pDef) => {
             if (showFullControls) {
               // Full inline controls
