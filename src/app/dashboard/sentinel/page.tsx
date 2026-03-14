@@ -148,6 +148,13 @@ export default function SentinelDashboard() {
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [generatedOrgId, setGeneratedOrgId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCrossVerifying, setIsCrossVerifying] = useState(false);
+  const [crossVerifyResult, setCrossVerifyResult] = useState<{
+    total: number;
+    verified: number;
+    failed: number;
+    skipped: number;
+  } | null>(null);
 
   const fetchAgents = useCallback(async () => {
     setError(null);
@@ -210,18 +217,32 @@ export default function SentinelDashboard() {
 
   const triggerCrossVerify = useCallback(async () => {
     if (!selectedAgent) return;
+    setIsCrossVerifying(true);
+    setCrossVerifyResult(null);
+    setError(null);
     try {
-      await fetch("/api/v1/sentinel/cross-verify", {
+      const res = await fetch("/api/v1/sentinel/cross-verify", {
         method: "POST",
         headers: { ...csrfHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ agent_id: selectedAgent }),
       });
-      // Refresh packets to show updated trust scores
-      await fetchPackets();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(
+          data.error || `Cross-verification failed (HTTP ${res.status})`,
+        );
+        return;
+      }
+      const json = await res.json();
+      setCrossVerifyResult(json.data);
+      // Refresh packets (updated trust scores) and agents (updated cross_checks_total)
+      await Promise.all([fetchPackets(), fetchAgents()]);
     } catch {
-      // silent
+      setError("Network error during cross-verification.");
+    } finally {
+      setIsCrossVerifying(false);
     }
-  }, [selectedAgent, fetchPackets]);
+  }, [selectedAgent, fetchPackets, fetchAgents]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -470,6 +491,27 @@ export default function SentinelDashboard() {
         />
       )}
 
+      {/* Cross-Verify Result Banner */}
+      {crossVerifyResult && (
+        <div className="rounded-xl border px-4 py-3 flex items-center justify-between bg-[var(--accent-success-soft)] border-[var(--accent-success)]">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 size={18} className="text-[var(--accent-primary)]" />
+            <p className="text-body font-medium text-[var(--accent-success)]">
+              Cross-verification complete · {crossVerifyResult.verified}{" "}
+              verified, {crossVerifyResult.failed} failed,{" "}
+              {crossVerifyResult.skipped} skipped ({crossVerifyResult.total}{" "}
+              total)
+            </p>
+          </div>
+          <button
+            onClick={() => setCrossVerifyResult(null)}
+            className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+          >
+            <XCircle size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Agent Selector + Stats */}
       {agents.length > 1 && (
         <div className="flex gap-2 flex-wrap">
@@ -554,9 +596,17 @@ export default function SentinelDashboard() {
             action={
               <button
                 onClick={triggerCrossVerify}
-                className="text-micro text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-medium"
+                disabled={isCrossVerifying}
+                className="text-micro text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
               >
-                Run verification
+                {isCrossVerifying ? (
+                  <>
+                    <Loader2 size={10} className="animate-spin" />
+                    Verifying…
+                  </>
+                ) : (
+                  "Run verification"
+                )}
               </button>
             }
           />
