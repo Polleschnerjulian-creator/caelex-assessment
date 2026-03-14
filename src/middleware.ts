@@ -383,7 +383,10 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Layer 2: Double-submit cookie validation for mutating requests
-    // ENFORCEMENT MODE: Rejects requests with missing/invalid CSRF tokens
+    // Defense-in-depth: validates when CSRF cookie is present.
+    // Origin validation (Layer 1) is the primary CSRF protection.
+    // If CSRF cookie is absent (first visit, domain mismatch, cookie cleared),
+    // the request is allowed — the cookie will be set on the response.
     const method = req.method.toUpperCase();
     const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
     const isCsrfExempt = CSRF_EXEMPT_ROUTES.some((route) =>
@@ -393,29 +396,32 @@ export default async function middleware(req: NextRequest) {
     if (isMutating && !isCsrfExempt) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
-      // Extract session ID for session-bound CSRF validation
-      const sessionId =
-        req.cookies.get("__Secure-authjs.session-token")?.value ||
-        req.cookies.get("authjs.session-token")?.value;
 
-      const csrfValid = await validateCsrfToken(
-        cookieToken,
-        headerToken,
-        sessionId,
-      );
-      if (!cookieToken || !csrfValid) {
-        return applySecurityHeaders(
-          new NextResponse(
-            JSON.stringify({
-              error: "Forbidden",
-              message: "Invalid or missing CSRF token",
-              code: "CSRF_VALIDATION_FAILED",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          ),
-          pathname,
-          nonce,
+      // Only enforce double-submit check when cookie exists
+      if (cookieToken) {
+        const sessionId =
+          req.cookies.get("__Secure-authjs.session-token")?.value ||
+          req.cookies.get("authjs.session-token")?.value;
+
+        const csrfValid = await validateCsrfToken(
+          cookieToken,
+          headerToken,
+          sessionId,
         );
+        if (!csrfValid) {
+          return applySecurityHeaders(
+            new NextResponse(
+              JSON.stringify({
+                error: "Forbidden",
+                message: "Invalid or missing CSRF token",
+                code: "CSRF_VALIDATION_FAILED",
+              }),
+              { status: 403, headers: { "Content-Type": "application/json" } },
+            ),
+            pathname,
+            nonce,
+          );
+        }
       }
     }
   }
