@@ -334,14 +334,36 @@ export default function SatelliteDetailPage({
           background: C.bg,
           minHeight: "100vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          color: C.textTertiary,
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 13,
+          gap: 16,
         }}
       >
-        LOADING SATELLITE DATA...
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            border: `2px solid ${C.border}`,
+            borderTopColor: C.accent,
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <span
+          style={{
+            color: C.textMuted,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+          }}
+        >
+          LOADING SATELLITE DATA
+        </span>
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        `}</style>
       </div>
     );
   }
@@ -369,9 +391,9 @@ export default function SatelliteDetailPage({
         {/* ── Top Bar (hidden in scenarios mode) ───────────────────────────── */}
         <div
           style={{
-            background: C.sunken,
+            background: C.bg,
             borderBottom: `1px solid ${C.border}`,
-            padding: "10px 24px",
+            padding: "14px 28px",
             display: activeTab === "scenarios" ? "none" : "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -381,25 +403,27 @@ export default function SatelliteDetailPage({
             <Link
               href="/dashboard/ephemeris"
               style={{
-                color: C.textTertiary,
+                color: C.textMuted,
                 textDecoration: "none",
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 12,
-                padding: "4px 8px",
-                borderRadius: 4,
+                fontSize: 11,
+                padding: "6px 12px",
+                borderRadius: 8,
                 border: `1px solid ${C.border}`,
+                transition: "all 0.15s ease",
+                letterSpacing: "0.04em",
               }}
             >
               ← FLEET
             </Link>
-            <div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 16,
+                  fontWeight: 700,
                   color: C.textPrimary,
-                  letterSpacing: "0.02em",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {state?.satelliteName ?? noradId}
@@ -408,8 +432,8 @@ export default function SatelliteDetailPage({
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
-                  color: C.textTertiary,
-                  marginLeft: 12,
+                  color: C.textMuted,
+                  letterSpacing: "0.04em",
                 }}
               >
                 NORAD {noradId}
@@ -423,9 +447,9 @@ export default function SatelliteDetailPage({
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 10,
                 color: C.textMuted,
+                letterSpacing: "0.04em",
               }}
             >
-              CALCULATED{" "}
               {state?.calculatedAt
                 ? new Date(state.calculatedAt).toLocaleString()
                 : "—"}
@@ -436,12 +460,17 @@ export default function SatelliteDetailPage({
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11,
-                padding: "4px 12px",
-                borderRadius: 4,
-                border: `1px solid ${C.border}`,
-                background: C.elevated,
-                color: loading ? C.textMuted : C.textSecondary,
+                fontWeight: 500,
+                padding: "7px 16px",
+                borderRadius: 10,
+                border: `1px solid ${loading ? C.border : C.accent + "40"}`,
+                background: loading
+                  ? "transparent"
+                  : `linear-gradient(135deg, ${C.accent}10 0%, ${C.accent}05 100%)`,
+                color: loading ? C.textMuted : C.accent,
                 cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                letterSpacing: "0.04em",
               }}
             >
               {loading ? "CALCULATING..." : "RECALCULATE"}
@@ -455,6 +484,7 @@ export default function SatelliteDetailPage({
             display: activeTab === "scenarios" ? "none" : "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
             borderBottom: `1px solid ${C.border}`,
+            background: C.elevated,
           }}
         >
           {/* Score */}
@@ -535,34 +565,40 @@ export default function SatelliteDetailPage({
         <div
           style={{
             display: activeTab === "scenarios" ? "none" : "flex",
+            gap: 2,
+            padding: "10px 28px",
             borderBottom: `1px solid ${C.border}`,
-            background: C.sunken,
+            background: C.bg,
           }}
         >
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                fontWeight: 500,
-                letterSpacing: "0.05em",
-                padding: "10px 20px",
-                border: "none",
-                borderBottom:
-                  activeTab === tab.id
-                    ? `2px solid ${C.accent}`
-                    : "2px solid transparent",
-                background: "transparent",
-                color: activeTab === tab.id ? C.textPrimary : C.textTertiary,
-                cursor: "pointer",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  fontWeight: isActive ? 600 : 400,
+                  letterSpacing: "0.06em",
+                  padding: "8px 18px",
+                  border: "none",
+                  borderRadius: 8,
+                  background: isActive ? C.elevated : "transparent",
+                  color: isActive ? C.textPrimary : C.textMuted,
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(0.4,0,0.2,1)",
+                  position: "relative",
+                  boxShadow: isActive
+                    ? `0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05)`
+                    : "none",
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Tab Content ───────────────────────────────────────────────────── */}
@@ -570,7 +606,7 @@ export default function SatelliteDetailPage({
           style={
             activeTab === "scenarios"
               ? { flex: 1, display: "flex", flexDirection: "column" as const }
-              : { padding: 24 }
+              : { padding: "28px 28px 40px" }
           }
         >
           {activeTab === "forecast" && (
@@ -633,17 +669,30 @@ function MetricCell({
   return (
     <div
       style={{
-        padding: "14px 20px",
-        borderRight: `1px solid ${C.border}`,
+        padding: "18px 24px",
+        position: "relative",
       }}
     >
+      {/* Separator line (not on first cell) */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: "25%",
+          bottom: "25%",
+          width: 1,
+          background: C.border,
+          opacity: 0.5,
+        }}
+      />
       <div
         style={{
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 10,
           color: C.textMuted,
-          letterSpacing: "0.08em",
-          marginBottom: 4,
+          letterSpacing: "0.1em",
+          marginBottom: 8,
+          textTransform: "uppercase",
         }}
       >
         {label}
@@ -651,10 +700,11 @@ function MetricCell({
       <div
         style={{
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 22,
-          fontWeight: 600,
+          fontSize: 28,
+          fontWeight: 700,
           color: valueColor,
-          lineHeight: 1.1,
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
         }}
       >
         {value}
@@ -665,12 +715,104 @@ function MetricCell({
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 10,
             color: C.textMuted,
-            marginTop: 2,
+            marginTop: 6,
+            letterSpacing: "0.04em",
           }}
         >
           {sub}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Custom Chart Tooltip ─────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ChartTooltip(props: any) {
+  const { active, payload, label, C } = props as {
+    active?: boolean;
+    payload?: Array<{
+      name: string;
+      value: number | [number, number];
+      color: string;
+    }>;
+    label?: string;
+    C: EphemerisColors;
+  };
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div
+      style={{
+        background: C.sunken,
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        border: `1px solid ${C.borderActive}`,
+        borderRadius: 12,
+        padding: "12px 16px",
+        boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${C.border}`,
+        minWidth: 160,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10,
+          color: C.textMuted,
+          letterSpacing: "0.06em",
+          marginBottom: 10,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </div>
+      {payload
+        .filter((p) => p.name !== "band" && p.name !== "Glow")
+        .map((p) => (
+          <div
+            key={p.name}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 16,
+              padding: "3px 0",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: p.color,
+                  boxShadow: `0 0 6px ${p.color}`,
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11,
+                  color: C.textTertiary,
+                }}
+              >
+                {p.name}
+              </span>
+            </div>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                fontWeight: 600,
+                color: C.textPrimary,
+              }}
+            >
+              {typeof p.value === "number" ? p.value.toFixed(1) : ""}
+            </span>
+          </div>
+        ))}
     </div>
   );
 }
@@ -686,9 +828,15 @@ function ForecastTab({
   events: ComplianceEvent[];
   C: EphemerisColors;
 }) {
-  const [selectedMetric, setSelectedMetric] = useState<string | null>(
-    forecast?.forecastCurves[0]?.metric ?? null,
-  );
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
+
+  // Auto-select first metric when forecast data loads
+  useEffect(() => {
+    if (selectedMetric === null && forecast?.forecastCurves[0]?.metric) {
+      setSelectedMetric(forecast.forecastCurves[0].metric);
+    }
+  }, [forecast, selectedMetric]);
 
   const curve = forecast?.forecastCurves.find(
     (c) => c.metric === selectedMetric,
@@ -719,11 +867,12 @@ function ForecastTab({
     return (
       <div
         style={{
-          padding: 40,
+          padding: 60,
           textAlign: "center",
           color: C.textMuted,
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 12,
+          letterSpacing: "0.1em",
         }}
       >
         NO FORECAST DATA AVAILABLE
@@ -733,89 +882,189 @@ function ForecastTab({
 
   return (
     <div>
-      {/* Curve Selector */}
+      {/* ── Curve Selector (pill buttons) ─────────────────────────────────── */}
       <div
         style={{
           display: "flex",
-          gap: 8,
-          marginBottom: 20,
+          gap: 6,
+          marginBottom: 24,
           flexWrap: "wrap",
         }}
       >
-        {forecast.forecastCurves.map((c) => (
-          <button
-            key={c.metric}
-            onClick={() => setSelectedMetric(c.metric)}
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11,
-              padding: "6px 14px",
-              borderRadius: 4,
-              border: `1px solid ${selectedMetric === c.metric ? C.accent : C.border}`,
-              background:
-                selectedMetric === c.metric ? C.elevated : "transparent",
-              color: selectedMetric === c.metric ? C.accent : C.textTertiary,
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-          >
-            {c.regulationName}
-            {c.crossingDaysFromNow !== null && (
-              <span style={{ color: C.warning, marginLeft: 8 }}>
-                {c.crossingDaysFromNow}d
-              </span>
-            )}
-          </button>
-        ))}
+        {forecast.forecastCurves.map((c) => {
+          const isActive = selectedMetric === c.metric;
+          const hasBreach = c.crossingDaysFromNow !== null;
+          return (
+            <button
+              key={c.metric}
+              onClick={() => setSelectedMetric(c.metric)}
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                fontWeight: isActive ? 600 : 400,
+                padding: "8px 18px",
+                borderRadius: 20,
+                border: `1px solid ${isActive ? C.accent + "50" : C.border}`,
+                background: isActive
+                  ? `linear-gradient(135deg, ${C.accent}18 0%, ${C.accent}08 100%)`
+                  : "transparent",
+                color: isActive ? C.accent : C.textTertiary,
+                cursor: "pointer",
+                transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: isActive
+                  ? `0 0 20px ${C.accent}15, inset 0 1px 0 rgba(255,255,255,0.06)`
+                  : "none",
+              }}
+            >
+              {c.regulationName}
+              {hasBreach && (
+                <span
+                  style={{
+                    marginLeft: 10,
+                    padding: "2px 8px",
+                    borderRadius: 10,
+                    background: `${C.warning}20`,
+                    color: C.warning,
+                    fontSize: 10,
+                    fontWeight: 700,
+                  }}
+                >
+                  {c.crossingDaysFromNow}d
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Chart */}
+      {/* ── Chart Container ───────────────────────────────────────────────── */}
       {curve && (
         <div
           style={{
+            position: "relative",
             background: C.elevated,
             border: `1px solid ${C.border}`,
-            borderRadius: 6,
-            padding: "16px 16px 8px 8px",
-            marginBottom: 20,
+            borderRadius: 16,
+            padding: "24px 24px 12px 12px",
+            marginBottom: 24,
+            overflow: "hidden",
           }}
         >
+          {/* Subtle radial gradient glow behind chart */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-20%",
+              left: "30%",
+              width: "40%",
+              height: "60%",
+              background: `radial-gradient(ellipse, ${C.accent}08 0%, transparent 70%)`,
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Chart header */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
-              padding: "0 8px 12px",
+              alignItems: "flex-start",
+              padding: "0 12px 20px",
+              position: "relative",
+              zIndex: 1,
             }}
           >
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 12,
-                color: C.textSecondary,
-              }}
-            >
-              {curve.regulationName}{" "}
-              <span style={{ color: C.textMuted }}>({curve.unit})</span>
-            </span>
-            {curve.crossingDaysFromNow !== null && (
-              <span
+            <div>
+              <div
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: C.textPrimary,
+                  marginBottom: 4,
+                }}
+              >
+                {curve.regulationName}
+              </div>
+              <div
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
-                  color: C.warning,
+                  color: C.textMuted,
                 }}
               >
-                BREACH IN {curve.crossingDaysFromNow}d
-              </span>
+                Unit: {curve.unit} · Confidence: {curve.confidence}
+              </div>
+            </div>
+            {curve.crossingDaysFromNow !== null && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 16px",
+                  borderRadius: 12,
+                  background: `${C.warning}12`,
+                  border: `1px solid ${C.warning}25`,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: C.warning,
+                    boxShadow: `0 0 8px ${C.warning}`,
+                    animation: "pulse 2s ease-in-out infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: C.warning,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  BREACH IN {curve.crossingDaysFromNow}d
+                </span>
+              </div>
             )}
           </div>
 
-          <ResponsiveContainer width="100%" height={300}>
+          {/* Recharts with gradient fills and glow lines */}
+          <ResponsiveContainer width="100%" height={340}>
             <ComposedChart data={chartData}>
+              <defs>
+                {/* Gradient fill under nominal line */}
+                <linearGradient
+                  id="nominalGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor={C.accent} stopOpacity={0.15} />
+                  <stop offset="50%" stopColor={C.accent} stopOpacity={0.05} />
+                  <stop offset="100%" stopColor={C.accent} stopOpacity={0} />
+                </linearGradient>
+                {/* Glow filter for nominal line */}
+                <filter id="lineGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
               <CartesianGrid
                 stroke={C.border}
-                strokeDasharray="3 3"
+                strokeOpacity={0.4}
+                strokeDasharray="1 6"
                 vertical={false}
               />
               <XAxis
@@ -825,9 +1074,10 @@ function ForecastTab({
                   fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}
-                axisLine={{ stroke: C.border }}
+                axisLine={{ stroke: C.border, strokeOpacity: 0.3 }}
                 tickLine={false}
                 interval="preserveStartEnd"
+                dy={8}
               />
               <YAxis
                 tick={{
@@ -835,212 +1085,313 @@ function ForecastTab({
                   fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}
-                axisLine={{ stroke: C.border }}
+                axisLine={false}
                 tickLine={false}
-                width={50}
+                width={45}
+                dx={-4}
               />
               <Tooltip
-                contentStyle={{
-                  background: C.sunken,
-                  border: `1px solid ${C.borderActive}`,
-                  borderRadius: 4,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  color: C.textPrimary,
+                content={(props) => <ChartTooltip {...props} C={C} />}
+                cursor={{
+                  stroke: C.accent,
+                  strokeWidth: 1,
+                  strokeOpacity: 0.2,
+                  strokeDasharray: "4 4",
                 }}
-                labelStyle={{ color: C.textTertiary }}
               />
 
-              {/* Confidence band (P10-P90 area) */}
+              {/* Confidence band with gradient fill */}
               <Area
                 dataKey="band"
-                fill={C.accent}
-                fillOpacity={0.08}
+                fill="url(#nominalGradient)"
                 stroke="none"
+                animationDuration={1200}
+                animationEasing="ease-out"
+                isRange
               />
 
               {/* Threshold line */}
               <ReferenceLine
                 y={curve.thresholdValue}
                 stroke={C.critical}
-                strokeDasharray="6 4"
-                strokeOpacity={0.6}
+                strokeDasharray="8 4"
+                strokeOpacity={0.4}
+                strokeWidth={1.5}
                 label={{
-                  value: `Threshold ${curve.thresholdValue}${curve.unit}`,
+                  value: `${curve.thresholdValue}${curve.unit}`,
                   fill: C.critical,
                   fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
                   position: "right",
+                  offset: 8,
                 }}
               />
 
-              {/* Worst case (P10) */}
+              {/* Worst case (P10) — subtle */}
               <Line
                 type="monotone"
                 dataKey="worstCase"
                 stroke={C.critical}
                 strokeWidth={1}
-                strokeOpacity={0.3}
+                strokeOpacity={0.2}
+                strokeDasharray="4 3"
                 dot={false}
                 name="P10 (Worst)"
+                animationDuration={1000}
               />
 
-              {/* Best case (P90) */}
+              {/* Best case (P90) — subtle */}
               <Line
                 type="monotone"
                 dataKey="bestCase"
                 stroke={C.nominal}
                 strokeWidth={1}
-                strokeOpacity={0.3}
+                strokeOpacity={0.2}
+                strokeDasharray="4 3"
                 dot={false}
                 name="P90 (Best)"
+                animationDuration={1000}
               />
 
-              {/* Nominal (P50) */}
+              {/* Nominal (P50) — main line with glow filter */}
               <Line
                 type="monotone"
                 dataKey="nominal"
                 stroke={C.accent}
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 name="Nominal (P50)"
+                animationDuration={1200}
+                animationEasing="ease-out"
+                style={{ filter: "url(#lineGlow)" }}
               />
             </ComposedChart>
           </ResponsiveContainer>
+
+          {/* Chart legend */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 24,
+              padding: "12px 0 4px",
+            }}
+          >
+            {[
+              { label: "Nominal (P50)", color: C.accent, dash: false },
+              { label: "Best Case (P90)", color: C.nominal, dash: true },
+              { label: "Worst Case (P10)", color: C.critical, dash: true },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    width: 16,
+                    height: 2,
+                    background: item.color,
+                    opacity: item.dash ? 0.4 : 1,
+                    borderRadius: 1,
+                    boxShadow: item.dash ? "none" : `0 0 6px ${item.color}60`,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    color: C.textMuted,
+                  }}
+                >
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Compliance Events Table */}
+      {/* ── Compliance Events ─────────────────────────────────────────────── */}
       {events.length > 0 && (
         <div
           style={{
             background: C.elevated,
             border: `1px solid ${C.border}`,
-            borderRadius: 6,
+            borderRadius: 16,
             overflow: "hidden",
           }}
         >
           <div
             style={{
-              padding: "12px 16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "16px 20px",
               borderBottom: `1px solid ${C.border}`,
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11,
-              color: C.textTertiary,
-              letterSpacing: "0.05em",
             }}
           >
-            COMPLIANCE EVENTS ({events.length})
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                fontWeight: 600,
+                color: C.textPrimary,
+              }}
+            >
+              Compliance Events
+            </span>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                color: C.textMuted,
+                padding: "3px 10px",
+                borderRadius: 10,
+                background: `${C.textMuted}12`,
+              }}
+            >
+              {events.length}
+            </span>
           </div>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{
-                  borderBottom: `1px solid ${C.border}`,
-                  background: C.sunken,
-                }}
-              >
-                {["DAYS", "SEVERITY", "REGULATION", "EVENT", "ACTION"].map(
-                  (h) => (
-                    <th
-                      key={h}
+
+          <div style={{ padding: "4px 0" }}>
+            {events.map((ev) => {
+              const sevColor = severityColor(ev.severity, C);
+              const isHovered = hoveredEvent === ev.id;
+              return (
+                <div
+                  key={ev.id}
+                  onMouseEnter={() => setHoveredEvent(ev.id)}
+                  onMouseLeave={() => setHoveredEvent(null)}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "72px 100px 1fr auto",
+                    alignItems: "center",
+                    gap: 16,
+                    padding: "14px 20px",
+                    borderBottom: `1px solid ${C.border}`,
+                    background: isHovered ? C.sunken : "transparent",
+                    transition: "background 0.15s ease",
+                    cursor: "default",
+                    position: "relative",
+                  }}
+                >
+                  {/* Left accent bar */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: "20%",
+                      bottom: "20%",
+                      width: 3,
+                      borderRadius: "0 2px 2px 0",
+                      background: sevColor,
+                      opacity: isHovered ? 1 : 0.4,
+                      transition: "opacity 0.15s ease",
+                    }}
+                  />
+
+                  {/* Days countdown */}
+                  <div
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: sevColor,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {ev.daysFromNow}
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        opacity: 0.7,
+                      }}
+                    >
+                      d
+                    </span>
+                  </div>
+
+                  {/* Severity + Regulation */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <span
                       style={{
                         fontFamily: "'IBM Plex Mono', monospace",
                         fontSize: 10,
-                        fontWeight: 500,
-                        color: C.textMuted,
-                        letterSpacing: "0.08em",
-                        padding: "8px 12px",
-                        textAlign: "left",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((ev) => (
-                <tr
-                  key={ev.id}
-                  style={{
-                    borderBottom: `1px solid ${C.border}`,
-                    transition: "background 0.1s",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = C.sunken)
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
-                >
-                  <td
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: severityColor(ev.severity, C),
-                      padding: "10px 12px",
-                    }}
-                  >
-                    {ev.daysFromNow}d
-                  </td>
-                  <td style={{ padding: "10px 12px" }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: severityColor(ev.severity, C),
-                        marginRight: 8,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
-                        fontSize: 11,
-                        color: C.textSecondary,
+                        fontWeight: 600,
+                        letterSpacing: "0.06em",
+                        color: sevColor,
+                        padding: "2px 8px",
+                        borderRadius: 8,
+                        background: `${sevColor}15`,
+                        width: "fit-content",
                       }}
                     >
                       {ev.severity}
                     </span>
-                  </td>
-                  <td
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        color: C.accent,
+                      }}
+                    >
+                      {ev.regulationName}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: C.textSecondary,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {ev.description}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: C.textMuted,
+                        marginTop: 4,
+                      }}
+                    >
+                      {ev.recommendedAction}
+                    </div>
+                  </div>
+
+                  {/* Date */}
+                  <span
                     style={{
                       fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 11,
-                      color: C.accent,
-                      padding: "10px 12px",
+                      fontSize: 10,
+                      color: C.textMuted,
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {ev.regulationName}
-                  </td>
-                  <td
-                    style={{
-                      fontSize: 12,
-                      color: C.textSecondary,
-                      padding: "10px 12px",
-                      maxWidth: 300,
-                    }}
-                  >
-                    {ev.description}
-                  </td>
-                  <td
-                    style={{
-                      fontSize: 11,
-                      color: C.textTertiary,
-                      padding: "10px 12px",
-                      maxWidth: 200,
-                    }}
-                  >
-                    {ev.recommendedAction}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {new Date(ev.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "2-digit",
+                    })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
