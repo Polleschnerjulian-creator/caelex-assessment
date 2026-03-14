@@ -150,6 +150,8 @@ function ScenarioNode({ id, data }: NodeProps) {
                       onChange={(e) =>
                         handleParamChange(sp.key, parseFloat(e.target.value))
                       }
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       style={sliderStyle(categoryColor)}
                     />
                   </div>
@@ -166,6 +168,8 @@ function ScenarioNode({ id, data }: NodeProps) {
                       onChange={(e) =>
                         handleParamChange(sp.key, e.target.value)
                       }
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       style={selectStyle}
                     >
                       {sp.options.map((opt) => (
