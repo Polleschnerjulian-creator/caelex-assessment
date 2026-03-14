@@ -282,26 +282,40 @@ export function Generate2Page() {
         setGenerationPhase("sections");
       }
 
-      // ── Phase 2: Generate each section ──
+      // ── Phase 2: Generate each section (with retry for transient errors) ──
       for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
-        const sectionRes = await fetchWithTimeout(
-          `/api/generate2/documents/${documentId}/section`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...csrfHeaders() },
-            body: JSON.stringify({
-              sectionIndex: i,
-              sectionTitle: sectionDefs[i].title,
-              sectionNumber: sectionDefs[i].number,
-            }),
-          },
-          SECTION_FETCH_TIMEOUT_MS,
-        );
+        let sectionRes: Response | null = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          sectionRes = await fetchWithTimeout(
+            `/api/generate2/documents/${documentId}/section`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...csrfHeaders() },
+              body: JSON.stringify({
+                sectionIndex: i,
+                sectionTitle: sectionDefs[i].title,
+                sectionNumber: sectionDefs[i].number,
+              }),
+            },
+            SECTION_FETCH_TIMEOUT_MS,
+          );
 
-        if (!sectionRes.ok) {
-          const errData = await sectionRes.json().catch(() => ({
+          if (
+            sectionRes.ok ||
+            (sectionRes.status !== 403 && sectionRes.status !== 429)
+          ) {
+            break; // Success or non-retryable error
+          }
+          // Wait before retry: 1s, 3s
+          if (attempt < 2) {
+            await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+          }
+        }
+
+        if (!sectionRes!.ok) {
+          const errData = await sectionRes!.json().catch(() => ({
             error: `Section ${i + 1} "${sectionDefs[i].title}" failed`,
           }));
           throw new Error(
@@ -309,7 +323,7 @@ export function Generate2Page() {
           );
         }
 
-        const sectionData = await sectionRes.json();
+        const sectionData = await sectionRes!.json();
         sectionContents.push(sectionData.content);
         totalInputTokens += sectionData.inputTokens || 0;
         totalOutputTokens += sectionData.outputTokens || 0;
@@ -572,24 +586,34 @@ export function Generate2Page() {
         for (let i = 0; i < sectionDefs.length; i++) {
           setCurrentSection(i);
           try {
-            const sectionRes = await fetchWithTimeout(
-              `/api/generate2/documents/${documentId}/section`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  ...csrfHeaders(),
+            let sectionRes: Response | null = null;
+            for (let attempt = 0; attempt < 3; attempt++) {
+              sectionRes = await fetchWithTimeout(
+                `/api/generate2/documents/${documentId}/section`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...csrfHeaders(),
+                  },
+                  body: JSON.stringify({
+                    sectionIndex: i,
+                    sectionTitle: sectionDefs[i].title,
+                    sectionNumber: sectionDefs[i].number,
+                  }),
                 },
-                body: JSON.stringify({
-                  sectionIndex: i,
-                  sectionTitle: sectionDefs[i].title,
-                  sectionNumber: sectionDefs[i].number,
-                }),
-              },
-              SECTION_FETCH_TIMEOUT_MS,
-            );
+                SECTION_FETCH_TIMEOUT_MS,
+              );
+              if (
+                sectionRes.ok ||
+                (sectionRes.status !== 403 && sectionRes.status !== 429)
+              )
+                break;
+              if (attempt < 2)
+                await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+            }
 
-            if (!sectionRes.ok) {
+            if (!sectionRes!.ok) {
               console.error(
                 `Section ${i + 1} of ${docType} failed, skipping document`,
               );
@@ -597,7 +621,7 @@ export function Generate2Page() {
               break;
             }
 
-            const sectionData = await sectionRes.json();
+            const sectionData = await sectionRes!.json();
             sectionContents.push(sectionData.content);
             totalInputTokens += sectionData.inputTokens || 0;
             totalOutputTokens += sectionData.outputTokens || 0;

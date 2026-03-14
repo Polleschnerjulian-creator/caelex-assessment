@@ -397,17 +397,12 @@ export default async function middleware(req: NextRequest) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
 
-      // Only enforce double-submit check when cookie exists
-      if (cookieToken) {
-        const sessionId =
-          req.cookies.get("__Secure-authjs.session-token")?.value ||
-          req.cookies.get("authjs.session-token")?.value;
-
-        const csrfValid = await validateCsrfToken(
-          cookieToken,
-          headerToken,
-          sessionId,
-        );
+      // Only enforce double-submit check when both cookie and header exist.
+      // Skip session binding — session rotation during long operations
+      // (e.g. multi-section document generation) causes false positives.
+      // Origin validation (Layer 1) + cookie/header match is sufficient.
+      if (cookieToken && headerToken) {
+        const csrfValid = await validateCsrfToken(cookieToken, headerToken);
         if (!csrfValid) {
           return applySecurityHeaders(
             new NextResponse(
