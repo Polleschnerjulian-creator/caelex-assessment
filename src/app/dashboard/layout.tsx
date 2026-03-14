@@ -110,6 +110,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isFullscreenPage =
     pathname === "/dashboard" ||
     pathname === "/dashboard/generate" ||
+    pathname === "/dashboard/documents" ||
     pathname === "/dashboard/tracker" ||
     pathname === "/dashboard/mission-control" ||
     isSettingsPage ||
