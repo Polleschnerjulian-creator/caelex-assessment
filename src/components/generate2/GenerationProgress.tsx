@@ -85,7 +85,9 @@ export function GenerationProgress({
                 ? "Preparing assessment data..."
                 : phase === "finalizing"
                   ? "Finalizing and saving document..."
-                  : `Section ${completedSections + 1} of ${sections.length}`}
+                  : completedSections >= sections.length
+                    ? "All sections generated, preparing to finalize..."
+                    : `Section ${completedSections + 1} of ${sections.length}`}
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { DocumentSelectorPanel } from "./DocumentSelectorPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
@@ -22,18 +22,29 @@ const SECTION_FETCH_TIMEOUT_MS = 305_000; // 5 min + 5s buffer (matches server m
 const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
 const GENERATION_WATCHDOG_MS = 900_000; // 15 minutes max total generation time
 
-/** Fetch with AbortController timeout so requests can't hang indefinitely */
+/** Fetch with AbortController timeout so requests can't hang indefinitely.
+ *  Optionally accepts a parent AbortSignal — if the parent aborts, this fetch
+ *  also aborts (used by the generation watchdog). */
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
   timeoutMs: number,
+  parentSignal?: AbortSignal,
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // If a parent signal aborts, propagate to this fetch
+  const onParentAbort = () => controller.abort();
+  parentSignal?.addEventListener("abort", onParentAbort);
+
   try {
     return await fetch(url, { ...options, signal: controller.signal });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
+      if (parentSignal?.aborted) {
+        throw new Error("Generation was cancelled.");
+      }
       throw new Error(
         `Request timed out after ${Math.round(timeoutMs / 1000)}s`,
       );
@@ -41,6 +52,7 @@ async function fetchWithTimeout(
     throw err;
   } finally {
     clearTimeout(timer);
+    parentSignal?.removeEventListener("abort", onParentAbort);
   }
 }
 
@@ -118,6 +130,9 @@ export function Generate2Page() {
     totalOutputTokens: number;
     startTime: number;
   } | null>(null);
+
+  // Global abort controller for cancelling the entire generation flow
+  const generationAbortRef = useRef<AbortController | null>(null);
 
   // Load readiness scores and existing documents
   useEffect(() => {
@@ -216,6 +231,11 @@ export function Generate2Page() {
     setIsGenerating(true);
     setPanelState("generating");
 
+    // Create a global abort controller for this generation run —
+    // the watchdog uses it to actually cancel pending fetches.
+    const abortController = new AbortController();
+    generationAbortRef.current = abortController;
+
     const sectionDefs = SECTION_DEFINITIONS[selectedType];
     let documentId: string;
     let sectionContents: string[];
@@ -224,16 +244,13 @@ export function Generate2Page() {
     let startTime: number;
     let startFromSection: number;
 
-    // Global watchdog — auto-fail after 15 minutes to prevent infinite hangs
+    // Global watchdog — auto-fail after 15 minutes to prevent infinite hangs.
+    // IMPORTANT: This aborts the controller so pending fetches actually cancel.
     const watchdogTimer = setTimeout(() => {
       console.error(
         "[Generate2] Watchdog triggered: generation exceeded 15 minutes",
       );
-      setError(
-        "Generation timed out after 15 minutes. Your progress has been saved — click Resume to continue.",
-      );
-      setIsGenerating(false);
-      setPanelState("pre-generation");
+      abortController.abort();
     }, GENERATION_WATCHDOG_MS);
 
     if (resume && resumeData) {
@@ -268,6 +285,7 @@ export function Generate2Page() {
             body: JSON.stringify({ documentType: selectedType }),
           },
           30_000, // 30s for init — it's a DB write, not AI
+          abortController.signal,
         );
 
         if (!initRes.ok) {
@@ -286,6 +304,11 @@ export function Generate2Page() {
       for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
+        // Check if generation was aborted (e.g. by watchdog)
+        if (abortController.signal.aborted) {
+          throw new Error("Generation was cancelled.");
+        }
+
         let sectionRes: Response | null = null;
         for (let attempt = 0; attempt < 3; attempt++) {
           sectionRes = await fetchWithTimeout(
@@ -300,6 +323,7 @@ export function Generate2Page() {
               }),
             },
             SECTION_FETCH_TIMEOUT_MS,
+            abortController.signal,
           );
 
           if (
@@ -396,45 +420,12 @@ export function Generate2Page() {
       setPanelState("completed");
       setResumeData(null);
 
-      // Save to server — try lightweight first (server reconstructs from saved
-      // sections), fall back to sending full content if that fails.
-      let saved = false;
-      try {
-        const lightRes = await fetchWithTimeout(
-          `/api/generate2/documents/${documentId}/complete`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...csrfHeaders(),
-            },
-            body: JSON.stringify({
-              mode: "reconstruct",
-              totalInputTokens,
-              totalOutputTokens,
-              generationTimeMs: Date.now() - startTime,
-            }),
-          },
-          COMPLETE_FETCH_TIMEOUT_MS,
-        );
-        saved = lightRes.ok;
-        if (!lightRes.ok) {
-          console.warn(
-            "[Generate2] Lightweight save failed, trying full mode:",
-            lightRes.status,
-          );
-        }
-      } catch (lightErr) {
-        console.warn(
-          "[Generate2] Lightweight save error, trying full mode:",
-          lightErr,
-        );
-      }
-
-      // Fallback: send full content if lightweight mode failed
-      if (!saved) {
+      // Save to server in the background — don't block the user from seeing
+      // their document. Fire-and-forget with best-effort retry.
+      (async () => {
+        let saved = false;
         try {
-          const fullRes = await fetchWithTimeout(
+          const lightRes = await fetchWithTimeout(
             `/api/generate2/documents/${documentId}/complete`,
             {
               method: "POST",
@@ -443,10 +434,7 @@ export function Generate2Page() {
                 ...csrfHeaders(),
               },
               body: JSON.stringify({
-                parsedSections: finalSections,
-                rawContent: fullContent,
-                actionRequiredCount: actionRequired,
-                evidencePlaceholderCount: evidencePlaceholders,
+                mode: "reconstruct",
                 totalInputTokens,
                 totalOutputTokens,
                 generationTimeMs: Date.now() - startTime,
@@ -454,24 +442,72 @@ export function Generate2Page() {
             },
             COMPLETE_FETCH_TIMEOUT_MS,
           );
-          saved = fullRes.ok;
-          if (!fullRes.ok) {
-            console.error("[Generate2] Full save also failed:", fullRes.status);
+          saved = lightRes.ok;
+          if (!lightRes.ok) {
+            console.warn(
+              "[Generate2] Lightweight save failed, trying full mode:",
+              lightRes.status,
+            );
           }
-        } catch (fullErr) {
-          console.error("[Generate2] Full save error:", fullErr);
+        } catch (lightErr) {
+          console.warn(
+            "[Generate2] Lightweight save error, trying full mode:",
+            lightErr,
+          );
         }
-      }
 
-      if (!saved) {
-        console.error(
-          "[Generate2] Both save modes failed — document visible but not persisted",
-        );
-      }
+        if (!saved) {
+          try {
+            const fullRes = await fetchWithTimeout(
+              `/api/generate2/documents/${documentId}/complete`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...csrfHeaders(),
+                },
+                body: JSON.stringify({
+                  parsedSections: finalSections,
+                  rawContent: fullContent,
+                  actionRequiredCount: actionRequired,
+                  evidencePlaceholderCount: evidencePlaceholders,
+                  totalInputTokens,
+                  totalOutputTokens,
+                  generationTimeMs: Date.now() - startTime,
+                }),
+              },
+              COMPLETE_FETCH_TIMEOUT_MS,
+            );
+            saved = fullRes.ok;
+            if (!fullRes.ok) {
+              console.error(
+                "[Generate2] Full save also failed:",
+                fullRes.status,
+              );
+            }
+          } catch (fullErr) {
+            console.error("[Generate2] Full save error:", fullErr);
+          }
+        }
+
+        if (!saved) {
+          console.error(
+            "[Generate2] Both save modes failed — document visible but not persisted",
+          );
+        }
+      })();
     } catch (err) {
       console.error("[Generate2] Generation failed:", err);
       const message = err instanceof Error ? err.message : "Generation failed";
-      setError(message);
+
+      // If the watchdog aborted, show a specific message with resume hint
+      if (abortController.signal.aborted) {
+        setError(
+          "Generation timed out after 15 minutes. Your progress has been saved — click Resume to continue.",
+        );
+      } else {
+        setError(message);
+      }
       setPanelState("pre-generation");
       // Save state for resume
       if (documentId && sectionContents.length > 0) {
@@ -485,6 +521,7 @@ export function Generate2Page() {
       }
     } finally {
       clearTimeout(watchdogTimer);
+      generationAbortRef.current = null;
       setIsGenerating(false);
     }
   }
