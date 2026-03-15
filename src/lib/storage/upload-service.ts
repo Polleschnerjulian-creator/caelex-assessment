@@ -121,16 +121,14 @@ export async function generatePresignedUploadUrl(
     documentId,
   );
 
+  // Only sign ContentType — the browser sets this header.
+  // Do NOT include ContentLength or Metadata here: the browser
+  // won't send matching x-amz-meta-* headers, causing a
+  // SignatureDoesNotMatch error from R2.
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: fileKey,
     ContentType: mimeType,
-    ContentLength: fileSize,
-    Metadata: {
-      "organization-id": organizationId,
-      category,
-      "original-filename": filename,
-    },
   });
 
   const uploadUrl = await getSignedUrl(client, command, {
