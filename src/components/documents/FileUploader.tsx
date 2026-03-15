@@ -123,63 +123,29 @@ export default function FileUploader({
       setProgress(0);
       setError(null);
 
-      // Step 1: Get presigned upload URL
-      const uploadUrlRes = await fetch("/api/documents/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({
-          filename: file.name,
-          mimeType: file.type,
-          fileSize: file.size,
-          category: metadata.category.toLowerCase(),
-        }),
-      });
-
-      if (!uploadUrlRes.ok) {
-        const data = await uploadUrlRes.json();
-        throw new Error(data.error || "Failed to prepare upload");
-      }
-
-      const { uploadUrl, fileKey } = await uploadUrlRes.json();
+      // Step 1: Upload file via server proxy (bypasses R2 CORS)
+      setStatus("uploading");
       setProgress(10);
 
-      // Step 2: Upload file directly to R2
-      setStatus("uploading");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("category", metadata.category.toLowerCase());
 
-      const xhr = new XMLHttpRequest();
-
-      await new Promise<void>((resolve, reject) => {
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 80) + 10;
-            setProgress(percent);
-          }
-        });
-
-        xhr.addEventListener("load", () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
-          }
-        });
-
-        xhr.addEventListener("error", () => {
-          reject(new Error("Network error during upload"));
-        });
-
-        xhr.addEventListener("abort", () => {
-          reject(new Error("Upload cancelled"));
-        });
-
-        xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("Content-Type", file.type);
-        xhr.send(file);
+      const uploadRes = await fetch("/api/documents/upload-file", {
+        method: "POST",
+        headers: { ...csrfHeaders() },
+        body: formData,
       });
 
-      setProgress(90);
+      if (!uploadRes.ok) {
+        const data = await uploadRes.json();
+        throw new Error(data.error || "Failed to upload file");
+      }
 
-      // Step 3: Confirm upload and create database record
+      const { fileKey } = await uploadRes.json();
+      setProgress(80);
+
+      // Step 2: Confirm upload and create database record
       setStatus("confirming");
 
       const confirmRes = await fetch("/api/documents/confirm-upload", {

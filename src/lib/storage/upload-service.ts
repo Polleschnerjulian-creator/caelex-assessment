@@ -256,6 +256,55 @@ export async function fileExists(fileKey: string): Promise<boolean> {
   return metadata !== null;
 }
 
+// ─── Server-side Upload (bypasses CORS) ───
+
+export async function uploadFileServerSide(
+  organizationId: string,
+  category: DocumentCategory,
+  filename: string,
+  mimeType: string,
+  fileBuffer: Buffer | Uint8Array,
+  documentId?: string,
+): Promise<{ fileKey: string }> {
+  const validation = validateUpload(mimeType, fileBuffer.byteLength);
+  if (!validation.valid) {
+    throw new Error(validation.error);
+  }
+
+  if (!isR2Configured()) {
+    throw new Error("R2 storage not configured");
+  }
+
+  const client = getR2Client();
+  if (!client) {
+    throw new Error("Failed to initialize R2 client");
+  }
+
+  const bucketName = getR2BucketName();
+  const fileKey = generateFileKey(
+    organizationId,
+    category,
+    filename,
+    documentId,
+  );
+
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: fileKey,
+    ContentType: mimeType,
+    Body: fileBuffer,
+    Metadata: {
+      "organization-id": organizationId,
+      category,
+      "original-filename": filename,
+    },
+  });
+
+  await client.send(command);
+
+  return { fileKey };
+}
+
 // ─── Re-export config check ───
 
 export { isR2Configured };
