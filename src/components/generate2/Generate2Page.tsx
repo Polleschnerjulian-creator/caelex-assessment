@@ -26,6 +26,7 @@ import {
   computeSingleDocProgress,
   computePackageProgress,
 } from "@/lib/generation-store";
+import { NCA_PROFILES } from "@/data/nca-profiles";
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
@@ -207,6 +208,8 @@ export function Generate2Page() {
   );
   const [reasoningPlanId, setReasoningPlanId] = useState<string | null>(null);
 
+  const [selectedNCA, setSelectedNCA] = useState<string | null>(null);
+
   // H-4: Save failure UI warning
   const [saveError, setSaveError] = useState(false);
   const saveRetryDataRef = useRef<{
@@ -327,7 +330,10 @@ export function Generate2Page() {
       const res = await fetch("/api/generate2/reasoning-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ documentType: selectedType }),
+        body: JSON.stringify({
+          documentType: selectedType,
+          targetNCA: selectedNCA,
+        }),
       });
 
       if (!res.ok) {
@@ -1259,6 +1265,9 @@ export function Generate2Page() {
             }}
             onVerdictOverride={handleVerdictOverride}
             isConfirming={isGenerating}
+            selectedNCA={selectedNCA}
+            onNCAChange={setSelectedNCA}
+            ncaProfiles={NCA_PROFILES}
           />
         </main>
 

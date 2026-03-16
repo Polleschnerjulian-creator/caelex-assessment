@@ -16,6 +16,7 @@ import type {
   ReasoningPlan,
   ComplianceVerdict,
 } from "@/lib/generate/reasoning-types";
+import type { NCAProfile } from "@/data/nca-profiles";
 
 type PanelState =
   | "empty"
@@ -51,6 +52,9 @@ interface DocumentPreviewPanelProps {
     verdict: ComplianceVerdict,
   ) => void;
   isConfirming?: boolean;
+  selectedNCA?: string | null;
+  onNCAChange?: (nca: string | null) => void;
+  ncaProfiles?: NCAProfile[];
 }
 
 export function DocumentPreviewPanel({
@@ -76,6 +80,9 @@ export function DocumentPreviewPanel({
   onBackFromPlan,
   onVerdictOverride,
   isConfirming,
+  selectedNCA,
+  onNCAChange,
+  ncaProfiles,
 }: DocumentPreviewPanelProps) {
   if (panelState === "empty" || !selectedType || !meta) {
     return (
@@ -359,6 +366,37 @@ export function DocumentPreviewPanel({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* NCA Targeting */}
+      {ncaProfiles && ncaProfiles.length > 0 && onNCAChange && (
+        <div className="mb-6">
+          <label className="text-sm font-medium text-slate-600 block mb-2">
+            Target NCA
+          </label>
+          <select
+            value={selectedNCA || ""}
+            onChange={(e) => onNCAChange(e.target.value || null)}
+            className="w-full text-sm bg-white/50 border border-black/[0.08] rounded-xl px-3 py-2.5 text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          >
+            <option value="">No specific NCA (generic output)</option>
+            {ncaProfiles.map((nca) => (
+              <option key={nca.id} value={nca.id}>
+                {nca.name}
+              </option>
+            ))}
+          </select>
+          {selectedNCA && ncaProfiles && (
+            <p className="text-xs text-slate-400 mt-1.5">
+              {(() => {
+                const nca = ncaProfiles.find((n) => n.id === selectedNCA);
+                if (!nca) return null;
+                const maxRigor = Math.max(...Object.values(nca.rigor));
+                return `${nca.name}: Focus on ${nca.focusAreas[0]?.description || "general compliance"}. Max rigor: ${maxRigor}/5.`;
+              })()}
+            </p>
+          )}
         </div>
       )}
 
