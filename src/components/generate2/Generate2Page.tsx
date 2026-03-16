@@ -28,6 +28,8 @@ import {
 } from "@/lib/generation-store";
 import { NCA_PROFILES } from "@/data/nca-profiles";
 import type { ConsistencyFinding } from "@/lib/generate/consistency-check";
+import { ImpactNotification } from "./ImpactNotification";
+import type { ImpactResult } from "@/lib/generate/impact-analysis";
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
@@ -218,6 +220,8 @@ export function Generate2Page() {
 
   // H-4: Save failure UI warning
   const [saveError, setSaveError] = useState(false);
+
+  const [impactAlerts, setImpactAlerts] = useState<ImpactResult[]>([]);
   const saveRetryDataRef = useRef<{
     documentId: string;
     finalSections: ParsedSection[];
@@ -1274,6 +1278,15 @@ export function Generate2Page() {
           >
             Cancel Generation
           </button>
+        </div>
+      )}
+
+      {impactAlerts.length > 0 && (
+        <div className="px-4 pt-4">
+          <ImpactNotification
+            impacts={impactAlerts}
+            onDismiss={() => setImpactAlerts([])}
+          />
         </div>
       )}
 
