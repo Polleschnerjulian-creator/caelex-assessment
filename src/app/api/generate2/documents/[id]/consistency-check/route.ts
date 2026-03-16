@@ -72,7 +72,7 @@ export async function POST(
         documentId,
         userId,
         organizationId: membership.organizationId,
-        findings: findings as unknown as Record<string, unknown>[],
+        findings: JSON.parse(JSON.stringify(findings)),
         findingCount: findings.length,
         errorCount: findings.filter((f) => f.severity === "error").length,
         warningCount: findings.filter((f) => f.severity === "warning").length,

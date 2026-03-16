@@ -4672,7 +4672,7 @@ model NCAReasoningPlan {
 
 model NCAConsistencyCheck {
   id              String   @id @default(cuid())
-  documentId      String
+  documentId      String?
   packageId       String?
   userId          String
   organizationId  String

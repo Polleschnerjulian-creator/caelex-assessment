@@ -84,15 +84,9 @@ export async function POST(
       await prisma.nCADocument.update({
         where: { id: documentId },
         data: {
-          content: result.updatedSections as unknown as Record<
-            string,
-            unknown
-          >[],
+          content: JSON.parse(JSON.stringify(result.updatedSections)),
           isEdited: true,
-          editedContent: result.updatedSections as unknown as Record<
-            string,
-            unknown
-          >[],
+          editedContent: JSON.parse(JSON.stringify(result.updatedSections)),
         },
       });
     }

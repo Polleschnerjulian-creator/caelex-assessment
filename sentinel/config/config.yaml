@@ -1,0 +1,39 @@
+sentinel:
+  operator_id: "cmldvmf0d0001wc3fck7hi3wy"
+  operator_name: "Caelex Test Operator"
+  satellites:
+    - norad_id: "58421"
+      name: "CAELEX-SAT-1"
+      orbit_type: "SSO"
+      initial_altitude_km: 550
+      initial_inclination_deg: 97.6
+
+collectors:
+  orbit_debris:
+    enabled: true
+    schedule: "*/15 * * * *"
+  cybersecurity:
+    enabled: true
+    schedule: "0 * * * *"
+  ground_station:
+    enabled: true
+    schedule: "0 */6 * * *"
+  document_watch:
+    enabled: true
+    schedule: "0 0 * * *"
+
+transport:
+  caelex_api_url: "https://www.caelex.eu"
+  sentinel_token: ""
+  retry_max_attempts: 10
+  retry_max_delay_ms: 3600000
+  buffer_max_days: 30
+
+dashboard:
+  enabled: true
+  port: 8443
+
+mode: simulator
+
+simulator:
+  scenario: "./src/simulator/scenarios/fuel-depletion.yaml"
