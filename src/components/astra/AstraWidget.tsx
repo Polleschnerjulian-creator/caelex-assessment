@@ -1,15 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  Component,
-  type ErrorInfo,
-  type ReactNode,
-} from "react";
-import dynamic from "next/dynamic";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Plus,
   X,
@@ -29,77 +20,6 @@ import {
 import { useAstra } from "./AstraProvider";
 import AstraMessageBubble from "./AstraMessageBubble";
 
-// ─── Error Boundary for Three.js scene ─────────────────────────────────────
-// Prevents WebGL/Three.js crashes from taking down the entire dashboard
-
-class SceneErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn("[AstraEntityScene] 3D scene failed to render:", error, info);
-  }
-  render() {
-    if (this.state.hasError) {
-      // Graceful fallback: simple gradient orb instead of 3D scene
-      return (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(16,185,129,0.25) 0%, rgba(13,148,136,0.1) 50%, transparent 70%)",
-              animation: "astraOrbPulse 3.5s ease-in-out infinite",
-            }}
-          />
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-// Dynamic import — only load Three.js when panel is open
-const AstraEntityScene = dynamic(() => import("./AstraEntityScene"), {
-  ssr: false,
-  loading: () => (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)",
-          animation: "astraOrbPulse 3.5s ease-in-out infinite",
-        }}
-      />
-    </div>
-  ),
-});
-
 // ─── Panel width ────────────────────────────────────────────────────────────
 
 const PANEL_W = 400;
@@ -111,52 +31,44 @@ const QUICK_TOOLS = [
     icon: BarChart3,
     label: "Compliance Score",
     prompt: "Show me my current compliance overview with all module scores",
-    color: "#10B981",
   },
   {
     icon: FileText,
     label: "Generate Report",
     prompt: "Help me generate a compliance report for my organization",
-    color: "#3B82F6",
   },
   {
     icon: Scale,
     label: "EU Space Act",
     prompt:
       "Explain the key requirements of the EU Space Act that apply to my organization",
-    color: "#8B5CF6",
   },
   {
     icon: Shield,
     label: "NIS2 Check",
     prompt: "What are my NIS2 obligations and what steps should I take next?",
-    color: "#F59E0B",
   },
   {
     icon: Globe,
     label: "Jurisdictions",
     prompt:
       "Compare the regulatory frameworks of the top 3 jurisdictions for my operator type",
-    color: "#EC4899",
   },
   {
     icon: Satellite,
     label: "Satellite Status",
     prompt:
       "Show me the current status of my tracked satellites and any active alerts",
-    color: "#06B6D4",
   },
   {
     icon: AlertTriangle,
     label: "Open Incidents",
     prompt: "List all open incidents and their NIS2 reporting status",
-    color: "#EF4444",
   },
   {
     icon: BookOpen,
     label: "Audit Evidence",
     prompt: "What evidence gaps do I have across my compliance modules?",
-    color: "#14B8A6",
   },
 ];
 
@@ -360,37 +272,41 @@ export default function AstraWidget({
                 }}
               />
 
-              {/* 3D Entity Cube — dark viewport for particle glow */}
+              {/* Animated Logo */}
               <div
+                className="astra-logo-container"
                 style={{
                   position: "relative",
                   width: "100%",
-                  height: 260,
+                  height: 200,
                   zIndex: 1,
-                  background:
-                    "linear-gradient(180deg, #0A0F1E 0%, #0F172A 60%, #1E293B 85%, #ffffff 100%)",
-                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                {/* Emerald ambient glow */}
+                {/* Subtle radial glow behind logo */}
                 <div
+                  className="astra-logo-glow"
                   style={{
                     position: "absolute",
-                    top: "45%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 300,
-                    height: 300,
+                    width: 160,
+                    height: 160,
                     borderRadius: "50%",
                     background:
-                      "radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 40%, transparent 65%)",
-                    filter: "blur(40px)",
+                      "radial-gradient(circle, rgba(0,0,0,0.04) 0%, transparent 70%)",
                     pointerEvents: "none",
                   }}
                 />
-                <SceneErrorBoundary>
-                  <AstraEntityScene />
-                </SceneErrorBoundary>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="astra-logo-float"
+                  src="/images/logo-black.png"
+                  alt="Caelex"
+                  width={64}
+                  height={64}
+                  style={{ objectFit: "contain", zIndex: 1 }}
+                />
               </div>
 
               {/* Greeting */}
@@ -459,13 +375,13 @@ export default function AstraWidget({
                         width: 30,
                         height: 30,
                         borderRadius: 8,
-                        background: `${tool.color}12`,
+                        background: "#f3f4f6",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <tool.icon size={15} color={tool.color} strokeWidth={2} />
+                      <tool.icon size={15} color="#374151" strokeWidth={2} />
                     </div>
                     <span
                       style={{
@@ -599,7 +515,7 @@ export default function AstraWidget({
         >
           <div
             style={{
-              border: inputFocused ? "2px solid #10B981" : "2px solid #e5e7eb",
+              border: inputFocused ? "2px solid #111827" : "2px solid #e5e7eb",
               borderRadius: 14,
               padding: "10px 14px",
               display: "flex",
@@ -633,7 +549,7 @@ export default function AstraWidget({
                 outline: "none",
                 fontSize: 14,
                 color: "#111827",
-                caretColor: "#10B981",
+                caretColor: "#111827",
                 resize: "none",
                 background: "transparent",
                 lineHeight: 1.5,
@@ -669,7 +585,7 @@ export default function AstraWidget({
                   height: 28,
                   borderRadius: 8,
                   border: "none",
-                  background: input.trim() ? "#10B981" : "transparent",
+                  background: input.trim() ? "#111827" : "transparent",
                   color: input.trim() ? "#ffffff" : "#9ca3af",
                   display: "flex",
                   alignItems: "center",
@@ -713,17 +629,25 @@ export default function AstraWidget({
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ─── Ambient glow ─── */
-        .astra-ambient {
-          animation: astraAmbientPulse 5s ease-in-out infinite;
+        /* ─── Logo float animation ─── */
+        .astra-logo-float {
+          animation: astraLogoEntry 800ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both,
+                     astraLogoFloat 4s ease-in-out 900ms infinite;
         }
-        @keyframes astraAmbientPulse {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
+        .astra-logo-glow {
+          animation: astraGlowPulse 4s ease-in-out 900ms infinite;
         }
-        @keyframes astraOrbPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.08); }
+        @keyframes astraLogoEntry {
+          from { opacity: 0; transform: scale(0.7) translateY(12px); filter: blur(6px); }
+          to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        @keyframes astraLogoFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes astraGlowPulse {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.08); }
         }
 
         /* Text entrance */
@@ -746,7 +670,7 @@ export default function AstraWidget({
         .astra-tool-card:hover {
           transform: translateY(-2px) scale(1.02);
           box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
-          border-color: rgba(16, 185, 129, 0.2) !important;
+          border-color: rgba(0, 0, 0, 0.12) !important;
           background: rgba(255, 255, 255, 0.9) !important;
         }
         .astra-tool-card:active {
