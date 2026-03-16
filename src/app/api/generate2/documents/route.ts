@@ -98,12 +98,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // M-1: Cursor-based pagination with configurable limit
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(
+      Math.max(parseInt(searchParams.get("limit") || "50", 10) || 50, 1),
+      100,
+    );
+    const cursor = searchParams.get("cursor");
 
     const documents = await prisma.nCADocument.findMany({
       where: { userId: session.user.id },
@@ -124,10 +132,25 @@ export async function GET() {
         createdAt: true,
         updatedAt: true,
       },
-      take: 50,
+      take: limit + 1, // Fetch one extra to determine if there's a next page
+      ...(cursor
+        ? {
+            cursor: { id: cursor },
+            skip: 1, // Skip the cursor itself
+          }
+        : {}),
     });
 
-    return NextResponse.json({ documents });
+    // Determine if there are more results
+    const hasMore = documents.length > limit;
+    const results = hasMore ? documents.slice(0, limit) : documents;
+    const nextCursor = hasMore ? results[results.length - 1]?.id : undefined;
+
+    return NextResponse.json({
+      documents: results,
+      nextCursor,
+      hasMore,
+    });
   } catch (error) {
     logger.error("Generate2 list error", error);
     return NextResponse.json(

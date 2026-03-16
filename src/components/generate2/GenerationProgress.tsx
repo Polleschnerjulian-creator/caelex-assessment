@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { SectionDefinition } from "@/lib/generate/types";
+import { innerGlass } from "./styles";
 
 type GenerationPhase = "init" | "sections" | "finalizing";
 
@@ -21,16 +22,6 @@ interface GenerationProgressProps {
   isGenerating: boolean;
   phase: GenerationPhase;
 }
-
-const innerGlass: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.45)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.5)",
-  borderRadius: 14,
-  boxShadow:
-    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
-};
 
 export function GenerationProgress({
   sections,
@@ -80,7 +71,7 @@ export function GenerationProgress({
             <h3 className="text-lg font-medium text-slate-800">
               ASTRA is generating your document
             </h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-400 mt-1" aria-live="polite">
               {phase === "init"
                 ? "Preparing assessment data..."
                 : phase === "finalizing"
@@ -149,11 +140,21 @@ export function GenerationProgress({
               <span className="text-caption text-slate-400">
                 Overall Progress
               </span>
-              <span className="text-caption font-medium text-emerald-600">
+              <span
+                className="text-caption font-medium text-emerald-600"
+                aria-live="polite"
+              >
                 {progress}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
+            <div
+              className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Document generation progress: ${progress}%`}
+            >
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 animate={{ width: `${progress}%` }}

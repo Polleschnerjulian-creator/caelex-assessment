@@ -245,6 +245,11 @@ export const SECTION_DEFINITIONS: Record<NCADocumentType, SectionDefinition[]> =
     ],
 
     // Category D — Safety (generated via dedicated Hazard Analysis module)
+    // L-10: HAZARD_REPORT section definitions exist for future use and are excluded
+    // from the Generate 2.0 flow. This document type is generated through the
+    // dedicated Hazard Analysis module (CNES/FSOA template), not via the AI
+    // generation pipeline. These definitions are retained here for completeness
+    // and to support potential future integration with the Generate 2.0 system.
     HAZARD_REPORT: [
       { number: 1, title: "Document Cover & Classification" },
       { number: 2, title: "Mission Overview" },

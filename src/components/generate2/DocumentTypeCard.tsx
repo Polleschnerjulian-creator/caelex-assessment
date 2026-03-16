@@ -27,7 +27,9 @@ export function DocumentTypeCard({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 group ${
+      aria-label={`${meta.code} ${meta.shortTitle}${hasDocument ? " — completed" : ""}`}
+      aria-pressed={isSelected}
+      className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 group focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none ${
         isSelected
           ? "bg-white/60 border-emerald-400/40 shadow-sm"
           : "bg-white/0 border-transparent hover:bg-white/40 hover:border-white/40"

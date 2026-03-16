@@ -36,6 +36,17 @@ function getAnthropicClient(): Anthropic | null {
 }
 
 /**
+ * Prompt context stored in rawContent during GENERATING status.
+ * Separated from the final markdown which overwrites rawContent on completion.
+ */
+export interface StoredPromptContext {
+  _type: "prompt_context";
+  systemPrompt: string;
+  userMessage: string;
+  model: string;
+}
+
+/**
  * Initialize a chunked NCA document generation.
  * Collects data, computes readiness, stores prompt context, returns section list.
  */
@@ -46,10 +57,17 @@ export async function initGeneration(
   language: string = "en",
   packageId?: string,
 ): Promise<Generate2InitResult> {
+  // H-7: Early API key check — fail fast before any DB operations
+  if (!getAnthropicClient()) {
+    throw new Error(
+      "Document generation requires ANTHROPIC_API_KEY to be configured",
+    );
+  }
+
   const meta = NCA_DOC_TYPE_MAP[documentType];
   const sections = SECTION_DEFINITIONS[documentType];
 
-  // Collect all assessment data
+  // Collect all assessment data (H-6: passes organizationId for org-scoped queries)
   const dataBundle = await collectGenerate2Data(userId, organizationId);
 
   // Compute readiness
@@ -61,6 +79,16 @@ export async function initGeneration(
     dataBundle,
     language,
   );
+
+  // H-5: Store prompt context with type marker and model in rawContent.
+  // During GENERATING status, rawContent holds the prompt context as JSON.
+  // On completion (complete/route.ts), rawContent is overwritten with final markdown.
+  const promptContext: StoredPromptContext = {
+    _type: "prompt_context",
+    systemPrompt,
+    userMessage,
+    model: MODEL,
+  };
 
   // Create NCADocument record with stored prompt context
   const doc = await prisma.nCADocument.create({
@@ -74,7 +102,8 @@ export async function initGeneration(
       status: "GENERATING",
       readinessScore: readiness.score,
       promptVersion: PROMPT_VERSION,
-      rawContent: JSON.stringify({ systemPrompt, userMessage }),
+      modelUsed: MODEL,
+      rawContent: JSON.stringify(promptContext),
       content: [], // will accumulate sections
     },
   });
@@ -115,7 +144,7 @@ export async function generateSection(
     throw new Error("ANTHROPIC_API_KEY not configured");
   }
 
-  // Load stored prompt context
+  // H-5: Load stored prompt context (includes model used during init)
   const doc = await prisma.nCADocument.findUniqueOrThrow({
     where: { id: documentId },
     select: { rawContent: true },
@@ -125,16 +154,22 @@ export async function generateSection(
     throw new Error("Document prompt context not found");
   }
 
-  let parsed: { systemPrompt: string; userMessage: string };
+  let parsed: StoredPromptContext;
   try {
-    parsed = JSON.parse(doc.rawContent) as {
-      systemPrompt: string;
-      userMessage: string;
-    };
+    parsed = JSON.parse(doc.rawContent) as StoredPromptContext;
   } catch {
     throw new Error("Document prompt context is malformed JSON");
   }
-  const { systemPrompt, userMessage } = parsed;
+
+  if (parsed._type !== "prompt_context") {
+    throw new Error(
+      "Document rawContent does not contain prompt context — document may already be completed",
+    );
+  }
+
+  // L-9: Use the model stored during init for consistency across all sections
+  const { systemPrompt, userMessage, model: storedModel } = parsed;
+  const sectionModel = storedModel || MODEL;
 
   // Build section-specific prompt
   const sectionPrompt = buildSectionPrompt(
@@ -150,7 +185,7 @@ export async function generateSection(
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const response = await client.messages.create({
-        model: MODEL,
+        model: sectionModel,
         max_tokens: MAX_TOKENS_PER_SECTION,
         temperature: 0.3,
         // Use prompt caching — system prompt is identical for all sections of a document.

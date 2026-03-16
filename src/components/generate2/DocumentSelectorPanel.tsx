@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FileText, Package, ExternalLink } from "lucide-react";
 import { DocumentTypeCard } from "./DocumentTypeCard";
 import { NCA_DOCUMENT_TYPES } from "@/lib/generate/types";
@@ -25,7 +25,6 @@ export function DocumentSelectorPanel({
 }: DocumentSelectorPanelProps) {
   const readinessMap = new Map(readiness.map((r) => [r.documentType, r]));
 
-  const router = useRouter();
   const debrisDocs = NCA_DOCUMENT_TYPES.filter((d) => d.category === "debris");
   const cyberDocs = NCA_DOCUMENT_TYPES.filter(
     (d) => d.category === "cybersecurity",
@@ -115,10 +114,11 @@ export function DocumentSelectorPanel({
             </h3>
             <div className="space-y-1">
               {safetyDocs.map((meta) => (
-                <button
+                <Link
                   key={meta.id}
-                  onClick={() => router.push("/dashboard/hazards")}
-                  className="w-full text-left px-3 py-2.5 rounded-lg border border-black/[0.06] hover:bg-slate-50 transition-colors group"
+                  href="/dashboard/hazards"
+                  className="block w-full text-left px-3 py-2.5 rounded-lg border border-black/[0.06] hover:bg-slate-50 transition-colors group focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                  aria-label={`${meta.code} ${meta.shortTitle} — Open hazard report`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -137,9 +137,10 @@ export function DocumentSelectorPanel({
                     <ExternalLink
                       size={14}
                       className="text-slate-400 group-hover:text-emerald-500 transition-colors flex-shrink-0 ml-2"
+                      aria-hidden="true"
                     />
                   </div>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -151,9 +152,14 @@ export function DocumentSelectorPanel({
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+          aria-label={
+            isPackageGenerating
+              ? "Package generation in progress"
+              : "Generate full NCA submission package"
+          }
         >
-          <Package size={14} />
+          <Package size={14} aria-hidden="true" />
           {isPackageGenerating ? "Generating..." : "Generate Full Package"}
         </button>
       </div>

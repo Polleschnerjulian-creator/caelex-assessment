@@ -3,6 +3,7 @@
 import { FileText, Download, AlertTriangle, BookOpen } from "lucide-react";
 import { GenerationProgress } from "./GenerationProgress";
 import { ReadinessRing } from "./ReadinessRing";
+import { innerGlass } from "./styles";
 import type {
   NCADocumentType,
   DocumentTypeMeta,
@@ -33,16 +34,6 @@ interface DocumentPreviewPanelProps {
   onGenerate: () => void;
   onExportPdf: () => void;
 }
-
-const innerGlass: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.45)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.5)",
-  borderRadius: 14,
-  boxShadow:
-    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
-};
 
 export function DocumentPreviewPanel({
   selectedType,
@@ -129,9 +120,10 @@ export function DocumentPreviewPanel({
             )}
             <button
               onClick={onExportPdf}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+              aria-label="Export document as PDF"
             >
-              <Download size={14} />
+              <Download size={14} aria-hidden="true" />
               PDF
             </button>
           </div>
@@ -360,7 +352,10 @@ export function DocumentPreviewPanel({
 
       {/* Error banner */}
       {error && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+        <div
+          className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20"
+          role="alert"
+        >
           <p className="text-sm font-medium text-red-600">Generation failed</p>
           <p className="text-xs text-red-500 mt-1">{error}</p>
         </div>
@@ -369,9 +364,14 @@ export function DocumentPreviewPanel({
       {/* Generate button */}
       <button
         onClick={onGenerate}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+        aria-label={
+          canResume
+            ? `Resume generating ${meta.shortTitle}`
+            : `Generate ${meta.shortTitle}`
+        }
       >
-        <FileText size={16} />
+        <FileText size={16} aria-hidden="true" />
         {canResume
           ? `Resume ${meta.shortTitle}`
           : `Generate ${meta.shortTitle}`}

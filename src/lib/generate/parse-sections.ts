@@ -27,7 +27,17 @@ export type ParsedSectionContent =
 
 export function parseSectionsFromMarkdown(rawContent: string): ParsedSection[] {
   const sections: ParsedSection[] = [];
-  const sectionBlocks = rawContent.split(/^## SECTION:\s*/m).filter(Boolean);
+
+  // M-11: Guard against empty or malformed section blocks.
+  // Filter out blocks that are empty, whitespace-only, or have no title on the first line.
+  const sectionBlocks = rawContent
+    .split(/^## SECTION:\s*/m)
+    .filter(Boolean)
+    .filter(
+      (block) =>
+        block.trim().length > 0 &&
+        block.trim().split("\n")[0].trim().length > 0,
+    );
 
   for (const block of sectionBlocks) {
     const lines = block.split("\n");

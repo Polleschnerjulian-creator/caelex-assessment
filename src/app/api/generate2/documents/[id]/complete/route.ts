@@ -10,6 +10,11 @@
  *
  * Sections are saved incrementally by the section endpoint, so the DB already
  * has all content by the time this endpoint is called.
+ *
+ * H-5: The prompt context stored in rawContent during GENERATING is not
+ *       carried forward — rawContent is overwritten with the final markdown.
+ * M-14: Only documents in GENERATING status can be completed (prevents overwrite).
+ * L-9: Model is read from the document's stored context, not independently from env.
  */
 
 import { NextResponse } from "next/server";
@@ -19,9 +24,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { parseSectionsFromMarkdown } from "@/lib/generate/parse-sections";
+import type { StoredPromptContext } from "@/lib/generate";
 import { logger } from "@/lib/logger";
 
-const GENERATION_MODEL = process.env.GENERATION_MODEL || "claude-sonnet-4-6";
+const FALLBACK_MODEL = process.env.GENERATION_MODEL || "claude-sonnet-4-6";
 
 // Schema for lightweight mode (preferred) — no content, just metrics
 const lightweightBodySchema = z.object({
@@ -91,17 +97,32 @@ export async function POST(
 
     const { id: documentId } = await params;
 
-    // Load the document with its incrementally-saved section content
+    // M-14: Only documents in GENERATING status can be completed.
+    // This prevents already-completed documents from being overwritten.
     const doc = await prisma.nCADocument.findFirst({
-      where: { id: documentId, userId: session.user.id },
-      select: { id: true, status: true, content: true },
+      where: { id: documentId, userId: session.user.id, status: "GENERATING" },
+      select: { id: true, status: true, content: true, rawContent: true },
     });
 
     if (!doc) {
       return NextResponse.json(
-        { error: "Document not found" },
+        { error: "Document not found or not in GENERATING status" },
         { status: 404 },
       );
+    }
+
+    // L-9: Read model from stored prompt context for consistency.
+    // Falls back to env var if prompt context is missing or unparseable.
+    let generationModel = FALLBACK_MODEL;
+    if (doc.rawContent) {
+      try {
+        const promptCtx = JSON.parse(doc.rawContent) as StoredPromptContext;
+        if (promptCtx._type === "prompt_context" && promptCtx.model) {
+          generationModel = promptCtx.model;
+        }
+      } catch {
+        // Non-fatal: fall back to env var
+      }
     }
 
     const body = await request.json();
@@ -143,6 +164,8 @@ export async function POST(
 
       // Server-side parse — fast, pure string/regex operations
       const parsedSections = parseSectionsFromMarkdown(rawContent);
+      // M-12: Use a practical document size limit (500k) for fallback content
+      // instead of the previous 50k which could truncate large documents.
       finalContent =
         parsedSections.length > 0
           ? parsedSections
@@ -150,7 +173,7 @@ export async function POST(
               {
                 title: "Generated Content",
                 content: [
-                  { type: "text", value: rawContent.substring(0, 50000) },
+                  { type: "text", value: rawContent.substring(0, 500_000) },
                 ],
               },
             ];
@@ -195,7 +218,7 @@ export async function POST(
         status: "COMPLETED",
         content: finalContent as never,
         rawContent,
-        modelUsed: GENERATION_MODEL,
+        modelUsed: generationModel,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
         generationTimeMs,

@@ -4,6 +4,10 @@
  * Gathers assessment data from Prisma for NCA document generation.
  * Reuses patterns from src/lib/astra/document-generator/data-collector.ts
  * but collects both debris AND cybersecurity data in a single bundle.
+ *
+ * H-6: All assessment queries are scoped by both userId AND organizationId
+ * to prevent cross-tenant data leakage. Both DebrisAssessment and
+ * CybersecurityAssessment have an optional organizationId field.
  */
 
 import "server-only";
@@ -28,9 +32,14 @@ export async function collectGenerate2Data(
         where: { id: organizationId },
         select: { name: true },
       }),
+      // H-6: Scope debris assessment query by organizationId to prevent cross-tenant access.
+      // Uses OR to also match assessments where organizationId was not yet set (legacy data).
       prisma.debrisAssessment
         .findFirst({
-          where: { userId },
+          where: {
+            userId,
+            OR: [{ organizationId }, { organizationId: null }],
+          },
           orderBy: { updatedAt: "desc" },
           include: {
             requirements: {
@@ -44,9 +53,13 @@ export async function collectGenerate2Data(
           },
         })
         .catch(() => null),
+      // H-6: Scope cybersecurity assessment query by organizationId
       prisma.cybersecurityAssessment
         .findFirst({
-          where: { userId },
+          where: {
+            userId,
+            OR: [{ organizationId }, { organizationId: null }],
+          },
           orderBy: { updatedAt: "desc" },
           include: {
             requirements: {

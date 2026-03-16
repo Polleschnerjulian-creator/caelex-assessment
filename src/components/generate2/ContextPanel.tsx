@@ -28,6 +28,7 @@ import {
   getRecommendedNext,
   estimateActionMarkers,
 } from "@/lib/generate/context-panel-utils";
+import { innerGlass } from "./styles";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 type GenerationPhase = "init" | "sections" | "finalizing";
@@ -46,16 +47,6 @@ interface ContextPanelProps {
   evidencePlaceholderCount: number;
   onSelectDocument: (type: NCADocumentType) => void;
 }
-
-const innerGlass: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.45)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.5)",
-  borderRadius: 14,
-  boxShadow:
-    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
-};
 
 export function ContextPanel({
   meta,

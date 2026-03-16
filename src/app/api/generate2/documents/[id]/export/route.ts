@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { ReportSection } from "@/lib/pdf/types";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 export async function POST(
   request: NextRequest,
@@ -23,13 +24,42 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // H-1: Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "generate2",
+      `generate2:${userId}`,
+    );
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 },
+      );
+    }
+
+    // C-2: Organization membership check
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId },
+      select: { organizationId: true },
+    });
+
+    if (!membership) {
+      return NextResponse.json({ error: "No Organization" }, { status: 403 });
+    }
+
     const { id: documentId } = await params;
 
     const body = await request.json();
     const { format = "pdf" } = body as { format?: "pdf" | "docx" };
 
+    // C-2: Add organizationId to where clause
     const doc = await prisma.nCADocument.findFirst({
-      where: { id: documentId, userId: session.user.id },
+      where: {
+        id: documentId,
+        userId,
+        organizationId: membership.organizationId,
+      },
       select: {
         id: true,
         title: true,
@@ -55,7 +85,8 @@ export async function POST(
       );
     }
 
-    const _sections = (doc.isEdited && doc.editedContent
+    // L-1: Fix dead code — use `sections` variable instead of `_sections`
+    const sections = (doc.isEdited && doc.editedContent
       ? doc.editedContent
       : doc.content) as unknown as ReportSection[];
 
@@ -82,7 +113,7 @@ export async function POST(
     // Return the sections for client-side PDF generation
     return NextResponse.json({
       title: doc.title,
-      sections: _sections,
+      sections,
       documentType: doc.documentType,
       exportedAt: new Date().toISOString(),
     });

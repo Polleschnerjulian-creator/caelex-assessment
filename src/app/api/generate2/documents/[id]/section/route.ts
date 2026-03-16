@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSection, markGenerationFailed } from "@/lib/generate";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 export const maxDuration = 300;
 
@@ -26,6 +27,30 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    // H-1: Rate limiting (document_generation tier since this calls Anthropic API)
+    const rateLimitResult = await checkRateLimit(
+      "document_generation",
+      `document_generation:${userId}`,
+    );
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 },
+      );
+    }
+
+    // H-2: Organization membership check
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId },
+      select: { organizationId: true },
+    });
+
+    if (!membership) {
+      return NextResponse.json({ error: "No Organization" }, { status: 403 });
     }
 
     ({ id: documentId } = await params);
@@ -57,9 +82,15 @@ export async function POST(
       );
     }
 
-    // Verify the document belongs to this user AND is in GENERATING state (atomic check)
+    // Verify the document belongs to this user AND org AND is in GENERATING state (atomic check)
+    // H-2: Add organizationId to where clause
     const doc = await prisma.nCADocument.findFirst({
-      where: { id: documentId, userId: session.user.id, status: "GENERATING" },
+      where: {
+        id: documentId,
+        userId,
+        organizationId: membership.organizationId,
+        status: "GENERATING",
+      },
       select: { id: true, content: true },
     });
 
@@ -68,6 +99,20 @@ export async function POST(
         { error: "Document not found or not in generating state" },
         { status: 400 },
       );
+    }
+
+    // H-3: Concurrency guard — check if section already generated (optimistic lock)
+    const existingContent = doc.content as unknown as Array<{
+      sectionIndex: number;
+      content: string;
+      raw?: string;
+      title?: string;
+    }> | null;
+    if (existingContent && existingContent[sectionIndex]?.raw) {
+      return NextResponse.json({
+        content: existingContent[sectionIndex].raw,
+        cached: true,
+      });
     }
 
     const result = await generateSection(

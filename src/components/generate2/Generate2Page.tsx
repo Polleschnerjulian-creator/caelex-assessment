@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { AlertTriangle, X } from "lucide-react";
 import { DocumentSelectorPanel } from "./DocumentSelectorPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
@@ -15,6 +16,23 @@ import type {
   SectionDefinition,
 } from "@/lib/generate/types";
 import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
+
+/** Structured error logger — forwards to Sentry if available, falls back to console. */
+function logError(message: string, error: unknown) {
+  if (typeof window !== "undefined") {
+    const win = window as unknown as Record<string, unknown>;
+    if (win.Sentry) {
+      const sentry = win.Sentry as {
+        captureException: (e: unknown) => void;
+      };
+      sentry.captureException(
+        error instanceof Error ? error : new Error(message),
+      );
+    }
+  }
+  // Always log to console for dev visibility
+  console.error(message, error);
+}
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
@@ -131,6 +149,19 @@ export function Generate2Page() {
     startTime: number;
   } | null>(null);
 
+  // H-4: Save failure UI warning
+  const [saveError, setSaveError] = useState(false);
+  const saveRetryDataRef = useRef<{
+    documentId: string;
+    finalSections: ParsedSection[];
+    fullContent: string;
+    actionRequired: number;
+    evidencePlaceholders: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    startTime: number;
+  } | null>(null);
+
   // Global abort controller for cancelling the entire generation flow
   const generationAbortRef = useRef<AbortController | null>(null);
 
@@ -161,7 +192,7 @@ export function Generate2Page() {
           setCompletedDocs(completed);
         }
       } catch (err) {
-        console.error("Failed to load document generator data:", err);
+        logError("[Generate2] Failed to load document generator data", err);
       } finally {
         setIsLoading(false);
       }
@@ -169,30 +200,12 @@ export function Generate2Page() {
     loadData();
   }, []);
 
-  const handleSelect = useCallback(
-    (type: NCADocumentType) => {
-      setSelectedType(type);
-      const defs = SECTION_DEFINITIONS[type];
-      setSections(defs);
-
-      if (completedDocs.has(type)) {
-        // Load the existing document
-        setPanelState("completed");
-        loadDocument(type);
-      } else {
-        setPanelState("pre-generation");
-        setDocumentState({
-          id: null,
-          content: null,
-          actionRequiredCount: 0,
-          evidencePlaceholderCount: 0,
-        });
-      }
-    },
-    [completedDocs],
-  );
-
-  async function loadDocument(type: NCADocumentType) {
+  // M-9: Wrap loadDocument in useCallback to prevent stale closures
+  // M-5: TODO — The GET /api/generate2/documents endpoint does not yet support
+  // query params (type, status, limit). Once the API agent adds support, change
+  // this to: fetch(`/api/generate2/documents?type=${type}&status=COMPLETED&limit=1`)
+  // to avoid fetching ALL documents just to find one by type.
+  const loadDocument = useCallback(async (type: NCADocumentType) => {
     try {
       const res = await fetch("/api/generate2/documents");
       if (!res.ok) return;
@@ -220,9 +233,33 @@ export function Generate2Page() {
         }
       }
     } catch (err) {
-      console.error("Failed to load document:", err);
+      logError("Failed to load document:", err);
     }
-  }
+  }, []);
+
+  // M-9: Add loadDocument to handleSelect dependency array
+  const handleSelect = useCallback(
+    (type: NCADocumentType) => {
+      setSelectedType(type);
+      const defs = SECTION_DEFINITIONS[type];
+      setSections(defs);
+
+      if (completedDocs.has(type)) {
+        // Load the existing document
+        setPanelState("completed");
+        loadDocument(type);
+      } else {
+        setPanelState("pre-generation");
+        setDocumentState({
+          id: null,
+          content: null,
+          actionRequiredCount: 0,
+          evidencePlaceholderCount: 0,
+        });
+      }
+    },
+    [completedDocs, loadDocument],
+  );
 
   async function handleGenerate(resume = false) {
     if (!selectedType) return;
@@ -247,8 +284,9 @@ export function Generate2Page() {
     // Global watchdog — auto-fail after 15 minutes to prevent infinite hangs.
     // IMPORTANT: This aborts the controller so pending fetches actually cancel.
     const watchdogTimer = setTimeout(() => {
-      console.error(
+      logError(
         "[Generate2] Watchdog triggered: generation exceeded 15 minutes",
+        new Error("Generation watchdog timeout"),
       );
       abortController.abort();
     }, GENERATION_WATCHDOG_MS);
@@ -301,6 +339,7 @@ export function Generate2Page() {
       }
 
       // ── Phase 2: Generate each section (with retry for transient errors) ──
+      const MAX_RETRIES = 3;
       for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
@@ -310,7 +349,7 @@ export function Generate2Page() {
         }
 
         let sectionRes: Response | null = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
           sectionRes = await fetchWithTimeout(
             `/api/generate2/documents/${documentId}/section`,
             {
@@ -326,20 +365,27 @@ export function Generate2Page() {
             abortController.signal,
           );
 
-          if (
-            sectionRes.ok ||
-            (sectionRes.status !== 403 && sectionRes.status !== 429)
-          ) {
-            break; // Success or non-retryable error
+          // M-2: Only retry on 429 (rate limited) and 5xx (server error)
+          if (sectionRes.ok) break; // Success
+          if (sectionRes.status >= 500 || sectionRes.status === 429) {
+            // Retryable — continue loop
+            if (attempt < MAX_RETRIES - 1) {
+              await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+            }
+            continue;
           }
-          // Wait before retry: 1s, 3s
-          if (attempt < 2) {
-            await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
-          }
+          break; // Non-retryable error (4xx except 429)
         }
 
-        if (!sectionRes!.ok) {
-          const errData = await sectionRes!.json().catch(() => ({
+        // L-7: Null guard on sectionRes after retry loop
+        if (!sectionRes) {
+          throw new Error(
+            `Failed to generate section after ${MAX_RETRIES} attempts`,
+          );
+        }
+
+        if (!sectionRes.ok) {
+          const errData = await sectionRes.json().catch(() => ({
             error: `Section ${i + 1} "${sectionDefs[i].title}" failed`,
           }));
           throw new Error(
@@ -347,7 +393,7 @@ export function Generate2Page() {
           );
         }
 
-        const sectionData = await sectionRes!.json();
+        const sectionData = await sectionRes.json();
         sectionContents.push(sectionData.content);
         totalInputTokens += sectionData.inputTokens || 0;
         totalOutputTokens += sectionData.outputTokens || 0;
@@ -379,7 +425,7 @@ export function Generate2Page() {
         evidencePlaceholders = result.evidencePlaceholders;
       } catch (parseErr) {
         // Parsing failed — fall back to raw text display
-        console.error("[Generate2] Client-side parse failed:", parseErr);
+        logError("[Generate2] Client-side parse failed", parseErr);
         parsedSections = [
           {
             title: "Generated Content",
@@ -420,6 +466,19 @@ export function Generate2Page() {
       setPanelState("completed");
       setResumeData(null);
 
+      // H-4: Store retry data for the save operation
+      setSaveError(false);
+      saveRetryDataRef.current = {
+        documentId,
+        finalSections,
+        fullContent,
+        actionRequired,
+        evidencePlaceholders,
+        totalInputTokens,
+        totalOutputTokens,
+        startTime,
+      };
+
       // Save to server in the background — don't block the user from seeing
       // their document. Fire-and-forget with best-effort retry.
       (async () => {
@@ -444,14 +503,14 @@ export function Generate2Page() {
           );
           saved = lightRes.ok;
           if (!lightRes.ok) {
-            console.warn(
-              "[Generate2] Lightweight save failed, trying full mode:",
-              lightRes.status,
+            logError(
+              "[Generate2] Lightweight save failed, trying full mode",
+              new Error(`Status ${lightRes.status}`),
             );
           }
         } catch (lightErr) {
-          console.warn(
-            "[Generate2] Lightweight save error, trying full mode:",
+          logError(
+            "[Generate2] Lightweight save error, trying full mode",
             lightErr,
           );
         }
@@ -480,24 +539,30 @@ export function Generate2Page() {
             );
             saved = fullRes.ok;
             if (!fullRes.ok) {
-              console.error(
-                "[Generate2] Full save also failed:",
-                fullRes.status,
+              logError(
+                "[Generate2] Full save also failed",
+                new Error(`Status ${fullRes.status}`),
               );
             }
           } catch (fullErr) {
-            console.error("[Generate2] Full save error:", fullErr);
+            logError("[Generate2] Full save error", fullErr);
           }
         }
 
+        // H-4: If both save modes failed, show warning banner
         if (!saved) {
-          console.error(
+          logError(
             "[Generate2] Both save modes failed — document visible but not persisted",
+            new Error("Save failed after 2 attempts"),
           );
+          setSaveError(true);
+        } else {
+          setSaveError(false);
+          saveRetryDataRef.current = null;
         }
       })();
     } catch (err) {
-      console.error("[Generate2] Generation failed:", err);
+      logError("[Generate2] Generation failed", err);
       const message = err instanceof Error ? err.message : "Generation failed";
 
       // If the watchdog aborted, show a specific message with resume hint
@@ -556,7 +621,45 @@ export function Generate2Page() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Export failed:", err);
+      logError("[Generate2] Export failed", err);
+    }
+  }
+
+  // H-4: Retry save handler
+  async function handleRetrySave() {
+    const data = saveRetryDataRef.current;
+    if (!data) return;
+
+    setSaveError(false);
+    try {
+      const res = await fetchWithTimeout(
+        `/api/generate2/documents/${data.documentId}/complete`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...csrfHeaders(),
+          },
+          body: JSON.stringify({
+            parsedSections: data.finalSections,
+            rawContent: data.fullContent,
+            actionRequiredCount: data.actionRequired,
+            evidencePlaceholderCount: data.evidencePlaceholders,
+            totalInputTokens: data.totalInputTokens,
+            totalOutputTokens: data.totalOutputTokens,
+            generationTimeMs: Date.now() - data.startTime,
+          }),
+        },
+        COMPLETE_FETCH_TIMEOUT_MS,
+      );
+      if (res.ok) {
+        setSaveError(false);
+        saveRetryDataRef.current = null;
+      } else {
+        setSaveError(true);
+      }
+    } catch {
+      setSaveError(true);
     }
   }
 
@@ -574,7 +677,10 @@ export function Generate2Page() {
     const DOC_WATCHDOG_MS = 900_000;
 
     const packageWatchdog = setTimeout(() => {
-      console.error("[Generate2] Package watchdog: exceeded 2 hours");
+      logError(
+        "[Generate2] Package watchdog: exceeded 2 hours",
+        new Error("Package watchdog timeout"),
+      );
       abortController.abort();
     }, PACKAGE_WATCHDOG_MS);
 
@@ -608,6 +714,10 @@ export function Generate2Page() {
         (t) => !completedDocs.has(t),
       );
 
+      // M-3: Track package-level counters for status updates
+      let pkgDocsCompleted = 0;
+      let pkgDocsFailed = 0;
+
       for (const docType of typesToGenerate) {
         // Check if aborted before starting each document
         if (abortController.signal.aborted) {
@@ -625,8 +735,9 @@ export function Generate2Page() {
         // Per-document watchdog — skip this document if it takes too long
         let docTimedOut = false;
         const docWatchdog = setTimeout(() => {
-          console.error(
+          logError(
             `[Generate2] Document watchdog: ${docType} exceeded 15 minutes, skipping`,
+            new Error("Per-document watchdog timeout"),
           );
           docTimedOut = true;
         }, DOC_WATCHDOG_MS);
@@ -648,7 +759,13 @@ export function Generate2Page() {
           );
 
           if (!initRes.ok) {
-            console.error(`Failed to init ${docType}, skipping`);
+            logError(
+              `[Generate2] Failed to init ${docType}, skipping`,
+              new Error(`Init failed: ${initRes.status}`),
+            );
+            // M-3: Update package status on failure
+            pkgDocsFailed++;
+            updatePackageStatus(packageId, pkgDocsCompleted, pkgDocsFailed);
             continue;
           }
 
@@ -656,7 +773,7 @@ export function Generate2Page() {
           setGenerationPhase("sections");
 
           // Generate sections
-          const sectionContents: string[] = [];
+          let sectionContents: string[] = [];
           let totalInputTokens = 0;
           let totalOutputTokens = 0;
           const startTime = Date.now();
@@ -672,7 +789,8 @@ export function Generate2Page() {
             setCurrentSection(i);
             try {
               let sectionRes: Response | null = null;
-              for (let attempt = 0; attempt < 3; attempt++) {
+              const PKG_MAX_RETRIES = 3;
+              for (let attempt = 0; attempt < PKG_MAX_RETRIES; attempt++) {
                 sectionRes = await fetchWithTimeout(
                   `/api/generate2/documents/${documentId}/section`,
                   {
@@ -690,24 +808,30 @@ export function Generate2Page() {
                   SECTION_FETCH_TIMEOUT_MS,
                   abortController.signal,
                 );
-                if (
-                  sectionRes.ok ||
-                  (sectionRes.status !== 403 && sectionRes.status !== 429)
-                )
-                  break;
-                if (attempt < 2)
-                  await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+                // M-2: Only retry on 429 and 5xx
+                if (sectionRes.ok) break;
+                if (sectionRes.status >= 500 || sectionRes.status === 429) {
+                  if (attempt < PKG_MAX_RETRIES - 1) {
+                    await new Promise((r) =>
+                      setTimeout(r, (attempt + 1) * 2000),
+                    );
+                  }
+                  continue;
+                }
+                break; // Non-retryable error (4xx except 429)
               }
 
-              if (!sectionRes!.ok) {
-                console.error(
-                  `Section ${i + 1} of ${docType} failed, skipping document`,
+              // L-7: Null guard on sectionRes
+              if (!sectionRes || !sectionRes.ok) {
+                logError(
+                  `[Generate2] Section ${i + 1} of ${docType} failed, skipping document`,
+                  new Error(`Section failed: ${sectionRes?.status ?? "null"}`),
                 );
                 failed = true;
                 break;
               }
 
-              const sectionData = await sectionRes!.json();
+              const sectionData = await sectionRes.json();
               sectionContents.push(sectionData.content);
               totalInputTokens += sectionData.inputTokens || 0;
               totalOutputTokens += sectionData.outputTokens || 0;
@@ -717,21 +841,28 @@ export function Generate2Page() {
               if (abortController.signal.aborted) {
                 throw sectionErr;
               }
-              console.error(
-                `Section ${i + 1} of ${docType} errored, skipping document`,
+              logError(
+                `[Generate2] Section ${i + 1} of ${docType} errored, skipping document`,
+                sectionErr,
               );
               failed = true;
               break;
             }
           }
 
-          if (failed) continue;
+          if (failed) {
+            // M-3: Update package status on failure
+            pkgDocsFailed++;
+            updatePackageStatus(packageId, pkgDocsCompleted, pkgDocsFailed);
+            // M-7: Clear accumulated section contents to free memory
+            sectionContents = [];
+            continue;
+          }
 
-          // Finalize — non-blocking parse, then background save
+          // Finalize — background save (server reconstructs from saved sections)
           setGenerationPhase("finalizing");
-          const fullContent = sectionContents.filter(Boolean).join("\n\n");
 
-          // Save to server — fire-and-forget (server reconstructs from saved sections)
+          // Save to server — fire-and-forget
           fetchWithTimeout(
             `/api/generate2/documents/${documentId}/complete`,
             {
@@ -749,13 +880,17 @@ export function Generate2Page() {
             },
             COMPLETE_FETCH_TIMEOUT_MS,
           ).catch((err) =>
-            console.error(
-              `[Generate2] Package save failed for ${docType}:`,
-              err,
-            ),
+            logError(`[Generate2] Package save failed for ${docType}`, err),
           );
 
           setCompletedDocs((prev) => new Set([...prev, docType]));
+
+          // M-3: Update package status on success
+          pkgDocsCompleted++;
+          updatePackageStatus(packageId, pkgDocsCompleted, pkgDocsFailed);
+
+          // M-7: Clear accumulated section contents to free memory for next document
+          sectionContents = [];
         } finally {
           clearTimeout(docWatchdog);
         }
@@ -763,7 +898,7 @@ export function Generate2Page() {
 
       setPanelState("empty");
     } catch (err) {
-      console.error("Package generation failed:", err);
+      logError("[Generate2] Package generation failed", err);
       if (abortController.signal.aborted) {
         setError(
           "Package generation timed out. Already generated documents have been saved.",
@@ -779,6 +914,21 @@ export function Generate2Page() {
       generationAbortRef.current = null;
       setIsPackageGenerating(false);
     }
+  }
+
+  // M-3: Fire-and-forget PATCH to update package progress counters
+  function updatePackageStatus(
+    packageId: string,
+    documentsCompleted: number,
+    documentsFailed: number,
+  ) {
+    fetch(`/api/generate2/package/${packageId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      body: JSON.stringify({ documentsCompleted, documentsFailed }),
+    }).catch((err) =>
+      logError("[Generate2] Package status update failed", err),
+    );
   }
 
   const selectedMeta = selectedType ? NCA_DOC_TYPE_MAP[selectedType] : null;
@@ -801,8 +951,12 @@ export function Generate2Page() {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">
+          <div
+            className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
+            role="progressbar"
+            aria-label="Loading document generator"
+          />
+          <p className="text-sm text-slate-500" aria-live="polite">
             Loading Document Generator...
           </p>
         </div>
@@ -811,58 +965,118 @@ export function Generate2Page() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
-      {/* Left Panel — Document Selector */}
-      <div className="w-[280px] shrink-0" style={glassPanel}>
-        <DocumentSelectorPanel
-          selectedType={selectedType}
-          onSelect={handleSelect}
-          readiness={readiness}
-          completedDocs={completedDocs}
-          onGeneratePackage={handleGeneratePackage}
-          isPackageGenerating={isPackageGenerating}
-        />
-      </div>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      {/* H-4: Save failure warning banner */}
+      {saveError && (
+        <div
+          className="mx-3 mt-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between"
+          role="alert"
+          aria-live="assertive"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-700">
+              Document generated but failed to save to server. Your content is
+              visible but not yet persisted.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 ml-3">
+            <button
+              onClick={handleRetrySave}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium transition-colors"
+              aria-label="Retry saving document to server"
+            >
+              Retry Save
+            </button>
+            <button
+              onClick={() => setSaveError(false)}
+              className="p-1 rounded-md hover:bg-amber-500/10 transition-colors"
+              aria-label="Dismiss save warning"
+            >
+              <X size={14} className="text-amber-500" />
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Center Panel — Preview/Generation */}
-      <div className="flex-1 min-w-0" style={glassPanel}>
-        <DocumentPreviewPanel
-          selectedType={selectedType}
-          meta={selectedMeta}
-          readiness={selectedReadiness || null}
-          panelState={panelState}
-          sections={sections}
-          completedSections={completedSections}
-          currentSection={currentSection}
-          isGenerating={isGenerating}
-          generationPhase={generationPhase}
-          documentContent={documentState.content}
-          actionRequiredCount={documentState.actionRequiredCount}
-          evidencePlaceholderCount={documentState.evidencePlaceholderCount}
-          documentId={documentState.id}
-          error={error}
-          canResume={!!resumeData}
-          onGenerate={() => handleGenerate(!!resumeData)}
-          onExportPdf={handleExportPdf}
-        />
-      </div>
+      {/* L-13: Cancel button for active generation */}
+      {(isGenerating || isPackageGenerating) && (
+        <div className="mx-3 mt-3 flex justify-end" aria-live="polite">
+          <button
+            onClick={() => generationAbortRef.current?.abort()}
+            className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 text-xs font-medium border border-red-500/20 transition-colors"
+            aria-label="Cancel document generation"
+          >
+            Cancel Generation
+          </button>
+        </div>
+      )}
 
-      {/* Right Panel — Context */}
-      <div className="w-[320px] shrink-0 hidden xl:block" style={glassPanel}>
-        <ContextPanel
-          meta={selectedMeta}
-          readiness={selectedReadiness || null}
-          allReadiness={readiness}
-          completedDocs={completedDocs}
-          panelState={panelState}
-          sections={sections}
-          completedSections={completedSections}
-          currentSection={currentSection}
-          generationPhase={generationPhase}
-          actionRequiredCount={documentState.actionRequiredCount}
-          evidencePlaceholderCount={documentState.evidencePlaceholderCount}
-          onSelectDocument={handleSelect}
-        />
+      <div className="flex flex-1 min-h-0 p-3 gap-3">
+        {/* Left Panel — Document Selector */}
+        <nav
+          className="w-[280px] shrink-0"
+          style={glassPanel}
+          aria-label="Document type selector"
+        >
+          <DocumentSelectorPanel
+            selectedType={selectedType}
+            onSelect={handleSelect}
+            readiness={readiness}
+            completedDocs={completedDocs}
+            onGeneratePackage={handleGeneratePackage}
+            isPackageGenerating={isPackageGenerating}
+          />
+        </nav>
+
+        {/* Center Panel — Preview/Generation */}
+        <main
+          className="flex-1 min-w-0"
+          style={glassPanel}
+          aria-label="Document preview"
+        >
+          <DocumentPreviewPanel
+            selectedType={selectedType}
+            meta={selectedMeta}
+            readiness={selectedReadiness || null}
+            panelState={panelState}
+            sections={sections}
+            completedSections={completedSections}
+            currentSection={currentSection}
+            isGenerating={isGenerating}
+            generationPhase={generationPhase}
+            documentContent={documentState.content}
+            actionRequiredCount={documentState.actionRequiredCount}
+            evidencePlaceholderCount={documentState.evidencePlaceholderCount}
+            documentId={documentState.id}
+            error={error}
+            canResume={!!resumeData}
+            onGenerate={() => handleGenerate(!!resumeData)}
+            onExportPdf={handleExportPdf}
+          />
+        </main>
+
+        {/* Right Panel — Context */}
+        <aside
+          className="w-[320px] shrink-0 hidden xl:block"
+          style={glassPanel}
+          aria-label="Generation intelligence"
+        >
+          <ContextPanel
+            meta={selectedMeta}
+            readiness={selectedReadiness || null}
+            allReadiness={readiness}
+            completedDocs={completedDocs}
+            panelState={panelState}
+            sections={sections}
+            completedSections={completedSections}
+            currentSection={currentSection}
+            generationPhase={generationPhase}
+            actionRequiredCount={documentState.actionRequiredCount}
+            evidencePlaceholderCount={documentState.evidencePlaceholderCount}
+            onSelectDocument={handleSelect}
+          />
+        </aside>
       </div>
     </div>
   );

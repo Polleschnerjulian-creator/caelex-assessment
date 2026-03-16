@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { NCA_DOC_TYPE_MAP, ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 import type { NCADocumentType } from "@/lib/generate/types";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // Map document types to their relevant article ranges
 const ARTICLE_RANGES: Record<
@@ -70,6 +71,20 @@ export async function GET(request: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    // H-1: Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "generate2",
+      `generate2:${userId}`,
+    );
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 },
+      );
     }
 
     const { searchParams } = new URL(request.url);

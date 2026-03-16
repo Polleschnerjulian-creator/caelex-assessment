@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { collectGenerate2Data } from "@/lib/generate/data-collector";
 import { computeAllReadiness } from "@/lib/generate/readiness";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 export async function GET() {
   try {
@@ -20,8 +21,22 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // H-1: Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "generate2",
+      `generate2:${userId}`,
+    );
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 },
+      );
+    }
+
     const membership = await prisma.organizationMember.findFirst({
-      where: { userId: session.user.id },
+      where: { userId },
       include: {
         organization: { select: { id: true, isActive: true } },
       },
@@ -35,7 +50,7 @@ export async function GET() {
     }
 
     const dataBundle = await collectGenerate2Data(
-      session.user.id,
+      userId,
       membership.organization.id,
     );
 
