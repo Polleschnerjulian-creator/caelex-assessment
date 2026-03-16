@@ -27,6 +27,7 @@ import {
   computePackageProgress,
 } from "@/lib/generation-store";
 import { NCA_PROFILES } from "@/data/nca-profiles";
+import type { ConsistencyFinding } from "@/lib/generate/consistency-check";
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
@@ -210,6 +211,11 @@ export function Generate2Page() {
 
   const [selectedNCA, setSelectedNCA] = useState<string | null>(null);
 
+  const [consistencyFindings, setConsistencyFindings] = useState<
+    ConsistencyFinding[]
+  >([]);
+  const [isCheckingConsistency, setIsCheckingConsistency] = useState(false);
+
   // H-4: Save failure UI warning
   const [saveError, setSaveError] = useState(false);
   const saveRetryDataRef = useRef<{
@@ -304,6 +310,7 @@ export function Generate2Page() {
       setSelectedType(type);
       const defs = SECTION_DEFINITIONS[type];
       setSections(defs);
+      setConsistencyFindings([]);
 
       if (completedDocs.has(type)) {
         // Load the existing document
@@ -608,6 +615,11 @@ export function Generate2Page() {
       // Auto-clear the ring after 3s so the user sees 100% briefly
       setTimeout(() => resetGenerationProgress(), 3000);
 
+      // Auto-trigger consistency check in background
+      if (documentId) {
+        handleConsistencyCheck(documentId);
+      }
+
       // H-4: Store retry data for the save operation
       setSaveError(false);
       saveRetryDataRef.current = {
@@ -807,6 +819,57 @@ export function Generate2Page() {
       }
     } catch {
       setSaveError(true);
+    }
+  }
+
+  async function handleConsistencyCheck(docId: string) {
+    setIsCheckingConsistency(true);
+    try {
+      const res = await fetch(
+        `/api/generate2/documents/${docId}/consistency-check`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setConsistencyFindings(data.findings || []);
+      }
+    } catch (err) {
+      logError("[Generate2] Consistency check failed", err);
+    } finally {
+      setIsCheckingConsistency(false);
+    }
+  }
+
+  async function handleAutoFix(findingId: string) {
+    if (!documentState.id) return;
+    try {
+      const res = await fetch(
+        `/api/generate2/documents/${documentState.id}/auto-fix`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            findingIds: [findingId],
+            findings: consistencyFindings,
+          }),
+        },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.appliedFixes?.length > 0) {
+          setDocumentState((prev) => ({
+            ...prev,
+            content: data.updatedSections,
+          }));
+          // Re-run check after fix
+          handleConsistencyCheck(documentState.id!);
+        }
+      }
+    } catch (err) {
+      logError("[Generate2] Auto-fix failed", err);
     }
   }
 
@@ -1268,6 +1331,12 @@ export function Generate2Page() {
             selectedNCA={selectedNCA}
             onNCAChange={setSelectedNCA}
             ncaProfiles={NCA_PROFILES}
+            consistencyFindings={consistencyFindings}
+            isCheckingConsistency={isCheckingConsistency}
+            onRunConsistencyCheck={() =>
+              documentState.id && handleConsistencyCheck(documentState.id)
+            }
+            onAutoFix={handleAutoFix}
           />
         </main>
 

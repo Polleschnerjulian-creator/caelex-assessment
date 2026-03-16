@@ -4,6 +4,7 @@ import { FileText, Download, AlertTriangle, BookOpen } from "lucide-react";
 import { GenerationProgress } from "./GenerationProgress";
 import { ReadinessRing } from "./ReadinessRing";
 import { ReasoningPreview } from "./ReasoningPreview";
+import { ConsistencyReport } from "./ConsistencyReport";
 import { innerGlass } from "./styles";
 import type {
   NCADocumentType,
@@ -17,6 +18,7 @@ import type {
   ComplianceVerdict,
 } from "@/lib/generate/reasoning-types";
 import type { NCAProfile } from "@/data/nca-profiles";
+import type { ConsistencyFinding } from "@/lib/generate/consistency-check";
 
 type PanelState =
   | "empty"
@@ -55,6 +57,10 @@ interface DocumentPreviewPanelProps {
   selectedNCA?: string | null;
   onNCAChange?: (nca: string | null) => void;
   ncaProfiles?: NCAProfile[];
+  consistencyFindings?: ConsistencyFinding[];
+  isCheckingConsistency?: boolean;
+  onRunConsistencyCheck?: () => void;
+  onAutoFix?: (findingId: string) => void;
 }
 
 export function DocumentPreviewPanel({
@@ -83,6 +89,10 @@ export function DocumentPreviewPanel({
   selectedNCA,
   onNCAChange,
   ncaProfiles,
+  consistencyFindings,
+  isCheckingConsistency,
+  onRunConsistencyCheck,
+  onAutoFix,
 }: DocumentPreviewPanelProps) {
   if (panelState === "empty" || !selectedType || !meta) {
     return (
@@ -170,6 +180,16 @@ export function DocumentPreviewPanel({
               PDF
             </button>
           </div>
+        </div>
+
+        {/* Consistency Check */}
+        <div className="px-6 pt-2">
+          <ConsistencyReport
+            findings={consistencyFindings || []}
+            isLoading={isCheckingConsistency}
+            onAutoFix={onAutoFix}
+            onRunCheck={onRunConsistencyCheck}
+          />
         </div>
 
         {/* Content */}
