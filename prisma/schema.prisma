@@ -4691,6 +4691,23 @@ model NCAConsistencyCheck {
   @@index([userId, organizationId])
 }
 
+model NCAImpactAlert {
+  id                String   @id @default(cuid())
+  userId            String
+  organizationId    String
+  changedField      String
+  changedSource     String
+  oldValue          String?
+  newValue          String?
+  affectedDocuments Json
+  totalSections     Int
+  resolved          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  resolvedAt        DateTime?
+
+  @@index([userId, organizationId, resolved])
+}
+
 model NCADocPackage {
   id                    String           @id @default(cuid())
   userId                String
