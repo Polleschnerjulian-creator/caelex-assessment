@@ -4634,6 +4634,7 @@ model NCADocument {
   version                  Int               @default(1)
   parentId                 String?
   error                    String?           @db.Text
+  reasoningPlanId          String?
   parent                   NCADocument?      @relation("NCADocVersions", fields: [parentId], references: [id])
   versions                 NCADocument[]     @relation("NCADocVersions")
   user                     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -4649,6 +4650,24 @@ model NCADocument {
   @@index([status])
   @@index([status, createdAt])
   @@index([userId, createdAt])
+}
+
+model NCAReasoningPlan {
+  id                       String          @id @default(cuid())
+  documentId               String?
+  userId                   String
+  organizationId           String
+  documentType             NCADocumentType
+  targetNCA                String?
+  overallStrategy          String          @db.Text
+  estimatedComplianceLevel String
+  sections                 Json
+  crossReferences          Json
+  userModified             Boolean         @default(false)
+  createdAt                DateTime        @default(now())
+
+  @@index([documentId])
+  @@index([userId, organizationId])
 }
 
 model NCADocPackage {
