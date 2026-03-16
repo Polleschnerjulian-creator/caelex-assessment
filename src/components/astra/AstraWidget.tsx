@@ -230,87 +230,161 @@ export default function AstraWidget({
           }}
         >
           {!hasMessages ? (
-            /* ─── Empty State: Greeting + Suggested Actions ─── */
+            /* ─── Empty State: Breathing Orb + Suggested Actions ─── */
             <div
               style={{
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                padding: "0 24px",
+                padding: "0 20px",
+                background:
+                  "radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
               }}
             >
-              {/* Logo + Greeting */}
+              {/* Breathing Orb */}
               <div
                 style={{
+                  position: "relative",
+                  width: 140,
+                  height: 140,
+                  marginTop: 48,
+                  marginBottom: 28,
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  paddingTop: 64,
-                  paddingBottom: 32,
+                  justifyContent: "center",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/logo-black.png"
-                  alt=""
-                  width={52}
-                  height={52}
-                  style={{ objectFit: "contain", marginBottom: 20 }}
+                {/* Outer glow ring */}
+                <div
+                  className="astra-orb-ring"
+                  style={{
+                    position: "absolute",
+                    inset: -8,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(16, 185, 129, 0.15)",
+                  }}
                 />
-                <h2
+                {/* Ambient glow */}
+                <div
+                  className="astra-orb-glow"
                   style={{
-                    fontSize: 20,
-                    fontWeight: 600,
-                    color: "#111827",
-                    margin: 0,
-                    letterSpacing: "-0.02em",
+                    position: "absolute",
+                    inset: -24,
+                    borderRadius: "50%",
+                    background:
+                      "radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.06) 50%, transparent 70%)",
+                    filter: "blur(20px)",
+                  }}
+                />
+                {/* Main orb */}
+                <div
+                  className="astra-orb"
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: "50%",
+                    background:
+                      "conic-gradient(from 0deg, #10B981, #3B82F6, #8B5CF6, #EC4899, #10B981)",
+                    position: "relative",
+                    boxShadow:
+                      "0 0 40px rgba(16, 185, 129, 0.25), 0 0 80px rgba(59, 130, 246, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.1)",
                   }}
                 >
-                  {greeting}
-                </h2>
-                <p
+                  {/* Inner white core for depth */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 3,
+                      borderRadius: "50%",
+                      background:
+                        "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 40%, transparent 70%)",
+                    }}
+                  />
+                  {/* Glass overlay */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: "50%",
+                      background:
+                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, transparent 60%)",
+                      backdropFilter: "blur(2px)",
+                    }}
+                  />
+                </div>
+                {/* Orbiting dot */}
+                <div
+                  className="astra-orbit-dot"
                   style={{
-                    fontSize: 14,
-                    color: "#6b7280",
-                    margin: "4px 0 0",
+                    position: "absolute",
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#10B981",
+                    boxShadow: "0 0 8px rgba(16, 185, 129, 0.6)",
+                    top: "50%",
+                    left: "50%",
                   }}
-                >
-                  What are we working on today?
-                </p>
+                />
               </div>
 
-              {/* Suggested Actions */}
+              {/* Greeting */}
+              <h2
+                className="astra-greeting"
+                style={{
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: "#111827",
+                  margin: 0,
+                  letterSpacing: "-0.03em",
+                  textAlign: "center",
+                }}
+              >
+                {greeting}
+              </h2>
+              <p
+                className="astra-subtitle"
+                style={{
+                  fontSize: 14,
+                  color: "#6b7280",
+                  margin: "6px 0 0",
+                  textAlign: "center",
+                }}
+              >
+                What are we working on today?
+              </p>
+
+              {/* Suggested Actions — glass cards */}
               <div
                 style={{
                   width: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 2,
+                  gap: 6,
+                  marginTop: 32,
                 }}
               >
-                {SUGGESTED_ACTIONS.map((action) => (
+                {SUGGESTED_ACTIONS.map((action, i) => (
                   <button
                     key={action.label}
+                    className="astra-action-card"
                     onClick={() => handleQuickAction(action.prompt)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 12,
                       padding: "12px 14px",
-                      borderRadius: 10,
-                      border: "none",
-                      background: "transparent",
+                      borderRadius: 12,
+                      border: "1px solid rgba(0, 0, 0, 0.06)",
+                      background: "rgba(255, 255, 255, 0.7)",
+                      backdropFilter: "blur(8px)",
                       cursor: "pointer",
                       textAlign: "left",
                       width: "100%",
-                      transition: "background 120ms ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#f3f4f6";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
+                      transition:
+                        "transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease",
+                      animation: `astraCardFadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) ${100 + i * 60}ms both`,
                     }}
                   >
                     <div
@@ -318,7 +392,8 @@ export default function AstraWidget({
                         width: 36,
                         height: 36,
                         borderRadius: 10,
-                        background: "#f3f4f6",
+                        background:
+                          "linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08))",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -326,9 +401,9 @@ export default function AstraWidget({
                       }}
                     >
                       <action.icon
-                        size={18}
-                        color="#6b7280"
-                        strokeWidth={1.5}
+                        size={17}
+                        color="#10B981"
+                        strokeWidth={1.8}
                       />
                     </div>
                     <div style={{ minWidth: 0 }}>
@@ -344,7 +419,7 @@ export default function AstraWidget({
                       </div>
                       <div
                         style={{
-                          fontSize: 12,
+                          fontSize: 11.5,
                           color: "#9ca3af",
                           lineHeight: 1.3,
                           marginTop: 1,
@@ -574,6 +649,8 @@ export default function AstraWidget({
           background: #e5e7eb;
           border-radius: 2px;
         }
+
+        /* ─── Panel animations ─── */
         @keyframes astraPanelSlideIn {
           from { transform: translateX(100%); }
           to { transform: translateX(0); }
@@ -586,6 +663,75 @@ export default function AstraWidget({
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
+
+        /* ─── Breathing Orb ─── */
+        .astra-orb {
+          animation: astraOrbBreathing 4s ease-in-out infinite, astraOrbRotate 8s linear infinite;
+        }
+        @keyframes astraOrbBreathing {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(16,185,129,0.25), 0 0 80px rgba(59,130,246,0.15), inset 0 0 30px rgba(255,255,255,0.1); }
+          50% { transform: scale(1.06); box-shadow: 0 0 50px rgba(16,185,129,0.35), 0 0 100px rgba(59,130,246,0.2), inset 0 0 30px rgba(255,255,255,0.15); }
+        }
+        @keyframes astraOrbRotate {
+          from { filter: hue-rotate(0deg); }
+          to { filter: hue-rotate(360deg); }
+        }
+
+        /* Outer ring pulse */
+        .astra-orb-ring {
+          animation: astraRingPulse 4s ease-in-out infinite;
+        }
+        @keyframes astraRingPulse {
+          0%, 100% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.08); opacity: 0.8; }
+        }
+
+        /* Ambient glow breathing */
+        .astra-orb-glow {
+          animation: astraGlowBreathing 4s ease-in-out infinite;
+        }
+        @keyframes astraGlowBreathing {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Orbiting dot */
+        .astra-orbit-dot {
+          animation: astraOrbitDot 6s linear infinite;
+        }
+        @keyframes astraOrbitDot {
+          from { transform: translate(-50%, -50%) rotate(0deg) translateX(62px) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg) translateX(62px) rotate(-360deg); }
+        }
+
+        /* Greeting text fade in */
+        .astra-greeting {
+          animation: astraTextReveal 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+        }
+        .astra-subtitle {
+          animation: astraTextReveal 600ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
+        }
+        @keyframes astraTextReveal {
+          from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        /* Action card stagger + hover */
+        @keyframes astraCardFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .astra-action-card:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1), 0 1px 4px rgba(0, 0, 0, 0.04);
+          border-color: rgba(16, 185, 129, 0.2) !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+        }
+        .astra-action-card:active {
+          transform: translateY(0) scale(0.99);
+        }
+
+        /* ─── Typing dots ─── */
         .astra-typing-dot {
           display: inline-block;
           width: 5px;
