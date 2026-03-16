@@ -540,8 +540,10 @@ export default function AstraEntityScene() {
       gl={{
         alpha: true,
         antialias: false,
-        toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 2.2,
+      }}
+      onCreated={({ gl }) => {
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 2.2;
       }}
       style={{ background: "transparent" }}
     >

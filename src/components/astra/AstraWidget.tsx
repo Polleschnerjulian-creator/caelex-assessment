@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import dynamic from "next/dynamic";
 import {
   Plus,
@@ -20,6 +28,50 @@ import {
 } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMessageBubble from "./AstraMessageBubble";
+
+// ─── Error Boundary for Three.js scene ─────────────────────────────────────
+// Prevents WebGL/Three.js crashes from taking down the entire dashboard
+
+class SceneErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.warn("[AstraEntityScene] 3D scene failed to render:", error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      // Graceful fallback: simple gradient orb instead of 3D scene
+      return (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(16,185,129,0.25) 0%, rgba(13,148,136,0.1) 50%, transparent 70%)",
+              animation: "astraOrbPulse 3.5s ease-in-out infinite",
+            }}
+          />
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Dynamic import — only load Three.js when panel is open
 const AstraEntityScene = dynamic(() => import("./AstraEntityScene"), {
@@ -335,7 +387,9 @@ export default function AstraWidget({
                     pointerEvents: "none",
                   }}
                 />
-                <AstraEntityScene />
+                <SceneErrorBoundary>
+                  <AstraEntityScene />
+                </SceneErrorBoundary>
               </div>
 
               {/* Greeting */}
