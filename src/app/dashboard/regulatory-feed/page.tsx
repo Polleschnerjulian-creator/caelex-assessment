@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   Eye,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -33,6 +35,29 @@ interface RegulatoryUpdate {
   isRead: boolean;
 }
 
+// ─── Glass Styles ───
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
+
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
 // ─── Severity Config ───
 
 const SEVERITY_CONFIG: Record<
@@ -41,36 +66,31 @@ const SEVERITY_CONFIG: Record<
     icon: typeof AlertTriangle;
     color: string;
     bg: string;
-    border: string;
     label: string;
   }
 > = {
   CRITICAL: {
     icon: AlertTriangle,
-    color: "text-[var(--accent-danger)]",
-    bg: "bg-[var(--accent-danger)]/10",
-    border: "border-[var(--accent-danger)/30]",
+    color: "text-red-500",
+    bg: "bg-red-500/10",
     label: "Critical",
   },
   HIGH: {
     icon: AlertCircle,
-    color: "text-[var(--accent-warning)]",
-    bg: "bg-[var(--accent-warning-soft)]",
-    border: "border-amber-500/30",
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
     label: "High",
   },
   MEDIUM: {
     icon: Info,
-    color: "text-[var(--accent-primary)]",
-    bg: "bg-[var(--accent-info-soft)]0/10",
-    border: "border-[var(--accent-primary)]/30",
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/10",
     label: "Medium",
   },
   LOW: {
     icon: Info,
-    color: "text-[var(--text-tertiary)]",
-    bg: "bg-[var(--surface-sunken)]0/10",
-    border: "border-[var(--border-default)]/20",
+    color: "text-slate-400",
+    bg: "bg-slate-400/10",
     label: "Low",
   },
 };
@@ -173,142 +193,170 @@ export default function RegulatoryFeedPage() {
 
   return (
     <FeatureGate module="regulatory-feed">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-            {t("regulatoryFeed.title")}
-          </p>
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2">
-            {t("regulatoryFeed.title")}
-          </h1>
-          <p className="text-body-lg text-[var(--text-secondary)]">
-            {t("regulatoryFeed.subtitle")}
-          </p>
-        </div>
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+        {/* ─── Left Sidebar ─── */}
+        <div
+          className="flex flex-col w-[260px] flex-shrink-0"
+          style={glassPanel}
+        >
+          <div className="p-5 pb-4">
+            <h1 className="text-lg font-semibold text-slate-800 dark:text-white">
+              {t("regulatoryFeed.title")}
+            </h1>
+            <p className="text-small text-slate-500 mt-0.5">
+              {t("regulatoryFeed.subtitle")}
+            </p>
+          </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <StatCard label={t("regulatoryFeed.totalUpdates")} value={total} />
-          <StatCard
-            label={t("regulatoryFeed.criticalUpdates")}
-            value={criticalCount}
-            accent="text-[var(--accent-danger)]"
-          />
-          <StatCard
-            label={t("regulatoryFeed.highUpdates")}
-            value={highCount}
-            accent="text-[var(--accent-warning)]"
-          />
-          <StatCard
-            label={t("regulatoryFeed.thisWeek")}
-            value={thisWeekCount}
-            accent="text-[var(--accent-primary)]"
-          />
-        </div>
+          {/* Stats */}
+          <div className="px-4 pb-4 space-y-2">
+            <SidebarStat
+              label={t("regulatoryFeed.totalUpdates")}
+              value={total}
+            />
+            <SidebarStat
+              label={t("regulatoryFeed.criticalUpdates")}
+              value={criticalCount}
+              accent="text-red-500"
+            />
+            <SidebarStat
+              label={t("regulatoryFeed.highUpdates")}
+              value={highCount}
+              accent="text-amber-500"
+            />
+            <SidebarStat
+              label={t("regulatoryFeed.thisWeek")}
+              value={thisWeekCount}
+              accent="text-indigo-500"
+            />
+          </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          {/* Severity pills */}
-          {SEVERITY_FILTERS.map((sev) => {
-            const isActive = severityFilter === sev;
-            return (
-              <button
-                key={sev}
-                onClick={() => {
-                  setSeverityFilter(sev);
+          {/* Divider */}
+          <div className="mx-4 border-t border-slate-200/60 dark:border-white/10" />
+
+          {/* Severity Filters */}
+          <div className="px-4 pt-4 pb-3">
+            <p className="text-micro font-medium text-slate-400 uppercase tracking-wider mb-2">
+              Severity
+            </p>
+            <div className="flex flex-col gap-1">
+              {SEVERITY_FILTERS.map((sev) => {
+                const isActive = severityFilter === sev;
+                return (
+                  <button
+                    key={sev}
+                    onClick={() => {
+                      setSeverityFilter(sev);
+                      setPage(1);
+                    }}
+                    className={`text-small px-3 py-1.5 rounded-lg font-medium text-left transition-all ${
+                      isActive
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                        : "text-slate-500 hover:bg-slate-100/60 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {sev === "ALL"
+                      ? t("regulatoryFeed.allSeverities")
+                      : sev.charAt(0) + sev.slice(1).toLowerCase()}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="mx-4 border-t border-slate-200/60 dark:border-white/10" />
+
+          {/* Module Filter */}
+          <div className="px-4 pt-4 pb-3">
+            <p className="text-micro font-medium text-slate-400 uppercase tracking-wider mb-2">
+              Module
+            </p>
+            <div className="relative">
+              <select
+                value={moduleFilter}
+                onChange={(e) => {
+                  setModuleFilter(e.target.value);
                   setPage(1);
                 }}
-                className={`text-small px-3 py-1.5 rounded-full font-medium transition-all ${
-                  isActive
-                    ? "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
-                    : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-transparent hover:bg-[var(--surface-sunken)]"
-                }`}
+                className="w-full text-small px-3 py-2 rounded-lg bg-white/40 dark:bg-white/5 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 appearance-none pr-7 cursor-pointer transition-colors hover:bg-white/60 dark:hover:bg-white/10"
               >
-                {sev === "ALL"
-                  ? t("regulatoryFeed.allSeverities")
-                  : sev.charAt(0) + sev.slice(1).toLowerCase()}
-              </button>
-            );
-          })}
-
-          {/* Module filter dropdown */}
-          <div className="relative ml-auto">
-            <select
-              value={moduleFilter}
-              onChange={(e) => {
-                setModuleFilter(e.target.value);
-                setPage(1);
-              }}
-              className="text-small px-3 py-1.5 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)] appearance-none pr-7 cursor-pointer"
-            >
-              <option value="">{t("regulatoryFeed.filterByModule")}</option>
-              {Object.entries(MODULE_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={12}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none"
-            />
+                <option value="">{t("regulatoryFeed.filterByModule")}</option>
+                {Object.entries(MODULE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={12}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
           </div>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-slate-200/60 dark:border-white/10">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/60 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-small text-slate-500">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/60 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Feed */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2
-              size={24}
-              className="animate-spin text-[var(--text-tertiary)]"
-            />
+        {/* ─── Right Panel ─── */}
+        <div className="flex-1 flex flex-col min-w-0" style={glassPanel}>
+          <div className="flex-1 overflow-y-auto p-5">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 size={24} className="animate-spin text-slate-400" />
+              </div>
+            ) : updates.length === 0 ? (
+              <EmptyState t={t} />
+            ) : (
+              <div className="space-y-3">
+                <AnimatePresence mode="popLayout">
+                  {updates.map((update) => (
+                    <FeedItem
+                      key={update.id}
+                      update={update}
+                      isExpanded={expandedId === update.id}
+                      onToggle={() =>
+                        setExpandedId(
+                          expandedId === update.id ? null : update.id,
+                        )
+                      }
+                      onMarkRead={() => handleMarkAsRead(update.id)}
+                      markingRead={markingRead === update.id}
+                      formatDate={formatDate}
+                      t={t}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
-        ) : updates.length === 0 ? (
-          <EmptyState t={t} />
-        ) : (
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {updates.map((update) => (
-                <FeedItem
-                  key={update.id}
-                  update={update}
-                  isExpanded={expandedId === update.id}
-                  onToggle={() =>
-                    setExpandedId(expandedId === update.id ? null : update.id)
-                  }
-                  onMarkRead={() => handleMarkAsRead(update.id)}
-                  markingRead={markingRead === update.id}
-                  formatDate={formatDate}
-                  t={t}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-              className="text-body px-4 py-2 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-sunken)] transition-colors"
-            >
-              Previous
-            </button>
-            <span className="text-body text-[var(--text-secondary)] px-3">
-              {page} / {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              className="text-body px-4 py-2 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-sunken)] transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </FeatureGate>
   );
@@ -316,7 +364,7 @@ export default function RegulatoryFeedPage() {
 
 // ─── Subcomponents ───
 
-function StatCard({
+function SidebarStat({
   label,
   value,
   accent,
@@ -326,15 +374,20 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
-      <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-        {label}
-      </p>
-      <p
-        className={`text-2xl font-semibold ${accent || "text-[var(--text-primary)]"}`}
+    <div
+      className="flex items-center justify-between px-3 py-2 rounded-lg"
+      style={{
+        background: "rgba(255, 255, 255, 0.3)",
+        border: "1px solid rgba(255, 255, 255, 0.35)",
+        borderRadius: 10,
+      }}
+    >
+      <span className="text-small text-slate-500">{label}</span>
+      <span
+        className={`text-body font-semibold ${accent || "text-slate-800 dark:text-white"}`}
       >
         {value}
-      </p>
+      </span>
     </div>
   );
 }
@@ -366,16 +419,13 @@ function FeedItem({
       animate={{ opacity: update.isRead ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      className={`bg-[var(--surface-raised)] border rounded-xl overflow-hidden transition-all ${
-        update.isRead
-          ? "border-[var(--border-default)]"
-          : `border-[var(--border-default)]`
-      }`}
+      style={innerGlass}
+      className="overflow-hidden"
     >
       {/* Main row */}
       <button
         onClick={onToggle}
-        className="w-full flex items-start gap-3 p-4 text-left hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
+        className="w-full flex items-start gap-3 p-4 text-left hover:bg-white/20 dark:hover:bg-white/5 transition-colors rounded-[14px]"
       >
         {/* Severity icon */}
         <div
@@ -392,30 +442,27 @@ function FeedItem({
             >
               {config.label}
             </span>
-            <span className="text-micro font-mono text-[var(--text-tertiary)]">
+            <span className="text-micro font-mono text-slate-400">
               {update.celexNumber}
             </span>
-            <span className="text-micro px-1.5 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-secondary)]">
+            <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100/60 dark:bg-white/10 text-slate-500">
               {DOC_TYPE_LABELS[update.documentType] || update.documentType}
             </span>
             {update.isRead && (
-              <CheckCircle2
-                size={12}
-                className="text-[var(--accent-primary)]/50"
-              />
+              <CheckCircle2 size={12} className="text-indigo-500/50" />
             )}
           </div>
-          <h3 className="text-body-lg font-medium text-[var(--text-primary)] line-clamp-2 leading-snug">
+          <h3 className="text-body-lg font-medium text-slate-800 dark:text-white line-clamp-2 leading-snug">
             {update.title}
           </h3>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className="text-caption text-[var(--text-tertiary)]">
+            <span className="text-caption text-slate-400">
               {formatDate(update.publishedAt)}
             </span>
             {update.affectedModules.map((mod) => (
               <span
                 key={mod}
-                className="text-micro px-1.5 py-0.5 rounded bg-[var(--accent-primary-soft)] text-[var(--accent-success)] font-medium"
+                className="text-micro px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-medium"
               >
                 {MODULE_LABELS[mod] || mod}
               </span>
@@ -426,7 +473,7 @@ function FeedItem({
         {/* Expand indicator */}
         <ChevronDown
           size={16}
-          className={`text-[var(--text-tertiary)] transition-transform flex-shrink-0 mt-1 ${
+          className={`text-slate-400 transition-transform flex-shrink-0 mt-1 ${
             isExpanded ? "rotate-180" : ""
           }`}
         />
@@ -442,15 +489,13 @@ function FeedItem({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-1 border-t border-[var(--border-subtle)]">
+            <div className="px-4 pb-4 pt-1 border-t border-slate-200/40 dark:border-white/10">
               {/* Match Reason */}
               <div className="mb-3">
-                <p className="text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                <p className="text-caption font-medium text-slate-500 uppercase tracking-wider mb-1">
                   {t("regulatoryFeed.matchReason")}
                 </p>
-                <p className="text-body text-[var(--text-secondary)]">
-                  {update.matchReason}
-                </p>
+                <p className="text-body text-slate-500">{update.matchReason}</p>
               </div>
 
               {/* Actions */}
@@ -459,7 +504,7 @@ function FeedItem({
                   href={update.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-small font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                  className="inline-flex items-center gap-1.5 text-small font-medium text-indigo-500 hover:text-indigo-600 transition-colors"
                 >
                   <ExternalLink size={12} />
                   {t("regulatoryFeed.viewOnEurLex")}
@@ -471,7 +516,7 @@ function FeedItem({
                       onMarkRead();
                     }}
                     disabled={markingRead}
-                    className="inline-flex items-center gap-1.5 text-small font-medium text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-small font-medium text-slate-500 hover:text-indigo-500 transition-colors disabled:opacity-50"
                   >
                     {markingRead ? (
                       <Loader2 size={12} className="animate-spin" />
@@ -492,20 +537,25 @@ function FeedItem({
 
 function EmptyState({ t }: { t: (key: string) => string }) {
   return (
-    <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center mx-auto mb-6">
-        <Radio
-          size={28}
-          className="text-[var(--text-tertiary)]"
-          strokeWidth={1.5}
-        />
+    <div className="flex items-center justify-center h-full">
+      <div className="text-center">
+        <div
+          className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6"
+          style={{
+            background: "rgba(255, 255, 255, 0.3)",
+            border: "1px solid rgba(255, 255, 255, 0.35)",
+            borderRadius: 14,
+          }}
+        >
+          <Radio size={28} className="text-slate-400" strokeWidth={1.5} />
+        </div>
+        <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">
+          {t("regulatoryFeed.noUpdates")}
+        </h3>
+        <p className="text-body-lg text-slate-500 max-w-md mx-auto">
+          {t("regulatoryFeed.noUpdatesDescription")}
+        </p>
       </div>
-      <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
-        {t("regulatoryFeed.noUpdates")}
-      </h3>
-      <p className="text-body-lg text-[var(--text-secondary)] max-w-md mx-auto">
-        {t("regulatoryFeed.noUpdatesDescription")}
-      </p>
     </div>
   );
 }

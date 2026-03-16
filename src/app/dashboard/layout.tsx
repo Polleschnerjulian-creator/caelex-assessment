@@ -114,6 +114,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     pathname === "/dashboard/tracker" ||
     pathname === "/dashboard/mission-control" ||
     pathname === "/dashboard/audit-center" ||
+    pathname === "/dashboard/nca-portal" ||
+    pathname === "/dashboard/timeline" ||
+    pathname === "/dashboard/incidents" ||
+    pathname === "/dashboard/regulatory-feed" ||
+    pathname === "/dashboard/evidence" ||
+    pathname === "/dashboard/network" ||
     isSettingsPage ||
     isEphemerisPage;
 

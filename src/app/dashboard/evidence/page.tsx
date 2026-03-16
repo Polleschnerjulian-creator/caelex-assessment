@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Link2,
+  RefreshCw,
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -58,6 +59,29 @@ interface DashboardData {
   chainIntegrity: ChainIntegrity;
 }
 
+// ── Glass Styles ────────────────────────────────────────────────────────────
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
+
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 const REGULATION_LABELS: Record<string, string> = {
@@ -87,50 +111,51 @@ function getStatusBadge(status: string) {
     case "ACCEPTED":
       return {
         label: "Accepted",
-        className:
-          "bg-[var(--accent-primary-soft)] text-[var(--accent-success)]",
+        className: "bg-emerald-100 text-emerald-600",
       };
     case "SUBMITTED":
       return {
         label: "Submitted",
-        className:
-          "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
+        className: "bg-amber-100 text-amber-500",
       };
     case "PENDING":
       return {
         label: "Pending",
-        className:
-          "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
+        className: "bg-amber-100 text-amber-500",
       };
     case "REJECTED":
       return {
         label: "Rejected",
-        className: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
-      };
-    case "DRAFT":
-      return {
-        label: "Draft",
-        className:
-          "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)]",
+        className: "bg-red-100 text-red-500",
       };
     case "EXPIRED":
       return {
         label: "Expired",
-        className: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
+        className: "bg-red-100 text-red-500",
+      };
+    case "DRAFT":
+      return {
+        label: "Draft",
+        className: "bg-slate-100 text-slate-500",
       };
     default:
       return {
         label: status,
-        className:
-          "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)]",
+        className: "bg-slate-100 text-slate-500",
       };
   }
 }
 
-function getCoverageColor(pct: number): string {
-  if (pct >= 80) return "bg-[var(--accent-success-soft)]0";
-  if (pct >= 50) return "bg-[var(--accent-warning)]";
-  return "bg-[var(--accent-danger)]";
+function getCoverageBarColor(pct: number): string {
+  if (pct >= 80) return "bg-emerald-500";
+  if (pct >= 50) return "bg-amber-500";
+  return "bg-red-500";
+}
+
+function getCoverageTextColor(pct: number): string {
+  if (pct >= 80) return "text-emerald-600";
+  if (pct >= 50) return "text-amber-500";
+  return "text-red-500";
 }
 
 function formatDate(dateStr: string): string {
@@ -173,8 +198,14 @@ export default function EvidenceCoveragePage() {
   // ── Loading ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+        <div
+          className="flex flex-col items-center gap-3 p-8"
+          style={glassPanel}
+        >
+          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          <p className="text-sm text-slate-500">Loading evidence data...</p>
+        </div>
       </div>
     );
   }
@@ -182,17 +213,22 @@ export default function EvidenceCoveragePage() {
   // ── Error ───────────────────────────────────────────────────────────────
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <AlertTriangle className="w-8 h-8 text-[var(--accent-danger)]" />
-        <p className="text-sm text-[var(--text-secondary)]">
-          {error || "Failed to load evidence data"}
-        </p>
-        <button
-          onClick={fetchData}
-          className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors"
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+        <div
+          className="flex flex-col items-center gap-4 p-8"
+          style={glassPanel}
         >
-          Retry
-        </button>
+          <AlertTriangle className="w-8 h-8 text-red-500" />
+          <p className="text-sm text-slate-500">
+            {error || "Failed to load evidence data"}
+          </p>
+          <button
+            onClick={fetchData}
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -214,287 +250,359 @@ export default function EvidenceCoveragePage() {
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20]">
-          <FileCheck className="w-5 h-5 text-[var(--accent-primary)]" />
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+      {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col w-[260px] shrink-0 p-5" style={glassPanel}>
+        {/* Title */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-500/20">
+            <FileCheck className="w-[18px] h-[18px] text-indigo-500" />
+          </div>
+          <div>
+            <h1 className="text-base font-semibold text-slate-800 dark:text-white leading-tight">
+              Evidence Coverage
+            </h1>
+            <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
+              ACE — Autonomous Compliance Evidence
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--text-primary)]">
-            Evidence Coverage
-          </h1>
-          <p className="text-sm text-[var(--text-secondary)]">
-            ACE — Autonomous Compliance Evidence Engine
-          </p>
+
+        {/* Stats */}
+        <div className="space-y-3 flex-1">
+          <div className="p-3 rounded-xl" style={innerGlass}>
+            <div className="flex items-center gap-2 mb-1">
+              <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
+              <span className="text-xs text-slate-500">Total Evidence</span>
+            </div>
+            <p className="text-xl font-semibold text-slate-800 dark:text-white">
+              {overviewStats.totalEvidence}
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl" style={innerGlass}>
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs text-slate-500">Accepted</span>
+            </div>
+            <p className="text-xl font-semibold text-emerald-600">
+              {overviewStats.acceptedEvidence}
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl" style={innerGlass}>
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-xs text-slate-500">Pending</span>
+            </div>
+            <p className="text-xl font-semibold text-amber-500">
+              {overviewStats.pendingEvidence}
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl" style={innerGlass}>
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+              <span className="text-xs text-slate-500">Coverage %</span>
+            </div>
+            <p className="text-xl font-semibold text-slate-800 dark:text-white">
+              {overallCoveragePct}%
+            </p>
+          </div>
+
+          {/* Chain Integrity Badge */}
+          <div className="p-3 rounded-xl" style={innerGlass}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Link2 className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs text-slate-500">Chain Integrity</span>
+            </div>
+            {chainIntegrity.verified ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600">
+                <CheckCircle2 className="w-3 h-3" />
+                Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-500">
+                <XCircle className="w-3 h-3" />
+                Integrity Issue
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Retry Button */}
+        <button
+          onClick={fetchData}
+          className="mt-4 flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
+          style={innerGlass}
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          Refresh Data
+        </button>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-info-soft)]0/10">
-              <BarChart3 className="w-4 h-4 text-[var(--accent-primary)]" />
-            </div>
-            <span className="text-sm text-[var(--text-secondary)]">
-              Total Evidence
-            </span>
-          </div>
-          <p className="text-2xl font-semibold text-[var(--text-primary)]">
-            {overviewStats.totalEvidence}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-primary-soft)]">
-              <CheckCircle2 className="w-4 h-4 text-[var(--accent-primary)]" />
-            </div>
-            <span className="text-sm text-[var(--text-secondary)]">
-              Accepted
-            </span>
-          </div>
-          <p className="text-2xl font-semibold text-[var(--accent-success)]">
-            {overviewStats.acceptedEvidence}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-warning-soft)]">
-              <Clock className="w-4 h-4 text-[var(--accent-warning)]" />
-            </div>
-            <span className="text-sm text-[var(--text-secondary)]">
-              Pending
-            </span>
-          </div>
-          <p className="text-2xl font-semibold text-[var(--accent-warning)]">
-            {overviewStats.pendingEvidence}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--accent-primary-soft)]">
-              <ShieldCheck className="w-4 h-4 text-[var(--accent-primary)]" />
-            </div>
-            <span className="text-sm text-[var(--text-secondary)]">
-              Coverage
-            </span>
-          </div>
-          <p className="text-2xl font-semibold text-[var(--text-primary)]">
-            {overallCoveragePct}%
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Coverage by Regulation */}
-      {coverageByRegulation.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
-            Coverage by Regulation
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {coverageByRegulation.map((reg, i) => (
-              <motion.div
-                key={reg.regulationType}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 + i * 0.04 }}
-                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-[var(--text-primary)]">
-                    {getRegulationLabel(reg.regulationType)}
-                  </h3>
-                  <span
-                    className={`text-sm font-semibold ${
-                      reg.coveragePct >= 80
-                        ? "text-[var(--accent-success)]"
-                        : reg.coveragePct >= 50
-                          ? "text-[var(--accent-warning)]"
-                          : "text-[var(--accent-danger)]"
-                    }`}
-                  >
-                    {reg.coveragePct}%
-                  </span>
+      {/* ── Right Panel ──────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto p-5" style={glassPanel}>
+        <div className="space-y-5">
+          {/* Metrics Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
+                  <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
                 </div>
-                <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full">
-                  <div
-                    className={`h-full ${getCoverageColor(reg.coveragePct)} rounded-full transition-all duration-500`}
-                    style={{ width: `${reg.coveragePct}%` }}
-                  />
+                <span className="text-xs text-slate-500">Total Evidence</span>
+              </div>
+              <p className="text-2xl font-semibold text-slate-800 dark:text-white">
+                {overviewStats.totalEvidence}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 </div>
-                <p className="mt-2 text-xs text-[var(--text-secondary)]">
-                  {reg.coveredRequirements} of {reg.totalRequirements}{" "}
-                  requirements covered
-                </p>
-              </motion.div>
-            ))}
+                <span className="text-xs text-slate-500">Accepted</span>
+              </div>
+              <p className="text-2xl font-semibold text-emerald-600">
+                {overviewStats.acceptedEvidence}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                </div>
+                <span className="text-xs text-slate-500">Pending</span>
+              </div>
+              <p className="text-2xl font-semibold text-amber-500">
+                {overviewStats.pendingEvidence}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                </div>
+                <span className="text-xs text-slate-500">Coverage</span>
+              </div>
+              <p className="text-2xl font-semibold text-slate-800 dark:text-white">
+                {overallCoveragePct}%
+              </p>
+            </motion.div>
           </div>
-        </motion.div>
-      )}
 
-      {/* Two-column layout: Recent Evidence + Gap Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Evidence */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
-            Recent Evidence
-          </h2>
-          {recentEvidence.length === 0 ? (
-            <p className="text-sm text-[var(--text-secondary)] py-8 text-center">
-              No evidence records yet
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {recentEvidence.map((item) => {
-                const badge = getStatusBadge(item.status);
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 py-2 border-b border-[var(--border-subtle)] last:border-0"
+          {/* Coverage by Regulation Grid */}
+          {coverageByRegulation.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-3">
+                Coverage by Regulation
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {coverageByRegulation.map((reg, i) => (
+                  <motion.div
+                    key={reg.regulationType}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 + i * 0.04 }}
+                    className="p-4"
+                    style={innerGlass}
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                        {item.title}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)]">
-                        {getRegulationLabel(item.regulationType)} &middot;{" "}
-                        {formatDate(item.updatedAt)}
-                      </p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.className}`}
-                    >
-                      {badge.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </motion.div>
-
-        {/* Gap Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5"
-        >
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
-            Gap Summary
-          </h2>
-          {gapsByCategory.length === 0 ? (
-            <p className="text-sm text-[var(--text-secondary)] py-8 text-center">
-              No regulatory requirements configured
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {gapsByCategory.slice(0, 8).map((cat) => {
-                const coveredPct =
-                  cat.total > 0
-                    ? Math.round(((cat.total - cat.gaps) / cat.total) * 100)
-                    : 0;
-                return (
-                  <div key={cat.category}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-[var(--text-secondary)] capitalize">
-                        {cat.category.replace(/_/g, " ")}
-                      </span>
-                      <span className="text-xs text-[var(--text-secondary)]">
-                        {cat.gaps > 0 ? (
-                          <span className="text-[var(--accent-danger)]">
-                            {cat.gaps} gap{cat.gaps !== 1 ? "s" : ""}
-                          </span>
-                        ) : (
-                          <span className="text-[var(--accent-primary)]">
-                            Complete
-                          </span>
-                        )}
-                        {" / "}
-                        {cat.total} total
+                    <div className="flex items-center justify-between mb-2.5">
+                      <h3 className="text-sm font-medium text-slate-800 dark:text-white">
+                        {getRegulationLabel(reg.regulationType)}
+                      </h3>
+                      <span
+                        className={`text-sm font-semibold ${getCoverageTextColor(reg.coveragePct)}`}
+                      >
+                        {reg.coveragePct}%
                       </span>
                     </div>
-                    <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full">
+                    <div className="h-1.5 bg-slate-200/60 dark:bg-white/10 rounded-full">
                       <div
-                        className={`h-full ${getCoverageColor(coveredPct)} rounded-full transition-all duration-500`}
-                        style={{ width: `${coveredPct}%` }}
+                        className={`h-full ${getCoverageBarColor(reg.coveragePct)} rounded-full transition-all duration-500`}
+                        style={{ width: `${reg.coveragePct}%` }}
                       />
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {reg.coveredRequirements} of {reg.totalRequirements}{" "}
+                      requirements covered
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           )}
-        </motion.div>
-      </div>
 
-      {/* Chain Integrity Footer */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
-      >
-        <div className="flex items-center gap-3">
-          <Link2 className="w-4 h-4 text-[var(--text-tertiary)]" />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-[var(--text-secondary)]">
-                Evidence Hash-Chain Integrity
-              </span>
-              {chainIntegrity.verified ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-primary-soft)] text-[var(--accent-success)]">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Verified
-                </span>
+          {/* Two-column: Recent Evidence + Gap Summary */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Recent Evidence */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-3">
+                Recent Evidence
+              </h2>
+              {recentEvidence.length === 0 ? (
+                <p className="text-sm text-slate-500 py-8 text-center">
+                  No evidence records yet
+                </p>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]">
-                  <XCircle className="w-3 h-3" />
-                  Integrity Issue
-                </span>
+                <div className="space-y-2.5">
+                  {recentEvidence.map((item) => {
+                    const badge = getStatusBadge(item.status);
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 py-2 border-b border-slate-200/50 dark:border-white/10 last:border-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 dark:text-white truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {getRegulationLabel(item.regulationType)} &middot;{" "}
+                            {formatDate(item.updatedAt)}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.className}`}
+                        >
+                          {badge.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-            </div>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-              {chainIntegrity.totalRecords} hashed record
-              {chainIntegrity.totalRecords !== 1 ? "s" : ""} &middot; Last
-              verified {formatDate(chainIntegrity.lastVerified)}
-            </p>
+            </motion.div>
+
+            {/* Gap Summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="p-4"
+              style={innerGlass}
+            >
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-3">
+                Gap Summary
+              </h2>
+              {gapsByCategory.length === 0 ? (
+                <p className="text-sm text-slate-500 py-8 text-center">
+                  No regulatory requirements configured
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {gapsByCategory.slice(0, 8).map((cat) => {
+                    const coveredPct =
+                      cat.total > 0
+                        ? Math.round(((cat.total - cat.gaps) / cat.total) * 100)
+                        : 0;
+                    return (
+                      <div key={cat.category}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm text-slate-500 capitalize">
+                            {cat.category.replace(/_/g, " ")}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {cat.gaps > 0 ? (
+                              <span className="text-red-500">
+                                {cat.gaps} gap{cat.gaps !== 1 ? "s" : ""}
+                              </span>
+                            ) : (
+                              <span className="text-emerald-600">Complete</span>
+                            )}
+                            {" / "}
+                            {cat.total} total
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-slate-200/60 dark:bg-white/10 rounded-full">
+                          <div
+                            className={`h-full ${getCoverageBarColor(coveredPct)} rounded-full transition-all duration-500`}
+                            style={{ width: `${coveredPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
           </div>
+
+          {/* Chain Integrity Footer */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="p-4"
+            style={innerGlass}
+          >
+            <div className="flex items-center gap-3">
+              <Link2 className="w-4 h-4 text-slate-400" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-500">
+                    Evidence Hash-Chain Integrity
+                  </span>
+                  {chainIntegrity.verified ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-500">
+                      <XCircle className="w-3 h-3" />
+                      Integrity Issue
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {chainIntegrity.totalRecords} hashed record
+                  {chainIntegrity.totalRecords !== 1 ? "s" : ""} &middot; Last
+                  verified {formatDate(chainIntegrity.lastVerified)}
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

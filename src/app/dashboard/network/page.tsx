@@ -12,7 +12,6 @@ import {
   Plus,
   Search,
   RefreshCw,
-  Loader2,
   AlertCircle,
   Building2,
   X,
@@ -79,35 +78,50 @@ const TABS: { id: StakeholderType; label: string }[] = [
   { id: "ncas", label: "NCAs" },
 ];
 
-// ─── Skeleton Components ───
+// ─── Glass Styles ───
 
-function StatSkeleton() {
-  return (
-    <GlassCard hover={false} className="p-5">
-      <div className="animate-pulse space-y-3">
-        <div className="h-3 bg-[var(--surface-sunken)] rounded w-24" />
-        <div className="h-8 bg-[var(--surface-sunken)] rounded w-16" />
-        <div className="h-2 bg-[var(--surface-sunken)] rounded w-32" />
-      </div>
-    </GlassCard>
-  );
-}
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
 
-function CardSkeleton() {
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
+// ─── Sidebar Stat ───
+
+function SidebarStat({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+}) {
   return (
-    <GlassCard hover={false} className="p-5">
-      <div className="animate-pulse space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[var(--surface-sunken)] rounded-lg" />
-          <div className="space-y-2 flex-1">
-            <div className="h-4 bg-[var(--surface-sunken)] rounded w-2/3" />
-            <div className="h-3 bg-[var(--surface-sunken)] rounded w-1/3" />
-          </div>
-        </div>
-        <div className="h-3 bg-[var(--surface-sunken)] rounded w-full" />
-        <div className="h-3 bg-[var(--surface-sunken)] rounded w-3/4" />
+    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/30 transition-colors">
+      <span className={color}>{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-slate-500 truncate">{label}</p>
       </div>
-    </GlassCard>
+      <span className={`text-sm font-semibold ${color}`}>{value}</span>
+    </div>
   );
 }
 
@@ -189,202 +203,175 @@ export default function NetworkHubPage() {
     );
   });
 
+  // ─── Loading State ───
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-500">
+            Loading Compliance Network...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Error State (full page) ───
+
+  if (error && !stats) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+        <div className="rounded-2xl p-6" style={innerGlass}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ─── Render ───
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary-soft)] to-[var(--accent-primary-soft)] flex items-center justify-center">
-            <Network className="w-5 h-5 text-[var(--accent-primary)]" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
-              Compliance Network
-            </h1>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Manage stakeholder engagements, data rooms, and attestations
-            </p>
-          </div>
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+      {/* ─── Left Panel — Sidebar ─── */}
+      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+        <div className="px-5 pt-5 pb-3">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+            Compliance Network
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Stakeholder engagements
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Tab Filter Buttons */}
+        <nav className="px-3 space-y-0.5">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-white/40 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Divider */}
+        <div className="mx-5 my-3 border-t border-black/[0.06] dark:border-white/10" />
+
+        {/* Stats Summary */}
+        <div className="px-4 space-y-2 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-medium px-1 mb-1.5">
+            Overview
+          </p>
+          <SidebarStat
+            icon={<Users size={14} />}
+            label="Active Engagements"
+            value={stats?.activeEngagements ?? 0}
+            color="text-indigo-600"
+          />
+          <SidebarStat
+            icon={<FolderLock size={14} />}
+            label="Data Rooms"
+            value={stats?.openDataRooms ?? 0}
+            color="text-blue-600"
+          />
+          <SidebarStat
+            icon={<ShieldCheck size={14} />}
+            label="Attestations"
+            value={stats?.totalAttestations ?? 0}
+            color="text-emerald-600"
+          />
+          <SidebarStat
+            icon={<Mail size={14} />}
+            label="Pending Invitations"
+            value={stats?.pendingInvitations ?? 0}
+            color="text-amber-500"
+          />
+        </div>
+
+        {/* Bottom Buttons */}
+        <div className="px-4 pb-4 pt-2 space-y-2">
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-[var(--border-default)] rounded-lg transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/40 hover:bg-white/60 border border-black/[0.06] text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors disabled:opacity-50"
           >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            Refresh
+            <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing..." : "Refresh"}
           </button>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-emerald-600 hover:bg-slate-700 dark:hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={15} />
             Invite Stakeholder
           </button>
         </div>
       </div>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
-          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {loading ? (
-          <>
-            <StatSkeleton />
-            <StatSkeleton />
-            <StatSkeleton />
-            <StatSkeleton />
-          </>
-        ) : (
-          <>
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-[var(--accent-primary)]" />
-                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Active Engagements
-                </span>
-              </div>
-              <div className="text-3xl font-bold text-[var(--text-primary)]">
-                {stats?.activeEngagements ?? 0}
-              </div>
-              <div className="text-caption text-[var(--text-tertiary)] mt-2">
-                Across all stakeholder types
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <FolderLock className="w-4 h-4 text-[var(--accent-primary)]" />
-                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Open Data Rooms
-                </span>
-              </div>
-              <div className="text-3xl font-bold text-[var(--text-primary)]">
-                {stats?.openDataRooms ?? 0}
-              </div>
-              <div className="text-caption text-[var(--text-tertiary)] mt-2">
-                Secure document sharing
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <ShieldCheck className="w-4 h-4 text-[var(--accent-success)]" />
-                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Total Attestations
-                </span>
-              </div>
-              <div className="text-3xl font-bold text-[var(--text-primary)]">
-                {stats?.totalAttestations ?? 0}
-              </div>
-              <div className="text-caption text-[var(--text-tertiary)] mt-2">
-                Compliance confirmations
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Mail className="w-4 h-4 text-[var(--accent-warning)]" />
-                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Pending Invitations
-                </span>
-              </div>
-              <div className="text-3xl font-bold text-[var(--text-primary)]">
-                {stats?.pendingInvitations ?? 0}
-              </div>
-              <div className="text-caption text-[var(--text-tertiary)] mt-2">
-                Awaiting response
-              </div>
-            </GlassCard>
-          </>
-        )}
-      </div>
-
-      {/* Search + Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="flex-1 relative w-full sm:w-auto">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
-            aria-hidden="true"
-          />
-          <label htmlFor="network-search" className="sr-only">
-            Search stakeholders
-          </label>
-          <input
-            id="network-search"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search stakeholders..."
-            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)] transition-colors"
-          />
-        </div>
-
-        <div
-          className="flex items-center gap-1 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
-          role="tablist"
-          aria-label="Stakeholder type filter"
-        >
-          {TABS.map((tab) => (
+      {/* ─── Right Panel — Main Content ─── */}
+      <div className="flex-1 flex flex-col min-w-0" style={glassPanel}>
+        {/* Error Banner */}
+        {error && (
+          <div className="mx-5 mt-4 flex items-center gap-3 p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-600 dark:text-red-400 flex-1">
+              {error}
+            </p>
             <button
-              key={tab.id}
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                px-3 py-1.5 rounded-lg text-caption font-medium transition-colors whitespace-nowrap
-                ${
-                  activeTab === tab.id
-                    ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
-                }
-              `}
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-600 transition-colors"
             >
-              {tab.label}
+              <X size={14} />
             </button>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* Main Content: 2-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Stakeholder Grid */}
-        <div className="lg:col-span-2 space-y-4">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <CardSkeleton />
-              <CardSkeleton />
-              <CardSkeleton />
-              <CardSkeleton />
-            </div>
-          ) : filteredEngagements.length === 0 ? (
-            <GlassCard hover={false} className="p-12">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
+            <label htmlFor="network-search" className="sr-only">
+              Search stakeholders
+            </label>
+            <input
+              id="network-search"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search stakeholders..."
+              className="w-full bg-white/40 border border-black/[0.06] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all"
+            />
+          </div>
+
+          {/* Stakeholder Grid */}
+          {filteredEngagements.length === 0 ? (
+            <div className="rounded-2xl p-12" style={innerGlass}>
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="w-8 h-8 text-[var(--text-tertiary)]" />
+                <div className="w-16 h-16 rounded-2xl bg-black/[0.04] flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-8 h-8 text-slate-400" />
                 </div>
-                <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
+                <h3 className="text-title font-medium text-slate-800 dark:text-white mb-2">
                   {searchQuery
                     ? "No matching stakeholders"
                     : "No stakeholders yet"}
                 </h3>
-                <p className="text-small text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
+                <p className="text-small text-slate-500 mb-6 max-w-sm mx-auto">
                   {searchQuery
                     ? "Try adjusting your search or filter criteria."
                     : "Invite your first stakeholder to start building your compliance network. Share data rooms, request attestations, and track engagement activity."}
@@ -392,14 +379,14 @@ export default function NetworkHubPage() {
                 {!searchQuery && (
                   <button
                     onClick={() => setShowInviteModal(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-slate-800 dark:bg-emerald-600 hover:bg-slate-700 dark:hover:bg-emerald-500 text-white rounded-xl transition-colors"
                   >
                     <Plus size={14} />
                     Invite Stakeholder
                   </button>
                 )}
               </div>
-            </GlassCard>
+            </div>
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
@@ -433,29 +420,15 @@ export default function NetworkHubPage() {
               </motion.div>
             </AnimatePresence>
           )}
-        </div>
 
-        {/* Right: Activity Feed */}
-        <div className="space-y-4">
-          <GlassCard hover={false} className="p-5">
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
-              <Network size={14} className="text-[var(--accent-primary)]" />
+          {/* Activity Feed Section */}
+          <div className="rounded-2xl p-5" style={innerGlass}>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+              <Network size={14} className="text-indigo-500" />
               Network Activity
             </h3>
-            {loading ? (
-              <div className="animate-pulse space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex gap-3">
-                    <div className="w-6 h-6 bg-[var(--surface-sunken)] rounded-full flex-shrink-0" />
-                    <div className="space-y-1.5 flex-1">
-                      <div className="h-3 bg-[var(--surface-sunken)] rounded w-3/4" />
-                      <div className="h-2 bg-[var(--surface-sunken)] rounded w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : activities.length === 0 ? (
-              <p className="text-sm text-[var(--text-secondary)] py-4 text-center">
+            {activities.length === 0 ? (
+              <p className="text-sm text-slate-500 py-4 text-center">
                 No recent activity.
               </p>
             ) : (
@@ -472,7 +445,7 @@ export default function NetworkHubPage() {
                 )}
               />
             )}
-          </GlassCard>
+          </div>
         </div>
       </div>
 

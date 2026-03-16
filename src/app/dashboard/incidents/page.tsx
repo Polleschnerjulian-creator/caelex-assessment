@@ -15,9 +15,9 @@ import {
   XCircle,
   Loader2,
   AlertCircle,
-  Search,
   Activity,
   Zap,
+  RefreshCw,
 } from "lucide-react";
 
 // ─── Types ───
@@ -95,32 +95,47 @@ interface IncidentSummary {
   urgentDeadlineMs: number | null;
 }
 
+// ─── Glass Styles ───
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
+
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
 // ─── Constants ───
 
 const SEVERITY_CONFIG: Record<
   string,
-  { color: string; bg: string; border: string }
+  { color: string; bg: string; dot: string }
 > = {
-  critical: {
-    color: "text-[var(--accent-danger)]",
-    bg: "bg-[var(--accent-danger)]/10",
-    border: "border-[var(--accent-danger)/30]",
-  },
+  critical: { color: "text-red-500", bg: "bg-red-500/10", dot: "bg-red-500" },
   high: {
-    color: "text-[var(--accent-warning)]",
-    bg: "bg-[var(--accent-warning-soft)]",
-    border: "border-amber-500/30",
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    dot: "bg-amber-500",
   },
   medium: {
-    color: "text-[var(--accent-primary)]",
-    bg: "bg-[var(--accent-primary-soft)]",
-    border: "border-[var(--accent-success)/30]",
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/10",
+    dot: "bg-indigo-500",
   },
-  low: {
-    color: "text-[var(--text-tertiary)]",
-    bg: "bg-[var(--surface-sunken)]0/10",
-    border: "border-[var(--border-default)]/20",
-  },
+  low: { color: "text-slate-400", bg: "bg-slate-400/10", dot: "bg-slate-400" },
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -135,15 +150,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const WORKFLOW_STATES: Record<string, { label: string; color: string }> = {
-  reported: { label: "Reported", color: "text-[var(--accent-warning)]" },
-  triaged: { label: "Triaged", color: "text-[var(--accent-primary)]" },
-  investigating: {
-    label: "Investigating",
-    color: "text-[var(--accent-warning)]",
-  },
+  reported: { label: "Reported", color: "text-amber-500" },
+  triaged: { label: "Triaged", color: "text-indigo-500" },
+  investigating: { label: "Investigating", color: "text-amber-500" },
   mitigating: { label: "Mitigating", color: "text-orange-400" },
-  resolved: { label: "Resolved", color: "text-[var(--accent-success)]" },
-  closed: { label: "Closed", color: "text-[var(--text-tertiary)]" },
+  resolved: { label: "Resolved", color: "text-emerald-600" },
+  closed: { label: "Closed", color: "text-slate-400" },
 };
 
 const STATE_ORDER = [
@@ -191,16 +203,26 @@ function getCountdownColor(
   percentRemaining: number,
   isOverdue: boolean,
 ): string {
-  if (isOverdue) return "text-[var(--accent-danger)] animate-pulse";
-  if (percentRemaining < 10) return "text-[var(--accent-danger)] animate-pulse";
-  if (percentRemaining < 25) return "text-[var(--accent-danger)]";
-  if (percentRemaining < 50) return "text-[var(--accent-warning)]";
-  return "text-[var(--accent-success)]";
+  if (isOverdue) return "text-red-500 animate-pulse";
+  if (percentRemaining < 10) return "text-red-500 animate-pulse";
+  if (percentRemaining < 25) return "text-red-500";
+  if (percentRemaining < 50) return "text-amber-500";
+  return "text-emerald-600";
 }
 
-// ─── Component ───
+// ─── Page wrapper ───
 
 export default function IncidentsPage() {
+  return (
+    <FeatureGate module="incidents">
+      <IncidentsContent />
+    </FeatureGate>
+  );
+}
+
+// ─── Main Content ───
+
+function IncidentsContent() {
   const { t } = useLanguage();
   const [incidents, setIncidents] = useState<IncidentSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,7 +252,6 @@ export default function IncidentsPage() {
       );
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
-      // The existing API returns incidents array; we transform to our summary format
       const summaries: IncidentSummary[] = (data.incidents || []).map(
         (inc: Record<string, unknown>) => ({
           id: inc.id,
@@ -374,12 +395,10 @@ export default function IncidentsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // Open draft in a new window using safe DOM methods (no document.write)
         const w = window.open("", "_blank", "width=800,height=600");
         if (w) {
           const doc = w.document;
           doc.open();
-          // Build the document safely using DOM APIs
           const html = doc.createElement("html");
           const head = doc.createElement("head");
           const title = doc.createElement("title");
@@ -413,7 +432,6 @@ export default function IncidentsPage() {
           doc.appendChild(html);
           doc.close();
         }
-        // Refresh phases
         if (expandedId === incidentId) {
           await fetchExpanded(incidentId);
         }
@@ -453,6 +471,13 @@ export default function IncidentsPage() {
   const criticalCount = incidents.filter(
     (i) => i.severity === "critical",
   ).length;
+  const phasesDueCount = incidents.reduce(
+    (s, i) =>
+      s +
+      (i.nis2PhasesSummary?.total || 0) -
+      (i.nis2PhasesSummary?.submitted || 0),
+    0,
+  );
   const overdueCount = incidents.reduce(
     (sum, i) => sum + (i.nis2PhasesSummary?.overdue || 0),
     0,
@@ -464,571 +489,611 @@ export default function IncidentsPage() {
       i.urgentDeadlineMs > 0,
   );
 
+  // ─── Loading State ───
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={28} className="animate-spin text-indigo-500" />
+          <p className="text-sm text-slate-500">Loading incidents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Render ───
+
   return (
-    <FeatureGate module="incidents">
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <p className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-1">
-            {t("incidents.mono")}
-          </p>
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-            {t("incidents.title")}
-          </h1>
-          <p className="text-body-lg text-[var(--text-secondary)] mt-1">
-            {t("incidents.description")}
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+      {/* ─── Left Panel — Sidebar ─── */}
+      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+        {/* Title */}
+        <div className="px-5 pt-5 pb-3">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+            Incident Management
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            NIS2 incident response
           </p>
         </div>
 
-        {/* Urgent deadline alert */}
-        <AnimatePresence>
-          {hasUrgentDeadline && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-xl p-4 flex items-center gap-3"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent-danger-soft)] flex items-center justify-center animate-pulse">
-                <AlertTriangle
-                  size={16}
-                  className="text-[var(--accent-danger)]"
-                />
-              </div>
-              <div>
-                <p className="text-body font-medium text-[var(--accent-danger)]">
-                  Critical Deadline Alert
-                </p>
-                <p className="text-small text-[var(--accent-danger)]/70">
-                  One or more NIS2 reporting deadlines are less than 2 hours
-                  away. Immediate action required.
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="px-4 pb-3 grid grid-cols-2 gap-2">
           {[
             {
-              label: "Active Incidents",
+              label: "Active",
               value: activeCount,
               icon: Activity,
-              color: "text-[var(--accent-primary)]",
+              color: "text-indigo-500",
             },
             {
-              label: "Critical Severity",
+              label: "Critical",
               value: criticalCount,
               icon: AlertTriangle,
-              color: "text-[var(--accent-danger)]",
+              color: "text-red-500",
             },
             {
-              label: "NIS2 Phases Due",
-              value: incidents.reduce(
-                (s, i) =>
-                  s +
-                  (i.nis2PhasesSummary?.total || 0) -
-                  (i.nis2PhasesSummary?.submitted || 0),
-                0,
-              ),
+              label: "Phases Due",
+              value: phasesDueCount,
               icon: Clock,
-              color: "text-[var(--accent-warning)]",
+              color: "text-amber-500",
             },
             {
-              label: "Overdue Phases",
+              label: "Overdue",
               value: overdueCount,
               icon: XCircle,
-              color: "text-[var(--accent-danger)]",
+              color: "text-red-500",
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
+              style={innerGlass}
+              className="p-3 flex flex-col gap-1"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <stat.icon size={14} className={stat.color} />
-                <span className="text-caption text-[var(--text-secondary)] uppercase tracking-wider">
+              <div className="flex items-center gap-1.5">
+                <stat.icon size={12} className={stat.color} />
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
                   {stat.label}
                 </span>
               </div>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">
+              <p className="text-xl font-semibold text-slate-800 dark:text-white">
                 {stat.value}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-1">
-            <span className="text-caption text-[var(--text-secondary)] mr-1">
-              Severity:
-            </span>
-            {SEVERITY_FILTERS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSeverityFilter(s)}
-                className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
-                  severityFilter === s
-                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-transparent"
-                }`}
-              >
-                {s === "ALL" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1 ml-4">
-            <span className="text-caption text-[var(--text-secondary)] mr-1">
-              Category:
-            </span>
-            {CATEGORY_FILTERS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCategoryFilter(c)}
-                className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
-                  categoryFilter === c
-                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border border-[var(--accent-success)/30]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-transparent"
-                }`}
-              >
-                {c === "ALL" ? "All" : CATEGORY_LABELS[c] || c}
-              </button>
-            ))}
+        {/* Divider */}
+        <div className="mx-4 border-t border-white/30 my-1" />
+
+        {/* Severity Filters */}
+        <div className="px-4 pt-3 pb-1">
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium mb-2">
+            Severity
+          </p>
+          <div className="space-y-0.5">
+            {SEVERITY_FILTERS.map((s) => {
+              const isActive = severityFilter === s;
+              const sev = s !== "ALL" ? SEVERITY_CONFIG[s] : null;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSeverityFilter(s)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white/30"
+                  }`}
+                >
+                  {sev ? (
+                    <span className={`w-2 h-2 rounded-full ${sev.dot}`} />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500" />
+                  )}
+                  {s === "ALL"
+                    ? "All Severities"
+                    : s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <Loader2
-              size={24}
-              className="animate-spin text-[var(--text-tertiary)]"
-            />
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && incidents.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center mb-4">
-              <Shield
-                size={28}
-                className="text-[var(--text-tertiary)]"
-                strokeWidth={1.5}
-              />
-            </div>
-            <h3 className="text-subtitle font-medium text-[var(--text-secondary)] mb-1">
-              No active incidents
-            </h3>
-            <p className="text-body text-[var(--text-secondary)]">
-              All clear. No incidents require attention.
-            </p>
-          </div>
-        )}
-
-        {/* Incident list */}
-        {!loading && incidents.length > 0 && (
-          <div className="space-y-3">
-            {incidents.map((incident) => {
-              const sev =
-                SEVERITY_CONFIG[incident.severity] || SEVERITY_CONFIG.medium;
-              const wf =
-                WORKFLOW_STATES[incident.workflowState] ||
-                WORKFLOW_STATES.reported;
-              const isExpanded = expandedId === incident.id;
-              const nowMs = Date.now();
-              const urgentMs = incident.urgentDeadlineMs;
-
+        {/* Category Filters */}
+        <div className="px-4 pt-3 pb-3 flex-1 overflow-y-auto">
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium mb-2">
+            Category
+          </p>
+          <div className="space-y-0.5">
+            {CATEGORY_FILTERS.map((c) => {
+              const isActive = categoryFilter === c;
               return (
-                <div
-                  key={incident.id}
-                  className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl overflow-hidden"
+                <button
+                  key={c}
+                  onClick={() => setCategoryFilter(c)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-left ${
+                    isActive
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white/30"
+                  }`}
                 >
-                  {/* Row */}
-                  <button
-                    onClick={() => fetchExpanded(incident.id)}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
-                  >
-                    {/* Severity badge */}
-                    <div
-                      className={`w-2 h-8 rounded-full ${sev.bg} ${sev.border} border`}
-                    />
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-600"}`}
+                  />
+                  {c === "ALL" ? "All Categories" : CATEGORY_LABELS[c] || c}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-                    {/* Number */}
-                    <span className="text-small font-mono text-[var(--text-secondary)] w-28 shrink-0">
-                      {incident.incidentNumber}
-                    </span>
+        {/* Refresh */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => fetchIncidents()}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/30 transition-all"
+            style={innerGlass}
+          >
+            <RefreshCw size={13} />
+            Refresh
+          </button>
+        </div>
+      </div>
 
-                    {/* Title */}
-                    <span className="text-body text-[var(--text-primary)] font-medium flex-1 truncate">
-                      {incident.title}
-                    </span>
+      {/* ─── Right Panel — Main Content ─── */}
+      <div className="flex-1 flex flex-col min-w-0" style={glassPanel}>
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Urgent deadline alert */}
+          <AnimatePresence>
+            {hasUrgentDeadline && (
+              <motion.div
+                initial={false}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{
+                  ...innerGlass,
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+                className="p-4 flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center animate-pulse">
+                  <AlertTriangle size={16} className="text-red-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-500">
+                    Critical Deadline Alert
+                  </p>
+                  <p className="text-xs text-red-500/70">
+                    One or more NIS2 reporting deadlines are less than 2 hours
+                    away. Immediate action required.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-                    {/* Category tag */}
-                    <span className="text-micro px-2 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-secondary)] shrink-0">
-                      {CATEGORY_LABELS[incident.category] || incident.category}
-                    </span>
+          {/* Empty state */}
+          {incidents.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div
+                className="w-16 h-16 rounded-xl flex items-center justify-center mb-4"
+                style={innerGlass}
+              >
+                <Shield
+                  size={28}
+                  className="text-slate-400"
+                  strokeWidth={1.5}
+                />
+              </div>
+              <h3 className="text-sm font-medium text-slate-500 mb-1">
+                No active incidents
+              </h3>
+              <p className="text-xs text-slate-400">
+                All clear. No incidents require attention.
+              </p>
+            </div>
+          )}
 
-                    {/* Workflow state */}
-                    <span
-                      className={`text-caption font-medium shrink-0 ${wf.color}`}
+          {/* Incident list */}
+          {incidents.length > 0 && (
+            <div className="space-y-3">
+              {incidents.map((incident) => {
+                const sev =
+                  SEVERITY_CONFIG[incident.severity] || SEVERITY_CONFIG.medium;
+                const wf =
+                  WORKFLOW_STATES[incident.workflowState] ||
+                  WORKFLOW_STATES.reported;
+                const isExpanded = expandedId === incident.id;
+                const nowMs = Date.now();
+                const urgentMs = incident.urgentDeadlineMs;
+
+                return (
+                  <div key={incident.id} style={innerGlass}>
+                    {/* Row */}
+                    <button
+                      onClick={() => fetchExpanded(incident.id)}
+                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/20 transition-colors rounded-[14px]"
                     >
-                      {wf.label}
-                    </span>
+                      {/* Severity badge */}
+                      <div className={`w-2 h-8 rounded-full ${sev.dot}`} />
 
-                    {/* NIS2 phase dots */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      {[0, 1, 2, 3].map((i) => {
-                        const submitted =
-                          i < (incident.nis2PhasesSummary?.submitted || 0);
-                        const overdue =
-                          !submitted &&
-                          i <
-                            (incident.nis2PhasesSummary?.submitted || 0) +
-                              (incident.nis2PhasesSummary?.overdue || 0);
-                        return (
-                          <div
-                            key={i}
-                            className={`w-2 h-2 rounded-full ${
-                              submitted
-                                ? "bg-green-400"
-                                : overdue
-                                  ? "bg-red-400 animate-pulse"
-                                  : i < (incident.nis2PhasesSummary?.total || 0)
-                                    ? "bg-[var(--surface-sunken)]"
-                                    : "bg-[var(--surface-sunken)]"
-                            }`}
-                          />
-                        );
-                      })}
-                    </div>
+                      {/* Number */}
+                      <span className="text-xs font-mono text-slate-500 w-28 shrink-0">
+                        {incident.incidentNumber}
+                      </span>
 
-                    {/* Countdown */}
-                    {urgentMs !== null && urgentMs > 0 && (
+                      {/* Title */}
+                      <span className="text-sm text-slate-800 dark:text-white font-medium flex-1 truncate">
+                        {incident.title}
+                      </span>
+
+                      {/* Category tag */}
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/30 text-slate-500 shrink-0">
+                        {CATEGORY_LABELS[incident.category] ||
+                          incident.category}
+                      </span>
+
+                      {/* Workflow state */}
                       <span
-                        className={`text-caption shrink-0 ${getCountdownColor(
-                          urgentMs > 0
-                            ? (urgentMs / (72 * 60 * 60 * 1000)) * 100
-                            : 0,
-                          urgentMs <= 0,
-                        )}`}
+                        className={`text-[11px] font-medium shrink-0 ${wf.color}`}
                       >
-                        {formatCountdown(urgentMs)}
+                        {wf.label}
                       </span>
-                    )}
-                    {urgentMs !== null && urgentMs <= 0 && (
-                      <span className="text-caption text-[var(--accent-danger)] animate-pulse shrink-0">
-                        OVERDUE
-                      </span>
-                    )}
 
-                    {/* Expand */}
-                    {isExpanded ? (
-                      <ChevronDown
-                        size={14}
-                        className="text-[var(--text-tertiary)] shrink-0"
-                      />
-                    ) : (
-                      <ChevronRight
-                        size={14}
-                        className="text-[var(--text-tertiary)] shrink-0"
-                      />
-                    )}
-                  </button>
+                      {/* NIS2 phase dots */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {[0, 1, 2, 3].map((i) => {
+                          const submitted =
+                            i < (incident.nis2PhasesSummary?.submitted || 0);
+                          const overdue =
+                            !submitted &&
+                            i <
+                              (incident.nis2PhasesSummary?.submitted || 0) +
+                                (incident.nis2PhasesSummary?.overdue || 0);
+                          return (
+                            <div
+                              key={i}
+                              className={`w-2 h-2 rounded-full ${
+                                submitted
+                                  ? "bg-emerald-400"
+                                  : overdue
+                                    ? "bg-red-400 animate-pulse"
+                                    : "bg-slate-300 dark:bg-slate-500"
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
 
-                  {/* Expanded panel */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-[var(--border-default)] p-4 space-y-5">
-                          {expandLoading ? (
-                            <div className="flex items-center justify-center py-8">
-                              <Loader2
-                                size={20}
-                                className="animate-spin text-[var(--text-tertiary)]"
-                              />
-                            </div>
-                          ) : expandedData ? (
-                            <>
-                              {/* Workflow track */}
-                              <div>
-                                <h4 className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-3">
-                                  Workflow Progress
-                                </h4>
-                                <div className="flex items-center gap-0">
-                                  {STATE_ORDER.map((state, idx) => {
-                                    const isActive =
-                                      state ===
-                                      expandedData.workflow.currentState;
-                                    const isPast =
-                                      STATE_ORDER.indexOf(
-                                        expandedData.workflow.currentState,
-                                      ) > idx;
-                                    const wfState = WORKFLOW_STATES[state];
+                      {/* Countdown */}
+                      {urgentMs !== null && urgentMs > 0 && (
+                        <span
+                          className={`text-[11px] shrink-0 ${getCountdownColor(
+                            urgentMs > 0
+                              ? (urgentMs / (72 * 60 * 60 * 1000)) * 100
+                              : 0,
+                            urgentMs <= 0,
+                          )}`}
+                        >
+                          {formatCountdown(urgentMs)}
+                        </span>
+                      )}
+                      {urgentMs !== null && urgentMs <= 0 && (
+                        <span className="text-[11px] text-red-500 animate-pulse shrink-0">
+                          OVERDUE
+                        </span>
+                      )}
 
-                                    return (
-                                      <div
-                                        key={state}
-                                        className="flex items-center"
-                                      >
-                                        <div className="flex flex-col items-center">
-                                          <div
-                                            className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium ${
-                                              isActive
-                                                ? "bg-[var(--accent-primary)] text-white ring-2 ring-[var(--border-focus)]/30"
-                                                : isPast
-                                                  ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border border-[var(--accent-success)/30]"
-                                                  : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)] border border-[var(--border-default)]"
-                                            }`}
-                                          >
-                                            {isPast ? (
-                                              <CheckCircle2 size={12} />
-                                            ) : (
-                                              idx + 1
-                                            )}
-                                          </div>
-                                          <span
-                                            className={`text-[9px] mt-1 ${
-                                              isActive
-                                                ? "text-[var(--accent-primary)] font-medium"
-                                                : "text-[var(--text-tertiary)]"
-                                            }`}
-                                          >
-                                            {wfState?.label || state}
-                                          </span>
-                                        </div>
-                                        {idx < STATE_ORDER.length - 1 && (
-                                          <div
-                                            className={`w-8 h-[2px] mx-1 mt-[-14px] ${
-                                              isPast
-                                                ? "bg-[var(--accent-success)]/40"
-                                                : "bg-[var(--surface-sunken)]"
-                                            }`}
-                                          />
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
+                      {/* Expand */}
+                      {isExpanded ? (
+                        <ChevronDown
+                          size={14}
+                          className="text-slate-400 shrink-0"
+                        />
+                      ) : (
+                        <ChevronRight
+                          size={14}
+                          className="text-slate-400 shrink-0"
+                        />
+                      )}
+                    </button>
 
-                                {/* Available actions */}
-                                {expandedData.workflow.availableTransitions
-                                  .length > 0 && (
-                                  <div className="flex gap-2 mt-3">
-                                    {expandedData.workflow.availableTransitions.map(
-                                      (t) => (
-                                        <button
-                                          key={t.event}
-                                          onClick={() =>
-                                            handleAdvanceWorkflow(
-                                              incident.id,
-                                              t.event,
-                                            )
-                                          }
-                                          disabled={
-                                            actionLoading ===
-                                            `workflow-${incident.id}-${t.event}`
-                                          }
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)/20] rounded-lg hover:bg-[var(--accent-success-soft)] transition-colors disabled:opacity-50"
-                                        >
-                                          {actionLoading ===
-                                          `workflow-${incident.id}-${t.event}` ? (
-                                            <Loader2
-                                              size={12}
-                                              className="animate-spin"
-                                            />
-                                          ) : (
-                                            <Zap size={12} />
-                                          )}
-                                          {t.description || t.event}
-                                        </button>
-                                      ),
-                                    )}
-                                  </div>
-                                )}
+                    {/* Expanded panel */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-white/30 p-4 space-y-5">
+                            {expandLoading ? (
+                              <div className="flex items-center justify-center py-8">
+                                <Loader2
+                                  size={20}
+                                  className="animate-spin text-slate-400"
+                                />
                               </div>
-
-                              {/* NIS2 Phase tracker */}
-                              {expandedData.nis2Phases.length > 0 && (
+                            ) : expandedData ? (
+                              <>
+                                {/* Workflow track */}
                                 <div>
-                                  <h4 className="text-caption tracking-widest text-[var(--text-secondary)] uppercase mb-3">
-                                    NIS2 Reporting Phases
+                                  <h4 className="text-[10px] tracking-widest text-slate-500 uppercase mb-3">
+                                    Workflow Progress
                                   </h4>
-                                  <div className="space-y-2">
-                                    {expandedData.nis2Phases.map((phase) => {
-                                      const deadlineMs = new Date(
-                                        phase.deadline,
-                                      ).getTime();
-                                      const remainMs = Math.max(
-                                        0,
-                                        deadlineMs - nowMs,
-                                      );
-                                      const isOverdue =
-                                        phase.countdown.isOverdue ||
-                                        (!phase.countdown.isSubmitted &&
-                                          nowMs > deadlineMs);
-                                      const isSubmitted =
-                                        phase.countdown.isSubmitted;
-                                      const pctRemaining =
-                                        phase.countdown.totalMs > 0
-                                          ? Math.round(
-                                              (remainMs /
-                                                phase.countdown.totalMs) *
-                                                100,
-                                            )
-                                          : 0;
+                                  <div className="flex items-center gap-0">
+                                    {STATE_ORDER.map((state, idx) => {
+                                      const isActive =
+                                        state ===
+                                        expandedData.workflow.currentState;
+                                      const isPast =
+                                        STATE_ORDER.indexOf(
+                                          expandedData.workflow.currentState,
+                                        ) > idx;
+                                      const wfState = WORKFLOW_STATES[state];
 
                                       return (
                                         <div
-                                          key={phase.phase}
-                                          className={`flex items-center gap-3 p-3 rounded-lg border ${
-                                            isSubmitted
-                                              ? "bg-[var(--accent-success)]/5 border-[var(--accent-success)]/20"
-                                              : isOverdue
-                                                ? "bg-[var(--accent-danger)]/5 border-[var(--accent-danger)]/20"
-                                                : "bg-[var(--surface-raised)][0.02] border-[var(--border-default)]"
-                                          }`}
+                                          key={state}
+                                          className="flex items-center"
                                         >
-                                          {/* Status icon */}
-                                          {isSubmitted ? (
-                                            <CheckCircle2
-                                              size={16}
-                                              className="text-[var(--accent-success)] shrink-0"
-                                            />
-                                          ) : isOverdue ? (
-                                            <AlertCircle
-                                              size={16}
-                                              className="text-[var(--accent-danger)] animate-pulse shrink-0"
-                                            />
-                                          ) : (
-                                            <Clock
-                                              size={16}
-                                              className="text-[var(--text-tertiary)] shrink-0"
-                                            />
-                                          )}
-
-                                          {/* Phase info */}
-                                          <div className="flex-1 min-w-0">
-                                            <p className="text-small font-medium text-[var(--text-primary)]">
-                                              {phase.phaseName}
-                                            </p>
-                                            <p className="text-micro text-[var(--text-secondary)]">
-                                              Due:{" "}
-                                              {new Date(
-                                                phase.deadline,
-                                              ).toLocaleString()}
-                                            </p>
-                                          </div>
-
-                                          {/* Countdown / status */}
-                                          {isSubmitted ? (
-                                            <span className="text-caption text-[var(--accent-success)] font-medium shrink-0">
-                                              Submitted
-                                            </span>
-                                          ) : (
-                                            <span
-                                              className={`text-caption shrink-0 ${getCountdownColor(
-                                                pctRemaining,
-                                                isOverdue,
-                                              )}`}
+                                          <div className="flex flex-col items-center">
+                                            <div
+                                              className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-medium ${
+                                                isActive
+                                                  ? "bg-indigo-500 text-white ring-2 ring-indigo-300/30"
+                                                  : isPast
+                                                    ? "bg-emerald-100 text-emerald-600 border border-emerald-300/30"
+                                                    : "bg-slate-100 dark:bg-slate-700 text-slate-400 border border-slate-200 dark:border-slate-600"
+                                              }`}
                                             >
-                                              {formatCountdown(remainMs)}
-                                            </span>
-                                          )}
-
-                                          {/* Actions */}
-                                          {!isSubmitted && (
-                                            <div className="flex gap-1.5 shrink-0">
-                                              <button
-                                                onClick={() =>
-                                                  handleGenerateDraft(
-                                                    incident.id,
-                                                    phase.phase,
-                                                  )
-                                                }
-                                                disabled={
-                                                  actionLoading ===
-                                                  `draft-${incident.id}-${phase.phase}`
-                                                }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-[var(--text-secondary)] bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded hover:bg-[var(--surface-sunken)] transition-colors disabled:opacity-50"
-                                              >
-                                                {actionLoading ===
-                                                `draft-${incident.id}-${phase.phase}` ? (
-                                                  <Loader2
-                                                    size={10}
-                                                    className="animate-spin"
-                                                  />
-                                                ) : (
-                                                  <FileText size={10} />
-                                                )}
-                                                Draft
-                                              </button>
-                                              <button
-                                                onClick={() =>
-                                                  handleSubmitPhase(
-                                                    incident.id,
-                                                    phase.phase,
-                                                  )
-                                                }
-                                                disabled={
-                                                  actionLoading ===
-                                                  `submit-${incident.id}-${phase.phase}`
-                                                }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-[var(--accent-success)] bg-[var(--accent-success)]/10 border border-[var(--accent-success)]/20 rounded hover:bg-[var(--accent-success-soft)] transition-colors disabled:opacity-50"
-                                              >
-                                                {actionLoading ===
-                                                `submit-${incident.id}-${phase.phase}` ? (
-                                                  <Loader2
-                                                    size={10}
-                                                    className="animate-spin"
-                                                  />
-                                                ) : (
-                                                  <CheckCircle2 size={10} />
-                                                )}
-                                                Submit
-                                              </button>
+                                              {isPast ? (
+                                                <CheckCircle2 size={12} />
+                                              ) : (
+                                                idx + 1
+                                              )}
                                             </div>
+                                            <span
+                                              className={`text-[9px] mt-1 ${
+                                                isActive
+                                                  ? "text-indigo-500 font-medium"
+                                                  : "text-slate-400"
+                                              }`}
+                                            >
+                                              {wfState?.label || state}
+                                            </span>
+                                          </div>
+                                          {idx < STATE_ORDER.length - 1 && (
+                                            <div
+                                              className={`w-8 h-[2px] mx-1 mt-[-14px] ${
+                                                isPast
+                                                  ? "bg-emerald-400/40"
+                                                  : "bg-slate-200 dark:bg-slate-600"
+                                              }`}
+                                            />
                                           )}
                                         </div>
                                       );
                                     })}
                                   </div>
-                                </div>
-                              )}
 
-                              {/* Details summary */}
-                              <div className="text-small text-[var(--text-secondary)]">
-                                Detected:{" "}
-                                {new Date(incident.detectedAt).toLocaleString()}{" "}
-                                | Category:{" "}
-                                {CATEGORY_LABELS[incident.category] ||
-                                  incident.category}{" "}
-                                | Severity: {incident.severity}
-                              </div>
-                            </>
-                          ) : (
-                            <p className="text-body text-[var(--text-secondary)] text-center py-4">
-                              Failed to load incident details.
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                                  {/* Available actions */}
+                                  {expandedData.workflow.availableTransitions
+                                    .length > 0 && (
+                                    <div className="flex gap-2 mt-3">
+                                      {expandedData.workflow.availableTransitions.map(
+                                        (tr) => (
+                                          <button
+                                            key={tr.event}
+                                            onClick={() =>
+                                              handleAdvanceWorkflow(
+                                                incident.id,
+                                                tr.event,
+                                              )
+                                            }
+                                            disabled={
+                                              actionLoading ===
+                                              `workflow-${incident.id}-${tr.event}`
+                                            }
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-lg hover:bg-indigo-500/20 transition-colors disabled:opacity-50"
+                                          >
+                                            {actionLoading ===
+                                            `workflow-${incident.id}-${tr.event}` ? (
+                                              <Loader2
+                                                size={12}
+                                                className="animate-spin"
+                                              />
+                                            ) : (
+                                              <Zap size={12} />
+                                            )}
+                                            {tr.description || tr.event}
+                                          </button>
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* NIS2 Phase tracker */}
+                                {expandedData.nis2Phases.length > 0 && (
+                                  <div>
+                                    <h4 className="text-[10px] tracking-widest text-slate-500 uppercase mb-3">
+                                      NIS2 Reporting Phases
+                                    </h4>
+                                    <div className="space-y-2">
+                                      {expandedData.nis2Phases.map((phase) => {
+                                        const deadlineMs = new Date(
+                                          phase.deadline,
+                                        ).getTime();
+                                        const remainMs = Math.max(
+                                          0,
+                                          deadlineMs - nowMs,
+                                        );
+                                        const isOverdue =
+                                          phase.countdown.isOverdue ||
+                                          (!phase.countdown.isSubmitted &&
+                                            nowMs > deadlineMs);
+                                        const isSubmitted =
+                                          phase.countdown.isSubmitted;
+                                        const pctRemaining =
+                                          phase.countdown.totalMs > 0
+                                            ? Math.round(
+                                                (remainMs /
+                                                  phase.countdown.totalMs) *
+                                                  100,
+                                              )
+                                            : 0;
+
+                                        return (
+                                          <div
+                                            key={phase.phase}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border ${
+                                              isSubmitted
+                                                ? "bg-emerald-500/5 border-emerald-500/20"
+                                                : isOverdue
+                                                  ? "bg-red-500/5 border-red-500/20"
+                                                  : "bg-white/20 border-white/30"
+                                            }`}
+                                          >
+                                            {/* Status icon */}
+                                            {isSubmitted ? (
+                                              <CheckCircle2
+                                                size={16}
+                                                className="text-emerald-600 shrink-0"
+                                              />
+                                            ) : isOverdue ? (
+                                              <AlertCircle
+                                                size={16}
+                                                className="text-red-500 animate-pulse shrink-0"
+                                              />
+                                            ) : (
+                                              <Clock
+                                                size={16}
+                                                className="text-slate-400 shrink-0"
+                                              />
+                                            )}
+
+                                            {/* Phase info */}
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-xs font-medium text-slate-800 dark:text-white">
+                                                {phase.phaseName}
+                                              </p>
+                                              <p className="text-[10px] text-slate-500">
+                                                Due:{" "}
+                                                {new Date(
+                                                  phase.deadline,
+                                                ).toLocaleString()}
+                                              </p>
+                                            </div>
+
+                                            {/* Countdown / status */}
+                                            {isSubmitted ? (
+                                              <span className="text-[11px] text-emerald-600 font-medium shrink-0">
+                                                Submitted
+                                              </span>
+                                            ) : (
+                                              <span
+                                                className={`text-[11px] shrink-0 ${getCountdownColor(
+                                                  pctRemaining,
+                                                  isOverdue,
+                                                )}`}
+                                              >
+                                                {formatCountdown(remainMs)}
+                                              </span>
+                                            )}
+
+                                            {/* Actions */}
+                                            {!isSubmitted && (
+                                              <div className="flex gap-1.5 shrink-0">
+                                                <button
+                                                  onClick={() =>
+                                                    handleGenerateDraft(
+                                                      incident.id,
+                                                      phase.phase,
+                                                    )
+                                                  }
+                                                  disabled={
+                                                    actionLoading ===
+                                                    `draft-${incident.id}-${phase.phase}`
+                                                  }
+                                                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-slate-500 bg-white/30 border border-white/40 rounded hover:bg-white/50 transition-colors disabled:opacity-50"
+                                                >
+                                                  {actionLoading ===
+                                                  `draft-${incident.id}-${phase.phase}` ? (
+                                                    <Loader2
+                                                      size={10}
+                                                      className="animate-spin"
+                                                    />
+                                                  ) : (
+                                                    <FileText size={10} />
+                                                  )}
+                                                  Draft
+                                                </button>
+                                                <button
+                                                  onClick={() =>
+                                                    handleSubmitPhase(
+                                                      incident.id,
+                                                      phase.phase,
+                                                    )
+                                                  }
+                                                  disabled={
+                                                    actionLoading ===
+                                                    `submit-${incident.id}-${phase.phase}`
+                                                  }
+                                                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                                >
+                                                  {actionLoading ===
+                                                  `submit-${incident.id}-${phase.phase}` ? (
+                                                    <Loader2
+                                                      size={10}
+                                                      className="animate-spin"
+                                                    />
+                                                  ) : (
+                                                    <CheckCircle2 size={10} />
+                                                  )}
+                                                  Submit
+                                                </button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Details summary */}
+                                <div className="text-xs text-slate-500">
+                                  Detected:{" "}
+                                  {new Date(
+                                    incident.detectedAt,
+                                  ).toLocaleString()}{" "}
+                                  | Category:{" "}
+                                  {CATEGORY_LABELS[incident.category] ||
+                                    incident.category}{" "}
+                                  | Severity: {incident.severity}
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-sm text-slate-500 text-center py-4">
+                                Failed to load incident details.
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </FeatureGate>
+    </div>
   );
 }

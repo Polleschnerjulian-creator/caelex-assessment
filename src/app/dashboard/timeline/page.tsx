@@ -23,20 +23,49 @@ import {
   LayoutList,
   CalendarDays,
   GanttChartSquare,
-  Filter,
   Download,
   X,
   Diamond,
 } from "lucide-react";
-import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
-import EmptyState from "@/components/dashboard/EmptyState";
 import {
   deadlineColors,
   categoryMetadata,
   getDaysUntilDue,
   getDeadlineUrgency,
 } from "@/data/timeline-deadlines";
+
+// ─── Glass Styles ───
+
+const glassPanel: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 20,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  overflow: "hidden",
+};
+
+const innerGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.5)",
+  borderRadius: 14,
+  boxShadow:
+    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
+// ─── Input style ───
+
+const inputClass =
+  "w-full bg-white/40 border border-black/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all";
+
+const selectClass =
+  "w-full bg-white/40 border border-black/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all appearance-none";
+
+// ─── Types ───
 
 type Step = "overview" | "calendar" | "mission-timeline" | "reminders";
 
@@ -74,14 +103,14 @@ interface CalendarEvent {
 }
 
 const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
-  { id: "overview", label: "Overview", icon: <LayoutList size={18} /> },
-  { id: "calendar", label: "Calendar", icon: <CalendarDays size={18} /> },
+  { id: "overview", label: "Overview", icon: <LayoutList size={16} /> },
+  { id: "calendar", label: "Calendar", icon: <CalendarDays size={16} /> },
   {
     id: "mission-timeline",
     label: "Mission Timeline",
-    icon: <GanttChartSquare size={18} />,
+    icon: <GanttChartSquare size={16} />,
   },
-  { id: "reminders", label: "Reminders", icon: <Bell size={18} /> },
+  { id: "reminders", label: "Reminders", icon: <Bell size={16} /> },
 ];
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -99,7 +128,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 
 interface MissionMilestone {
   label: string;
-  date: string; // ISO date string
+  date: string;
 }
 
 interface MissionPhase {
@@ -176,6 +205,30 @@ const DEFAULT_MISSION_PHASES: MissionPhase[] = [
   },
 ];
 
+// ─── Sidebar Stat Row ───
+
+function StatRow({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  color: string;
+}) {
+  return (
+    <div className="flex items-center justify-between px-1 py-1.5">
+      <div className="flex items-center gap-2 text-slate-500">
+        {icon}
+        <span className="text-xs">{label}</span>
+      </div>
+      <span className={`text-sm font-semibold ${color}`}>{value}</span>
+    </div>
+  );
+}
+
 // ─── Gantt Component ───
 
 function MissionTimelineGantt() {
@@ -183,7 +236,6 @@ function MissionTimelineGantt() {
   const [hoveredPhase, setHoveredPhase] = useState<string | null>(null);
   const [hoveredMilestone, setHoveredMilestone] = useState<string | null>(null);
 
-  // Calculate global time range from all phases
   const timeRange = useMemo(() => {
     const starts = phases.map((p) => new Date(p.startDate).getTime());
     const ends = phases.map((p) => new Date(p.endDate).getTime());
@@ -192,7 +244,6 @@ function MissionTimelineGantt() {
     return { min: minTime, max: maxTime, span: maxTime - minTime };
   }, [phases]);
 
-  // Generate year labels for the time axis
   const yearLabels = useMemo(() => {
     const startYear = new Date(timeRange.min).getFullYear();
     const endYear = new Date(timeRange.max).getFullYear();
@@ -205,7 +256,6 @@ function MissionTimelineGantt() {
     return labels;
   }, [timeRange]);
 
-  // Helper: calculate bar position and width as percentages
   const getBarStyle = (startDate: string, endDate: string) => {
     const start = new Date(startDate).getTime();
     const end = new Date(endDate).getTime();
@@ -214,46 +264,44 @@ function MissionTimelineGantt() {
     return { left: `${left}%`, width: `${Math.max(width, 0.5)}%` };
   };
 
-  // Helper: calculate milestone position
   const getMilestoneOffset = (date: string) => {
     const ts = new Date(date).getTime();
     return ((ts - timeRange.min) / timeRange.span) * 100;
   };
 
-  // Color mapping for phases
   const phaseColors: Record<
     string,
     { bar: string; bg: string; text: string; border: string }
   > = {
     blue: {
-      bar: "bg-[var(--accent-success-soft)]0",
-      bg: "bg-[var(--accent-primary-soft)]",
-      text: "text-[var(--accent-primary)]",
-      border: "border-[var(--accent-success)/30]",
+      bar: "bg-blue-500",
+      bg: "bg-blue-50",
+      text: "text-blue-600",
+      border: "border-blue-200",
     },
     amber: {
-      bar: "bg-[var(--accent-warning)]",
-      bg: "bg-[var(--accent-warning-soft)]",
-      text: "text-[var(--accent-warning)]",
-      border: "border-amber-500/30",
+      bar: "bg-amber-500",
+      bg: "bg-amber-50",
+      text: "text-amber-600",
+      border: "border-amber-200",
     },
     purple: {
       bar: "bg-purple-500",
-      bg: "bg-purple-500/10",
-      text: "text-purple-400",
-      border: "border-purple-500/30",
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      border: "border-purple-200",
     },
     emerald: {
-      bar: "bg-[var(--accent-success-soft)]0",
-      bg: "bg-[var(--accent-primary-soft)]",
-      text: "text-[var(--accent-primary)]",
-      border: "border-[var(--accent-success)/30]",
+      bar: "bg-emerald-500",
+      bg: "bg-emerald-50",
+      text: "text-emerald-600",
+      border: "border-emerald-200",
     },
     slate: {
-      bar: "bg-[var(--surface-sunken)]0",
-      bg: "bg-[var(--surface-sunken)]0/10",
-      text: "text-[var(--text-tertiary)]",
-      border: "border-[var(--border-default)]/30",
+      bar: "bg-slate-400",
+      bg: "bg-slate-50",
+      text: "text-slate-500",
+      border: "border-slate-200",
     },
   };
 
@@ -262,22 +310,21 @@ function MissionTimelineGantt() {
       case "completed":
         return {
           text: "Completed",
-          cls: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+          cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400",
         };
       case "active":
         return {
           text: "Active",
-          cls: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+          cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
         };
       case "future":
         return {
           text: "Upcoming",
-          cls: "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)]",
+          cls: "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400",
         };
     }
   };
 
-  // "Today" marker position
   const todayOffset = useMemo(() => {
     const now = Date.now();
     if (now < timeRange.min || now > timeRange.max) return null;
@@ -285,70 +332,71 @@ function MissionTimelineGantt() {
   }, [timeRange]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <GanttChartSquare size={20} />
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-base font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <GanttChartSquare size={18} className="text-slate-400" />
           Mission Timeline
-        </CardTitle>
+        </h3>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
-            <Download size={14} className="mr-1" />
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/50 transition-colors border border-black/[0.04] dark:border-white/5">
+            <Download size={13} />
             Export
-          </Button>
-          <Button size="sm">
-            <Plus size={14} className="mr-1" />
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 dark:bg-emerald-600 text-white hover:bg-slate-700 dark:hover:bg-emerald-500 transition-colors">
+            <Plus size={13} />
             Add Phase
-          </Button>
+          </button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-[var(--text-secondary)]">
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-[var(--accent-success-soft)]0" />
-            Active
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-[var(--accent-success-soft)]0" />
-            Completed
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-[var(--surface-sunken)]0" />
-            Upcoming
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Diamond size={10} className="text-[var(--text-secondary)]" />
-            Milestone
-          </div>
-          {todayOffset !== null && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-0.5 h-3 bg-[var(--accent-danger)] rounded-full" />
-              Today
-            </div>
-          )}
-        </div>
+      </div>
 
-        {/* Desktop Gantt view */}
-        <div className="hidden md:block">
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-4 mb-5 text-xs text-slate-500">
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm bg-blue-500" />
+          Active
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+          Completed
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm bg-slate-300" />
+          Upcoming
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Diamond size={10} className="text-slate-500" />
+          Milestone
+        </div>
+        {todayOffset !== null && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-0.5 h-3 bg-red-500 rounded-full" />
+            Today
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Gantt view */}
+      <div className="hidden md:block" style={innerGlass}>
+        <div className="p-4">
           {/* Time axis */}
-          <div className="relative h-8 mb-2 ml-48 border-b border-[var(--border-default)]">
+          <div className="relative h-8 mb-2 ml-48 border-b border-black/[0.06] dark:border-white/5">
             {yearLabels.map(({ year, offset }) => (
               <div
                 key={year}
                 className="absolute top-0 flex flex-col items-center"
                 style={{ left: `${offset}%` }}
               >
-                <div className="h-3 w-px bg-[var(--surface-sunken)]" />
-                <span className="text-micro text-[var(--text-secondary)] mt-0.5 -translate-x-1/2">
+                <div className="h-3 w-px bg-slate-300 dark:bg-white/10" />
+                <span className="text-[10px] text-slate-400 mt-0.5 -translate-x-1/2">
                   {year}
                 </span>
               </div>
             ))}
-            {/* Today marker on axis */}
             {todayOffset !== null && (
               <div
-                className="absolute top-0 bottom-0 w-px bg-[var(--accent-danger)] z-10"
+                className="absolute top-0 bottom-0 w-px bg-red-500 z-10"
                 style={{ left: `${todayOffset}%` }}
               />
             )}
@@ -371,17 +419,21 @@ function MissionTimelineGantt() {
                   {/* Phase label */}
                   <div className="w-48 flex-shrink-0 pr-4">
                     <p
-                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-[var(--text-secondary)]"}`}
+                      className={`text-sm font-medium truncate ${
+                        hoveredPhase === phase.id
+                          ? "text-slate-800 dark:text-white"
+                          : "text-slate-500"
+                      }`}
                     >
                       {phase.name}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span
-                        className={`px-1.5 py-0.5 text-micro rounded-full ${sl.cls}`}
+                        className={`px-1.5 py-0.5 text-[10px] rounded-full ${sl.cls}`}
                       >
                         {sl.text}
                       </span>
-                      <span className="text-micro text-[var(--text-tertiary)]">
+                      <span className="text-[10px] text-slate-400">
                         {new Date(phase.startDate).getFullYear()}&ndash;
                         {new Date(phase.endDate).getFullYear()}
                       </span>
@@ -389,12 +441,12 @@ function MissionTimelineGantt() {
                   </div>
 
                   {/* Gantt bar area */}
-                  <div className="flex-1 relative h-10 bg-[var(--surface-sunken)][0.02] rounded-lg border border-[var(--border-subtle)]">
+                  <div className="flex-1 relative h-10 bg-white/30 dark:bg-white/5 rounded-lg border border-black/[0.04] dark:border-white/5">
                     {/* Year grid lines */}
                     {yearLabels.map(({ year, offset }) => (
                       <div
                         key={year}
-                        className="absolute top-0 bottom-0 w-px bg-[var(--surface-sunken)]"
+                        className="absolute top-0 bottom-0 w-px bg-slate-200/50 dark:bg-white/5"
                         style={{ left: `${offset}%` }}
                       />
                     ))}
@@ -402,7 +454,7 @@ function MissionTimelineGantt() {
                     {/* Today marker */}
                     {todayOffset !== null && (
                       <div
-                        className="absolute top-0 bottom-0 w-px bg-[var(--accent-danger)/60] z-10"
+                        className="absolute top-0 bottom-0 w-px bg-red-500/60 z-10"
                         style={{ left: `${todayOffset}%` }}
                       />
                     )}
@@ -433,17 +485,17 @@ function MissionTimelineGantt() {
                             size={12}
                             className={`-translate-x-1/2 ${
                               hoveredMilestone === msKey
-                                ? "text-white fill-white"
-                                : "text-[var(--text-primary)] fill-white/90"
+                                ? "text-slate-800 fill-slate-800 dark:text-white dark:fill-white"
+                                : "text-slate-600 fill-white/90 dark:text-white dark:fill-white/90"
                             } drop-shadow-md transition-all`}
                           />
                           {/* Milestone tooltip */}
                           {hoveredMilestone === msKey && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[var(--text-primary)] border border-[var(--border-default)] rounded-lg shadow-xl text-xs whitespace-nowrap z-30 pointer-events-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-800 dark:bg-slate-900 border border-black/[0.04] dark:border-white/10 rounded-lg shadow-xl text-xs whitespace-nowrap z-30 pointer-events-none">
                               <p className="font-medium text-white">
                                 {ms.label}
                               </p>
-                              <p className="text-[var(--text-tertiary)] text-micro mt-0.5">
+                              <p className="text-slate-400 text-[10px] mt-0.5">
                                 {new Date(ms.date).toLocaleDateString("en-US", {
                                   month: "short",
                                   year: "numeric",
@@ -460,106 +512,107 @@ function MissionTimelineGantt() {
             })}
           </div>
         </div>
+      </div>
 
-        {/* Mobile stacked view */}
-        <div className="md:hidden space-y-3">
-          {phases.map((phase) => {
-            const colors = phaseColors[phase.color] || phaseColors.slate;
-            const sl = statusLabel(phase.status);
+      {/* Mobile stacked view */}
+      <div className="md:hidden space-y-3">
+        {phases.map((phase) => {
+          const colors = phaseColors[phase.color] || phaseColors.slate;
+          const sl = statusLabel(phase.status);
 
-            return (
-              <div
-                key={phase.id}
-                className={`rounded-lg border p-3 ${colors.border} ${colors.bg}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-[var(--text-primary)]">
-                    {phase.name}
-                  </p>
-                  <span
-                    className={`px-2 py-0.5 text-micro rounded-full ${sl.cls}`}
-                  >
-                    {sl.text}
-                  </span>
-                </div>
-
-                {/* Date range */}
-                <p className="text-xs text-[var(--text-secondary)] mb-2">
-                  {new Date(phase.startDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}{" "}
-                  &ndash;{" "}
-                  {new Date(phase.endDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}
+          return (
+            <div
+              key={phase.id}
+              className={`rounded-xl border p-3 ${colors.border} ${colors.bg}`}
+              style={innerGlass}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-slate-800 dark:text-white">
+                  {phase.name}
                 </p>
-
-                {/* Mini progress bar */}
-                <div className="relative h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden mb-2">
-                  {(() => {
-                    const now = Date.now();
-                    const start = new Date(phase.startDate).getTime();
-                    const end = new Date(phase.endDate).getTime();
-                    const progress = Math.max(
-                      0,
-                      Math.min(100, ((now - start) / (end - start)) * 100),
-                    );
-                    return (
-                      <div
-                        className={`absolute inset-y-0 left-0 rounded-full ${colors.bar}`}
-                        style={{
-                          width: `${phase.status === "future" ? 0 : progress}%`,
-                        }}
-                      />
-                    );
-                  })()}
-                </div>
-
-                {/* Milestones list */}
-                {phase.milestones && phase.milestones.length > 0 && (
-                  <div className="space-y-1">
-                    {phase.milestones.map((ms) => (
-                      <div
-                        key={ms.date}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        <Diamond size={8} className={colors.text} />
-                        <span className="text-[var(--text-secondary)]">
-                          {ms.label}
-                        </span>
-                        <span className="ml-auto text-[var(--text-tertiary)]">
-                          {new Date(ms.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <span
+                  className={`px-2 py-0.5 text-[10px] rounded-full ${sl.cls}`}
+                >
+                  {sl.text}
+                </span>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Summary footer */}
-        <div className="mt-6 pt-4 border-t border-[var(--border-default)] flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)]">
-          <span>
-            {phases.length} phases &middot;{" "}
-            {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
-            milestones
-          </span>
-          <span>
-            {new Date(timeRange.min).getFullYear()} &ndash;{" "}
-            {new Date(timeRange.max).getFullYear()}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+              {/* Date range */}
+              <p className="text-xs text-slate-500 mb-2">
+                {new Date(phase.startDate).toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })}{" "}
+                &ndash;{" "}
+                {new Date(phase.endDate).toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+
+              {/* Mini progress bar */}
+              <div className="relative h-2 bg-slate-200/50 dark:bg-white/10 rounded-full overflow-hidden mb-2">
+                {(() => {
+                  const now = Date.now();
+                  const start = new Date(phase.startDate).getTime();
+                  const end = new Date(phase.endDate).getTime();
+                  const progress = Math.max(
+                    0,
+                    Math.min(100, ((now - start) / (end - start)) * 100),
+                  );
+                  return (
+                    <div
+                      className={`absolute inset-y-0 left-0 rounded-full ${colors.bar}`}
+                      style={{
+                        width: `${phase.status === "future" ? 0 : progress}%`,
+                      }}
+                    />
+                  );
+                })()}
+              </div>
+
+              {/* Milestones list */}
+              {phase.milestones && phase.milestones.length > 0 && (
+                <div className="space-y-1">
+                  {phase.milestones.map((ms) => (
+                    <div
+                      key={ms.date}
+                      className="flex items-center gap-2 text-xs"
+                    >
+                      <Diamond size={8} className={colors.text} />
+                      <span className="text-slate-500">{ms.label}</span>
+                      <span className="ml-auto text-slate-400">
+                        {new Date(ms.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Summary footer */}
+      <div className="mt-5 pt-4 border-t border-black/[0.04] dark:border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-500">
+        <span>
+          {phases.length} phases &middot;{" "}
+          {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
+          milestones
+        </span>
+        <span>
+          {new Date(timeRange.min).getFullYear()} &ndash;{" "}
+          {new Date(timeRange.max).getFullYear()}
+        </span>
+      </div>
+    </div>
   );
 }
+
+// ─── Main Page Content ───
 
 function TimelinePageContent() {
   const [activeStep, setActiveStep] = useState<Step>("overview");
@@ -570,7 +623,12 @@ function TimelinePageContent() {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showDeadlineForm, setShowDeadlineForm] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<
+    string | null
+  >(null);
+  const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<
+    string | null
+  >(null);
 
   // Form state
   const [deadlineForm, setDeadlineForm] = useState({
@@ -677,14 +735,14 @@ function TimelinePageContent() {
 
     if (urgency === "overdue") {
       return (
-        <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
+        <span className="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400">
           {Math.abs(days)} days overdue
         </span>
       );
     }
     if (urgency === "due_soon") {
       return (
-        <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/20 text-orange-400">
+        <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
           {days === 0
             ? "Due today"
             : days === 1
@@ -694,7 +752,7 @@ function TimelinePageContent() {
       );
     }
     return (
-      <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-success-soft)] text-[var(--accent-primary)]">
+      <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
         {days} days left
       </span>
     );
@@ -729,17 +787,15 @@ function TimelinePageContent() {
     const firstDay = getFirstDayOfMonth(currentMonth);
     const days = [];
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(
         <div
           key={`empty-${i}`}
-          className="h-24 bg-[var(--surface-sunken)][0.01]"
+          className="h-24 bg-white/20 dark:bg-white/[0.02]"
         />,
       );
     }
 
-    // Add cells for each day
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const dayEvents = calendarEvents.filter((e) =>
@@ -751,14 +807,14 @@ function TimelinePageContent() {
       days.push(
         <div
           key={day}
-          className={`h-24 p-2 border-r border-b border-[var(--border-default)] ${
+          className={`h-24 p-2 border-r border-b border-black/[0.04] dark:border-white/5 ${
             isToday
-              ? "bg-[var(--accent-primary-soft)]"
-              : "bg-[var(--surface-sunken)][0.01]"
+              ? "bg-blue-50/80 dark:bg-blue-500/10"
+              : "bg-white/20 dark:bg-white/[0.02]"
           }`}
         >
           <div
-            className={`text-sm font-medium mb-1 ${isToday ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}
+            className={`text-sm font-medium mb-1 ${isToday ? "text-blue-600 dark:text-blue-400" : "text-slate-500"}`}
           >
             {day}
           </div>
@@ -769,11 +825,11 @@ function TimelinePageContent() {
                 className={`text-xs px-1.5 py-0.5 rounded truncate ${
                   event.type === "deadline"
                     ? event.status === "OVERDUE"
-                      ? "bg-[var(--accent-danger-soft)] text-red-300"
+                      ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400"
                       : event.priority === "CRITICAL"
-                        ? "bg-orange-500/20 text-orange-300"
-                        : "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
-                    : "bg-purple-500/20 text-purple-300"
+                        ? "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
+                        : "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
+                    : "bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400"
                 }`}
                 title={event.title}
               >
@@ -781,7 +837,7 @@ function TimelinePageContent() {
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="text-xs text-[var(--text-tertiary)]">
+              <div className="text-xs text-slate-400">
                 +{dayEvents.length - 3} more
               </div>
             )}
@@ -793,199 +849,231 @@ function TimelinePageContent() {
     return days;
   };
 
+  // ─── Loading State ───
+
   if (loading) {
     return (
-      <div className="space-y-6" role="status" aria-live="polite">
-        <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
-        <span className="sr-only">Loading timeline data...</span>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-500">Loading timeline...</p>
+        </div>
       </div>
     );
   }
 
+  // ─── Render ───
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2">
-            TIMELINE
-          </p>
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-            Timeline & Deadlines
-          </h1>
-          <p className="text-[var(--text-secondary)] mt-1">
-            Manage compliance deadlines and mission milestones
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+      {/* ─── Left Panel — Navigation + Stats + Filters ─── */}
+      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+        <div className="px-5 pt-5 pb-3">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+            Timeline
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Mission deadlines & milestones
           </p>
         </div>
-        <Button onClick={() => setShowDeadlineForm(true)}>
-          <Plus size={16} className="mr-1" />
-          Add Deadline
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card
-            className={`bg-[var(--surface-raised)][0.02] ${stats.overdue > 0 ? "border-[var(--accent-danger)/30]" : ""}`}
-          >
-            <CardContent className="p-4">
+        {/* View Navigation */}
+        <nav className="px-3 space-y-0.5">
+          {steps.map((step) => (
+            <button
+              key={step.id}
+              onClick={() => setActiveStep(step.id)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                activeStep === step.id
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-white/40 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              {step.icon}
+              {step.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Divider */}
+        <div className="mx-5 my-3 border-t border-black/[0.06] dark:border-white/10" />
+
+        {/* Stats Summary */}
+        {stats && (
+          <div className="px-4 space-y-2">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-medium px-1 mb-1.5">
+              Quick Stats
+            </p>
+            <StatRow
+              icon={<AlertTriangle size={14} />}
+              label="Overdue"
+              value={stats.overdue}
+              color={stats.overdue > 0 ? "text-red-500" : "text-slate-400"}
+            />
+            <StatRow
+              icon={<Clock size={14} />}
+              label="Due Soon"
+              value={stats.dueTodayTomorrow}
+              color={
+                stats.dueTodayTomorrow > 0 ? "text-amber-500" : "text-slate-400"
+              }
+            />
+            <StatRow
+              icon={<Calendar size={14} />}
+              label="This Week"
+              value={stats.dueThisWeek}
+              color="text-slate-700 dark:text-slate-200"
+            />
+            <StatRow
+              icon={<CalendarDays size={14} />}
+              label="This Month"
+              value={stats.dueThisMonth}
+              color="text-slate-700 dark:text-slate-200"
+            />
+
+            {/* Completion Ring */}
+            <div className="mt-3 rounded-xl p-3" style={innerGlass}>
               <div className="flex items-center gap-3">
-                <div
-                  className={`p-2 rounded-lg ${stats.overdue > 0 ? "bg-[var(--accent-danger-soft)]" : "bg-[var(--surface-sunken)]"}`}
-                >
-                  <AlertTriangle
-                    size={18}
-                    className={
-                      stats.overdue > 0
-                        ? "text-[var(--accent-danger)]"
-                        : "text-[var(--text-tertiary)]"
-                    }
-                  />
+                <div className="relative w-11 h-11">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 44 44">
+                    <circle
+                      cx="22"
+                      cy="22"
+                      r="18"
+                      fill="none"
+                      stroke="rgba(0,0,0,0.06)"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="22"
+                      cy="22"
+                      r="18"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(stats.completionRate / 100) * 113} 113`}
+                    />
+                  </svg>
                 </div>
                 <div>
-                  <p
-                    className={`text-2xl font-semibold ${stats.overdue > 0 ? "text-[var(--accent-danger)]" : "text-white"}`}
-                  >
-                    {stats.overdue}
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    Completion Rate
                   </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Overdue
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[var(--surface-raised)][0.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/10">
-                  <Clock size={18} className="text-orange-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
-                    {stats.dueThisWeek}
-                  </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    This Week
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[var(--surface-raised)][0.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
-                  <Calendar
-                    size={18}
-                    className="text-[var(--accent-warning)]"
-                  />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
-                    {stats.dueThisMonth}
-                  </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    This Month
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[var(--surface-raised)][0.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
-                  <CheckCircle2
-                    size={18}
-                    className="text-[var(--accent-primary)]"
-                  />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
+                  <p className="text-lg font-semibold text-slate-800 dark:text-white">
                     {stats.completionRate}%
                   </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Completed
-                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </div>
+        )}
 
-      {/* Step Navigation */}
-      <div
-        className="flex items-center gap-2 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
-        role="tablist"
-        aria-label="Timeline views"
-      >
-        {steps.map((step) => (
-          <button
-            key={step.id}
-            role="tab"
-            aria-selected={activeStep === step.id}
-            aria-controls={`tabpanel-${step.id}`}
-            onClick={() => setActiveStep(step.id)}
-            className={`
-              flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg
-              text-sm font-medium transition-all
-              ${
-                activeStep === step.id
-                  ? "bg-[var(--surface-sunken)] text-white"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
+        {/* Divider */}
+        <div className="mx-5 my-3 border-t border-black/[0.06] dark:border-white/10" />
+
+        {/* Filters */}
+        <div className="px-4 space-y-3 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-medium px-1">
+            Filters
+          </p>
+
+          {/* Category filter */}
+          <div>
+            <label className="block text-xs text-slate-500 mb-1 px-1">
+              Category
+            </label>
+            <select
+              value={selectedCategoryFilter || ""}
+              onChange={(e) =>
+                setSelectedCategoryFilter(e.target.value || null)
               }
-            `}
+              className={selectClass}
+            >
+              <option value="">All Categories</option>
+              {categoryMetadata.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Priority filter */}
+          <div>
+            <label className="block text-xs text-slate-500 mb-1 px-1">
+              Priority
+            </label>
+            <select
+              value={selectedPriorityFilter || ""}
+              onChange={(e) =>
+                setSelectedPriorityFilter(e.target.value || null)
+              }
+              className={selectClass}
+            >
+              <option value="">All Priorities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Add Deadline Button */}
+        <div className="px-4 pb-4 pt-2">
+          <button
+            onClick={() => setShowDeadlineForm(true)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-emerald-600 hover:bg-slate-700 dark:hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
           >
-            <span aria-hidden="true">{step.icon}</span>
-            <span className="hidden md:inline">{step.label}</span>
+            <Plus size={15} />
+            Add Deadline
           </button>
-        ))}
+        </div>
       </div>
 
-      {/* Step Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeStep}
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* Overview */}
-          {activeStep === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Overdue Deadlines */}
-              {overdueDeadlines.length > 0 && (
-                <div className="lg:col-span-3">
-                  <Card className="border-[var(--accent-danger)]/20 bg-[var(--accent-danger)]/5">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-[var(--accent-danger)]">
-                        <AlertTriangle size={20} />
-                        Overdue Deadlines
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
+      {/* ─── Right Panel — Main Content ─── */}
+      <div className="flex-1 min-w-0 flex flex-col" style={glassPanel}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeStep}
+            initial={false}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1 overflow-y-auto p-5"
+          >
+            {/* ─── Overview ─── */}
+            {activeStep === "overview" && (
+              <div className="space-y-5">
+                {/* Overdue Deadlines */}
+                {overdueDeadlines.length > 0 && (
+                  <div
+                    className="rounded-2xl p-4 border border-red-200 dark:border-red-500/20"
+                    style={{
+                      ...innerGlass,
+                      background: "rgba(254, 226, 226, 0.5)",
+                    }}
+                  >
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-red-600 dark:text-red-400 mb-3">
+                      <AlertTriangle size={16} />
+                      Overdue Deadlines
+                    </h3>
+                    <div className="space-y-2">
                       {overdueDeadlines.map((deadline) => (
                         <div
                           key={deadline.id}
-                          className="flex items-center justify-between bg-[var(--accent-danger)]/10 rounded-lg p-3"
+                          className="flex items-center justify-between bg-red-50/60 dark:bg-red-500/10 rounded-xl p-3"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="text-[var(--accent-danger)]">
+                            <div className="text-red-500">
                               {categoryIcons[deadline.category]}
                             </div>
                             <div>
-                              <p className="font-medium text-[var(--text-primary)]">
+                              <p className="font-medium text-slate-800 dark:text-white text-sm">
                                 {deadline.title}
                               </p>
-                              <p className="text-xs text-[var(--text-secondary)]">
+                              <p className="text-xs text-slate-500">
                                 Due:{" "}
                                 {new Date(
                                   deadline.dueDate,
@@ -997,58 +1085,65 @@ function TimelinePageContent() {
                           </div>
                           <div className="flex items-center gap-2">
                             {getStatusBadge(deadline)}
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                            <button
                               onClick={() => completeDeadline(deadline.id)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-white/50 dark:text-slate-300 dark:hover:bg-white/10 transition-colors"
                             >
                               Mark Done
-                            </Button>
+                            </button>
                           </div>
                         </div>
                       ))}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                    </div>
+                  </div>
+                )}
 
-              {/* Upcoming Deadlines */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock size={20} />
+                {/* Upcoming Deadlines */}
+                <div className="rounded-2xl p-4" style={innerGlass}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-white">
+                      <Clock size={16} className="text-slate-400" />
                       Upcoming Deadlines
-                    </CardTitle>
-                    <button
-                      onClick={() =>
-                        setSelectedFilter(selectedFilter ? null : "filter")
-                      }
-                      aria-label="Filter deadlines"
-                      className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
-                    >
-                      <Filter
-                        size={16}
-                        className="text-[var(--text-secondary)]"
-                        aria-hidden="true"
+                    </h3>
+                  </div>
+
+                  {deadlines.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Calendar
+                        size={32}
+                        className="mx-auto text-slate-300 mb-3"
                       />
-                    </button>
-                  </CardHeader>
-                  <CardContent>
-                    {deadlines.length === 0 ? (
-                      <EmptyState
-                        icon={<Calendar size={28} />}
-                        title="No deadlines set"
-                        description="Create your first deadline to start tracking your compliance timeline."
-                        actionLabel="Add Deadline"
-                        onAction={() => setShowDeadlineForm(true)}
-                      />
-                    ) : (
-                      <div className="space-y-3">
-                        {deadlines.map((deadline) => (
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        No deadlines set
+                      </p>
+                      <p className="text-xs text-slate-400 mb-4">
+                        Create your first deadline to start tracking your
+                        compliance timeline.
+                      </p>
+                      <button
+                        onClick={() => setShowDeadlineForm(true)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 dark:bg-emerald-600 text-white text-sm font-medium hover:bg-slate-700 dark:hover:bg-emerald-500 transition-colors"
+                      >
+                        <Plus size={14} />
+                        Add Deadline
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {deadlines
+                        .filter((d) => {
+                          const matchesCat =
+                            !selectedCategoryFilter ||
+                            d.category === selectedCategoryFilter;
+                          const matchesPri =
+                            !selectedPriorityFilter ||
+                            d.priority === selectedPriorityFilter;
+                          return matchesCat && matchesPri;
+                        })
+                        .map((deadline) => (
                           <div
                             key={deadline.id}
-                            className="flex items-center justify-between bg-[var(--surface-raised)][0.02] rounded-lg p-3 hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white/30 dark:bg-white/5 rounded-xl p-3 hover:bg-white/50 dark:hover:bg-white/10 transition-colors cursor-pointer border border-black/[0.04] dark:border-white/5"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -1060,17 +1155,17 @@ function TimelinePageContent() {
                                 {categoryIcons[deadline.category]}
                               </div>
                               <div>
-                                <p className="font-medium text-[var(--text-primary)]">
+                                <p className="font-medium text-slate-800 dark:text-white text-sm">
                                   {deadline.title}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-[var(--text-secondary)]">
+                                  <span className="text-xs text-slate-500">
                                     {new Date(
                                       deadline.dueDate,
                                     ).toLocaleDateString()}
                                   </span>
                                   {deadline.regulatoryRef && (
-                                    <span className="text-xs text-[var(--text-tertiary)]">
+                                    <span className="text-xs text-slate-400">
                                       | {deadline.regulatoryRef}
                                     </span>
                                   )}
@@ -1083,19 +1178,16 @@ function TimelinePageContent() {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Categories Summary */}
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>By Category</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+                {/* Categories Summary */}
+                <div className="rounded-2xl p-4" style={innerGlass}>
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-3">
+                    By Category
+                  </h3>
+                  <div className="space-y-1.5">
                     {categoryMetadata.map((cat) => {
                       const count = deadlines.filter(
                         (d) => d.category === cat.id,
@@ -1103,7 +1195,7 @@ function TimelinePageContent() {
                       return (
                         <div
                           key={cat.id}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
+                          className="flex items-center justify-between p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
                             <div
@@ -1112,84 +1204,87 @@ function TimelinePageContent() {
                             >
                               {categoryIcons[cat.id]}
                             </div>
-                            <span className="text-sm text-[var(--text-secondary)]">
+                            <span className="text-sm text-slate-500">
                               {cat.label}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-[var(--text-primary)]">
+                          <span className="text-sm font-medium text-slate-800 dark:text-white">
                             {count}
                           </span>
                         </div>
                       );
                     })}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-
-          {/* Calendar View */}
-          {activeStep === "calendar" && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar size={20} />
-                  {currentMonth.toLocaleString("default", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      setCurrentMonth(
-                        new Date(
-                          currentMonth.setMonth(currentMonth.getMonth() - 1),
-                        ),
-                      )
-                    }
-                    aria-label="Previous month"
-                    className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
-                  >
-                    <ChevronLeft
-                      size={16}
-                      className="text-[var(--text-secondary)]"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <button
-                    onClick={() => setCurrentMonth(new Date())}
-                    className="px-3 py-1 text-xs bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCurrentMonth(
-                        new Date(
-                          currentMonth.setMonth(currentMonth.getMonth() + 1),
-                        ),
-                      )
-                    }
-                    aria-label="Next month"
-                    className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
-                  >
-                    <ChevronRight
-                      size={16}
-                      className="text-[var(--text-secondary)]"
-                      aria-hidden="true"
-                    />
-                  </button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+            )}
+
+            {/* ─── Calendar View ─── */}
+            {activeStep === "calendar" && (
+              <div className="rounded-2xl p-4" style={innerGlass}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-white">
+                    <Calendar size={18} className="text-slate-400" />
+                    {currentMonth.toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        setCurrentMonth(
+                          new Date(
+                            currentMonth.getFullYear(),
+                            currentMonth.getMonth() - 1,
+                            1,
+                          ),
+                        )
+                      }
+                      aria-label="Previous month"
+                      className="p-2 hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <ChevronLeft
+                        size={16}
+                        className="text-slate-500"
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <button
+                      onClick={() => setCurrentMonth(new Date())}
+                      className="px-3 py-1 text-xs bg-white/50 dark:bg-white/10 hover:bg-white/70 dark:hover:bg-white/20 rounded-lg transition-colors text-slate-600 dark:text-slate-300 font-medium"
+                    >
+                      Today
+                    </button>
+                    <button
+                      onClick={() =>
+                        setCurrentMonth(
+                          new Date(
+                            currentMonth.getFullYear(),
+                            currentMonth.getMonth() + 1,
+                            1,
+                          ),
+                        )
+                      }
+                      aria-label="Next month"
+                      className="p-2 hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <ChevronRight
+                        size={16}
+                        className="text-slate-500"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                </div>
+
                 {/* Calendar Header */}
-                <div className="grid grid-cols-7 border-b border-[var(--border-default)] mb-1">
+                <div className="grid grid-cols-7 border-b border-black/[0.04] dark:border-white/5 mb-1">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
                         key={day}
-                        className="py-2 text-center text-xs font-medium text-[var(--text-secondary)]"
+                        className="py-2 text-center text-xs font-medium text-slate-500"
                       >
                         {day}
                       </div>
@@ -1197,37 +1292,30 @@ function TimelinePageContent() {
                   )}
                 </div>
                 {/* Calendar Grid */}
-                <div className="grid grid-cols-7 border-l border-t border-[var(--border-default)]">
+                <div className="grid grid-cols-7 border-l border-t border-black/[0.04] dark:border-white/5">
                   {renderCalendar()}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
 
-          {/* Mission Timeline (Gantt) */}
-          {activeStep === "mission-timeline" && <MissionTimelineGantt />}
+            {/* ─── Mission Timeline (Gantt) ─── */}
+            {activeStep === "mission-timeline" && <MissionTimelineGantt />}
 
-          {/* Reminders */}
-          {activeStep === "reminders" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell size={20} />
-                  Notification Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)]">
-                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
+            {/* ─── Reminders ─── */}
+            {activeStep === "reminders" && (
+              <div className="space-y-5">
+                {/* Reminder Schedule */}
+                <div className="rounded-2xl p-4" style={innerGlass}>
+                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">
                     Reminder Schedule
-                  </h4>
+                  </h3>
                   <div className="space-y-3">
                     {[30, 14, 7, 3, 1].map((days) => (
                       <div
                         key={days}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-[var(--text-secondary)]">
+                        <span className="text-sm text-slate-500">
                           {days === 1 ? "1 day before" : `${days} days before`}
                         </span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1236,107 +1324,92 @@ function TimelinePageContent() {
                             className="sr-only peer"
                             defaultChecked
                           />
-                          <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
+                          <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                         </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)]">
-                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
+                {/* Notification Channels */}
+                <div className="rounded-2xl p-4" style={innerGlass}>
+                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">
                     Notification Channels
-                  </h4>
+                  </h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--text-secondary)]">
-                        Email notifications
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          defaultChecked
-                        />
-                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--text-secondary)]">
-                        In-app notifications
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          defaultChecked
-                        />
-                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--text-secondary)]">
-                        Daily digest
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--text-secondary)]">
-                        Weekly summary
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          defaultChecked
-                        />
-                        <div className="w-11 h-6 bg-[var(--surface-sunken)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--surface-raised)] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-success-soft)]0"></div>
-                      </label>
-                    </div>
+                    {[
+                      { label: "Email notifications", defaultOn: true },
+                      { label: "In-app notifications", defaultOn: true },
+                      { label: "Daily digest", defaultOn: false },
+                      { label: "Weekly summary", defaultOn: true },
+                    ].map((channel) => (
+                      <div
+                        key={channel.label}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm text-slate-500">
+                          {channel.label}
+                        </span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            defaultChecked={channel.defaultOn}
+                          />
+                          <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
+                {/* Save button */}
                 <div className="flex justify-end">
-                  <Button>Save Settings</Button>
+                  <button className="px-5 py-2.5 rounded-xl bg-slate-800 dark:bg-emerald-600 hover:bg-slate-700 dark:hover:bg-emerald-500 text-white text-sm font-medium transition-colors">
+                    Save Settings
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </motion.div>
-      </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      {/* Add Deadline Modal */}
+      {/* ─── Add Deadline Modal ─── */}
       {showDeadlineForm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
             role="dialog"
             aria-label="Add new deadline"
             aria-modal="true"
-            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            className="max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-2xl p-6"
+            style={{
+              ...glassPanel,
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(32px) saturate(1.4)",
+              WebkitBackdropFilter: "blur(32px) saturate(1.4)",
+            }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
                 Add New Deadline
               </h3>
               <button
                 onClick={() => setShowDeadlineForm(false)}
                 aria-label="Close dialog"
-                className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
+                className="p-2 hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-colors"
               >
-                <X
-                  size={16}
-                  className="text-[var(--text-secondary)]"
-                  aria-hidden="true"
-                />
+                <X size={16} className="text-slate-500" aria-hidden="true" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1.5">
                   Title *
                 </label>
                 <input
@@ -1345,13 +1418,13 @@ function TimelinePageContent() {
                   onChange={(e) =>
                     setDeadlineForm({ ...deadlineForm, title: e.target.value })
                   }
-                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
+                  className={inputClass}
                   placeholder="Deadline title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -1362,14 +1435,14 @@ function TimelinePageContent() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-[var(--border-focus)]"
+                  className={`${inputClass} h-20 resize-none`}
                   placeholder="Optional description"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5">
                     Due Date *
                   </label>
                   <input
@@ -1381,11 +1454,11 @@ function TimelinePageContent() {
                         dueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5">
                     Priority *
                   </label>
                   <select
@@ -1396,7 +1469,7 @@ function TimelinePageContent() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
+                    className={selectClass}
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -1407,7 +1480,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1.5">
                   Category *
                 </label>
                 <select
@@ -1418,7 +1491,7 @@ function TimelinePageContent() {
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
+                  className={selectClass}
                 >
                   {categoryMetadata.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -1429,7 +1502,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1.5">
                   Regulatory Reference
                 </label>
                 <input
@@ -1441,29 +1514,28 @@ function TimelinePageContent() {
                       regulatoryRef: e.target.value,
                     })
                   }
-                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
+                  className={inputClass}
                   placeholder="e.g., EU Space Act Art. 45"
                 />
               </div>
             </div>
 
             <div className="flex gap-3 mt-6">
-              <Button
-                variant="ghost"
-                className="flex-1"
+              <button
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-white/50 dark:hover:bg-white/10 transition-colors border border-black/[0.06] dark:border-white/10"
                 onClick={() => setShowDeadlineForm(false)}
               >
                 Cancel
-              </Button>
-              <Button
-                className="flex-1"
+              </button>
+              <button
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-slate-800 dark:bg-emerald-600 hover:bg-slate-700 dark:hover:bg-emerald-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={createDeadline}
                 disabled={!deadlineForm.title || !deadlineForm.dueDate}
               >
                 Create Deadline
-              </Button>
+              </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
