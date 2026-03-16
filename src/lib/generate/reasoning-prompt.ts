@@ -8,6 +8,7 @@
 
 import type { SectionPlan, CrossReference } from "./reasoning-types";
 import type { NCAProfile, DocumentCategory } from "@/data/nca-profiles";
+import { getCNESRegulatoryKnowledge } from "@/data/cnes-regulatory-knowledge";
 
 export function buildNCAContextBlock(
   nca: NCAProfile,
@@ -32,6 +33,12 @@ export function buildNCAContextBlock(
         `  - ${area.articleRange} (${area.weight}): ${area.description}`,
       );
     }
+  }
+
+  // Inject deep CNES regulatory knowledge when targeting CNES
+  if (nca.id === "cnes") {
+    parts.push("");
+    parts.push(getCNESRegulatoryKnowledge());
   }
 
   return parts.join("\n");
