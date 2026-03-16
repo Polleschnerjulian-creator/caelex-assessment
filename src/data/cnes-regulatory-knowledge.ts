@@ -598,6 +598,71 @@ Status values:
 - Document must respond point-by-point to Art. 12-17 (dossier composition) AND Art. 35-48 (RT)
 `;
 
+// ─── CNES Compliance Matrix Format Override ──────────────────────────────────
+
+export const CNES_COMPLIANCE_MATRIX_KNOWLEDGE = `
+## CNES Compliance Matrix Format (OVERRIDES generic compliance matrix format)
+
+CRITICAL: When generating for CNES, ALL compliance matrices MUST follow the official CNES template format.
+This REPLACES the generic compliance matrix format from the Quality Rules.
+
+### Two Compliance Matrices Required
+
+**Matrix 1: Exigences de composition du dossier (Arrêté du 23 février 2022, Art. 12-17)**
+
+| Article | Objet de l'exigence dans l'arrêté de composition documentaire | C / NC / PC / NA | Paragraphe du dossier technique | Commentaire |
+|---------|---------------------------------------------------------------|------------------|-------------------------------|-------------|
+| 12 | Description de l'opération spatiale et des systèmes | | | |
+| 13 | Notice générale de conformité à la RT | | | |
+| 14 | Normes internes et dispositions de gestion de la qualité | | | |
+| 15 | Etude des dangers | | | |
+| 16 | Etude d'impact environnemental | | | |
+| 17 | Mesures de maîtrise des risques | | | |
+
+**Matrix 2: Exigences techniques (RT Art. 35-48)**
+
+| Article RT | Objet de l'exigence dans la RT du 28 juin 2024 | C / NC / PC / NA | Paragraphe du dossier technique | Commentaire |
+|-----------|------------------------------------------------|------------------|-------------------------------|-------------|
+| Art. 38-1 | Plan de contrôle durant la maîtrise en orbite | | | |
+| Art. 38-2 | Validation des procédures | | | |
+| Art. 39 | Capacité de maîtrise de l'objet spatial | | | |
+| Art. 39-1 | Identification des objets spatiaux | | | |
+| Art. 39-2 | Gestion des ergols | | | |
+| Art. 39-3 | Cybersécurité | | | |
+| Art. 40.1 | Libération intentionnelle d'un débris | | | |
+| Art. 40.2 | Désintégration accidentelle | | | |
+| Art. 40.3 | Passivation | | | |
+| Art. 41 | Prévention collisions objets habités | | | |
+| Art. 41-1 | Capacité anti-collision | | | |
+| Art. 41-2 | Disponibilité manœuvres anti-collision | | | |
+| Art. 41-3 | Probabilité de collision | | | |
+| Art. 41-6 | Seuil déclenchement manœuvres | | | |
+| Art. 41-7 | Partage de données | | | |
+| Art. 41-8 | Obligation de retrait de service | | | |
+| Art. 41-9 | Durée vie orbitale max (25 ans LEO) | | | |
+| Art. 41-12 | Fiabilité retrait de service | | | |
+| Art. 44 | Objectifs sécurité personnes retour sur Terre | | | |
+| Art. 45 | Rentrée non contrôlée | | | |
+| Art. 46 | Rentrée contrôlée | | | |
+| Art. 47 | Rentrées non nominales | | | |
+
+(Include ALL applicable RT articles for the specific document type — the above is a representative subset.
+For constellations, add Art. 48-1 through 48-10. For service en orbite, add Art. 47-1 through 47-21.)
+
+### CNES Status Values
+Use French abbreviations in the matrix columns, with English explanation in parentheses on first use:
+- **C**: Conforme (Compliant)
+- **NC**: Non Conforme (Non-Compliant)
+- **PC**: Partiellement Conforme (Partially Compliant)
+- **NA**: Non Applicable (with justification in Commentaire column)
+
+### Cross-Reference Column
+The "Paragraphe du dossier technique" column must reference the exact section/paragraph number in the current document or an annexe document where the compliance justification can be found.
+
+### Additional EU Space Act Mapping
+In addition to the RT matrix, include a secondary reference showing the correspondence between each RT article and the equivalent EU Space Act article. This can be a note at the bottom of the matrix or an additional column.
+`;
+
 // ─── Consolidated CNES Knowledge for Prompt Injection ────────────────────────
 
 /**
@@ -612,6 +677,7 @@ export function getCNESRegulatoryKnowledge(): string {
     "to ensure this document meets CNES Bureau LOS expectations. Reference these sources",
     "throughout the document where applicable.",
     "",
+    CNES_COMPLIANCE_MATRIX_KNOWLEDGE,
     CNES_PASSIVATION_KNOWLEDGE,
     CNES_REENTRY_KNOWLEDGE,
     CNES_TOOLS_KNOWLEDGE,
