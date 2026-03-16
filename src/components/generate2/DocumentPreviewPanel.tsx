@@ -3,6 +3,7 @@
 import { FileText, Download, AlertTriangle, BookOpen } from "lucide-react";
 import { GenerationProgress } from "./GenerationProgress";
 import { ReadinessRing } from "./ReadinessRing";
+import { ReasoningPreview } from "./ReasoningPreview";
 import { innerGlass } from "./styles";
 import type {
   NCADocumentType,
@@ -11,8 +12,17 @@ import type {
   SectionDefinition,
 } from "@/lib/generate/types";
 import type { ParsedSection } from "@/lib/generate/parse-sections";
+import type {
+  ReasoningPlan,
+  ComplianceVerdict,
+} from "@/lib/generate/reasoning-types";
 
-type PanelState = "empty" | "pre-generation" | "generating" | "completed";
+type PanelState =
+  | "empty"
+  | "pre-generation"
+  | "planning"
+  | "generating"
+  | "completed";
 type GenerationPhase = "init" | "sections" | "finalizing";
 
 interface DocumentPreviewPanelProps {
@@ -33,6 +43,14 @@ interface DocumentPreviewPanelProps {
   canResume?: boolean;
   onGenerate: () => void;
   onExportPdf: () => void;
+  reasoningPlan?: ReasoningPlan | null;
+  onConfirmPlan?: () => void;
+  onBackFromPlan?: () => void;
+  onVerdictOverride?: (
+    sectionIndex: number,
+    verdict: ComplianceVerdict,
+  ) => void;
+  isConfirming?: boolean;
 }
 
 export function DocumentPreviewPanel({
@@ -53,6 +71,11 @@ export function DocumentPreviewPanel({
   canResume,
   onGenerate,
   onExportPdf,
+  reasoningPlan,
+  onConfirmPlan,
+  onBackFromPlan,
+  onVerdictOverride,
+  isConfirming,
 }: DocumentPreviewPanelProps) {
   if (panelState === "empty" || !selectedType || !meta) {
     return (
@@ -71,6 +94,19 @@ export function DocumentPreviewPanel({
           and generate submission-ready content.
         </p>
       </div>
+    );
+  }
+
+  if (panelState === "planning" && reasoningPlan && meta) {
+    return (
+      <ReasoningPreview
+        plan={reasoningPlan}
+        meta={meta}
+        onConfirm={onConfirmPlan || (() => {})}
+        onBack={onBackFromPlan || (() => {})}
+        onVerdictOverride={onVerdictOverride || (() => {})}
+        isConfirming={isConfirming || false}
+      />
     );
   }
 

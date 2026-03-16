@@ -15,6 +15,10 @@ import type {
   ReadinessResult,
   SectionDefinition,
 } from "@/lib/generate/types";
+import type {
+  ReasoningPlan,
+  ComplianceVerdict,
+} from "@/lib/generate/reasoning-types";
 import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 import {
   updateGenerationProgress,
@@ -40,7 +44,12 @@ function logError(message: string, error: unknown) {
   console.error(message, error);
 }
 
-type PanelState = "empty" | "pre-generation" | "generating" | "completed";
+type PanelState =
+  | "empty"
+  | "pre-generation"
+  | "planning"
+  | "generating"
+  | "completed";
 
 const SECTION_FETCH_TIMEOUT_MS = 150_000; // 2.5 min — Anthropic SDK timeout is 120s + overhead
 const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
@@ -193,6 +202,11 @@ export function Generate2Page() {
     startTime: number;
   } | null>(null);
 
+  const [reasoningPlan, setReasoningPlan] = useState<ReasoningPlan | null>(
+    null,
+  );
+  const [reasoningPlanId, setReasoningPlanId] = useState<string | null>(null);
+
   // H-4: Save failure UI warning
   const [saveError, setSaveError] = useState(false);
   const saveRetryDataRef = useRef<{
@@ -304,6 +318,49 @@ export function Generate2Page() {
     },
     [completedDocs, loadDocument],
   );
+
+  async function handleComputePlan() {
+    if (!selectedType) return;
+    setError(null);
+
+    try {
+      const res = await fetch("/api/generate2/reasoning-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ documentType: selectedType }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data?.error || "Failed to compute plan");
+      }
+
+      const data = await res.json();
+      setReasoningPlan(data.plan);
+      setReasoningPlanId(data.plan.id);
+      setPanelState("planning");
+    } catch (err) {
+      logError("[Generate2] Plan computation failed", err);
+      // Fall back to direct generation (no plan)
+      handleGenerate(false);
+    }
+  }
+
+  function handleVerdictOverride(
+    sectionIndex: number,
+    verdict: ComplianceVerdict,
+  ) {
+    if (!reasoningPlan) return;
+    setReasoningPlan({
+      ...reasoningPlan,
+      userModified: true,
+      sections: reasoningPlan.sections.map((s) =>
+        s.sectionIndex === sectionIndex
+          ? { ...s, complianceVerdict: verdict }
+          : s,
+      ),
+    });
+  }
 
   async function handleGenerate(resume = false) {
     if (!selectedType) return;
@@ -1190,8 +1247,18 @@ export function Generate2Page() {
             documentId={documentState.id}
             error={error}
             canResume={!!resumeData}
-            onGenerate={() => handleGenerate(!!resumeData)}
+            onGenerate={
+              resumeData ? () => handleGenerate(true) : handleComputePlan
+            }
             onExportPdf={handleExportPdf}
+            reasoningPlan={reasoningPlan}
+            onConfirmPlan={() => handleGenerate(false)}
+            onBackFromPlan={() => {
+              setPanelState("pre-generation");
+              setReasoningPlan(null);
+            }}
+            onVerdictOverride={handleVerdictOverride}
+            isConfirming={isGenerating}
           />
         </main>
 

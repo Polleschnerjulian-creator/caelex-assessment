@@ -30,7 +30,12 @@ import {
 } from "@/lib/generate/context-panel-utils";
 import { innerGlass } from "./styles";
 
-type PanelState = "empty" | "pre-generation" | "generating" | "completed";
+type PanelState =
+  | "empty"
+  | "pre-generation"
+  | "planning"
+  | "generating"
+  | "completed";
 type GenerationPhase = "init" | "sections" | "finalizing";
 
 interface ContextPanelProps {
