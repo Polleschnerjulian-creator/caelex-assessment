@@ -16,6 +16,12 @@ import type {
   SectionDefinition,
 } from "@/lib/generate/types";
 import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
+import {
+  updateGenerationProgress,
+  resetGenerationProgress,
+  computeSingleDocProgress,
+  computePackageProgress,
+} from "@/lib/generation-store";
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
@@ -306,6 +312,18 @@ export function Generate2Page() {
     setIsGenerating(true);
     setPanelState("generating");
 
+    const totalSectionCount = SECTION_DEFINITIONS[selectedType].length;
+    updateGenerationProgress({
+      active: true,
+      progress: 0,
+      phase: "init",
+      documentType: selectedType,
+      currentSection: 0,
+      totalSections: totalSectionCount,
+      isPackage: false,
+      error: null,
+    });
+
     // Create a global abort controller for this generation run —
     // the watchdog uses it to actually cancel pending fetches.
     const abortController = new AbortController();
@@ -374,6 +392,7 @@ export function Generate2Page() {
 
         documentId = initData.documentId;
         setGenerationPhase("sections");
+        updateGenerationProgress({ phase: "sections" });
       }
 
       // ── Phase 2: Generate each section (with retry for transient errors) ──
@@ -446,6 +465,14 @@ export function Generate2Page() {
         totalInputTokens += sectionData.inputTokens || 0;
         totalOutputTokens += sectionData.outputTokens || 0;
         setCompletedSections(i + 1);
+        updateGenerationProgress({
+          currentSection: i + 1,
+          progress: computeSingleDocProgress(
+            "sections",
+            i + 1,
+            totalSectionCount,
+          ),
+        });
       }
 
       // ── Phase 3: Finalize ──
@@ -453,6 +480,7 @@ export function Generate2Page() {
       // Parse locally first, display immediately, then try to save to server.
       // Server save failure must NEVER block the user from seeing their document.
       setGenerationPhase("finalizing");
+      updateGenerationProgress({ phase: "finalizing", progress: 95 });
 
       const fullContent = sectionContents
         .filter((s) => typeof s === "string" && s.length > 0)
@@ -513,6 +541,9 @@ export function Generate2Page() {
       setCompletedDocs((prev) => new Set([...prev, selectedType]));
       setPanelState("completed");
       setResumeData(null);
+      updateGenerationProgress({ phase: "completed", progress: 100 });
+      // Auto-clear the ring after 3s so the user sees 100% briefly
+      setTimeout(() => resetGenerationProgress(), 3000);
 
       // H-4: Store retry data for the save operation
       setSaveError(false);
@@ -612,6 +643,11 @@ export function Generate2Page() {
     } catch (err) {
       logError("[Generate2] Generation failed", err);
       const message = err instanceof Error ? err.message : "Generation failed";
+      updateGenerationProgress({
+        phase: "failed",
+        error: message,
+        active: false,
+      });
 
       // If the watchdog aborted, show a specific message with resume hint
       if (abortController.signal.aborted) {
@@ -759,10 +795,21 @@ export function Generate2Page() {
       const typesToGenerate = (documentTypes || ALL_NCA_DOC_TYPES).filter(
         (t) => !completedDocs.has(t),
       );
+      const pkgTotalDocs = typesToGenerate.length;
 
       // M-3: Track package-level counters for status updates
       let pkgDocsCompleted = 0;
       let pkgDocsFailed = 0;
+
+      updateGenerationProgress({
+        active: true,
+        progress: 0,
+        phase: "sections",
+        isPackage: true,
+        totalDocs: pkgTotalDocs,
+        completedDocs: 0,
+        error: null,
+      });
 
       for (const docType of typesToGenerate) {
         // Check if aborted before starting each document
@@ -777,6 +824,17 @@ export function Generate2Page() {
         setGenerationPhase("init");
         setCompletedSections(0);
         setCurrentSection(0);
+        updateGenerationProgress({
+          documentType: docType,
+          currentSection: 0,
+          totalSections: sectionDefs.length,
+          progress: computePackageProgress(
+            pkgDocsCompleted,
+            pkgTotalDocs,
+            0,
+            sectionDefs.length,
+          ),
+        });
 
         // Per-document watchdog — skip this document if it takes too long
         let docTimedOut = false;
@@ -896,6 +954,15 @@ export function Generate2Page() {
               totalInputTokens += sectionData.inputTokens || 0;
               totalOutputTokens += sectionData.outputTokens || 0;
               setCompletedSections(i + 1);
+              updateGenerationProgress({
+                currentSection: i + 1,
+                progress: computePackageProgress(
+                  pkgDocsCompleted,
+                  pkgTotalDocs,
+                  i + 1,
+                  sectionDefs.length,
+                ),
+              });
             } catch (sectionErr) {
               // If the global abort fired, re-throw to exit the outer loop
               if (abortController.signal.aborted) {
@@ -948,6 +1015,15 @@ export function Generate2Page() {
           // M-3: Update package status on success
           pkgDocsCompleted++;
           updatePackageStatus(packageId, pkgDocsCompleted, pkgDocsFailed);
+          updateGenerationProgress({
+            completedDocs: pkgDocsCompleted,
+            progress: computePackageProgress(
+              pkgDocsCompleted,
+              pkgTotalDocs,
+              0,
+              0,
+            ),
+          });
 
           // M-7: Clear accumulated section contents to free memory for next document
           sectionContents = [];
@@ -957,8 +1033,11 @@ export function Generate2Page() {
       }
 
       setPanelState("empty");
+      updateGenerationProgress({ phase: "completed", progress: 100 });
+      setTimeout(() => resetGenerationProgress(), 3000);
     } catch (err) {
       logError("[Generate2] Package generation failed", err);
+      resetGenerationProgress();
       if (abortController.signal.aborted) {
         setError(
           "Package generation timed out. Already generated documents have been saved.",

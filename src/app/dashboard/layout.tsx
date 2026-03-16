@@ -10,6 +10,7 @@ import { OrganizationProvider } from "@/components/providers/OrganizationProvide
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
+import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
   LanguageProvider,
@@ -187,30 +188,35 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
       {/* Floating Astra FAB — hidden when Forge is active or widget is open */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
-        <button
-          onClick={() => setAstraWidgetOpen(true)}
-          aria-label="Open Astra AI Assistant"
-          className="fixed bottom-7 right-7 z-[100] flex items-center justify-center transition-all duration-200 ease-out hover:scale-[1.08] active:scale-95"
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 18,
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(24px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-            border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-black.png"
-            alt=""
-            width={30}
-            height={30}
-            style={{ objectFit: "contain" }}
-          />
-        </button>
+        <div className="fixed bottom-7 right-7 z-[100] transition-all duration-200 ease-out hover:scale-[1.08] active:scale-95">
+          <GenerationProgressRing size={68}>
+            <button
+              onClick={() => setAstraWidgetOpen(true)}
+              aria-label="Open Astra AI Assistant"
+              className="flex items-center justify-center"
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.85)",
+                backdropFilter: "blur(24px) saturate(1.4)",
+                WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+                border: "1px solid rgba(0,0,0,0.08)",
+                boxShadow:
+                  "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo-black.png"
+                alt=""
+                width={30}
+                height={30}
+                style={{ objectFit: "contain" }}
+              />
+            </button>
+          </GenerationProgressRing>
+        </div>
       )}
 
       {/* Astra Chat Widget */}
