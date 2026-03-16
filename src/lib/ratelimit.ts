@@ -161,10 +161,11 @@ export const rateLimiters = redis
         prefix: "ratelimit:mfa",
       }),
 
-      // Generate 2.0: 20 per hour per user (AI section generation calls)
+      // Generate 2.0: 300 per hour per user (section calls are per-document keyed,
+      // but readiness/articles/export/GET/PATCH/DELETE share this tier)
       generate2: new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(20, "1 h"),
+        limiter: Ratelimit.slidingWindow(300, "1 h"),
         analytics: true,
         prefix: "ratelimit:generate2",
       }),
@@ -342,13 +343,13 @@ const fallbackLimiters = {
   export: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
   sensitive: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   supplier: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
-  document_generation: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
+  document_generation: new InMemoryRateLimiter(5, 3600000), // 5/hr (matches Redis)
   nca_portal: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
   nca_package: new InMemoryRateLimiter(3, 3600000), // 3/hr vs 10/hr (Redis)
   public_api: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   widget: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
   mfa: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
-  generate2: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
+  generate2: new InMemoryRateLimiter(150, 3600000), // 150/hr vs 300/hr (Redis)
   admin: new InMemoryRateLimiter(10, 60000), // 10/min vs 30/min (Redis)
   contact: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   assure: new InMemoryRateLimiter(15, 3600000), // 15/hr vs 30/hr (Redis)
