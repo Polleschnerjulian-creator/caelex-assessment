@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import {
   Plus,
   X,
@@ -19,6 +20,33 @@ import {
 } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMessageBubble from "./AstraMessageBubble";
+
+// Dynamic import — only load Three.js when panel is open
+const AstraEntityScene = dynamic(() => import("./AstraEntityScene"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)",
+          animation: "astraOrbPulse 3.5s ease-in-out infinite",
+        }}
+      />
+    </div>
+  ),
+});
 
 // ─── Panel width ────────────────────────────────────────────────────────────
 
@@ -252,7 +280,7 @@ export default function AstraWidget({
           }}
         >
           {!hasUserMessages ? (
-            /* ─── Empty State: Entity Orb + Tool Grid ─── */
+            /* ─── Empty State: 3D Entity Cube + Tool Grid ─── */
             <div
               className="astra-empty-state"
               style={{
@@ -270,155 +298,44 @@ export default function AstraWidget({
                   position: "absolute",
                   inset: 0,
                   backgroundImage:
-                    "radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)",
+                    "radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px)",
                   backgroundSize: "20px 20px",
                   pointerEvents: "none",
                   maskImage:
-                    "radial-gradient(ellipse at 50% 40%, black 20%, transparent 70%)",
+                    "radial-gradient(ellipse at 50% 30%, black 10%, transparent 60%)",
                   WebkitMaskImage:
-                    "radial-gradient(ellipse at 50% 40%, black 20%, transparent 70%)",
+                    "radial-gradient(ellipse at 50% 30%, black 10%, transparent 60%)",
                 }}
               />
 
-              {/* Radial ambient light behind orb */}
-              <div
-                className="astra-ambient"
-                style={{
-                  position: "absolute",
-                  top: -20,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 360,
-                  height: 360,
-                  borderRadius: "50%",
-                  background:
-                    "radial-gradient(circle, rgba(16,185,129,0.10) 0%, rgba(59,130,246,0.05) 40%, transparent 65%)",
-                  filter: "blur(40px)",
-                  pointerEvents: "none",
-                }}
-              />
-
-              {/* Entity Orb */}
+              {/* 3D Entity Cube — replaces CSS orb */}
               <div
                 style={{
                   position: "relative",
-                  width: 160,
-                  height: 160,
-                  marginTop: 40,
-                  marginBottom: 24,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  width: "100%",
+                  height: 220,
+                  marginTop: 8,
                   zIndex: 1,
                 }}
               >
-                {/* Outer ring 2 — slow rotate */}
+                {/* Ambient glow behind the cube */}
                 <div
-                  className="astra-ring-outer"
+                  className="astra-ambient"
                   style={{
                     position: "absolute",
-                    inset: -4,
-                    borderRadius: "50%",
-                    border: "1px solid rgba(16, 185, 129, 0.1)",
-                  }}
-                />
-                {/* Outer ring 1 — pulse */}
-                <div
-                  className="astra-ring-pulse"
-                  style={{
-                    position: "absolute",
-                    inset: 6,
-                    borderRadius: "50%",
-                    border: "1.5px solid rgba(16, 185, 129, 0.15)",
-                  }}
-                />
-                {/* Glow layer */}
-                <div
-                  className="astra-orb-glow"
-                  style={{
-                    position: "absolute",
-                    inset: -30,
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 280,
+                    height: 280,
                     borderRadius: "50%",
                     background:
-                      "radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(59,130,246,0.08) 45%, transparent 65%)",
-                    filter: "blur(24px)",
+                      "radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(13,148,136,0.06) 40%, transparent 65%)",
+                    filter: "blur(30px)",
+                    pointerEvents: "none",
                   }}
                 />
-                {/* Main orb body */}
-                <div
-                  className="astra-orb"
-                  style={{
-                    width: 88,
-                    height: 88,
-                    borderRadius: "50%",
-                    position: "relative",
-                    background:
-                      "conic-gradient(from 220deg, #10B981, #059669, #0D9488, #0891B2, #3B82F6, #6366F1, #8B5CF6, #A855F7, #EC4899, #10B981)",
-                  }}
-                >
-                  {/* White inner core — creates depth */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 6,
-                      borderRadius: "50%",
-                      background:
-                        "radial-gradient(circle at 38% 35%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 35%, rgba(255,255,255,0.1) 60%, transparent 80%)",
-                    }}
-                  />
-                  {/* Surface shimmer */}
-                  <div
-                    className="astra-shimmer"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: "50%",
-                      background:
-                        "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)",
-                    }}
-                  />
-                </div>
-
-                {/* Orbiting particles */}
-                <div
-                  className="astra-orbit-1"
-                  style={{
-                    position: "absolute",
-                    width: 5,
-                    height: 5,
-                    borderRadius: "50%",
-                    background: "#10B981",
-                    boxShadow: "0 0 10px rgba(16,185,129,0.8)",
-                    top: "50%",
-                    left: "50%",
-                  }}
-                />
-                <div
-                  className="astra-orbit-2"
-                  style={{
-                    position: "absolute",
-                    width: 3,
-                    height: 3,
-                    borderRadius: "50%",
-                    background: "#3B82F6",
-                    boxShadow: "0 0 8px rgba(59,130,246,0.7)",
-                    top: "50%",
-                    left: "50%",
-                  }}
-                />
-                <div
-                  className="astra-orbit-3"
-                  style={{
-                    position: "absolute",
-                    width: 4,
-                    height: 4,
-                    borderRadius: "50%",
-                    background: "#8B5CF6",
-                    boxShadow: "0 0 8px rgba(139,92,246,0.6)",
-                    top: "50%",
-                    left: "50%",
-                  }}
-                />
+                <AstraEntityScene />
               </div>
 
               {/* Greeting */}
@@ -429,6 +346,7 @@ export default function AstraWidget({
                   fontWeight: 600,
                   color: "#111827",
                   margin: 0,
+                  marginTop: -4,
                   letterSpacing: "-0.03em",
                   textAlign: "center",
                   zIndex: 1,
@@ -456,7 +374,7 @@ export default function AstraWidget({
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: 8,
-                  padding: "20px 16px 16px",
+                  padding: "16px 16px 16px",
                   zIndex: 1,
                 }}
               >
@@ -740,80 +658,17 @@ export default function AstraWidget({
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ─── Entity Orb ─── */
-        .astra-orb {
-          animation: astraOrbPulse 3.5s ease-in-out infinite;
-          box-shadow: 0 0 40px rgba(16,185,129,0.3), 0 0 80px rgba(59,130,246,0.15), inset 0 0 20px rgba(255,255,255,0.1);
-        }
-        @keyframes astraOrbPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(16,185,129,0.3), 0 0 80px rgba(59,130,246,0.15); }
-          50% { transform: scale(1.08); box-shadow: 0 0 60px rgba(16,185,129,0.4), 0 0 120px rgba(59,130,246,0.2); }
-        }
-
-        /* Shimmer rotation */
-        .astra-shimmer {
-          animation: astraShimmerRotate 6s linear infinite;
-        }
-        @keyframes astraShimmerRotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* Outer ring — slow rotate */
-        .astra-ring-outer {
-          animation: astraRingRotate 12s linear infinite;
-        }
-        @keyframes astraRingRotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* Inner ring — pulse */
-        .astra-ring-pulse {
-          animation: astraRingPulse 3.5s ease-in-out infinite;
-        }
-        @keyframes astraRingPulse {
-          0%, 100% { transform: scale(1); opacity: 0.4; }
-          50% { transform: scale(1.06); opacity: 1; }
-        }
-
-        /* Ambient glow */
-        .astra-orb-glow {
-          animation: astraGlowPulse 3.5s ease-in-out infinite;
-        }
+        /* ─── Ambient glow ─── */
         .astra-ambient {
           animation: astraAmbientPulse 5s ease-in-out infinite;
-        }
-        @keyframes astraGlowPulse {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.15); }
         }
         @keyframes astraAmbientPulse {
           0%, 100% { opacity: 0.7; }
           50% { opacity: 1; }
         }
-
-        /* Three orbiting particles at different speeds/radii */
-        .astra-orbit-1 {
-          animation: astraOrbit1 5s linear infinite;
-        }
-        .astra-orbit-2 {
-          animation: astraOrbit2 7s linear infinite;
-        }
-        .astra-orbit-3 {
-          animation: astraOrbit3 9s linear infinite;
-        }
-        @keyframes astraOrbit1 {
-          from { transform: translate(-50%,-50%) rotate(0deg) translateX(58px) rotate(0deg); }
-          to { transform: translate(-50%,-50%) rotate(360deg) translateX(58px) rotate(-360deg); }
-        }
-        @keyframes astraOrbit2 {
-          from { transform: translate(-50%,-50%) rotate(120deg) translateX(68px) rotate(-120deg); }
-          to { transform: translate(-50%,-50%) rotate(480deg) translateX(68px) rotate(-480deg); }
-        }
-        @keyframes astraOrbit3 {
-          from { transform: translate(-50%,-50%) rotate(240deg) translateX(74px) rotate(-240deg); }
-          to { transform: translate(-50%,-50%) rotate(600deg) translateX(74px) rotate(-600deg); }
+        @keyframes astraOrbPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
         }
 
         /* Text entrance */
