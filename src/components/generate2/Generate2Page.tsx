@@ -40,9 +40,50 @@ const SECTION_FETCH_TIMEOUT_MS = 150_000; // 2.5 min — Anthropic SDK timeout i
 const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
 const GENERATION_WATCHDOG_MS = 900_000; // 15 minutes max total generation time
 
-/** Fetch with AbortController timeout so requests can't hang indefinitely.
- *  Optionally accepts a parent AbortSignal — if the parent aborts, this fetch
- *  also aborts (used by the generation watchdog). */
+/** Fetch + JSON parse with a single timeout covering the ENTIRE lifecycle.
+ *  Previous version only timed out the fetch() — if the server sent headers
+ *  (200 OK) but the body stream never completed, .json() would hang forever.
+ *  This version wraps fetch + json in a single AbortController timeout. */
+async function fetchJsonWithTimeout<T = unknown>(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+  parentSignal?: AbortSignal,
+): Promise<{ response: Response; data: T }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // If a parent signal aborts, propagate to this fetch
+  const onParentAbort = () => controller.abort();
+  parentSignal?.addEventListener("abort", onParentAbort);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    // Read body WITHIN the same timeout — this is the fix.
+    // If Vercel kills the function after sending headers but before flushing
+    // the body, .json() would hang forever without this timeout.
+    const data = (await response.json()) as T;
+    return { response, data };
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      if (parentSignal?.aborted) {
+        throw new Error("Generation was cancelled.");
+      }
+      throw new Error(
+        `Request timed out after ${Math.round(timeoutMs / 1000)}s`,
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+    parentSignal?.removeEventListener("abort", onParentAbort);
+  }
+}
+
+/** Simple fetch with timeout (for non-JSON responses like the complete endpoint). */
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
@@ -51,11 +92,8 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  // If a parent signal aborts, propagate to this fetch
   const onParentAbort = () => controller.abort();
   parentSignal?.addEventListener("abort", onParentAbort);
-
   try {
     return await fetch(url, { ...options, signal: controller.signal });
   } catch (err) {
@@ -315,25 +353,25 @@ export function Generate2Page() {
     try {
       // ── Phase 1: Initialize ──
       if (!resume || !resumeData) {
-        const initRes = await fetchWithTimeout(
-          "/api/generate2/documents",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...csrfHeaders() },
-            body: JSON.stringify({ documentType: selectedType }),
-          },
-          30_000, // 30s for init — it's a DB write, not AI
-          abortController.signal,
-        );
+        const { response: initRes, data: initData } =
+          await fetchJsonWithTimeout<{ documentId: string; error?: string }>(
+            "/api/generate2/documents",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...csrfHeaders(),
+              },
+              body: JSON.stringify({ documentType: selectedType }),
+            },
+            30_000, // 30s for init — it's a DB write, not AI
+            abortController.signal,
+          );
 
         if (!initRes.ok) {
-          const err = await initRes
-            .json()
-            .catch(() => ({ error: "Failed to initialize document" }));
-          throw new Error(err.error || "Failed to initialize");
+          throw new Error(initData?.error || "Failed to initialize");
         }
 
-        const initData = await initRes.json();
         documentId = initData.documentId;
         setGenerationPhase("sections");
       }
@@ -348,9 +386,21 @@ export function Generate2Page() {
           throw new Error("Generation was cancelled.");
         }
 
-        let sectionRes: Response | null = null;
+        let sectionData: {
+          content: string;
+          inputTokens?: number;
+          outputTokens?: number;
+        } | null = null;
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-          sectionRes = await fetchWithTimeout(
+          // fetchJsonWithTimeout covers fetch + .json() in ONE timeout.
+          // This prevents hangs when the server sends headers but the body
+          // stream never completes (e.g. Vercel kills the function mid-response).
+          const { response, data } = await fetchJsonWithTimeout<{
+            content: string;
+            inputTokens?: number;
+            outputTokens?: number;
+            error?: string;
+          }>(
             `/api/generate2/documents/${documentId}/section`,
             {
               method: "POST",
@@ -366,38 +416,32 @@ export function Generate2Page() {
           );
 
           // M-2: Only retry on 429 (rate limited) and 5xx (server error)
-          if (sectionRes.ok) break; // Success
-          if (sectionRes.status >= 500 || sectionRes.status === 429) {
-            // Retryable — use longer delay for 429 (rate limit needs cool-down)
+          if (response.ok) {
+            sectionData = data;
+            break;
+          }
+          if (response.status >= 500 || response.status === 429) {
             if (attempt < MAX_RETRIES - 1) {
               const delay =
-                sectionRes.status === 429
-                  ? 10_000 * (attempt + 1) // 10s, 20s for rate limit
-                  : 3_000 * (attempt + 1); // 3s, 6s for server errors
+                response.status === 429
+                  ? 10_000 * (attempt + 1)
+                  : 3_000 * (attempt + 1);
               await new Promise((r) => setTimeout(r, delay));
             }
             continue;
           }
-          break; // Non-retryable error (4xx except 429)
-        }
-
-        // L-7: Null guard on sectionRes after retry loop
-        if (!sectionRes) {
+          // Non-retryable error (4xx except 429)
           throw new Error(
-            `Failed to generate section after ${MAX_RETRIES} attempts`,
+            data?.error || `Section ${i + 1} "${sectionDefs[i].title}" failed`,
           );
         }
 
-        if (!sectionRes.ok) {
-          const errData = await sectionRes.json().catch(() => ({
-            error: `Section ${i + 1} "${sectionDefs[i].title}" failed`,
-          }));
+        if (!sectionData) {
           throw new Error(
-            errData.error || `Failed to generate section ${i + 1}`,
+            `Failed to generate section ${i + 1} after ${MAX_RETRIES} attempts`,
           );
         }
 
-        const sectionData = await sectionRes.json();
         sectionContents.push(sectionData.content);
         totalInputTokens += sectionData.inputTokens || 0;
         totalOutputTokens += sectionData.outputTokens || 0;
@@ -690,7 +734,11 @@ export function Generate2Page() {
 
     try {
       // 1. Create the package
-      const pkgRes = await fetchWithTimeout(
+      const { response: pkgRes, data: pkgData } = await fetchJsonWithTimeout<{
+        packageId: string;
+        documentTypes: NCADocumentType[];
+        error?: string;
+      }>(
         "/api/generate2/package",
         {
           method: "POST",
@@ -702,16 +750,10 @@ export function Generate2Page() {
       );
 
       if (!pkgRes.ok) {
-        const err = await pkgRes
-          .json()
-          .catch(() => ({ error: "Failed to create package" }));
-        throw new Error(err.error || "Failed to create package");
+        throw new Error(pkgData?.error || "Failed to create package");
       }
 
-      const { packageId, documentTypes } = (await pkgRes.json()) as {
-        packageId: string;
-        documentTypes: NCADocumentType[];
-      };
+      const { packageId, documentTypes } = pkgData;
 
       // 2. Generate each document type sequentially
       const typesToGenerate = (documentTypes || ALL_NCA_DOC_TYPES).filter(
@@ -748,19 +790,20 @@ export function Generate2Page() {
 
         try {
           // Init
-          const initRes = await fetchWithTimeout(
-            "/api/generate2/documents",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...csrfHeaders(),
+          const { response: initRes, data: initData } =
+            await fetchJsonWithTimeout<{ documentId: string; error?: string }>(
+              "/api/generate2/documents",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...csrfHeaders(),
+                },
+                body: JSON.stringify({ documentType: docType, packageId }),
               },
-              body: JSON.stringify({ documentType: docType, packageId }),
-            },
-            30_000,
-            abortController.signal,
-          );
+              30_000,
+              abortController.signal,
+            );
 
           if (!initRes.ok) {
             logError(
@@ -773,7 +816,7 @@ export function Generate2Page() {
             continue;
           }
 
-          const { documentId } = await initRes.json();
+          const { documentId } = initData;
           setGenerationPhase("sections");
 
           // Generate sections
@@ -792,28 +835,41 @@ export function Generate2Page() {
 
             setCurrentSection(i);
             try {
-              let sectionRes: Response | null = null;
+              let sectionData: {
+                content: string;
+                inputTokens?: number;
+                outputTokens?: number;
+              } | null = null;
               const PKG_MAX_RETRIES = 3;
               for (let attempt = 0; attempt < PKG_MAX_RETRIES; attempt++) {
-                sectionRes = await fetchWithTimeout(
-                  `/api/generate2/documents/${documentId}/section`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      ...csrfHeaders(),
+                const { response: sectionRes, data } =
+                  await fetchJsonWithTimeout<{
+                    content: string;
+                    inputTokens?: number;
+                    outputTokens?: number;
+                    error?: string;
+                  }>(
+                    `/api/generate2/documents/${documentId}/section`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        ...csrfHeaders(),
+                      },
+                      body: JSON.stringify({
+                        sectionIndex: i,
+                        sectionTitle: sectionDefs[i].title,
+                        sectionNumber: sectionDefs[i].number,
+                      }),
                     },
-                    body: JSON.stringify({
-                      sectionIndex: i,
-                      sectionTitle: sectionDefs[i].title,
-                      sectionNumber: sectionDefs[i].number,
-                    }),
-                  },
-                  SECTION_FETCH_TIMEOUT_MS,
-                  abortController.signal,
-                );
+                    SECTION_FETCH_TIMEOUT_MS,
+                    abortController.signal,
+                  );
                 // M-2: Only retry on 429 and 5xx
-                if (sectionRes.ok) break;
+                if (sectionRes.ok) {
+                  sectionData = data;
+                  break;
+                }
                 if (sectionRes.status >= 500 || sectionRes.status === 429) {
                   if (attempt < PKG_MAX_RETRIES - 1) {
                     const delay =
@@ -827,17 +883,15 @@ export function Generate2Page() {
                 break; // Non-retryable error (4xx except 429)
               }
 
-              // L-7: Null guard on sectionRes
-              if (!sectionRes || !sectionRes.ok) {
+              if (!sectionData) {
                 logError(
                   `[Generate2] Section ${i + 1} of ${docType} failed, skipping document`,
-                  new Error(`Section failed: ${sectionRes?.status ?? "null"}`),
+                  new Error("Section failed after retries"),
                 );
                 failed = true;
                 break;
               }
 
-              const sectionData = await sectionRes.json();
               sectionContents.push(sectionData.content);
               totalInputTokens += sectionData.inputTokens || 0;
               totalOutputTokens += sectionData.outputTokens || 0;
