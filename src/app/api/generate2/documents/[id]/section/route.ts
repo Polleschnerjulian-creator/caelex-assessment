@@ -31,10 +31,12 @@ export async function POST(
 
     const userId = session.user.id;
 
-    // H-1: Rate limiting (document_generation tier since this calls Anthropic API)
+    // H-1: Rate limiting — scoped per document so a single doc's 11+ sections
+    // don't exhaust the limit. The POST /documents endpoint gates new documents.
+    const { id: docId } = await params;
     const rateLimitResult = await checkRateLimit(
-      "document_generation",
-      `document_generation:${userId}`,
+      "generate2",
+      `generate2_section:${userId}:${docId}`,
     );
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -53,7 +55,7 @@ export async function POST(
       return NextResponse.json({ error: "No Organization" }, { status: 403 });
     }
 
-    ({ id: documentId } = await params);
+    documentId = docId;
 
     const body = await request.json();
     const { sectionIndex, sectionTitle, sectionNumber } = body as {
