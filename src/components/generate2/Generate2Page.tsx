@@ -228,6 +228,17 @@ export function Generate2Page() {
   const [saveError, setSaveError] = useState(false);
 
   const [impactAlerts, setImpactAlerts] = useState<ImpactResult[]>([]);
+  const [documentHistory, setDocumentHistory] = useState<
+    Array<{
+      id: string;
+      version: number;
+      createdAt: string;
+      modelUsed: string | null;
+      readinessScore: number | null;
+      inputTokens: number | null;
+      outputTokens: number | null;
+    }>
+  >([]);
   const saveRetryDataRef = useRef<{
     documentId: string;
     finalSections: ParsedSection[];
@@ -307,6 +318,47 @@ export function Generate2Page() {
             evidencePlaceholderCount:
               detail.document.evidencePlaceholderCount || 0,
           });
+
+          // Load version history for this document type
+          try {
+            const historyRes = await fetch("/api/generate2/documents");
+            if (historyRes.ok) {
+              const histData = await historyRes.json();
+              const versions = (histData.documents || [])
+                .filter(
+                  (d: { documentType: string; status: string }) =>
+                    d.documentType === type &&
+                    (d.status === "COMPLETED" || d.status === "EXPORTED"),
+                )
+                .sort(
+                  (a: { createdAt: string }, b: { createdAt: string }) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+                )
+                .map(
+                  (d: {
+                    id: string;
+                    version: number;
+                    createdAt: string;
+                    modelUsed: string | null;
+                    readinessScore: number | null;
+                    inputTokens: number | null;
+                    outputTokens: number | null;
+                  }) => ({
+                    id: d.id,
+                    version: d.version,
+                    createdAt: d.createdAt,
+                    modelUsed: d.modelUsed,
+                    readinessScore: d.readinessScore,
+                    inputTokens: d.inputTokens,
+                    outputTokens: d.outputTokens,
+                  }),
+                );
+              setDocumentHistory(versions);
+            }
+          } catch {
+            // Non-critical
+          }
         }
       }
     } catch (err) {
@@ -321,6 +373,7 @@ export function Generate2Page() {
       const defs = SECTION_DEFINITIONS[type];
       setSections(defs);
       setConsistencyFindings([]);
+      setDocumentHistory([]);
 
       if (completedDocs.has(type)) {
         // Load the existing document
@@ -883,6 +936,43 @@ export function Generate2Page() {
     }
   }
 
+  function handleRegenerate() {
+    if (!selectedType) return;
+    // Reset to pre-generation state — user goes through NCA selection + Reasoning Plan
+    setPanelState("pre-generation");
+    setDocumentState({
+      id: null,
+      content: null,
+      actionRequiredCount: 0,
+      evidencePlaceholderCount: 0,
+    });
+    setReasoningPlan(null);
+    setReasoningPlanId(null);
+    setConsistencyFindings([]);
+    setError(null);
+  }
+
+  async function handleLoadVersion(documentId: string) {
+    try {
+      const res = await fetch(`/api/generate2/documents/${documentId}`);
+      if (!res.ok) return;
+      const detail = await res.json();
+      const content =
+        detail.document.isEdited && detail.document.editedContent
+          ? detail.document.editedContent
+          : detail.document.content;
+      setDocumentState({
+        id: detail.document.id,
+        content: content as ParsedSection[],
+        actionRequiredCount: detail.document.actionRequiredCount || 0,
+        evidencePlaceholderCount: detail.document.evidencePlaceholderCount || 0,
+      });
+      setConsistencyFindings([]);
+    } catch (err) {
+      logError("Failed to load version:", err);
+    }
+  }
+
   async function handleGeneratePackage() {
     setIsPackageGenerating(true);
     setError(null);
@@ -1377,6 +1467,7 @@ export function Generate2Page() {
               documentState.id && handleConsistencyCheck(documentState.id)
             }
             onAutoFix={handleAutoFix}
+            onRegenerate={handleRegenerate}
           />
         </main>
 
@@ -1399,6 +1490,8 @@ export function Generate2Page() {
             actionRequiredCount={documentState.actionRequiredCount}
             evidencePlaceholderCount={documentState.evidencePlaceholderCount}
             onSelectDocument={handleSelect}
+            documentHistory={documentHistory}
+            onLoadVersion={handleLoadVersion}
           />
         </aside>
       </div>

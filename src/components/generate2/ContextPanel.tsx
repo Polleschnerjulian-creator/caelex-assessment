@@ -51,6 +51,16 @@ interface ContextPanelProps {
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
   onSelectDocument: (type: NCADocumentType) => void;
+  documentHistory?: Array<{
+    id: string;
+    version: number;
+    createdAt: string;
+    modelUsed: string | null;
+    readinessScore: number | null;
+    inputTokens: number | null;
+    outputTokens: number | null;
+  }>;
+  onLoadVersion?: (documentId: string) => void;
 }
 
 export function ContextPanel({
@@ -66,6 +76,8 @@ export function ContextPanel({
   actionRequiredCount,
   evidencePlaceholderCount,
   onSelectDocument,
+  documentHistory,
+  onLoadVersion,
 }: ContextPanelProps) {
   if (panelState === "empty" || !meta) {
     return (
@@ -102,6 +114,8 @@ export function ContextPanel({
         actionRequiredCount={actionRequiredCount}
         evidencePlaceholderCount={evidencePlaceholderCount}
         onSelect={onSelectDocument}
+        documentHistory={documentHistory}
+        onLoadVersion={onLoadVersion}
       />
     );
   }
@@ -600,6 +614,8 @@ function CompletedView({
   actionRequiredCount,
   evidencePlaceholderCount,
   onSelect,
+  documentHistory,
+  onLoadVersion,
 }: {
   meta: DocumentTypeMeta;
   readiness: ReadinessResult | null;
@@ -609,6 +625,16 @@ function CompletedView({
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
   onSelect: (type: NCADocumentType) => void;
+  documentHistory?: Array<{
+    id: string;
+    version: number;
+    createdAt: string;
+    modelUsed: string | null;
+    readinessScore: number | null;
+    inputTokens: number | null;
+    outputTokens: number | null;
+  }>;
+  onLoadVersion?: (documentId: string) => void;
 }) {
   const totalDocs = NCA_DOCUMENT_TYPES.length;
   const completedCount = completedDocs.size;
@@ -723,6 +749,50 @@ function CompletedView({
                       {doc.sharedFields} shared fields
                     </p>
                   </div>
+                </button>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Version History */}
+        {documentHistory && documentHistory.length > 1 && (
+          <Section title="Version History">
+            <div className="space-y-1.5">
+              {documentHistory.map((ver, idx) => (
+                <button
+                  key={ver.id}
+                  onClick={() => onLoadVersion?.(ver.id)}
+                  className={`w-full text-left p-2.5 rounded-xl transition-colors ${
+                    idx === 0
+                      ? "bg-emerald-500/10 border border-emerald-500/20"
+                      : "hover:bg-white/40 border border-transparent"
+                  }`}
+                  style={idx === 0 ? undefined : innerGlass}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-700">
+                      v{ver.version}
+                      {idx === 0 && (
+                        <span className="ml-1.5 text-emerald-600">
+                          (current)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {new Date(ver.createdAt).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  {ver.readinessScore != null && (
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      Readiness: {ver.readinessScore}%
+                      {ver.modelUsed && ` · ${ver.modelUsed}`}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

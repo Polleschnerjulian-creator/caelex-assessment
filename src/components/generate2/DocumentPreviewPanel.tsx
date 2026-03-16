@@ -1,6 +1,12 @@
 "use client";
 
-import { FileText, Download, AlertTriangle, BookOpen } from "lucide-react";
+import {
+  FileText,
+  Download,
+  AlertTriangle,
+  BookOpen,
+  RefreshCw,
+} from "lucide-react";
 import { GenerationProgress } from "./GenerationProgress";
 import { ReadinessRing } from "./ReadinessRing";
 import { ReasoningPreview } from "./ReasoningPreview";
@@ -61,6 +67,7 @@ interface DocumentPreviewPanelProps {
   isCheckingConsistency?: boolean;
   onRunConsistencyCheck?: () => void;
   onAutoFix?: (findingId: string) => void;
+  onRegenerate?: () => void;
 }
 
 export function DocumentPreviewPanel({
@@ -93,6 +100,7 @@ export function DocumentPreviewPanel({
   isCheckingConsistency,
   onRunConsistencyCheck,
   onAutoFix,
+  onRegenerate,
 }: DocumentPreviewPanelProps) {
   if (panelState === "empty" || !selectedType || !meta) {
     return (
@@ -171,6 +179,14 @@ export function DocumentPreviewPanel({
                 {evidencePlaceholderCount} Evidence
               </span>
             )}
+            <button
+              onClick={onRegenerate}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-black/[0.08] text-sm text-slate-600 hover:bg-white/40 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+              aria-label="Regenerate document"
+            >
+              <RefreshCw size={14} aria-hidden="true" />
+              Regenerate
+            </button>
             <button
               onClick={onExportPdf}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
