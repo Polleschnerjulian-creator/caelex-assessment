@@ -30,6 +30,12 @@ import { NCA_PROFILES } from "@/data/nca-profiles";
 import type { ConsistencyFinding } from "@/lib/generate/consistency-check";
 import { ImpactNotification } from "./ImpactNotification";
 import type { ImpactResult } from "@/lib/generate/impact-analysis";
+import { computeOptimalOrder } from "@/lib/generate/document-order";
+import {
+  extractKeyFindings,
+  formatPackageContext,
+} from "@/lib/generate/key-findings";
+import type { DocumentFindings } from "@/lib/generate/key-findings";
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
@@ -922,8 +928,10 @@ export function Generate2Page() {
       const { packageId, documentTypes } = pkgData;
 
       // 2. Generate each document type sequentially
-      const typesToGenerate = (documentTypes || ALL_NCA_DOC_TYPES).filter(
-        (t) => !completedDocs.has(t),
+      const typesToGenerate = computeOptimalOrder(
+        (documentTypes || ALL_NCA_DOC_TYPES).filter(
+          (t) => !completedDocs.has(t),
+        ),
       );
       const pkgTotalDocs = typesToGenerate.length;
 
@@ -940,6 +948,8 @@ export function Generate2Page() {
         completedDocs: 0,
         error: null,
       });
+
+      const packageFindings: DocumentFindings[] = [];
 
       for (const docType of typesToGenerate) {
         // Check if aborted before starting each document
@@ -1154,6 +1164,23 @@ export function Generate2Page() {
               0,
             ),
           });
+
+          // Extract key findings for cross-reference in subsequent documents
+          try {
+            const fullContent = sectionContents
+              .filter((s) => typeof s === "string" && s.length > 0)
+              .join("\n\n");
+            const parsedForFindings = parseSectionsFromMarkdown(fullContent);
+            const findings = extractKeyFindings(docType, parsedForFindings);
+            if (findings.length > 0) {
+              packageFindings.push({
+                documentType: docType,
+                keyFindings: findings,
+              });
+            }
+          } catch {
+            // Non-critical — cross-references are best-effort
+          }
 
           // M-7: Clear accumulated section contents to free memory for next document
           sectionContents = [];
