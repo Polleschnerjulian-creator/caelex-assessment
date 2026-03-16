@@ -54,3 +54,6 @@ function getLanguageDirective(language: string): string {
       return "## Language\nGenerate all document content in English.";
   }
 }
+
+// Re-export plan-aware prompt builder for use when a reasoning plan exists
+export { buildSectionPromptWithPlan } from "./reasoning-prompt";

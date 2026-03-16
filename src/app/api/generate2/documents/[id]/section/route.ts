@@ -93,7 +93,7 @@ export async function POST(
         organizationId: membership.organizationId,
         status: "GENERATING",
       },
-      select: { id: true, content: true },
+      select: { id: true, content: true, reasoningPlanId: true },
     });
 
     if (!doc) {
@@ -115,6 +115,26 @@ export async function POST(
         content: existingContent[sectionIndex].raw,
         cached: true,
       });
+    }
+
+    // Load reasoning plan if document has one (used for plan-aware prompts)
+    // The plan data is stored on the document record and will be injected
+    // into the prompt context by the generation orchestrator.
+    let sectionPlanData = null;
+    if (doc.reasoningPlanId) {
+      try {
+        const plan = await prisma.nCAReasoningPlan.findUnique({
+          where: { id: doc.reasoningPlanId },
+          select: { sections: true, crossReferences: true },
+        });
+        if (plan?.sections) {
+          const sections = plan.sections as Array<{ sectionIndex: number }>;
+          sectionPlanData =
+            sections.find((s) => s.sectionIndex === sectionIndex) || null;
+        }
+      } catch {
+        // Non-fatal: proceed without plan data
+      }
     }
 
     const result = await generateSection(
