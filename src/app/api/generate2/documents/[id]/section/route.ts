@@ -139,33 +139,48 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     const safeMessage = "Section generation failed";
-    const status = (error as { status?: number }).status;
+    const apiStatus = (error as { status?: number }).status;
 
     logger.error(
       `[section/route] Section generation error (doc=${documentId}):`,
       {
         message: error instanceof Error ? error.message : safeMessage,
-        status,
+        status: apiStatus,
         error,
       },
     );
 
-    // Mark document as FAILED for permanent errors (not transient/retryable)
-    const isPermanentFailure =
-      status !== 429 && status !== 529 && status !== 503;
-    if (documentId && isPermanentFailure) {
+    // Only mark as FAILED for errors that are DEFINITELY permanent:
+    // explicit 4xx (except 429) from Anthropic = bad request, auth, etc.
+    // Missing status (undefined) means timeout/network/SDK error = transient.
+    const isDefinitelyPermanent =
+      typeof apiStatus === "number" &&
+      apiStatus >= 400 &&
+      apiStatus < 500 &&
+      apiStatus !== 429;
+
+    if (documentId && isDefinitelyPermanent) {
       markGenerationFailed(documentId, safeMessage).catch((e) =>
         logger.error("[section/route] Failed to mark doc as FAILED", e),
       );
     }
 
+    // Return the actual error status so the client can distinguish:
+    // 429 → rate limited (retryable), 503 → overloaded (retryable), else 500
+    const httpStatus =
+      apiStatus === 429
+        ? 429
+        : apiStatus === 529 || apiStatus === 503
+          ? 503
+          : 500;
+
     return NextResponse.json(
       {
         error: safeMessage,
-        code: status === 429 ? "RATE_LIMITED" : "GENERATION_FAILED",
-        retryable: !isPermanentFailure,
+        code: apiStatus === 429 ? "RATE_LIMITED" : "GENERATION_FAILED",
+        retryable: !isDefinitelyPermanent,
       },
-      { status: 500 },
+      { status: httpStatus },
     );
   }
 }

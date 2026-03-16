@@ -36,7 +36,7 @@ function logError(message: string, error: unknown) {
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
-const SECTION_FETCH_TIMEOUT_MS = 305_000; // 5 min + 5s buffer (matches server maxDuration=300s)
+const SECTION_FETCH_TIMEOUT_MS = 150_000; // 2.5 min — Anthropic SDK timeout is 120s + overhead
 const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
 const GENERATION_WATCHDOG_MS = 900_000; // 15 minutes max total generation time
 
@@ -368,9 +368,13 @@ export function Generate2Page() {
           // M-2: Only retry on 429 (rate limited) and 5xx (server error)
           if (sectionRes.ok) break; // Success
           if (sectionRes.status >= 500 || sectionRes.status === 429) {
-            // Retryable — continue loop
+            // Retryable — use longer delay for 429 (rate limit needs cool-down)
             if (attempt < MAX_RETRIES - 1) {
-              await new Promise((r) => setTimeout(r, (attempt + 1) * 2000));
+              const delay =
+                sectionRes.status === 429
+                  ? 10_000 * (attempt + 1) // 10s, 20s for rate limit
+                  : 3_000 * (attempt + 1); // 3s, 6s for server errors
+              await new Promise((r) => setTimeout(r, delay));
             }
             continue;
           }
@@ -812,9 +816,11 @@ export function Generate2Page() {
                 if (sectionRes.ok) break;
                 if (sectionRes.status >= 500 || sectionRes.status === 429) {
                   if (attempt < PKG_MAX_RETRIES - 1) {
-                    await new Promise((r) =>
-                      setTimeout(r, (attempt + 1) * 2000),
-                    );
+                    const delay =
+                      sectionRes.status === 429
+                        ? 10_000 * (attempt + 1)
+                        : 3_000 * (attempt + 1);
+                    await new Promise((r) => setTimeout(r, delay));
                   }
                   continue;
                 }

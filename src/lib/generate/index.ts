@@ -30,7 +30,12 @@ let anthropicClient: Anthropic | null = null;
 function getAnthropicClient(): Anthropic | null {
   if (!ANTHROPIC_API_KEY) return null;
   if (!anthropicClient) {
-    anthropicClient = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    anthropicClient = new Anthropic({
+      apiKey: ANTHROPIC_API_KEY,
+      // Explicit timeout prevents indefinite hangs if Anthropic is slow.
+      // 120s per API call — well within Vercel's maxDuration=300.
+      timeout: 120_000,
+    });
   }
   return anthropicClient;
 }
@@ -178,65 +183,37 @@ export async function generateSection(
     sectionTitle,
   );
 
-  // Retry with exponential backoff for transient errors (429, 529, 500)
-  const MAX_RETRIES = 3;
-  let lastError: Error | null = null;
+  // Single attempt — the CLIENT already retries on 429/5xx with backoff.
+  // Removing the server-side retry loop prevents double-retry amplification
+  // that caused multi-minute silent hangs (the "freeze" bug).
+  const response = await client.messages.create({
+    model: sectionModel,
+    max_tokens: MAX_TOKENS_PER_SECTION,
+    temperature: 0.3,
+    // Use prompt caching — system prompt is identical for all sections of a document.
+    // Sections 2+ hit the cache, reducing latency by ~50% and input cost by ~90%.
+    system: [
+      {
+        type: "text" as const,
+        text: systemPrompt,
+        cache_control: { type: "ephemeral" as const },
+      },
+    ],
+    messages: [{ role: "user", content: sectionPrompt }],
+  });
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const response = await client.messages.create({
-        model: sectionModel,
-        max_tokens: MAX_TOKENS_PER_SECTION,
-        temperature: 0.3,
-        // Use prompt caching — system prompt is identical for all sections of a document.
-        // Sections 2+ hit the cache, reducing latency by ~50% and input cost by ~90%.
-        system: [
-          {
-            type: "text" as const,
-            text: systemPrompt,
-            cache_control: { type: "ephemeral" as const },
-          },
-        ],
-        messages: [{ role: "user", content: sectionPrompt }],
-      });
+  const content =
+    response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
+      .join("\n") || "";
 
-      const content =
-        response.content
-          .filter(
-            (block): block is Anthropic.TextBlock => block.type === "text",
-          )
-          .map((block) => block.text)
-          .join("\n") || "";
-
-      return {
-        content,
-        sectionIndex,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      };
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      const status = (err as { status?: number }).status;
-      const isRetryable = status === 429 || status === 529 || status === 500;
-
-      if (!isRetryable || attempt === MAX_RETRIES) {
-        console.error(
-          `[generateSection] Section ${sectionNumber} "${sectionTitle}" failed permanently:`,
-          { status, attempt, error: lastError.message },
-        );
-        throw lastError;
-      }
-
-      // Exponential backoff: 2s, 4s, 8s
-      const delayMs = 2000 * Math.pow(2, attempt);
-      console.warn(
-        `[generateSection] Retrying section ${sectionNumber} (attempt ${attempt + 1}/${MAX_RETRIES}) after ${delayMs}ms — status ${status}`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-
-  throw lastError || new Error("Section generation failed after retries");
+  return {
+    content,
+    sectionIndex,
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+  };
 }
 
 /**
