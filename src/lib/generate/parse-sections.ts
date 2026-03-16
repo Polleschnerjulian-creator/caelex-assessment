@@ -98,7 +98,7 @@ function parseBlockContent(body: string): ParsedSectionContent[] {
       continue;
     }
 
-    // Table: starts with | Header |
+    // Table: starts with | Header | and next line is a separator (| --- | --- |)
     if (
       line.match(/^\|.*\|/) &&
       i + 1 < lines.length &&
@@ -109,6 +109,24 @@ function parseBlockContent(body: string): ParsedSectionContent[] {
         content.push(tableResult.table);
       }
       i = tableResult.nextIndex;
+      continue;
+    }
+
+    // Pipe-delimited line WITHOUT a table separator on the next line.
+    // Treat as text to prevent infinite loop — the table check above didn't
+    // match, but the default text exclusion regex would block this line,
+    // causing `i` to never advance.
+    if (line.match(/^\|.*\|/)) {
+      const pipeTextLines: string[] = [];
+      while (i < lines.length && lines[i]?.match(/^\|.*\|/)) {
+        // Strip leading/trailing pipes and collapse cells into readable text
+        pipeTextLines.push(lines[i].trim());
+        i++;
+      }
+      content.push({
+        type: "text",
+        value: pipeTextLines.join(" "),
+      });
       continue;
     }
 
@@ -169,6 +187,11 @@ function parseBlockContent(body: string): ParsedSectionContent[] {
     }
     if (textLines.length > 0) {
       content.push({ type: "text", value: textLines.join(" ") });
+    } else {
+      // Safety: skip any unrecognized line to guarantee forward progress.
+      // Without this, a line that matches the exclusion regex above but isn't
+      // handled by any specific parser branch would cause an infinite loop.
+      i++;
     }
   }
 

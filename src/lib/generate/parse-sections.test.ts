@@ -255,5 +255,52 @@ More text.`;
       expect(t.headers).toEqual(["Header 1", "Header 2"]);
       expect(t.rows).toEqual([]);
     });
+
+    it("does not freeze on pipe-delimited line without table separator", () => {
+      const input = `## SECTION: Test
+| Requirement | Status | Evidence |
+Some text after the pipe line.`;
+      const result = parseSectionsFromMarkdown(input);
+      // Must complete without hanging — pipe line treated as text
+      expect(result).toHaveLength(1);
+      expect(result[0].content.length).toBeGreaterThanOrEqual(1);
+      const allText = result[0].content
+        .filter((c): c is { type: "text"; value: string } => c.type === "text")
+        .map((c) => c.value)
+        .join(" ");
+      expect(allText).toContain("Requirement");
+      expect(allText).toContain("Some text after");
+    });
+
+    it("does not freeze on multiple consecutive pipe lines without separator", () => {
+      const input = `## SECTION: Test
+| Row 1 Col A | Row 1 Col B |
+| Row 2 Col A | Row 2 Col B |
+Normal text after.`;
+      const result = parseSectionsFromMarkdown(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].content.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("does not freeze on pipe line at end of section", () => {
+      const input = `## SECTION: Test
+Some introductory text.
+| Standalone pipe line |`;
+      const result = parseSectionsFromMarkdown(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].content.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("handles pipe line followed by heading", () => {
+      const input = `## SECTION: Test
+| Art. 67 | Debris Mitigation | Compliant |
+### Next Subsection
+More content here.`;
+      const result = parseSectionsFromMarkdown(input);
+      expect(result).toHaveLength(1);
+      const types = result[0].content.map((c) => c.type);
+      expect(types).toContain("text");
+      expect(types).toContain("heading");
+    });
   });
 });
