@@ -123,4 +123,18 @@ describe("buildSectionPromptWithPlan", () => {
     expect(prompt).toContain("CROSS-REFERENCE DATA");
     expect(prompt).toContain("25-year compliance");
   });
+
+  it("includes NCA context block when provided", () => {
+    const prompt = buildSectionPromptWithPlan(
+      "Context",
+      5,
+      "Title",
+      mockSectionPlan,
+      undefined,
+      undefined,
+      "NCA TARGET: CNES (France)\n- Scrutiny level for debris: 5/5",
+    );
+    expect(prompt).toContain("NCA TARGET");
+    expect(prompt).toContain("CNES");
+  });
 });

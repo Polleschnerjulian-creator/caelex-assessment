@@ -7,6 +7,35 @@
  */
 
 import type { SectionPlan, CrossReference } from "./reasoning-types";
+import type { NCAProfile, DocumentCategory } from "@/data/nca-profiles";
+
+export function buildNCAContextBlock(
+  nca: NCAProfile,
+  documentCategory: DocumentCategory,
+): string {
+  const rigor = nca.rigor[documentCategory];
+  const parts: string[] = [];
+
+  parts.push(`NCA TARGET: ${nca.name}`);
+  parts.push(`- Scrutiny level for ${documentCategory}: ${rigor}/5`);
+
+  if (nca.preferredStandards.length > 0) {
+    parts.push(
+      `- Preferred standards to reference: ${nca.preferredStandards.join(", ")}`,
+    );
+  }
+
+  if (nca.focusAreas.length > 0) {
+    parts.push("- Focus areas:");
+    for (const area of nca.focusAreas) {
+      parts.push(
+        `  - ${area.articleRange} (${area.weight}): ${area.description}`,
+      );
+    }
+  }
+
+  return parts.join("\n");
+}
 
 export function buildSectionPromptWithPlan(
   userMessage: string,
@@ -18,6 +47,7 @@ export function buildSectionPromptWithPlan(
     "toDocumentType" | "toSection" | "description"
   >[],
   packageContext?: string,
+  ncaContext?: string,
 ): string {
   // Fall back to existing prompt format when no plan
   if (!sectionPlan) {
@@ -73,6 +103,11 @@ export function buildSectionPromptWithPlan(
   // Package context from previously generated documents
   if (packageContext) {
     parts.push(`\n${packageContext}`);
+  }
+
+  // NCA-specific context block
+  if (ncaContext) {
+    parts.push(`\n${ncaContext}`);
   }
 
   parts.push(
