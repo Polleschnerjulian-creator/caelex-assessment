@@ -161,8 +161,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         @media (min-width: 1024px) {
           .sidebar-content-area {
             margin-left: ${contentMargin}px;
-            ${layoutMounted ? "transition: margin-left 300ms ease-out;" : ""}
-            will-change: margin-left;
+            margin-right: ${astraWidgetOpen ? 400 : 0}px;
+            ${layoutMounted ? "transition: margin-left 300ms ease-out, margin-right 280ms cubic-bezier(0.16, 1, 0.3, 1);" : ""}
+            will-change: margin-left, margin-right;
           }
         }
       `}</style>
