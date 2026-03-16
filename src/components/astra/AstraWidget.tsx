@@ -124,7 +124,7 @@ export default function AstraWidget({
     sendMessage(prompt);
   };
 
-  const hasMessages = messages.length > 0;
+  const hasUserMessages = messages.some((m) => m.role === "user");
 
   if (!isOpen) return null;
 
@@ -197,7 +197,7 @@ export default function AstraWidget({
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {hasMessages && (
+            {hasUserMessages && (
               <button
                 onClick={resetChat}
                 style={headerBtnStyle}
@@ -229,7 +229,7 @@ export default function AstraWidget({
             flexDirection: "column",
           }}
         >
-          {!hasMessages ? (
+          {!hasUserMessages ? (
             /* ─── Empty State: Breathing Orb + Suggested Actions ─── */
             <div
               style={{
