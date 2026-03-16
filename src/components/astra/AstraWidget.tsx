@@ -268,8 +268,14 @@ export default function AstraWidget({
   onClose,
   sidebarMargin,
 }: AstraWidgetProps) {
-  const { messages, isTyping, sendMessage, resetChat, setGeneralContext } =
-    useAstra();
+  const {
+    messages,
+    isTyping,
+    isStreaming,
+    sendMessage,
+    resetChat,
+    setGeneralContext,
+  } = useAstra();
 
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
@@ -277,38 +283,6 @@ export default function AstraWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const initRef = useRef(false);
-
-  // ─── Streaming simulation ───
-  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
-  const [streamChars, setStreamChars] = useState(0);
-  const processedMsgIds = useRef(new Set<string>());
-
-  useEffect(() => {
-    if (messages.length === 0) return;
-    const lastMsg = messages[messages.length - 1];
-    if (!lastMsg || lastMsg.role === "user") return;
-    if (processedMsgIds.current.has(lastMsg.id)) return;
-
-    processedMsgIds.current.add(lastMsg.id);
-
-    const len = lastMsg.content.length;
-    const speed = Math.max(2, Math.ceil(len / 80));
-
-    setStreamingMsgId(lastMsg.id);
-    setStreamChars(0);
-
-    let idx = 0;
-    const timer = setInterval(() => {
-      idx = Math.min(idx + speed, len);
-      setStreamChars(idx);
-      if (idx >= len) {
-        clearInterval(timer);
-        setStreamingMsgId(null);
-      }
-    }, 14);
-
-    return () => clearInterval(timer);
-  }, [messages]);
 
   // Initialize general context on first open
   useEffect(() => {
@@ -323,7 +297,7 @@ export default function AstraWidget({
   // Auto-scroll (also during streaming)
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping, streamChars]);
+  }, [messages, isTyping]);
 
   // Focus input on open
   useEffect(() => {
@@ -654,12 +628,11 @@ export default function AstraWidget({
                 width: "100%",
               }}
             >
-              {messages.map((msg) => {
+              {messages.map((msg, msgIdx) => {
                 const isUser = msg.role === "user";
-                const isStreaming = streamingMsgId === msg.id;
-                const displayText = isStreaming
-                  ? msg.content.slice(0, streamChars)
-                  : msg.content;
+                const isLastAssistant =
+                  !isUser && msgIdx === messages.length - 1;
+                const showCursor = isStreaming && isLastAssistant;
 
                 if (isUser) {
                   return (
@@ -677,12 +650,17 @@ export default function AstraWidget({
                           maxWidth: "82%",
                           padding: "10px 14px",
                           borderRadius: "16px 16px 4px 16px",
-                          background: "#111827",
+                          background: "rgba(0, 0, 0, 0.78)",
+                          backdropFilter: "blur(12px) saturate(1.3)",
+                          WebkitBackdropFilter: "blur(12px) saturate(1.3)",
+                          border: "1px solid rgba(255, 255, 255, 0.06)",
                           color: "#ffffff",
                           fontSize: 13,
                           lineHeight: 1.55,
                           wordBreak: "break-word",
                           whiteSpace: "pre-wrap",
+                          boxShadow:
+                            "0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
                         }}
                       >
                         {msg.content}
@@ -691,7 +669,7 @@ export default function AstraWidget({
                   );
                 }
 
-                // Assistant message
+                // Assistant message — liquid glass panel
                 return (
                   <div
                     key={msg.id}
@@ -730,19 +708,27 @@ export default function AstraWidget({
                       />
                     </div>
 
-                    {/* Message content */}
+                    {/* Glass message panel */}
                     <div
                       style={{
                         flex: 1,
                         minWidth: 0,
+                        padding: "10px 14px",
+                        borderRadius: 14,
+                        background: "rgba(255, 255, 255, 0.45)",
+                        backdropFilter: "blur(12px) saturate(1.2)",
+                        WebkitBackdropFilter: "blur(12px) saturate(1.2)",
+                        border: "1px solid rgba(0, 0, 0, 0.04)",
+                        boxShadow:
+                          "0 1px 4px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,0.5)",
                         fontSize: 13,
                         lineHeight: 1.6,
                         color: "#374151",
                         wordBreak: "break-word",
                       }}
                     >
-                      {renderMarkdownGlass(displayText)}
-                      {isStreaming && (
+                      {renderMarkdownGlass(msg.content)}
+                      {showCursor && (
                         <span
                           className="astra-stream-cursor"
                           style={{
@@ -761,8 +747,8 @@ export default function AstraWidget({
                 );
               })}
 
-              {/* Typing indicator */}
-              {isTyping && (
+              {/* Typing indicator — show during tool execution (before streaming starts) */}
+              {isTyping && !isStreaming && (
                 <div
                   style={{
                     display: "flex",

@@ -322,6 +322,8 @@ export interface AstraChatRequest {
     mode?: ConversationMode;
   };
   missionData?: AstraMissionData;
+  /** Request streaming response via SSE */
+  stream?: boolean;
 }
 
 export interface AstraChatResponse {

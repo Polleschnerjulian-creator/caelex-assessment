@@ -165,7 +165,95 @@ export async function POST(request: NextRequest) {
     // ─── Initialize Engine ───
     const engine = new AstraEngine();
 
-    // ─── Process Message ───
+    // ─── Streaming Mode (SSE) ───
+    if (body.stream) {
+      const encoder = new TextEncoder();
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            const { response, conversationId: convId } =
+              await engine.processMessageStreamingWithConversation(
+                body.message,
+                userId,
+                organizationId,
+                (chunk: string) => {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ type: "text", text: chunk })}\n\n`,
+                    ),
+                  );
+                },
+                body.conversationId,
+                pageContext,
+                body.missionData,
+              );
+
+            // Send metadata
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "metadata",
+                  conversationId: convId,
+                  response: {
+                    confidence: response.confidence,
+                    sources: response.sources,
+                    actions: response.actions,
+                    complianceImpact: response.complianceImpact,
+                    metadata: response.metadata,
+                  },
+                  remainingQueries: rateLimitResult.remaining,
+                })}\n\n`,
+              ),
+            );
+
+            // Send done
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`),
+            );
+            controller.close();
+
+            // Audit (non-blocking)
+            logAuditEvent({
+              action: "ASTRA_CHAT",
+              entityType: "astra_conversation",
+              entityId: convId,
+              userId,
+              metadata: {
+                organizationId,
+                messageLength: body.message.length,
+                conversationMode: body.context?.mode || "general",
+                responseConfidence: response.confidence,
+                processingTimeMs: Date.now() - startTime,
+                streaming: true,
+                ip,
+              },
+            }).catch(() => {});
+          } catch (error) {
+            logger.error("ASTRA Streaming Error", error);
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "error",
+                  message: "An error occurred while processing your request",
+                })}\n\n`,
+              ),
+            );
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
+
+    // ─── Non-Streaming Mode ───
     const { response, conversationId } =
       await engine.processMessageWithConversation(
         body.message,

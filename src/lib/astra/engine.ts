@@ -312,6 +312,106 @@ export class AstraEngine implements IAstraEngine {
   }
 
   /**
+   * Call Anthropic API with streaming and automatic tool execution loop.
+   * Text chunks from the final response are streamed via onTextChunk callback.
+   */
+  private async callAnthropicWithToolLoopStreaming(
+    client: Anthropic,
+    systemPrompt: string,
+    initialMessages: AnthropicMessage[],
+    userContext: AstraUserContext,
+    onTextChunk: (text: string) => void,
+  ): Promise<{
+    responseText: string;
+    toolCalls: AstraToolCall[];
+    tokensUsed: number;
+  }> {
+    const messages: AnthropicMessage[] = [...initialMessages];
+    const allToolCalls: AstraToolCall[] = [];
+    let totalTokens = 0;
+    let iterations = 0;
+
+    while (iterations < MAX_TOOL_ITERATIONS) {
+      iterations++;
+
+      const stream = client.messages.stream({
+        model: MODEL,
+        max_tokens: MAX_TOKENS,
+        system: systemPrompt,
+        messages: messages as Anthropic.MessageParam[],
+        tools: ALL_TOOLS as Anthropic.Tool[],
+        temperature: 0.7,
+      });
+
+      // Forward text chunks in real-time
+      stream.on("text", (text) => {
+        onTextChunk(text);
+      });
+
+      const response = await stream.finalMessage();
+      totalTokens += response.usage.input_tokens + response.usage.output_tokens;
+
+      const toolUseBlocks = response.content.filter(
+        (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+      );
+
+      // If no tool calls, extract text and return
+      if (response.stop_reason !== "tool_use" || toolUseBlocks.length === 0) {
+        const textBlocks = response.content.filter(
+          (block): block is Anthropic.TextBlock => block.type === "text",
+        );
+        const responseText = textBlocks.map((b) => b.text).join("\n\n");
+        return {
+          responseText,
+          toolCalls: allToolCalls,
+          tokensUsed: totalTokens,
+        };
+      }
+
+      // Execute tool calls
+      const toolResults: AnthropicContentBlock[] = [];
+
+      for (const toolUse of toolUseBlocks) {
+        const toolCall: AstraToolCall = {
+          id: toolUse.id,
+          name: toolUse.name,
+          input: toolUse.input as Record<string, unknown>,
+        };
+        allToolCalls.push(toolCall);
+
+        const result = await executeTool(toolCall, userContext);
+
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: toolUse.id,
+          content: result.success
+            ? JSON.stringify(result.data)
+            : `Error: ${result.error}`,
+          is_error: !result.success,
+        });
+      }
+
+      messages.push({
+        role: "assistant",
+        content: response.content as AnthropicContentBlock[],
+      });
+
+      messages.push({
+        role: "user",
+        content: toolResults,
+      });
+    }
+
+    console.warn(`ASTRA: Hit max tool iterations (${MAX_TOOL_ITERATIONS})`);
+    return {
+      responseText:
+        "I executed several tools but couldn't complete the analysis. Please try a more specific question.",
+      toolCalls: allToolCalls,
+      tokensUsed: totalTokens,
+    };
+  }
+
+  /**
    * Generate fallback response when API is not available.
    */
   private generateFallbackResponse(
@@ -419,6 +519,139 @@ export class AstraEngine implements IAstraEngine {
       response,
       conversationId: conversation.id,
     };
+  }
+
+  /**
+   * Process a message with streaming and full conversation management.
+   * Text chunks are streamed via onTextChunk as Claude generates them.
+   */
+  async processMessageStreamingWithConversation(
+    message: string,
+    userId: string,
+    organizationId: string,
+    onTextChunk: (text: string) => void,
+    conversationId?: string,
+    pageContext?: AstraContext,
+    missionData?: AstraMissionData,
+  ): Promise<{ response: AstraResponse; conversationId: string }> {
+    const startTime = Date.now();
+
+    const conversation = await getOrCreateConversation(
+      conversationId,
+      userId,
+      organizationId,
+    );
+
+    await addUserMessage(conversation.id, message);
+
+    const history = this.config.enableHistory
+      ? await getHistoryForLLM(conversation.id)
+      : [];
+
+    const { userContext, contextString } = await buildCompleteContext(
+      userId,
+      organizationId,
+      message,
+      pageContext,
+      missionData,
+    );
+
+    const conversationMessages: AstraConversationMessage[] = history.map(
+      (h, i) => ({
+        id: `hist-${i}`,
+        role: h.role as "user" | "assistant",
+        content: h.content,
+        timestamp: new Date(),
+      }),
+    );
+
+    try {
+      const client = getAnthropicClient();
+      if (!client) {
+        const response = this.generateFallbackResponse(
+          message,
+          userContext,
+          startTime,
+        );
+        onTextChunk(response.message);
+        await addAssistantMessage(conversation.id, response.message, {
+          sources: response.sources,
+          confidence: response.confidence,
+          toolCalls: response.metadata?.toolCalls,
+        });
+        return { response, conversationId: conversation.id };
+      }
+
+      const mode = this.detectMode(message, pageContext);
+      const systemPrompt = buildSystemPrompt(userContext, mode);
+      const preparedMessages = this.prepareMessages(
+        message,
+        conversationMessages,
+        contextString,
+      );
+
+      const { responseText, toolCalls, tokensUsed } =
+        await this.callAnthropicWithToolLoopStreaming(
+          client,
+          systemPrompt,
+          preparedMessages,
+          userContext,
+          onTextChunk,
+        );
+
+      const processingTimeMs = Date.now() - startTime;
+      const response = formatResponse(
+        responseText,
+        toolCalls,
+        undefined,
+        processingTimeMs,
+      );
+      if (response.metadata) {
+        response.metadata.tokensUsed = tokensUsed;
+      }
+
+      await addAssistantMessage(conversation.id, response.message, {
+        sources: response.sources,
+        confidence: response.confidence,
+        toolCalls: response.metadata?.toolCalls,
+      });
+
+      if (
+        this.config.autoSummarize &&
+        (await shouldSummarize(conversation.id))
+      ) {
+        await summarizeOlderMessages(conversation.id);
+      }
+
+      return { response, conversationId: conversation.id };
+    } catch (error) {
+      console.error("ASTRA Engine streaming error:", error);
+
+      let errorResponse: AstraResponse;
+      if (error instanceof Anthropic.APIError) {
+        if (error.status === 401) {
+          errorResponse = createErrorResponse("Invalid API key.");
+        } else if (error.status === 429) {
+          errorResponse = createErrorResponse(
+            "Rate limit exceeded. Please try again.",
+          );
+        } else if (error.status === 500 || error.status === 503) {
+          errorResponse = createErrorResponse(
+            "AI service temporarily unavailable.",
+          );
+        } else {
+          errorResponse = createErrorResponse(`API error: ${error.message}`);
+        }
+      } else {
+        errorResponse = createErrorResponse(
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        );
+      }
+
+      return { response: errorResponse, conversationId: conversation.id };
+    }
   }
 
   /**

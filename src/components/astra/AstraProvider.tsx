@@ -14,8 +14,6 @@ import type {
   AstraArticleContext,
   AstraCategoryContext,
   AstraMissionData,
-  AstraChatResponse,
-  AstraResponse,
   ConfidenceLevel,
 } from "@/lib/astra/types";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -37,6 +35,7 @@ interface AstraContextType {
   context: AstraContext | null;
   missionData: AstraMissionData;
   isTyping: boolean;
+  isStreaming: boolean;
   conversationId: string | null;
   remainingQueries: number | null;
   error: string | null;
@@ -73,28 +72,6 @@ interface AstraContextType {
 
 const AstraCtx = createContext<AstraContextType | null>(null);
 
-// ─── Helper: Convert API Response to Legacy Message Format ───
-
-function responseToMessage(
-  response: AstraResponse,
-  conversationId: string,
-): AstraMessage {
-  return {
-    id: `${conversationId}-${Date.now()}`,
-    role: "astra",
-    type: "text",
-    content: response.message,
-    timestamp: new Date(),
-    metadata: {
-      sources: response.sources,
-      actions: response.actions,
-      confidence: response.confidence,
-      complianceImpact: response.complianceImpact,
-      toolCalls: response.metadata?.toolCalls,
-    },
-  };
-}
-
 // ─── Helper: Create Local Greeting ───
 
 function createLocalGreeting(ctx: AstraContext): AstraMessage {
@@ -129,6 +106,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
   const [context, setContext] = useState<AstraContext | null>(null);
   const [missionData, setMissionData] = useState<AstraMissionData>({});
   const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [remainingQueries, setRemainingQueries] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -231,6 +209,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
     setMissionData({});
     setConversationId(null);
     setIsTyping(false);
+    setIsStreaming(false);
     setError(null);
   }, []);
 
@@ -253,10 +232,14 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       // Create abort controller for this request
       abortControllerRef.current = new AbortController();
 
+      // Create placeholder assistant message for streaming
+      const placeholderId = crypto.randomUUID();
+
       try {
         const payload = {
           message: text.trim(),
           conversationId: conversationId || undefined,
+          stream: true,
           context: {
             articleId:
               context.mode === "article"
@@ -304,21 +287,90 @@ export function AstraProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        const data: AstraChatResponse = await response.json();
+        // Add placeholder message and start streaming
+        const placeholderMsg: AstraMessage = {
+          id: placeholderId,
+          role: "astra",
+          type: "text",
+          content: "",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, placeholderMsg]);
+        setIsStreaming(true);
 
-        if (data.conversationId && !conversationId) {
-          setConversationId(data.conversationId);
+        // Read SSE stream
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let fullContent = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Parse SSE events from buffer
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() || "";
+
+          for (const part of parts) {
+            const dataLine = part
+              .split("\n")
+              .find((l) => l.startsWith("data: "));
+            if (!dataLine) continue;
+
+            try {
+              const data = JSON.parse(dataLine.slice(6));
+
+              if (data.type === "text") {
+                fullContent += data.text;
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === placeholderId ? { ...m, content: fullContent } : m,
+                  ),
+                );
+              } else if (data.type === "metadata") {
+                if (data.conversationId && !conversationId) {
+                  setConversationId(data.conversationId);
+                }
+                if (data.remainingQueries !== undefined) {
+                  setRemainingQueries(data.remainingQueries);
+                }
+                // Update message with metadata
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === placeholderId
+                      ? {
+                          ...m,
+                          metadata: {
+                            sources: data.response?.sources,
+                            actions: data.response?.actions,
+                            confidence: data.response?.confidence,
+                            complianceImpact: data.response?.complianceImpact,
+                            toolCalls: data.response?.metadata?.toolCalls,
+                          },
+                        }
+                      : m,
+                  ),
+                );
+              } else if (data.type === "error") {
+                throw new Error(
+                  data.message || "An error occurred during streaming.",
+                );
+              }
+            } catch (parseErr) {
+              if (
+                parseErr instanceof Error &&
+                parseErr.message !== "An error occurred during streaming."
+              ) {
+                console.warn("SSE parse error:", parseErr);
+              } else {
+                throw parseErr;
+              }
+            }
+          }
         }
-
-        if (data.remainingQueries !== undefined) {
-          setRemainingQueries(data.remainingQueries);
-        }
-
-        const assistantMsg = responseToMessage(
-          data.response,
-          data.conversationId,
-        );
-        setMessages((prev) => [...prev, assistantMsg]);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
           return;
@@ -339,6 +391,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         setMessages((prev) => [...prev, errorMsg]);
       } finally {
         setIsTyping(false);
+        setIsStreaming(false);
         abortControllerRef.current = null;
       }
     },
@@ -430,6 +483,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         context,
         missionData,
         isTyping,
+        isStreaming,
         conversationId,
         remainingQueries,
         error,
