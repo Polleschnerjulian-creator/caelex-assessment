@@ -4670,6 +4670,27 @@ model NCAReasoningPlan {
   @@index([userId, organizationId])
 }
 
+model NCAConsistencyCheck {
+  id              String   @id @default(cuid())
+  documentId      String
+  packageId       String?
+  userId          String
+  organizationId  String
+  findings        Json
+  findingCount    Int
+  errorCount      Int
+  warningCount    Int
+  infoCount       Int
+  aiModelUsed     String?
+  aiTokensUsed    Int?
+  durationMs      Int
+  createdAt       DateTime @default(now())
+
+  @@index([documentId])
+  @@index([packageId])
+  @@index([userId, organizationId])
+}
+
 model NCADocPackage {
   id                    String           @id @default(cuid())
   userId                String
