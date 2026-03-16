@@ -19,7 +19,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAstra } from "./AstraProvider";
-import AstraMessageBubble from "./AstraMessageBubble";
 
 // ─── Panel width ────────────────────────────────────────────────────────────
 
@@ -73,6 +72,187 @@ const QUICK_TOOLS = [
   },
 ];
 
+// ─── Markdown Renderer (glass theme) ────────────────────────────────────────
+
+function processInline(line: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let remaining = line;
+  let pk = 0;
+
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+    if (boldMatch && boldMatch.index !== undefined) {
+      if (boldMatch.index > 0)
+        parts.push(
+          <span key={pk++}>{remaining.slice(0, boldMatch.index)}</span>,
+        );
+      parts.push(
+        <strong key={pk++} style={{ fontWeight: 600, color: "#111827" }}>
+          {boldMatch[1]}
+        </strong>,
+      );
+      remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+    } else {
+      const codeMatch = remaining.match(/`([^`]+)`/);
+      if (codeMatch && codeMatch.index !== undefined) {
+        if (codeMatch.index > 0)
+          parts.push(
+            <span key={pk++}>{remaining.slice(0, codeMatch.index)}</span>,
+          );
+        parts.push(
+          <code
+            key={pk++}
+            style={{
+              padding: "1px 5px",
+              borderRadius: 4,
+              background: "rgba(0,0,0,0.05)",
+              fontSize: "0.9em",
+              fontFamily: "monospace",
+            }}
+          >
+            {codeMatch[1]}
+          </code>,
+        );
+        remaining = remaining.slice(codeMatch.index + codeMatch[0].length);
+      } else {
+        parts.push(<span key={pk++}>{remaining}</span>);
+        break;
+      }
+    }
+  }
+  return parts;
+}
+
+function renderMarkdownGlass(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let key = 0;
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      elements.push(
+        <ul
+          key={key++}
+          style={{
+            margin: "4px 0",
+            paddingLeft: 16,
+            listStyleType: "disc",
+          }}
+        >
+          {listItems.map((item, idx) => (
+            <li key={idx} style={{ marginBottom: 2, color: "#4b5563" }}>
+              {processInline(item)}
+            </li>
+          ))}
+        </ul>,
+      );
+      listItems = [];
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      continue;
+    }
+
+    // Bullet list
+    if (/^[•\-*]\s/.test(trimmed)) {
+      listItems.push(trimmed.slice(2));
+      continue;
+    }
+    // Numbered list
+    const numMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+    if (numMatch) {
+      listItems.push(numMatch[1]);
+      continue;
+    }
+
+    flushList();
+
+    // Horizontal rule
+    if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+      elements.push(
+        <hr
+          key={key++}
+          style={{
+            border: "none",
+            borderTop: "1px solid rgba(0,0,0,0.06)",
+            margin: "10px 0",
+          }}
+        />,
+      );
+      continue;
+    }
+
+    // Headers
+    if (trimmed.startsWith("### ")) {
+      elements.push(
+        <div
+          key={key++}
+          style={{
+            fontWeight: 600,
+            fontSize: 12,
+            color: "#111827",
+            marginTop: 10,
+            marginBottom: 2,
+          }}
+        >
+          {processInline(trimmed.slice(4))}
+        </div>,
+      );
+      continue;
+    }
+    if (trimmed.startsWith("## ")) {
+      elements.push(
+        <div
+          key={key++}
+          style={{
+            fontWeight: 600,
+            fontSize: 13,
+            color: "#111827",
+            marginTop: 12,
+            marginBottom: 3,
+          }}
+        >
+          {processInline(trimmed.slice(3))}
+        </div>,
+      );
+      continue;
+    }
+    if (trimmed.startsWith("# ")) {
+      elements.push(
+        <div
+          key={key++}
+          style={{
+            fontWeight: 600,
+            fontSize: 14,
+            color: "#111827",
+            marginTop: 12,
+            marginBottom: 4,
+          }}
+        >
+          {processInline(trimmed.slice(2))}
+        </div>,
+      );
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(
+      <p key={key++} style={{ margin: "3px 0" }}>
+        {processInline(trimmed)}
+      </p>,
+    );
+  }
+
+  flushList();
+  return elements;
+}
+
 // ─── Props ──────────────────────────────────────────────────────────────────
 
 interface AstraWidgetProps {
@@ -98,6 +278,38 @@ export default function AstraWidget({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const initRef = useRef(false);
 
+  // ─── Streaming simulation ───
+  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
+  const [streamChars, setStreamChars] = useState(0);
+  const processedMsgIds = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg || lastMsg.role === "user") return;
+    if (processedMsgIds.current.has(lastMsg.id)) return;
+
+    processedMsgIds.current.add(lastMsg.id);
+
+    const len = lastMsg.content.length;
+    const speed = Math.max(2, Math.ceil(len / 80));
+
+    setStreamingMsgId(lastMsg.id);
+    setStreamChars(0);
+
+    let idx = 0;
+    const timer = setInterval(() => {
+      idx = Math.min(idx + speed, len);
+      setStreamChars(idx);
+      if (idx >= len) {
+        clearInterval(timer);
+        setStreamingMsgId(null);
+      }
+    }, 14);
+
+    return () => clearInterval(timer);
+  }, [messages]);
+
   // Initialize general context on first open
   useEffect(() => {
     if (isOpen && !initRef.current) {
@@ -108,10 +320,10 @@ export default function AstraWidget({
     }
   }, [isOpen, messages.length, setGeneralContext]);
 
-  // Auto-scroll
+  // Auto-scroll (also during streaming)
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, streamChars]);
 
   // Focus input on open
   useEffect(() => {
@@ -124,7 +336,6 @@ export default function AstraWidget({
     if (!input.trim() || isTyping) return;
     sendMessage(input);
     setInput("");
-    // Reset textarea height
     if (inputRef.current) inputRef.current.style.height = "auto";
   }, [input, isTyping, sendMessage]);
 
@@ -299,12 +510,8 @@ export default function AstraWidget({
                   justifyContent: "center",
                 }}
               >
-                {/* Outer glow ring */}
                 <div className="astra-orb-ring" />
-
-                {/* Glass Orb */}
                 <div className="astra-glass-orb">
-                  {/* Inner highlight — top-left light catch */}
                   <div
                     style={{
                       position: "absolute",
@@ -438,101 +645,177 @@ export default function AstraWidget({
             /* ─── Chat Messages ─── */
             <div
               style={{
-                padding: expanded ? "20px 24px" : "16px 20px",
+                padding: "16px 16px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: 4,
+                maxWidth: expanded ? 800 : undefined,
+                margin: expanded ? "0 auto" : undefined,
+                width: "100%",
               }}
             >
-              <div
-                style={{
-                  maxWidth: expanded ? 800 : undefined,
-                  margin: expanded ? "0 auto" : undefined,
-                  width: "100%",
-                }}
-              >
-                {messages.map((msg) =>
-                  expanded ? (
-                    <div key={msg.id} style={{ marginBottom: 16 }}>
-                      <AstraMessageBubble message={msg} />
-                    </div>
-                  ) : (
+              {messages.map((msg) => {
+                const isUser = msg.role === "user";
+                const isStreaming = streamingMsgId === msg.id;
+                const displayText = isStreaming
+                  ? msg.content.slice(0, streamChars)
+                  : msg.content;
+
+                if (isUser) {
+                  return (
                     <div
                       key={msg.id}
                       style={{
                         display: "flex",
-                        flexDirection: "column",
-                        alignItems:
-                          msg.role === "user" ? "flex-end" : "flex-start",
-                        marginBottom: 10,
+                        justifyContent: "flex-end",
+                        marginBottom: 6,
                         animation: "astraMsgFadeIn 200ms ease-out",
                       }}
                     >
                       <div
                         style={{
-                          maxWidth: "88%",
+                          maxWidth: "82%",
                           padding: "10px 14px",
-                          borderRadius:
-                            msg.role === "user"
-                              ? "14px 14px 4px 14px"
-                              : "14px 14px 14px 4px",
-                          background:
-                            msg.role === "user"
-                              ? "#111827"
-                              : "rgba(255,255,255,0.6)",
-                          backdropFilter:
-                            msg.role === "user" ? "none" : "blur(8px)",
-                          border:
-                            msg.role === "user"
-                              ? "none"
-                              : "1px solid rgba(0,0,0,0.04)",
-                          color: msg.role === "user" ? "#ffffff" : "#111827",
+                          borderRadius: "16px 16px 4px 16px",
+                          background: "#111827",
+                          color: "#ffffff",
                           fontSize: 13,
                           lineHeight: 1.55,
                           wordBreak: "break-word",
                           whiteSpace: "pre-wrap",
-                          boxShadow:
-                            msg.role === "user"
-                              ? "none"
-                              : "0 1px 3px rgba(0,0,0,0.02)",
                         }}
                       >
                         {msg.content}
                       </div>
                     </div>
-                  ),
-                )}
-              </div>
+                  );
+                }
+
+                // Assistant message
+                return (
+                  <div
+                    key={msg.id}
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "flex-start",
+                      marginBottom: 8,
+                      animation: "astraMsgFadeIn 250ms ease-out",
+                    }}
+                  >
+                    {/* Avatar */}
+                    <div
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.6)",
+                        backdropFilter: "blur(8px)",
+                        border: "1px solid rgba(0,0,0,0.04)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 2,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/images/logo-black.png"
+                        alt=""
+                        width={13}
+                        height={13}
+                        style={{ objectFit: "contain", opacity: 0.55 }}
+                      />
+                    </div>
+
+                    {/* Message content */}
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontSize: 13,
+                        lineHeight: 1.6,
+                        color: "#374151",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {renderMarkdownGlass(displayText)}
+                      {isStreaming && (
+                        <span
+                          className="astra-stream-cursor"
+                          style={{
+                            display: "inline-block",
+                            width: 2,
+                            height: 14,
+                            background: "#111827",
+                            marginLeft: 1,
+                            verticalAlign: "text-bottom",
+                            borderRadius: 1,
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Typing indicator */}
               {isTyping && (
                 <div
                   style={{
-                    padding: "10px 14px",
-                    borderRadius: "14px 14px 14px 4px",
-                    background: "rgba(255,255,255,0.6)",
-                    backdropFilter: "blur(8px)",
-                    border: "1px solid rgba(0,0,0,0.04)",
-                    fontSize: 13,
-                    color: "#6b7280",
-                    maxWidth: expanded ? 800 : "88%",
-                    margin: expanded ? "0 auto" : undefined,
-                    width: expanded ? "100%" : undefined,
                     display: "flex",
-                    gap: 5,
-                    alignItems: "center",
+                    gap: 10,
+                    alignItems: "flex-start",
+                    marginBottom: 8,
                   }}
                 >
-                  <span
-                    className="astra-typing-dot"
-                    style={{ animationDelay: "0ms" }}
-                  />
-                  <span
-                    className="astra-typing-dot"
-                    style={{ animationDelay: "150ms" }}
-                  />
-                  <span
-                    className="astra-typing-dot"
-                    style={{ animationDelay: "300ms" }}
-                  />
+                  <div
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.6)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid rgba(0,0,0,0.04)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      marginTop: 2,
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/logo-black.png"
+                      alt=""
+                      width={13}
+                      height={13}
+                      style={{ objectFit: "contain", opacity: 0.55 }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 4,
+                      alignItems: "center",
+                      paddingTop: 6,
+                    }}
+                  >
+                    <span
+                      className="astra-typing-dot"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="astra-typing-dot"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="astra-typing-dot"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
@@ -588,7 +871,6 @@ export default function AstraWidget({
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
-                // Auto-resize
                 e.target.style.height = "auto";
                 e.target.style.height =
                   Math.min(e.target.scrollHeight, 120) + "px";
@@ -718,8 +1000,6 @@ export default function AstraWidget({
           animation: astraOrbEntry 700ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both,
                      astraOrbBreathe 5s ease-in-out 800ms infinite;
         }
-
-        /* Outer ring glow */
         .astra-orb-ring {
           position: absolute;
           width: 140px;
@@ -738,7 +1018,6 @@ export default function AstraWidget({
           border: 1px solid rgba(0, 0, 0, 0.015);
           animation: astraRingPulse 5s ease-in-out 1200ms infinite;
         }
-
         @keyframes astraOrbEntry {
           from { opacity: 0; transform: scale(0.6); filter: blur(10px); }
           to { opacity: 1; transform: scale(1); filter: blur(0); }
@@ -786,6 +1065,15 @@ export default function AstraWidget({
         }
         .astra-tool-card:active {
           transform: translateY(0) scale(0.98);
+        }
+
+        /* ─── Streaming cursor ─── */
+        .astra-stream-cursor {
+          animation: astraCursorBlink 600ms steps(2) infinite;
+        }
+        @keyframes astraCursorBlink {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
         }
 
         /* ─── Input ─── */

@@ -107,7 +107,7 @@ function createLocalGreeting(ctx: AstraContext): AstraMessage {
     const catCtx = ctx as AstraCategoryContext;
     content = `Let me help you navigate **${catCtx.categoryLabel}** which covers ${catCtx.articles.length} articles. What specific aspect interests you?`;
   } else {
-    content = `Hello! I'm **ASTRA**, your AI compliance copilot for space regulations. I can help you with:\n\n• EU Space Act requirements (119 articles)\n• NIS2 cybersecurity obligations\n• National space laws (10 jurisdictions)\n• Your Caelex compliance status\n\nWhat would you like to know?`;
+    content = `Your AI compliance copilot. I have access to your compliance data, assessments, and regulatory frameworks.\n\nI can help with EU Space Act, NIS2, national space laws, and your organization's compliance status.`;
   }
 
   return {
