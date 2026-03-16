@@ -77,21 +77,6 @@ const CUBE_CORNERS = [
   [-1, 1, 1],
 ];
 
-const ARTICLE_LABELS = [
-  "Art.4",
-  "Art.9",
-  "Art.12",
-  "Art.18",
-  "Art.27",
-  "Art.31",
-  "Art.45",
-  "Art.52",
-  "Art.67",
-  "Art.74",
-  "Annex II",
-  "Annex IV",
-];
-
 // ─── Shaders ───────────────────────────────────────────────────────────────
 const vertexShader = `
   attribute float size;
@@ -126,11 +111,11 @@ function createCubeGeo(count: number, scale: number, corners: number) {
   const colors = new Float32Array(count * 3);
   const opacities = new Float32Array(count);
 
-  // Use greens/teals for Caelex brand instead of white/blue
-  const primary = new THREE.Color("#10B981"); // emerald
-  const secondary = new THREE.Color("#0D9488"); // teal
+  // White/blue like original landing page entity (on dark background)
   const white = new THREE.Color("#FFFFFF");
-  const baseOpacity = scale === 1 ? 0.7 : scale === 0.6 ? 0.45 : 0.25;
+  const blue = new THREE.Color("#AAC4FF");
+  const color = scale === 1 ? white : blue;
+  const baseOpacity = scale === 1 ? 0.8 : scale === 0.6 ? 0.5 : 0.3;
 
   let idx = 0;
   for (let i = 0; i < corners; i++) {
@@ -140,10 +125,9 @@ function createCubeGeo(count: number, scale: number, corners: number) {
     pos[idx * 3 + 2] = c[2] * HALF * scale + (Math.random() - 0.5) * 0.02;
     sizes[idx] = 0.015 + Math.random() * 0.005;
     opacities[idx] = baseOpacity;
-    const cl = Math.random() < 0.3 ? primary : white;
-    colors[idx * 3] = cl.r;
-    colors[idx * 3 + 1] = cl.g;
-    colors[idx * 3 + 2] = cl.b;
+    colors[idx * 3] = color.r;
+    colors[idx * 3 + 1] = color.g;
+    colors[idx * 3 + 2] = color.b;
     idx++;
   }
 
@@ -156,10 +140,9 @@ function createCubeGeo(count: number, scale: number, corners: number) {
     pos[idx * 3 + 2] = (e[0][2] + (e[1][2] - e[0][2]) * t) * HALF * scale;
     sizes[idx] = 0.012 + Math.random() * 0.004;
     opacities[idx] = baseOpacity;
-    const cl = Math.random() < 0.2 ? secondary : white;
-    colors[idx * 3] = cl.r;
-    colors[idx * 3 + 1] = cl.g;
-    colors[idx * 3 + 2] = cl.b;
+    colors[idx * 3] = color.r;
+    colors[idx * 3 + 1] = color.g;
+    colors[idx * 3 + 2] = color.b;
     idx++;
   }
 
@@ -251,8 +234,8 @@ function VolumeCloud() {
     const c = new Float32Array(VOLUME_PARTICLES * 3);
     const o = new Float32Array(VOLUME_PARTICLES);
     const white = new THREE.Color("#FFFFFF");
-    const emerald = new THREE.Color("#10B981");
-    const teal = new THREE.Color("#0D9488");
+    const blue = new THREE.Color("#AAC4FF");
+    const warm = new THREE.Color("#FFE8CC");
 
     for (let i = 0; i < VOLUME_PARTICLES; i++) {
       const spread = Math.random() < 0.7 ? 1.4 : 2.4;
@@ -267,11 +250,11 @@ function VolumeCloud() {
       b[i * 3 + 2] = z;
       s[i] = 0.006 + Math.random() * 0.004;
       const r = Math.random();
-      const col = r < 0.75 ? white : r < 0.9 ? emerald : teal;
+      const col = r < 0.8 ? white : r < 0.95 ? blue : warm;
       c[i * 3] = col.r;
       c[i * 3 + 1] = col.g;
       c[i * 3 + 2] = col.b;
-      o[i] = 0.35;
+      o[i] = 0.4;
     }
 
     const g = new THREE.BufferGeometry();
@@ -351,10 +334,10 @@ function EdgeStreams() {
     <group ref={g}>
       <points ref={pts} geometry={geo}>
         <pointsMaterial
-          color="#10B981"
+          color="#ffffff"
           size={0.02}
           transparent
-          opacity={0.7}
+          opacity={0.8}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
           sizeAttenuation
@@ -498,10 +481,10 @@ function DataNetwork() {
       </lineSegments>
       <points ref={nodesRef} geometry={nodeGeo}>
         <pointsMaterial
-          color="#10B981"
+          color="#ffffff"
           size={0.018}
           transparent
-          opacity={0.45}
+          opacity={0.5}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
           sizeAttenuation
@@ -515,11 +498,11 @@ function DataNetwork() {
 function Scene() {
   return (
     <>
-      <ambientLight intensity={0.15} />
+      <ambientLight intensity={0.2} />
       <pointLight
         position={[0, 0, 0]}
-        intensity={0.6}
-        color="#10B981"
+        intensity={0.8}
+        color="#8B9FFF"
         distance={6}
       />
       <OuterCube />

@@ -360,30 +360,31 @@ export default function AstraWidget({
                 }}
               />
 
-              {/* 3D Entity Cube — replaces CSS orb */}
+              {/* 3D Entity Cube — dark viewport for particle glow */}
               <div
                 style={{
                   position: "relative",
                   width: "100%",
-                  height: 220,
-                  marginTop: 8,
+                  height: 260,
                   zIndex: 1,
+                  background:
+                    "linear-gradient(180deg, #0A0F1E 0%, #0F172A 60%, #1E293B 85%, #ffffff 100%)",
+                  overflow: "hidden",
                 }}
               >
-                {/* Ambient glow behind the cube */}
+                {/* Emerald ambient glow */}
                 <div
-                  className="astra-ambient"
                   style={{
                     position: "absolute",
-                    top: "50%",
+                    top: "45%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    width: 280,
-                    height: 280,
+                    width: 300,
+                    height: 300,
                     borderRadius: "50%",
                     background:
-                      "radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(13,148,136,0.06) 40%, transparent 65%)",
-                    filter: "blur(30px)",
+                      "radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 40%, transparent 65%)",
+                    filter: "blur(40px)",
                     pointerEvents: "none",
                   }}
                 />
