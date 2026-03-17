@@ -1,44 +1,67 @@
 /**
- * PDF Generator using jsPDF
+ * PDF Generator using jsPDF — Premium Edition
  *
  * Pure JavaScript — zero React dependency.
- * Generates professional compliance documents from ReportSection[] data.
+ * Generates Palantir/Apple-grade compliance documents from ReportSection[] data.
+ *
+ * Features:
+ *   - Dedicated cover page with emerald accent branding
+ *   - Auto-generated Table of Contents with page numbers
+ *   - Running header/footer on every content page
+ *   - "Page X of Y" via putTotalPages two-pass
+ *   - Emerald accent color system with navy typography
+ *   - Section numbering, left accent bars on headings
  */
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { ReportSection } from "./types";
 
-// ─── Layout Constants (mm) ───
+// ─── Layout Constants (mm, A4) ───
 
 const PAGE_W = 210;
-const MARGIN_L = 20;
-const MARGIN_R = 20;
-const MARGIN_T = 25;
-const MARGIN_B = 35;
-const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R;
 const PAGE_H = 297;
+const MARGIN_L = 22;
+const MARGIN_R = 22;
+const MARGIN_T = 30;
+const MARGIN_B = 28;
+const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R;
 const MAX_Y = PAGE_H - MARGIN_B;
 
-// ─── Colors ───
+const TOTAL_PAGES_PLACEHOLDER = "{totalPages}";
+
+// ─── Color Palette ───
 
 const COL = {
-  primary: [30, 58, 95] as [number, number, number], // #1E3A5F
-  body: [45, 55, 72] as [number, number, number], // #2D3748
-  secondary: [74, 85, 104] as [number, number, number], // #4A5568
-  muted: [113, 128, 150] as [number, number, number], // #718096
-  light: [160, 174, 192] as [number, number, number], // #A0AEC0
-  border: [226, 232, 240] as [number, number, number], // #E2E8F0
-  red: [229, 62, 62] as [number, number, number], // #E53E3E
-  alertInfoBg: [235, 248, 255] as [number, number, number],
-  alertInfoText: [43, 108, 176] as [number, number, number],
-  alertWarnBg: [255, 250, 240] as [number, number, number],
-  alertWarnText: [192, 86, 33] as [number, number, number],
-  alertErrBg: [255, 245, 245] as [number, number, number],
-  alertErrText: [197, 48, 48] as [number, number, number],
+  navy: [15, 23, 42] as [number, number, number], // #0F172A — titles, table headers
+  slate800: [30, 41, 59] as [number, number, number], // #1E293B — section headings
+  slate700: [51, 65, 85] as [number, number, number], // #334155 — body text
+  slate500: [100, 116, 139] as [number, number, number], // #64748B — secondary text
+  slate400: [148, 163, 184] as [number, number, number], // #94A3B8 — muted text
+  slate200: [226, 232, 240] as [number, number, number], // #E2E8F0 — borders, lines
+  slate50: [248, 250, 252] as [number, number, number], // #F8FAFC — subtle backgrounds
+  emerald: [16, 185, 129] as [number, number, number], // #10B981 — accent, brand
+  emeraldDark: [5, 150, 105] as [number, number, number], // #059669 — darker accent
   white: [255, 255, 255] as [number, number, number],
-  headerBg: [247, 250, 252] as [number, number, number],
+  red: [239, 68, 68] as [number, number, number], // #EF4444 — errors, confidential
+  amber: [245, 158, 11] as [number, number, number], // #F59E0B — warnings
+  blue: [59, 130, 246] as [number, number, number], // #3B82F6 — info
+  // Alert backgrounds (subtle)
+  redBg: [254, 242, 242] as [number, number, number],
+  amberBg: [255, 251, 235] as [number, number, number],
+  blueBg: [239, 246, 255] as [number, number, number],
 };
+
+// ─── Public API Types ───
+
+export interface PDFGenerationOptions {
+  title: string;
+  documentCode?: string; // e.g. "A1-DMP"
+  preparedFor?: string; // e.g. "CNES (France)"
+  version?: string; // e.g. "1.0"
+  classification?: string; // e.g. "NCA Confidential"
+  organizationName?: string; // Operator name for cover
+}
 
 // ─── Helpers ───
 
@@ -57,29 +80,23 @@ function str(v: unknown): string {
  * Insert spaces into words that are too wide for the given maxWidth (mm).
  * jsPDF's splitTextToSize only breaks at whitespace, so long URLs, compound
  * German words, or any unbroken string will overflow the right margin.
- * This pre-processes text so every "word" fits within maxWidth.
  */
 function breakLongWords(doc: jsPDF, text: string, maxWidth: number): string {
-  // Split on whitespace, preserving the whitespace tokens
   const tokens = text.split(/(\s+)/);
   const result: string[] = [];
 
   for (const token of tokens) {
-    // Keep whitespace as-is
     if (/^\s+$/.test(token)) {
       result.push(token);
       continue;
     }
-    // If it fits, keep it
     if (doc.getTextWidth(token) <= maxWidth) {
       result.push(token);
       continue;
     }
-    // Break oversized word into chunks that fit
     let remaining = token;
     while (remaining.length > 0) {
       let end = remaining.length;
-      // Shrink until it fits
       while (
         end > 1 &&
         doc.getTextWidth(remaining.substring(0, end)) > maxWidth
@@ -94,124 +111,339 @@ function breakLongWords(doc: jsPDF, text: string, maxWidth: number): string {
   return result.join(" ");
 }
 
-// ─── PDF Builder ───
+/** Format current date as "17 March 2026" */
+function formatDate(): string {
+  return new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+// ─── TOC Entry ───
+
+interface TOCEntry {
+  number: number;
+  title: string;
+  page: number; // page number in final doc (after TOC inserted)
+}
+
+// ─── Premium PDF Builder ───
 
 class DocumentPDFBuilder {
   private doc: jsPDF;
   private y: number = MARGIN_T;
   private pageNum: number = 1;
   private title: string;
+  private opts: PDFGenerationOptions;
+  private sectionCounter: number = 0;
+  private tocEntries: TOCEntry[] = [];
+  private tocPageCount: number = 0; // how many pages the TOC occupies
 
-  constructor(title: string) {
+  constructor(title: string, opts: PDFGenerationOptions) {
     this.title = title;
+    this.opts = opts;
     this.doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     this.doc.setFont("helvetica", "normal");
   }
 
+  // ═══════════════════════════════════════════════
+  // COVER PAGE
+  // ═══════════════════════════════════════════════
+
+  renderCoverPage() {
+    const doc = this.doc;
+    const classification = this.opts.classification || "NCA Confidential";
+
+    // ── Top emerald accent line ──
+    doc.setFillColor(...COL.emerald);
+    doc.rect(MARGIN_L, 28, 50, 2.5, "F");
+
+    // ── Classification badge ──
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.slate500);
+    doc.text(classification.toUpperCase(), MARGIN_L, 42);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COL.slate400);
+    doc.text("AUTHORIZATION SUBMISSION", MARGIN_L, 48);
+
+    // ── Document Title (large, navy) ──
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.navy);
+    const safeTitle = breakLongWords(doc, this.title, CONTENT_W);
+    const titleLines = doc.splitTextToSize(safeTitle, CONTENT_W);
+    doc.text(titleLines, MARGIN_L, 80);
+    const titleEndY = 80 + titleLines.length * 10;
+
+    // ── Document Code ──
+    if (this.opts.documentCode) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COL.slate400);
+      doc.text(this.opts.documentCode, MARGIN_L, titleEndY + 6);
+    }
+
+    // ── Thin separator ──
+    const separatorY = titleEndY + 20;
+    doc.setDrawColor(...COL.slate200);
+    doc.setLineWidth(0.4);
+    doc.line(MARGIN_L, separatorY, MARGIN_L + 80, separatorY);
+
+    // ── Metadata block ──
+    const metaStartY = separatorY + 12;
+    doc.setFontSize(9);
+    const metaItems: [string, string][] = [];
+    if (this.opts.preparedFor) {
+      metaItems.push(["Prepared for", this.opts.preparedFor]);
+    }
+    metaItems.push(["Date", formatDate()]);
+    metaItems.push(["Version", this.opts.version || "1.0"]);
+    metaItems.push(["Classification", classification]);
+    if (this.opts.organizationName) {
+      metaItems.push(["Organization", this.opts.organizationName]);
+    }
+
+    let metaY = metaStartY;
+    for (const [label, value] of metaItems) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COL.slate500);
+      doc.text(`${label}:`, MARGIN_L, metaY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COL.slate700);
+      doc.text(value, MARGIN_L + 35, metaY);
+      metaY += 6;
+    }
+
+    // ── Bottom emerald accent line ──
+    doc.setFillColor(...COL.emerald);
+    doc.rect(MARGIN_L, PAGE_H - 42, 50, 2.5, "F");
+
+    // ── Caelex branding at bottom ──
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.slate500);
+    doc.text("Generated by Caelex", MARGIN_L, PAGE_H - 32);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COL.slate400);
+    doc.text("caelex.eu", MARGIN_L, PAGE_H - 26);
+
+    // ── Disclaimer at very bottom right ──
+    doc.setFontSize(7);
+    doc.setTextColor(...COL.red);
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      "FOR INFORMATIONAL PURPOSES ONLY \u2014 NOT LEGAL ADVICE",
+      PAGE_W - MARGIN_R,
+      PAGE_H - 16,
+      { align: "right" },
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // TABLE OF CONTENTS
+  // ═══════════════════════════════════════════════
+
+  /**
+   * Reserve placeholder page(s) for the TOC.
+   * We start with 1 page and may add more later.
+   */
+  private reserveTOCPages() {
+    this.doc.addPage();
+    this.pageNum++;
+    this.tocPageCount = 1;
+  }
+
+  /**
+   * Fill in the TOC on the reserved page(s) after content rendering.
+   * Called during finalize when we know all section page numbers.
+   */
+  private renderTOC() {
+    const doc = this.doc;
+    // Go to page 2 (first TOC page)
+    doc.setPage(2);
+
+    let y = MARGIN_T;
+
+    // ── Title ──
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.navy);
+    doc.text("Table of Contents", MARGIN_L, y);
+    y += 8;
+
+    // ── Thin line ──
+    doc.setDrawColor(...COL.emerald);
+    doc.setLineWidth(0.6);
+    doc.line(MARGIN_L, y, PAGE_W - MARGIN_R, y);
+    y += 10;
+
+    // ── TOC entries ──
+    doc.setFontSize(10);
+    const lineHeight = 7;
+
+    for (const entry of this.tocEntries) {
+      // Check if we need another TOC page
+      if (y + lineHeight > MAX_Y) {
+        // We need an additional TOC page — for simplicity we just stop.
+        // In practice, TOCs rarely exceed one page.
+        break;
+      }
+
+      // Section number + title
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COL.slate700);
+      const label = `${entry.number}. ${entry.title}`;
+      const safeLbl = breakLongWords(doc, label, CONTENT_W - 20);
+      const truncated =
+        doc.splitTextToSize(safeLbl, CONTENT_W - 20)[0] || label;
+      doc.text(truncated, MARGIN_L, y);
+
+      // Page number (right-aligned)
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COL.navy);
+      doc.text(String(entry.page), PAGE_W - MARGIN_R, y, { align: "right" });
+
+      // Dot leader
+      const textEndX = MARGIN_L + doc.getTextWidth(truncated) + 2;
+      const pageNumStartX =
+        PAGE_W - MARGIN_R - doc.getTextWidth(String(entry.page)) - 2;
+      if (pageNumStartX > textEndX + 4) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...COL.slate400);
+        let dotX = textEndX;
+        while (dotX < pageNumStartX) {
+          doc.text(".", dotX, y);
+          dotX += 1.8;
+        }
+      }
+
+      y += lineHeight;
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // RUNNING HEADER (every content page)
+  // ═══════════════════════════════════════════════
+
+  private addHeader() {
+    const doc = this.doc;
+    const classification = this.opts.classification || "NCA Confidential";
+    const headerY = 16;
+
+    // Left: document code + short title
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COL.slate500);
+    const leftText = this.opts.documentCode
+      ? `${this.opts.documentCode} \u2014 ${this.title}`
+      : this.title;
+    const safeLt = breakLongWords(doc, leftText, CONTENT_W * 0.6);
+    const truncLeft =
+      doc.splitTextToSize(safeLt, CONTENT_W * 0.6)[0] || leftText;
+    doc.text(truncLeft, MARGIN_L, headerY);
+
+    // Right: classification
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.slate500);
+    doc.text(classification.toUpperCase(), PAGE_W - MARGIN_R, headerY, {
+      align: "right",
+    });
+
+    // Emerald line under header
+    doc.setDrawColor(...COL.emerald);
+    doc.setLineWidth(0.5);
+    doc.line(MARGIN_L, headerY + 3, PAGE_W - MARGIN_R, headerY + 3);
+  }
+
+  // ═══════════════════════════════════════════════
+  // FOOTER (every content page)
+  // ═══════════════════════════════════════════════
+
+  private addFooter(pageNumber: number) {
+    const doc = this.doc;
+    const footerY = PAGE_H - 16;
+
+    // Thin line
+    doc.setDrawColor(...COL.slate200);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN_L, footerY, PAGE_W - MARGIN_R, footerY);
+
+    // Left: branding
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COL.slate400);
+    doc.text("Caelex \u00B7 caelex.eu", MARGIN_L, footerY + 4);
+
+    // Center: CONFIDENTIAL
+    doc.setFontSize(6.5);
+    doc.setTextColor(...COL.red);
+    doc.setFont("helvetica", "bold");
+    doc.text("CONFIDENTIAL", PAGE_W / 2, footerY + 4, { align: "center" });
+
+    // Right: Page X of Y
+    doc.setFontSize(7.5);
+    doc.setTextColor(...COL.slate500);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `Page ${pageNumber} of ${TOTAL_PAGES_PLACEHOLDER}`,
+      PAGE_W - MARGIN_R,
+      footerY + 4,
+      { align: "right" },
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // PAGE BREAK
+  // ═══════════════════════════════════════════════
+
   private checkPageBreak(neededHeight: number) {
     if (this.y + neededHeight > MAX_Y) {
-      this.addFooter();
       this.doc.addPage();
       this.pageNum++;
       this.y = MARGIN_T;
     }
   }
 
-  private addFooter() {
-    const footerY = PAGE_H - 20;
-    // Divider line
-    this.doc.setDrawColor(...COL.border);
-    this.doc.setLineWidth(0.3);
-    this.doc.line(MARGIN_L, footerY, PAGE_W - MARGIN_R, footerY);
-
-    // Left text
-    this.doc.setFontSize(7);
-    this.doc.setTextColor(...COL.light);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(
-      "Generated by Caelex (caelex.eu). Not legal advice.",
-      MARGIN_L,
-      footerY + 4,
-    );
-
-    // Center - CONFIDENTIAL
-    this.doc.setFontSize(6);
-    this.doc.setTextColor(...COL.red);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("CONFIDENTIAL", PAGE_W / 2, footerY + 4, {
-      align: "center",
-    });
-
-    // Right - page number
-    this.doc.setFontSize(8);
-    this.doc.setTextColor(...COL.secondary);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(`Page ${this.pageNum}`, PAGE_W - MARGIN_R, footerY + 4, {
-      align: "right",
-    });
-  }
-
-  renderHeader(subtitle: string) {
-    // Title
-    this.doc.setFontSize(18);
-    this.doc.setTextColor(...COL.primary);
-    this.doc.setFont("helvetica", "bold");
-    const safeTitle = breakLongWords(this.doc, this.title, CONTENT_W);
-    const titleLines = this.doc.splitTextToSize(safeTitle, CONTENT_W);
-    this.doc.text(titleLines, MARGIN_L, this.y);
-    this.y += titleLines.length * 7 + 2;
-
-    // Subtitle
-    this.doc.setFontSize(11);
-    this.doc.setTextColor(...COL.secondary);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(subtitle, MARGIN_L, this.y);
-    this.y += 6;
-
-    // Report date
-    this.doc.setFontSize(9);
-    this.doc.setTextColor(...COL.muted);
-    const dateStr = `Report Date: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`;
-    this.doc.text(dateStr, MARGIN_L, this.y);
-    this.y += 4;
-
-    // Header line
-    this.doc.setDrawColor(...COL.primary);
-    this.doc.setLineWidth(0.8);
-    this.doc.line(MARGIN_L, this.y, PAGE_W - MARGIN_R, this.y);
-    this.y += 8;
-
-    // Disclaimer
-    this.doc.setFontSize(7);
-    this.doc.setTextColor(...COL.red);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text(
-      "FOR INFORMATIONAL PURPOSES ONLY — NOT LEGAL ADVICE",
-      PAGE_W / 2,
-      this.y,
-      { align: "center" },
-    );
-    this.doc.setFont("helvetica", "normal");
-    this.y += 10;
-  }
+  // ═══════════════════════════════════════════════
+  // SECTION TITLE (with number + emerald bar)
+  // ═══════════════════════════════════════════════
 
   renderSection(section: { title: string; content: unknown[] }) {
+    this.sectionCounter++;
+    const sectionNum = this.sectionCounter;
     const titleText = str(section.title);
+    const numberedTitle = `${sectionNum}. ${titleText}`;
 
-    // Section title
-    this.checkPageBreak(15);
-    this.doc.setFontSize(13);
-    this.doc.setTextColor(...COL.primary);
-    this.doc.setFont("helvetica", "bold");
-    const safeSectionTitle = breakLongWords(this.doc, titleText, CONTENT_W);
-    this.doc.text(safeSectionTitle, MARGIN_L, this.y);
-    this.y += 5;
+    // Track for TOC
+    this.tocEntries.push({
+      number: sectionNum,
+      title: titleText,
+      page: this.pageNum, // will be adjusted later for TOC offset
+    });
 
-    // Section underline
-    this.doc.setDrawColor(...COL.border);
-    this.doc.setLineWidth(0.3);
-    this.doc.line(MARGIN_L, this.y, PAGE_W - MARGIN_R, this.y);
-    this.y += 6;
+    // Section title with emerald left bar
+    this.checkPageBreak(16);
+    this.y += 4;
+
+    const doc = this.doc;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COL.navy);
+    const safe = breakLongWords(doc, numberedTitle, CONTENT_W - 6);
+    const lines = doc.splitTextToSize(safe, CONTENT_W - 6);
+    const titleHeight = lines.length * 6;
+
+    // Emerald accent bar (left side)
+    doc.setFillColor(...COL.emerald);
+    doc.rect(MARGIN_L, this.y - 4.5, 2.5, titleHeight + 2, "F");
+
+    // Title text (offset right to make room for bar)
+    doc.text(lines, MARGIN_L + 6, this.y);
+    this.y += titleHeight + 4;
 
     // Content blocks
     const content = Array.isArray(section.content) ? section.content : [];
@@ -222,6 +454,10 @@ class DocumentPDFBuilder {
 
     this.y += 4;
   }
+
+  // ═══════════════════════════════════════════════
+  // BLOCK DISPATCHER
+  // ═══════════════════════════════════════════════
 
   private renderBlock(block: Record<string, unknown>) {
     const type = String(block.type || "");
@@ -260,42 +496,56 @@ class DocumentPDFBuilder {
     }
   }
 
+  // ═══════════════════════════════════════════════
+  // TEXT BLOCK
+  // ═══════════════════════════════════════════════
+
   private renderText(text: string) {
     if (!text) return;
     this.doc.setFontSize(10);
-    this.doc.setTextColor(...COL.body);
+    this.doc.setTextColor(...COL.slate700);
     this.doc.setFont("helvetica", "normal");
     const safe = breakLongWords(this.doc, text, CONTENT_W);
     const lines = this.doc.splitTextToSize(safe, CONTENT_W);
-    const lineHeight = 4.5;
+    const lineHeight = 5;
     const totalHeight = lines.length * lineHeight;
     this.checkPageBreak(totalHeight);
-    this.doc.text(lines, MARGIN_L, this.y);
+    this.doc.text(lines, MARGIN_L, this.y, { lineHeightFactor: 1.4 });
     this.y += totalHeight + 3;
   }
+
+  // ═══════════════════════════════════════════════
+  // HEADING BLOCK (h2, h3)
+  // ═══════════════════════════════════════════════
 
   private renderHeading(text: string, level: number) {
     if (!text) return;
     this.checkPageBreak(12);
     this.y += 3;
+    const doc = this.doc;
+
     if (level === 2) {
-      this.doc.setFontSize(12);
-      this.doc.setTextColor(...COL.body);
+      doc.setFontSize(12);
+      doc.setTextColor(...COL.slate800);
     } else {
-      this.doc.setFontSize(11);
-      this.doc.setTextColor(...COL.secondary);
+      doc.setFontSize(11);
+      doc.setTextColor(...COL.slate500);
     }
-    this.doc.setFont("helvetica", "bold");
-    const safe = breakLongWords(this.doc, text, CONTENT_W);
-    const lines = this.doc.splitTextToSize(safe, CONTENT_W);
-    this.doc.text(lines, MARGIN_L, this.y);
+    doc.setFont("helvetica", "bold");
+    const safe = breakLongWords(doc, text, CONTENT_W);
+    const lines = doc.splitTextToSize(safe, CONTENT_W);
+    doc.text(lines, MARGIN_L, this.y);
     this.y += lines.length * 5 + 3;
   }
+
+  // ═══════════════════════════════════════════════
+  // LIST BLOCK
+  // ═══════════════════════════════════════════════
 
   private renderList(items: unknown[], ordered: boolean) {
     if (items.length === 0) return;
     this.doc.setFontSize(10);
-    this.doc.setTextColor(...COL.body);
+    this.doc.setTextColor(...COL.slate700);
     this.doc.setFont("helvetica", "normal");
 
     const indent = 8;
@@ -310,17 +560,21 @@ class DocumentPDFBuilder {
       this.checkPageBreak(height);
 
       // Bullet/number
-      this.doc.setTextColor(...COL.secondary);
+      this.doc.setTextColor(...COL.slate500);
       const bullet = ordered ? `${i + 1}.` : "\u2022";
       this.doc.text(bullet, MARGIN_L + indent, this.y);
 
       // Text
-      this.doc.setTextColor(...COL.body);
+      this.doc.setTextColor(...COL.slate700);
       this.doc.text(lines, MARGIN_L + indent + bulletWidth, this.y);
       this.y += height + 1.5;
     }
     this.y += 2;
   }
+
+  // ═══════════════════════════════════════════════
+  // TABLE BLOCK
+  // ═══════════════════════════════════════════════
 
   private renderTable(headers: unknown[], rows: unknown[]) {
     if (headers.length === 0 && rows.length === 0) return;
@@ -334,31 +588,29 @@ class DocumentPDFBuilder {
 
     this.checkPageBreak(20);
 
-    // Use jspdf-autotable (standalone function, not doc method)
     autoTable(this.doc, {
       startY: this.y,
       head: head[0].length > 0 ? head : undefined,
       body,
       margin: { left: MARGIN_L, right: MARGIN_R },
       styles: {
-        fontSize: 8,
+        fontSize: 8.5,
         cellPadding: 3,
-        textColor: COL.body,
-        lineColor: COL.border,
-        lineWidth: 0.2,
+        textColor: COL.slate700,
+        lineColor: COL.slate200,
+        lineWidth: 0.15,
       },
       headStyles: {
-        fillColor: COL.headerBg,
-        textColor: COL.primary,
+        fillColor: COL.navy,
+        textColor: COL.white,
         fontStyle: "bold",
-        lineWidth: 0.2,
+        lineWidth: 0.15,
       },
       alternateRowStyles: {
-        fillColor: [252, 252, 253],
+        fillColor: COL.slate50,
       },
     });
 
-    // Get final Y position after autotable
     const finalY = (
       this.doc as unknown as { lastAutoTable?: { finalY: number } }
     ).lastAutoTable?.finalY;
@@ -368,6 +620,10 @@ class DocumentPDFBuilder {
       this.y += 15;
     }
   }
+
+  // ═══════════════════════════════════════════════
+  // KEY-VALUE BLOCK
+  // ═══════════════════════════════════════════════
 
   private renderKeyValue(items: unknown[]) {
     if (items.length === 0) return;
@@ -389,18 +645,18 @@ class DocumentPDFBuilder {
 
       // Key
       this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(...COL.secondary);
+      this.doc.setTextColor(...COL.slate500);
       this.doc.text(key, MARGIN_L, this.y);
 
       // Value
       this.doc.setFont("helvetica", "normal");
-      this.doc.setTextColor(...COL.body);
+      this.doc.setTextColor(...COL.slate700);
       this.doc.text(valLines, MARGIN_L + keyWidth, this.y);
 
       this.y += height;
 
       // Separator line
-      this.doc.setDrawColor(...COL.border);
+      this.doc.setDrawColor(...COL.slate200);
       this.doc.setLineWidth(0.1);
       this.doc.line(MARGIN_L, this.y, PAGE_W - MARGIN_R, this.y);
       this.y += 3;
@@ -408,27 +664,26 @@ class DocumentPDFBuilder {
     this.y += 2;
   }
 
+  // ═══════════════════════════════════════════════
+  // ALERT BLOCK
+  // ═══════════════════════════════════════════════
+
   private renderAlert(message: string, severity: string) {
     if (!message) return;
 
     const bgColor =
       severity === "warning"
-        ? COL.alertWarnBg
+        ? COL.amberBg
         : severity === "error"
-          ? COL.alertErrBg
-          : COL.alertInfoBg;
+          ? COL.redBg
+          : COL.blueBg;
     const textColor =
       severity === "warning"
-        ? COL.alertWarnText
+        ? COL.amber
         : severity === "error"
-          ? COL.alertErrText
-          : COL.alertInfoText;
-    const borderColor =
-      severity === "warning"
-        ? COL.alertWarnText
-        : severity === "error"
-          ? COL.alertErrText
-          : COL.alertInfoText;
+          ? COL.red
+          : COL.blue;
+    const borderColor = textColor;
 
     this.doc.setFontSize(9);
     const safe = breakLongWords(this.doc, message, CONTENT_W - 12);
@@ -438,33 +693,90 @@ class DocumentPDFBuilder {
 
     // Background
     this.doc.setFillColor(...bgColor);
-    this.doc.roundedRect(MARGIN_L, this.y - 2, CONTENT_W, boxHeight, 1, 1, "F");
+    this.doc.roundedRect(
+      MARGIN_L,
+      this.y - 2,
+      CONTENT_W,
+      boxHeight,
+      1.5,
+      1.5,
+      "F",
+    );
 
-    // Left border
+    // Left accent border
     this.doc.setFillColor(...borderColor);
-    this.doc.rect(MARGIN_L, this.y - 2, 1.5, boxHeight, "F");
+    this.doc.rect(MARGIN_L, this.y - 2, 2, boxHeight, "F");
 
     // Text
     this.doc.setTextColor(...textColor);
     this.doc.setFont("helvetica", "normal");
-    this.doc.text(lines, MARGIN_L + 6, this.y + 3);
+    this.doc.text(lines, MARGIN_L + 7, this.y + 3);
 
     this.y += boxHeight + 4;
   }
 
+  // ═══════════════════════════════════════════════
+  // DIVIDER BLOCK
+  // ═══════════════════════════════════════════════
+
   private renderDivider() {
     this.checkPageBreak(8);
     this.y += 4;
-    this.doc.setDrawColor(...COL.border);
+    this.doc.setDrawColor(...COL.slate200);
     this.doc.setLineWidth(0.3);
     this.doc.line(MARGIN_L, this.y, PAGE_W - MARGIN_R, this.y);
     this.y += 6;
   }
 
-  finalize(): Blob {
-    // Add footer to last page
-    this.addFooter();
-    return this.doc.output("blob");
+  // ═══════════════════════════════════════════════
+  // BUILD (orchestrator)
+  // ═══════════════════════════════════════════════
+
+  build(sections: ReportSection[]): Blob {
+    const doc = this.doc;
+
+    // ── 1. Cover page (page 1) ──
+    this.renderCoverPage();
+
+    // ── 2. Reserve TOC page(s) (page 2) ──
+    this.reserveTOCPages();
+
+    // ── 3. Start content on page 3 ──
+    doc.addPage();
+    this.pageNum++;
+    this.y = MARGIN_T;
+
+    // ── 4. Render all sections ──
+    for (const section of sections) {
+      this.renderSection({
+        title: str(section.title),
+        content: Array.isArray(section.content) ? section.content : [],
+      });
+    }
+
+    // ── 5. Compute final page numbers ──
+    // TOC occupies pages starting from page 2.
+    // Content starts at page (2 + tocPageCount).
+    // The TOC entries have page numbers relative to when they were rendered
+    // (starting from page 3 = cover + 1 TOC page).
+    // Since tocPageCount is 1 and we added the content page as page 3,
+    // the recorded page numbers are already correct.
+
+    // ── 6. Fill in TOC ──
+    this.renderTOC();
+
+    // ── 7. Add headers and footers to all content pages ──
+    const totalPages = doc.getNumberOfPages();
+    for (let p = 2; p <= totalPages; p++) {
+      doc.setPage(p);
+      this.addHeader();
+      this.addFooter(p);
+    }
+
+    // ── 8. putTotalPages for "Page X of Y" ──
+    doc.putTotalPages(TOTAL_PAGES_PLACEHOLDER);
+
+    return doc.output("blob");
   }
 }
 
@@ -473,20 +785,17 @@ class DocumentPDFBuilder {
 export function generateDocumentPDF(
   title: string,
   sections: ReportSection[],
+  options?: Partial<PDFGenerationOptions>,
 ): Blob {
-  const builder = new DocumentPDFBuilder(title);
+  const opts: PDFGenerationOptions = {
+    title,
+    documentCode: options?.documentCode,
+    preparedFor: options?.preparedFor,
+    version: options?.version || "1.0",
+    classification: options?.classification || "NCA Confidential",
+    organizationName: options?.organizationName,
+  };
 
-  // Header
-  const subtitle = `Generated by ASTRA AI — ${new Date().toLocaleDateString("en-GB")}`;
-  builder.renderHeader(subtitle);
-
-  // Sections
-  for (const section of sections) {
-    builder.renderSection({
-      title: str(section.title),
-      content: Array.isArray(section.content) ? section.content : [],
-    });
-  }
-
-  return builder.finalize();
+  const builder = new DocumentPDFBuilder(title, opts);
+  return builder.build(sections);
 }

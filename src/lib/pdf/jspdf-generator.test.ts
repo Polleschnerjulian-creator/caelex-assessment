@@ -18,8 +18,9 @@ const { mockDoc, mockAutoTable } = vi.hoisted(() => {
     internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } },
     output: vi.fn(() => new Blob(["mock-pdf"], { type: "application/pdf" })),
     save: vi.fn(),
-    getNumberOfPages: vi.fn(() => 1),
+    getNumberOfPages: vi.fn(() => 3),
     setPage: vi.fn(),
+    putTotalPages: vi.fn(),
     lastAutoTable: { finalY: 100 } as { finalY: number } | undefined,
   };
   const mockAutoTable = vi.fn();
