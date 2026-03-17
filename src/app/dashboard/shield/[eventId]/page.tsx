@@ -862,9 +862,20 @@ export default function ShieldEventDetailPage() {
                       }
                       className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--fill-light)] transition-colors"
                     >
-                      <span className="text-body text-[var(--text-primary)] font-mono">
-                        CDM {cdm.cdmId} —{" "}
-                        {new Date(cdm.creationDate).toLocaleDateString()}
+                      <span className="flex items-center gap-2">
+                        <span className="text-body text-[var(--text-primary)] font-mono">
+                          CDM {cdm.cdmId} —{" "}
+                          {new Date(cdm.creationDate).toLocaleDateString()}
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
+                            cdm.source === "leolabs"
+                              ? "bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                              : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+                          }`}
+                        >
+                          {cdm.source === "leolabs" ? "LeoLabs" : "Space-Track"}
+                        </span>
                       </span>
                       {expandedCdm === cdm.id ? (
                         <ChevronUp className="w-4 h-4 text-[var(--text-secondary)]" />
@@ -1112,6 +1123,9 @@ function OverviewTab({
                     <th className="text-center py-2 px-3 text-caption font-medium text-[var(--text-secondary)]">
                       Tier
                     </th>
+                    <th className="text-center py-2 px-3 text-caption font-medium text-[var(--text-secondary)]">
+                      Source
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1137,6 +1151,17 @@ function OverviewTab({
                           className={`inline-block px-2 py-0.5 rounded text-micro font-medium ${TIER_COLORS[cdm.riskTier] || ""}`}
                         >
                           {cdm.riskTier}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
+                            cdm.source === "leolabs"
+                              ? "bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                              : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+                          }`}
+                        >
+                          {cdm.source === "leolabs" ? "LeoLabs" : "Space-Track"}
                         </span>
                       </td>
                     </tr>

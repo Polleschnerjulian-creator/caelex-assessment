@@ -390,6 +390,13 @@ export default function ShieldPage() {
   const [noradSearch, setNoradSearch] = useState("");
   const [offset, setOffset] = useState(0);
 
+  // LeoLabs integration
+  const [leolabsKey, setLeolabsKey] = useState("");
+  const [leolabsEnabled, setLeolabsEnabled] = useState(false);
+  const [leolabsTestResult, setLeolabsTestResult] = useState<
+    "idle" | "testing" | "success" | "error"
+  >("idle");
+
   // ── Data Fetching ────────────────────────────────────────────────────────
 
   const fetchStats = useCallback(async () => {
@@ -516,6 +523,32 @@ export default function ShieldPage() {
     } finally {
       setSaving(false);
       setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  // ── LeoLabs Test ─────────────────────────────────────────────────────────
+
+  const handleTestLeolabs = async () => {
+    if (!leolabsKey) return;
+    setLeolabsTestResult("testing");
+    try {
+      const res = await fetch("/api/shield/config/test-leolabs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...csrfHeaders(),
+        },
+        body: JSON.stringify({ apiKey: leolabsKey }),
+      });
+      if (res.ok) {
+        setLeolabsTestResult("success");
+      } else {
+        setLeolabsTestResult("error");
+      }
+    } catch {
+      setLeolabsTestResult("error");
+    } finally {
+      setTimeout(() => setLeolabsTestResult("idle"), 4000);
     }
   };
 
@@ -1212,6 +1245,84 @@ export default function ShieldPage() {
                           }
                           hint="ISO country code of the responsible NCA"
                         />
+                      </div>
+                    </div>
+
+                    {/* LeoLabs Integration */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-body font-semibold text-white">
+                          LeoLabs Integration
+                        </h3>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
+                            leolabsEnabled
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                          }`}
+                        >
+                          {leolabsEnabled ? "Connected" : "Disabled"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Input
+                            label="LeoLabs API Key"
+                            type="password"
+                            placeholder="Enter your LeoLabs API key"
+                            value={leolabsKey}
+                            onChange={(e) => setLeolabsKey(e.target.value)}
+                            hint="Your LeoLabs BYOK (Bring Your Own Key) API credential"
+                          />
+                          <div className="mt-2 flex items-center gap-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={handleTestLeolabs}
+                              loading={leolabsTestResult === "testing"}
+                              disabled={!leolabsKey}
+                            >
+                              Test Connection
+                            </Button>
+                            {leolabsTestResult === "success" && (
+                              <span className="flex items-center gap-1.5 text-small text-emerald-400">
+                                <CheckCircle2 className="w-4 h-4" />
+                                Connection successful
+                              </span>
+                            )}
+                            {leolabsTestResult === "error" && (
+                              <span className="flex items-center gap-1.5 text-small text-red-400">
+                                <XCircle className="w-4 h-4" />
+                                Connection failed
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-3 pt-1">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              id="leolabsEnabled"
+                              checked={leolabsEnabled}
+                              onChange={(e) =>
+                                setLeolabsEnabled(e.target.checked)
+                              }
+                              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500/20"
+                            />
+                            <label
+                              htmlFor="leolabsEnabled"
+                              className="text-body text-[var(--text-primary)]"
+                            >
+                              Enable LeoLabs as CDM data source
+                            </label>
+                          </div>
+                          <p className="text-small text-[var(--text-tertiary)]">
+                            LeoLabs provides independent conjunction assessments
+                            via BYOK integration. CDMs from LeoLabs will be
+                            merged with Space-Track data and tagged with a
+                            source badge.
+                          </p>
+                        </div>
                       </div>
                     </div>
 

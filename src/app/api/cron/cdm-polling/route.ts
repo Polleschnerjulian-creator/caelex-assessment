@@ -16,7 +16,10 @@ import {
   shouldAutoEscalate,
   shouldAutoClose,
 } from "@/lib/shield/conjunction-tracker.server";
-import type { CDMPollingResult } from "@/lib/shield/types";
+import type { CDMPollingResult, ParsedCDM } from "@/lib/shield/types";
+import { fetchLeoLabsCDMs } from "@/lib/shield/leolabs-client.server";
+import { mergeCDMs } from "@/lib/shield/cdm-merger.server";
+import { decrypt } from "@/lib/encryption";
 import { notifyOrganization } from "@/lib/services/notification-service";
 
 export const runtime = "nodejs";
@@ -142,8 +145,28 @@ async function pollCDMs(): Promise<CDMPollingResult> {
       // Build NORAD ID -> spacecraft mapping
       const scByNorad = new Map(org.spacecraft.map((sc) => [sc.noradId!, sc]));
 
-      // Fetch CDMs from Space-Track
-      const cdms = await fetchCDMs(noradIds, 1); // Last 24h
+      // Fetch from Space-Track (always)
+      const spaceTrackCDMs = await fetchCDMs(noradIds, 1);
+
+      // Fetch from LeoLabs (if enabled for this org)
+      let leoLabsCDMs: ParsedCDM[] = [];
+      if (org.caConfig?.leolabsEnabled && org.caConfig?.leolabsApiKey) {
+        try {
+          const apiKey = await decrypt(org.caConfig.leolabsApiKey);
+          leoLabsCDMs = await fetchLeoLabsCDMs(
+            { apiKey },
+            noradIds,
+            new Date(Date.now() - 24 * 60 * 60 * 1000),
+          );
+        } catch (err) {
+          errors.push(
+            `LeoLabs fetch failed for org ${org.id}: ${err instanceof Error ? err.message : "unknown"}`,
+          );
+        }
+      }
+
+      // Merge CDMs from both sources
+      const cdms = mergeCDMs(spaceTrackCDMs, leoLabsCDMs);
 
       // Build thresholds from org config
       const thresholds = org.caConfig
@@ -321,6 +344,9 @@ async function pollCDMs(): Promise<CDMPollingResult> {
               rawCdm:
                 cdm.rawCdm as unknown as import("@prisma/client").Prisma.InputJsonValue,
               riskTier: tier,
+              source: cdm.cdmId.startsWith("leolabs-")
+                ? "leolabs"
+                : "space_track",
             },
           });
 

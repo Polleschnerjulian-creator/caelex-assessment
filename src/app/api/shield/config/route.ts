@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
+import { encrypt } from "@/lib/encryption";
 import { z } from "zod";
 
 const configUpdateSchema = z.object({
@@ -25,6 +26,8 @@ const configUpdateSchema = z.object({
   ncaAutoNotify: z.boolean().optional(),
   ncaJurisdiction: z.string().max(10).nullable().optional(),
   defaultAssigneeId: z.string().nullable().optional(),
+  leolabsEnabled: z.boolean().optional(),
+  leolabsApiKey: z.string().optional(),
 });
 
 const DEFAULT_CONFIG = {
@@ -60,12 +63,23 @@ export async function GET() {
       where: { organizationId: membership.organizationId },
     });
 
-    return NextResponse.json({
-      data: config ?? {
-        ...DEFAULT_CONFIG,
-        organizationId: membership.organizationId,
-      },
-    });
+    const responseData = config
+      ? {
+          ...config,
+          leolabsApiKey: undefined,
+          leolabsApiKeyMasked: config.leolabsApiKey
+            ? "••••••" + config.leolabsApiKey.slice(-6)
+            : null,
+          leolabsEnabled: config.leolabsEnabled ?? false,
+        }
+      : {
+          ...DEFAULT_CONFIG,
+          organizationId: membership.organizationId,
+          leolabsEnabled: false,
+          leolabsApiKeyMasked: null,
+        };
+
+    return NextResponse.json({ data: responseData });
   } catch (error) {
     logger.error("Failed to get shield config", error);
     return NextResponse.json(
@@ -115,13 +129,21 @@ export async function PUT(req: Request) {
 
     const data = parseResult.data;
 
+    // Encrypt LeoLabs API key before storing
+    const persistData = {
+      ...data,
+      leolabsApiKey: data.leolabsApiKey
+        ? await encrypt(data.leolabsApiKey)
+        : undefined,
+    };
+
     const config = await prisma.cAConfig.upsert({
       where: { organizationId: membership.organizationId },
       create: {
         organizationId: membership.organizationId,
-        ...data,
+        ...persistData,
       },
-      update: data,
+      update: persistData,
     });
 
     await logAuditEvent({
