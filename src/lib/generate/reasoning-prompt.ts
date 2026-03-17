@@ -9,6 +9,7 @@
 import type { SectionPlan, CrossReference } from "./reasoning-types";
 import type { NCAProfile, DocumentCategory } from "@/data/nca-profiles";
 import { getCNESRegulatoryKnowledge } from "@/data/cnes-regulatory-knowledge";
+import { getBNetzARegulatoryKnowledge } from "@/data/bnetza-regulatory-knowledge";
 
 export function buildNCAContextBlock(
   nca: NCAProfile,
@@ -39,6 +40,12 @@ export function buildNCAContextBlock(
   if (nca.id === "cnes") {
     parts.push("");
     parts.push(getCNESRegulatoryKnowledge());
+  }
+
+  // Inject deep BNetzA regulatory knowledge when targeting BNetzA
+  if (nca.id === "bnetza") {
+    parts.push("");
+    parts.push(getBNetzARegulatoryKnowledge());
   }
 
   return parts.join("\n");

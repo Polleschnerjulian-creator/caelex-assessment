@@ -395,51 +395,364 @@ export const NCA_PROFILES: NCAProfile[] = [
     country: "DE",
     language: "de",
     executiveSummaryLanguage: "de",
-    rigor: { debris: 3, cybersecurity: 5, general: 4, safety: 3 },
+    // Debris raised to 4: WRG Eckpunkte (Sept 2024) have explicit debris/sustainability
+    // requirements including mandatory EOL planning, collision avoidance, and SSA data sharing.
+    // Cybersecurity at 5: NIS2UmsuCG + BSI-TR-03184 space-specific requirements are the
+    // most prescriptive in Europe alongside CNES.
+    rigor: { debris: 4, cybersecurity: 5, general: 4, safety: 3 },
     focusAreas: [
+      // ── Cybersecurity / NIS2 ──
       {
         articleRange: "Art. 74-95",
         weight: "critical",
         description:
-          "Full NIS2 mapping required — BNetzA enforces NIS2 strictly for space operators",
+          "Full NIS2 mapping required — Germany implements NIS2 via NIS2UmsuCG with BSI as supervisory authority. " +
+          "BSI-TR-03184 (Parts 1 & 2) provides space-specific cybersecurity technical guidance. " +
+          "Dual compliance demonstration required: NIS2UmsuCG + EU Space Act cyber provisions.",
+      },
+      {
+        articleRange: "Art. 77-78",
+        weight: "critical",
+        description:
+          "Risk assessment must reference BSI-TR-03184 methodology: structure description, protection needs " +
+          "(Schutzbedarf: Normal/Hoch/Sehr Hoch), threat identification, risk treatment, security measures. " +
+          "Must cover both space segment (Part 1) and ground segment (Part 2) separately.",
+      },
+      {
+        articleRange: "Art. 89-92",
+        weight: "critical",
+        description:
+          "Incident reporting follows NIS2UmsuCG timelines to BSI: 24h early warning (Frühwarnung), " +
+          "72h incident notification (Meldung), 1-month final report (Abschlussbericht). " +
+          "Dual reporting to BSI (cybersecurity) and NCA (space operations impact).",
       },
       {
         articleRange: "Art. 85",
+        weight: "critical",
+        description:
+          "BCP must include tested recovery procedures with documented RTO/RPO. " +
+          "BSI-Standard 200-4 (Business Continuity Management) is the expected methodology. " +
+          "Must cover both ground segment failover and degraded-mode satellite operations.",
+      },
+      {
+        articleRange: "Art. 79",
         weight: "high",
         description:
-          "BCP must include tested recovery procedures with documented RTO/RPO",
+          "Access control policy must reference BSI IT-Grundschutz Bausteine (ORP.4, OPS.1.1.1). " +
+          "MFA mandatory for critical operations per NIS2UmsuCG. " +
+          "Physical access to ground stations must be addressed (INF.1, INF.2 Bausteine).",
+      },
+      // ── Debris & Space Sustainability ──
+      {
+        articleRange: "Art. 58-67",
+        weight: "high",
+        description:
+          "WRG Eckpunkte (Sept 2024) establish explicit debris avoidance requirements (Weltraummüllvermeidung). " +
+          "Mandatory planned end-of-life for every space activity. " +
+          "Reference IADC Guidelines Rev.2 and ISO 24113:2019 as primary debris standards.",
+      },
+      {
+        articleRange: "Art. 72",
+        weight: "high",
+        description:
+          "WRG Eckpunkte require demonstrable orbital lifetime compliance and disposal planning. " +
+          "No mandatory German-specific tools (unlike CNES STELA) — ESA DRAMA suite or equivalent accepted. " +
+          "For constellations: WRG treats the constellation as a single activity (einheitliche Weltraumaktivität).",
+      },
+      {
+        articleRange: "Art. 64",
+        weight: "high",
+        description:
+          "Collision avoidance capabilities required. WRG Eckpunkte mandate SSA data sharing. " +
+          "Reference EU SST services and coordination with CSpOC/18th SDS.",
+      },
+      // ── Authorization & Insurance ──
+      {
+        articleRange: "Art. 4-12",
+        weight: "high",
+        description:
+          "Under WRG Eckpunkte, authorization will be required for all non-state space activities. " +
+          "New BMWK agency will be licensing body. Constellations receive a single authorization. " +
+          "Simplified regime (vereinfachtes Verfahren) planned for SMEs and research.",
+      },
+      {
+        articleRange: "Art. 47-50",
+        weight: "high",
+        description:
+          "WRG Eckpunkte liability regime: Federal Republic strict liability (verschuldensunabhängig) with " +
+          "operator recourse. Insurance cap: 10% of 3-year average turnover, max €50M per incident. " +
+          "Universities/research exempt from recourse unless gross negligence.",
+      },
+      // ── SatDSiG (EO only) ──
+      {
+        articleRange: "Art. 74 / SatDSiG",
+        weight: "normal",
+        description:
+          "For Earth observation operators only: SatDSiG approval required in addition to EU Space Act authorization. " +
+          "Data sensitivity classification and distribution controls. " +
+          "Complementary to NIS2/EU Space Act cyber requirements.",
       },
     ],
     preferredStandards: [
-      "ISO/IEC 27001:2022",
-      "BSI IT-Grundschutz",
-      "NIS2 Directive",
+      // German national framework
+      "WRG Eckpunkte (Eckpunkte der Bundesregierung für ein Weltraumgesetz, Sept 2024)",
+      "NIS2UmsuCG (NIS-2-Umsetzungs- und Cybersicherheitsstärkungsgesetz)",
+      "BSI-TR-03184 Part 1 (Information Security for Space Systems — Space Segment, July 2023)",
+      "BSI-TR-03184 Part 2 (Information Security for Space Systems — Ground Segment, July 2025)",
+      "BSI IT-Grundschutz Kompendium (current edition)",
+      "BSI-Standard 200-1/200-2/200-3/200-4 (ISMS, Methodology, Risk Analysis, BCM)",
+      "SatDSiG (Satellitendatensicherheitsgesetz, 2007 — for EO operators)",
+      "RAÜG (Raumfahrtaufgabenübertragungsgesetz)",
+      // International standards
+      "ISO/IEC 27001:2022 (Information security management)",
+      "ISO 24113:2019 (Space debris mitigation requirements)",
+      "IADC Space Debris Mitigation Guidelines Rev.2 (IADC-02-01, 2020)",
+      "ECSS-U-AS-10C (Space sustainability)",
+      // Cybersecurity
+      "CCSDS 350.1-G-3 (Security threats against space missions)",
+      "NIS2 Directive (EU 2022/2555)",
     ],
     preferredEvidence: [
       {
-        type: "ISO27001_CERT",
-        description: "ISO 27001 certificate",
+        type: "BSI_GRUNDSCHUTZ_CERT",
+        description:
+          "BSI ISO 27001 Certificate on the basis of IT-Grundschutz — the gold standard " +
+          "for German NCA cybersecurity submissions. More prescriptive than standalone ISO 27001.",
         acceptedAsShortcut: true,
       },
       {
-        type: "BSI_GRUNDSCHUTZ",
-        description: "BSI IT-Grundschutz certification",
+        type: "ISO27001_CERT",
+        description:
+          "ISO/IEC 27001:2022 certificate — accepted but less preferred than BSI IT-Grundschutz certification. " +
+          "Must be accompanied by Statement of Applicability (SoA) demonstrating space-relevant controls.",
         acceptedAsShortcut: true,
+      },
+      {
+        type: "BSI_TR_03184_COMPLIANCE",
+        description:
+          "BSI-TR-03184 compliance attestation — demonstrates adherence to BSI's space-specific " +
+          "cybersecurity technical guideline for both space segment (Part 1) and ground segment (Part 2).",
+        acceptedAsShortcut: false,
+      },
+      {
+        type: "NIS2_COMPLIANCE_REPORT",
+        description:
+          "NIS2UmsuCG compliance report — demonstrates adherence to German NIS2 transposition " +
+          "including incident reporting procedures, risk management measures, and supply chain security.",
+        acceptedAsShortcut: false,
+      },
+      {
+        type: "SATDSIG_APPROVAL",
+        description:
+          "SatDSiG approval (Genehmigung) from BMWK — required ONLY for Earth observation operators " +
+          "with high-resolution imaging systems. Not applicable to non-EO missions.",
+        acceptedAsShortcut: false,
+      },
+      {
+        type: "DRAMA_OUTPUT",
+        description:
+          "ESA DRAMA suite output (OSCAR, MASTER, ARES) — accepted for orbital lifetime " +
+          "and re-entry risk analysis. No mandatory German-specific tool equivalent to CNES STELA.",
+        acceptedAsShortcut: false,
       },
     ],
     documentGuidance: {
+      DMP: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "Include German-language executive summary (Zusammenfassung auf Deutsch)",
+          "Reference WRG Eckpunkte (Sept 2024) debris requirements alongside EU Space Act throughout",
+          "WRG treats constellations as single activity (einheitliche Weltraumaktivität) — address fleet-level compliance",
+          "Reference IADC Guidelines Rev.2 (IADC-02-01, 2020) and ISO 24113:2019 as primary debris standards",
+          "No mandatory German-specific tools (unlike CNES) — ESA DRAMA suite or equivalent accepted for orbital analysis",
+          "Include collision avoidance strategy referencing WRG SSA data sharing obligations",
+          "Address WRG mandatory planned end-of-life (geplantes Missionsende) requirement",
+          "Include compliance matrix mapping EU Space Act articles to WRG Eckpunkte provisions",
+        ],
+        commonRejectionReasons: [
+          "No reference to WRG Eckpunkte or German regulatory context (28%)",
+          "Constellation not treated as unified activity per WRG approach (18%)",
+          "Missing SSA data sharing commitment per WRG requirements (15%)",
+          "Compliance matrix missing German national regulation references (12%)",
+        ],
+      },
+      ORBITAL_LIFETIME: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "ESA DRAMA suite (OSCAR module) or equivalent propagation tool accepted — no mandatory German-specific tool",
+          "Include propagation curves for mean, +2σ, and -2σ solar activity scenarios",
+          "Show altitude vs. time plots for the full 25-year post-mission period",
+          "Reference WRG Eckpunkte debris avoidance requirements and planned end-of-life mandate",
+          "Include atmospheric density model specification and justification",
+          "For constellations: individual satellite analysis plus fleet-level statistical assessment",
+        ],
+        commonRejectionReasons: [
+          "No solar cycle sensitivity analysis (must show mean, +2σ, -2σ scenarios)",
+          "Atmospheric density model not specified or justified",
+          "Constellation fleet-level analysis missing",
+        ],
+      },
+      EOL_DISPOSAL: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "Reference WRG Eckpunkte mandatory end-of-life planning requirement",
+          "Delta-V budget with margin (≥10% recommended)",
+          "Probability of success analysis for disposal maneuver",
+          "For controlled re-entry: ESA DRAMA (SARA module) or equivalent for casualty risk assessment",
+          "Contingency procedures for failed disposal must be described",
+          "For constellations: fleet disposal strategy considering WRG unified activity concept",
+        ],
+        commonRejectionReasons: [
+          "No probability of success analysis for disposal maneuver",
+          "Insufficient fuel margin documentation",
+          "Missing contingency procedures for failed disposal",
+        ],
+      },
       CYBER_POLICY: {
         depthExpectation: "extensive",
         specificRequirements: [
-          "Map every requirement to NIS2 Article as well as EU Space Act",
-          "Reference Weltraumgesetz alongside EU Space Act",
-          "ISO 27001 certificate can substitute for detailed policy sections — reference it explicitly",
-          "German technical terminology preferred in cybersecurity sections",
+          "Map every requirement to BOTH NIS2UmsuCG article AND EU Space Act article — dual compliance required",
+          "Reference BSI-TR-03184 (Parts 1 & 2) as primary technical guidance for space cybersecurity",
+          "Reference BSI IT-Grundschutz framework and applicable Bausteine (building blocks)",
+          "Include ISMS scope aligned with BSI-Standard 200-1 or ISO 27001",
+          "Address protection needs (Schutzbedarf) per BSI methodology: Normal/Hoch/Sehr Hoch",
+          "German technical terminology preferred (with English in parentheses on first use)",
+          "Reference WRG Eckpunkte alongside EU Space Act for forward-looking compliance",
+          "ISO 27001 or BSI IT-Grundschutz certificate can substitute for detailed policy sections — reference explicitly",
+          "Address both IT and OT (Operational Technology) segments per BSI-TR-03184",
         ],
         commonRejectionReasons: [
-          "NIS2 mapping incomplete (41%)",
-          "Missing BCP test evidence (26%)",
-          "Access control policy too generic (15%)",
+          "NIS2UmsuCG mapping incomplete — missing dual compliance demonstration (41%)",
+          "No reference to BSI-TR-03184 or IT-Grundschutz framework (22%)",
+          "Missing BCP test evidence (BSI-Standard 200-4 not referenced) (18%)",
+          "Access control policy too generic — no IT-Grundschutz Baustein references (10%)",
+        ],
+      },
+      CYBER_RISK_ASSESSMENT: {
+        depthExpectation: "extensive",
+        specificRequirements: [
+          "Use BSI-TR-03184 methodology as primary risk assessment framework for space systems",
+          "Structure analysis per BSI approach: Strukturbeschreibung → Schutzbedarfsfeststellung → Risikoanalyse → Risikobehandlung",
+          "Protection needs (Schutzbedarf) classification: Normal, Hoch (High), Sehr Hoch (Very High)",
+          "Address space-specific threats from BSI-TR-03184 Part 1: unauthorized telecommand, telemetry interception, GNSS spoofing",
+          "Address ground-segment threats from BSI-TR-03184 Part 2: SCC compromise, key management, physical security",
+          "Reference CCSDS 350.1-G-3 for space-specific threat taxonomy",
+          "Include lifecycle coverage per BSI-TR-03184: design through decommissioning",
+          "Supply chain risk assessment per NIS2UmsuCG requirements (Lieferkettensicherheit)",
+          "Cross-reference BSI IT-Grundschutz relevant Bausteine for each identified risk",
+        ],
+        commonRejectionReasons: [
+          "Risk methodology not aligned with BSI-TR-03184 or IT-Grundschutz (35%)",
+          "Protection needs classification missing or incomplete (22%)",
+          "Space segment vs. ground segment not separately analyzed per BSI-TR-03184 Parts 1 & 2 (18%)",
+          "TT&C link security not adequately assessed (12%)",
+        ],
+      },
+      INCIDENT_RESPONSE: {
+        depthExpectation: "extensive",
+        specificRequirements: [
+          "Follow NIS2UmsuCG incident reporting timelines to BSI: 24h Frühwarnung, 72h Meldung, 1-month Abschlussbericht",
+          "Define dual reporting: to BSI (cybersecurity incidents) and to NCA (space operations impact)",
+          "Reference BSI IT-Grundschutz Baustein DER.2.1 (Behandlung von Sicherheitsvorfällen)",
+          "Include IT forensics preparedness per BSI Baustein DER.2.2 (Vorsorge für die IT-Forensik)",
+          "Reference EU Space Act Art. 89-92 alongside NIS2UmsuCG notification requirements",
+          "Define penalties for non-compliance: essential entities up to €10M or 2% turnover, important entities up to €7M or 1.4%",
+          "Include CSIRT coordination procedures with BSI CERT-Bund",
+          "Address management liability (Geschäftsleitung) for compliance failures per NIS2UmsuCG",
+        ],
+        commonRejectionReasons: [
+          "NIS2UmsuCG reporting timelines not accurately reflected (32%)",
+          "Dual reporting to BSI + NCA not described (24%)",
+          "No reference to BSI DER.2.1/DER.2.2 Bausteine (18%)",
+          "Management liability provisions not addressed (12%)",
+        ],
+      },
+      BCP_RECOVERY: {
+        depthExpectation: "extensive",
+        specificRequirements: [
+          "BSI-Standard 200-4 (Business Continuity Management) is the expected methodology",
+          "Document RTO (Recovery Time Objective) and RPO (Recovery Point Objective) for all critical systems",
+          "Cover both ground segment failover and degraded-mode satellite operations",
+          "Reference BSI IT-Grundschutz Baustein DER.4 (Notfallmanagement)",
+          "Include tested recovery procedures — BNetzA expects documented test results",
+          "Address satellite-specific BCM: safe mode operations, ground station redundancy, backup TT&C paths",
+          "Crisis communication procedures per NIS2UmsuCG",
+        ],
+        commonRejectionReasons: [
+          "No documented BCP test results (32%)",
+          "RTO/RPO not defined for critical systems (24%)",
+          "BSI-Standard 200-4 not referenced (18%)",
+          "Satellite-specific degraded-mode operations not covered (14%)",
+        ],
+      },
+      ACCESS_CONTROL: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "Reference BSI IT-Grundschutz Bausteine ORP.4 (Identitäts- und Berechtigungsmanagement)",
+          "MFA mandatory for all critical operations per NIS2UmsuCG",
+          "Physical access control for ground stations per BSI Bausteine INF.1 and INF.2",
+          "Privileged access management (PAM) for satellite command operations",
+          "Access control for TT&C systems per BSI-TR-03184 Part 2",
+          "Role-based access control (RBAC) with least-privilege principle",
+          "Regular access review and recertification procedures",
+        ],
+        commonRejectionReasons: [
+          "MFA not mandated for critical operations (28%)",
+          "Physical access control for ground facilities not addressed (22%)",
+          "No IT-Grundschutz Baustein references (18%)",
+          "TT&C access control not specifically addressed (14%)",
+        ],
+      },
+      AUTHORIZATION_APPLICATION: {
+        depthExpectation: "extensive",
+        specificRequirements: [
+          "Structure must address both EU Space Act requirements and WRG Eckpunkte provisions",
+          "Include compliance matrix with dual mapping: EU Space Act articles + German national regulations",
+          "Matrix columns: Anforderung | EU Space Act Art. | German Law Reference | Status (K/NK/TK/NA) | Nachweis | Abschnitt | Bemerkung",
+          "German-language Zusammenfassung (executive summary) mandatory",
+          "Reference WRG Eckpunkte authorization requirements (Genehmigungsvorbehalt)",
+          "Address WRG liability and insurance provisions (10% turnover cap, max €50M)",
+          "For constellations: address unified activity concept (einheitliche Weltraumaktivität)",
+          "For EO operators: include SatDSiG compliance status",
+          "Reference BSI-TR-03184 compliance for cybersecurity sections",
+          "Address WRG simplified regime eligibility if applicable (SME/research)",
+          "Registration requirements per UN Registration Convention and WRG",
+        ],
+        commonRejectionReasons: [
+          "Compliance matrix not mapped to German national regulations (34%)",
+          "WRG Eckpunkte provisions not addressed (22%)",
+          "Liability/insurance not quantified per WRG cap provisions (16%)",
+          "Missing German-language executive summary (12%)",
+        ],
+      },
+      ENVIRONMENTAL_FOOTPRINT: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "Reference WRG Eckpunkte environmental impact assessment (Umweltverträglichkeitsprüfung, UVP) requirement",
+          "German UVP framework may apply depending on mission type and launch arrangements",
+          "Reference EU Space Act Art. 44-46 environmental requirements",
+          "Include propellant environmental impact assessment for re-entry debris",
+          "Address space sustainability per WRG Nachhaltige Nutzung des Weltraums provisions",
+        ],
+        commonRejectionReasons: [
+          "No reference to WRG UVP requirement (28%)",
+          "Space sustainability aspects not addressed (22%)",
+        ],
+      },
+      INSURANCE_COMPLIANCE: {
+        depthExpectation: "detailed",
+        specificRequirements: [
+          "Reference WRG Eckpunkte liability regime: Federal Republic strict liability with operator recourse",
+          "Insurance cap calculation: 10% of average annual turnover (Jahresumsatz) over last 3 years, max €50M per incident",
+          "Acceptable forms: Haftpflichtversicherung (liability insurance) or Bankbürgschaft (bank guarantee)",
+          "For constellations: increased insurance considering higher aggregate risk",
+          "University/research exemptions: regressfrei unless grobe Fahrlässigkeit (gross negligence)",
+          "Reference Liability Convention 1972 obligations for Germany as launching state",
+        ],
+        commonRejectionReasons: [
+          "WRG liability cap not properly calculated (28%)",
+          "Constellation aggregate risk not addressed in insurance analysis (22%)",
+          "German-specific liability regime not referenced (18%)",
         ],
       },
     },
