@@ -16,6 +16,12 @@ import {
   Save,
   CheckCircle2,
   XCircle,
+  AlertTriangle,
+  Satellite,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -390,6 +396,19 @@ export default function ShieldPage() {
   const [noradSearch, setNoradSearch] = useState("");
   const [offset, setOffset] = useState(0);
 
+  // Fleet overview & forecast state
+  const [fleetSummary, setFleetSummary] = useState<any>(null);
+  const [fleetSummaryLoading, setFleetSummaryLoading] = useState(false);
+  const [forecast, setForecast] = useState<any[] | null>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [anomaliesLoading, setAnomaliesLoading] = useState(false);
+  const [maneuverSummary, setManeuverSummary] = useState<any>(null);
+  const [maneuverSummaryLoading, setManeuverSummaryLoading] = useState(false);
+  const [sortMode, setSortMode] = useState<"priority" | "date">("date");
+  const [priorityEvents, setPriorityEvents] = useState<any[]>([]);
+  const [priorityLoading, setPriorityLoading] = useState(false);
+
   // LeoLabs integration
   const [leolabsKey, setLeolabsKey] = useState("");
   const [leolabsEnabled, setLeolabsEnabled] = useState(false);
@@ -461,18 +480,108 @@ export default function ShieldPage() {
     }
   }, []);
 
-  // Initial load: stats + events
+  const fetchFleetSummary = useCallback(async () => {
+    setFleetSummaryLoading(true);
+    try {
+      const res = await fetch("/api/shield/fleet-summary");
+      if (res.ok) {
+        const json = await res.json();
+        setFleetSummary(json);
+      }
+    } catch {
+      /* silently fail */
+    } finally {
+      setFleetSummaryLoading(false);
+    }
+  }, []);
+
+  const fetchForecast = useCallback(async () => {
+    setForecastLoading(true);
+    try {
+      const res = await fetch("/api/shield/forecast");
+      if (res.ok) {
+        const json = await res.json();
+        setForecast(json);
+      }
+    } catch {
+      /* silently fail */
+    } finally {
+      setForecastLoading(false);
+    }
+  }, []);
+
+  const fetchAnomalies = useCallback(async () => {
+    setAnomaliesLoading(true);
+    try {
+      const res = await fetch("/api/shield/anomalies");
+      if (res.ok) {
+        const json = await res.json();
+        setAnomalies(json.anomalies ?? []);
+      }
+    } catch {
+      /* silently fail */
+    } finally {
+      setAnomaliesLoading(false);
+    }
+  }, []);
+
+  const fetchManeuverSummary = useCallback(async () => {
+    setManeuverSummaryLoading(true);
+    try {
+      const res = await fetch("/api/shield/fleet-maneuver-summary?period=week");
+      if (res.ok) {
+        const json = await res.json();
+        setManeuverSummary(json);
+      }
+    } catch {
+      /* silently fail */
+    } finally {
+      setManeuverSummaryLoading(false);
+    }
+  }, []);
+
+  const fetchPriorityQueue = useCallback(async () => {
+    setPriorityLoading(true);
+    try {
+      const res = await fetch("/api/shield/priority-queue");
+      if (res.ok) {
+        const json = await res.json();
+        setPriorityEvents(json.events ?? []);
+      }
+    } catch {
+      /* silently fail */
+    } finally {
+      setPriorityLoading(false);
+    }
+  }, []);
+
+  // Initial load: stats + events + fleet summary
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchStats(), fetchEvents()]).finally(() => setLoading(false));
-  }, [fetchStats, fetchEvents]);
+    Promise.all([fetchStats(), fetchEvents(), fetchFleetSummary()]).finally(
+      () => setLoading(false),
+    );
+  }, [fetchStats, fetchEvents, fetchFleetSummary]);
 
-  // Load analytics when tab selected
+  // Load analytics + forecast + anomalies + maneuver summary when tab selected
   useEffect(() => {
-    if (activeTab === "analytics" && !analytics) {
-      fetchAnalytics();
+    if (activeTab === "analytics") {
+      if (!analytics) fetchAnalytics();
+      if (!forecast) fetchForecast();
+      if (anomalies.length === 0) fetchAnomalies();
+      if (!maneuverSummary) fetchManeuverSummary();
     }
-  }, [activeTab, analytics, fetchAnalytics]);
+  }, [
+    activeTab,
+    analytics,
+    forecast,
+    anomalies.length,
+    maneuverSummary,
+    fetchAnalytics,
+    fetchForecast,
+    fetchAnomalies,
+    fetchManeuverSummary,
+  ]);
 
   // Load config when tab selected
   useEffect(() => {
@@ -480,6 +589,13 @@ export default function ShieldPage() {
       fetchConfig();
     }
   }, [activeTab, config, fetchConfig]);
+
+  // Fetch priority queue when sort mode changes to priority
+  useEffect(() => {
+    if (sortMode === "priority" && priorityEvents.length === 0) {
+      fetchPriorityQueue();
+    }
+  }, [sortMode, priorityEvents.length, fetchPriorityQueue]);
 
   // Reset offset when filters change
   useEffect(() => {
@@ -688,6 +804,147 @@ export default function ShieldPage() {
                 </GlassStagger>
               )}
 
+              {/* Fleet Overview */}
+              {fleetSummaryLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+                  <span className="ml-2 text-small text-slate-400">
+                    Loading fleet overview...
+                  </span>
+                </div>
+              ) : fleetSummary ? (
+                <Card variant="elevated" padding="md">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Satellite className="w-4 h-4 text-emerald-400" />
+                    <h2 className="text-body font-semibold text-white">
+                      Fleet Overview
+                    </h2>
+                  </div>
+
+                  {/* Fleet Summary Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="glass-surface rounded-lg p-3">
+                      <p className="text-micro text-slate-500 uppercase mb-1">
+                        Active Events
+                      </p>
+                      <p className="text-title font-bold text-white">
+                        {fleetSummary.totalActiveEvents}
+                      </p>
+                    </div>
+                    <div className="glass-surface rounded-lg p-3">
+                      <p className="text-micro text-slate-500 uppercase mb-1">
+                        Emergency
+                      </p>
+                      <p className="text-title font-bold text-red-400">
+                        {fleetSummary.emergencyCount}
+                      </p>
+                    </div>
+                    <div className="glass-surface rounded-lg p-3">
+                      <p className="text-micro text-slate-500 uppercase mb-1">
+                        Overdue Decisions
+                      </p>
+                      <p className="text-title font-bold text-amber-400">
+                        {fleetSummary.overdueDecisions}
+                      </p>
+                    </div>
+                    <div className="glass-surface rounded-lg p-3">
+                      <p className="text-micro text-slate-500 uppercase mb-1">
+                        Satellites w/ Events
+                      </p>
+                      <p className="text-title font-bold text-white">
+                        {fleetSummary.satellitesWithActiveEvents}
+                        <span className="text-small text-slate-500 font-normal">
+                          /{fleetSummary.totalSatellites}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Satellite Status Table — only show if >1 satellite */}
+                  {fleetSummary.satellites &&
+                    fleetSummary.satellites.length > 1 && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-small">
+                          <thead>
+                            <tr className="text-left text-micro text-slate-500 uppercase border-b border-white/5">
+                              <th className="pb-2 pr-4">Satellite</th>
+                              <th className="pb-2 pr-4">Active Events</th>
+                              <th className="pb-2 pr-4">Highest Tier</th>
+                              <th className="pb-2">Oldest TCA</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fleetSummary.satellites
+                              .filter((s: any) => s.activeEventCount > 0)
+                              .map((sat: any) => (
+                                <tr
+                                  key={sat.noradId}
+                                  className="border-b border-white/5 last:border-0"
+                                >
+                                  <td className="py-2 pr-4 text-slate-200 font-medium">
+                                    {sat.name}
+                                    <span className="text-slate-500 ml-1 text-micro">
+                                      {sat.noradId}
+                                    </span>
+                                  </td>
+                                  <td className="py-2 pr-4 text-slate-300">
+                                    {sat.activeEventCount}
+                                  </td>
+                                  <td className="py-2 pr-4">
+                                    {sat.highestTier ? (
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
+                                          TIER_COLORS[sat.highestTier] ??
+                                          TIER_COLORS.INFORMATIONAL
+                                        }`}
+                                      >
+                                        {sat.highestTier}
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-500">--</span>
+                                    )}
+                                  </td>
+                                  <td className="py-2 text-slate-300">
+                                    {sat.oldestUnresolvedTca
+                                      ? formatTcaCountdown(
+                                          sat.oldestUnresolvedTca,
+                                        )
+                                      : "--"}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                </Card>
+              ) : null}
+
+              {/* Priority Sort Toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-small text-slate-400">Sort by:</span>
+                <button
+                  onClick={() => setSortMode("priority")}
+                  className={`px-3 py-1.5 rounded-md text-small font-medium transition-all duration-200 ${
+                    sortMode === "priority"
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  Priority
+                </button>
+                <button
+                  onClick={() => setSortMode("date")}
+                  className={`px-3 py-1.5 rounded-md text-small font-medium transition-all duration-200 ${
+                    sortMode === "date"
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  Date
+                </button>
+              </div>
+
               {/* Filter Bar */}
               <Card variant="elevated" padding="md">
                 <div className="flex flex-col sm:flex-row gap-3 items-end">
@@ -745,8 +1002,110 @@ export default function ShieldPage() {
                 </div>
               </Card>
 
-              {/* Event Cards */}
-              {loading ? (
+              {/* Event Cards — Priority Mode */}
+              {sortMode === "priority" ? (
+                priorityLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+                  </div>
+                ) : priorityEvents.length === 0 ? (
+                  <Card variant="elevated" padding="lg">
+                    <div className="text-center py-12">
+                      <Shield className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+                      <p className="text-body-lg text-slate-400">
+                        No active events in priority queue
+                      </p>
+                      <p className="text-small text-slate-500 mt-1">
+                        All conjunction events are resolved or closed.
+                      </p>
+                    </div>
+                  </Card>
+                ) : (
+                  <GlassStagger className="space-y-3">
+                    {priorityEvents.map((pe: any) => (
+                      <motion.div key={pe.eventId} variants={glassItemVariants}>
+                        <Card
+                          variant="interactive"
+                          padding="md"
+                          onClick={() =>
+                            router.push(`/dashboard/shield/${pe.eventId}`)
+                          }
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e: React.KeyboardEvent) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              router.push(`/dashboard/shield/${pe.eventId}`);
+                            }
+                          }}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="min-w-0">
+                                <p className="text-body font-medium text-white truncate">
+                                  {pe.conjunctionId}
+                                </p>
+                                <p className="text-caption text-slate-500 mt-0.5">
+                                  {pe.satelliteName}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
+                                  TIER_COLORS[pe.tier] ??
+                                  TIER_COLORS.INFORMATIONAL
+                                }`}
+                              >
+                                {pe.tier}
+                              </span>
+                              <span
+                                className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-medium ${
+                                  STATUS_COLORS[pe.status] ?? STATUS_COLORS.NEW
+                                }`}
+                              >
+                                {formatLabel(pe.status)}
+                              </span>
+                              <span className="shrink-0 px-2 py-0.5 rounded-full text-micro font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                Score: {Math.round(pe.priorityScore)}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-6 text-small">
+                              <div className="text-right">
+                                <p className="text-slate-500 text-micro uppercase">
+                                  TCA
+                                </p>
+                                <p className="text-slate-300 font-medium flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {formatTcaCountdown(pe.tca)}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-slate-500 text-micro uppercase">
+                                  Pc
+                                </p>
+                                <p className="text-slate-300 font-mono font-medium">
+                                  {formatPc(pe.pc)}
+                                </p>
+                              </div>
+                              {pe.hoursWithoutDecision !== null && (
+                                <div className="text-right">
+                                  <p className="text-slate-500 text-micro uppercase">
+                                    Waiting
+                                  </p>
+                                  <p className="text-amber-400 font-mono font-medium">
+                                    {Math.round(pe.hoursWithoutDecision)}h
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </GlassStagger>
+                )
+              ) : /* Event Cards — Date Mode (default) */
+              loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
                 </div>
@@ -888,6 +1247,204 @@ export default function ShieldPage() {
           {/* ── Tab: Analytics ──────────────────────────────────────────── */}
           {activeTab === "analytics" && (
             <div className="space-y-6">
+              {/* Anomaly Alerts Banner */}
+              {anomaliesLoading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                  <span className="text-small text-slate-400">
+                    Checking for anomalies...
+                  </span>
+                </div>
+              ) : anomalies.length > 0 ? (
+                <Card
+                  variant="elevated"
+                  padding="md"
+                  className="border-l-4 border-l-amber-500"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="w-4 h-4 text-amber-400" />
+                    <p className="text-body font-semibold text-amber-400">
+                      {anomalies.length} satellite
+                      {anomalies.length !== 1 ? "s" : ""} show
+                      {anomalies.length === 1 ? "s" : ""} unusual conjunction
+                      activity
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {anomalies.map((a: any, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 text-small"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                        <span className="text-slate-300">{a.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ) : null}
+
+              {/* 7-Day Forecast */}
+              {forecastLoading ? (
+                <div className="flex items-center gap-2 py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+                  <span className="text-small text-slate-400">
+                    Computing forecast...
+                  </span>
+                </div>
+              ) : forecast && forecast.length > 0 ? (
+                <Card variant="elevated" padding="md">
+                  <CardHeader>
+                    <CardTitle>7-Day Conjunction Forecast</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-small">
+                        <thead>
+                          <tr className="text-left text-micro text-slate-500 uppercase border-b border-white/5">
+                            <th className="pb-2 pr-4">Satellite</th>
+                            <th className="pb-2 pr-4">Expected Conjunctions</th>
+                            <th className="pb-2 pr-4">Trend</th>
+                            <th className="pb-2">Confidence</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {forecast.map((f: any) => (
+                            <tr
+                              key={f.noradId}
+                              className="border-b border-white/5 last:border-0"
+                            >
+                              <td className="py-2 pr-4 text-slate-200 font-medium">
+                                {f.satelliteName}
+                                <span className="text-slate-500 ml-1 text-micro">
+                                  {f.noradId}
+                                </span>
+                              </td>
+                              <td className="py-2 pr-4 text-slate-300 font-mono">
+                                {f.expectedConjunctions7d}
+                              </td>
+                              <td className="py-2 pr-4">
+                                {f.trend === "increasing" ? (
+                                  <span className="flex items-center gap-1 text-red-400">
+                                    <TrendingUp className="w-3.5 h-3.5" />
+                                    Increasing
+                                  </span>
+                                ) : f.trend === "decreasing" ? (
+                                  <span className="flex items-center gap-1 text-emerald-400">
+                                    <TrendingDown className="w-3.5 h-3.5" />
+                                    Decreasing
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-slate-400">
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                    Stable
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-micro font-medium ${
+                                    f.confidence === "high"
+                                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                      : f.confidence === "medium"
+                                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                        : f.confidence === "low"
+                                          ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                          : "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                  }`}
+                                >
+                                  {f.confidence === "insufficient_data"
+                                    ? "Insufficient Data"
+                                    : formatLabel(f.confidence)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : forecast && forecast.length === 0 ? (
+                <Card variant="elevated" padding="md">
+                  <div className="text-center py-8">
+                    <BarChart3 className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+                    <p className="text-body text-slate-400">
+                      No forecast data yet
+                    </p>
+                    <p className="text-small text-slate-500 mt-1">
+                      Shield needs 7+ days of CDM data to generate forecasts.
+                    </p>
+                  </div>
+                </Card>
+              ) : null}
+
+              {/* Fleet Maneuver Summary */}
+              {maneuverSummaryLoading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span className="text-small text-slate-400">
+                    Loading maneuver summary...
+                  </span>
+                </div>
+              ) : maneuverSummary ? (
+                <GlassStagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-orange-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Maneuvers (Week)
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.maneuversExecuted}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-cyan-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Total Delta-V
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.totalDeltaV}
+                          <span className="text-body text-slate-500 font-normal ml-1">
+                            m/s
+                          </span>
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-blue-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Avg Response Time
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.averageResponseTimeHours > 0
+                            ? `${maneuverSummary.averageResponseTimeHours}h`
+                            : "N/A"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-amber-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Risks Accepted
+                        </p>
+                        <p className="text-display-sm font-bold text-amber-400">
+                          {maneuverSummary.risksAccepted}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </GlassStagger>
+              ) : null}
+
               {analyticsLoading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
