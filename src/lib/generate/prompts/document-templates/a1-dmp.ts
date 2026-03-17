@@ -2,14 +2,15 @@
  * Generate 2.0 — A1: Debris Mitigation Plan (DMP) Template
  *
  * P0 document. The foundational debris mitigation document required under
- * EU Space Act Art. 67, referencing IADC Guidelines and ISO 24113:2019.
+ * IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67
+ * in EU Space Act proposal COM(2025) 335).
  * This is the master debris document — all other A-series documents support it.
  */
 
 export function getDMPTemplate(): string {
   return `## Document-Specific Instructions: A1 — Debris Mitigation Plan (DMP)
 
-This is the foundational debris mitigation document in the NCA submission package. It must demonstrate comprehensive compliance with EU Space Act Art. 58-73, IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3), and ISO 24113:2019. NCAs treat the DMP as the PRIMARY document for evaluating an operator's debris mitigation posture. All other A-series documents (A2-A8) support and are referenced by this master document.
+This is the foundational debris mitigation document in the NCA submission package. It must demonstrate comprehensive compliance with the IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3), ISO 24113:2019, and the corresponding debris mitigation provisions of the EU Space Act proposal (COM(2025) 335, Art. 58-73). NCAs treat the DMP as the PRIMARY document for evaluating an operator's debris mitigation posture. All other A-series documents (A2-A8) support and are referenced by this master document.
 
 The DMP must be sufficiently detailed for an NCA technical reviewer to independently assess compliance without requiring external documents, while also providing clear cross-references to supporting analyses in the A-series package.
 
@@ -34,17 +35,17 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Describe the operator, mission type, orbital regime, constellation size (if applicable), and planned mission lifetime
-2. **Document Purpose:** "This Debris Mitigation Plan is prepared in compliance with Art. 67(1)(a)-(e) of the EU Space Act (COM(2025) 335) and demonstrates compliance with the debris mitigation requirements of Art. 58-73. It constitutes a required element of the NCA authorization application package."
+2. **Document Purpose:** "This Debris Mitigation Plan is prepared in compliance with the IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3) and ISO 24113:2019, the primary enacted frameworks for space debris mitigation. It also maps compliance to the EU Space Act proposal (COM(2025) 335), Art. 58-73. It constitutes a required element of the NCA authorization application package."
 3. **Key Findings (5-7 bullets):**
-   - **Overall Compliance Status:** [compliant/partially compliant] with Art. 58-73
-   - **25-Year Rule:** Status per Art. 72(2) with predicted orbital lifetime
-   - **Collision Avoidance:** Capability assessment per Art. 64(1)-(5)
-   - **Passivation:** Status of energy source passivation per Art. 67(1)(d)
-   - **Disposal Strategy:** Selected approach per Art. 72(1) with success probability
+   - **Overall Compliance Status:** [compliant/partially compliant] with IADC Guidelines and ISO 24113 (corresponds to EU Space Act proposal Art. 58-73)
+   - **25-Year Rule:** Status per IADC Section 5.3.2 / ISO 24113 Section 6.3.3 with predicted orbital lifetime (corresponds to EU Space Act proposal Art. 72(2))
+   - **Collision Avoidance:** Capability assessment per IADC Section 5.4 (corresponds to EU Space Act proposal Art. 64(1)-(5))
+   - **Passivation:** Status of energy source passivation per IADC Section 5.2.1 / ISO 24113 Section 6.3 (corresponds to EU Space Act proposal Art. 67(1)(d))
+   - **Disposal Strategy:** Selected approach per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72(1)) with success probability
    - **Critical Gaps:** Number and nature of identified gaps
    - **Evidence Completeness:** Assessment of supporting documentation
 4. **Evidence Summary:** List of referenced evidence documents and supporting analyses
-5. **Compliance Determination:** Clear statement per Art. 67 compliance
+5. **Compliance Determination:** Clear statement per IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67 in EU Space Act proposal COM(2025) 335) compliance
 
 Cross-reference supporting documents: A2 (Orbital Lifetime), A3 (Collision Avoidance), A4 (EOL Disposal), A5 (Passivation), A6 (Re-Entry Risk), A7 (Supply Chain Debris), A8 (Debris Compliance Matrix)
 
@@ -56,8 +57,8 @@ Generate detailed mission characterization. This section establishes the technic
 
 **3.1 Mission Description:**
 - Mission objectives, concept of operations, and operational concept summary
-- Operator type classification per Art. 3(12)-(18) of the EU Space Act
-- Art. 10 light regime applicability assessment (entity size, mission type, risk classification)
+- Operator type classification per IADC scope definition (corresponds to Art. 3(12)-(18) of EU Space Act proposal COM(2025) 335)
+- Light regime applicability assessment (entity size, mission type, risk classification) per EU Space Act proposal Art. 10
 - Planned mission lifetime with start/end dates
 - Key mission phases: launch, LEOP (Launch and Early Orbit Phase), commissioning, operational, extended operations (if any), end-of-life, disposal
 
@@ -76,19 +77,19 @@ Generate a detailed orbital parameters table:
 | Orbital Period | [calculated from above] | min | |
 
 **3.3 Orbital Regime Classification:**
-- LEO/MEO/GEO/HEO classification and implications under Art. 58
+- LEO/MEO/GEO/HEO classification and implications under IADC Guidelines general obligations (corresponds to EU Space Act proposal Art. 58)
 - IADC Protected Region analysis:
-  - LEO Protected Region: altitude < 2,000 km — 25-year rule applies per Art. 72(2)
-  - GEO Protected Region: GEO altitude ± 200 km, ± 15° latitude — re-orbit requirements per Art. 72(3)
+  - LEO Protected Region: altitude < 2,000 km — 25-year rule applies per IADC Section 5.3.2 (corresponds to EU Space Act proposal Art. 72(2))
+  - GEO Protected Region: GEO altitude ± 200 km, ± 15° latitude — re-orbit requirements per IADC Section 5.3.3 (corresponds to EU Space Act proposal Art. 72(3))
 - If within protected region: explicit statement of applicable disposal requirements
 
 **3.4 Constellation Architecture (if applicable):**
 - Number of orbital planes, satellites per plane, inter-satellite spacing
 - Phasing strategy and station-keeping box dimensions
 - Spare satellite strategy and replacement cadence
-- Fleet disposal sequencing per Art. 67(1)(e) for SCO operators
+- Fleet disposal sequencing per IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67(1)(e) in EU Space Act proposal COM(2025) 335) for SCO operators
 
-Reference: Art. 58(1)-(3), Art. 60(1)-(5), Art. 62(1)-(4)
+Reference: IADC Guidelines general obligations (EU Space Act proposal Art. 58(1)-(3), Art. 60(1)-(5), Art. 62(1)-(4))
 
 ---
 
@@ -125,14 +126,14 @@ Generate comprehensive spacecraft technical characterization. NCAs require suffi
 | Margin/contingency | | | |
 | **Total** | | | 100% |
 
-**4.3 Power System:** Solar panel area, battery chemistry/capacity, passivation approach per Art. 67(1)(d)
+**4.3 Power System:** Solar panel area, battery chemistry/capacity, passivation approach per IADC Section 5.2.1 / ISO 24113 Section 6.3 (corresponds to EU Space Act proposal Art. 67(1)(d))
 **4.4 Attitude Control:** System type, sensors, actuators, stored angular momentum
 **4.5 Communications:** Frequencies (TT&C and payload), antenna types, ground station network
 **4.6 Payload:** Description and any deployable elements
-**4.7 Materials & Fragmentation Susceptibility:** External surface materials, Design for Demise features per Art. 59(1)-(4), fragmentation analysis results
-**4.8 Trackability Features:** Radar cross-section, optical magnitude, reflectors, GNSS receiver for precision orbit determination per Art. 67(1)(e)
+**4.7 Materials & Fragmentation Susceptibility:** External surface materials, Design for Demise features per ISO 24113 Section 6.2 (corresponds to EU Space Act proposal Art. 59(1)-(4)), fragmentation analysis results
+**4.8 Trackability Features:** Radar cross-section, optical magnitude, reflectors, GNSS receiver for precision orbit determination per IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67(1)(e) in EU Space Act proposal COM(2025) 335)
 
-Reference: Art. 67(1)(a), Art. 59(1)-(4), Art. 60(1)-(5)
+Reference: IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (EU Space Act proposal Art. 67(1)(a), Art. 59(1)-(4), Art. 60(1)-(5))
 
 ---
 
@@ -141,7 +142,7 @@ Reference: Art. 67(1)(a), Art. 59(1)-(4), Art. 60(1)-(5)
 Generate a summary of the orbital lifetime compliance analysis. Full technical detail is in Document A2.
 
 **5.1 Regulatory Requirement:**
-State the 25-year post-mission disposal requirement per Art. 72(2) of the EU Space Act and IADC Guidelines Section 5.3.1. For GEO operators, state the re-orbit requirement per Art. 72(3).
+State the 25-year post-mission disposal requirement per IADC Guidelines Section 5.3.2 (25-year rule) and ISO 24113:2019 Section 6.3.3 (corresponds to EU Space Act proposal Art. 72(2), COM(2025) 335). For GEO operators, state the re-orbit requirement per IADC Section 5.3.3 (corresponds to EU Space Act proposal Art. 72(3)).
 
 **5.2 Analysis Methodology:**
 - Propagation tool/software used (e.g., STELA, DRAMA, GMAT, STK Lifetime)
@@ -164,17 +165,17 @@ State the 25-year post-mission disposal requirement per Art. 72(2) of the EU Spa
 **5.5 Gap Identification:**
 If not compliant: clearly identify the gap, root cause, and reference the remediation plan in the Gap Analysis section
 
-Reference: Art. 72(1)-(2), IADC Guidelines Section 5.3.1, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3.1-5.3.2 / ISO 24113:2019 Section 6.3 (EU Space Act proposal Art. 72(1)-(2), COM(2025) 335)
 Cross-reference: Document A2 — Orbital Lifetime Analysis (full technical detail)
 
 ---
 
 **## SECTION: Collision Avoidance Strategy**
 
-Generate comprehensive collision avoidance operations plan per Art. 64(1)-(5).
+Generate comprehensive collision avoidance operations plan per IADC Section 5.4 (corresponds to EU Space Act proposal Art. 64(1)-(5), COM(2025) 335).
 
 **6.1 Conjunction Assessment Process:**
-- Data sources: 18th Space Defense Squadron (18 SDS), EU SST (Art. 45-50), commercial providers (LeoLabs, ExoAnalytic)
+- Data sources: 18th Space Defense Squadron (18 SDS), EU SST (EU Space Act proposal Art. 45-50), commercial providers (LeoLabs, ExoAnalytic)
 - Screening methodology: conjunction data message (CDM) processing, probability of collision (Pc) computation
 - Screening volume: define the screening dimensions (e.g., 10 km radial, 50 km along-track, 25 km cross-track)
 
@@ -194,14 +195,14 @@ Generate comprehensive collision avoidance operations plan per Art. 64(1)-(5).
 - Post-maneuver orbit determination and verification
 
 **6.4 Operator Coordination:**
-- Communication protocols per Art. 64(3) with other operators in similar orbital regimes
+- Communication protocols per IADC Section 5.4 (corresponds to EU Space Act proposal Art. 64(3)) with other operators in similar orbital regimes
 - Multi-object conjunction scenarios: priority and coordination procedures
-- Coordination with EU SST per Art. 45-50
+- Coordination with EU SST per EU Space Act proposal Art. 45-50
 
 **6.5 Non-Maneuverable Spacecraft:**
-If spacecraft lacks maneuver capability: explain alternative risk mitigation measures, operational limitations, and Art. 64(5) notification requirements
+If spacecraft lacks maneuver capability: explain alternative risk mitigation measures, operational limitations, and notification requirements per IADC Section 5.4 (corresponds to EU Space Act proposal Art. 64(5))
 
-Reference: Art. 64(1)-(5), IADC Guidelines Section 5.2.2, ISO 24113:2019 Section 6.2
+Reference: IADC Guidelines Section 5.4 / ISO 24113:2019 Section 6.2 (EU Space Act proposal Art. 64(1)-(5), COM(2025) 335)
 Cross-reference: Document A2 for orbital parameters, Document A3 — Collision Avoidance Operations Plan (full operational detail)
 
 ---
@@ -211,11 +212,11 @@ Cross-reference: Document A2 for orbital parameters, Document A3 — Collision A
 Generate disposal strategy summary. Full technical detail is in Document A4.
 
 **7.1 Disposal Strategy Selection:**
-- Available options evaluated per Art. 72(1)-(5): controlled re-entry, semi-controlled re-entry, natural decay, graveyard orbit (GEO), heliocentric escape
-- Selected strategy with justification against Art. 72 requirements
-- For LEO: compliance with Art. 72(2) 25-year rule
-- For GEO: compliance with Art. 72(3) 300+ km re-orbit requirement
-- For controlled re-entry: compliance with Art. 72(4) casualty risk < 1:10,000
+- Available options evaluated per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72(1)-(5), COM(2025) 335): controlled re-entry, semi-controlled re-entry, natural decay, graveyard orbit (GEO), heliocentric escape
+- Selected strategy with justification against IADC/ISO disposal requirements
+- For LEO: compliance with IADC Section 5.3.2 25-year rule (corresponds to EU Space Act proposal Art. 72(2))
+- For GEO: compliance with IADC Section 5.3.3 300+ km re-orbit requirement (corresponds to EU Space Act proposal Art. 72(3))
+- For controlled re-entry: compliance with ISO 24113 Section 6.4 casualty risk < 1:10,000 (corresponds to EU Space Act proposal Art. 72(4))
 
 **7.2 Disposal Maneuver Summary:**
 
@@ -229,16 +230,16 @@ Generate disposal strategy summary. Full technical detail is in Document A4.
 
 **7.3 Contingency Procedures:**
 - Summary of contingency approaches if primary disposal fails (detailed in Document A4)
-- NCA notification requirements per Art. 72 if disposal is not achievable
+- NCA notification requirements per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72) if disposal is not achievable
 
-Reference: Art. 72(1)-(5), IADC Guidelines Section 5.3, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.3-6.4 (EU Space Act proposal Art. 72(1)-(5), COM(2025) 335)
 Cross-reference: Document A4 — End-of-Life Disposal Plan (full technical detail), Document A2 for lifetime calculations
 
 ---
 
 **## SECTION: Passivation & Fragmentation Prevention**
 
-Generate comprehensive passivation plan per Art. 67(1)(d) and IADC Guidelines Section 5.2.3.
+Generate comprehensive passivation plan per IADC Guidelines Section 5.2.1 / ISO 24113 Section 6.3 (codified as Art. 67(1)(d) in EU Space Act proposal COM(2025) 335) and IADC Guidelines Section 5.2.3.
 
 **8.1 Energy Sources Inventory:**
 
@@ -265,20 +266,20 @@ For each energy source, define:
 **8.4 Fragmentation Risk Assessment:**
 - Probability of accidental breakup during operational phase per ISO 24113 Section 6.2
 - Probability of accidental breakup post-passivation
-- Design for Demise features per Art. 59(1)-(4)
+- Design for Demise features per ISO 24113 Section 6.2 (corresponds to EU Space Act proposal Art. 59(1)-(4))
 
-Reference: Art. 67(1)(d), Art. 59(1)-(4), IADC Guidelines Section 5.2.3, ISO 24113:2019 Section 6.2
+Reference: IADC Guidelines Section 5.2.1-5.2.3 / ISO 24113:2019 Section 6.2-6.3 (EU Space Act proposal Art. 67(1)(d), Art. 59(1)-(4), COM(2025) 335)
 Cross-reference: Document A5 — Passivation Procedure (full procedural detail)
 
 ---
 
 **## SECTION: Trackability & Identification**
 
-Generate trackability measures per Art. 67(1)(e).
+Generate trackability measures per IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67(1)(e) in EU Space Act proposal COM(2025) 335).
 
 **9.1 Object Registration:**
-- EU Space Registry (EUSR) registration per Art. 33-38
-- UN Registry notification per Art. 39-44
+- EU Space Registry (EUSR) registration per EU Space Act proposal Art. 33-38
+- UN Registry notification per EU Space Act proposal Art. 39-44
 - NORAD/COSPAR designation tracking
 
 **9.2 Tracking Characteristics:**
@@ -293,40 +294,50 @@ Generate trackability measures per Art. 67(1)(e).
 - Onboard GNSS receiver capability (if applicable)
 - Ground-based tracking support
 - Precision orbit ephemeris generation and sharing cadence
-- Data sharing agreements with SSA providers per Art. 63(1)-(2)
+- Data sharing agreements with SSA providers per IADC coordination provisions (corresponds to EU Space Act proposal Art. 63(1)-(2))
 
 **9.4 Constellation Identification (if applicable):**
-- Individual object identification methodology per Art. 67(1)(e) for SCO operators
+- Individual object identification methodology per IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (codified as Art. 67(1)(e) in EU Space Act proposal COM(2025) 335) for SCO operators
 - Fleet management and tracking data dissemination
 
-Reference: Art. 67(1)(e), Art. 33-44, Art. 63(1)-(2), Art. 68(1)-(4)
+Reference: IADC Guidelines Section 5 / ISO 24113:2019 Section 6 (EU Space Act proposal Art. 67(1)(e), Art. 33-44, Art. 63(1)-(2), Art. 68(1)-(4), COM(2025) 335)
 
 ---
 
-**## SECTION: Compliance Verification Matrix (Art. 58-73)**
+**## SECTION: Compliance Verification Matrix**
 
-Generate a comprehensive compliance matrix at sub-article granularity.
+Generate a comprehensive compliance matrix using the enacted-law-first format from the Quality Rules. Use the following column structure:
 
 **Table 10.1:** Debris Mitigation Compliance Matrix
 
-| Req. ID | Provision | Requirement Description | Compliance Status | Implementation Description | Evidence Reference | Gap Description | Remediation Action | Target Date |
+| Enacted Standard | Requirement | National Implementation | Compliance Status | Evidence Reference | EU Space Act Mapping |
 
-Include ALL of the following provisions with one row per sub-article:
-- Art. 58(1), 58(2), 58(3) — General debris mitigation obligations
-- Art. 59(1), 59(2), 59(3), 59(4) — Design for demise
-- Art. 60(1), 60(2), 60(3), 60(4), 60(5) — Debris prevention by design
-- Art. 61(1), 61(2), 61(3) — Operational debris minimization
-- Art. 62(1), 62(2), 62(3), 62(4) — Standards adoption
-- Art. 63(1), 63(2) — Coordination obligations
-- Art. 64(1), 64(2), 64(3), 64(4), 64(5) — Collision avoidance
-- Art. 67(1)(a), 67(1)(b), 67(1)(c), 67(1)(d), 67(1)(e) — DMP requirements
-- Art. 68(1), 68(2), 68(3), 68(4) — Light pollution mitigation
-- Art. 72(1), 72(2), 72(3), 72(4), 72(5) — Disposal and orbital lifetime
-- Art. 73(1), 73(2), 73(3) — Supply chain debris mitigation
+The **Enacted Standard** column ALWAYS lists the IADC/ISO reference first. The **EU Space Act Mapping** column lists the corresponding EU Space Act proposal article, ALWAYS marked "(Proposal)".
 
-Also include rows for key standards compliance:
-- IADC Guidelines: Sections 5.1, 5.2.1, 5.2.2, 5.2.3, 5.3.1, 5.3.2
-- ISO 24113:2019: Sections 6.1, 6.2, 6.3, 6.4
+Include ALL of the following provisions with one row per enacted standard requirement, mapped to corresponding EU Space Act proposal articles:
+
+**IADC Guidelines (enacted):**
+- IADC 5.1 — General debris mitigation obligations (EU Space Act proposal Art. 58(1)-(3))
+- IADC 5.2.1 — Passivation of energy sources (EU Space Act proposal Art. 67(1)(d))
+- IADC 5.2.2 — Collision avoidance (EU Space Act proposal Art. 64(1)-(5))
+- IADC 5.2.3 — Fragmentation prevention (EU Space Act proposal Art. 59(1)-(4))
+- IADC 5.3.1 — Post-mission orbit lifetime (EU Space Act proposal Art. 72(1))
+- IADC 5.3.2 — LEO 25-year rule (EU Space Act proposal Art. 72(2))
+- IADC 5.3.3 — GEO re-orbit (EU Space Act proposal Art. 72(3))
+- IADC 5.4 — Collision avoidance operations (EU Space Act proposal Art. 64(1)-(5))
+
+**ISO 24113:2019 (enacted):**
+- ISO 24113 Section 6.1 — General requirements (EU Space Act proposal Art. 58(1)-(3))
+- ISO 24113 Section 6.2 — Prevention of on-orbit breakups (EU Space Act proposal Art. 59(1)-(4), Art. 60(1)-(5))
+- ISO 24113 Section 6.3 — Disposal and passivation (EU Space Act proposal Art. 67(1)(a)-(e), Art. 72(1)-(5))
+- ISO 24113 Section 6.4 — Post-mission disposal (EU Space Act proposal Art. 72(1)-(5))
+
+**Additional EU Space Act proposal provisions (Proposal):**
+- Art. 61(1)-(3) — Operational debris minimization (Proposal)
+- Art. 62(1)-(4) — Standards adoption (Proposal)
+- Art. 63(1)-(2) — Coordination obligations (Proposal)
+- Art. 68(1)-(4) — Light pollution mitigation (Proposal)
+- Art. 73(1)-(3) — Supply chain debris mitigation (Proposal)
 
 ---
 
@@ -367,12 +378,12 @@ Personnel, tools, external support, and estimated cost categories for remediatio
 - Document A5 — Passivation Procedure: detailed passivation sequence and verification criteria
 - Document A6 — Re-Entry Casualty Risk Assessment: if controlled/uncontrolled re-entry is planned
 - Document A7 — Supply Chain Debris Mitigation Plan: debris requirement flow-down to suppliers
-- Document A8 — Debris Compliance Verification Matrix: consolidated Art. 58-73 compliance summary
+- Document A8 — Debris Compliance Verification Matrix: consolidated IADC/ISO compliance summary (mapped to EU Space Act proposal Art. 58-73)
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 58-73 (with subsection granularity)
-- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3, 2021)
-- ISO 24113:2019 — Space debris mitigation requirements
+- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3, 2021) — primary enacted debris framework
+- ISO 24113:2019 — Space debris mitigation requirements (enacted international standard)
+- EU Space Act COM(2025) 335, Art. 58-73 (Proposal — with subsection granularity)
 - ECSS-U-AS-10C (2023) — Space sustainability
 - ESA Space Debris Mitigation Compliance Verification Guidelines
 - NASA-STD-8719.14 Rev. B — Process for Limiting Orbital Debris

@@ -2,14 +2,16 @@
  * Generate 2.0 — A2: Orbital Lifetime Analysis Template
  *
  * P0 document. Technical analysis demonstrating compliance with the
- * 25-year post-mission orbital lifetime rule per EU Space Act Art. 72.
+ * IADC 25-year post-mission orbital lifetime requirement (IADC Section 5.3.2
+ * / ISO 24113 Section 6.3.3; corresponds to EU Space Act proposal Art. 72,
+ * COM(2025) 335).
  * This document directly supports the DMP (A1) and informs the EOL Disposal Plan (A4).
  */
 
 export function getOrbitalLifetimeTemplate(): string {
   return `## Document-Specific Instructions: A2 — Orbital Lifetime Analysis
 
-This document provides the rigorous technical analysis demonstrating compliance with the 25-year post-mission orbital lifetime requirement under EU Space Act Art. 72(2). NCAs expect quantitative analysis with clearly stated assumptions, validated propagation models, multiple solar activity scenarios, sensitivity analysis, and explicit compliance determination with margins. This is a technically critical document — NCA reviewers (typically orbital mechanics engineers) will scrutinize the methodology, assumptions, and margin analysis.
+This document provides the rigorous technical analysis demonstrating compliance with the IADC 25-year post-mission orbital lifetime requirement (IADC Guidelines Section 5.3.2 / ISO 24113:2019 Section 6.3.3; corresponds to EU Space Act proposal Art. 72(2), COM(2025) 335). NCAs expect quantitative analysis with clearly stated assumptions, validated propagation models, multiple solar activity scenarios, sensitivity analysis, and explicit compliance determination with margins. This is a technically critical document — NCA reviewers (typically orbital mechanics engineers) will scrutinize the methodology, assumptions, and margin analysis.
 
 This document directly supports the DMP (Document A1, Section 5) and informs the EOL Disposal Plan (Document A4) regarding disposal delta-V requirements.
 
@@ -34,7 +36,7 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Operator, mission name, orbital regime, planned mission lifetime
-2. **Document Purpose:** "This Orbital Lifetime Analysis demonstrates compliance with the 25-year post-mission orbital lifetime requirement of Art. 72(2) of the EU Space Act (COM(2025) 335) and IADC Guidelines Section 5.3.1. It provides the quantitative basis for the disposal strategy described in Document A4 and referenced by the DMP (Document A1)."
+2. **Document Purpose:** "This Orbital Lifetime Analysis demonstrates compliance with the IADC 25-year post-mission orbital lifetime requirement (IADC Guidelines Section 5.3.2 / ISO 24113:2019 Section 6.3.3), the primary enacted international standards for orbital lifetime limitation. It also maps compliance to the EU Space Act proposal (COM(2025) 335), Art. 72(2). It provides the quantitative basis for the disposal strategy described in Document A4 and referenced by the DMP (Document A1)."
 3. **Key Findings (5-7 bullets):**
    - **Primary Result:** Predicted orbital lifetime under conservative scenario: [X] years
    - **25-Year Compliance:** [PASS/FAIL] with [X]% margin under conservative case
@@ -43,7 +45,7 @@ Generate a comprehensive executive summary following the Executive Summary Stand
    - **Sensitivity:** Most sensitive parameter identified with impact range
    - **Confidence Level:** [High/Medium/Low] based on model validation and uncertainty bounds
 4. **Evidence Summary:** Propagation tool, atmospheric model, validation references
-5. **Compliance Determination:** "Based on the analysis presented in this document, the [Mission Name] mission [MEETS / DOES NOT MEET] the 25-year post-mission orbital lifetime requirement of Art. 72(2) under the conservative (low solar activity) scenario with a margin of [X] years ([Y]%)."
+5. **Compliance Determination:** "Based on the analysis presented in this document, the [Mission Name] mission [MEETS / DOES NOT MEET] the IADC 25-year post-mission orbital lifetime requirement (IADC Section 5.3.2 / ISO 24113 Section 6.3.3; corresponds to EU Space Act proposal Art. 72(2), COM(2025) 335) under the conservative (low solar activity) scenario with a margin of [X] years ([Y]%)."
 
 ---
 
@@ -68,8 +70,8 @@ Generate detailed orbital parameter characterization establishing the technical 
 **3.2 Orbit Regime Classification:**
 - Classification per IADC: LEO (< 2,000 km), MEO, GEO, HEO
 - IADC Protected Region assessment:
-  - LEO Protected Region: up to 2,000 km altitude — Art. 72(2) 25-year rule applies
-  - GEO Protected Region: GEO ± 200 km altitude, ± 15° latitude — Art. 72(3) re-orbit applies
+  - LEO Protected Region: up to 2,000 km altitude — IADC 25-year post-mission orbital lifetime requirement applies (IADC Section 5.3.2; corresponds to EU Space Act proposal Art. 72(2))
+  - GEO Protected Region: GEO ± 200 km altitude, ± 15° latitude — IADC re-orbit requirement applies (IADC Section 5.3.3; corresponds to EU Space Act proposal Art. 72(3))
 - Explicit statement of which disposal requirement applies based on orbital regime
 
 **3.3 Constellation Parameters (if applicable):**
@@ -82,7 +84,7 @@ Generate detailed orbital parameter characterization establishing the technical 
 - Station-keeping strategy and its effect on end-of-mission orbit
 - Post-mission disposal orbit parameters (if disposal maneuver is planned)
 
-Reference: Art. 72(1)-(3), IADC Guidelines Section 5.3
+Reference: IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.3-6.4 (EU Space Act proposal Art. 72(1)-(3), COM(2025) 335)
 
 ---
 
@@ -199,7 +201,7 @@ Generate orbital decay modeling results — the core quantitative output.
 - Key inflection points (e.g., rapid decay below ~300 km due to exponential density increase)
 - Comparison of natural decay vs. post-maneuver decay curves
 
-Reference: Art. 72(2), IADC Guidelines Section 5.3.1, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3.1-5.3.2 / ISO 24113:2019 Section 6.3 (EU Space Act proposal Art. 72(2), COM(2025) 335)
 
 ---
 
@@ -208,8 +210,9 @@ Reference: Art. 72(2), IADC Guidelines Section 5.3.1, ISO 24113:2019 Section 6.3
 Generate the formal compliance determination — the most scrutinized section by NCAs.
 
 **7.1 Regulatory Requirement Statement:**
-Per Art. 72(2) of the EU Space Act: "For space objects in low Earth orbit, the post-mission orbital lifetime shall not exceed 25 years from the end of the operational mission."
-Per IADC Guidelines Section 5.3.1: Post-mission disposal must ensure orbital lifetime limitation, using conservative solar activity assumptions.
+Per IADC Guidelines Section 5.3.2: Post-mission orbital lifetime in the LEO protected region shall not exceed 25 years from the end of the operational mission, using conservative solar activity assumptions.
+Per ISO 24113:2019 Section 6.3.3: The post-mission orbital lifetime shall be limited in accordance with the 25-year requirement.
+(These enacted requirements correspond to EU Space Act proposal Art. 72(2), COM(2025) 335: "For space objects in low Earth orbit, the post-mission orbital lifetime shall not exceed 25 years from the end of the operational mission.")
 
 **7.2 Compliance Determination:**
 
@@ -238,9 +241,9 @@ Per IADC Guidelines Section 5.3.1: Post-mission disposal must ensure orbital lif
 - NCA notification requirements
 
 **7.6 Compliance Statement:**
-"Based on the analysis presented in this document, using the conservative solar activity scenario (-2σ) as the primary compliance case per IADC Guidelines Section 5.3.1, the [Mission Name] mission [MEETS / DOES NOT MEET] the 25-year post-mission orbital lifetime requirement of Art. 72(2) of the EU Space Act with a margin of [X] years ([Y]%)."
+"Based on the analysis presented in this document, using the conservative solar activity scenario (-2σ) as the primary compliance case per IADC Guidelines Section 5.3.1, the [Mission Name] mission [MEETS / DOES NOT MEET] the IADC 25-year post-mission orbital lifetime requirement (IADC Section 5.3.2 / ISO 24113 Section 6.3.3; corresponds to EU Space Act proposal Art. 72(2), COM(2025) 335) with a margin of [X] years ([Y]%)."
 
-Reference: Art. 72(2), IADC Guidelines Section 5.3.1, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3.1-5.3.2 / ISO 24113:2019 Section 6.3 (EU Space Act proposal Art. 72(2), COM(2025) 335)
 
 ---
 
@@ -286,7 +289,7 @@ Reference: ISO 24113:2019 Section 6.3, ESA Space Debris Mitigation Compliance Ve
 Generate formal conclusions with clear regulatory determination.
 
 **9.1 Compliance Summary:**
-- Restate the Art. 72(2) requirement
+- Restate the IADC 25-year post-mission orbital lifetime requirement (IADC Section 5.3.2 / ISO 24113 Section 6.3.3; corresponds to EU Space Act proposal Art. 72(2))
 - Summarize methodology: tool, model, scenarios
 - State the compliance determination unambiguously
 
@@ -314,9 +317,9 @@ Generate formal conclusions with clear regulatory determination.
 - Document A5 — Passivation Procedure: post-passivation spacecraft state assumed in this analysis
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 72(1)-(5)
-- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3) Section 5.3.1
-- ISO 24113:2019 Section 6.3
+- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3) Section 5.3.1-5.3.2 — primary enacted orbital lifetime framework
+- ISO 24113:2019 Section 6.3 — enacted international standard for orbital lifetime requirements
+- EU Space Act COM(2025) 335, Art. 72(1)-(5) (Proposal)
 - ECSS-U-AS-10C (2023) — Space sustainability
 - ESA DRAMA software suite documentation (if DRAMA used)
 - CNES STELA software documentation (if STELA used)`;

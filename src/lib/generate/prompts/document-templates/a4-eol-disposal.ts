@@ -2,14 +2,15 @@
  * Generate 2.0 — A4: End-of-Life Disposal Plan Template
  *
  * P0 document. Detailed plan for spacecraft disposal at end of mission,
- * per EU Space Act Art. 72, IADC Guidelines, and ISO 24113:2019.
+ * per IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.4
+ * (corresponds to EU Space Act proposal Art. 72, COM(2025) 335).
  * Informed by Document A2 (Orbital Lifetime Analysis).
  */
 
 export function getEOLDisposalTemplate(): string {
   return `## Document-Specific Instructions: A4 — End-of-Life Disposal Plan
 
-This document details the spacecraft disposal strategy at end-of-life, demonstrating compliance with EU Space Act Art. 72(1)-(5) disposal requirements. NCAs require a well-justified disposal approach with quantitative fuel budget analysis, success probability assessment per ISO 24113 (> 90% target), and detailed contingency procedures. This is a key supporting document to the DMP (Document A1) and is informed by the Orbital Lifetime Analysis (Document A2).
+This document details the spacecraft disposal strategy at end-of-life, demonstrating compliance with IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.4 disposal requirements (corresponds to EU Space Act proposal Art. 72(1)-(5), COM(2025) 335). NCAs require a well-justified disposal approach with quantitative fuel budget analysis, success probability assessment per ISO 24113 (> 90% target), and detailed contingency procedures. This is a key supporting document to the DMP (Document A1) and is informed by the Orbital Lifetime Analysis (Document A2).
 
 NCA reviewers pay particular attention to: (1) disposal delta-V margin analysis, (2) success probability with system reliability breakdown, and (3) contingency procedures for degraded capabilities.
 
@@ -34,9 +35,9 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Operator, mission, orbital regime, planned mission lifetime, end-of-mission date
-2. **Document Purpose:** "This End-of-Life Disposal Plan details the spacecraft disposal strategy in compliance with Art. 72(1)-(5) of the EU Space Act (COM(2025) 335). It provides the quantitative analysis of the disposal maneuver design, fuel budget, success probability, and contingency procedures required for NCA authorization."
+2. **Document Purpose:** "This End-of-Life Disposal Plan details the spacecraft disposal strategy in compliance with IADC Guidelines Section 5.3 and ISO 24113:2019 Section 6.4, the primary enacted international standards for end-of-life disposal. It also maps compliance to the EU Space Act proposal (COM(2025) 335), Art. 72(1)-(5). It provides the quantitative analysis of the disposal maneuver design, fuel budget, success probability, and contingency procedures required for NCA authorization."
 3. **Key Findings (5-7 bullets):**
-   - **Disposal Strategy:** [selected method] per Art. 72(1)
+   - **Disposal Strategy:** [selected method] per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72(1))
    - **Disposal Delta-V:** [X] m/s required, [Y] m/s available (margin: [Z]%)
    - **Success Probability:** [X]% combined probability per ISO 24113 (target: > 90%)
    - **25-Year Compliance:** [PASS/FAIL] after disposal (from Document A2)
@@ -44,7 +45,7 @@ Generate a comprehensive executive summary following the Executive Summary Stand
    - **Contingency:** [number] contingency scenarios defined with response procedures
    - **Critical Gaps:** [number and nature]
 4. **Evidence Summary:** Analysis tools, heritage data, reliability assessments
-5. **Compliance Determination:** Clear statement per Art. 72
+5. **Compliance Determination:** Clear statement per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72)
 
 Cross-reference: Document A1 (DMP, Section 7), Document A2 (Orbital Lifetime Analysis), Document A5 (Passivation Procedure)
 
@@ -52,34 +53,34 @@ Cross-reference: Document A1 (DMP, Section 7), Document A2 (Orbital Lifetime Ana
 
 **## SECTION: Disposal Strategy Selection**
 
-Generate comprehensive disposal strategy trade-off analysis per Art. 72(1)-(5).
+Generate comprehensive disposal strategy trade-off analysis per IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.4 (corresponds to EU Space Act proposal Art. 72(1)-(5), COM(2025) 335).
 
 **3.1 Available Options Analysis:**
 
 **Table 3.1:** Disposal Strategy Trade-Off
-| Option | Description | Art. 72 Ref. | Applicability | Advantages | Disadvantages | Selected? |
-| Controlled re-entry | Targeted re-entry to ocean | Art. 72(4) | LEO with sufficient ΔV | Deterministic, clears orbit immediately | High ΔV, casualty risk analysis required | [Yes/No] |
-| Semi-controlled re-entry | Lowered perigee for accelerated decay | Art. 72(2) | LEO | Moderate ΔV, achieves 25-year compliance | Longer decay period, less predictable | [Yes/No] |
-| Natural decay | No maneuver, natural atmospheric drag | Art. 72(2) | LEO if already < 25 years | No fuel required | Only if already compliant without maneuver | [Yes/No] |
-| Graveyard orbit | Re-orbit 300+ km above GEO | Art. 72(3) | GEO | Proven approach, lower ΔV than re-entry | Permanent debris in graveyard orbit | [Yes/No] |
-| Heliocentric escape | Earth escape trajectory | — | MEO/HEO | Complete removal from Earth orbit | Very high ΔV | [Yes/No] |
+| Option | Description | IADC/ISO Reference | Applicability | Advantages | Disadvantages | Selected? |
+| Controlled re-entry | Targeted re-entry to ocean | IADC 5.3 / ISO 24113 §6.4 (EU Space Act proposal Art. 72(4)) | LEO with sufficient ΔV | Deterministic, clears orbit immediately | High ΔV, casualty risk analysis required | [Yes/No] |
+| Semi-controlled re-entry | Lowered perigee for accelerated decay | IADC 5.3.2 (LEO deorbit) (EU Space Act proposal Art. 72(2)) | LEO | Moderate ΔV, achieves 25-year compliance | Longer decay period, less predictable | [Yes/No] |
+| Natural decay | No maneuver, natural atmospheric drag | IADC 5.3.2 (25-year rule) (EU Space Act proposal Art. 72(2)) | LEO if already < 25 years | No fuel required | Only if already compliant without maneuver | [Yes/No] |
+| Graveyard orbit | Re-orbit 300+ km above GEO | IADC 5.3.3 (GEO graveyard) (EU Space Act proposal Art. 72(3)) | GEO | Proven approach, lower ΔV than re-entry | Permanent debris in graveyard orbit | [Yes/No] |
+| Heliocentric escape | Earth escape trajectory | IADC 5.3 general disposal | MEO/HEO | Complete removal from Earth orbit | Very high ΔV | [Yes/No] |
 
 **3.2 Selected Strategy — Detailed Justification:**
 - Rationale for selected approach over alternatives
-- Compliance with applicable Art. 72 sub-paragraph:
-  - LEO: Art. 72(2) — 25-year post-mission lifetime limit
-  - GEO: Art. 72(3) — minimum 300 km re-orbit altitude, eccentricity constraints
-  - Controlled re-entry: Art. 72(4) — casualty risk < 1:10,000 per event
+- Compliance with applicable IADC/ISO requirement:
+  - LEO: IADC Section 5.3.2 — 25-year post-mission lifetime limit (corresponds to EU Space Act proposal Art. 72(2))
+  - GEO: IADC Section 5.3.3 — minimum 300 km re-orbit altitude, eccentricity constraints (corresponds to EU Space Act proposal Art. 72(3))
+  - Controlled re-entry: ISO 24113 Section 6.4 — casualty risk < 1:10,000 per event (corresponds to EU Space Act proposal Art. 72(4))
 - IADC Guidelines Section 5.3 compliance for the orbital regime
-- ISO 24113:2019 Section 6.3 requirements assessment
+- ISO 24113:2019 Section 6.3-6.4 requirements assessment
 - For controlled re-entry: reference to Document A6 (Re-Entry Casualty Risk Assessment)
 
-**3.3 Art. 72(5) Fuel Reservation:**
-Statement of compliance with Art. 72(5) mandatory fuel reservation:
+**3.3 Fuel Reservation (IADC fuel reservation guidance; corresponds to EU Space Act proposal Art. 72(5)):**
+Statement of compliance with IADC fuel reservation guidance (corresponds to EU Space Act proposal Art. 72(5) mandatory fuel reservation):
 - Fuel reserved specifically for disposal: [X] kg / [Y] m/s
 - Protection mechanism against pre-disposal fuel consumption (e.g., operational procedures, fuel budget monitoring triggers)
 
-Reference: Art. 72(1)-(5), IADC Guidelines Section 5.3, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.3-6.4 (EU Space Act proposal Art. 72(1)-(5), COM(2025) 335)
 
 ---
 
@@ -134,7 +135,7 @@ Generate detailed maneuver design — the core technical content.
 - Impact of execution errors on disposal orbit and resulting lifetime
 - Re-targeting or trim maneuver approach if accuracy is insufficient
 
-Reference: Art. 72(1)-(5), ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.3-6.4 (EU Space Act proposal Art. 72(1)-(5), COM(2025) 335)
 
 ---
 
@@ -165,7 +166,7 @@ Generate comprehensive fuel budget — NCAs scrutinize margin analysis closely.
 Worst case accounts for: extra station-keeping, additional collision avoidance maneuvers (2× statistical), orbit maintenance corrections
 
 **5.3 NCA Fuel Margin Expectation:**
-- NCA expectation: 10-20% margin above disposal ΔV requirement per Art. 72(5)
+- NCA expectation: 10-20% margin above disposal ΔV requirement per IADC fuel reservation guidance (corresponds to EU Space Act proposal Art. 72(5))
 - Achieved margin vs. NCA expectation
 - If margin < 10%: risk assessment and mitigation measures
 
@@ -177,7 +178,7 @@ If using drag sail, electrodynamic tether, or other propellant-less system:
 - Demonstrated heritage on similar missions
 - [EVIDENCE: Drag augmentation system test/qualification data]
 
-Reference: Art. 72(5), ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3 (fuel reservation) / ISO 24113:2019 Section 6.3 (EU Space Act proposal Art. 72(5), COM(2025) 335)
 
 ---
 
@@ -264,17 +265,17 @@ Generate contingency plans for disposal failure scenarios — NCAs evaluate prep
 - Time constraints for contingency decisions
 
 **7.4 NCA Notification:**
-- Per Art. 72: notification to NCA if disposal cannot achieve 25-year compliance
+- Per IADC Section 5.3 / ISO 24113 Section 6.4 (corresponds to EU Space Act proposal Art. 72): notification to NCA if disposal cannot achieve 25-year compliance
 - Notification timeline and content requirements
 - Coordination with EU SST for post-contingency tracking
 
-**7.5 Art. 72 Implications:**
+**7.5 IADC/ISO Non-Compliance Implications (corresponds to EU Space Act proposal Art. 72):**
 If 25-year compliance cannot be achieved under any contingency:
 - Gap notification to NCA with remediation assessment
-- Potential authorization implications per Art. 114-115
+- Potential authorization implications per EU Space Act proposal Art. 114-115
 - Long-term monitoring plan for the non-compliant object
 
-Reference: Art. 72, IADC Guidelines Section 5.3, ISO 24113:2019 Section 6.3
+Reference: IADC Guidelines Section 5.3 / ISO 24113:2019 Section 6.3-6.4 (EU Space Act proposal Art. 72, COM(2025) 335)
 
 ---
 
@@ -302,10 +303,10 @@ Generate ground segment support plan for disposal operations.
 **8.4 Post-Disposal Monitoring:**
 - Tracking duration after disposal (until natural re-entry or handover to SSA)
 - Criteria for closing out the disposal campaign
-- Data archiving requirements per Art. 72
+- Data archiving requirements per IADC/ISO disposal verification (corresponds to EU Space Act proposal Art. 72)
 
 **8.5 NCA Reporting:**
-- Disposal completion report format and timeline per Art. 72
+- Disposal completion report format and timeline per IADC/ISO disposal verification (corresponds to EU Space Act proposal Art. 72)
 - Content: achieved disposal orbit, passivation status, predicted remaining lifetime
 - [EVIDENCE: Template disposal completion report for NCA]
 
@@ -313,23 +314,28 @@ Generate ground segment support plan for disposal operations.
 
 **## SECTION: Compliance Matrix**
 
-Generate a compliance matrix at sub-article granularity for Art. 72.
+Generate a compliance matrix using the enacted-law-first format from the Quality Rules.
 
 **Table 9.1:** End-of-Life Disposal Compliance Matrix
 
-| Req. ID | Provision | Requirement Description | Compliance Status | Implementation Description | Evidence Reference | Gap Description | Remediation Action | Target Date |
+| Enacted Standard | Requirement | National Implementation | Compliance Status | Evidence Reference | EU Space Act Mapping |
 
-Requirements to map:
-- Art. 72(1): General disposal obligation for all space objects
-- Art. 72(2): LEO — 25-year post-mission orbital lifetime limit
-- Art. 72(3): GEO — re-orbit to 300+ km above GEO altitude, eccentricity constraints
-- Art. 72(4): Controlled re-entry — casualty risk < 1:10,000 per event
-- Art. 72(5): Fuel reservation — mandatory allocation for disposal with documented margin
-- IADC Guideline 5.3.1: Post-mission orbit lifetime < 25 years (LEO)
-- IADC Guideline 5.3.2: GEO re-orbit requirements (300+ km, eccentricity < 0.003)
-- ISO 24113:2019 Section 6.3.1: Disposal orbit requirements
-- ISO 24113:2019 Section 6.3.2: Success probability > 90%
-- ISO 24113:2019 Section 6.3.3: Re-entry casualty risk requirements
+The **Enacted Standard** column ALWAYS lists the IADC/ISO reference first. The **EU Space Act Mapping** column lists the corresponding EU Space Act proposal article, ALWAYS marked "(Proposal)".
+
+Requirements to map (enacted standards first):
+
+**IADC Guidelines (enacted):**
+- IADC Section 5.3.1: General post-mission disposal obligation — EU Space Act proposal Art. 72(1) (Proposal)
+- IADC Section 5.3.2: LEO 25-year post-mission orbital lifetime limit — EU Space Act proposal Art. 72(2) (Proposal)
+- IADC Section 5.3.3: GEO re-orbit requirements (300+ km, eccentricity < 0.003) — EU Space Act proposal Art. 72(3) (Proposal)
+- IADC Section 5.3 (fuel reservation guidance): Fuel reservation for disposal — EU Space Act proposal Art. 72(5) (Proposal)
+
+**ISO 24113:2019 (enacted):**
+- ISO 24113 Section 6.3.1: Disposal orbit requirements — EU Space Act proposal Art. 72(1) (Proposal)
+- ISO 24113 Section 6.3.2: Success probability > 90% — EU Space Act proposal Art. 72(1) (Proposal)
+- ISO 24113 Section 6.3.3: Post-mission orbital lifetime — EU Space Act proposal Art. 72(2) (Proposal)
+- ISO 24113 Section 6.4: Controlled re-entry casualty risk requirements — EU Space Act proposal Art. 72(4) (Proposal)
+
 - Cross-reference entries from Document A1 (DMP) compliance matrix, Section 10
 
 ### Cross-References
@@ -339,9 +345,9 @@ Requirements to map:
 - Document A6 — Re-Entry Casualty Risk Assessment: casualty risk analysis (if controlled/uncontrolled re-entry)
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 72(1)-(5)
-- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3) Section 5.3
-- ISO 24113:2019 Section 6.3
+- IADC Space Debris Mitigation Guidelines (IADC-02-01, Rev. 3) Section 5.3 — primary enacted disposal framework
+- ISO 24113:2019 Section 6.3-6.4 — enacted international standard for disposal requirements
+- EU Space Act COM(2025) 335, Art. 72(1)-(5) (Proposal)
 - ECSS-U-AS-10C (2023) — Space sustainability
 - ESA Space Debris Mitigation Compliance Verification Guidelines
 - NASA-STD-8719.14 Rev. B — Process for Limiting Orbital Debris (for casualty risk methodology)`;
