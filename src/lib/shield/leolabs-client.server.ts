@@ -144,7 +144,10 @@ export async function fetchLeoLabsCDMs(
     } catch (err) {
       if (attempt < MAX_RETRIES - 1) {
         const backoff = 1000 * Math.pow(2, attempt);
-        logger.warn(`[Shield/LeoLabs] Error, retrying in ${backoff}ms`, err);
+        logger.warn(
+          `[Shield/LeoLabs] Error, retrying in ${backoff}ms`,
+          err as Record<string, unknown>,
+        );
         await new Promise((r) => setTimeout(r, backoff));
         continue;
       }
