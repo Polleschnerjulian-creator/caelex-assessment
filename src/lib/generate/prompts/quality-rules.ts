@@ -106,8 +106,16 @@ Every Compliance Matrix section MUST use sub-article granularity. Map requiremen
 **Correct:** Art. 67(1)(a), Art. 74(2)(b), Art. 89(3)
 **Incorrect:** Art. 67, Art. 74, Art. 89
 
-Required columns for ALL compliance matrices:
-| Requirement ID | Applicable Provision | Requirement Description | Compliance Status | Implementation Description | Evidence Reference | Gap Description | Remediation Action | Target Date |
+Required columns for ALL compliance matrices (default format — NCA-specific formats override when a target NCA is selected):
+| Enacted Standard | Requirement | National Implementation | Compliance Status | Evidence Reference | EU Space Act Mapping |
+
+Column descriptions:
+- **Enacted Standard:** Primary reference to enacted international standard (e.g., "IADC 5.3.2 / ISO 24113 §6.3.3"). ALWAYS an enacted or published standard — never a proposal.
+- **Requirement:** Description of what is required.
+- **National Implementation:** How the enacted standard is implemented in the target jurisdiction's national law (e.g., "RT Art. 41-9 (FR)" or "SIA 2018 s.12 (UK)"). Leave blank if no jurisdiction selected.
+- **Compliance Status:** Compliant / Substantially Compliant / Partially Compliant / Non-Compliant / Not Applicable
+- **Evidence Reference:** Specific evidence supporting the compliance claim, or [EVIDENCE: description] marker.
+- **EU Space Act Mapping:** The corresponding EU Space Act article, ALWAYS marked "(Proposal)". Example: "Art. 72(2) (Proposal)". This is the LAST column — supplementary, not primary.
 
 Compliance Status values (use consistently):
 - **Compliant** — requirement fully met with evidence
@@ -177,6 +185,9 @@ Use these markers to flag items requiring operator attention:
 - When referencing another document in the NCA package, include both code and title on first reference: "Document A4 — End-of-Life Disposal Plan, Section 4.2"
 - Subsequent references use code only: "Document A4, Section 4.2"
 - Ensure all cross-references to other documents are bidirectional — if Document A1 references Document A4, then Document A4 should reference Document A1
+- When citing regulatory requirements, ALWAYS cite the enacted standard first, then the national implementation, then the EU Space Act proposal reference
+- Format: "Per IADC Guidelines Section 5.3.2 (implemented as RT Art. 41-9 in France; corresponds to EU Space Act Art. 72(2), COM(2025) 335 proposal)"
+- NEVER cite the EU Space Act article as the primary reference
 
 ---
 
