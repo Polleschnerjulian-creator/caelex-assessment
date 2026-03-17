@@ -8,8 +8,8 @@
 
 import type { SectionPlan, CrossReference } from "./reasoning-types";
 import type { NCAProfile, DocumentCategory } from "@/data/nca-profiles";
-import { getCNESRegulatoryKnowledge } from "@/data/cnes-regulatory-knowledge";
-import { getBNetzARegulatoryKnowledge } from "@/data/bnetza-regulatory-knowledge";
+import { getFranceJurisdiction } from "@/data/regulatory/jurisdictions/france";
+import { getGermanyJurisdiction } from "@/data/regulatory/jurisdictions/germany";
 
 export function buildNCAContextBlock(
   nca: NCAProfile,
@@ -39,13 +39,13 @@ export function buildNCAContextBlock(
   // Inject deep CNES regulatory knowledge when targeting CNES
   if (nca.id === "cnes") {
     parts.push("");
-    parts.push(getCNESRegulatoryKnowledge());
+    parts.push(getFranceJurisdiction().knowledgeBase);
   }
 
   // Inject deep BNetzA regulatory knowledge when targeting BNetzA
   if (nca.id === "bnetza") {
     parts.push("");
-    parts.push(getBNetzARegulatoryKnowledge());
+    parts.push(getGermanyJurisdiction().knowledgeBase);
   }
 
   return parts.join("\n");

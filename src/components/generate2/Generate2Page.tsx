@@ -26,7 +26,12 @@ import {
   computeSingleDocProgress,
   computePackageProgress,
 } from "@/lib/generation-store";
-import { NCA_PROFILES } from "@/data/nca-profiles";
+import type { NCAProfile } from "@/data/nca-profiles";
+import { getFranceJurisdiction } from "@/data/regulatory/jurisdictions/france";
+import { getGermanyJurisdiction } from "@/data/regulatory/jurisdictions/germany";
+import { getUKJurisdiction } from "@/data/regulatory/jurisdictions/uk";
+import { getBelgiumJurisdiction } from "@/data/regulatory/jurisdictions/belgium";
+import { getNetherlandsJurisdiction } from "@/data/regulatory/jurisdictions/netherlands";
 import type { ConsistencyFinding } from "@/lib/generate/consistency-check";
 import { ImpactNotification } from "./ImpactNotification";
 import type { ImpactResult } from "@/lib/generate/impact-analysis";
@@ -36,6 +41,38 @@ import {
   formatPackageContext,
 } from "@/lib/generate/key-findings";
 import type { DocumentFindings } from "@/lib/generate/key-findings";
+
+// ─── NCA profiles derived from the enacted regulatory data layer ─────────────
+
+function buildNCAProfiles(): NCAProfile[] {
+  const jurisdictions = [
+    { id: "cnes", getter: getFranceJurisdiction },
+    { id: "bnetza", getter: getGermanyJurisdiction },
+    { id: "uksa", getter: getUKJurisdiction },
+    { id: "belspo", getter: getBelgiumJurisdiction },
+    { id: "nso", getter: getNetherlandsJurisdiction },
+  ] as const;
+
+  return jurisdictions.map(({ id, getter }) => {
+    const j = getter();
+    return {
+      id,
+      name: j.nca.name,
+      country: j.code,
+      language: j.nca.language,
+      executiveSummaryLanguage: j.nca.executiveSummaryLanguage,
+      rigor: j.rigor,
+      focusAreas: [],
+      preferredStandards: [],
+      preferredEvidence: [],
+      documentGuidance: j.documentGuidance as NCAProfile["documentGuidance"],
+    };
+  });
+}
+
+const NCA_PROFILES: NCAProfile[] = buildNCAProfiles();
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 /** Structured error logger — forwards to Sentry if available, falls back to console. */
 function logError(message: string, error: unknown) {
