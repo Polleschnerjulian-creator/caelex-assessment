@@ -218,13 +218,13 @@ export async function computeFleetRiskSummary(
       select: {
         id: true,
         conjunctionId: true,
-        currentTier: true,
+        riskTier: true,
         status: true,
-        latestTca: true,
-        primaryNoradId: true,
-        secondaryNoradId: true,
-        decisionMadeAt: true,
-        statusChangedAt: true,
+        tca: true,
+        noradId: true,
+        threatNoradId: true,
+        decisionAt: true,
+        updatedAt: true,
       },
     }),
   ]);
@@ -236,10 +236,10 @@ export async function computeFleetRiskSummary(
   }
 
   for (const event of events) {
-    const ourNorad = noradIds.has(event.primaryNoradId)
-      ? event.primaryNoradId
-      : noradIds.has(event.secondaryNoradId)
-        ? event.secondaryNoradId
+    const ourNorad = noradIds.has(event.noradId)
+      ? event.noradId
+      : noradIds.has(event.threatNoradId)
+        ? event.threatNoradId
         : null;
     if (ourNorad && satMap.has(ourNorad)) {
       satMap.get(ourNorad)!.events.push(event);
@@ -250,13 +250,10 @@ export async function computeFleetRiskSummary(
     .map(([noradId, data]) => {
       const highestTier =
         data.events.length > 0
-          ? (tierOrder.find((t) =>
-              data.events.some((e) => e.currentTier === t),
-            ) ?? null)
+          ? (tierOrder.find((t) => data.events.some((e) => e.riskTier === t)) ??
+            null)
           : null;
-      const unresolved = data.events
-        .filter((e) => e.latestTca)
-        .map((e) => e.latestTca!);
+      const unresolved = data.events.filter((e) => e.tca).map((e) => e.tca!);
       const oldest =
         unresolved.length > 0
           ? new Date(Math.min(...unresolved.map((d) => d.getTime())))
@@ -282,14 +279,14 @@ export async function computeFleetRiskSummary(
     satellitesWithActiveEvents: satellites.filter((s) => s.activeEventCount > 0)
       .length,
     totalActiveEvents: events.length,
-    emergencyCount: events.filter((e) => e.currentTier === "EMERGENCY").length,
-    highCount: events.filter((e) => e.currentTier === "HIGH").length,
+    emergencyCount: events.filter((e) => e.riskTier === "EMERGENCY").length,
+    highCount: events.filter((e) => e.riskTier === "HIGH").length,
     overdueDecisions: events.filter(
       (e) =>
         e.status === "ASSESSMENT_REQUIRED" &&
-        !e.decisionMadeAt &&
-        e.statusChangedAt &&
-        Date.now() - e.statusChangedAt.getTime() > 24 * 3600000,
+        !e.decisionAt &&
+        e.updatedAt &&
+        Date.now() - e.updatedAt.getTime() > 24 * 3600000,
     ).length,
     satellites,
   };
@@ -313,8 +310,8 @@ export async function computeConjunctionForecast(
       where: {
         conjunctionEvent: { organizationId: orgId },
         OR: [
-          { conjunctionEvent: { primaryNoradId: sc.noradId! } },
-          { conjunctionEvent: { secondaryNoradId: sc.noradId! } },
+          { conjunctionEvent: { noradId: sc.noradId! } },
+          { conjunctionEvent: { threatNoradId: sc.noradId! } },
         ],
         createdAt: { gte: thirtyDaysAgo },
       },
@@ -324,8 +321,8 @@ export async function computeConjunctionForecast(
       where: {
         conjunctionEvent: { organizationId: orgId },
         OR: [
-          { conjunctionEvent: { primaryNoradId: sc.noradId! } },
-          { conjunctionEvent: { secondaryNoradId: sc.noradId! } },
+          { conjunctionEvent: { noradId: sc.noradId! } },
+          { conjunctionEvent: { threatNoradId: sc.noradId! } },
         ],
         createdAt: { gte: sevenDaysAgo },
       },
@@ -335,8 +332,8 @@ export async function computeConjunctionForecast(
       where: {
         conjunctionEvent: { organizationId: orgId },
         OR: [
-          { conjunctionEvent: { primaryNoradId: sc.noradId! } },
-          { conjunctionEvent: { secondaryNoradId: sc.noradId! } },
+          { conjunctionEvent: { noradId: sc.noradId! } },
+          { conjunctionEvent: { threatNoradId: sc.noradId! } },
         ],
       },
       orderBy: { createdAt: "asc" },
@@ -408,9 +405,9 @@ export async function computeFleetManeuverSummary(
     select: {
       status: true,
       decision: true,
-      maneuverDeltaV: true,
-      statusChangedAt: true,
-      decisionMadeAt: true,
+      fuelConsumedPct: true,
+      updatedAt: true,
+      decisionAt: true,
       createdAt: true,
     },
   });
@@ -420,15 +417,13 @@ export async function computeFleetManeuverSummary(
   const autoClosed = events.filter((e) => e.status === "CLOSED" && !e.decision);
 
   const totalDeltaV = maneuvers.reduce(
-    (sum, e) => sum + (e.maneuverDeltaV || 0),
+    (sum, e) => sum + (e.fuelConsumedPct || 0),
     0,
   );
 
   const responseTimes = events
-    .filter((e) => e.decisionMadeAt && e.createdAt)
-    .map(
-      (e) => (e.decisionMadeAt!.getTime() - e.createdAt.getTime()) / 3600000,
-    );
+    .filter((e) => e.decisionAt && e.createdAt)
+    .map((e) => (e.decisionAt!.getTime() - e.createdAt.getTime()) / 3600000);
   const avgResponse =
     responseTimes.length > 0
       ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length

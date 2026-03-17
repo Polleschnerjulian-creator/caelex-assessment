@@ -38,15 +38,15 @@ export async function GET() {
         select: {
           id: true,
           conjunctionId: true,
-          currentTier: true,
+          riskTier: true,
           status: true,
-          latestTca: true,
+          tca: true,
           latestPc: true,
-          primaryNoradId: true,
-          statusChangedAt: true,
-          decisionMadeAt: true,
+          noradId: true,
+          updatedAt: true,
+          decisionAt: true,
         },
-        orderBy: { latestTca: "asc" },
+        orderBy: { tca: "asc" },
       }),
       prisma.spacecraft.findMany({
         where: { organizationId: orgId, noradId: { not: null } },
@@ -58,14 +58,14 @@ export async function GET() {
 
     const eventInputs = events.map((e) => ({
       eventId: e.id,
-      tier: e.currentTier,
+      tier: e.riskTier,
       status: e.status,
-      tca: e.latestTca || new Date(),
-      pc: e.latestPc || 0,
+      tca: e.tca,
+      pc: e.latestPc,
       conjunctionId: e.conjunctionId,
-      satelliteName: scNames.get(e.primaryNoradId) || e.primaryNoradId,
-      decisionMadeAt: e.decisionMadeAt,
-      statusChangedAt: e.statusChangedAt,
+      satelliteName: scNames.get(e.noradId) || e.noradId,
+      decisionMadeAt: e.decisionAt,
+      statusChangedAt: e.updatedAt,
     }));
 
     const prioritized = prioritizeEvents(eventInputs);
