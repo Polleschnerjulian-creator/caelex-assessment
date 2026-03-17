@@ -831,7 +831,14 @@ export function Generate2Page() {
       // 2. Dynamic import jsPDF generator (client-side only)
       const { generateDocumentPDF } = await import("@/lib/pdf/jspdf-generator");
       const meta = NCA_DOC_TYPE_MAP[selectedType];
-      const blob = generateDocumentPDF(meta.title, documentState.content);
+      const ncaProfile = selectedNCA
+        ? NCA_PROFILES.find((p) => p.id === selectedNCA)
+        : null;
+      const blob = generateDocumentPDF(meta.title, documentState.content, {
+        documentCode: meta.code,
+        preparedFor: ncaProfile?.name || undefined,
+        classification: "NCA Confidential — Authorization Submission",
+      });
 
       // 3. Trigger browser download
       const url = URL.createObjectURL(blob);
