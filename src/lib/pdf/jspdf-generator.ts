@@ -236,7 +236,7 @@ class DocumentPDFBuilder {
     doc.setTextColor(...COL.red);
     doc.setFont("helvetica", "bold");
     doc.text(
-      "FOR INFORMATIONAL PURPOSES ONLY \u2014 NOT LEGAL ADVICE",
+      "BASED ON ENACTED LAW. EU SPACE ACT REFERENCES ARE FROM COM(2025) 335 LEGISLATIVE PROPOSAL. NOT LEGAL ADVICE.",
       PAGE_W - MARGIN_R,
       PAGE_H - 16,
       { align: "right" },
