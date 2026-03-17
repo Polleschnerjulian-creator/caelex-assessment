@@ -345,7 +345,7 @@ export const nationalInsuranceRequirements: NationalInsuranceRequirement[] = [
     hasSpaceLaw: true,
     lawName: "Space Industry Act 2018 / Outer Space Act 1986",
     lawYear: 2018,
-    relevantLegislation: ["SIA 2018 s.36", "OSA 1986 s.10"],
+    relevantLegislation: ["SIA 2018 s.12", "OSA 1986 s.10"],
     insuranceRequired: true,
     minimumTPL: 60_000_000,
     tplCap: 60_000_000,

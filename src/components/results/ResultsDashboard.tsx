@@ -168,6 +168,13 @@ export default function ResultsDashboard({
           </div>
         </motion.div>
 
+        {/* Legal disclaimer */}
+        <p className="text-xs text-slate-400 mt-6 px-4">
+          Regulatory references based on enacted international standards and
+          national law. EU Space Act references based on COM(2025) 335
+          legislative proposal. Not legal advice.
+        </p>
+
         {/* Disclaimer */}
         <DisclaimerBanner
           assessmentType="eu-space-act"

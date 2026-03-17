@@ -80,7 +80,7 @@
     },
     {
       "path": "/api/cron/audit-chain-anchor",
-      "schedule": "0 23 * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/cdm-polling",
