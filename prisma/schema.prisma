@@ -6904,6 +6904,8 @@ model CDMRecord {
   riskTier  RiskTier
   createdAt DateTime @default(now())
 
+  source            String   @default("space_track")
+
   conjunctionEvent ConjunctionEvent @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
 
   @@index([conjunctionEventId, creationDate])
@@ -6943,6 +6945,9 @@ model CAConfig {
   ncaJurisdiction String?
 
   defaultAssigneeId String?
+
+  leolabsEnabled    Boolean  @default(false)
+  leolabsApiKey     String?  @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
