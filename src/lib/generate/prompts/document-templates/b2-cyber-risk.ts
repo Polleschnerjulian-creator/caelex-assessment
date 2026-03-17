@@ -2,17 +2,18 @@
  * Generate 2.0 — B2: Cybersecurity Risk Assessment Template
  *
  * P0 document. Comprehensive risk assessment for space and ground systems
- * per EU Space Act Art. 77-78, aligned with NIST SP 800-30 and ISO 27005.
+ * per NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1
+ * (EU Space Act proposal Art. 77-78), aligned with NIST SP 800-30 and ISO 27005.
  */
 
 export function getCyberRiskTemplate(): string {
   return `## Document-Specific Instructions: B2 — Cybersecurity Risk Assessment
 
-This document provides the comprehensive cybersecurity risk assessment required under EU Space Act Art. 77(1)(a)-(d) and Art. 78(1)-(3). NCAs expect a structured, methodical risk assessment covering the full attack surface of space operations — space segment, ground segment, communication links, and supply chain. The assessment must identify threats specific to space systems (per CCSDS 350.1-G-3), evaluate vulnerabilities, and present a prioritized risk treatment plan with residual risk acceptance.
+This document provides the comprehensive cybersecurity risk assessment required under NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (corresponds to EU Space Act proposal Art. 77(1)(a)-(d) and Art. 78(1)-(3), COM(2025) 335). NCAs expect a structured, methodical risk assessment covering the full attack surface of space operations — space segment, ground segment, communication links, and supply chain. The assessment must identify threats specific to space systems (per CCSDS 350.1-G-3), evaluate vulnerabilities, and present a prioritized risk treatment plan with residual risk acceptance.
 
 This document implements the risk assessment obligation established in the Cybersecurity Policy (Document B1) and informs the Incident Response Plan (Document B3), Access Control Policy (Document B5), and Supply Chain Security Plan (Document B6).
 
-NCA reviewers specifically evaluate: (1) use of a recognized risk methodology (NIST SP 800-30 / ISO 27005), (2) space-specific threat scenarios (not generic IT risks), (3) comprehensive asset inventory per Art. 77(a), (4) quantified risk levels with clear acceptance criteria, (5) actionable risk treatment plan with timelines.
+NCA reviewers specifically evaluate: (1) use of a recognized risk methodology (NIST SP 800-30 / ISO 27005), (2) space-specific threat scenarios (not generic IT risks), (3) comprehensive asset inventory per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(a)), (4) quantified risk levels with clear acceptance criteria, (5) actionable risk treatment plan with timelines.
 
 ### Required Sections
 
@@ -26,7 +27,7 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 - Document title: "Cybersecurity Risk Assessment"
 - Document code: B2-CRA
 - All elements from the Cover Page Standard (Document Control Block, Approval Block, Distribution List, Revision History)
-- Assessment date and validity period (NCA expectation: annual reassessment per Art. 78(3))
+- Assessment date and validity period (NCA expectation: annual reassessment per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 78(3)))
 - Table of Contents listing all 9 sections with subsection numbers
 
 ---
@@ -36,17 +37,17 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Organization, missions/spacecraft covered, operational scope
-2. **Document Purpose:** "This Cybersecurity Risk Assessment fulfills the requirements of Art. 77(1)(a)-(d) and Art. 78(1)-(3) of the EU Space Act (COM(2025) 335). It identifies, evaluates, and prioritizes cybersecurity risks across all segments of space operations and establishes a risk treatment plan with documented residual risk acceptance."
+2. **Document Purpose:** "This Cybersecurity Risk Assessment fulfills the requirements of NIS2 Directive Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (corresponds to EU Space Act proposal Art. 77(1)(a)-(d) and Art. 78(1)-(3), COM(2025) 335). It identifies, evaluates, and prioritizes cybersecurity risks across all segments of space operations and establishes a risk treatment plan with documented residual risk acceptance."
 3. **Key Findings (5-7 bullets):**
    - **Total Risks Identified:** [X] risks across [Y] categories
    - **Risk Distribution:** [X] Critical, [X] High, [X] Medium, [X] Low
    - **Top Risk:** [Brief description of highest-priority risk]
    - **Residual Risk Posture:** [Assessment after planned treatments]
-   - **Critical Assets:** [Number] mission-critical assets identified per Art. 77(a)
+   - **Critical Assets:** [Number] mission-critical assets identified per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(a))
    - **Space-Specific Threats:** [Number] space-specific threat scenarios analyzed per CCSDS 350.1-G-3
-   - **Supply Chain Risks:** [Number] supply chain risks per Art. 78(2)
+   - **Supply Chain Risks:** [Number] supply chain risks per NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2))
 4. **Evidence Summary:** Assessment methodology, tools used, validation approach
-5. **Compliance Determination:** Statement on Art. 77-78 compliance
+5. **Compliance Determination:** Statement on NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77-78) compliance
 
 Cross-reference: Document B1 (Cybersecurity Policy), B3 (Incident Response), B5 (Access Control), B6 (Supply Chain)
 
@@ -62,13 +63,13 @@ Generate detailed methodology description demonstrating use of recognized framew
 - Justification for framework selection and NCA acceptance
 
 **3.2 Risk Assessment Process:**
-1. Asset identification and valuation per Art. 77(a)
-2. Threat identification and characterization per Art. 77(b)
-3. Vulnerability identification per Art. 77(c)
+1. Asset identification and valuation per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(a))
+2. Threat identification and characterization per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(b))
+3. Vulnerability identification per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(c))
 4. Likelihood determination (5-level scale)
 5. Impact analysis (5-level scale, multi-dimensional)
 6. Risk determination (likelihood × impact)
-7. Risk treatment selection per Art. 78(1)
+7. Risk treatment selection per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 78(1))
 
 **3.3 Likelihood Scale:**
 
@@ -87,8 +88,8 @@ Generate detailed methodology description demonstrating use of recognized framew
 | Negligible | 1 | No effect on ops | < EUR 10K | No regulatory action | No safety impact |
 | Minor | 2 | Degraded non-critical | EUR 10K-100K | Informal NCA inquiry | Negligible safety |
 | Moderate | 3 | Degraded critical service | EUR 100K-1M | Formal NCA investigation | Minor safety concern |
-| Major | 4 | Loss of critical service | EUR 1M-10M | NCA enforcement (Art. 106-110) | Significant safety |
-| Catastrophic | 5 | Loss of spacecraft/mission | > EUR 10M | Authorization revocation (Art. 115), fines up to 1% turnover (Art. 111) | Loss of life risk |
+| Major | 4 | Loss of critical service | EUR 1M-10M | NCA enforcement (proposal Art. 106-110) | Significant safety |
+| Catastrophic | 5 | Loss of spacecraft/mission | > EUR 10M | Authorization revocation (proposal Art. 115), fines up to 1% turnover (proposal Art. 111) | Loss of life risk |
 
 **3.5 Risk Matrix:**
 
@@ -108,13 +109,13 @@ Risk levels: **Critical** (≥15): Immediate action, Board notification | **High
 - Medium risks: CISO approval for acceptance with documented justification
 - Low risks: Accepted by default, monitored in risk register
 
-Reference: Art. 77(1)(a)-(d), NIST SP 800-30 Rev. 1, ISO/IEC 27005:2022
+Reference: NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(1)(a)-(d)), NIST SP 800-30 Rev. 1, ISO/IEC 27005:2022
 
 ---
 
 **## SECTION: Asset Inventory & Classification**
 
-Generate comprehensive asset inventory per Art. 77(a).
+Generate comprehensive asset inventory per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(a)).
 
 **4.1 Asset Identification Methodology:**
 - Identification approach: system architecture review, interviews, documentation analysis
@@ -162,13 +163,13 @@ Generate comprehensive asset inventory per Art. 77(a).
 - Single points of failure identification
 - Redundancy assessment for mission-critical asset chains
 
-Reference: Art. 77(a) asset identification, ISO/IEC 27001:2022 Annex A.5.9
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(a)) asset identification, ISO/IEC 27001:2022 Annex A.5.9
 
 ---
 
 **## SECTION: Threat Landscape Analysis**
 
-Generate space-specific threat analysis per Art. 77(b) and CCSDS 350.1-G-3.
+Generate space-specific threat analysis per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(b)) and CCSDS 350.1-G-3.
 
 **5.1 Threat Actor Assessment:**
 
@@ -216,13 +217,13 @@ Generate space-specific threat analysis per Art. 77(b) and CCSDS 350.1-G-3.
 - Proliferation of commercial SIGINT capabilities
 - 5G/6G ground infrastructure attack surface expansion
 
-Reference: Art. 77(b), CCSDS 350.1-G-3, ENISA Threat Landscape
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(b)), CCSDS 350.1-G-3, ENISA Threat Landscape
 
 ---
 
 **## SECTION: Vulnerability Assessment**
 
-Generate vulnerability analysis per Art. 77(c).
+Generate vulnerability analysis per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(c)).
 
 **6.1 Assessment Methodology:**
 
@@ -258,7 +259,7 @@ Generate vulnerability analysis per Art. 77(c).
 - Shared ground infrastructure serving multiple missions
 - Time-delayed communication affecting real-time security response
 
-Reference: Art. 77(c), ISO/IEC 27001:2022 Annex A.8.8
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(c)), ISO/IEC 27001:2022 Annex A.8.8
 
 ---
 
@@ -308,13 +309,13 @@ For each: detailed attack scenario, current controls, gaps, recommended treatmen
 - How this risk profile compares to similar space operators
 - Areas above/below industry average risk levels
 
-Reference: Art. 77(d), Art. 78(1), NIST SP 800-30 Rev. 1
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 77(d), Art. 78(1)), NIST SP 800-30 Rev. 1
 
 ---
 
 **## SECTION: Risk Treatment Plan**
 
-Generate actionable risk treatment plan per Art. 78(1).
+Generate actionable risk treatment plan per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 78(1)).
 
 **8.1 Treatment Strategy:**
 
@@ -351,30 +352,30 @@ Generate actionable risk treatment plan per Art. 78(1).
 
 **8.5 Monitoring and Reassessment:**
 - Risk register review frequency: quarterly
-- Full risk assessment reassessment: annually per Art. 78(3)
+- Full risk assessment reassessment: annually per NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 78(3))
 - Trigger events for out-of-cycle reassessment (same as policy review triggers)
 - KPIs for tracking risk treatment progress
 
-Reference: Art. 78(1)-(3), NIST SP 800-30 Rev. 1, ISO/IEC 27005:2022
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 6.1 (proposal Art. 78(1)-(3)), NIST SP 800-30 Rev. 1, ISO/IEC 27005:2022
 
 ---
 
 **## SECTION: Compliance Matrix**
 
-Generate a compliance matrix at sub-article granularity for Art. 77-78.
+Generate a compliance matrix at sub-article granularity mapping enacted law (NIS2 / ISO 27001) as primary, with EU Space Act proposal references as secondary.
 
 **Table 9.1:** Risk Assessment Compliance Matrix
 
 | Req. ID | Provision | Requirement Description | Compliance Status | Assessment Section | Evidence Reference | Gap / Remediation |
 
-Map ALL of the following provisions:
-- Art. 77(1)(a): Asset identification and classification — Section 4
-- Art. 77(1)(b): Threat assessment specific to space operations — Section 5
-- Art. 77(1)(c): Vulnerability identification and assessment — Section 6
-- Art. 77(1)(d): Risk evaluation and prioritization — Section 7
-- Art. 78(1): Risk treatment plan with residual risk acceptance — Section 8
-- Art. 78(2): Supply chain risk assessment for critical components — Section 5.2 (T-05, T-13), Section 7 (R-03, R-12), cross-ref Document B6
-- Art. 78(3): Periodic reassessment obligation (minimum annually) — Section 8.5
+Map ALL of the following provisions (enacted-law-first, proposal-secondary):
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(1)(a)): Asset identification and classification — Section 4
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(1)(b)): Threat assessment specific to space operations — Section 5
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(1)(c)): Vulnerability identification and assessment — Section 6
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(1)(d)): Risk evaluation and prioritization — Section 7
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 78(1)): Risk treatment plan with residual risk acceptance — Section 8
+- NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2)): Supply chain risk assessment for critical components — Section 5.2 (T-05, T-13), Section 7 (R-03, R-12), cross-ref Document B6
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 78(3)): Periodic reassessment obligation (minimum annually) — Section 8.5
 - NIST SP 800-30 Rev. 1: Full risk assessment process compliance
 - NIST CSF 2.0 ID.RA: Risk Assessment subcategory mapping
 - ISO/IEC 27005:2022: Risk management process compliance
@@ -386,15 +387,16 @@ Map ALL of the following provisions:
 - Document B4 — Business Continuity & Recovery Plan: informed by impact analysis (Section 3.4)
 - Document B5 — Access Control & Authentication Policy: implements access-related risk treatments
 - Document B6 — Supply Chain Security Plan: implements supply chain risk treatments (R-03, R-12)
-- Document B8 — Compliance Verification Matrix: consolidated Art. 74-95 compliance summary
+- Document B8 — Compliance Verification Matrix: consolidated NIS2 Art. 21 / ISO 27001 (proposal Art. 74-95) compliance summary
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 77(1)(a)-(d), Art. 78(1)-(3)
-- NIST SP 800-30 Rev. 1 — Guide for Conducting Risk Assessments
-- NIST Cybersecurity Framework (CSF) 2.0 — Identify function
+- NIS2 Directive (EU 2022/2555) Art. 21(2)(a) — primary enacted risk assessment framework
+- ISO/IEC 27001:2022 Clause 6.1 — Risk assessment requirements
 - ISO/IEC 27005:2022 — Information Security Risk Management
 - ISO/IEC 27001:2022 Annex A.5.9 — Information security in supplier relationships
+- NIST SP 800-30 Rev. 1 — Guide for Conducting Risk Assessments
+- NIST Cybersecurity Framework (CSF) 2.0 — Identify function
+- EU Space Act COM(2025) 335, Art. 77(1)(a)-(d), Art. 78(1)-(3) (proposal)
 - CCSDS 350.1-G-3 (2022) — Security Threats Against Space Missions
-- NIS2 Directive (EU 2022/2555) Art. 21(2)(a)
 - ENISA Threat Landscape for Space (if available)`;
 }

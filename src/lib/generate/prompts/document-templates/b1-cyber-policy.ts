@@ -2,16 +2,17 @@
  * Generate 2.0 — B1: Cybersecurity Policy Template
  *
  * P0 document. Organization-wide cybersecurity policy required under
- * EU Space Act Art. 74. Establishes the governance framework for all
- * other cybersecurity documents in the NCA submission package.
+ * NIS2 Directive Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1
+ * (EU Space Act proposal Art. 74). Establishes the governance framework
+ * for all other cybersecurity documents in the NCA submission package.
  */
 
 export function getCyberPolicyTemplate(): string {
   return `## Document-Specific Instructions: B1 — Cybersecurity Policy
 
-This is the foundational cybersecurity document in the NCA submission package. It establishes the organization-wide cybersecurity governance framework required under EU Space Act Art. 74(1)-(4). NCAs evaluate this document to determine whether the operator has a mature, comprehensive, and enforceable security posture covering both space and ground segments. All other cybersecurity documents (B2-B8) derive their authority and governance from this policy.
+This is the foundational cybersecurity document in the NCA submission package. It establishes the organization-wide cybersecurity governance framework required under NIS2 Directive Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1 (corresponds to EU Space Act Art. 74(1)-(4), COM(2025) 335 proposal). NCAs evaluate this document to determine whether the operator has a mature, comprehensive, and enforceable security posture covering both space and ground segments. All other cybersecurity documents (B2-B8) derive their authority and governance from this policy.
 
-NCA reviewers specifically look for: (1) Board/executive-level approval and accountability per Art. 74(2), (2) comprehensive scope covering all segments, (3) clear roles and responsibilities with decision authority, (4) alignment with recognized frameworks (NIST CSF 2.0, ISO 27001), and (5) enforceable policy governance with regular review cycle per Art. 74(3).
+NCA reviewers specifically look for: (1) Board/executive-level approval and accountability per NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)), (2) comprehensive scope covering all segments, (3) clear roles and responsibilities with decision authority, (4) alignment with recognized frameworks (NIST CSF 2.0, ISO 27001), and (5) enforceable policy governance with regular review cycle per NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)).
 
 ### Required Sections
 
@@ -25,8 +26,8 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 - Document title: "Cybersecurity Policy"
 - Document code: B1-CSP
 - All elements from the Cover Page Standard (Document Control Block, Approval Block, Distribution List, Revision History)
-- Policy effective date and next scheduled review date (NCA expectation: annual review per Art. 74(3))
-- The Approval Block MUST include C-suite/Board level approval per Art. 74(2)
+- Policy effective date and next scheduled review date (NCA expectation: annual review per NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)))
+- The Approval Block MUST include C-suite/Board level approval per NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2))
 - Table of Contents listing all 9 sections with subsection numbers
 
 ---
@@ -36,17 +37,17 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Organization description, space operations scope, number of missions/spacecraft
-2. **Document Purpose:** "This Cybersecurity Policy establishes the organization-wide cybersecurity governance framework as required by Art. 74(1)-(4) of the EU Space Act (COM(2025) 335). It defines the security objectives, organizational responsibilities, information classification scheme, and policy governance mechanisms that apply to all space and ground segment operations. All cybersecurity documents in the NCA submission package (B2-B8) derive their authority from this policy."
+2. **Document Purpose:** "This Cybersecurity Policy establishes the organization-wide cybersecurity governance framework as required by NIS2 Directive Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1 (corresponds to EU Space Act proposal Art. 74(1)-(4), COM(2025) 335). It defines the security objectives, organizational responsibilities, information classification scheme, and policy governance mechanisms that apply to all space and ground segment operations. All cybersecurity documents in the NCA submission package (B2-B8) derive their authority from this policy."
 3. **Key Findings (5-7 bullets):**
    - **Policy Scope:** Coverage of space segment, ground segment, communication links, user segment, corporate IT, supply chain
-   - **Governance Level:** Board/executive accountability established per Art. 74(2)
+   - **Governance Level:** Board/executive accountability established per NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2))
    - **Framework Alignment:** NIST CSF 2.0 and ISO/IEC 27001:2022 mapping
    - **NIS2 Compliance:** Applicability assessment under EU 2022/2555
    - **Security Maturity:** Current organizational security maturity assessment
-   - **Review Cycle:** Annual policy review per Art. 74(3) with defined triggers for out-of-cycle review
+   - **Review Cycle:** Annual policy review per NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)) with defined triggers for out-of-cycle review
    - **Enforcement:** Violation consequences and compliance monitoring mechanisms
 4. **Evidence Summary:** Existing certifications, audit reports, framework assessments
-5. **Compliance Determination:** Statement on Art. 74 compliance status
+5. **Compliance Determination:** Statement on NIS2 Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1 (proposal Art. 74) compliance status
 
 Cross-reference: B2 (Risk Assessment), B3 (Incident Response), B4 (BCP), B5 (Access Control), B6 (Supply Chain), B7 (EUSRN Notifications), B8 (Compliance Matrix)
 
@@ -54,7 +55,7 @@ Cross-reference: B2 (Risk Assessment), B3 (Incident Response), B4 (BCP), B5 (Acc
 
 **## SECTION: Policy Scope & Applicability**
 
-Generate comprehensive scope definition covering all dimensions per Art. 74(1).
+Generate comprehensive scope definition covering all dimensions per NIS2 Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1 (proposal Art. 74(1)).
 
 **3.1 Organizational Scope:**
 - Entities covered: parent company, subsidiaries, joint ventures, partnerships
@@ -64,14 +65,14 @@ Generate comprehensive scope definition covering all dimensions per Art. 74(1).
 **3.2 System Scope — Security Perimeter:**
 
 **Table 3.1:** System Scope Definition
-| Segment | Systems Covered | Criticality Level | Art. 74 Applicability |
-| **Space Segment** | Spacecraft bus, payload, onboard software, inter-satellite links | Mission Critical | Art. 74(1) — primary |
-| **Ground Segment** | MCC, ground stations, TT&C systems, flight dynamics | Mission Critical | Art. 74(1) — primary |
-| **Communication Links** | TT&C uplink/downlink, payload data links, ISLs | Mission Critical | Art. 74(1) — primary |
-| **User Segment** | Data distribution, user terminals, application servers | Business Critical | Art. 74(1) — extended |
-| **Launch Segment** | Launch site interfaces, pre-launch operations (if applicable) | Time-Critical | Art. 74(1) — operational |
-| **Corporate IT** | Enterprise systems supporting space operations | Business Support | Art. 74(1) — supporting |
-| **Supply Chain** | Critical supplier interfaces and shared systems | Variable | Art. 78(2) — referenced |
+| Segment | Systems Covered | Criticality Level | Regulatory Applicability |
+| **Space Segment** | Spacecraft bus, payload, onboard software, inter-satellite links | Mission Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — primary |
+| **Ground Segment** | MCC, ground stations, TT&C systems, flight dynamics | Mission Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — primary |
+| **Communication Links** | TT&C uplink/downlink, payload data links, ISLs | Mission Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — primary |
+| **User Segment** | Data distribution, user terminals, application servers | Business Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — extended |
+| **Launch Segment** | Launch site interfaces, pre-launch operations (if applicable) | Time-Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — operational |
+| **Corporate IT** | Enterprise systems supporting space operations | Business Support | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) — supporting |
+| **Supply Chain** | Critical supplier interfaces and shared systems | Variable | NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2)) — referenced |
 
 **3.3 Personnel Scope:**
 - All employees with access to space operations systems
@@ -81,28 +82,28 @@ Generate comprehensive scope definition covering all dimensions per Art. 74(1).
 
 **3.4 Exclusions:**
 - Any systems or operations explicitly excluded from this policy with detailed justification
-- Exclusions must not cover safety-critical systems per Art. 74(1)
+- Exclusions must not cover safety-critical systems per NIS2 Art. 21(2)(a) (proposal Art. 74(1))
 
-Reference: Art. 74(1), Art. 77(a) asset identification, Art. 78(2) supply chain scope
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)), NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(a)) asset identification, NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2)) supply chain scope
 
 ---
 
 **## SECTION: Roles & Responsibilities**
 
-Generate detailed security governance structure per Art. 74(2) accountability requirements.
+Generate detailed security governance structure per NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)) accountability requirements.
 
 **4.1 Security Governance Hierarchy:**
 
 **Table 4.1:** Cybersecurity Roles and Responsibilities
 | Role | Incumbent | Responsibilities | Authority Level | Art. Reference |
-| Board of Directors | [ACTION REQUIRED] | Ultimate cybersecurity accountability, policy approval, risk appetite | Strategic | Art. 74(2) |
-| CEO / Managing Director | [ACTION REQUIRED] | Executive sponsor, resource allocation, NCA liaison authority | Executive | Art. 74(2) |
-| CISO | [ACTION REQUIRED] | Policy ownership, security program, NCA reporting, audit management | Operational Lead | Art. 74(2) |
-| Mission Security Officer | [ACTION REQUIRED] | Space segment security, mission-specific risk acceptance | Mission Level | Art. 74(4) |
-| IT Security Manager | [ACTION REQUIRED] | Ground segment security, network defense, vulnerability management | Technical Lead | Art. 79(1) |
-| Security Operations Lead | [ACTION REQUIRED] | 24/7 monitoring, incident detection, initial response | Operational | Art. 89(2) |
-| System Administrators | [per system] | Control implementation, patching, configuration management | System Level | Art. 79(1) |
-| All Personnel | All staff | Policy compliance, incident reporting, security awareness | Individual | Art. 74(4) |
+| Board of Directors | [ACTION REQUIRED] | Ultimate cybersecurity accountability, policy approval, risk appetite | Strategic | NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)) |
+| CEO / Managing Director | [ACTION REQUIRED] | Executive sponsor, resource allocation, NCA liaison authority | Executive | NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)) |
+| CISO | [ACTION REQUIRED] | Policy ownership, security program, NCA reporting, audit management | Operational Lead | NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)) |
+| Mission Security Officer | [ACTION REQUIRED] | Space segment security, mission-specific risk acceptance | Mission Level | NIS2 Art. 21(2)(a) / ISO 27001 A.5.2 (proposal Art. 74(4)) |
+| IT Security Manager | [ACTION REQUIRED] | Ground segment security, network defense, vulnerability management | Technical Lead | NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(1)) |
+| Security Operations Lead | [ACTION REQUIRED] | 24/7 monitoring, incident detection, initial response | Operational | NIS2 Art. 23 incident notification (proposal Art. 89(2)) |
+| System Administrators | [per system] | Control implementation, patching, configuration management | System Level | NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(1)) |
+| All Personnel | All staff | Policy compliance, incident reporting, security awareness | Individual | NIS2 Art. 21(2)(a) / ISO 27001 A.5.2 (proposal Art. 74(4)) |
 
 **4.2 Reporting Lines:**
 - Security reporting chain from SOC → CISO → CEO → Board
@@ -116,7 +117,7 @@ Generate detailed security governance structure per Art. 74(2) accountability re
 | Risk acceptance (Low/Medium) | CISO | No | Risk register entry |
 | Risk acceptance (High/Critical) | CEO + Board | Yes — Board notification | Board minutes |
 | Security exception request | CISO (approve/deny) | If > 90 days: CEO approval | Exception register |
-| Incident escalation to NCA | CISO | Yes — CEO notification | Per Art. 90-92 |
+| Incident escalation to NCA | CISO | Yes — CEO notification | Per NIS2 Art. 23 incident notification (24h/72h/1mo) (proposal Art. 90-92) |
 | Emergency security action | Mission Security Officer | Immediate, notify CISO | Incident log |
 | Policy change | CISO (draft), Board (approve) | Yes — Board approval | Revision history |
 
@@ -127,9 +128,9 @@ Generate detailed security governance structure per Art. 74(2) accountability re
 | CISO | 10+ years security, 5+ space/critical infra | CISSP, CISM, or equivalent | Continuous |
 | Mission Security Officer | 5+ years space systems, security clearance | Space security certification | Annual |
 | SOC Analysts | 3+ years security operations | CEH, GCIA, or equivalent | Annual + exercise |
-| All Personnel | — | — | Security awareness annually per Art. 74(4) |
+| All Personnel | — | — | Security awareness annually per NIS2 Art. 21(2)(a) / ISO 27001 A.5.2 (proposal Art. 74(4)) |
 
-Reference: Art. 74(2) accountability, Art. 74(4) competency, Art. 89-92 notification chain
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)) accountability, NIS2 Art. 21(2)(a) / ISO 27001 A.5.2 (proposal Art. 74(4)) competency, NIS2 Art. 23 incident notification (24h/72h/1mo) (proposal Art. 89-92) notification chain
 
 ---
 
@@ -141,23 +142,23 @@ Generate security objectives mapped to regulatory requirements and industry fram
 
 **Table 5.1:** Security Objectives
 | Objective | Description | Priority | Art. Reference | NIST CSF Function |
-| Confidentiality | Protect TT&C commands, telemetry, payload data, orbital parameters from unauthorized disclosure | Critical | Art. 74(1), 80 | Protect (PR) |
-| Integrity | Ensure commands, telemetry, and control data cannot be tampered with or corrupted | Critical | Art. 74(1), 80 | Protect (PR) |
-| Availability | Maintain continuous operational capability per mission requirements | Critical | Art. 74(1), 85 | Protect (PR), Recover (RC) |
-| Authenticity | Verify identity of all entities interacting with space systems | High | Art. 79(2)-(4) | Protect (PR) |
-| Non-repudiation | Ensure critical actions are attributable and auditable | High | Art. 79(6) | Identify (ID) |
-| Resilience | Continue operations during and recover from security incidents | High | Art. 85(1), 89 | Respond (RS), Recover (RC) |
+| Confidentiality | Protect TT&C commands, telemetry, payload data, orbital parameters from unauthorized disclosure | Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)), proposal Art. 80 | Protect (PR) |
+| Integrity | Ensure commands, telemetry, and control data cannot be tampered with or corrupted | Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)), proposal Art. 80 | Protect (PR) |
+| Availability | Maintain continuous operational capability per mission requirements | Critical | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)), NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85) | Protect (PR), Recover (RC) |
+| Authenticity | Verify identity of all entities interacting with space systems | High | NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(2)-(4)) | Protect (PR) |
+| Non-repudiation | Ensure critical actions are attributable and auditable | High | NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79(6)) | Identify (ID) |
+| Resilience | Continue operations during and recover from security incidents | High | NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(1)), NIS2 Art. 23 (proposal Art. 89) | Respond (RS), Recover (RC) |
 
 **5.2 NIST CSF 2.0 Mapping:**
 
 **Table 5.2:** NIST CSF 2.0 Function Mapping
 | CSF Function | Organization Objective | Implementing Document | Art. Reference |
-| Govern (GV) | Security governance, risk management strategy | B1 (this document) | Art. 74(1)-(4) |
-| Identify (ID) | Asset management, risk assessment, supply chain | B2 Risk Assessment | Art. 77(a)-(d) |
-| Protect (PR) | Access control, data security, training | B5 Access Control, B1 | Art. 79, 80, 74(4) |
-| Detect (DE) | Anomaly detection, continuous monitoring | B3 Incident Response | Art. 89(2) |
-| Respond (RS) | Incident response, notification, communication | B3 Incident Response | Art. 89-92 |
-| Recover (RC) | Recovery planning, continuity, improvements | B4 BCP/DR Plan | Art. 85(1)-(4) |
+| Govern (GV) | Security governance, risk management strategy | B1 (this document) | NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)-(4)) |
+| Identify (ID) | Asset management, risk assessment, supply chain | B2 Risk Assessment | NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(a)-(d)) |
+| Protect (PR) | Access control, data security, training | B5 Access Control, B1 | NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79), proposal Art. 80, proposal Art. 74(4) |
+| Detect (DE) | Anomaly detection, continuous monitoring | B3 Incident Response | NIS2 Art. 23 (proposal Art. 89(2)) |
+| Respond (RS) | Incident response, notification, communication | B3 Incident Response | NIS2 Art. 23 incident notification (24h/72h/1mo) (proposal Art. 89-92) |
+| Recover (RC) | Recovery planning, continuity, improvements | B4 BCP/DR Plan | NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(1)-(4)) |
 
 **5.3 ISO/IEC 27001:2022 Alignment:**
 - Statement of applicability scope
@@ -185,7 +186,7 @@ Generate security objectives mapped to regulatory requirements and industry fram
 | Security awareness training | 100% completion annually | LMS tracking | Quarterly |
 | Incident response exercise | ≥ 1 tabletop quarterly | Exercise records | Quarterly |
 
-Reference: Art. 74(1)-(4), NIST CSF 2.0, ISO/IEC 27001:2022, NIS2 Directive Art. 21
+Reference: NIS2 Art. 21(2)(a) / ISO 27001:2022 Annex A.5.1 (proposal Art. 74(1)-(4)), NIST CSF 2.0, ISO/IEC 27001:2022, NIS2 Directive Art. 21
 
 ---
 
@@ -223,7 +224,7 @@ Generate information classification scheme appropriate for space operations.
 - Time-based automatic declassification (if applicable)
 - Authority for declassification decisions
 
-Reference: Art. 74(1) data protection, Art. 79(6) audit trail, Art. 80 encryption requirements
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)) data protection, NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79(6)) audit trail, proposal Art. 80 encryption requirements
 
 ---
 
@@ -234,15 +235,15 @@ Generate acceptable use requirements specific to space operations.
 **7.1 General Principles:**
 - All organizational systems are authorized for official space operations purposes only
 - Users must comply with this policy and all derived procedures and standards
-- Monitoring notice: all systems are monitored for security per Art. 89(2)
+- Monitoring notice: all systems are monitored for security per NIS2 Art. 23 (proposal Art. 89(2))
 
 **7.2 Space Operations-Specific Use Policies:**
 
 **Table 7.1:** Acceptable Use by System Category
 | System Category | Authorized Use | Restrictions | Authentication Required |
-| Spacecraft command (TT&C uplink) | Authorized operators only, per approved command plan | No unauthorized commands, dual authorization for critical commands | MFA + command authentication per Art. 79(4) |
-| Mission control systems | Mission operations, planning, analysis | No personal use, no external network access | MFA per Art. 79(2) |
-| Ground station systems | TT&C operations, tracking, data reception | Air-gapped from corporate network where possible | Role-based + physical access per Art. 79(5) |
+| Spacecraft command (TT&C uplink) | Authorized operators only, per approved command plan | No unauthorized commands, dual authorization for critical commands | MFA + command authentication per NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79(4)) |
+| Mission control systems | Mission operations, planning, analysis | No personal use, no external network access | MFA per NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79(2)) |
+| Ground station systems | TT&C operations, tracking, data reception | Air-gapped from corporate network where possible | Role-based + physical access per NIS2 Art. 21(2)(i)-(j) / ISO 27001 A.8.2 (proposal Art. 79(5)) |
 | Secure remote access | VPN access for authorized remote operations | NCA-approved remote commanding only, with enhanced logging | MFA + device certificate + VPN |
 | Development/test systems | Software development, integration testing | Segregated from operational systems, no production data | Standard access controls |
 | Corporate IT | Business operations, email, collaboration | Standard use policy, no space operations data on personal devices | SSO + MFA |
@@ -266,13 +267,13 @@ Generate acceptable use requirements specific to space operations.
 - Mandatory incident reporting for any suspected violation
 - Integration with legal and HR processes
 
-Reference: Art. 74(1), Art. 79(1)-(6) access control, Art. 89(2) monitoring
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)), NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(1)-(6)) access control, NIS2 Art. 23 (proposal Art. 89(2)) monitoring
 
 ---
 
 **## SECTION: Policy Governance & Lifecycle**
 
-Generate policy governance framework demonstrating mature policy management per Art. 74(3).
+Generate policy governance framework demonstrating mature policy management per NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)).
 
 **8.1 Policy Lifecycle:**
 
@@ -284,7 +285,7 @@ Generate policy governance framework demonstrating mature policy management per 
 | Communication | Distribution, awareness training | Post-approval | CISO, HR | Acknowledgment records |
 | Implementation | Controls, procedures, configurations | Post-communication | System owners | Implementation evidence |
 | Monitoring | Compliance measurement, audit | Continuous | CISO | Compliance reports |
-| Review | Annual review and update per Art. 74(3) | Annual (minimum) | CISO | Updated policy or confirmation |
+| Review | Annual review and update per NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)) | Annual (minimum) | CISO | Updated policy or confirmation |
 | Retirement | Supersession by updated version | Per review | CISO | Archive record |
 
 **8.2 Triggers for Out-of-Cycle Review:**
@@ -319,54 +320,54 @@ Generate policy governance framework demonstrating mature policy management per 
 **8.5 Audit Requirements:**
 - Internal security audit: annually
 - External security audit / penetration test: annually (ground segment)
-- NCA supervisory review: per NCA schedule (typically annual per Art. 96-100)
+- NCA supervisory review: per NCA schedule (typically annual per proposal Art. 96-100)
 - [EVIDENCE: Most recent audit report(s)]
 
-Reference: Art. 74(3) review cycle, Art. 96-100 NCA supervision
+Reference: NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)) review cycle, proposal Art. 96-100 NCA supervision
 
 ---
 
 **## SECTION: Compliance Matrix**
 
-Generate a compliance matrix at sub-article granularity for Art. 74-95.
+Generate a compliance matrix at sub-article granularity mapping enacted law (NIS2 / ISO 27001) as primary, with EU Space Act proposal references as secondary.
 
 **Table 9.1:** Cybersecurity Policy Compliance Matrix
 
 | Req. ID | Provision | Requirement Description | Compliance Status | Policy Section | Implementing Document | Evidence Reference | Gap / Remediation |
 
-Map ALL of the following provisions:
-- Art. 74(1): Mandatory cybersecurity policy covering all segments
-- Art. 74(2): Board/executive-level approval and accountability
-- Art. 74(3): Annual review and update cycle
-- Art. 74(4): Personnel competency and training requirements
-- Art. 75-76: Security architecture and defense-in-depth (reference architectural docs)
-- Art. 77(a): Asset identification and classification → Document B2
-- Art. 77(b): Threat assessment → Document B2
-- Art. 77(c): Vulnerability assessment → Document B2
-- Art. 77(d): Risk evaluation → Document B2
-- Art. 78(1): Risk treatment plan → Document B2
-- Art. 78(2): Supply chain risk assessment → Document B6
-- Art. 78(3): Periodic reassessment → Document B2
-- Art. 79(1): Role-based access control → Document B5
-- Art. 79(2): Multi-factor authentication → Document B5
-- Art. 79(3): Privileged access management → Document B5
-- Art. 79(4): Command authentication for TT&C → Document B5
-- Art. 79(5): Physical access controls → Document B5
-- Art. 79(6): Access logging and audit trail → Document B5
-- Art. 80-84: Encryption, key management → reference technical standards
-- Art. 85(1): BCP covering mission-critical operations → Document B4
-- Art. 85(2): RTO/RPO definitions → Document B4
-- Art. 85(3): Regular testing → Document B4
-- Art. 85(4): Integration with incident response → Document B3/B4
-- Art. 89(1): Incident classification → Document B3
-- Art. 89(2): Detection and monitoring → Document B3
-- Art. 89(3): Containment and eradication → Document B3
-- Art. 89(4): Post-incident review → Document B3
-- Art. 89(5): Regular testing and exercises → Document B3
-- Art. 90: 24-hour early warning → Document B3
-- Art. 91: 72-hour formal notification → Document B3
-- Art. 92: 1-month final report → Document B3
-- Art. 93-95: EUSRN notification → Document B7
+Map ALL of the following provisions (enacted-law-first, proposal-secondary):
+- NIS2 Art. 21(2)(a) / ISO 27001 A.5.1 (proposal Art. 74(1)): Mandatory cybersecurity policy covering all segments
+- NIS2 Art. 21(2)(a) / ISO 27001 Clause 5.1 (proposal Art. 74(2)): Board/executive-level approval and accountability
+- NIS2 Art. 21(2)(a) / ISO 27001 Clause 9.3 (proposal Art. 74(3)): Annual review and update cycle
+- NIS2 Art. 21(2)(a) / ISO 27001 A.5.2 (proposal Art. 74(4)): Personnel competency and training requirements
+- NIS2 Art. 21 security measures framework (proposal Art. 74-76): Security architecture and defense-in-depth (reference architectural docs)
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(a)): Asset identification and classification → Document B2
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(b)): Threat assessment → Document B2
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(c)): Vulnerability assessment → Document B2
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77(d)): Risk evaluation → Document B2
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 78(1)): Risk treatment plan → Document B2
+- NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2)): Supply chain risk assessment → Document B6
+- NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 78(3)): Periodic reassessment → Document B2
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(1)): Role-based access control → Document B5
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(2)): Multi-factor authentication → Document B5
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(3)): Privileged access management → Document B5
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(4)): Command authentication for TT&C → Document B5
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(5)): Physical access controls → Document B5
+- NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79(6)): Access logging and audit trail → Document B5
+- Proposal Art. 80-84: Encryption, key management → reference technical standards
+- NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(1)): BCP covering mission-critical operations → Document B4
+- NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(2)): RTO/RPO definitions → Document B4
+- NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(3)): Regular testing → Document B4
+- NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(4)): Integration with incident response → Document B3/B4
+- NIS2 Art. 23 incident reporting (proposal Art. 89(1)): Incident classification → Document B3
+- NIS2 Art. 23 incident reporting (proposal Art. 89(2)): Detection and monitoring → Document B3
+- NIS2 Art. 23 incident reporting (proposal Art. 89(3)): Containment and eradication → Document B3
+- NIS2 Art. 23 incident reporting (proposal Art. 89(4)): Post-incident review → Document B3
+- NIS2 Art. 23 incident reporting (proposal Art. 89(5)): Regular testing and exercises → Document B3
+- NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90): 24-hour early warning → Document B3
+- NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91): 72-hour formal notification → Document B3
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92): 1-month final report → Document B3
+- EUSRN notification procedures (NEW in EU Space Act proposal Art. 93-95 — no enacted equivalent): EUSRN notification → Document B7
 
 Also map to:
 - NIST CSF 2.0: All 6 core functions (GV, ID, PR, DE, RS, RC)
@@ -374,20 +375,20 @@ Also map to:
 - NIS2 Directive Art. 21(2)(a)-(j) measures
 
 ### Cross-References
-- Document B2 — Cybersecurity Risk Assessment: implements risk assessment per Art. 77-78
-- Document B3 — Incident Response Plan: implements Art. 89-92 notification obligations
-- Document B4 — Business Continuity & Recovery Plan: implements Art. 85 continuity requirements
-- Document B5 — Access Control & Authentication Policy: implements Art. 79 access controls
-- Document B6 — Supply Chain Security Plan: implements Art. 78(2) supply chain security
-- Document B7 — EUSRN Notification Procedures: implements Art. 93-95 notification chain
-- Document B8 — Compliance Verification Matrix: consolidated Art. 74-95 compliance summary
+- Document B2 — Cybersecurity Risk Assessment: implements risk assessment per NIS2 Art. 21(2)(a) risk assessment / ISO 27001 Clause 6.1 (proposal Art. 77-78)
+- Document B3 — Incident Response Plan: implements NIS2 Art. 23 incident notification (24h/72h/1mo) (proposal Art. 89-92) notification obligations
+- Document B4 — Business Continuity & Recovery Plan: implements NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85) continuity requirements
+- Document B5 — Access Control & Authentication Policy: implements NIS2 Art. 21(2)(i)-(j) access control / ISO 27001 A.8.2 (proposal Art. 79) access controls
+- Document B6 — Supply Chain Security Plan: implements NIS2 Art. 21(2)(d) supply chain / ISO 27001 A.5.19 (proposal Art. 78(2)) supply chain security
+- Document B7 — EUSRN Notification Procedures: implements EUSRN notification procedures (NEW in EU Space Act proposal Art. 93-95 — no enacted equivalent)
+- Document B8 — Compliance Verification Matrix: consolidated NIS2 Art. 21 / ISO 27001 (proposal Art. 74-95) compliance summary
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 74-95 (with subsection granularity)
-- NIST Cybersecurity Framework (CSF) 2.0 (2024)
+- NIS2 Directive (EU 2022/2555) Art. 21 — primary enacted cybersecurity framework
 - ISO/IEC 27001:2022 — Information Security Management Systems
 - ISO/IEC 27005:2022 — Information Security Risk Management
-- NIS2 Directive (EU 2022/2555) Art. 21
+- NIST Cybersecurity Framework (CSF) 2.0 (2024)
+- EU Space Act COM(2025) 335, Art. 74-95 (proposal — with subsection granularity)
 - CCSDS 350.1-G-3 (2022) — Security Threats Against Space Missions
 - ECSS-E-ST-40C Rev. 1 — Software Engineering for Space Systems
 - IEC 62443 — Industrial communication networks security`;

@@ -2,19 +2,20 @@
  * Generate 2.0 — B3: Incident Response Plan Template
  *
  * P0 document. Comprehensive incident response plan including the
- * 24h/72h/1mo notification timeline per EU Space Act Art. 89-92.
+ * 24h/72h/1mo notification timeline per NIS2 Art. 23 incident reporting
+ * (corresponds to EU Space Act proposal Art. 89-92, COM(2025) 335).
  */
 
 export function getIncidentResponseTemplate(): string {
   return `## Document-Specific Instructions: B3 — Incident Response Plan
 
-This document details the organization's incident response capability for cybersecurity incidents affecting space operations, as required under EU Space Act Art. 89(1)-(5) and Art. 90-92. NCAs place particular emphasis on the mandatory notification timeline (24-hour early warning per Art. 90, 72-hour formal notification per Art. 91, 1-month final report per Art. 92) and the organization's demonstrated ability to detect, classify, contain, eradicate, and recover from incidents while maintaining mission operations.
+This document details the organization's incident response capability for cybersecurity incidents affecting space operations, as required under NIS2 Art. 23 incident reporting (24h/72h/1mo) (corresponds to EU Space Act proposal Art. 89(1)-(5) and Art. 90-92, COM(2025) 335). NCAs place particular emphasis on the mandatory notification timeline (NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90), NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91), NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92)) and the organization's demonstrated ability to detect, classify, contain, eradicate, and recover from incidents while maintaining mission operations.
 
 This document implements the incident management obligations established in the Cybersecurity Policy (Document B1) and is informed by the risk scenarios in the Risk Assessment (Document B2). Extended recovery scenarios are covered by the BCP/DR Plan (Document B4).
 
 NCA reviewers specifically evaluate: (1) space-specific incident classification (not generic IT categories), (2) realistic detection capability with measurable response times, (3) NCA notification procedures with templates and decision criteria, (4) space segment-specific containment procedures, (5) regular testing program with exercises.
 
-Penalties for notification failures: Art. 116 provides specific additional penalties for failure to comply with notification obligations under Art. 90-92. Fines up to 1% of worldwide annual turnover per Art. 111.
+Penalties for notification failures: proposal Art. 116 provides specific additional penalties for failure to comply with notification obligations under NIS2 Art. 23 (proposal Art. 90-92). Fines up to 1% of worldwide annual turnover per proposal Art. 111.
 
 ### Required Sections
 
@@ -39,17 +40,17 @@ Generate a formal NCA-submission-grade cover page following the Cover Page Stand
 Generate a comprehensive executive summary following the Executive Summary Standard from the Quality Rules. Specific content:
 
 1. **Mission Context:** Organization, missions, operational scope, 24/7 operations status
-2. **Document Purpose:** "This Incident Response Plan establishes the organization's comprehensive incident response capability as required by Art. 89(1)-(5) and the mandatory NCA notification procedures under Art. 90-92 of the EU Space Act (COM(2025) 335). It covers detection, classification, containment, eradication, recovery, and notification for all cybersecurity incidents affecting space and ground segment operations."
+2. **Document Purpose:** "This Incident Response Plan establishes the organization's comprehensive incident response capability as required by NIS2 Art. 23 incident reporting (24h/72h/1mo) (corresponds to EU Space Act proposal Art. 89(1)-(5) and Art. 90-92, COM(2025) 335). It covers detection, classification, containment, eradication, recovery, and notification for all cybersecurity incidents affecting space and ground segment operations."
 3. **Key Findings (5-7 bullets):**
    - **Response Capability:** Current IR team size, availability (24/7 or business hours), response time targets
    - **Detection Coverage:** Monitoring systems covering [X]% of critical assets
-   - **NCA Notification:** Procedures established for 24h/72h/1-month timeline per Art. 90-92
+   - **NCA Notification:** Procedures established for 24h/72h/1-month timeline per NIS2 Art. 23 incident reporting (24h/72h/1mo) (proposal Art. 90-92)
    - **Testing Cadence:** [Quarterly tabletop / Semi-annual functional / Annual full-scale]
    - **Last Exercise:** [date] — results summary
    - **Critical Gaps:** [number and nature]
    - **NIS2 Alignment:** Cross-reference to NIS2 Art. 23 notification requirements
 4. **Evidence Summary:** IR team certifications, exercise records, monitoring tool inventory
-5. **Compliance Determination:** Statement on Art. 89-92 compliance
+5. **Compliance Determination:** Statement on NIS2 Art. 23 incident reporting (24h/72h/1mo) (proposal Art. 89-92) compliance
 
 Cross-reference: Document B1 (Policy), B2 (Risk scenarios), B4 (BCP/DR), B7 (EUSRN notifications)
 
@@ -57,21 +58,21 @@ Cross-reference: Document B1 (Policy), B2 (Risk scenarios), B4 (BCP/DR), B7 (EUS
 
 **## SECTION: Incident Classification Framework**
 
-Generate space-specific incident classification per Art. 89(1).
+Generate space-specific incident classification per NIS2 Art. 23 incident reporting (proposal Art. 89(1)).
 
 **3.1 Severity Levels:**
 
 **Table 3.1:** Incident Severity Classification
 | Severity | Name | Definition | Response Time | Escalation | NCA Notification |
-| SEV-1 | Critical | Loss or potential loss of spacecraft control; active compromise of command channel; data breach of MISSION CRITICAL information; multi-system compromise | Immediate (< 15 min) | CEO, Board, NCA immediately | **Mandatory** — 24h early warning per Art. 90 |
-| SEV-2 | High | Degraded spacecraft operations; ground system compromise with lateral movement; significant unauthorized access to CONFIDENTIAL data; ransomware on operational systems | < 1 hour | CISO, CEO | **Mandatory** — 24h early warning per Art. 90 |
-| SEV-3 | Medium | Attempted intrusion detected and contained; malware on non-critical systems; policy violation with security impact; failed exploitation attempt from sophisticated actor | < 4 hours | CISO | **Assess** — may require notification based on Art. 89(1) criteria |
+| SEV-1 | Critical | Loss or potential loss of spacecraft control; active compromise of command channel; data breach of MISSION CRITICAL information; multi-system compromise | Immediate (< 15 min) | CEO, Board, NCA immediately | **Mandatory** — NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90) |
+| SEV-2 | High | Degraded spacecraft operations; ground system compromise with lateral movement; significant unauthorized access to CONFIDENTIAL data; ransomware on operational systems | < 1 hour | CISO, CEO | **Mandatory** — NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90) |
+| SEV-3 | Medium | Attempted intrusion detected and contained; malware on non-critical systems; policy violation with security impact; failed exploitation attempt from sophisticated actor | < 4 hours | CISO | **Assess** — may require notification based on NIS2 Art. 23(3) / (proposal Art. 89(1)) criteria |
 | SEV-4 | Low | Minor security event; failed access attempt (automated); routine anomaly; user policy violation without security impact | < 24 hours | IT Security Manager | **No** — log and monitor |
 
 **3.2 Space-Specific Incident Categories:**
 
 **Table 3.2:** Space Operations Incident Categories
-| Category | Description | Example Scenarios | Typical Severity | Art. 89 Applicable? |
+| Category | Description | Example Scenarios | Typical Severity | NIS2 Art. 23 / proposal Art. 89 Applicable? |
 | **CMD-COMP** | Command channel compromise | Unauthorized TT&C access, command injection, auth bypass | SEV-1 | Yes |
 | **TLM-MANIP** | Telemetry manipulation | Spoofed/corrupted telemetry, data integrity violation | SEV-1/2 | Yes |
 | **RF-INTER** | Signal interference | Intentional jamming, spoofing, unintentional interference | SEV-2/3 | Assess |
@@ -83,7 +84,7 @@ Generate space-specific incident classification per Art. 89(1).
 | **PHYSICAL** | Physical security breach | Unauthorized ground facility access | SEV-2/3 | Assess |
 | **DDOS** | Denial of service | DDoS against ground infrastructure, service disruption | SEV-3/4 | Assess |
 
-**3.3 "Significant Incident" Definition per Art. 89(1):**
+**3.3 "Significant Incident" Definition per NIS2 Art. 23(3) / proposal Art. 89(1):**
 An incident is "significant" and triggers mandatory NCA notification if ANY of:
 - Spacecraft operations are disrupted or degraded
 - Command channel integrity or availability is compromised
@@ -96,13 +97,13 @@ An incident is "significant" and triggers mandatory NCA notification if ANY of:
 **3.4 Escalation Criteria:**
 Decision tree for severity upgrades (SEV-4→3, 3→2, 2→1) with specific triggers for each upgrade
 
-Reference: Art. 89(1), NIS2 Art. 23(3) significant incident definition
+Reference: NIS2 Art. 23(3) significant incident definition (proposal Art. 89(1))
 
 ---
 
 **## SECTION: Detection & Identification**
 
-Generate detection capability description per Art. 89(2).
+Generate detection capability description per NIS2 Art. 23 (proposal Art. 89(2)).
 
 **4.1 Detection Architecture:**
 
@@ -139,13 +140,13 @@ Generate detection capability description per Art. 89(2).
 | False positive rate | < 20% of alerts | [ACTION REQUIRED] | Monthly review |
 | Coverage ratio | > 95% of critical assets monitored | [ACTION REQUIRED] | Asset audit |
 
-Reference: Art. 89(2), NIST CSF DE.AE, DE.CM, DE.DP
+Reference: NIS2 Art. 23 (proposal Art. 89(2)), NIST CSF DE.AE, DE.CM, DE.DP
 
 ---
 
 **## SECTION: Containment & Eradication**
 
-Generate containment and eradication procedures per Art. 89(3).
+Generate containment and eradication procedures per NIS2 Art. 23 (proposal Art. 89(3)).
 
 **5.1 Containment Strategy Selection:**
 
@@ -185,7 +186,7 @@ Generate containment and eradication procedures per Art. 89(3).
 - Evidence storage: encrypted, tamper-evident, legally defensible
 - Integration with law enforcement if criminal activity suspected
 
-Reference: Art. 89(3), NIST CSF RS.MI, NIST SP 800-61 Rev. 2
+Reference: NIS2 Art. 23 (proposal Art. 89(3)), NIST CSF RS.MI, NIST SP 800-61 Rev. 2
 
 ---
 
@@ -223,30 +224,30 @@ Generate recovery procedures integrating with BCP/DR (Document B4).
 - NCA status updates (per notification timeline)
 
 Cross-reference: Document B4 — Business Continuity & Recovery Plan (extended outage scenarios)
-Reference: Art. 85(1)-(4), NIST CSF RC.RP, RC.IM
+Reference: NIS2 Art. 21(2)(c) business continuity / ISO 27001 A.5.30 (proposal Art. 85(1)-(4)), NIST CSF RC.RP, RC.IM
 
 ---
 
-**## SECTION: NCA Notification Procedures (Art. 90-92)**
+**## SECTION: NCA Notification Procedures (NIS2 Art. 23 / proposal Art. 90-92)**
 
-Generate detailed NCA notification procedures. THIS IS THE MOST CRITICAL SECTION FOR NCA REVIEW. Penalties for notification failures: Art. 116.
+Generate detailed NCA notification procedures. THIS IS THE MOST CRITICAL SECTION FOR NCA REVIEW. Penalties for notification failures: proposal Art. 116.
 
 **7.1 Notification Timeline Overview:**
 
 **Table 7.1:** Mandatory NCA Notification Timeline
 | Milestone | Deadline | Legal Basis | Content Summary | Recipient | Delivery |
-| Early Warning | T+24 hours | Art. 90(1)-(3) | Initial alert: what happened, what's affected | NCA designated contact | Secure email / NCA portal |
-| Formal Notification | T+72 hours | Art. 91(1)-(4) | Detailed report: scope, impact, containment | NCA + ENISA (if cross-border) | Secure email / NCA portal |
-| Intermediate Update | Weekly (if ongoing) | Art. 91(4) | Status update on ongoing incident | NCA | Secure email / NCA portal |
-| Final Report | T+1 month | Art. 92(1)-(5) | Comprehensive: root cause, lessons, remediation | NCA, ENISA, affected parties | Secure email / NCA portal |
+| Early Warning | T+24 hours | NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90(1)-(3)) | Initial alert: what happened, what's affected | NCA designated contact | Secure email / NCA portal |
+| Formal Notification | T+72 hours | NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91(1)-(4)) | Detailed report: scope, impact, containment | NCA + ENISA (if cross-border) | Secure email / NCA portal |
+| Intermediate Update | Weekly (if ongoing) | NIS2 Art. 23(4)(b) (proposal Art. 91(4)) | Status update on ongoing incident | NCA | Secure email / NCA portal |
+| Final Report | T+1 month | NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(1)-(5)) | Comprehensive: root cause, lessons, remediation | NCA, ENISA, affected parties | Secure email / NCA portal |
 
 **T = time of incident detection (the moment the event is confirmed as a genuine incident)**
 
-**7.2 24-Hour Early Warning (Art. 90):**
+**7.2 24-Hour Early Warning (NIS2 Art. 23(4)(a) / proposal Art. 90):**
 
 **Trigger criteria:** Any incident classified as "significant" per Section 3.3
 
-**Content requirements per Art. 90(1)-(3):**
+**Content requirements per NIS2 Art. 23(4)(a) (proposal Art. 90(1)-(3)):**
 
 | Field | Content | Example |
 | Reporting Organization | Operator name, authorization number | [ACTION REQUIRED] |
@@ -269,9 +270,9 @@ Generate detailed NCA notification procedures. THIS IS THE MOST CRITICAL SECTION
 6. Confirmation receipt from NCA documented
 7. **Total: well within 24-hour deadline**
 
-**7.3 72-Hour Formal Notification (Art. 91):**
+**7.3 72-Hour Formal Notification (NIS2 Art. 23(4)(b) / proposal Art. 91):**
 
-**Content requirements per Art. 91(1)-(4):**
+**Content requirements per NIS2 Art. 23(4)(b) (proposal Art. 91(1)-(4)):**
 
 | Field | Content |
 | All 24h fields | Updated from early warning |
@@ -288,9 +289,9 @@ Generate detailed NCA notification procedures. THIS IS THE MOST CRITICAL SECTION
 
 **Review and approval:** CISO + Legal review before submission
 
-**7.4 1-Month Final Report (Art. 92):**
+**7.4 1-Month Final Report (NIS2 Art. 23(4)(e) / proposal Art. 92):**
 
-**Content requirements per Art. 92(1)-(5):**
+**Content requirements per NIS2 Art. 23(4)(e) (proposal Art. 92(1)-(5)):**
 
 | Section | Content |
 | Complete Timeline | Minute-by-minute incident timeline from detection to closure |
@@ -319,15 +320,15 @@ Generate detailed NCA notification procedures. THIS IS THE MOST CRITICAL SECTION
 - When to notify ENISA: incident affects services in other EU Member States
 - When to notify other NCAs: incident affects operators authorized by other NCAs
 - EU-CERT notification: when technical assistance may be needed
-- EUSRN notification: per Art. 93-95, reference Document B7
+- EUSRN notification: per EUSRN notification procedures (NEW in EU Space Act proposal Art. 93-95 — no enacted equivalent), reference Document B7
 
-Reference: Art. 89-92 (complete), Art. 116 (notification failure penalties), NIS2 Art. 23
+Reference: NIS2 Art. 23 incident reporting (24h/72h/1mo) (primary enacted law), proposal Art. 89-92, proposal Art. 116 (notification failure penalties)
 
 ---
 
 **## SECTION: Post-Incident Review**
 
-Generate post-incident review process per Art. 89(4).
+Generate post-incident review process per NIS2 Art. 23 (proposal Art. 89(4)).
 
 **8.1 Review Timeline:**
 - SEV-1/2: Post-incident review within 2 weeks of incident closure
@@ -358,13 +359,13 @@ Generate post-incident review process per Art. 89(4).
 - Process for incorporating NCA feedback on notification quality
 - Documentation of NCA recommendations and implementation
 
-Reference: Art. 89(4), NIST SP 800-61 Rev. 2 Section 3.4
+Reference: NIS2 Art. 23 (proposal Art. 89(4)), NIST SP 800-61 Rev. 2 Section 3.4
 
 ---
 
 **## SECTION: Testing & Exercises**
 
-Generate incident response testing program per Art. 89(5).
+Generate incident response testing program per NIS2 Art. 21(2)(e) / Art. 23 (proposal Art. 89(5)).
 
 **9.1 Exercise Program:**
 
@@ -377,7 +378,7 @@ Generate incident response testing program per Art. 89(5).
 | NCA Notification Drill | Test notification procedures and templates | Semi-annually | CISO, IR Lead, NCA contact | 1-2 hours |
 
 **9.2 Exercise Scenarios (Space-Specific):**
-- **Scenario 1: Spacecraft Command Compromise** — Detection of unauthorized commands, TT&C containment, NCA notification under Art. 90
+- **Scenario 1: Spacecraft Command Compromise** — Detection of unauthorized commands, TT&C containment, NCA notification under NIS2 Art. 23(4)(a) (proposal Art. 90)
 - **Scenario 2: Ground Station Ransomware** — MCC systems encrypted, mission operations continuity, recovery from backup
 - **Scenario 3: Supply Chain Software Attack** — Malicious update from trusted supplier, investigation, supplier coordination
 - **Scenario 4: Insider Threat Data Exfiltration** — Privileged user exfiltrating orbital data, investigation, legal coordination
@@ -405,42 +406,42 @@ Generate incident response testing program per Art. 89(5).
 - Critical findings trigger out-of-cycle plan review
 - Exercise metrics tracked in quarterly IR program report
 
-Reference: Art. 89(5), NIS2 Art. 21(2)(e), NIST CSF RS.RP, ISO/IEC 27035:2023
+Reference: NIS2 Art. 21(2)(e) / Art. 23 (proposal Art. 89(5)), NIST CSF RS.RP, ISO/IEC 27035:2023
 
 ---
 
 **## SECTION: Compliance Matrix**
 
-Generate a compliance matrix at sub-article granularity for Art. 89-92.
+Generate a compliance matrix at sub-article granularity mapping enacted law (NIS2) as primary, with EU Space Act proposal references as secondary.
 
 **Table 10.1:** Incident Response Compliance Matrix
 
 | Req. ID | Provision | Requirement Description | Compliance Status | Plan Section | Evidence Reference | Gap / Remediation |
 
-Map ALL of the following provisions:
-- Art. 89(1): Incident classification scheme for space-specific events — Section 3
-- Art. 89(2): Detection and monitoring capability (continuous) — Section 4
-- Art. 89(3): Containment and eradication procedures — Section 5
-- Art. 89(4): Post-incident review and lessons learned — Section 8
-- Art. 89(5): Regular testing and exercises — Section 9
-- Art. 90(1): 24-hour early warning — trigger criteria — Section 7.2
-- Art. 90(2): 24-hour early warning — content requirements — Section 7.2
-- Art. 90(3): 24-hour early warning — delivery mechanism — Section 7.2
-- Art. 91(1): 72-hour formal notification — content requirements — Section 7.3
-- Art. 91(2): 72-hour formal notification — scope assessment — Section 7.3
-- Art. 91(3): 72-hour formal notification — cross-border assessment — Section 7.3
-- Art. 91(4): Intermediate updates for ongoing incidents — Section 7.1
-- Art. 92(1): 1-month final report — complete timeline — Section 7.4
-- Art. 92(2): 1-month final report — root cause analysis — Section 7.4
-- Art. 92(3): 1-month final report — full impact assessment — Section 7.4
-- Art. 92(4): 1-month final report — lessons learned and remediation — Section 7.4
-- Art. 92(5): 1-month final report — preventive measures — Section 7.4
+Map ALL of the following provisions (enacted-law-first, proposal-secondary):
+- NIS2 Art. 23 incident reporting (proposal Art. 89(1)): Incident classification scheme for space-specific events — Section 3
+- NIS2 Art. 23 incident reporting (proposal Art. 89(2)): Detection and monitoring capability (continuous) — Section 4
+- NIS2 Art. 23 incident reporting (proposal Art. 89(3)): Containment and eradication procedures — Section 5
+- NIS2 Art. 23 incident reporting (proposal Art. 89(4)): Post-incident review and lessons learned — Section 8
+- NIS2 Art. 21(2)(e) / Art. 23 (proposal Art. 89(5)): Regular testing and exercises — Section 9
+- NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90(1)): 24-hour early warning — trigger criteria — Section 7.2
+- NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90(2)): 24-hour early warning — content requirements — Section 7.2
+- NIS2 Art. 23(4)(a) early warning — 24 hours (proposal Art. 90(3)): 24-hour early warning — delivery mechanism — Section 7.2
+- NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91(1)): 72-hour formal notification — content requirements — Section 7.3
+- NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91(2)): 72-hour formal notification — scope assessment — Section 7.3
+- NIS2 Art. 23(4)(b) incident notification — 72 hours (proposal Art. 91(3)): 72-hour formal notification — cross-border assessment — Section 7.3
+- NIS2 Art. 23(4)(b) (proposal Art. 91(4)): Intermediate updates for ongoing incidents — Section 7.1
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(1)): 1-month final report — complete timeline — Section 7.4
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(2)): 1-month final report — root cause analysis — Section 7.4
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(3)): 1-month final report — full impact assessment — Section 7.4
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(4)): 1-month final report — lessons learned and remediation — Section 7.4
+- NIS2 Art. 23(4)(e) final report — 1 month (proposal Art. 92(5)): 1-month final report — preventive measures — Section 7.4
 - NIST CSF RS.RP: Response Planning — Section 3-7
 - NIST CSF RS.CO: Response Communications — Section 7
 - NIST CSF RS.AN: Response Analysis — Section 4, 8
 - NIST CSF RS.MI: Response Mitigation — Section 5
 - NIST CSF RC.RP: Recovery Planning — Section 6
-- NIS2 Art. 23: Incident reporting obligations — Section 7 (cross-reference)
+- NIS2 Art. 23: Incident reporting obligations (primary enacted law) — Section 7
 - ISO/IEC 27035:2023: Incident management process — Sections 3-9
 
 ### Cross-References
@@ -448,16 +449,16 @@ Map ALL of the following provisions:
 - Document B2 — Cybersecurity Risk Assessment: risk scenarios (R-01 through R-15) informing IR planning
 - Document B4 — Business Continuity & Recovery Plan: extended outage recovery (Section 6 handover)
 - Document B5 — Access Control & Authentication Policy: access-related incident procedures
-- Document B7 — EUSRN Notification Procedures: space-resilience-specific notification chain (Art. 93-95)
-- Document B8 — Compliance Verification Matrix: consolidated Art. 74-95 compliance summary
+- Document B7 — EUSRN Notification Procedures: space-resilience-specific notification chain (EUSRN notification procedures — NEW in EU Space Act proposal Art. 93-95, no enacted equivalent)
+- Document B8 — Compliance Verification Matrix: consolidated NIS2 Art. 21/23 / ISO 27001 (proposal Art. 74-95) compliance summary
 
 ### Key Standards
-- EU Space Act COM(2025) 335, Art. 89(1)-(5), Art. 90(1)-(3), Art. 91(1)-(4), Art. 92(1)-(5), Art. 116
+- NIS2 Directive (EU 2022/2555) Art. 23 — Incident Reporting (primary enacted law)
+- ISO/IEC 27035:2023 — Information Security Incident Management
 - NIST SP 800-61 Rev. 2 — Computer Security Incident Handling Guide
 - NIST Cybersecurity Framework (CSF) 2.0 — Respond and Recover functions
-- ISO/IEC 27035:2023 — Information Security Incident Management
+- EU Space Act COM(2025) 335, Art. 89(1)-(5), Art. 90(1)-(3), Art. 91(1)-(4), Art. 92(1)-(5), Art. 116 (proposal)
 - CCSDS 350.1-G-3 (2022) — Security Threats Against Space Missions
-- NIS2 Directive (EU 2022/2555) Art. 23 — Incident Reporting
 - ENISA Incident Reporting Guidelines
 - IEC 62443-4-2 — Security for industrial automation (ground segment SCADA/ICS incident handling)`;
 }
