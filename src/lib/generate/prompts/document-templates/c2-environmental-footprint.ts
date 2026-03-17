@@ -1,17 +1,22 @@
 /**
  * Generate 2.0 — C2: Environmental Footprint Declaration (EFD) Template
  *
- * P0 document. Environmental Footprint Declaration per EU Space Act Art. 44-46,
- * aligned with ISO 14040/14044 lifecycle assessment methodology. Required for
- * NCA authorization to demonstrate environmental impact assessment and mitigation.
+ * P0 document. Environmental Footprint Declaration aligned with ISO 14040/14044
+ * lifecycle assessment methodology. Where national environmental requirements for
+ * space activities exist (e.g., France: RT Art. 47-48, INERIS methodology), those
+ * are the primary reference. The EU Space Act Art. 44-46 EFD is largely a NEW
+ * obligation with limited enacted national equivalents.
+ *
+ * Hierarchy: Enacted environmental standards (ISO 14040/14044, INERIS) first →
+ * national environmental law where applicable → EU Space Act Art. 44-46 as anticipated.
  */
 
 export function getEnvironmentalFootprintTemplate(): string {
   return `## Document-Specific Instructions: C2 — Environmental Footprint Declaration (EFD)
 
-This document is the Environmental Footprint Declaration required under EU Space Act Art. 44-46. It must demonstrate comprehensive lifecycle environmental impact assessment aligned with ISO 14040/14044 methodology. NCAs use this to evaluate the operator's environmental stewardship and compliance with sustainability requirements.
+This document is the Environmental Footprint Declaration aligned with **ISO 14040/14044 lifecycle assessment methodology** and, where applicable, **national environmental requirements for space activities** (e.g., France: Réglementation Technique (RT) Art. 47-48, INERIS environmental assessment methodology). The EU Space Act Art. 44-46 EFD obligation is largely **NEW** — most national space laws do not currently mandate a formal environmental footprint declaration for space activities. Where no enacted national equivalent exists, this document anticipates the EU Space Act framework while grounding analysis in enacted ISO and national environmental standards.
 
-The EFD must be technically rigorous, quantitative where data is available, and transparent about data gaps and assumptions. It should enable an NCA reviewer to independently assess the operator's environmental impact and mitigation commitments.
+NCAs use this to evaluate the operator's environmental stewardship. The EFD must be technically rigorous, quantitative where data is available, and transparent about data gaps and assumptions. It should enable an NCA reviewer to independently assess the operator's environmental impact and mitigation commitments.
 
 ### Required Sections
 
@@ -23,16 +28,16 @@ Generate the following 11 sections. Each section must contain comprehensive, sub
 
 Generate a comprehensive executive summary. Include:
 1. **Mission Context:** Operator, mission type, orbital regime, spacecraft characteristics
-2. **Document Purpose:** "This Environmental Footprint Declaration is prepared in compliance with Art. 44-46 of the EU Space Act (COM(2025) 335) and constitutes a required element of the NCA authorization submission package. The assessment follows ISO 14040/14044 lifecycle assessment methodology."
+2. **Document Purpose:** "This Environmental Footprint Declaration is prepared in accordance with ISO 14040/14044 lifecycle assessment methodology and applicable national environmental requirements for space activities. For France: RT Art. 47-48 and INERIS methodology. For other jurisdictions: [identify applicable national provisions or note their absence]. This declaration also anticipates the Environmental Footprint Declaration obligations under EU Space Act (COM(2025) 335) Art. 44-46, which are not yet enacted."
 3. **Key Findings (5-7 bullets):**
-   - **EFD Grade:** Assigned grade based on Art. 45 criteria with justification summary
+   - **EFD Grade:** Assigned grade based on ISO 14040/14044 assessment criteria (aligned with anticipated EU Space Act Art. 45 grading) with justification summary
    - **Total GWP:** Global Warming Potential in kg CO2eq for the complete mission lifecycle
    - **Total ODP:** Ozone Depletion Potential in kg CFC-11 eq
    - **Carbon Intensity:** kg CO2eq per kg of payload delivered to orbit
    - **Dominant Impact Phase:** Which lifecycle phase contributes most to environmental impact
    - **Mitigation Effectiveness:** Summary of mitigation measures and their estimated impact reduction
    - **Data Quality Assessment:** Completeness and reliability of environmental data
-4. **Compliance Determination:** Clear statement per Art. 44-46
+4. **Compliance Determination:** Clear statement against applicable enacted standards (ISO 14040/14044, national requirements) and anticipated EU Space Act Art. 44-46
 
 Cross-reference: A1 (DMP) for debris-related environmental considerations, C1 (Authorization Application) for overall compliance context.
 
@@ -79,7 +84,7 @@ Generate a detailed launch vehicle environmental impact analysis. Include:
 - **Comparison with Alternatives:** Brief comparison with alternative launch vehicles if data available
 - **Launch Frequency Impact:** (for constellations) Total lifecycle launch burden including replacements
 
-Reference Art. 45 requirements for launch-phase environmental assessment.
+Reference ISO 14040/14044 system boundary requirements and, for France, INERIS launch-phase assessment methodology. Note: EU Space Act Art. 45 anticipates specific launch-phase environmental assessment criteria.
 
 ---
 
@@ -174,13 +179,14 @@ For each measure, provide: description, applicable lifecycle phase, estimated im
 
 **## SECTION: EFD Grade Justification**
 
-Generate a formal EFD grade assessment per Art. 45 criteria. Include:
-- **Grading Methodology:** How the EFD grade is determined (A through E scale or equivalent)
-- **Assessment Criteria:** Specific criteria evaluated for grade assignment
+Generate a formal EFD grade assessment per ISO 14040/14044 completeness and quality criteria, aligned with anticipated EU Space Act Art. 45 grading where applicable. Include:
+- **Grading Methodology:** How the EFD grade is determined (A through E scale or equivalent), referencing ISO 14044 data quality indicators and, for France, INERIS grading criteria
+- **Assessment Criteria:** Specific criteria evaluated for grade assignment — data completeness, methodological rigour, uncertainty analysis
 - **Grade Assignment:** Assigned grade with detailed justification
 - **Comparison:** How this grade compares to industry benchmarks
 - **Improvement Path:** What actions would improve the grade in future declarations
 - **NCA Considerations:** Factors the NCA should consider in evaluating the grade
+- **Enacted vs. Anticipated:** Note which grading criteria are based on enacted standards (ISO 14044, national requirements) vs. anticipated EU Space Act Art. 45 criteria
 
 ---
 
@@ -195,8 +201,10 @@ Generate prioritized recommendations for environmental improvement. Include:
 - **Regulatory Engagement:** Recommendations for engagement with NCA on evolving environmental requirements
 
 ### Key Requirements
-- Reference Art. 44-46 at sub-article granularity throughout
-- Include ISO 14040/14044 methodology references where applicable
+- Reference ISO 14040/14044 as the PRIMARY methodological framework throughout
+- Reference national environmental requirements where enacted (e.g., France: RT Art. 47-48, INERIS methodology)
+- Reference EU Space Act Art. 44-46 as ANTICIPATED obligations — clearly distinguish from enacted requirements
+- Where no enacted national equivalent exists for an EU Space Act EFD obligation, note the gap explicitly
 - Cross-reference related documents: A1 (DMP), C1 (Authorization Application)
 - Include [ACTION REQUIRED: specific description] markers for all missing operator data
 - Include [EVIDENCE: specific description] markers for all claims requiring supporting documentation
