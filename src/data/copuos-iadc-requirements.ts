@@ -1,4 +1,8 @@
 /**
+ * @deprecated Use `src/data/regulatory/standards/iadc-guidelines.ts` + `src/data/regulatory/standards/copuos-lts.ts` instead.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

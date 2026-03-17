@@ -1,4 +1,9 @@
 /**
+ * @deprecated Use individual jurisdiction files in `src/data/regulatory/jurisdictions/` instead.
+ * Each jurisdiction now has its own file with enacted law, NCA knowledge, and requirements.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

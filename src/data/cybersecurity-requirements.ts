@@ -1,4 +1,10 @@
 /**
+ * @deprecated Use `src/data/regulatory/standards/nis2-directive.ts` + `src/data/regulatory/standards/iso-27001.ts` instead.
+ * This file references EU Space Act proposal articles as if they are enacted law.
+ * The new regulatory layer uses NIS2 and ISO 27001 as primary enacted references.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

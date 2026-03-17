@@ -1,4 +1,8 @@
 /**
+ * @deprecated Insurance data is now consolidated into each jurisdiction file at `src/data/regulatory/jurisdictions/`.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

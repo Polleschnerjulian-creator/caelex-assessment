@@ -1,4 +1,8 @@
 /**
+ * @deprecated Consolidated into `src/data/regulatory/jurisdictions/france.ts` knowledgeBase field.
+ */
+
+/**
  * CNES Regulatory Knowledge Base
  *
  * Extracted from official CNES documents:

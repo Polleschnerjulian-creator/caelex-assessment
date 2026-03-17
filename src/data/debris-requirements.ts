@@ -1,4 +1,9 @@
 /**
+ * @deprecated Use `src/data/regulatory/standards/iadc-guidelines.ts` + `src/data/regulatory/standards/iso-24113.ts` instead.
+ * The new regulatory layer uses IADC and ISO 24113 as primary enacted references.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

@@ -1,4 +1,8 @@
 /**
+ * @deprecated Environmental requirements distributed to relevant standards and jurisdiction files in `src/data/regulatory/`.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

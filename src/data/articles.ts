@@ -1,4 +1,11 @@
 /**
+ * @deprecated Use `src/data/regulatory/eu-space-act-proposal.ts` instead.
+ * This file contains EU Space Act article references with internal inconsistencies
+ * (Art. 6/7 mapping, debris article numbers). The new regulatory layer provides
+ * a single canonical source with enacted-law-first references.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

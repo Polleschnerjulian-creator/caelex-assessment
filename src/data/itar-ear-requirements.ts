@@ -1,4 +1,8 @@
 /**
+ * @deprecated Use `src/data/regulatory/standards/itar-ear.ts` instead.
+ */
+
+/**
  * ITAR/EAR Export Control Requirements Data
  *
  * IMPORTANT LEGAL DISCLAIMER:

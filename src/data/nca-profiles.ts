@@ -1,4 +1,9 @@
 /**
+ * @deprecated NCA profiles are now consolidated into jurisdiction files at `src/data/regulatory/jurisdictions/`.
+ * Each jurisdiction file includes the full NCA profile, document guidance, and knowledge base.
+ */
+
+/**
  * NCA (National Competent Authority) Profiles
  *
  * Static profiles defining how each NCA evaluates submissions.

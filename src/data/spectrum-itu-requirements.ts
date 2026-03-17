@@ -1,4 +1,8 @@
 /**
+ * @deprecated Use `src/data/regulatory/standards/itu-radio-regulations.ts` instead.
+ */
+
+/**
  * Spectrum Management & ITU Compliance Requirements Data
  *
  * This module covers:

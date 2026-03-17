@@ -1,4 +1,8 @@
 /**
+ * @deprecated Consolidated into `src/data/regulatory/jurisdictions/germany.ts` knowledgeBase field.
+ */
+
+/**
  * BNetzA (Germany) Regulatory Knowledge Base
  *
  * Extracted from official German regulatory documents:
