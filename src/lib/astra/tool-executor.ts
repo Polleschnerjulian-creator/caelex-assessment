@@ -36,6 +36,11 @@ import {
   searchTerms,
 } from "./regulatory-knowledge/glossary";
 import type { IncidentCategory } from "@/lib/services/incident-response-service";
+import {
+  getObligationsForOperator,
+  getSubgraph,
+  getNodeDetail,
+} from "@/lib/ontology";
 
 // ─── Main Executor ───
 
@@ -2085,6 +2090,83 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       ...result,
       summary: `Audit score: ${result.overallScore}/100. Regulation coverage: ${result.regulationCoverage.score}%, Threshold consistency: ${result.thresholdConsistency.score}%, Section completeness: ${result.sectionCompleteness.score}%. ${result.recommendations.length} recommendation(s).`,
     };
+  },
+
+  // ─── Ontology Tools ───
+
+  query_ontology: async (input) => {
+    const query_type = input.query_type as string;
+    const operator_type = input.operator_type as string | undefined;
+    const jurisdictions = input.jurisdictions as string[] | undefined;
+    const domain = input.domain as string | undefined;
+    const include_proposals = input.include_proposals as boolean | undefined;
+    const node_code = input.node_code as string | undefined;
+    const depth = input.depth as number | undefined;
+
+    if (query_type === "obligations") {
+      if (!operator_type)
+        return { error: "operator_type required for obligations query" };
+      const results = await getObligationsForOperator({
+        operatorType: operator_type,
+        jurisdictions: jurisdictions || [],
+        domain: domain || undefined,
+        includeProposals: include_proposals || false,
+      });
+      return {
+        count: results.length,
+        obligations: results.map((r) => ({
+          code: r.code,
+          label: r.label,
+          confidence: r.confidence,
+          source: r.source,
+          domain: r.domain,
+          jurisdictions: r.jurisdictions,
+          evidenceRequired: r.evidenceRequired,
+          euSpaceActMapping: r.euSpaceActMapping,
+        })),
+        note: include_proposals
+          ? "Results include EU Space Act proposals (confidence < 1.0)"
+          : "Results based on enacted law only",
+      };
+    }
+
+    if (query_type === "subgraph") {
+      if (!node_code) return { error: "node_code required for subgraph query" };
+      const node = await prisma.ontologyNode.findUnique({
+        where: { code: node_code },
+      });
+      if (!node) return { error: `Node not found: ${node_code}` };
+      const result = await getSubgraph({ nodeId: node.id, depth: depth || 1 });
+      return {
+        center: result.centerNode,
+        connectedNodes: result.nodes.length,
+        edges: result.edges.length,
+        nodes: result.nodes,
+        relationships: result.edges,
+      };
+    }
+
+    if (query_type === "node_detail") {
+      if (!node_code)
+        return { error: "node_code required for node_detail query" };
+      const node = await prisma.ontologyNode.findUnique({
+        where: { code: node_code },
+      });
+      if (!node) return { error: `Node not found: ${node_code}` };
+      const detail = await getNodeDetail(node.id);
+      return detail;
+    }
+
+    // conflicts and evidence_gaps — delegate to future functions
+    if (query_type === "conflicts" || query_type === "evidence_gaps") {
+      return {
+        message: `${query_type} query is available but the detection engine is in development. Use 'obligations' query to find applicable obligations, then analyze conflicts manually.`,
+        suggestion:
+          "Try: query_ontology with query_type='obligations' to see all applicable obligations for the operator.",
+      };
+    }
+
+    return { error: `Unknown query_type: ${query_type}` };
   },
 };
 

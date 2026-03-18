@@ -1074,6 +1074,72 @@ export const getEvidenceGaps: AstraToolDefinition = {
   },
 };
 
+// ─── Ontology Tools ───
+
+export const queryOntology: AstraToolDefinition = {
+  name: "query_ontology",
+  description:
+    "Query the regulatory knowledge graph for deterministic compliance answers. Returns structured results from graph traversal — not text search. Use this for: finding applicable obligations for an operator, detecting conflicts between jurisdictions, identifying evidence gaps, or exploring the regulatory graph around a specific concept.",
+  input_schema: {
+    type: "object",
+    properties: {
+      query_type: {
+        type: "string",
+        enum: [
+          "obligations",
+          "conflicts",
+          "evidence_gaps",
+          "subgraph",
+          "node_detail",
+        ],
+        description: "Type of graph query to execute",
+      },
+      operator_type: {
+        type: "string",
+        enum: ["SCO", "LO", "LSO", "ISOS", "CAP", "PDP", "TCO"],
+        description:
+          "Operator type for obligation/conflict/evidence queries. Required for obligations, conflicts, evidence_gaps.",
+      },
+      jurisdictions: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Jurisdiction codes (FR, DE, GB, NL, BE, LU, AT, DK, IT, NO). For obligation/conflict queries.",
+      },
+      domain: {
+        type: "string",
+        enum: [
+          "debris",
+          "cybersecurity",
+          "spectrum",
+          "export_control",
+          "insurance",
+          "environmental",
+          "authorization",
+          "registration",
+          "supervision",
+        ],
+        description: "Filter by compliance domain. Optional.",
+      },
+      include_proposals: {
+        type: "boolean",
+        description:
+          "Include EU Space Act proposal obligations (confidence < 1.0). Default: false — only enacted law.",
+      },
+      node_code: {
+        type: "string",
+        description:
+          "Node code for subgraph/node_detail queries (e.g., 'IADC-5.3.2', 'FR', 'NIS2')",
+      },
+      depth: {
+        type: "number",
+        description: "Subgraph traversal depth (1-3). Default: 1.",
+      },
+    },
+    required: ["query_type"],
+  },
+};
+
 // ─── Audit Tools ───
 
 export const auditDocument: AstraToolDefinition = {
@@ -1147,6 +1213,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   runWhatifScenario,
   getEvidenceGaps,
 
+  // Ontology Tools
+  queryOntology,
+
   // Audit Tools
   auditDocument,
 ];
@@ -1218,4 +1287,5 @@ export const TOOL_CATEGORIES = {
     "run_whatif_scenario",
     "get_evidence_gaps",
   ],
+  ontology: ["query_ontology"],
 } as const;
