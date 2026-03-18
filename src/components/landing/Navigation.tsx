@@ -1,20 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
-import Button from "@/components/ui/Button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 interface NavigationProps {
   theme?: "light" | "dark";
 }
 
+const navLinks = [
+  { label: "Platform", href: "/platform" },
+  { label: "Resources", href: "/resources" },
+  { label: "Modules", href: "/modules" },
+  { label: "Pricing", href: "/pricing" },
+];
+
 export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const isLight = theme === "light";
   const isLandingHero = pathname === "/";
@@ -28,27 +34,35 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change / resize
+  // Close menu on route change
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) setMobileOpen(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    setMenuOpen(false);
+  }, [pathname]);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileOpen]);
+  }, [menuOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   // On landing page: start transparent/white over dark hero, transition when scrolled
   // On all other pages: always show dark text (light background, no dark hero)
-  const showDarkText =
-    isLight && (isLandingHero ? scrolled || mobileOpen : true);
+  const showDarkText = isLight && (isLandingHero ? scrolled : true);
 
   return (
     <>
@@ -58,14 +72,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
-            {/* Glass Bar — transparent at top, solid when scrolled */}
+            {/* Glass Bar */}
             <div
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 isLight
-                  ? scrolled || mobileOpen
+                  ? scrolled
                     ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
                     : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
-                  : scrolled || mobileOpen
+                  : scrolled
                     ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
                     : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
@@ -82,68 +96,33 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 />
               </Link>
 
-              {/* Right Side Navigation */}
-              <div className="flex items-center gap-6">
-                {/* Links */}
-                {["Platform", "Resources", "Modules"].map((label) => (
-                  <Link
-                    key={label}
-                    href={`/${label.toLowerCase()}`}
-                    className={`hidden md:block text-body transition-colors duration-700 ${
-                      showDarkText
-                        ? "text-[#4B5563] hover:text-[#111827]"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                ))}
+              {/* Right Side: Get Started + Hamburger */}
+              <div className="flex items-center gap-3">
+                {/* Get Started CTA */}
+                <Link
+                  href="/assessment"
+                  className={`hidden sm:inline-flex items-center justify-center h-8 px-4 text-[12px] font-medium rounded-full transition-all duration-500 border ${
+                    showDarkText
+                      ? "text-[#111827] border-[#111827]/30 hover:border-[#111827] hover:bg-[#111827] hover:text-white"
+                      : "text-white/90 border-white/30 hover:border-white hover:bg-white hover:text-black"
+                  }`}
+                >
+                  Get Started
+                </Link>
 
-                {/* Auth + CTAs */}
-                <div className="hidden md:flex items-center gap-4">
-                  <Link
-                    href="/login"
-                    className={`text-body transition-colors duration-700 ${
-                      showDarkText
-                        ? "text-[#4B5563] hover:text-[#111827]"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    Log in
-                  </Link>
-                  <Button
-                    href="/demo"
-                    variant={showDarkText ? "landing-outline" : "white-outline"}
-                    size="sm"
-                  >
-                    Request Demo
-                  </Button>
-                  <Button
-                    href="/assessment"
-                    variant={showDarkText ? "landing-primary" : "white"}
-                    size="sm"
-                  >
-                    Start Assessment
-                  </Button>
-                </div>
-
-                {/* Mobile Menu Button */}
+                {/* Hamburger Menu — always visible */}
                 <button
-                  onClick={() => setMobileOpen(!mobileOpen)}
-                  className={`md:hidden p-2 transition-colors duration-700 ${
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className={`relative p-2 transition-colors duration-500 ${
                     showDarkText
                       ? "text-[#4B5563] hover:text-[#111827]"
                       : "text-white/70 hover:text-white"
                   }`}
-                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={mobileOpen}
-                  aria-controls="mobile-menu"
+                  aria-label={menuOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={menuOpen}
+                  aria-controls="nav-menu"
                 >
-                  {mobileOpen ? (
-                    <X size={20} aria-hidden="true" />
-                  ) : (
-                    <Menu size={20} aria-hidden="true" />
-                  )}
+                  <Menu size={20} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -151,116 +130,162 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Full-screen Menu Overlay */}
       <AnimatePresence>
-        {mobileOpen && (
+        {menuOpen && (
           <motion.div
-            initial={false}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 md:hidden"
-            id="mobile-menu"
+            id="nav-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Mobile navigation menu"
+            aria-label="Navigation menu"
+            className="fixed inset-0 z-[60]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            {/* Backdrop */}
-            <div
-              className={`absolute inset-0 ${
-                isLight
-                  ? "bg-black/20 backdrop-blur-sm"
-                  : "bg-black/80 backdrop-blur-sm"
-              }`}
-              onClick={() => setMobileOpen(false)}
-              aria-hidden="true"
+            {/* Dark backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-[#050A18]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
             />
 
-            {/* Menu Content */}
+            {/* Menu content */}
             <motion.div
-              initial={false}
+              className="relative h-full flex flex-col"
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2, delay: 0.05 }}
-              className={`relative mt-20 mx-6 p-6 rounded-xl border ${
-                isLight
-                  ? "bg-white border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
-                  : "bg-dark-surface border-white/[0.08]"
-              }`}
-              role="navigation"
-              aria-label="Mobile navigation"
+              exit={{ opacity: 0, y: -20 }}
+              transition={{
+                duration: 0.35,
+                delay: 0.05,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
             >
-              <div className="flex flex-col gap-1">
-                {/* Primary CTAs */}
-                <Link
-                  href="/assessment"
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-body-lg font-medium transition-colors ${
-                    isLight
-                      ? "bg-[#111827] text-white hover:bg-[#374151]"
-                      : "bg-white text-black hover:bg-white/90"
-                  }`}
-                >
-                  Start Assessment
-                </Link>
-                <Link
-                  href="/demo"
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-body-lg font-medium border transition-colors mt-2 ${
-                    isLight
-                      ? "text-[#4B5563] border-[#D1D5DB] hover:border-[#111827]"
-                      : "text-white/70 border-white/20 hover:border-white/40"
-                  }`}
-                >
-                  Request Demo
-                </Link>
-                <div
-                  className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
-                />
-                {["Platform", "Resources", "Modules", "About", "Contact"].map(
-                  (label) => (
+              {/* Menu Header */}
+              <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12">
+                <div className="flex items-center justify-between h-20">
+                  <div className="flex items-center justify-between w-full rounded-xl px-5 py-2.5">
                     <Link
-                      key={label}
-                      href={`/${label.toLowerCase()}`}
-                      onClick={() => setMobileOpen(false)}
-                      className={`px-4 py-3 rounded-lg text-body-lg transition-colors ${
-                        isLight
-                          ? "text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F5]"
-                          : "text-white/70 hover:text-white hover:bg-white/[0.04]"
-                      }`}
+                      href="/"
+                      onClick={closeMenu}
+                      className="transition-opacity duration-300 hover:opacity-70"
+                      aria-label="Caelex — Go to homepage"
                     >
-                      {label}
+                      <Logo size={34} className="text-white" />
                     </Link>
-                  ),
-                )}
-                <div
-                  className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
-                />
-                <div className="flex gap-3">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex-1 text-center px-4 py-2.5 rounded-lg text-body border transition-colors ${
-                      isLight
-                        ? "text-[#4B5563] border-[#E5E7EB] hover:border-[#D1D5DB]"
-                        : "text-white/70 border-white/[0.08] hover:border-white/20"
-                    }`}
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex-1 text-center px-4 py-2.5 rounded-lg text-body transition-colors ${
-                      isLight
-                        ? "text-[#111827] bg-[#F1F3F5] hover:bg-[#E9ECEF]"
-                        : "text-white bg-white/[0.08] hover:bg-white/[0.12]"
-                    }`}
-                  >
-                    Sign up
-                  </Link>
+
+                    <button
+                      onClick={closeMenu}
+                      className="p-2 text-white/70 hover:text-white transition-colors duration-300"
+                      aria-label="Close menu"
+                    >
+                      <X size={20} aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Menu Links */}
+              <div className="flex-1 flex flex-col justify-center max-w-[1400px] w-full mx-auto px-11 md:px-[4.25rem] -mt-20">
+                <nav aria-label="Main menu navigation">
+                  {/* Primary navigation links */}
+                  <div className="flex flex-col gap-1">
+                    {navLinks.map((link, i) => (
+                      <motion.div
+                        key={link.label}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: 0.4,
+                          delay: 0.1 + i * 0.06,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          className={`group flex items-center gap-4 py-3 md:py-4 text-display-sm md:text-display font-light tracking-[-0.02em] transition-all duration-300 ${
+                            pathname === link.href
+                              ? "text-white"
+                              : "text-white/50 hover:text-white"
+                          }`}
+                        >
+                          <span>{link.label}</span>
+                          <ArrowRight
+                            size={20}
+                            className="opacity-0 -translate-x-2 group-hover:opacity-60 group-hover:translate-x-0 transition-all duration-300"
+                            aria-hidden="true"
+                          />
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <motion.div
+                    className="h-px bg-white/[0.08] my-6 md:my-8"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    style={{ transformOrigin: "left" }}
+                  />
+
+                  {/* Auth links */}
+                  <motion.div
+                    className="flex flex-col gap-1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
+                  >
+                    <Link
+                      href="/login"
+                      onClick={closeMenu}
+                      className="py-2 md:py-3 text-body-lg md:text-subtitle text-white/40 hover:text-white transition-colors duration-300"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={closeMenu}
+                      className="py-2 md:py-3 text-body-lg md:text-subtitle text-white/40 hover:text-white transition-colors duration-300"
+                    >
+                      Sign up
+                    </Link>
+                  </motion.div>
+
+                  {/* CTA */}
+                  <motion.div
+                    className="mt-8 md:mt-10"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.45 }}
+                  >
+                    <Link
+                      href="/demo"
+                      onClick={closeMenu}
+                      className="inline-flex items-center justify-center h-11 px-7 text-subtitle font-medium rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all duration-300"
+                    >
+                      Request Demo
+                    </Link>
+                  </motion.div>
+                </nav>
+              </div>
+
+              {/* Bottom bar */}
+              <motion.div
+                className="max-w-[1400px] w-full mx-auto px-11 md:px-[4.25rem] pb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+              >
+                <p className="text-caption text-white/20">
+                  Space regulatory compliance, simplified.
+                </p>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}
