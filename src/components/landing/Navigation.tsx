@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, Search } from "lucide-react";
 
 interface NavigationProps {
   theme?: "light" | "dark";
@@ -96,34 +96,60 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 />
               </Link>
 
-              {/* Right Side: Get Started + Hamburger */}
+              {/* Right Side: Get Started + Search/Hamburger pill */}
               <div className="flex items-center gap-3">
-                {/* Get Started CTA */}
+                {/* Get Started CTA — Palantir style */}
                 <Link
                   href="/assessment"
-                  className={`hidden sm:inline-flex items-center justify-center h-8 px-4 text-[12px] font-medium rounded-full transition-all duration-500 border ${
+                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-full transition-all duration-500 border ${
                     showDarkText
-                      ? "text-[#111827] border-[#111827]/30 hover:border-[#111827] hover:bg-[#111827] hover:text-white"
-                      : "text-white/90 border-white/30 hover:border-white hover:bg-white hover:text-black"
+                      ? "text-[#111827] border-[#D1D5DB] hover:border-[#111827] hover:bg-[#111827] hover:text-white"
+                      : "text-white border-white/40 hover:border-white hover:bg-white hover:text-black"
                   }`}
                 >
                   Get Started
                 </Link>
 
-                {/* Hamburger Menu — always visible */}
-                <button
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className={`relative p-2 transition-colors duration-500 ${
-                    showDarkText
-                      ? "text-[#4B5563] hover:text-[#111827]"
-                      : "text-white/70 hover:text-white"
+                {/* Search + Hamburger pill — Palantir style combined container */}
+                <div
+                  className={`flex items-center rounded-full border transition-all duration-500 overflow-hidden ${
+                    showDarkText ? "border-[#D1D5DB]" : "border-white/40"
                   }`}
-                  aria-label={menuOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={menuOpen}
-                  aria-controls="nav-menu"
                 >
-                  <Menu size={20} aria-hidden="true" />
-                </button>
+                  {/* Search icon */}
+                  <button
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-300 ${
+                      showDarkText
+                        ? "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
+                    }`}
+                    aria-label="Search"
+                  >
+                    <Search size={16} strokeWidth={2} aria-hidden="true" />
+                  </button>
+
+                  {/* Divider */}
+                  <div
+                    className={`w-px h-5 ${
+                      showDarkText ? "bg-[#D1D5DB]" : "bg-white/20"
+                    }`}
+                  />
+
+                  {/* Hamburger */}
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-300 ${
+                      showDarkText
+                        ? "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
+                    }`}
+                    aria-label={menuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={menuOpen}
+                    aria-controls="nav-menu"
+                  >
+                    <Menu size={16} strokeWidth={2} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
