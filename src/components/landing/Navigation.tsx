@@ -96,53 +96,28 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 />
               </Link>
 
-              {/* Right Side: Get Started + Search/Hamburger pill */}
+              {/* Right Side: Get Started + Search/Hamburger */}
               <div className="flex items-center gap-3">
-                {/* Get Started CTA — Palantir style */}
+                {/* Get Started CTA — white bg, subtle border, soft radius */}
                 <Link
                   href="/assessment"
-                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-full transition-all duration-500 border ${
-                    showDarkText
-                      ? "text-[#111827] border-[#D1D5DB] hover:border-[#111827] hover:bg-[#111827] hover:text-white"
-                      : "text-white border-white/40 hover:border-white hover:bg-white hover:text-black"
-                  }`}
+                  className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-all duration-300"
                 >
                   Get Started
                 </Link>
 
-                {/* Search + Hamburger pill — Palantir style combined container */}
-                <div
-                  className={`flex items-center rounded-full border transition-all duration-500 overflow-hidden ${
-                    showDarkText ? "border-[#D1D5DB]" : "border-white/40"
-                  }`}
-                >
-                  {/* Search icon */}
+                {/* Search + Hamburger — white bg, subtle border, soft radius */}
+                <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
                   <button
-                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-300 ${
-                      showDarkText
-                        ? "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
-                        : "text-white/60 hover:text-white hover:bg-white/10"
-                    }`}
+                    className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
                     aria-label="Search"
                   >
                     <Search size={16} strokeWidth={2} aria-hidden="true" />
                   </button>
-
-                  {/* Divider */}
-                  <div
-                    className={`w-px h-5 ${
-                      showDarkText ? "bg-[#D1D5DB]" : "bg-white/20"
-                    }`}
-                  />
-
-                  {/* Hamburger */}
+                  <div className="w-px h-5 bg-[#E5E7EB]" />
                   <button
                     onClick={() => setMenuOpen(!menuOpen)}
-                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-300 ${
-                      showDarkText
-                        ? "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
-                        : "text-white/60 hover:text-white hover:bg-white/10"
-                    }`}
+                    className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
                     aria-label={menuOpen ? "Close menu" : "Open menu"}
                     aria-expanded={menuOpen}
                     aria-controls="nav-menu"
