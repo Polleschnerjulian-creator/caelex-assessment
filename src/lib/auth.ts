@@ -407,8 +407,9 @@ const authResult = isAuthConfigured
               } = {
                 failedLoginAttempts: newAttempts,
               };
-              // Lock account after 10 failed attempts for 30 minutes
-              if (newAttempts >= 10) {
+              // Lock account after 5 failed attempts for 30 minutes
+              // Must match MAX_FAILED_ATTEMPTS in login-security.server.ts
+              if (newAttempts >= 5) {
                 lockoutData.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
               }
               await prisma.user.update({
