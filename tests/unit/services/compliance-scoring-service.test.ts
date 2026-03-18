@@ -15,6 +15,9 @@ vi.mock("@/lib/prisma", () => ({
     cybersecurityAssessment: {
       findFirst: vi.fn(),
     },
+    nIS2Assessment: {
+      findFirst: vi.fn(),
+    },
     insuranceAssessment: {
       findFirst: vi.fn(),
     },
@@ -98,6 +101,7 @@ function mockAllEmpty() {
   vi.mocked(prisma.authorizationWorkflow.findMany).mockResolvedValue([]);
   vi.mocked(prisma.debrisAssessment.findFirst).mockResolvedValue(null);
   vi.mocked(prisma.cybersecurityAssessment.findFirst).mockResolvedValue(null);
+  vi.mocked(prisma.nIS2Assessment.findFirst).mockResolvedValue(null);
   vi.mocked(prisma.insuranceAssessment.findFirst).mockResolvedValue(null);
   vi.mocked(prisma.environmentalAssessment.findFirst).mockResolvedValue(null);
   vi.mocked(prisma.supervisionConfig.findUnique).mockResolvedValue(null);
@@ -134,6 +138,11 @@ function mockAllComplete() {
     frameworkGeneratedAt: new Date(),
     maturityScore: 100,
     hasIncidentResponsePlan: true,
+    hasSecurityTeam: true,
+    hasBCP: true,
+  } as never);
+  vi.mocked(prisma.nIS2Assessment.findFirst).mockResolvedValue({
+    id: "nis2-1",
   } as never);
   vi.mocked(prisma.insuranceAssessment.findFirst).mockResolvedValue({
     reportGenerated: true,
@@ -436,9 +445,11 @@ describe("Compliance Scoring Service", () => {
       ] as never);
       // Cybersecurity: keep framework (critical ok), low maturity
       vi.mocked(prisma.cybersecurityAssessment.findFirst).mockResolvedValue({
-        frameworkGeneratedAt: new Date(), // risk_assessment critical = 35 pts
+        frameworkGeneratedAt: new Date(), // risk_assessment critical = 30 pts
         maturityScore: 20, // maturity = 5 pts
         hasIncidentResponsePlan: false, // irp = 0
+        hasSecurityTeam: false,
+        hasBCP: false,
       } as never);
 
       const score = await calculateComplianceScore("user-1");
@@ -448,10 +459,12 @@ describe("Compliance Scoring Service", () => {
       expect(spaceOps.status).toBe("non_compliant");
       expect(spaceOps.factors.every((f) => !f.isCritical)).toBe(true);
 
-      // Cybersecurity must be partial (not non_compliant) since risk_assessment earns > 0
-      expect(["partial", "compliant"]).toContain(
-        score.breakdown.cybersecurity.status,
+      // Cybersecurity's critical factor (risk_assessment / cyber_0) earns > 0, so even
+      // if the module status is non_compliant it must NOT trigger Gate 1.
+      const cyberCritical = score.breakdown.cybersecurity.factors.find(
+        (f) => f.isCritical,
       );
+      expect(cyberCritical!.earnedPoints).toBeGreaterThan(0);
 
       // Environmental must not be non_compliant (score is 70 → partial)
       expect(["partial", "compliant"]).toContain(
@@ -646,6 +659,12 @@ describe("Compliance Scoring Service", () => {
 
   // --------------------------------------------------------------------------
   // Module 3: Cybersecurity (17% weight)
+  // Uses shared computeCybersecurityScore() — 5 factors, 100 total points
+  //   cyber_0: Risk Assessment       30 pts
+  //   cyber_1: Security Maturity     25 pts
+  //   cyber_2: Incident Response     20 pts
+  //   cyber_3: Security Team & BCP   15 pts
+  //   cyber_4: Incident Track Record 10 pts
   // --------------------------------------------------------------------------
   describe("Cybersecurity module", () => {
     it("has weight 0.17", async () => {
@@ -656,22 +675,35 @@ describe("Compliance Scoring Service", () => {
     it("scores 0 for risk assessment factor when no assessment exists", async () => {
       const score = await calculateComplianceScore("user-1");
       const riskFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "risk_assessment",
+        (f) => f.id === "cyber_0",
       );
       expect(riskFactor!.earnedPoints).toBe(0);
     });
 
-    it("scores 35 for risk assessment when frameworkGeneratedAt is set", async () => {
+    it("scores 30 for risk assessment when frameworkGeneratedAt is set", async () => {
       vi.mocked(prisma.cybersecurityAssessment.findFirst).mockResolvedValue({
         frameworkGeneratedAt: new Date(),
         maturityScore: null,
         hasIncidentResponsePlan: false,
+        hasSecurityTeam: false,
+        hasBCP: false,
       } as never);
       const score = await calculateComplianceScore("user-1");
       const riskFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "risk_assessment",
+        (f) => f.id === "cyber_0",
       );
-      expect(riskFactor!.earnedPoints).toBe(35);
+      expect(riskFactor!.earnedPoints).toBe(30);
+    });
+
+    it("scores 10 for risk assessment when only NIS2 assessment exists", async () => {
+      vi.mocked(prisma.nIS2Assessment.findFirst).mockResolvedValue({
+        id: "nis2-1",
+      } as never);
+      const score = await calculateComplianceScore("user-1");
+      const riskFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_0",
+      );
+      expect(riskFactor!.earnedPoints).toBe(10);
     });
 
     it("scales maturity score: maturityScore=100 → 25 earned points", async () => {
@@ -679,12 +711,14 @@ describe("Compliance Scoring Service", () => {
         frameworkGeneratedAt: null,
         maturityScore: 100,
         hasIncidentResponsePlan: false,
+        hasSecurityTeam: false,
+        hasBCP: false,
       } as never);
       const score = await calculateComplianceScore("user-1");
       const matFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "maturity_score",
+        (f) => f.id === "cyber_1",
       );
-      expect(matFactor!.earnedPoints).toBe(25); // Math.round(100/4)
+      expect(matFactor!.earnedPoints).toBe(25); // Math.round((100/100)*25)
     });
 
     it("scales maturity score: maturityScore=60 → 15 earned points", async () => {
@@ -692,24 +726,26 @@ describe("Compliance Scoring Service", () => {
         frameworkGeneratedAt: null,
         maturityScore: 60,
         hasIncidentResponsePlan: false,
+        hasSecurityTeam: false,
+        hasBCP: false,
       } as never);
       const score = await calculateComplianceScore("user-1");
       const matFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "maturity_score",
+        (f) => f.id === "cyber_1",
       );
-      expect(matFactor!.earnedPoints).toBe(15); // Math.round(60/4)
+      expect(matFactor!.earnedPoints).toBe(15); // Math.round((60/100)*25)
     });
 
-    it("awards full incident-response points when there are no unresolved incidents", async () => {
+    it("awards full track-record points when there are no unresolved incidents", async () => {
       vi.mocked(prisma.incident.findMany).mockResolvedValue([]);
       const score = await calculateComplianceScore("user-1");
-      const incFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "incident_response",
+      const trackFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_4",
       );
-      expect(incFactor!.earnedPoints).toBe(20);
+      expect(trackFactor!.earnedPoints).toBe(10);
     });
 
-    it("deducts 5 points per unresolved cyber incident", async () => {
+    it("deducts 5 points per unresolved cyber incident from track record", async () => {
       vi.mocked(prisma.incident.findMany).mockResolvedValue([
         {
           status: "detected",
@@ -727,14 +763,14 @@ describe("Compliance Scoring Service", () => {
         },
       ] as never);
       const score = await calculateComplianceScore("user-1");
-      const incFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "incident_response",
+      const trackFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_4",
       );
-      // 20 - (2 * 5) = 10
-      expect(incFactor!.earnedPoints).toBe(10);
+      // 10 - (2 * 5) = 0
+      expect(trackFactor!.earnedPoints).toBe(0);
     });
 
-    it("does not drop incident_response below 0 even with many unresolved incidents", async () => {
+    it("does not drop track record below 0 even with many unresolved incidents", async () => {
       const unresolvedIncidents = Array.from({ length: 10 }, (_, i) => ({
         status: "detected",
         category: "cyber_incident",
@@ -747,13 +783,13 @@ describe("Compliance Scoring Service", () => {
         unresolvedIncidents as never,
       );
       const score = await calculateComplianceScore("user-1");
-      const incFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "incident_response",
+      const trackFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_4",
       );
-      expect(incFactor!.earnedPoints).toBe(0);
+      expect(trackFactor!.earnedPoints).toBe(0);
     });
 
-    it("resolved and closed incidents do not reduce points", async () => {
+    it("resolved and closed incidents do not reduce track record", async () => {
       vi.mocked(prisma.incident.findMany).mockResolvedValue([
         {
           status: "resolved",
@@ -771,26 +807,43 @@ describe("Compliance Scoring Service", () => {
         },
       ] as never);
       const score = await calculateComplianceScore("user-1");
-      const incFactor = score.breakdown.cybersecurity.factors.find(
-        (f) => f.id === "incident_response",
+      const trackFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_4",
       );
-      expect(incFactor!.earnedPoints).toBe(20);
+      expect(trackFactor!.earnedPoints).toBe(10);
     });
 
-    it("achieves score 100 with full assessment and no incidents", async () => {
+    it("awards security team & BCP points correctly", async () => {
+      vi.mocked(prisma.cybersecurityAssessment.findFirst).mockResolvedValue({
+        frameworkGeneratedAt: null,
+        maturityScore: null,
+        hasIncidentResponsePlan: false,
+        hasSecurityTeam: true,
+        hasBCP: true,
+      } as never);
+      const score = await calculateComplianceScore("user-1");
+      const teamFactor = score.breakdown.cybersecurity.factors.find(
+        (f) => f.id === "cyber_3",
+      );
+      expect(teamFactor!.earnedPoints).toBe(15); // 8 + 7
+    });
+
+    it("achieves score 100 with full assessment, team, BCP, and no incidents", async () => {
       vi.mocked(prisma.cybersecurityAssessment.findFirst).mockResolvedValue({
         frameworkGeneratedAt: new Date(),
         maturityScore: 100,
         hasIncidentResponsePlan: true,
+        hasSecurityTeam: true,
+        hasBCP: true,
       } as never);
       vi.mocked(prisma.incident.findMany).mockResolvedValue([]);
       const score = await calculateComplianceScore("user-1");
       expect(score.breakdown.cybersecurity.score).toBe(100);
     });
 
-    it("has 4 scoring factors", async () => {
+    it("has 5 scoring factors", async () => {
       const score = await calculateComplianceScore("user-1");
-      expect(score.breakdown.cybersecurity.factors).toHaveLength(4);
+      expect(score.breakdown.cybersecurity.factors).toHaveLength(5);
     });
 
     it("includes correct article references", async () => {

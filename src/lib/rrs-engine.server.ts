@@ -19,6 +19,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { startOfDay, subDays } from "date-fns";
+import { computeCybersecurityScore } from "@/lib/services/cybersecurity-score";
 
 // ─── Types ───
 
@@ -407,72 +408,32 @@ function computeAuthorizationReadiness(
 function computeCybersecurityPosture(
   data: Awaited<ReturnType<typeof fetchCybersecurityData>>,
 ): RRSComponentScore {
-  const factors: RRSFactor[] = [];
-
-  // Factor 1: Cybersecurity assessment (35 pts)
-  const assessFactor: RRSFactor = {
-    id: "cyber_assessment",
-    name: "Cybersecurity Risk Assessment",
-    maxPoints: 35,
-    earnedPoints: 0,
-    description: "NIS2-compliant cybersecurity risk assessment",
-  };
   const latestCyber = data.cyberAssessments[0];
-  if (latestCyber?.frameworkGeneratedAt) {
-    assessFactor.earnedPoints = 35;
-  } else if (latestCyber) {
-    assessFactor.earnedPoints = 15;
-  }
-  factors.push(assessFactor);
-
-  // Factor 2: NIS2 compliance (30 pts)
-  const nis2Factor: RRSFactor = {
-    id: "cyber_nis2",
-    name: "NIS2 Directive Compliance",
-    maxPoints: 30,
-    earnedPoints: 0,
-    description: "NIS2 assessment and classification",
-  };
   const latestNis2 = data.nis2Assessments[0];
-  if (latestNis2) {
-    // Has NIS2 assessment — base credit
-    nis2Factor.earnedPoints = 20;
-    // Additional credit for maturity
-    if (
-      latestCyber?.maturityScore !== undefined &&
-      latestCyber.maturityScore !== null
-    ) {
-      nis2Factor.earnedPoints += Math.min(
-        10,
-        Math.round(latestCyber.maturityScore / 10),
-      );
-    }
-  }
-  factors.push(nis2Factor);
 
-  // Factor 3: Incident response (20 pts)
-  const irFactor: RRSFactor = {
-    id: "cyber_ir",
-    name: "Incident Response Capability",
-    maxPoints: 20,
-    earnedPoints: latestCyber?.hasIncidentResponsePlan ? 20 : 0,
-    description: "Documented incident response procedures",
-  };
-  factors.push(irFactor);
-
-  // Factor 4: Incident track record (15 pts)
-  const trackFactor: RRSFactor = {
-    id: "cyber_track",
-    name: "Incident Management Track Record",
-    maxPoints: 15,
-    earnedPoints: 15,
-    description: "Proper management of cyber incidents",
-  };
   const unresolved = data.incidents.filter(
     (i) => !["resolved", "closed"].includes(i.status),
   ).length;
-  trackFactor.earnedPoints = Math.max(0, 15 - unresolved * 5);
-  factors.push(trackFactor);
+
+  // Delegate to the single source of truth
+  const result = computeCybersecurityScore({
+    frameworkGeneratedAt: latestCyber?.frameworkGeneratedAt ?? null,
+    maturityScore: latestCyber?.maturityScore ?? null,
+    hasIncidentResponsePlan: latestCyber?.hasIncidentResponsePlan ?? false,
+    hasSecurityTeam: latestCyber?.hasSecurityTeam ?? false,
+    hasBCP: latestCyber?.hasBCP ?? false,
+    unresolvedCyberIncidents: unresolved,
+    hasNIS2Assessment: latestNis2 != null,
+  });
+
+  // Map shared factors to the RRS factor format
+  const factors: RRSFactor[] = result.factors.map((f, i) => ({
+    id: `cyber_${i}`,
+    name: f.name,
+    maxPoints: f.maxPoints,
+    earnedPoints: f.earnedPoints,
+    description: `${f.enactedRef} — ${f.name}`,
+  }));
 
   return buildComponentScore(factors, WEIGHTS.cybersecurityPosture);
 }

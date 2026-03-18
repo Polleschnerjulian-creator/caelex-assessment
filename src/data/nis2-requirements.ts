@@ -3791,6 +3791,9 @@ export function getApplicableNIS2Requirements(
  * Calculate a NIS2 maturity score (0-100) based on requirement compliance statuses.
  * Weights requirements by severity: critical=3, major=2, minor=1.
  * Returns score, maturity level label, and per-category breakdown.
+ *
+ * @deprecated This function is never called. Use computeCybersecurityScore()
+ * from src/lib/services/cybersecurity-score.ts instead.
  */
 export function calculateNIS2MaturityScore(
   requirementStatuses: { requirementId: string; status: string }[],

@@ -154,11 +154,13 @@ function setupHighScorePrismaMocks() {
   );
 
   // Cybersecurity: full assessment with framework generated, NIS2 assessment,
-  // incident response plan, maturity score 80, no unresolved incidents
+  // incident response plan, maturity score 80, security team, BCP, no unresolved incidents
   vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
     {
       frameworkGeneratedAt: new Date(),
       hasIncidentResponsePlan: true,
+      hasSecurityTeam: true,
+      hasBCP: true,
       maturityScore: 80,
       updatedAt: new Date(),
     },
@@ -559,9 +561,9 @@ describe("RRS Engine", () => {
       expect(result.components.authorizationReadiness.factors).toHaveLength(3);
     });
 
-    it("should have cybersecurity component with 4 factors", async () => {
+    it("should have cybersecurity component with 5 factors", async () => {
       const result = await computeRRS(ORG_ID);
-      expect(result.components.cybersecurityPosture.factors).toHaveLength(4);
+      expect(result.components.cybersecurityPosture.factors).toHaveLength(5);
     });
 
     it("should have operational component with 4 factors", async () => {
@@ -699,6 +701,12 @@ describe("RRS Engine", () => {
   // Cybersecurity Posture — Specific Scenarios
   // ─────────────────────────────────────────────
 
+  // Cybersecurity Posture uses shared computeCybersecurityScore() — 5 factors:
+  //   cyber_0: Risk Assessment       30 pts
+  //   cyber_1: Security Maturity     25 pts
+  //   cyber_2: Incident Response     20 pts
+  //   cyber_3: Security Team & BCP   15 pts
+  //   cyber_4: Incident Track Record 10 pts
   describe("Cybersecurity Posture component", () => {
     beforeEach(() => {
       setupEmptyPrismaMocks();
@@ -707,7 +715,7 @@ describe("RRS Engine", () => {
       ]);
     });
 
-    it("should give full assessment points when framework is generated", async () => {
+    it("should give 30 risk assessment points when framework is generated", async () => {
       vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
         {
           frameworkGeneratedAt: new Date(),
@@ -718,48 +726,48 @@ describe("RRS Engine", () => {
       ] as any);
 
       const result = await computeRRS(ORG_ID);
-      const assessFactor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_assessment",
+      const riskFactor = result.components.cybersecurityPosture.factors.find(
+        (f) => f.id === "cyber_0",
       );
-      expect(assessFactor?.earnedPoints).toBe(35);
+      expect(riskFactor?.earnedPoints).toBe(30);
     });
 
-    it("should give 15 assessment points when assessment exists but no framework", async () => {
-      vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
-        {
-          frameworkGeneratedAt: null,
-          hasIncidentResponsePlan: false,
-          maturityScore: null,
-          updatedAt: new Date(),
-        },
-      ] as any);
-
-      const result = await computeRRS(ORG_ID);
-      const assessFactor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_assessment",
-      );
-      expect(assessFactor?.earnedPoints).toBe(15);
-    });
-
-    it("should give NIS2 credit with maturity bonus", async () => {
-      vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
-        {
-          frameworkGeneratedAt: new Date(),
-          hasIncidentResponsePlan: false,
-          maturityScore: 80,
-          updatedAt: new Date(),
-        },
-      ] as any);
+    it("should give 10 risk assessment points when only NIS2 assessment exists", async () => {
       vi.mocked(prisma.nIS2Assessment.findMany).mockResolvedValue([
         { id: "nis2-1", updatedAt: new Date() },
       ] as any);
 
       const result = await computeRRS(ORG_ID);
-      const nis2Factor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_nis2",
+      const riskFactor = result.components.cybersecurityPosture.factors.find(
+        (f) => f.id === "cyber_0",
       );
-      // 20 base + min(10, round(80/10)) = 20 + 8 = 28
-      expect(nis2Factor?.earnedPoints).toBe(28);
+      expect(riskFactor?.earnedPoints).toBe(10);
+    });
+
+    it("should give 0 risk assessment points with no assessment at all", async () => {
+      const result = await computeRRS(ORG_ID);
+      const riskFactor = result.components.cybersecurityPosture.factors.find(
+        (f) => f.id === "cyber_0",
+      );
+      expect(riskFactor?.earnedPoints).toBe(0);
+    });
+
+    it("should scale maturity score into 25 pts", async () => {
+      vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
+        {
+          frameworkGeneratedAt: null,
+          hasIncidentResponsePlan: false,
+          maturityScore: 80,
+          updatedAt: new Date(),
+        },
+      ] as any);
+
+      const result = await computeRRS(ORG_ID);
+      const matFactor = result.components.cybersecurityPosture.factors.find(
+        (f) => f.id === "cyber_1",
+      );
+      // Math.round((80/100) * 25) = 20
+      expect(matFactor?.earnedPoints).toBe(20);
     });
 
     it("should give 20 incident response points when plan exists", async () => {
@@ -774,9 +782,29 @@ describe("RRS Engine", () => {
 
       const result = await computeRRS(ORG_ID);
       const irFactor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_ir",
+        (f) => f.id === "cyber_2",
       );
       expect(irFactor?.earnedPoints).toBe(20);
+    });
+
+    it("should award security team & BCP points", async () => {
+      vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([
+        {
+          frameworkGeneratedAt: null,
+          hasIncidentResponsePlan: false,
+          hasSecurityTeam: true,
+          hasBCP: true,
+          maturityScore: null,
+          updatedAt: new Date(),
+        },
+      ] as any);
+
+      const result = await computeRRS(ORG_ID);
+      const teamFactor = result.components.cybersecurityPosture.factors.find(
+        (f) => f.id === "cyber_3",
+      );
+      // 8 (team) + 7 (BCP) = 15
+      expect(teamFactor?.earnedPoints).toBe(15);
     });
 
     it("should deduct incident track record points for unresolved incidents", async () => {
@@ -788,10 +816,10 @@ describe("RRS Engine", () => {
 
       const result = await computeRRS(ORG_ID);
       const trackFactor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_track",
+        (f) => f.id === "cyber_4",
       );
-      // max(0, 15 - 2 * 5) = 5
-      expect(trackFactor?.earnedPoints).toBe(5);
+      // max(0, 10 - 2 * 5) = 0
+      expect(trackFactor?.earnedPoints).toBe(0);
     });
 
     it("should floor incident track record at 0", async () => {
@@ -804,9 +832,9 @@ describe("RRS Engine", () => {
 
       const result = await computeRRS(ORG_ID);
       const trackFactor = result.components.cybersecurityPosture.factors.find(
-        (f) => f.id === "cyber_track",
+        (f) => f.id === "cyber_4",
       );
-      // max(0, 15 - 4 * 5) = max(0, -5) = 0
+      // max(0, 10 - 4 * 5) = max(0, -10) = 0
       expect(trackFactor?.earnedPoints).toBe(0);
     });
   });

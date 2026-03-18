@@ -10,6 +10,7 @@ import {
   calculateNCADeadline,
   type IncidentCategory,
 } from "./incident-response-service";
+import { computeCybersecurityScore } from "./cybersecurity-score";
 
 // ============================================================================
 // Types
@@ -191,7 +192,15 @@ async function getCybersecurityData(userId: string) {
       frameworkGeneratedAt: true,
       maturityScore: true,
       hasIncidentResponsePlan: true,
+      hasSecurityTeam: true,
+      hasBCP: true,
     },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const nis2Assessment = await prisma.nIS2Assessment.findFirst({
+    where: { userId },
+    select: { id: true },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -204,7 +213,7 @@ async function getCybersecurityData(userId: string) {
     select: { status: true },
   });
 
-  return { assessment, incidents };
+  return { assessment, nis2Assessment, incidents };
 }
 
 async function getInsuranceData(userId: string) {
@@ -493,89 +502,40 @@ function calculateCybersecurityScore(data: {
     frameworkGeneratedAt?: Date | null;
     maturityScore?: number | null;
     hasIncidentResponsePlan?: boolean;
+    hasSecurityTeam?: boolean;
+    hasBCP?: boolean;
   } | null;
+  nis2Assessment: { id: string } | null;
   incidents: Array<{ status: string }>;
 }): ModuleScore {
-  const factors: ScoringFactor[] = [];
-  let totalPoints = 0;
-  let earnedPoints = 0;
-
-  // Factor 1: Risk Assessment (35 points)
-  const riskFactor: ScoringFactor = {
-    id: "risk_assessment",
-    name: "Risk Assessment",
-    description: "NIS2-compliant risk assessment completed",
-    maxPoints: 35,
-    earnedPoints: data.assessment?.frameworkGeneratedAt ? 35 : 0,
-    isCritical: true,
-    articleRef: "Art. 74-78",
-  };
-
-  factors.push(riskFactor);
-  totalPoints += riskFactor.maxPoints;
-  earnedPoints += riskFactor.earnedPoints;
-
-  // Factor 2: Maturity Score (25 points)
-  const scoreFactor: ScoringFactor = {
-    id: "maturity_score",
-    name: "Security Maturity",
-    description: "Security maturity level achieved",
-    maxPoints: 25,
-    earnedPoints: 0,
-    isCritical: false,
-    articleRef: "Art. 79-82",
-  };
-
-  if (
-    data.assessment?.maturityScore !== undefined &&
-    data.assessment.maturityScore !== null
-  ) {
-    // Higher maturity score = more points (maturity score 0-100, higher is better)
-    scoreFactor.earnedPoints = Math.round(data.assessment.maturityScore / 4);
-  }
-
-  factors.push(scoreFactor);
-  totalPoints += scoreFactor.maxPoints;
-  earnedPoints += scoreFactor.earnedPoints;
-
-  // Factor 3: Incident Response Plan (20 points)
-  const irpFactor: ScoringFactor = {
-    id: "incident_response_plan",
-    name: "Incident Response Plan",
-    description: "Incident response procedures documented",
-    maxPoints: 20,
-    earnedPoints: data.assessment?.hasIncidentResponsePlan ? 20 : 0,
-    isCritical: false,
-    articleRef: "Art. 83-88",
-  };
-
-  factors.push(irpFactor);
-  totalPoints += irpFactor.maxPoints;
-  earnedPoints += irpFactor.earnedPoints;
-
-  // Factor 4: Incident Response (20 points)
-  const incidentFactor: ScoringFactor = {
-    id: "incident_response",
-    name: "Incident Response",
-    description: "Cyber incidents properly managed",
-    maxPoints: 20,
-    earnedPoints: 20, // Default full points
-    isCritical: false,
-    articleRef: "Art. 89-95",
-  };
-
-  // Deduct points for unresolved incidents
-  const unresolvedIncidents = data.incidents.filter(
+  // Count unresolved incidents
+  const unresolvedCyberIncidents = data.incidents.filter(
     (i) => !["resolved", "closed"].includes(i.status),
   ).length;
-  incidentFactor.earnedPoints = Math.max(0, 20 - unresolvedIncidents * 5);
 
-  factors.push(incidentFactor);
-  totalPoints += incidentFactor.maxPoints;
-  earnedPoints += incidentFactor.earnedPoints;
+  // Delegate to the single source of truth
+  const result = computeCybersecurityScore({
+    frameworkGeneratedAt: data.assessment?.frameworkGeneratedAt ?? null,
+    maturityScore: data.assessment?.maturityScore ?? null,
+    hasIncidentResponsePlan: data.assessment?.hasIncidentResponsePlan ?? false,
+    hasSecurityTeam: data.assessment?.hasSecurityTeam ?? false,
+    hasBCP: data.assessment?.hasBCP ?? false,
+    unresolvedCyberIncidents,
+    hasNIS2Assessment: data.nis2Assessment !== null,
+  });
 
-  const score =
-    totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+  // Map shared factors to the ModuleScore format
+  const factors: ScoringFactor[] = result.factors.map((f, i) => ({
+    id: `cyber_${i}`,
+    name: f.name,
+    description: `${f.enactedRef} — ${f.name}`,
+    maxPoints: f.maxPoints,
+    earnedPoints: f.earnedPoints,
+    isCritical: i === 0, // Risk Assessment is critical
+    articleRef: f.enactedRef,
+  }));
+
+  const score = result.totalScore;
 
   return {
     score,
