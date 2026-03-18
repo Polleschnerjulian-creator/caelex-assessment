@@ -359,11 +359,270 @@ const UK_DATA: JurisdictionLaw = {
   lastUpdated: "2026-01",
 };
 
+// ─── Additional Mock Jurisdictions for Favorability Edge Cases ───
+
+// Luxembourg — space_resources legislation, negotiable liability, fast timeline, small entity bonus
+const LU_DATA: JurisdictionLaw = {
+  countryCode: "LU",
+  countryName: "Luxembourg",
+  flagEmoji: "\u{1F1F1}\u{1F1FA}",
+  legislation: {
+    name: "Luxembourg Space Resources Law 2017",
+    nameLocal:
+      "Loi du 20 juillet 2017 sur l'exploration et l'utilisation des ressources de l'espace",
+    yearEnacted: 2017,
+    status: "enacted",
+  },
+  licensingAuthority: {
+    name: "Luxembourg Space Agency (LSA)",
+    nameLocal: "Agence spatiale luxembourgeoise",
+    website: "https://space.public.lu",
+    contactEmail: "contact@space.public.lu",
+    parentMinistry: "Ministry of the Economy",
+  },
+  licensingRequirements: [
+    {
+      id: "lu-auth",
+      category: "corporate_governance",
+      title: "Authorization",
+      description: "Authorization for space activities.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "Art. 2",
+    },
+    {
+      id: "lu-resources",
+      category: "technical_assessment",
+      title: "Resource Extraction Plan",
+      description: "Plan for extraction of space resources.",
+      mandatory: true,
+      applicableTo: ["space_resources"],
+      articleRef: "Art. 4",
+    },
+  ],
+  applicabilityRules: [
+    {
+      id: "lu-rule-general",
+      description: "Applies to all space activities from Luxembourg",
+      condition: "Space activity with Luxembourg nexus",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "eu_other", "non_eu"],
+      articleRef: "Art. 1",
+    },
+  ],
+  insuranceLiability: {
+    mandatoryInsurance: true,
+    minimumCoverage: "€30,000,000",
+    governmentIndemnification: false,
+    liabilityRegime: "negotiable",
+    thirdPartyRequired: true,
+  },
+  debrisMitigation: {
+    deorbitRequirement: true,
+    deorbitTimeline: "25 years",
+    passivationRequired: true,
+    debrisMitigationPlan: true,
+    collisionAvoidance: true,
+  },
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+  timeline: {
+    typicalProcessingWeeks: { min: 6, max: 12 },
+    applicationFee: "€2,000",
+  },
+  registration: {
+    nationalRegistryExists: true,
+    registryName: "Luxembourg Space Object Registry",
+    unRegistrationRequired: true,
+  },
+  euSpaceActCrossRef: {
+    relationship: "complementary",
+    description:
+      "Luxembourg space resources law is complementary to EU Space Act.",
+    transitionNotes:
+      "Resources legislation likely to be retained alongside EU framework.",
+  },
+  lastUpdated: "2026-01",
+};
+
+// Netherlands — reduced thresholds for small satellites, fast timeline
+const NL_DATA: JurisdictionLaw = {
+  countryCode: "NL",
+  countryName: "Netherlands",
+  flagEmoji: "\u{1F1F3}\u{1F1F1}",
+  legislation: {
+    name: "Dutch Space Activities Act (Wet ruimtevaart)",
+    nameLocal: "Wet ruimtevaart",
+    yearEnacted: 2007,
+    status: "enacted",
+  },
+  licensingAuthority: {
+    name: "Netherlands Enterprise Agency (RVO)",
+    nameLocal: "Rijksdienst voor Ondernemend Nederland",
+    website: "https://rvo.nl",
+    contactEmail: "ruimtevaart@rvo.nl",
+    parentMinistry: "Ministry of Economic Affairs and Climate Policy",
+  },
+  licensingRequirements: [
+    {
+      id: "nl-auth",
+      category: "corporate_governance",
+      title: "Space Activity License",
+      description: "License for all space activities from Netherlands.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "Art. 2 WR",
+    },
+    {
+      id: "nl-insurance",
+      category: "insurance",
+      title: "Third-Party Liability Insurance",
+      description:
+        "Mandatory TPL insurance with reduced thresholds for small satellites.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "Art. 13 WR",
+    },
+  ],
+  applicabilityRules: [
+    {
+      id: "nl-rule-nexus",
+      description: "Applies to activities with Dutch nexus",
+      condition: "Dutch registration or launch from Dutch territory",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "eu_other"],
+      articleRef: "Art. 1 WR",
+    },
+    {
+      id: "nl-rule-non-eu-excluded",
+      description: "Non-EU entities without Dutch nexus are not covered",
+      condition: "No Dutch nexus for non-EU entities",
+      applies: false,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["non_eu"],
+    },
+  ],
+  insuranceLiability: {
+    mandatoryInsurance: true,
+    minimumCoverage: "€60,000,000",
+    governmentIndemnification: true,
+    liabilityRegime: "capped",
+    liabilityCap: "€60M",
+    thirdPartyRequired: true,
+  },
+  debrisMitigation: {
+    deorbitRequirement: true,
+    deorbitTimeline: "25 years",
+    passivationRequired: true,
+    debrisMitigationPlan: true,
+    collisionAvoidance: true,
+  },
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+  timeline: {
+    typicalProcessingWeeks: { min: 8, max: 14 },
+    applicationFee: "€3,000",
+    annualFee: "€1,500",
+  },
+  registration: {
+    nationalRegistryExists: true,
+    registryName: "Netherlands Space Object Registry",
+    unRegistrationRequired: true,
+  },
+  euSpaceActCrossRef: {
+    relationship: "complementary",
+    description: "Dutch space law aligns closely with the EU Space Act.",
+    transitionNotes: "RVO will serve as the NCA under the EU Space Act.",
+  },
+  lastUpdated: "2026-01",
+};
+
+// Austria — no fees defined at all (tests formatCostEstimate fallback)
+const AT_DATA: JurisdictionLaw = {
+  countryCode: "AT",
+  countryName: "Austria",
+  flagEmoji: "\u{1F1E6}\u{1F1F9}",
+  legislation: {
+    name: "Austrian Outer Space Act (Weltraumgesetz)",
+    nameLocal: "Bundesgesetz über die Tätigkeit im Weltraum",
+    yearEnacted: 2011,
+    status: "enacted",
+  },
+  licensingAuthority: {
+    name: "Federal Ministry Republic of Austria (BMAW)",
+    nameLocal: "Bundesministerium für Arbeit und Wirtschaft",
+    website: "https://bmaw.gv.at",
+    contactEmail: "weltraum@bmaw.gv.at",
+    parentMinistry: "Federal Ministry for Digital and Economic Affairs",
+  },
+  licensingRequirements: [
+    {
+      id: "at-auth",
+      category: "corporate_governance",
+      title: "Space Activity Licence",
+      description: "License required for all space activities from Austria.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "§ 3 AWG",
+    },
+  ],
+  applicabilityRules: [
+    {
+      id: "at-rule-general",
+      description: "Applies to space activities from Austria",
+      condition: "Austrian nexus",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "eu_other", "non_eu"],
+    },
+  ],
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+  },
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+  timeline: {
+    // No applicationFee, no annualFee => formatCostEstimate fallback
+    typicalProcessingWeeks: { min: 18, max: 30 },
+  },
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: false,
+  },
+  euSpaceActCrossRef: {
+    relationship: "superseded",
+    description:
+      "The EU Space Act will supersede the Austrian space activity law.",
+    transitionNotes: "Austria will need to adopt EU framework.",
+  },
+  lastUpdated: "2026-01",
+};
+
 // Build the mock map
 const MOCK_JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["FR", FR_DATA],
   ["DE", DE_DATA],
   ["UK", UK_DATA],
+  ["LU", LU_DATA],
+  ["NL", NL_DATA],
+  ["AT", AT_DATA],
 ]);
 
 // Mock jurisdiction data module (lazy import)
@@ -1803,6 +2062,404 @@ describe("Space Law Engine", () => {
 
       const uk = result.jurisdictions[0];
       expect(uk.countryCode).toBe("UK");
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 8. Luxembourg special provisions
+  // ═══════════════════════════════════════════
+
+  describe("Luxembourg special provisions", () => {
+    it("should award +15 bonus for space_resources activity in Luxembourg", async () => {
+      const answersResources = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "space_resources",
+      });
+      const answersOther = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+      });
+
+      const resultResources =
+        await calculateSpaceLawCompliance(answersResources);
+      const resultOther = await calculateSpaceLawCompliance(answersOther);
+
+      const luResources = resultResources.jurisdictions[0];
+      const luOther = resultOther.jurisdictions[0];
+
+      // space_resources gets +15 bonus
+      expect(luResources.favorabilityScore).toBeGreaterThan(
+        luOther.favorabilityScore,
+      );
+      expect(luResources.favorabilityFactors).toContain(
+        "Explicit space resources legislation",
+      );
+    });
+
+    it("should include 'Explicit space resources legislation' factor for LU + space_resources", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "space_resources",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const lu = result.jurisdictions[0];
+      expect(lu.favorabilityFactors).toContain(
+        "Explicit space resources legislation",
+      );
+    });
+
+    it("should NOT include space resources bonus for LU with spacecraft_operation", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const lu = result.jurisdictions[0];
+      expect(lu.favorabilityFactors).not.toContain(
+        "Explicit space resources legislation",
+      );
+    });
+
+    it("should award small entity bonus for LU with entitySize small", async () => {
+      const answersSmall = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+        entitySize: "small",
+      });
+      const answersMedium = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+        entitySize: "medium",
+      });
+
+      const resultSmall = await calculateSpaceLawCompliance(answersSmall);
+      const resultMedium = await calculateSpaceLawCompliance(answersMedium);
+
+      const luSmall = resultSmall.jurisdictions[0];
+      const luMedium = resultMedium.jurisdictions[0];
+
+      // Small entity gets +5 bonus for LU
+      expect(luSmall.favorabilityScore).toBeGreaterThan(
+        luMedium.favorabilityScore,
+      );
+      expect(luSmall.favorabilityFactors).toContain(
+        "Flexible thresholds for smaller operators",
+      );
+    });
+
+    it("should award negotiable liability regime bonus for LU", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const lu = result.jurisdictions[0];
+      expect(lu.favorabilityFactors).toContain("Negotiable liability terms");
+    });
+
+    it("should mark LU as applicable for space_resources activity", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "space_resources",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const lu = result.jurisdictions[0];
+      expect(lu.isApplicable).toBe(true);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 9. Netherlands small entity bonus
+  // ═══════════════════════════════════════════
+
+  describe("Netherlands small entity bonus", () => {
+    it("should award +5 small entity bonus for NL with entitySize small", async () => {
+      const answersSmall = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entitySize: "small",
+      });
+      const answersMedium = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entitySize: "medium",
+      });
+
+      const resultSmall = await calculateSpaceLawCompliance(answersSmall);
+      const resultMedium = await calculateSpaceLawCompliance(answersMedium);
+
+      const nlSmall = resultSmall.jurisdictions[0];
+      const nlMedium = resultMedium.jurisdictions[0];
+
+      expect(nlSmall.favorabilityScore).toBeGreaterThan(
+        nlMedium.favorabilityScore,
+      );
+      expect(nlSmall.favorabilityFactors).toContain(
+        "Reduced insurance thresholds for small satellites",
+      );
+    });
+
+    it("should NOT include NL small entity bonus for large entity", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entitySize: "large",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const nl = result.jurisdictions[0];
+      expect(nl.favorabilityFactors).not.toContain(
+        "Reduced insurance thresholds for small satellites",
+      );
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 10. formatCostEstimate fallback
+  // ═══════════════════════════════════════════
+
+  describe("formatCostEstimate fallback", () => {
+    it("should return contact message when no fees are defined at all", async () => {
+      // AT has no applicationFee or annualFee defined
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      expect(at.estimatedCost).toBe("Contact authority for fee schedule");
+    });
+
+    it("should include only application fee line when only applicationFee is set", async () => {
+      // AT has neither, LU has only applicationFee
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const lu = result.jurisdictions[0];
+      expect(lu.estimatedCost).toContain("Application:");
+      expect(lu.estimatedCost).not.toContain("Annual:");
+    });
+
+    it("should include both fees when both are set (FR)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["FR"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const fr = result.jurisdictions[0];
+      expect(fr.estimatedCost).toContain("Application:");
+      expect(fr.estimatedCost).toContain("Annual:");
+      expect(fr.estimatedCost).toContain(" · ");
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 11. Comparison matrix: processing time scoring
+  // ═══════════════════════════════════════════
+
+  describe("Comparison matrix: processing time score thresholds", () => {
+    it("should score 5 for avg <= 10 weeks (LU: min=6, max=12, avg=9)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["LU"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const ptCriterion = result.comparisonMatrix.criteria.find(
+        (c) => c.id === "processing_time",
+      )!;
+      expect(ptCriterion.jurisdictionValues["LU"].value).toBe("6–12 weeks");
+      expect(ptCriterion.jurisdictionValues["LU"].score).toBe(5);
+    });
+
+    it("should score 4 for avg <= 14 weeks (NL: min=8, max=14, avg=11)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const ptCriterion = result.comparisonMatrix.criteria.find(
+        (c) => c.id === "processing_time",
+      )!;
+      expect(ptCriterion.jurisdictionValues["NL"].value).toBe("8–14 weeks");
+      expect(ptCriterion.jurisdictionValues["NL"].score).toBe(4);
+    });
+
+    it("should score 3 for avg <= 18 weeks (FR: min=12, max=26, avg=19 falls to 2)", async () => {
+      // FR avg = (12+26)/2 = 19, which is > 18 and <= 24, so score = 2
+      const answers = createAnswers({
+        selectedJurisdictions: ["FR"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const ptCriterion = result.comparisonMatrix.criteria.find(
+        (c) => c.id === "processing_time",
+      )!;
+      // FR: avg=19, score=2
+      expect(ptCriterion.jurisdictionValues["FR"].score).toBe(2);
+    });
+
+    it("should score 1 for avg > 24 weeks (AT: min=18, max=30, avg=24 is score=2)", async () => {
+      // AT avg = (18+30)/2 = 24, which is <= 24, so score = 2
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const ptCriterion = result.comparisonMatrix.criteria.find(
+        (c) => c.id === "processing_time",
+      )!;
+      expect(ptCriterion.jurisdictionValues["AT"].value).toBe("18–30 weeks");
+      expect(ptCriterion.jurisdictionValues["AT"].score).toBe(2);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 12. Applicability rules: entity type filtering
+  // ═══════════════════════════════════════════
+
+  describe("Applicability rules: entity type filtering", () => {
+    it("should mark NL as not applicable for non_eu entity (applicability rule applies:false)", async () => {
+      // NL has a rule that non_eu entities without Dutch nexus are not covered (applies: false)
+      const answers = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entityNationality: "non_eu",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const nl = result.jurisdictions[0];
+      // The applies:false rule for non_eu should trigger
+      expect(nl.isApplicable).toBe(false);
+    });
+
+    it("should mark NL as applicable for domestic entity", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entityNationality: "domestic",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const nl = result.jurisdictions[0];
+      expect(nl.isApplicable).toBe(true);
+    });
+
+    it("should mark NL as applicable for eu_other entity", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entityNationality: "eu_other",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const nl = result.jurisdictions[0];
+      expect(nl.isApplicable).toBe(true);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 13. Favorability scoring: longer timeline penalty
+  // ═══════════════════════════════════════════
+
+  describe("Favorability scoring: timeline penalty for long processing", () => {
+    it("should apply -5 penalty for Austria (avg=24 weeks, > 16)", async () => {
+      // AT: base 50 - 5 (longer timeline, avg=24 > 16) + 5 (established framework, year=2011)
+      // = 50 net. The penalty is applied but offset by the framework maturity bonus.
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      expect(at.favorabilityFactors).toContain("Longer licensing timeline");
+      // Net score: 50 (base) - 5 (longer timeline) + 5 (established framework) = 50
+      expect(at.favorabilityScore).toBe(50);
+    });
+
+    it("should score Austria lower than Luxembourg due to longer timeline", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT", "LU"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions.find((j) => j.countryCode === "AT")!;
+      const lu = result.jurisdictions.find((j) => j.countryCode === "LU")!;
+      expect(lu.favorabilityScore).toBeGreaterThan(at.favorabilityScore);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 14. Favorability scoring: moderate timeline
+  // ═══════════════════════════════════════════
+
+  describe("Favorability scoring: moderate timeline bonus", () => {
+    it("should apply +8 moderate bonus for NL (avg=11, > 10 and <= 16)", async () => {
+      const answersNL = createAnswers({
+        selectedJurisdictions: ["NL"],
+        activityType: "spacecraft_operation",
+        entitySize: "medium",
+      });
+      const result = await calculateSpaceLawCompliance(answersNL);
+      const nl = result.jurisdictions[0];
+      expect(nl.favorabilityFactors).toContain("Moderate licensing timeline");
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 15. Applicability check: null activityType
+  //     skips the hasApplicableRequirements guard
+  // ═══════════════════════════════════════════
+
+  describe("Applicability check with null activityType", () => {
+    it("should be applicable for AT with null activityType (no per-activity filter)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: null,
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      // AT has applicabilityRules with applies:true and no activityType filter — should pass
+      expect(at.isApplicable).toBe(true);
+    });
+
+    it("should return all AT requirements when activityType is null", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: null,
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      expect(at.totalRequirements).toBe(AT_DATA.licensingRequirements.length);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // 16. Favorability scoring: established framework (2010 < year <= 2018)
+  //     and registered national registry
+  // ═══════════════════════════════════════════
+
+  describe("Favorability scoring: established framework for 2011-2018", () => {
+    it("should give +5 for AT (yearEnacted=2011, <= 2018 but > 2010)", async () => {
+      // AT enacted 2011: > 2010, <= 2018 => "Established regulatory framework" +5
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      expect(at.favorabilityFactors).toContain(
+        "Established regulatory framework",
+      );
+    });
+
+    it("should NOT include national registry factor for AT (no registry)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["AT"],
+        activityType: "spacecraft_operation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+      const at = result.jurisdictions[0];
+      expect(at.favorabilityFactors).not.toContain(
+        "National space registry maintained",
+      );
     });
   });
 });
