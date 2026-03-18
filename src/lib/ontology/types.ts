@@ -36,7 +36,7 @@ export interface ObligationResult {
   nodeId: string;
   code: string;
   label: string;
-  confidence: float;
+  confidence: number;
   source: {
     framework: string;
     reference: string;
