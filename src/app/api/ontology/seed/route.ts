@@ -2,25 +2,36 @@
  * POST /api/ontology/seed
  *
  * Admin-only endpoint that runs the ontology seed pipeline followed by
- * post-seed validation. Requires platform-level admin role.
+ * post-seed validation. Requires platform-level admin role or CRON_SECRET.
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { seedOntology } from "@/lib/ontology/seed";
 import { validateOntology } from "@/lib/ontology/seed-validation";
 import { logger } from "@/lib/logger";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Allow CRON_SECRET-based auth (for CLI / cron triggers)
+    const cronSecret = request.headers
+      .get("authorization")
+      ?.replace("Bearer ", "");
+    const isCronAuth =
+      cronSecret &&
+      process.env.CRON_SECRET &&
+      cronSecret === process.env.CRON_SECRET;
 
-    // Require platform-level admin role
-    await requireRole(["admin"]);
+    if (!isCronAuth) {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      // Require platform-level admin role
+      await requireRole(["admin"]);
+    }
 
     // Run seed pipeline
     const seedResult = await seedOntology();
@@ -40,7 +51,7 @@ export async function POST() {
     const validation = await validateOntology();
 
     logger.info("Ontology seed completed", {
-      userId: session.user.id,
+      userId: isCronAuth ? "cron" : "admin",
       nodeCount: seedResult.nodeCount,
       edgeCount: seedResult.edgeCount,
       valid: validation.valid,
