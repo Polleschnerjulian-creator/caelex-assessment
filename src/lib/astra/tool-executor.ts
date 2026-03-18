@@ -2157,10 +2157,24 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       return detail;
     }
 
-    // conflicts and evidence_gaps — delegate to future functions
-    if (query_type === "conflicts" || query_type === "evidence_gaps") {
+    if (query_type === "conflicts") {
+      if (!operator_type)
+        return { error: "operator_type required for conflicts query" };
+      if (!jurisdictions || jurisdictions.length < 2)
+        return { error: "At least 2 jurisdictions required" };
+      const { detectConflicts } = await import("@/lib/ontology/conflicts");
+      const conflicts = await detectConflicts({
+        jurisdictions,
+        operatorType: operator_type,
+        domain: domain || undefined,
+      });
+      return { count: conflicts.length, conflicts };
+    }
+
+    // evidence_gaps — delegate to future function
+    if (query_type === "evidence_gaps") {
       return {
-        message: `${query_type} query is available but the detection engine is in development. Use 'obligations' query to find applicable obligations, then analyze conflicts manually.`,
+        message: `evidence_gaps query is available but the detection engine is in development. Use 'obligations' query to find applicable obligations, then analyze gaps manually.`,
         suggestion:
           "Try: query_ontology with query_type='obligations' to see all applicable obligations for the operator.",
       };

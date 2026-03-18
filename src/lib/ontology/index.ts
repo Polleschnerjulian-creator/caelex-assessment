@@ -31,3 +31,6 @@ export {
   getSubgraph,
   getNodeDetail,
 } from "./traverse";
+
+export { propagateChange } from "./impact";
+export { detectConflicts } from "./conflicts";
