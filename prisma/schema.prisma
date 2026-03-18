@@ -7278,3 +7278,59 @@ model HazardReportVersion {
   @@index([organizationId])
   @@index([spacecraftId])
 }
+
+// ─── Regulatory Ontology ─────────────────────────────────────────────────────
+
+model OntologyNode {
+  id            String   @id @default(cuid())
+  type          String
+  code          String   @unique
+  label         String
+  properties    Json
+  validFrom     DateTime @default(now())
+  validUntil    DateTime?
+  confidence    Float    @default(1.0)
+  sourceFile    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  outEdges      OntologyEdge[] @relation("FromNode")
+  inEdges       OntologyEdge[] @relation("ToNode")
+
+  @@index([type])
+  @@index([type, code])
+  @@index([validFrom, validUntil])
+}
+
+model OntologyEdge {
+  id            String   @id @default(cuid())
+  type          String
+  fromNodeId    String
+  toNodeId      String
+  properties    Json?
+  weight        Float    @default(1.0)
+  validFrom     DateTime @default(now())
+  validUntil    DateTime?
+
+  fromNode      OntologyNode @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode        OntologyNode @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([fromNodeId, toNodeId, type])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@index([type])
+  @@index([fromNodeId, type])
+  @@index([toNodeId, type])
+}
+
+model OntologyVersion {
+  id            String   @id @default(cuid())
+  version       String
+  description   String
+  nodeCount     Int
+  edgeCount     Int
+  seededFrom    String
+  seededAt      DateTime @default(now())
+
+  @@index([version])
+}
