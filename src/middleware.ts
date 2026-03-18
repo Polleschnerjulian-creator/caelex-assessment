@@ -217,6 +217,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/widget/", // Widget config API uses session auth
   "/api/newsletter/", // Public newsletter subscribe/unsubscribe
   "/api/demo/", // Public demo request form
+  "/api/ontology/seed", // Ontology seed uses Bearer token auth (CRON_SECRET), not browser session
 ];
 
 function validateOrigin(req: NextRequest): boolean {
