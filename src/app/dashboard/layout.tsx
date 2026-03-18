@@ -39,6 +39,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/assure/rating/methodology": "_literal:Rating Methodology",
   "/dashboard/assure/rating/appeal": "_literal:Rating Appeals",
   "/dashboard/evidence": "_literal:Evidence Coverage",
+  "/dashboard/ontology": "_literal:Regulatory Ontology",
   "/dashboard/sentinel": "_literal:Sentinel",
   "/dashboard/ephemeris": "_literal:Ephemeris",
   "/dashboard/optimizer": "_literal:Regulatory Arbitrage Optimizer",
@@ -121,6 +122,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     pathname === "/dashboard/regulatory-feed" ||
     pathname === "/dashboard/evidence" ||
     pathname === "/dashboard/network" ||
+    pathname === "/dashboard/ontology" ||
     isSettingsPage ||
     isEphemerisPage;
 

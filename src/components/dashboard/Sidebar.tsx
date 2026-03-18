@@ -40,6 +40,7 @@ import {
   LayoutGrid,
   FolderKanban,
   CheckSquare,
+  GitBranch,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -852,6 +853,14 @@ export default function Sidebar({
               {t("sidebar.resources")}
             </SectionHeader>
             <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/ontology"
+                icon={<GitBranch size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Ontology
+              </NavItem>
               <NavItem
                 href="/dashboard/nca-portal"
                 icon={<Building2 size={18} strokeWidth={1.5} />}
