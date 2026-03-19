@@ -1,6 +1,6 @@
 import "server-only";
 
-// TODO: Register at https://cosmos.esa.int for API access
+// Registered at https://cosmos.esa.int — EU_DISCOS_API_KEY env var required
 
 import type {
   ObjectCatalogProvider,
@@ -30,9 +30,19 @@ interface DISCOSAttributes {
   name: string | null;
   objectClass: string | null;
   mass: number | null;
-  launchDate: string | null;
-  decayDate: string | null;
-  orbitClass: string | null;
+  shape: string | null;
+  width: number | null;
+  height: number | null;
+  depth: number | null;
+  span: number | null;
+  xSectMax: number | null;
+  xSectAvg: number | null;
+  firstEpoch: string | null;
+  predDecayDate: string | null;
+  mission: string | null;
+  active: boolean | null;
+  cataloguedFragments: number | null;
+  onOrbitCataloguedFragments: number | null;
 }
 
 interface DISCOSDataItem {
@@ -56,7 +66,7 @@ function buildHeaders(): HeadersInit {
   return {
     Authorization: `Bearer ${key ?? ""}`,
     Accept: "application/vnd.api+json",
-    "Content-Type": "application/vnd.api+json",
+    "DiscosWeb-Api-Version": "2",
   };
 }
 
@@ -78,9 +88,9 @@ function mapToEntry(item: DISCOSDataItem): ObjectCatalogEntry {
     name: attr.name ?? "Unknown",
     objectClass: mapObjectClass(attr.objectClass),
     mass: attr.mass ?? null,
-    launchDate: attr.launchDate ?? null,
-    decayDate: attr.decayDate ?? null,
-    orbitType: attr.orbitClass ?? null,
+    launchDate: attr.firstEpoch ?? null,
+    decayDate: attr.predDecayDate ?? null,
+    orbitType: attr.mission ?? null,
     source: "ESA DISCOS",
   };
 }
