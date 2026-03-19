@@ -2545,6 +2545,7 @@ model Organization {
 
   // Verity: compliance attestations (multi-tenant FK)
   verityAttestations VerityAttestation[]
+  verityPassports   VerityPassport[]
 
   // Ephemeris: predictive compliance intelligence
   satelliteComplianceStates  SatelliteComplianceState[]
@@ -6304,6 +6305,89 @@ model VerityCertificateClaim {
   attestation VerityAttestation @relation(fields: [attestationId], references: [id])
 
   @@id([certificateId, attestationId])
+}
+
+model VerityPassport {
+  id             String   @id @default(cuid())
+  passportId     String   @unique @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  operatorId     String
+
+  satelliteNorad String?
+  satelliteName  String?
+  label          String
+
+  attestationCount    Int
+  certificateCount    Int
+  complianceScore     Int
+  scoreBreakdown      Json
+  attestationSummary  Json
+  jurisdictions       String[]
+
+  isPublic       Boolean  @default(true)
+  accessToken    String?  @unique
+  viewCount      Int      @default(0)
+  lastViewedAt   DateTime?
+
+  generatedAt    DateTime @default(now())
+  expiresAt      DateTime
+  revokedAt      DateTime?
+
+  @@index([organizationId])
+  @@index([operatorId])
+  @@index([passportId])
+  @@index([isPublic, revokedAt])
+}
+
+model VerityP2PRequest {
+  id              String   @id @default(cuid())
+  requestId       String   @unique @default(cuid())
+
+  requesterOrgId  String
+  requesterName   String
+  requesterEmail  String?
+
+  targetOrgId     String
+  targetNoradId   String?
+
+  regulationRefs  String[]
+  purpose         String
+  message         String?
+
+  status          String   @default("PENDING")
+  responseAt      DateTime?
+  responseMessage String?
+  attestationIds  String[]
+  certificateId   String?
+
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+
+  @@index([requesterOrgId])
+  @@index([targetOrgId, status])
+  @@index([requestId])
+}
+
+model VerityAuditChainEntry {
+  id              String   @id @default(cuid())
+  organizationId  String
+  sequenceNumber  Int
+
+  eventType       String
+  entityId        String
+  entityType      String
+  eventData       Json
+
+  entryHash       String
+  previousHash    String
+
+  createdAt       DateTime @default(now())
+
+  @@unique([organizationId, sequenceNumber])
+  @@index([organizationId, createdAt])
+  @@index([entityId])
+  @@index([entryHash])
 }
 
 model VerityIssuerKey {
