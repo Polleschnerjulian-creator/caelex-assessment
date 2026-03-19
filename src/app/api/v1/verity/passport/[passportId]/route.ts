@@ -1,0 +1,86 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+/**
+ * GET /api/v1/verity/passport/[passportId]
+ * Public endpoint — returns passport data for the given ID.
+ * No authentication required; passport must be public and not revoked/expired.
+ */
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ passportId: string }> },
+) {
+  try {
+    const { passportId } = await params;
+
+    const record = await prisma.verityPassport.findFirst({
+      where: { passportId },
+    });
+
+    if (!record) {
+      return NextResponse.json(
+        { error: "Passport not found" },
+        { status: 404 },
+      );
+    }
+
+    if (!record.isPublic) {
+      return NextResponse.json(
+        { error: "Passport is not public" },
+        { status: 403 },
+      );
+    }
+
+    if (record.revokedAt) {
+      return NextResponse.json(
+        { error: "Passport has been revoked" },
+        { status: 410 },
+      );
+    }
+
+    if (record.expiresAt < new Date()) {
+      return NextResponse.json(
+        { error: "Passport has expired" },
+        { status: 410 },
+      );
+    }
+
+    // Increment view count (fire-and-forget — do not block response)
+    prisma.verityPassport
+      .update({
+        where: { id: record.id },
+        data: {
+          viewCount: { increment: 1 },
+          lastViewedAt: new Date(),
+        },
+      })
+      .catch(() => {
+        // Non-critical — ignore errors
+      });
+
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://caelex.eu";
+
+    const passport = {
+      passportId: record.passportId,
+      label: record.label,
+      operatorId: record.operatorId,
+      satelliteNorad: record.satelliteNorad,
+      satelliteName: record.satelliteName,
+      complianceScore: record.complianceScore,
+      scoreBreakdown: record.scoreBreakdown as Record<string, number>,
+      attestations: record.attestationSummary as unknown[],
+      jurisdictions: record.jurisdictions,
+      generatedAt: record.generatedAt.toISOString(),
+      expiresAt: record.expiresAt.toISOString(),
+      verificationUrl: `${APP_URL}/verity/passport/${record.passportId}`,
+    };
+
+    return NextResponse.json({ passport });
+  } catch (error) {
+    console.error("[passport/[passportId]]", error);
+    return NextResponse.json(
+      { error: "Failed to retrieve passport" },
+      { status: 500 },
+    );
+  }
+}
