@@ -60,14 +60,16 @@ interface EvidencePacket {
   collected_at: string;
   compliance_notes: string[];
   regulation_mapping: Record<string, unknown>;
-  content_hash: string;
-  previous_hash: string;
+  content_hash?: string;
+  previous_hash?: string;
   chain_position: number;
   signature_valid: boolean;
   chain_valid: boolean;
   cross_verified: boolean;
   trust_score: number | null;
   satellite_norad: string | null;
+  agent_sentinel_id?: string;
+  agent_name?: string;
 }
 
 interface ChainVerification {
@@ -187,7 +189,16 @@ export default function SentinelPage() {
       }
       if (healthRes.ok) {
         const data = await healthRes.json();
-        setHealth(data.data || null);
+        const h = data.data;
+        if (h) {
+          setHealth({
+            agents: h.agents?.total ?? 0,
+            activeAgents: h.agents?.active ?? 0,
+            recentPackets: h.packets_24h ?? 0,
+            unverifiedCount: h.pending_verification ?? 0,
+            invalidSignatures: h.invalid_signatures ?? 0,
+          });
+        }
       }
     } catch {
       // silent
@@ -1067,12 +1078,20 @@ function PacketRow({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 rounded-lg bg-[var(--fill-light)]">
                 <DetailItem
                   label="Content Hash"
-                  value={truncateHash(packet.content_hash)}
+                  value={
+                    packet.content_hash
+                      ? truncateHash(packet.content_hash)
+                      : "—"
+                  }
                   mono
                 />
                 <DetailItem
                   label="Previous Hash"
-                  value={truncateHash(packet.previous_hash)}
+                  value={
+                    packet.previous_hash
+                      ? truncateHash(packet.previous_hash)
+                      : "—"
+                  }
                   mono
                 />
                 <DetailItem
@@ -1085,7 +1104,7 @@ function PacketRow({
                   value={packet.collection_method}
                 />
               </div>
-              {packet.compliance_notes.length > 0 && (
+              {packet.compliance_notes?.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {packet.compliance_notes.map((note, i) => (
                     <span
