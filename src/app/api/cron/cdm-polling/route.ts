@@ -7,6 +7,7 @@ import {
   fetchCDMs,
   isSpaceTrackConfigured,
 } from "@/lib/shield/space-track-client.server";
+import { euSstProvider } from "@/lib/data-sources/providers/eu-sst-provider.server";
 import {
   classifyRisk,
   thresholdsFromConfig,
@@ -74,6 +75,18 @@ export async function GET(req: Request) {
   }
 
   try {
+    // EU SST status check (will be primary once registered)
+    if (euSstProvider.isConfigured()) {
+      console.info(
+        "[cdm-polling] EU SST is configured — using as primary conjunction source",
+      );
+      // TODO: Wire EU SST CDMs into the merge pipeline alongside Space-Track + LeoLabs
+    } else {
+      console.info(
+        "[cdm-polling] EU SST not configured — using Space-Track as primary",
+      );
+    }
+
     logger.info("[Shield] Starting CDM polling...");
     const result = await pollCDMs();
 

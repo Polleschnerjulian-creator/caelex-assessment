@@ -176,6 +176,45 @@ async function createEdgeSafe(
 }
 
 /**
+ * Infer a compliance domain from an EUSA article code.
+ * Used as a fallback when an EU Space Act article lacks a category or its
+ * category does not map to an existing DOMAIN node.
+ *
+ * Article number ranges are based on COM(2025) 335 structure:
+ *   Art. 1, 3, 4, 6, 7, 10  → authorization
+ *   Art. 14–17               → authorization
+ *   Art. 58–72               → debris (Art. 70–72 overlap: debris wins)
+ *   Art. 59–61               → environmental (debris takes priority for overlap)
+ *   Art. 74, 76              → supervision
+ *   Art. 85–86               → supervision
+ */
+function inferDomainFromArticleRef(code: string): string {
+  // Extract the leading integer from codes like "EUSA-Art58", "EUSA-Art70_5", etc.
+  const match = code.match(/^EUSA-Art(\d+)/);
+  if (!match) return "authorization";
+
+  const n = parseInt(match[1], 10);
+
+  // Debris takes highest priority for the overlapping ranges
+  if ((n >= 58 && n <= 72) || (n >= 70 && n <= 72)) return "debris";
+
+  // Authorization ranges
+  if (n >= 14 && n <= 17) return "authorization";
+  if ([1, 3, 4, 6, 7, 10].includes(n)) return "authorization";
+
+  // Environmental (59–61 is sub-range of 58–72; debris already handles those above,
+  // but kept here for documentation clarity — unreachable due to ordering)
+  if (n >= 59 && n <= 61) return "environmental";
+
+  // Supervision
+  if (n === 74 || n === 76) return "supervision";
+  if (n >= 85 && n <= 86) return "supervision";
+
+  // Default fallback
+  return "authorization";
+}
+
+/**
  * Derive a source file path from a framework string.
  */
 function sourceFileForFramework(framework: string): string {
@@ -504,6 +543,17 @@ async function seedJurisdictions(): Promise<{
         edgeCount++;
       }
 
+      // APPLIES_TO → OperatorType nodes
+      // NationalRequirement has no applicableTo field; national space laws apply to
+      // all operator types by default unless the national law specifies otherwise.
+      let appliesToCount = 0;
+      for (const op of OPERATOR_TYPES) {
+        if (await createEdgeSafe("APPLIES_TO", oblCode, `OP-${op}`)) {
+          appliesToCount++;
+        }
+      }
+      edgeCount += appliesToCount;
+
       // IMPLEMENTS edges from standardsMapping
       for (const mapping of req.standardsMapping) {
         const stdCode = FRAMEWORK_TO_CODE[mapping.framework];
@@ -586,10 +636,22 @@ async function seedEUSpaceActArticles(): Promise<{
     nodeIdMap.set(code, node.id);
     nodeCount++;
 
-    // BELONGS_TO → Domain
+    // BELONGS_TO → Domain (with fallback inference when category is missing or unmapped)
     const domainCode = `DOMAIN-${article.category}`;
-    if (await createEdgeSafe("BELONGS_TO", code, domainCode)) {
+    const belongsToCreated = await createEdgeSafe(
+      "BELONGS_TO",
+      code,
+      domainCode,
+    );
+    if (belongsToCreated) {
       edgeCount++;
+    } else {
+      // Fallback: infer domain from article number range
+      const inferredDomain = inferDomainFromArticleRef(code);
+      const fallbackDomainCode = `DOMAIN-${inferredDomain}`;
+      if (await createEdgeSafe("BELONGS_TO", code, fallbackDomainCode)) {
+        edgeCount++;
+      }
     }
 
     // APPLIES_TO → OperatorType nodes
@@ -677,6 +739,24 @@ async function seedEUSpaceActArticles(): Promise<{
     });
     nodeIdMap.set(code, node.id);
     nodeCount++;
+
+    // BELONGS_TO → Domain for stub nodes (use enacted req's category, fallback to inference)
+    const stubDomainCode = `DOMAIN-${req.category}`;
+    const stubBelongsTo = await createEdgeSafe(
+      "BELONGS_TO",
+      code,
+      stubDomainCode,
+    );
+    if (stubBelongsTo) {
+      edgeCount++;
+    } else {
+      const inferredDomain = inferDomainFromArticleRef(code);
+      if (
+        await createEdgeSafe("BELONGS_TO", code, `DOMAIN-${inferredDomain}`)
+      ) {
+        edgeCount++;
+      }
+    }
   }
 
   // Retry edges from step 5 that may have failed due to missing EUSA nodes

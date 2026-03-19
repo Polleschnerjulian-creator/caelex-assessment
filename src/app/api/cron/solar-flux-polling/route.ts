@@ -10,6 +10,7 @@ import {
   fetchPredictedSolarCycle,
   processSpaceWeatherData,
 } from "@/lib/services/space-weather-service.server";
+import { fetchSpaceWeatherWithFallback } from "@/lib/data-sources/router.server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -53,6 +54,17 @@ export async function GET(req: Request) {
 
   try {
     logger.info("[Solar Flux] Starting F10.7 + space weather polling...");
+
+    // Try EU-first data source (ESA SWE → NOAA fallback)
+    const routerResult = await fetchSpaceWeatherWithFallback();
+    if (routerResult.data) {
+      console.info(
+        `[solar-flux-cron] Source: ${routerResult.source.name} (${routerResult.source.region}), fallback: ${routerResult.fallbackUsed}`,
+      );
+    }
+
+    // Router provides EU-first F10.7. Full space weather processing (scales, events, alerts)
+    // still uses NOAA directly until ESA SWE coverage expands.
 
     // Fetch all data sources in parallel
     const [f107, kpIndex, scales, predictions] = await Promise.all([

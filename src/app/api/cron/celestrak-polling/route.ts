@@ -48,6 +48,10 @@ export async function GET(req: Request) {
   }
 
   try {
+    // NOTE: CelesTrak remains the primary orbital data source.
+    // Neither ESA DISCOS nor EU SST provide current TLEs via API.
+    // DISCOS provides catalog data (mass, dimensions) only.
+    // See docs/DATASOURCES.md for the full routing strategy.
     logger.info("[CelesTrak] Starting TLE/GP polling...");
 
     const result = await processAllSpacecraft();
