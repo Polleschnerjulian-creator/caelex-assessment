@@ -320,6 +320,10 @@ export default function ShieldEventDetailPage() {
   >([]);
   const [newNote, setNewNote] = useState("");
 
+  // Threat object DISCOS enrichment state
+  const [threatObject, setThreatObject] = useState<any>(null);
+  const [threatLoading, setThreatLoading] = useState(false);
+
   // Workflow action states
   const [showManeuverForm, setShowManeuverForm] = useState(false);
   const [fuelConsumedPct, setFuelConsumedPct] = useState("");
@@ -354,6 +358,17 @@ export default function ShieldEventDetailPage() {
         });
     }
   }, [activeTab, eventId, factors]);
+
+  // Fetch threat object DISCOS data
+  useEffect(() => {
+    if (!event?.id) return;
+    setThreatLoading(true);
+    fetch(`/api/shield/events/${eventId}/threat-object`)
+      .then((r) => r.json())
+      .then((d) => setThreatObject(d))
+      .catch(() => setThreatObject(null))
+      .finally(() => setThreatLoading(false));
+  }, [event?.id, eventId]);
 
   // Fetch compliance intelligence when compliance tab selected
   useEffect(() => {
@@ -736,6 +751,8 @@ export default function ShieldEventDetailPage() {
           cdmChartData={cdmChartData}
           cdmsSorted={cdmsSorted}
           latestCdm={latestCdm}
+          threatObject={threatObject}
+          threatLoading={threatLoading}
         />
       )}
 
@@ -1477,11 +1494,15 @@ function OverviewTab({
   cdmChartData,
   cdmsSorted,
   latestCdm,
+  threatObject,
+  threatLoading,
 }: {
   event: any;
   cdmChartData: Array<{ date: string; pc: number; missDistance: number }>;
   cdmsSorted: any[];
   latestCdm: any;
+  threatObject: any;
+  threatLoading: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -1538,6 +1559,161 @@ function OverviewTab({
           </Card>
         </GlassMotion>
       </div>
+
+      {/* Threat Object — ESA DISCOS Enrichment */}
+      {!threatLoading && threatObject && (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <AlertTriangle className="w-4 h-4 inline mr-2" />
+                Threat Object
+                {threatObject.source === "ESA DISCOS" && (
+                  <span className="ml-2 text-micro font-normal px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                    ESA DISCOS
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-micro text-[var(--text-tertiary)] uppercase tracking-wider mb-0.5">
+                    Object
+                  </p>
+                  <p className="text-body font-medium text-[var(--text-primary)]">
+                    {threatObject.name}
+                  </p>
+                  <p className="text-caption text-[var(--text-secondary)]">
+                    NORAD {threatObject.noradId}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-micro text-[var(--text-tertiary)] uppercase tracking-wider mb-0.5">
+                    Type
+                  </p>
+                  <p className="text-body font-medium text-[var(--text-primary)]">
+                    {threatObject.objectType}
+                  </p>
+                  {threatObject.discos?.cosparId && (
+                    <p className="text-caption text-[var(--text-secondary)]">
+                      {threatObject.discos.cosparId}
+                    </p>
+                  )}
+                </div>
+                {threatObject.discos?.mass && (
+                  <div>
+                    <p className="text-micro text-[var(--text-tertiary)] uppercase tracking-wider mb-0.5">
+                      Mass
+                    </p>
+                    <p className="text-body font-medium text-[var(--text-primary)]">
+                      {threatObject.discos.mass.toLocaleString()} kg
+                    </p>
+                  </div>
+                )}
+                {threatObject.discos?.span && (
+                  <div>
+                    <p className="text-micro text-[var(--text-tertiary)] uppercase tracking-wider mb-0.5">
+                      Largest Dimension
+                    </p>
+                    <p className="text-body font-medium text-[var(--text-primary)]">
+                      {threatObject.discos.span} m
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {threatObject.discos && (
+                <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {threatObject.discos.shape && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Shape
+                        </p>
+                        <p className="text-caption text-[var(--text-primary)]">
+                          {threatObject.discos.shape}
+                        </p>
+                      </div>
+                    )}
+                    {threatObject.discos.xSectAvg && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Avg Cross-Section
+                        </p>
+                        <p className="text-caption text-[var(--text-primary)]">
+                          {threatObject.discos.xSectAvg.toFixed(1)} m²
+                        </p>
+                      </div>
+                    )}
+                    {threatObject.discos.mission && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Mission
+                        </p>
+                        <p className="text-caption text-[var(--text-primary)]">
+                          {threatObject.discos.mission}
+                        </p>
+                      </div>
+                    )}
+                    {threatObject.discos.active !== null && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Status
+                        </p>
+                        <p
+                          className={`text-caption ${threatObject.discos.active ? "text-emerald-400" : "text-[var(--text-secondary)]"}`}
+                        >
+                          {threatObject.discos.active
+                            ? "Active"
+                            : "Inactive / Unknown"}
+                        </p>
+                      </div>
+                    )}
+                    {threatObject.discos.launchDate && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Launched
+                        </p>
+                        <p className="text-caption text-[var(--text-primary)]">
+                          {threatObject.discos.launchDate.slice(0, 10)}
+                        </p>
+                      </div>
+                    )}
+                    {(threatObject.discos.cataloguedFragments ?? 0) > 0 && (
+                      <div>
+                        <p className="text-micro text-[var(--text-tertiary)]">
+                          Known Fragments
+                        </p>
+                        <p className="text-caption text-amber-400">
+                          {threatObject.discos.cataloguedFragments} (
+                          {threatObject.discos.onOrbitFragments ?? 0} on-orbit)
+                        </p>
+                      </div>
+                    )}
+                    {threatObject.discos.width &&
+                      threatObject.discos.height && (
+                        <div>
+                          <p className="text-micro text-[var(--text-tertiary)]">
+                            Dimensions
+                          </p>
+                          <p className="text-caption text-[var(--text-primary)]">
+                            {threatObject.discos.width}×
+                            {threatObject.discos.height}
+                            {threatObject.discos.depth
+                              ? `×${threatObject.discos.depth}`
+                              : ""}{" "}
+                            m
+                          </p>
+                        </div>
+                      )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </GlassMotion>
+      )}
 
       {/* Charts Row */}
       {cdmChartData.length > 0 && (
