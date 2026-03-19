@@ -25,6 +25,11 @@ import {
   Download,
   Copy,
   ClipboardCheck,
+  Scale,
+  Globe,
+  Timer,
+  CircleDot,
+  Fuel,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -65,10 +70,20 @@ const CONFIDENCE_COLORS: Record<string, string> = {
   LOW: "text-red-400",
 };
 
-type TabId = "overview" | "decision" | "documentation" | "coordination";
+type TabId =
+  | "overview"
+  | "compliance"
+  | "decision"
+  | "documentation"
+  | "coordination";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <Shield className="w-4 h-4" /> },
+  {
+    id: "compliance",
+    label: "Compliance",
+    icon: <Scale className="w-4 h-4" />,
+  },
   {
     id: "decision",
     label: "Decision",
@@ -294,6 +309,10 @@ export default function ShieldEventDetailPage() {
   const [ncaError, setNcaError] = useState("");
   const [expandedCdm, setExpandedCdm] = useState<string | null>(null);
 
+  // Compliance tab state
+  const [compliance, setCompliance] = useState<any>(null);
+  const [complianceLoading, setComplianceLoading] = useState(false);
+
   // Coordination tab state
   const [copied, setCopied] = useState(false);
   const [coordNotes, setCoordNotes] = useState<
@@ -335,6 +354,18 @@ export default function ShieldEventDetailPage() {
         });
     }
   }, [activeTab, eventId, factors]);
+
+  // Fetch compliance intelligence when compliance tab selected
+  useEffect(() => {
+    if (activeTab === "compliance" && !compliance) {
+      setComplianceLoading(true);
+      fetch(`/api/shield/events/${eventId}/compliance`)
+        .then((r) => r.json())
+        .then((d) => setCompliance(d))
+        .catch(() => setCompliance(null))
+        .finally(() => setComplianceLoading(false));
+    }
+  }, [activeTab, eventId, compliance]);
 
   // ── Decision Submission ────────────────────────────────────────────────────
 
@@ -708,6 +739,14 @@ export default function ShieldEventDetailPage() {
         />
       )}
 
+      {activeTab === "compliance" && (
+        <ComplianceTab
+          compliance={compliance}
+          complianceLoading={complianceLoading}
+          event={event}
+        />
+      )}
+
       {activeTab === "decision" && (
         <DecisionTab
           event={event}
@@ -997,6 +1036,435 @@ export default function ShieldEventDetailPage() {
             </Card>
           </GlassMotion>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Compliance Tab ──────────────────────────────────────────────────────────
+
+const COMPLIANCE_RISK_COLORS: Record<string, string> = {
+  critical: "bg-red-500/20 text-red-400 border-red-500/30",
+  high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  low: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+};
+
+const NCA_STATUS_COLORS: Record<string, string> = {
+  overdue: "bg-red-500/20 text-red-400",
+  due_soon: "bg-amber-500/20 text-amber-400",
+  pending: "bg-blue-500/20 text-blue-400",
+  completed: "bg-emerald-500/20 text-emerald-400",
+  not_required: "bg-slate-500/20 text-slate-400",
+};
+
+function ComplianceTab({
+  compliance,
+  complianceLoading,
+  event,
+}: {
+  compliance: any;
+  complianceLoading: boolean;
+  event: any;
+}) {
+  if (complianceLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-400 mr-3" />
+        <span className="text-[var(--text-secondary)]">
+          Computing compliance assessment...
+        </span>
+      </div>
+    );
+  }
+
+  if (!compliance?.assessment) {
+    return (
+      <GlassMotion>
+        <Card variant="elevated">
+          <CardContent className="py-12 text-center">
+            <Scale className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" />
+            <p className="text-[var(--text-secondary)]">
+              Compliance data not available. Ensure jurisdictions are configured
+              in Shield settings.
+            </p>
+          </CardContent>
+        </Card>
+      </GlassMotion>
+    );
+  }
+
+  const { assessment, timeline, maneuverImpact, jurisdictions } = compliance;
+
+  return (
+    <div className="space-y-6">
+      {/* Compliance Risk Banner */}
+      <GlassMotion>
+        <div
+          className={`flex items-center gap-4 px-5 py-4 rounded-xl border ${COMPLIANCE_RISK_COLORS[assessment.complianceRisk] || ""}`}
+        >
+          <Scale className="w-5 h-5 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <span className="text-subtitle font-semibold uppercase tracking-wider">
+                {assessment.complianceRisk} Compliance Risk
+              </span>
+              <span className="text-caption opacity-60">
+                {jurisdictions?.length ?? 0} jurisdiction
+                {jurisdictions?.length !== 1 ? "s" : ""} assessed
+              </span>
+            </div>
+            <p className="text-body mt-0.5 opacity-80">{assessment.summary}</p>
+          </div>
+        </div>
+      </GlassMotion>
+
+      {/* NCA Reporting Requirements */}
+      <GlassMotion>
+        <Card variant="elevated">
+          <CardHeader>
+            <CardTitle>
+              <Globe className="w-4 h-4 inline mr-2" />
+              NCA Reporting Requirements
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {assessment.reportingRequirements?.map((req: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 rounded-lg glass-surface"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-caption font-semibold px-2 py-0.5 rounded ${NCA_STATUS_COLORS[req.status] || ""}`}
+                    >
+                      {req.status === "overdue"
+                        ? "OVERDUE"
+                        : req.status === "due_soon"
+                          ? "DUE SOON"
+                          : req.status === "completed"
+                            ? "DONE"
+                            : req.status === "pending"
+                              ? "PENDING"
+                              : "N/A"}
+                    </span>
+                    <div>
+                      <p className="text-body font-medium text-[var(--text-primary)]">
+                        {req.authority}{" "}
+                        <span className="text-[var(--text-tertiary)]">
+                          ({req.jurisdiction})
+                        </span>
+                      </p>
+                      <p className="text-caption text-[var(--text-secondary)]">
+                        {req.isTriggered
+                          ? req.triggerReason
+                          : "Below reporting thresholds"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {req.hoursRemaining !== null && req.isTriggered && (
+                      <p
+                        className={`text-body font-mono tabular-nums ${
+                          req.isOverdue
+                            ? "text-red-400"
+                            : req.hoursRemaining < 24
+                              ? "text-amber-400"
+                              : "text-[var(--text-secondary)]"
+                        }`}
+                      >
+                        {req.isOverdue
+                          ? "OVERDUE"
+                          : `${Math.floor(req.hoursRemaining)}h remaining`}
+                      </p>
+                    )}
+                    <p className="text-caption text-[var(--text-tertiary)]">
+                      {req.legalBasis?.split(",")[0]}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </GlassMotion>
+
+      {/* Compliance Deadlines */}
+      {assessment.deadlines?.length > 0 && (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <Timer className="w-4 h-4 inline mr-2" />
+                Compliance Deadlines
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-[11px] top-2 bottom-2 w-px bg-[var(--border-subtle)]" />
+
+                <div className="space-y-4">
+                  {assessment.deadlines.map((dl: any, i: number) => (
+                    <div key={i} className="flex gap-4 relative">
+                      <div
+                        className={`w-[23px] h-[23px] rounded-full flex items-center justify-center flex-shrink-0 z-10 ${
+                          dl.isOverdue
+                            ? "bg-red-500/30 border border-red-500/50"
+                            : dl.hoursRemaining < 24
+                              ? "bg-amber-500/30 border border-amber-500/50"
+                              : "bg-[var(--fill-light)] border border-[var(--border-subtle)]"
+                        }`}
+                      >
+                        <CircleDot
+                          className={`w-3 h-3 ${
+                            dl.isOverdue
+                              ? "text-red-400"
+                              : dl.hoursRemaining < 24
+                                ? "text-amber-400"
+                                : "text-[var(--text-tertiary)]"
+                          }`}
+                        />
+                      </div>
+                      <div className="flex-1 pb-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-body font-medium text-[var(--text-primary)]">
+                            {dl.description}
+                          </p>
+                          {dl.isOverdue && (
+                            <span className="text-micro font-semibold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                              OVERDUE
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-caption text-[var(--text-tertiary)]">
+                          {new Date(dl.deadlineAt).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          &middot; {dl.authority}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </GlassMotion>
+      )}
+
+      {/* Decision Impact Analysis */}
+      <GlassMotion>
+        <Card variant="elevated">
+          <CardHeader>
+            <CardTitle>
+              <Target className="w-4 h-4 inline mr-2" />
+              Decision Compliance Impact
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {assessment.decisionImpacts?.map((impact: any) => (
+                <div
+                  key={impact.decision}
+                  className="p-4 rounded-lg glass-surface"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-body font-semibold text-[var(--text-primary)]">
+                      {formatLabel(impact.decision)}
+                    </span>
+                    <span
+                      className={`text-caption font-medium px-2 py-0.5 rounded ${
+                        impact.riskLevel === "high"
+                          ? "bg-red-500/20 text-red-400"
+                          : impact.riskLevel === "medium"
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-emerald-500/20 text-emerald-400"
+                      }`}
+                    >
+                      {impact.riskLevel} risk
+                    </span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {impact.complianceImplications
+                      ?.slice(0, 3)
+                      .map((imp: string, j: number) => (
+                        <li
+                          key={j}
+                          className="text-caption text-[var(--text-secondary)] flex gap-2"
+                        >
+                          <span className="text-[var(--text-tertiary)] flex-shrink-0">
+                            {imp.startsWith("WARNING") ? "⚠" : "•"}
+                          </span>
+                          {imp}
+                        </li>
+                      ))}
+                  </ul>
+                  {impact.ncaRequirements?.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
+                      {impact.ncaRequirements.map((req: string, k: number) => (
+                        <p key={k} className="text-caption text-amber-400/80">
+                          {req}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </GlassMotion>
+
+      {/* Maneuver Impact (when applicable) */}
+      {maneuverImpact && (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <Fuel className="w-4 h-4 inline mr-2" />
+                Maneuver Compliance Impact
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Fuel impact */}
+              <div
+                className={`p-3 rounded-lg ${
+                  maneuverImpact.fuelImpact.passivationBudgetAffected
+                    ? "bg-red-500/10 border border-red-500/20"
+                    : maneuverImpact.fuelImpact.eolDisposalBudgetAffected
+                      ? "bg-amber-500/10 border border-amber-500/20"
+                      : "glass-surface"
+                }`}
+              >
+                <p className="text-body font-medium text-[var(--text-primary)] mb-1">
+                  Fuel &amp; Passivation
+                </p>
+                <p className="text-caption text-[var(--text-secondary)]">
+                  {maneuverImpact.fuelImpact.description}
+                </p>
+              </div>
+
+              {/* Orbital lifetime */}
+              <div className="p-3 rounded-lg glass-surface">
+                <p className="text-body font-medium text-[var(--text-primary)] mb-1">
+                  Orbital Lifetime (25-Year Rule)
+                </p>
+                <p className="text-caption text-[var(--text-secondary)]">
+                  {maneuverImpact.orbitalLifetimeImpact.description}
+                </p>
+              </div>
+
+              {/* Required post-maneuver actions */}
+              {maneuverImpact.requiredActions?.length > 0 && (
+                <div>
+                  <p className="text-caption font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                    Required Post-Maneuver Actions
+                  </p>
+                  <div className="space-y-2">
+                    {maneuverImpact.requiredActions.map(
+                      (action: any, i: number) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 p-2.5 rounded-lg glass-surface"
+                        >
+                          <CheckCircle className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-body text-[var(--text-primary)]">
+                              {action.action}
+                            </p>
+                            <p className="text-caption text-[var(--text-tertiary)]">
+                              {action.deadline} &middot; {action.legalBasis}
+                            </p>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </GlassMotion>
+      )}
+
+      {/* Compliance Timeline */}
+      {timeline?.events?.length > 0 && (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <Clock className="w-4 h-4 inline mr-2" />
+                Compliance Timeline
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <div className="absolute left-[11px] top-2 bottom-2 w-px bg-[var(--border-subtle)]" />
+                <div className="space-y-3">
+                  {timeline.events.map((evt: any, i: number) => (
+                    <div key={i} className="flex gap-4 relative">
+                      <div
+                        className={`w-[23px] h-[23px] rounded-full flex items-center justify-center flex-shrink-0 z-10 ${
+                          evt.completed
+                            ? "bg-emerald-500/20 border border-emerald-500/40"
+                            : evt.urgency === "critical"
+                              ? "bg-red-500/20 border border-red-500/40"
+                              : evt.urgency === "high"
+                                ? "bg-amber-500/20 border border-amber-500/40"
+                                : "bg-[var(--fill-light)] border border-[var(--border-subtle)]"
+                        }`}
+                      >
+                        {evt.completed ? (
+                          <CheckCircle className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <CircleDot
+                            className={`w-3 h-3 ${
+                              evt.urgency === "critical"
+                                ? "text-red-400"
+                                : evt.urgency === "high"
+                                  ? "text-amber-400"
+                                  : "text-[var(--text-tertiary)]"
+                            }`}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p
+                            className={`text-body font-medium ${evt.completed ? "text-[var(--text-tertiary)] line-through" : "text-[var(--text-primary)]"}`}
+                          >
+                            {evt.title}
+                          </p>
+                          {evt.jurisdiction && (
+                            <span className="text-micro px-1.5 py-0.5 rounded bg-[var(--fill-light)] text-[var(--text-tertiary)]">
+                              {evt.jurisdiction}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-caption text-[var(--text-tertiary)]">
+                          {new Date(evt.timestamp).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          {evt.description !== evt.title &&
+                            ` — ${evt.description}`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </GlassMotion>
       )}
     </div>
   );
