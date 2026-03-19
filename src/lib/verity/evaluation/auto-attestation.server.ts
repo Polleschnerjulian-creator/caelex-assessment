@@ -5,6 +5,7 @@ import { evaluateAndAttest } from "./threshold-evaluator";
 import { REGULATION_THRESHOLDS } from "./regulation-thresholds";
 import { safeLog } from "../utils/redaction";
 import { logger } from "@/lib/logger";
+import { appendToChain } from "../audit-chain/chain-writer.server";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -237,6 +238,19 @@ async function processThreshold(
     return "skipped"; // No evidence available
   }
 
+  // Append to compliance audit chain (non-blocking)
+  appendToChain({
+    organizationId,
+    eventType: "ATTESTATION_CREATED",
+    entityId: attestation.attestation_id,
+    entityType: "attestation",
+    eventData: {
+      regulationRef: attestation.claim.regulation_ref,
+      result: attestation.claim.result,
+      trustLevel: attestation.evidence.trust_level,
+    },
+  }).catch(() => {});
+
   // Handle PASS↔FAIL revocation
   const revoked = await revokeSupersededAttestations(prisma, {
     organizationId,
@@ -318,6 +332,13 @@ async function revokeSupersededAttestations(
       attestationId: att.attestationId,
       reason,
     });
+    appendToChain({
+      organizationId,
+      eventType: "ATTESTATION_REVOKED",
+      entityId: att.attestationId,
+      entityType: "attestation",
+      eventData: { reason: "threshold_flip", regulationRef },
+    }).catch(() => {});
   }
 
   return superseded.length;

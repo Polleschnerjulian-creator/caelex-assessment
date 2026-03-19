@@ -30,6 +30,8 @@ export function issueCertificate(params: {
   expires_in_days: number;
   is_public: boolean;
 }): VerityCertificate {
+  // NOTE: Audit chain entry for CERTIFICATE_ISSUED should be appended
+  // by the caller (API route) after persisting the certificate to DB.
   if (params.attestations.length === 0) {
     throw new Error("Certificate requires at least one attestation");
   }

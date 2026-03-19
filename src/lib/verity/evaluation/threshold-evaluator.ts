@@ -5,6 +5,7 @@ import { findThreshold, renderClaimStatement } from "./regulation-thresholds";
 import { resolveEvidence } from "./evidence-resolver";
 import { safeLog } from "../utils/redaction";
 import type { ThresholdAttestation } from "../core/types";
+import { appendToChain } from "../audit-chain/chain-writer.server";
 
 /**
  * Server-side threshold evaluation.
@@ -111,6 +112,19 @@ export async function evaluateAndAttest(
     attestationId: attestation.attestation_id,
     regulationRef: threshold.regulation_ref,
   });
+
+  // Append to compliance audit chain (non-blocking)
+  appendToChain({
+    organizationId: params.organizationId ?? params.operatorId,
+    eventType: "ATTESTATION_CREATED",
+    entityId: attestation.attestation_id,
+    entityType: "attestation",
+    eventData: {
+      regulationRef: attestation.claim.regulation_ref,
+      result: attestation.claim.result,
+      trustLevel: attestation.evidence.trust_level,
+    },
+  }).catch(() => {});
 
   return attestation;
 }
