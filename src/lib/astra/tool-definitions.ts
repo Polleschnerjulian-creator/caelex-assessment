@@ -1079,7 +1079,7 @@ export const getEvidenceGaps: AstraToolDefinition = {
 export const queryOntology: AstraToolDefinition = {
   name: "query_ontology",
   description:
-    "Query the regulatory knowledge graph for deterministic compliance answers. Returns structured results from graph traversal — not text search. Use this for: finding applicable obligations for an operator, detecting conflicts between jurisdictions, identifying evidence gaps, or exploring the regulatory graph around a specific concept.",
+    "Query the regulatory knowledge graph for deterministic compliance answers. Capabilities: find obligations for an operator (obligations), detect cross-jurisdictional conflicts (conflicts), identify evidence gaps (evidence_gaps), explore the graph around a node (subgraph), get node details (node_detail), analyze regulatory change impact (impact), search nodes by text (search), compare jurisdictions side-by-side (compare_jurisdictions), get graph statistics (stats).",
   input_schema: {
     type: "object",
     properties: {
@@ -1091,6 +1091,10 @@ export const queryOntology: AstraToolDefinition = {
           "evidence_gaps",
           "subgraph",
           "node_detail",
+          "impact",
+          "search",
+          "compare_jurisdictions",
+          "stats",
         ],
         description: "Type of graph query to execute",
       },
@@ -1134,6 +1138,17 @@ export const queryOntology: AstraToolDefinition = {
       depth: {
         type: "number",
         description: "Subgraph traversal depth (1-3). Default: 1.",
+      },
+      change_type: {
+        type: "string",
+        enum: ["amended", "repealed", "new"],
+        description:
+          "Type of regulatory change for impact analysis. Required for 'impact' query_type.",
+      },
+      search_query: {
+        type: "string",
+        description:
+          "Free-text search query for 'search' query_type. Searches node codes and labels.",
       },
     },
     required: ["query_type"],

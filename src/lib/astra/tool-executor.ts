@@ -40,6 +40,7 @@ import {
   getObligationsForOperator,
   getSubgraph,
   getNodeDetail,
+  propagateChange,
 } from "@/lib/ontology";
 
 // ─── Main Executor ───
@@ -2171,12 +2172,163 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       return { count: conflicts.length, conflicts };
     }
 
-    // evidence_gaps — delegate to future function
     if (query_type === "evidence_gaps") {
+      if (!operator_type)
+        return { error: "operator_type required for evidence_gaps query" };
+
+      // Get all obligations for operator
+      const obligations = await getObligationsForOperator({
+        operatorType: operator_type,
+        jurisdictions: jurisdictions || [],
+        domain: domain || undefined,
+        includeProposals: false,
+      });
+
+      // Find obligations that have evidence requirements
+      const gaps = obligations
+        .filter((o) => o.evidenceRequired.length > 0)
+        .map((o) => ({
+          obligation: { code: o.code, label: o.label, domain: o.domain },
+          evidenceRequired: o.evidenceRequired,
+          jurisdictions: o.jurisdictions,
+        }));
+
       return {
-        message: `evidence_gaps query is available but the detection engine is in development. Use 'obligations' query to find applicable obligations, then analyze gaps manually.`,
-        suggestion:
-          "Try: query_ontology with query_type='obligations' to see all applicable obligations for the operator.",
+        totalObligations: obligations.length,
+        obligationsWithEvidenceReqs: gaps.length,
+        gaps,
+        note: `${gaps.length} obligations require specific evidence documentation. Review each to ensure evidence is collected and current.`,
+      };
+    }
+
+    if (query_type === "impact") {
+      if (!node_code) return { error: "node_code required for impact query" };
+      const change_type = input.change_type as
+        | "amended"
+        | "repealed"
+        | "new"
+        | undefined;
+      if (!change_type)
+        return {
+          error:
+            "change_type required for impact query (amended, repealed, new)",
+        };
+
+      const node = await prisma.ontologyNode.findUnique({
+        where: { code: node_code },
+      });
+      if (!node) return { error: `Node not found: ${node_code}` };
+
+      const result = await propagateChange({
+        nodeId: node.id,
+        changeType: change_type,
+      });
+      return {
+        changedNode: result.changedNode,
+        totalAffected: result.totalAffected,
+        affectedNodes: result.affectedNodes.map((n) => ({
+          code: n.affectedNode.code,
+          label: n.affectedNode.label,
+          type: n.affectedNode.type,
+          impactLevel: n.impactLevel,
+          depth: n.depth,
+          path: n.edgePath,
+        })),
+        note: `If ${node_code} is ${change_type}, ${result.totalAffected} nodes are affected downstream.`,
+      };
+    }
+
+    if (query_type === "search") {
+      const search_query = input.search_query as string | undefined;
+      if (!search_query)
+        return { error: "search_query required for search query" };
+
+      const q = search_query.toLowerCase();
+      const nodes = await prisma.ontologyNode.findMany({
+        where: {
+          OR: [
+            { code: { contains: q, mode: "insensitive" } },
+            { label: { contains: q, mode: "insensitive" } },
+          ],
+          validUntil: null,
+        },
+        take: 20,
+        orderBy: { confidence: "desc" },
+        select: { code: true, label: true, type: true, confidence: true },
+      });
+
+      return {
+        count: nodes.length,
+        results: nodes,
+        query: search_query,
+      };
+    }
+
+    if (query_type === "compare_jurisdictions") {
+      if (!jurisdictions || jurisdictions.length < 2)
+        return { error: "At least 2 jurisdictions required for comparison" };
+      if (!domain)
+        return { error: "domain required for jurisdiction comparison" };
+
+      // Get obligations per jurisdiction
+      const comparison: Record<string, any[]> = {};
+      for (const j of jurisdictions) {
+        const obls = await getObligationsForOperator({
+          operatorType: operator_type || "SCO",
+          jurisdictions: [j],
+          domain,
+          includeProposals: include_proposals || false,
+        });
+        comparison[j] = obls.map((o) => ({
+          code: o.code,
+          label: o.label,
+          confidence: o.confidence,
+          evidenceRequired: o.evidenceRequired.map((e) => e.label),
+        }));
+      }
+
+      // Also detect conflicts
+      const { detectConflicts: dc } = await import("@/lib/ontology/conflicts");
+      const conflicts = await dc({
+        jurisdictions,
+        operatorType: operator_type || "SCO",
+        domain,
+      });
+
+      return {
+        domain,
+        jurisdictions,
+        obligationsByJurisdiction: comparison,
+        totalObligations: Object.values(comparison).reduce(
+          (sum, arr) => sum + arr.length,
+          0,
+        ),
+        conflicts: conflicts.length > 0 ? conflicts : null,
+        note: `Comparison of ${domain} obligations across ${jurisdictions.join(", ")}. ${conflicts.length} conflicts detected.`,
+      };
+    }
+
+    if (query_type === "stats") {
+      const stats = await prisma.ontologyNode.groupBy({
+        by: ["type"],
+        _count: true,
+        where: { validUntil: null },
+      });
+      const edgeStats = await prisma.ontologyEdge.groupBy({
+        by: ["type"],
+        _count: true,
+        where: { validUntil: null },
+      });
+      const totalNodes = stats.reduce((s, r) => s + r._count, 0);
+      const totalEdges = edgeStats.reduce((s, r) => s + r._count, 0);
+
+      return {
+        totalNodes,
+        totalEdges,
+        nodesByType: Object.fromEntries(stats.map((s) => [s.type, s._count])),
+        edgesByType: Object.fromEntries(
+          edgeStats.map((s) => [s.type, s._count]),
+        ),
       };
     }
 
