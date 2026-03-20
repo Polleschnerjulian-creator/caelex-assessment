@@ -1,9 +1,57 @@
 "use client";
 
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef, Component, type ReactNode } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+
+// ─── Error Boundary for WebGL/Three.js crashes ─────────────────────────────
+
+class GlobeErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: "" };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-[#0A0F1E] rounded-xl">
+          <div className="text-center px-8">
+            <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-3">
+              <svg
+                className="w-6 h-6 text-slate-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-slate-400 mb-1">3D Globe unavailable</p>
+            <p className="text-xs text-slate-600 max-w-[240px]">
+              WebGL may not be supported in this browser. Satellite data is
+              still available in table view.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import EarthMesh from "./EarthMesh";
 import SatellitePoints from "./SatellitePoints";
 import FleetLabels from "./FleetLabels";
@@ -132,24 +180,26 @@ function SceneContent({
 
 export default function GlobeScene(props: GlobeSceneProps) {
   return (
-    <Canvas
-      camera={{
-        position: [0, 0.8, props.compact ? 3.2 : 2.8],
-        fov: 45,
-        near: 0.1,
-        far: 100,
-      }}
-      gl={{
-        alpha: true,
-        antialias: true,
-        toneMapping: 0, // NoToneMapping
-      }}
-      style={{ background: "transparent" }}
-      dpr={[1, 1.5]}
-    >
-      <Suspense fallback={null}>
-        <SceneContent {...props} />
-      </Suspense>
-    </Canvas>
+    <GlobeErrorBoundary>
+      <Canvas
+        camera={{
+          position: [0, 0.8, props.compact ? 3.2 : 2.8],
+          fov: 45,
+          near: 0.1,
+          far: 100,
+        }}
+        gl={{
+          alpha: true,
+          antialias: true,
+          toneMapping: 0, // NoToneMapping
+        }}
+        style={{ background: "transparent" }}
+        dpr={[1, 1.5]}
+      >
+        <Suspense fallback={null}>
+          <SceneContent {...props} />
+        </Suspense>
+      </Canvas>
+    </GlobeErrorBoundary>
   );
 }
