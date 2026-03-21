@@ -96,32 +96,24 @@ interface CacheEntry {
 }
 
 function getSessionCache(): CacheEntry | null {
+  // Disabled: expanded satellite data is ~7.5 MB, exceeds sessionStorage 5 MB limit.
+  // Previous attempts to cache would silently fail or corrupt, causing render crashes.
+  // The API has a 2-hour server-side cache, so re-fetching is fast.
   try {
-    const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
-    if (!raw) return null;
-    const entry: CacheEntry = JSON.parse(raw);
-    if (Date.now() - entry.timestamp > SESSION_CACHE_TTL) {
-      sessionStorage.removeItem(SESSION_CACHE_KEY);
-      return null;
-    }
-    return entry;
+    // Clean up any stale/corrupt data from previous versions
+    sessionStorage.removeItem(SESSION_CACHE_KEY);
   } catch {
-    return null;
+    // sessionStorage unavailable
   }
+  return null;
 }
 
 function setSessionCache(
-  satellites: SatelliteData[],
-  stats: CelesTrakResponse["stats"],
+  _satellites: SatelliteData[],
+  _stats: CelesTrakResponse["stats"],
 ) {
-  try {
-    // Don't cache to sessionStorage — the expanded data is too large
-    // Instead rely on the server-side 2-hour cache and the API's Cache-Control headers
-    const entry: CacheEntry = { satellites, stats, timestamp: Date.now() };
-    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(entry));
-  } catch {
-    // SessionStorage quota exceeded — that's fine, we have API caching
-  }
+  // No-op: data is ~7.5 MB expanded, exceeds sessionStorage 5 MB quota.
+  // Server-side 2-hour cache handles repeat visits efficiently.
 }
 
 export function useSatelliteData() {
