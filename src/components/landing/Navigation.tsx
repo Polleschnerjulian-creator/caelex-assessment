@@ -11,12 +11,47 @@ interface NavigationProps {
   theme?: "light" | "dark";
 }
 
-const navLinks = [
-  { label: "Platform", href: "/platform" },
-  { label: "Resources", href: "/resources" },
-  { label: "Modules", href: "/modules" },
-  { label: "Pricing", href: "/pricing" },
-];
+// ─── Navigation Structure (Palantir-style multi-section) ────────────────────
+
+const navSections = {
+  primary: [
+    { label: "Platform", href: "/platform" },
+    {
+      label: "Modules",
+      href: "/modules",
+      children: [
+        { label: "Authorization", href: "/modules/authorization" },
+        { label: "Cybersecurity", href: "/modules/cybersecurity" },
+        { label: "Debris Mitigation", href: "/modules/debris" },
+        { label: "Environmental", href: "/modules/environmental" },
+        { label: "Insurance", href: "/modules/insurance" },
+      ],
+    },
+    { label: "Resources", href: "/resources" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Security", href: "/security" },
+  ],
+  solutions: [
+    {
+      label: "Regulatory Compliance",
+      href: "/solutions/regulatory-compliance",
+    },
+    {
+      label: "Authorization & Licensing",
+      href: "/solutions/authorization-licensing",
+    },
+    { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
+    { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
+    { label: "Space Insurance", href: "/solutions/space-insurance" },
+  ],
+  quickLinks: [
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "Careers", href: "/careers" },
+    { label: "Contact", href: "/contact" },
+    { label: "Documentation", href: "/docs/api" },
+  ],
+};
 
 export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
@@ -131,7 +166,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
         </div>
       </nav>
 
-      {/* Full-screen Menu Overlay */}
+      {/* Full-screen Menu Overlay — Palantir-style multi-column */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -143,30 +178,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
           >
-            {/* Dark backdrop */}
-            <motion.div
-              className="absolute inset-0 bg-[#050A18]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            />
+            {/* Background */}
+            <div className="absolute inset-0 bg-[#0A0D14]" />
 
-            {/* Menu content */}
-            <motion.div
-              className="relative h-full flex flex-col"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{
-                duration: 0.35,
-                delay: 0.05,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-            >
-              {/* Menu Header */}
+            {/* Content */}
+            <div className="relative h-full flex flex-col overflow-y-auto">
+              {/* Header — matches nav bar position */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12">
                 <div className="flex items-center justify-between h-20">
                   <div className="flex items-center justify-between w-full rounded-xl px-5 py-2.5">
@@ -179,115 +198,204 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Logo size={34} className="text-white" />
                     </Link>
 
-                    <button
-                      onClick={closeMenu}
-                      className="p-2 text-white/70 hover:text-white transition-colors duration-300"
-                      aria-label="Close menu"
-                    >
-                      <X size={20} aria-hidden="true" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href="/assessment"
+                        onClick={closeMenu}
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-all duration-300"
+                      >
+                        Get Started
+                      </Link>
+                      <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
+                        <button
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                          aria-label="Search"
+                        >
+                          <Search
+                            size={16}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <div className="w-px h-5 bg-[#E5E7EB]" />
+                        <button
+                          onClick={closeMenu}
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                          aria-label="Close menu"
+                        >
+                          <X size={16} strokeWidth={2} aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Menu Links */}
-              <div className="flex-1 flex flex-col justify-center max-w-[1400px] w-full mx-auto px-11 md:px-[4.25rem] -mt-20">
-                <nav aria-label="Main menu navigation">
-                  {/* Primary navigation links */}
-                  <div className="flex flex-col gap-1">
-                    {navLinks.map((link, i) => (
-                      <motion.div
-                        key={link.label}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          duration: 0.4,
-                          delay: 0.1 + i * 0.06,
-                          ease: [0.25, 0.46, 0.45, 0.94],
-                        }}
-                      >
+              {/* Divider */}
+              <div className="w-full border-t border-white/[0.06]" />
+
+              {/* Multi-column Menu Body */}
+              <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
+                  {/* Left Column — Primary Navigation */}
+                  <motion.div
+                    className="md:col-span-4"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: 0.05 }}
+                  >
+                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 mb-6">
+                      Navigation
+                    </p>
+                    <nav aria-label="Primary navigation">
+                      <div className="flex flex-col">
+                        {navSections.primary.map((link) => (
+                          <div key={link.label}>
+                            <Link
+                              href={link.href}
+                              onClick={closeMenu}
+                              className={`block py-2 text-[28px] md:text-[34px] font-light tracking-[-0.02em] transition-colors duration-200 ${
+                                pathname === link.href
+                                  ? "text-white"
+                                  : "text-white/70 hover:text-white"
+                              }`}
+                            >
+                              {link.label}
+                            </Link>
+                            {"children" in link &&
+                              link.children?.map((child) => (
+                                <Link
+                                  key={child.label}
+                                  href={child.href}
+                                  onClick={closeMenu}
+                                  className="flex items-center gap-2 py-1.5 pl-1 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                                >
+                                  <span className="text-white/20">&#8627;</span>
+                                  {child.label}
+                                </Link>
+                              ))}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Auth below primary nav */}
+                      <div className="h-px bg-white/[0.06] my-6" />
+                      <div className="flex flex-col gap-1">
                         <Link
+                          href="/login"
+                          onClick={closeMenu}
+                          className="py-1.5 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                        >
+                          Log in
+                        </Link>
+                        <Link
+                          href="/signup"
+                          onClick={closeMenu}
+                          className="py-1.5 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                        >
+                          Create account
+                        </Link>
+                      </div>
+                    </nav>
+                  </motion.div>
+
+                  {/* Middle Column — Solutions */}
+                  <motion.div
+                    className="md:col-span-4"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: 0.12 }}
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30">
+                        Solutions
+                      </p>
+                      <Link
+                        href="/solutions/regulatory-compliance"
+                        onClick={closeMenu}
+                        className="text-[11px] font-medium uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors"
+                      >
+                        View All &rarr;
+                      </Link>
+                    </div>
+
+                    <p className="text-[15px] text-white/50 leading-relaxed mb-6">
+                      The compliance intelligence platform for European space
+                      operators. Automated regulatory analysis, document
+                      generation, and NCA submission across 10 jurisdictions.
+                    </p>
+
+                    <div className="space-y-1">
+                      {navSections.solutions.map((link) => (
+                        <Link
+                          key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className={`group flex items-center gap-4 py-3 md:py-4 text-display-sm md:text-display font-light tracking-[-0.02em] transition-all duration-300 ${
-                            pathname === link.href
-                              ? "text-white"
-                              : "text-white/50 hover:text-white"
-                          }`}
+                          className="flex items-center gap-2 py-2 text-[14px] text-white/50 hover:text-white transition-colors duration-200 group"
                         >
-                          <span>{link.label}</span>
-                          <ArrowRight
-                            size={20}
-                            className="opacity-0 -translate-x-2 group-hover:opacity-60 group-hover:translate-x-0 transition-all duration-300"
-                            aria-hidden="true"
-                          />
+                          <span className="text-white/20 group-hover:text-white/40 transition-colors">
+                            &#8627;
+                          </span>
+                          {link.label}
                         </Link>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Divider */}
-                  <motion.div
-                    className="h-px bg-white/[0.08] my-6 md:my-8"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    style={{ transformOrigin: "left" }}
-                  />
-
-                  {/* Auth links */}
-                  <motion.div
-                    className="flex flex-col gap-1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.35 }}
-                  >
-                    <Link
-                      href="/login"
-                      onClick={closeMenu}
-                      className="py-2 md:py-3 text-body-lg md:text-subtitle text-white/40 hover:text-white transition-colors duration-300"
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href="/signup"
-                      onClick={closeMenu}
-                      className="py-2 md:py-3 text-body-lg md:text-subtitle text-white/40 hover:text-white transition-colors duration-300"
-                    >
-                      Sign up
-                    </Link>
+                      ))}
+                    </div>
                   </motion.div>
 
-                  {/* CTA */}
+                  {/* Right Column — Quick Links */}
                   <motion.div
-                    className="mt-8 md:mt-10"
-                    initial={{ opacity: 0, y: 10 }}
+                    className="md:col-span-4"
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.45 }}
+                    transition={{ duration: 0.35, delay: 0.19 }}
                   >
-                    <Link
-                      href="/demo"
-                      onClick={closeMenu}
-                      className="inline-flex items-center justify-center h-11 px-7 text-subtitle font-medium rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all duration-300"
-                    >
-                      Request Demo
-                    </Link>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 mb-6">
+                      Quick Links
+                    </p>
+                    <div className="space-y-0.5">
+                      {navSections.quickLinks.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.href}
+                          onClick={closeMenu}
+                          className="block py-2 text-[14px] text-white/50 hover:text-white transition-colors duration-200"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* CTA */}
+                    <div className="mt-8">
+                      <Link
+                        href="/demo"
+                        onClick={closeMenu}
+                        className="inline-flex items-center justify-center h-11 px-7 text-[14px] font-medium rounded-lg border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300"
+                      >
+                        Request Demo
+                      </Link>
+                    </div>
                   </motion.div>
-                </nav>
+                </div>
               </div>
 
-              {/* Bottom bar */}
+              {/* Footer */}
               <motion.div
-                className="max-w-[1400px] w-full mx-auto px-11 md:px-[4.25rem] pb-8"
+                className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.5 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
               >
-                <p className="text-caption text-white/20">
-                  Space regulatory compliance, simplified.
-                </p>
+                <div className="border-t border-white/[0.06] pt-6 flex items-center justify-between">
+                  <p className="text-[11px] text-white/20">
+                    European Space Compliance Intelligence
+                  </p>
+                  <p className="text-[11px] text-white/20">
+                    &copy; {new Date().getFullYear()} Caelex
+                  </p>
+                </div>
               </motion.div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
