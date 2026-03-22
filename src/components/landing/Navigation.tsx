@@ -280,10 +280,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 isLight
                   ? scrolled
                     ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-                    : "bg-[#0d0d0d] backdrop-blur-sm border border-[#1a1a1a]"
+                    : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
                   : scrolled
                     ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                    : "bg-white/[0.04] backdrop-blur-xl border border-[#1a1a1a] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
             >
               {/* Logo */}
@@ -401,7 +401,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 </div>
               </div>
 
-              <div className="w-full border-t border-[#1f1f1f]" />
+              <div className="w-full border-t border-white/[0.08]" />
 
               {/* Multi-column Body */}
               <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
@@ -502,7 +502,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           onClick={closeMenu}
                           className="group block"
                         >
-                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#0d0d0d] border border-[#1a1a1a]">
+                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-white/[0.03] border border-white/[0.06]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={news.image}
@@ -528,7 +528,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     </div>
 
                     {/* Platform Description */}
-                    <div className="mt-8 pt-6 border-t border-[#1f1f1f]">
+                    <div className="mt-8 pt-6 border-t border-white/[0.08]">
                       <p
                         style={{ color: "#999" }}
                         className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-4"
@@ -574,7 +574,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className="py-2.5 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-[#161616] last:border-0"
+                          className="py-2.5 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-white/[0.04] last:border-0"
                         >
                           {link.label}
                         </Link>
@@ -603,7 +603,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
 
               {/* Footer */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8">
-                <div className="border-t border-[#1a1a1a] pt-5 flex items-center justify-between">
+                <div className="border-t border-white/[0.06] pt-5 flex items-center justify-between">
                   <p style={{ color: "#555" }} className="text-[11px]">
                     European Space Compliance Intelligence
                   </p>
@@ -690,7 +690,12 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       }
                     }}
                     placeholder="Start typing to search"
-                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] text-white placeholder-[#444] outline-none caret-white"
+                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] text-white placeholder-[#444] outline-none caret-white border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "none",
+                      boxShadow: "none",
+                    }}
                   />
                   <div className="h-px bg-[#333] mt-4" />
                 </div>
