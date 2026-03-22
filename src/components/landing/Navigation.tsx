@@ -166,7 +166,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
         </div>
       </nav>
 
-      {/* Full-screen Menu Overlay — Palantir-style multi-column */}
+      {/* Full-screen Menu Overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -178,17 +178,16 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
           >
-            {/* Background */}
-            <div className="absolute inset-0 bg-[#0A0D14]" />
+            {/* Background — pure black for max contrast */}
+            <div className="absolute inset-0 bg-black" />
 
-            {/* Content */}
             <div className="relative h-full flex flex-col overflow-y-auto">
-              {/* Header — matches nav bar position */}
+              {/* Header */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12">
                 <div className="flex items-center justify-between h-20">
-                  <div className="flex items-center justify-between w-full rounded-xl px-5 py-2.5">
+                  <div className="flex items-center justify-between w-full px-5 py-2.5">
                     <Link
                       href="/"
                       onClick={closeMenu}
@@ -202,13 +201,13 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/assessment"
                         onClick={closeMenu}
-                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-all duration-300"
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
                       >
                         Get Started
                       </Link>
-                      <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
+                      <div className="flex items-center rounded-lg bg-white overflow-hidden">
                         <button
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
                           aria-label="Search"
                         >
                           <Search
@@ -217,10 +216,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                             aria-hidden="true"
                           />
                         </button>
-                        <div className="w-px h-5 bg-[#E5E7EB]" />
+                        <div className="w-px h-5 bg-black/10" />
                         <button
                           onClick={closeMenu}
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
                           aria-label="Close menu"
                         >
                           <X size={16} strokeWidth={2} aria-hidden="true" />
@@ -231,33 +230,32 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="w-full border-t border-white/[0.06]" />
+              <div className="w-full border-t border-white/[0.08]" />
 
-              {/* Multi-column Menu Body */}
+              {/* Multi-column Body */}
               <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
-                  {/* Left Column — Primary Navigation */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-6">
+                  {/* Left — Primary Navigation */}
                   <motion.div
                     className="md:col-span-4"
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.05 }}
+                    transition={{ duration: 0.3, delay: 0.05 }}
                   >
-                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 mb-6">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-8">
                       Navigation
                     </p>
                     <nav aria-label="Primary navigation">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         {navSections.primary.map((link) => (
                           <div key={link.label}>
                             <Link
                               href={link.href}
                               onClick={closeMenu}
-                              className={`block py-2 text-[28px] md:text-[34px] font-light tracking-[-0.02em] transition-colors duration-200 ${
+                              className={`block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] transition-all duration-200 ${
                                 pathname === link.href
                                   ? "text-white"
-                                  : "text-white/70 hover:text-white"
+                                  : "text-white hover:text-white/60"
                               }`}
                             >
                               {link.label}
@@ -268,9 +266,9 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                                   key={child.label}
                                   href={child.href}
                                   onClick={closeMenu}
-                                  className="flex items-center gap-2 py-1.5 pl-1 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
                                 >
-                                  <span className="text-white/20">&#8627;</span>
+                                  <span className="text-white/25">&#8627;</span>
                                   {child.label}
                                 </Link>
                               ))}
@@ -278,20 +276,19 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         ))}
                       </div>
 
-                      {/* Auth below primary nav */}
-                      <div className="h-px bg-white/[0.06] my-6" />
-                      <div className="flex flex-col gap-1">
+                      <div className="h-px bg-white/[0.08] my-8" />
+                      <div className="flex flex-col gap-0.5">
                         <Link
                           href="/login"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                          className="py-1.5 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
                         >
                           Log in
                         </Link>
                         <Link
                           href="/signup"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-white/40 hover:text-white transition-colors duration-200"
+                          className="py-1.5 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
                         >
                           Create account
                         </Link>
@@ -299,80 +296,126 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     </nav>
                   </motion.div>
 
-                  {/* Middle Column — Solutions */}
+                  {/* Middle — Highlights / News Panel */}
                   <motion.div
-                    className="md:col-span-4"
-                    initial={{ opacity: 0, y: 12 }}
+                    className="md:col-span-5"
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.12 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
                   >
-                    <div className="flex items-center justify-between mb-6">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30">
-                        Solutions
+                    <div className="flex items-center justify-between mb-8">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                        Highlights
                       </p>
                       <Link
-                        href="/solutions/regulatory-compliance"
+                        href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-medium uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors"
+                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/50 hover:text-white transition-colors"
                       >
-                        View All &rarr;
+                        All Updates &rarr;
                       </Link>
                     </div>
 
-                    <p className="text-[15px] text-white/50 leading-relaxed mb-6">
-                      The compliance intelligence platform for European space
-                      operators. Automated regulatory analysis, document
-                      generation, and NCA submission across 10 jurisdictions.
-                    </p>
-
-                    <div className="space-y-1">
-                      {navSections.solutions.map((link) => (
-                        <Link
-                          key={link.label}
-                          href={link.href}
-                          onClick={closeMenu}
-                          className="flex items-center gap-2 py-2 text-[14px] text-white/50 hover:text-white transition-colors duration-200 group"
-                        >
-                          <span className="text-white/20 group-hover:text-white/40 transition-colors">
-                            &#8627;
+                    {/* News Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <Link
+                        href="/resources/eu-space-act"
+                        onClick={closeMenu}
+                        className="group block"
+                      >
+                        <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-emerald-900/40 to-emerald-950/20 border border-white/[0.06] mb-3 flex items-center justify-center overflow-hidden">
+                          <span className="text-[40px] opacity-40 group-hover:opacity-60 transition-opacity">
+                            &#167;
                           </span>
-                          {link.label}
-                        </Link>
-                      ))}
+                        </div>
+                        <p className="text-[11px] text-white/30 mb-1 uppercase tracking-wider">
+                          Regulation
+                        </p>
+                        <p className="text-[15px] text-white font-medium leading-snug group-hover:text-white/80 transition-colors">
+                          EU Space Act (COM 2025/335) — Full analysis of 119
+                          articles and compliance requirements
+                        </p>
+                      </Link>
+
+                      <Link
+                        href="/resources/timeline"
+                        onClick={closeMenu}
+                        className="group block"
+                      >
+                        <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-blue-900/40 to-blue-950/20 border border-white/[0.06] mb-3 flex items-center justify-center overflow-hidden">
+                          <span className="text-[40px] opacity-40 group-hover:opacity-60 transition-opacity">
+                            &#8986;
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-white/30 mb-1 uppercase tracking-wider">
+                          Timeline
+                        </p>
+                        <p className="text-[15px] text-white font-medium leading-snug group-hover:text-white/80 transition-colors">
+                          Regulatory timeline — key dates and deadlines for
+                          European space operators
+                        </p>
+                      </Link>
+                    </div>
+
+                    {/* Platform Description */}
+                    <div className="mt-8 pt-6 border-t border-white/[0.06]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-4">
+                        Platform
+                      </p>
+                      <p className="text-[14px] text-white/60 leading-relaxed">
+                        Compliance intelligence for European space operations.
+                        10 jurisdictions. 119 regulatory articles. Automated
+                        document generation, NCA submission, and cryptographic
+                        compliance proof.
+                      </p>
+                      <Link
+                        href="/platform"
+                        onClick={closeMenu}
+                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-white/50 hover:text-white transition-colors"
+                      >
+                        Learn more
+                        <ArrowRight size={12} />
+                      </Link>
                     </div>
                   </motion.div>
 
-                  {/* Right Column — Quick Links */}
+                  {/* Right — Quick Links + CTA */}
                   <motion.div
-                    className="md:col-span-4"
-                    initial={{ opacity: 0, y: 12 }}
+                    className="md:col-span-3"
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.19 }}
+                    transition={{ duration: 0.3, delay: 0.15 }}
                   >
-                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 mb-6">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-8">
                       Quick Links
                     </p>
-                    <div className="space-y-0.5">
+                    <div className="flex flex-col">
                       {navSections.quickLinks.map((link) => (
                         <Link
                           key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className="block py-2 text-[14px] text-white/50 hover:text-white transition-colors duration-200"
+                          className="py-2.5 text-[14px] text-white/70 hover:text-white transition-colors duration-200 border-b border-white/[0.04] last:border-0"
                         >
                           {link.label}
                         </Link>
                       ))}
                     </div>
 
-                    {/* CTA */}
-                    <div className="mt-8">
+                    <div className="mt-10">
                       <Link
                         href="/demo"
                         onClick={closeMenu}
-                        className="inline-flex items-center justify-center h-11 px-7 text-[14px] font-medium rounded-lg border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300"
+                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-white/15 text-white hover:bg-white hover:text-black transition-all duration-300"
                       >
                         Request Demo
+                      </Link>
+                      <Link
+                        href="/assessment"
+                        onClick={closeMenu}
+                        className="inline-flex items-center justify-center w-full h-12 mt-2 text-[14px] font-medium rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
+                      >
+                        Start Free Assessment
                       </Link>
                     </div>
                   </motion.div>
@@ -380,21 +423,16 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               </div>
 
               {/* Footer */}
-              <motion.div
-                className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
-              >
-                <div className="border-t border-white/[0.06] pt-6 flex items-center justify-between">
-                  <p className="text-[11px] text-white/20">
+              <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8">
+                <div className="border-t border-white/[0.06] pt-5 flex items-center justify-between">
+                  <p className="text-[11px] text-white/25">
                     European Space Compliance Intelligence
                   </p>
-                  <p className="text-[11px] text-white/20">
+                  <p className="text-[11px] text-white/25">
                     &copy; {new Date().getFullYear()} Caelex
                   </p>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         )}
