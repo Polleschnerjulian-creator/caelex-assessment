@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
 import { Menu, X, ArrowRight, Search } from "lucide-react";
@@ -124,9 +124,78 @@ function getCurrentNews() {
   ];
 }
 
+// ─── Search Config ──────────────────────────────────────────────────────────
+
+const POPULAR_SEARCHES = [
+  { label: "EU Space Act", href: "/resources/eu-space-act" },
+  { label: "NIS2", href: "/solutions/cybersecurity-nis2" },
+  { label: "Debris Mitigation", href: "/modules/debris" },
+  { label: "Authorization", href: "/modules/authorization" },
+  { label: "Compliance Assessment", href: "/assessment" },
+];
+
+const SEARCH_PAGES = [
+  {
+    title: "EU Space Act Overview",
+    href: "/resources/eu-space-act",
+    category: "Regulation",
+  },
+  {
+    title: "NIS2 Cybersecurity Directive",
+    href: "/solutions/cybersecurity-nis2",
+    category: "Regulation",
+  },
+  {
+    title: "Debris Mitigation Module",
+    href: "/modules/debris",
+    category: "Module",
+  },
+  {
+    title: "Authorization & Licensing",
+    href: "/modules/authorization",
+    category: "Module",
+  },
+  {
+    title: "Cybersecurity Module",
+    href: "/modules/cybersecurity",
+    category: "Module",
+  },
+  {
+    title: "Environmental Compliance",
+    href: "/modules/environmental",
+    category: "Module",
+  },
+  { title: "Insurance Module", href: "/modules/insurance", category: "Module" },
+  {
+    title: "Space Insurance Solutions",
+    href: "/solutions/space-insurance",
+    category: "Solution",
+  },
+  { title: "Platform Overview", href: "/platform", category: "Platform" },
+  { title: "Pricing Plans", href: "/pricing", category: "Platform" },
+  { title: "Security", href: "/security", category: "Platform" },
+  {
+    title: "Regulatory Timeline",
+    href: "/resources/timeline",
+    category: "Resource",
+  },
+  { title: "Glossary", href: "/resources/glossary", category: "Resource" },
+  { title: "FAQ", href: "/resources/faq", category: "Resource" },
+  { title: "Free Assessment", href: "/assessment", category: "Tool" },
+  { title: "API Documentation", href: "/docs/api", category: "Developer" },
+  { title: "Verity — Compliance Proof", href: "/verity", category: "Product" },
+  { title: "Blog", href: "/blog", category: "Content" },
+  { title: "Careers", href: "/careers", category: "Company" },
+  { title: "Contact", href: "/contact", category: "Company" },
+];
+
 export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const pathname = usePathname();
   const isLight = theme === "light";
   const isLandingHero = pathname === "/";
@@ -140,31 +209,58 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menu on route change
+  // Close menu/search on route change
   useEffect(() => {
     setMenuOpen(false);
+    setSearchOpen(false);
+    setSearchQuery("");
   }, [pathname]);
 
-  // Prevent body scroll when menu is open
+  // Prevent body scroll when menu or search is open
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
+    document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [menuOpen]);
+  }, [menuOpen, searchOpen]);
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) {
-        setMenuOpen(false);
+      if (e.key === "Escape") {
+        if (searchOpen) {
+          setSearchOpen(false);
+          setSearchQuery("");
+        } else if (menuOpen) {
+          setMenuOpen(false);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen]);
+  }, [menuOpen, searchOpen]);
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [searchOpen]);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  }, []);
+
+  const searchResults =
+    searchQuery.trim().length >= 2
+      ? SEARCH_PAGES.filter(
+          (p) =>
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.category.toLowerCase().includes(searchQuery.toLowerCase()),
+        ).slice(0, 8)
+      : [];
 
   // On landing page: start transparent/white over dark hero, transition when scrolled
   // On all other pages: always show dark text (light background, no dark hero)
@@ -215,6 +311,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 {/* Search + Hamburger — white bg, subtle border, soft radius */}
                 <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
                   <button
+                    onClick={() => {
+                      setSearchOpen(true);
+                      setMenuOpen(false);
+                    }}
                     className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
                     aria-label="Search"
                   >
@@ -490,6 +590,135 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     &copy; {new Date().getFullYear()} Caelex
                   </p>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Search Overlay — Palantir-style fullscreen search ═══ */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            className="fixed inset-0 z-[70]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="absolute inset-0 bg-[#111111]" />
+
+            <div className="relative h-full flex flex-col">
+              {/* Header */}
+              <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12">
+                <div className="flex items-center justify-between h-20">
+                  <div className="flex items-center justify-between w-full px-5 py-2.5">
+                    <Link
+                      href="/"
+                      onClick={closeSearch}
+                      className="transition-opacity duration-300 hover:opacity-70"
+                    >
+                      <Logo size={34} className="text-white" />
+                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href="/assessment"
+                        onClick={closeSearch}
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
+                      >
+                        Get Started
+                      </Link>
+                      <div className="flex items-center rounded-lg bg-white overflow-hidden">
+                        <button
+                          onClick={closeSearch}
+                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          aria-label="Close search"
+                        >
+                          <X size={16} strokeWidth={2} />
+                        </button>
+                        <div className="w-px h-5 bg-black/10" />
+                        <button
+                          onClick={() => {
+                            closeSearch();
+                            setMenuOpen(true);
+                          }}
+                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          aria-label="Open menu"
+                        >
+                          <Menu size={16} strokeWidth={2} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Content — centered vertically */}
+              <div className="flex-1 flex flex-col justify-center max-w-[1400px] w-full mx-auto px-11 md:px-[4.25rem] -mt-20">
+                {/* Large Search Input */}
+                <div className="mb-6">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && searchResults.length > 0) {
+                        router.push(searchResults[0].href);
+                        closeSearch();
+                      }
+                    }}
+                    placeholder="Start typing to search"
+                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] text-white placeholder-[#444] outline-none caret-white"
+                  />
+                  <div className="h-px bg-[#333] mt-4" />
+                </div>
+
+                {/* Search Results */}
+                {searchResults.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-1"
+                  >
+                    {searchResults.map((result) => (
+                      <Link
+                        key={result.href}
+                        href={result.href}
+                        onClick={closeSearch}
+                        className="flex items-center justify-between py-3 group"
+                      >
+                        <span className="text-[18px] text-[#ccc] group-hover:text-white transition-colors">
+                          {result.title}
+                        </span>
+                        <span className="text-[12px] uppercase tracking-wider text-[#555] group-hover:text-[#888] transition-colors">
+                          {result.category}
+                        </span>
+                      </Link>
+                    ))}
+                  </motion.div>
+                ) : searchQuery.length > 0 ? (
+                  <p className="text-[16px] text-[#555]">
+                    No results for &ldquo;{searchQuery}&rdquo;
+                  </p>
+                ) : (
+                  /* Popular Searches */
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                      Popular Searches
+                    </span>
+                    {POPULAR_SEARCHES.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={closeSearch}
+                        className="text-[15px] text-[#999] hover:text-white underline underline-offset-4 decoration-[#333] hover:decoration-white transition-all duration-200"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
