@@ -168,10 +168,10 @@ export default function BlogShowcase() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 md:mb-14">
           <div>
             <p className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
-              Featured
+              Capabilities
             </p>
             <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-[#111827]">
-              What we&apos;re building
+              The platform, in depth
             </h2>
           </div>
 
