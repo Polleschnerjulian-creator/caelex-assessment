@@ -53,6 +53,77 @@ const navSections = {
   ],
 };
 
+// ─── Rotating News Items (2 shown at a time, rotates bi-weekly) ─────────────
+
+const NEWS_ITEMS = [
+  {
+    date: "March 2026",
+    category: "Regulation",
+    title:
+      "EU Space Act (COM 2025/335) enters trilogue — what operators need to know now",
+    href: "/resources/eu-space-act",
+    image:
+      "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&h=400&fit=crop",
+  },
+  {
+    date: "March 2026",
+    category: "Product",
+    title:
+      "Caelex Shield: Compliance intelligence layer for collision avoidance",
+    href: "/platform",
+    image:
+      "https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=600&h=400&fit=crop",
+  },
+  {
+    date: "February 2026",
+    category: "Compliance",
+    title:
+      "NIS2 Directive now applies to space — 5 things every operator must do",
+    href: "/solutions/cybersecurity-nis2",
+    image:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop",
+  },
+  {
+    date: "February 2026",
+    category: "Data",
+    title:
+      "Caelex integrates ESA DISCOS — European space object catalog now live",
+    href: "/platform",
+    image:
+      "https://images.unsplash.com/photo-1457364887197-9150188c107b?w=600&h=400&fit=crop",
+  },
+  {
+    date: "January 2026",
+    category: "Industry",
+    title:
+      "10 European jurisdictions, one platform — how Caelex maps the regulatory landscape",
+    href: "/modules",
+    image:
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop",
+  },
+  {
+    date: "January 2026",
+    category: "Timeline",
+    title:
+      "Regulatory deadlines 2026–2028: the critical dates for EU space operators",
+    href: "/resources/timeline",
+    image:
+      "https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?w=600&h=400&fit=crop",
+  },
+];
+
+/** Returns 2 news items based on the current bi-weekly period */
+function getCurrentNews() {
+  const epoch = new Date("2026-01-01").getTime();
+  const biWeekMs = 14 * 24 * 60 * 60 * 1000;
+  const period = Math.floor((Date.now() - epoch) / biWeekMs);
+  const startIdx = (period * 2) % NEWS_ITEMS.length;
+  return [
+    NEWS_ITEMS[startIdx % NEWS_ITEMS.length],
+    NEWS_ITEMS[(startIdx + 1) % NEWS_ITEMS.length],
+  ];
+}
+
 export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -242,7 +313,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 }}
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-8">
                       Navigation
                     </p>
                     <nav aria-label="Primary navigation">
@@ -304,65 +375,52 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     transition={{ duration: 0.3, delay: 0.1 }}
                   >
                     <div className="flex items-center justify-between mb-8">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
-                        Highlights
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                        Latest News
                       </p>
                       <Link
                         href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/50 hover:text-white transition-colors"
+                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/60 hover:text-white transition-colors"
                       >
-                        All Updates &rarr;
+                        Newsroom &rarr;
                       </Link>
                     </div>
 
-                    {/* News Cards */}
+                    {/* News Cards — rotates bi-weekly */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <Link
-                        href="/resources/eu-space-act"
-                        onClick={closeMenu}
-                        className="group block"
-                      >
-                        <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-emerald-900/40 to-emerald-950/20 border border-white/[0.06] mb-3 flex items-center justify-center overflow-hidden">
-                          <span className="text-[40px] opacity-40 group-hover:opacity-60 transition-opacity">
-                            &#167;
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-white/30 mb-1 uppercase tracking-wider">
-                          Regulation
-                        </p>
-                        <p className="text-[15px] text-white font-medium leading-snug group-hover:text-white/80 transition-colors">
-                          EU Space Act (COM 2025/335) — Full analysis of 119
-                          articles and compliance requirements
-                        </p>
-                      </Link>
-
-                      <Link
-                        href="/resources/timeline"
-                        onClick={closeMenu}
-                        className="group block"
-                      >
-                        <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-blue-900/40 to-blue-950/20 border border-white/[0.06] mb-3 flex items-center justify-center overflow-hidden">
-                          <span className="text-[40px] opacity-40 group-hover:opacity-60 transition-opacity">
-                            &#8986;
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-white/30 mb-1 uppercase tracking-wider">
-                          Timeline
-                        </p>
-                        <p className="text-[15px] text-white font-medium leading-snug group-hover:text-white/80 transition-colors">
-                          Regulatory timeline — key dates and deadlines for
-                          European space operators
-                        </p>
-                      </Link>
+                      {getCurrentNews().map((news) => (
+                        <Link
+                          key={news.title}
+                          href={news.href}
+                          onClick={closeMenu}
+                          className="group block"
+                        >
+                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-white/[0.03] border border-white/[0.06]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={news.image}
+                              alt=""
+                              className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
+                              loading="lazy"
+                            />
+                          </div>
+                          <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">
+                            {news.category} &middot; {news.date}
+                          </p>
+                          <p className="text-[14px] text-white/90 font-medium leading-snug group-hover:text-white transition-colors">
+                            {news.title}
+                          </p>
+                        </Link>
+                      ))}
                     </div>
 
                     {/* Platform Description */}
-                    <div className="mt-8 pt-6 border-t border-white/[0.06]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-4">
+                    <div className="mt-8 pt-6 border-t border-white/[0.08]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-4">
                         Platform
                       </p>
-                      <p className="text-[14px] text-white/60 leading-relaxed">
+                      <p className="text-[14px] text-white/70 leading-relaxed">
                         Compliance intelligence for European space operations.
                         10 jurisdictions. 119 regulatory articles. Automated
                         document generation, NCA submission, and cryptographic
@@ -371,7 +429,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/platform"
                         onClick={closeMenu}
-                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-white/50 hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-white/60 hover:text-white transition-colors"
                       >
                         Learn more
                         <ArrowRight size={12} />
@@ -386,7 +444,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.15 }}
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40 mb-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-8">
                       Quick Links
                     </p>
                     <div className="flex flex-col">
