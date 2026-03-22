@@ -11,8 +11,10 @@ import {
   Zap,
   UserCheck,
   Activity,
+  Sparkles,
 } from "lucide-react";
 import QuickUpgradeModal from "@/components/admin/QuickUpgradeModal";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface AdminStats {
   totalUsers: number;
@@ -30,10 +32,47 @@ export default function AdminDashboard() {
     enterpriseOrgs: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [demoActive, setDemoActive] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoResult, setDemoResult] = useState<any>(null);
 
   useEffect(() => {
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    fetch("/api/admin/demo-mode")
+      .then((r) => r.json())
+      .then((d) => setDemoActive(d.active))
+      .catch(() => {});
+  }, []);
+
+  const handleDemoToggle = async () => {
+    const action = demoActive ? "deactivate" : "activate";
+    const confirmed = confirm(
+      demoActive
+        ? "Deactivate demo mode? All demo data will be permanently removed."
+        : "Activate demo mode? This will create realistic demo data in your organization.",
+    );
+    if (!confirmed) return;
+
+    setDemoLoading(true);
+    setDemoResult(null);
+    try {
+      const res = await fetch("/api/admin/demo-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      setDemoResult(data);
+      setDemoActive(action === "activate");
+    } catch {
+      // error
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   async function fetchStats() {
     try {
@@ -140,6 +179,72 @@ export default function AdminDashboard() {
           icon={<Building2 size={22} />}
           stat={`${stats.totalOrgs} organizations`}
         />
+      </div>
+
+      {/* Demo Mode Card */}
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-400 flex-shrink-0">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-subtitle font-semibold text-[var(--text-primary)]">
+                  Demo Mode
+                </h3>
+                {demoActive ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium bg-[var(--accent-success-soft)] text-[var(--accent-success)]">
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium bg-[var(--surface-sunken)] text-[var(--text-tertiary)]">
+                    Inactive
+                  </span>
+                )}
+              </div>
+              <p className="text-body text-[var(--text-secondary)]">
+                Populate your organization with realistic demo data for
+                presentations and demonstrations.
+              </p>
+              <p className="text-small text-[var(--text-tertiary)] mt-2">
+                Demo data is tagged with [DEMO] and can be fully removed by
+                deactivating.
+              </p>
+              {demoResult && demoResult.result?.created && (
+                <p className="text-small text-[var(--accent-success)] mt-2">
+                  Created{" "}
+                  {Object.values(
+                    demoResult.result.created as Record<string, number>,
+                  ).reduce((a, b) => a + b, 0)}{" "}
+                  demo records
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={handleDemoToggle}
+            disabled={demoLoading}
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 text-body font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              demoActive
+                ? "bg-[var(--accent-danger-soft)] hover:bg-red-500/20 text-red-400 border border-red-500/30"
+                : "bg-[var(--accent-success-soft)] hover:bg-emerald-500/20 text-[var(--accent-success)] border border-emerald-500/30"
+            }`}
+          >
+            {demoLoading ? (
+              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Sparkles size={16} />
+            )}
+            {demoLoading
+              ? demoActive
+                ? "Deactivating…"
+                : "Activating…"
+              : demoActive
+                ? "Deactivate Demo Mode"
+                : "Activate Demo Mode"}
+          </button>
+        </div>
       </div>
 
       {/* Info Banner */}
