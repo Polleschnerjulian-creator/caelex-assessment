@@ -184,10 +184,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 isLight
                   ? scrolled
                     ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-                    : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
+                    : "bg-[#0d0d0d] backdrop-blur-sm border border-[#1a1a1a]"
                   : scrolled
                     ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                    : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    : "bg-white/[0.04] backdrop-blur-xl border border-[#1a1a1a] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
             >
               {/* Logo */}
@@ -301,7 +301,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 </div>
               </div>
 
-              <div className="w-full border-t border-white/[0.08]" />
+              <div className="w-full border-t border-[#1f1f1f]" />
 
               {/* Multi-column Body */}
               <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
@@ -313,7 +313,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 }}
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-8">
                       Navigation
                     </p>
                     <nav aria-label="Primary navigation">
@@ -326,7 +326,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                               className={`block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] transition-all duration-200 ${
                                 pathname === link.href
                                   ? "text-white"
-                                  : "text-white hover:text-white/60"
+                                  : "text-white hover:text-[#999]"
                               }`}
                             >
                               {link.label}
@@ -337,9 +337,9 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                                   key={child.label}
                                   href={child.href}
                                   onClick={closeMenu}
-                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
+                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
                                 >
-                                  <span className="text-white/25">&#8627;</span>
+                                  <span className="text-[#555]">&#8627;</span>
                                   {child.label}
                                 </Link>
                               ))}
@@ -352,14 +352,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         <Link
                           href="/login"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
+                          className="py-1.5 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
                         >
                           Log in
                         </Link>
                         <Link
                           href="/signup"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-white/50 hover:text-white transition-colors duration-200"
+                          className="py-1.5 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
                         >
                           Create account
                         </Link>
@@ -375,13 +375,13 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     transition={{ duration: 0.3, delay: 0.1 }}
                   >
                     <div className="flex items-center justify-between mb-8">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#999]">
                         Latest News
                       </p>
                       <Link
                         href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/60 hover:text-white transition-colors"
+                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999] hover:text-white transition-colors"
                       >
                         Newsroom &rarr;
                       </Link>
@@ -396,7 +396,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           onClick={closeMenu}
                           className="group block"
                         >
-                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-white/[0.03] border border-white/[0.06]">
+                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#0d0d0d] border border-[#1a1a1a]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={news.image}
@@ -405,10 +405,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                               loading="lazy"
                             />
                           </div>
-                          <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">
+                          <p className="text-[11px] text-[#888] mb-1.5 uppercase tracking-wider">
                             {news.category} &middot; {news.date}
                           </p>
-                          <p className="text-[14px] text-white/90 font-medium leading-snug group-hover:text-white transition-colors">
+                          <p className="text-[14px] text-[#e5e5e5] font-medium leading-snug group-hover:text-white transition-colors">
                             {news.title}
                           </p>
                         </Link>
@@ -416,11 +416,11 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     </div>
 
                     {/* Platform Description */}
-                    <div className="mt-8 pt-6 border-t border-white/[0.08]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-4">
+                    <div className="mt-8 pt-6 border-t border-[#1f1f1f]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">
                         Platform
                       </p>
-                      <p className="text-[14px] text-white/70 leading-relaxed">
+                      <p className="text-[14px] text-[#aaa] leading-relaxed">
                         Compliance intelligence for European space operations.
                         10 jurisdictions. 119 regulatory articles. Automated
                         document generation, NCA submission, and cryptographic
@@ -429,7 +429,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/platform"
                         onClick={closeMenu}
-                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-white/60 hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#999] hover:text-white transition-colors"
                       >
                         Learn more
                         <ArrowRight size={12} />
@@ -444,7 +444,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.15 }}
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 mb-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-8">
                       Quick Links
                     </p>
                     <div className="flex flex-col">
@@ -453,7 +453,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className="py-2.5 text-[14px] text-white/70 hover:text-white transition-colors duration-200 border-b border-white/[0.04] last:border-0"
+                          className="py-2.5 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-[#161616] last:border-0"
                         >
                           {link.label}
                         </Link>
@@ -464,7 +464,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/demo"
                         onClick={closeMenu}
-                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-white/15 text-white hover:bg-white hover:text-black transition-all duration-300"
+                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-[#262626] text-white hover:bg-white hover:text-black transition-all duration-300"
                       >
                         Request Demo
                       </Link>
@@ -482,11 +482,11 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
 
               {/* Footer */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8">
-                <div className="border-t border-white/[0.06] pt-5 flex items-center justify-between">
-                  <p className="text-[11px] text-white/25">
+                <div className="border-t border-[#1a1a1a] pt-5 flex items-center justify-between">
+                  <p className="text-[11px] text-[#555]">
                     European Space Compliance Intelligence
                   </p>
-                  <p className="text-[11px] text-white/25">
+                  <p className="text-[11px] text-[#555]">
                     &copy; {new Date().getFullYear()} Caelex
                   </p>
                 </div>
