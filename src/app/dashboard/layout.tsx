@@ -123,6 +123,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     pathname === "/dashboard/evidence" ||
     pathname === "/dashboard/network" ||
     pathname === "/dashboard/ontology" ||
+    pathname === "/dashboard/shield" ||
+    pathname?.startsWith("/dashboard/shield/") ||
     isSettingsPage ||
     isEphemerisPage;
 
