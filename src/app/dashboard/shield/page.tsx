@@ -994,12 +994,99 @@ export default function ShieldPage() {
     { key: "settings" as const, label: "Settings", icon: Settings },
   ];
 
+  // ── Cinematic Intro ──────────────────────────────────────────────────────
+
+  const [introComplete, setIntroComplete] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIntroComplete(true), 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
   // ── Render ───────────────────────────────────────────────────────────────
+
+  // Cinematic intro screen
+  if (!introComplete) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <motion.div
+          className="flex flex-col items-center gap-5"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 100 100"
+              className="text-white"
+            >
+              <path
+                d="M50 5 L15 85 L50 70 L85 85 Z"
+                fill="currentColor"
+                opacity="0.9"
+              />
+            </svg>
+          </motion.div>
+
+          {/* SHIELD text */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <p className="text-[11px] font-medium uppercase tracking-[0.4em] text-white/30 mb-1">
+              Caelex
+            </p>
+            <h1 className="text-[32px] font-light tracking-[0.3em] text-white uppercase">
+              Shield
+            </h1>
+          </motion.div>
+
+          {/* Loading bar */}
+          <motion.div
+            className="w-48 h-px bg-white/10 mt-4 overflow-hidden rounded-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <motion.div
+              className="h-full bg-white/40"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 1.2, delay: 0.9, ease: "easeInOut" }}
+            />
+          </motion.div>
+
+          <motion.p
+            className="text-[10px] uppercase tracking-[0.2em] text-white/15 mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0 }}
+          >
+            Conjunction Assessment System
+          </motion.p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
       <GlassMotion>
-        <div className="p-4 md:p-6 space-y-4">
+        <motion.div
+          className="p-4 md:p-6 space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
           {/* ── Command Center Header ───────────────────────────────── */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -2206,7 +2293,7 @@ export default function ShieldPage() {
               )}
             </div>
           )}
-        </div>
+        </motion.div>
       </GlassMotion>
     </div>
   );
