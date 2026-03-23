@@ -124,10 +124,13 @@ function formatLabel(value: string): string {
 // ── Globe Component ───────────────────────────────────────────────────────────
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function ShieldGlobe({ events }: { events: any[] }) {
+// ── SpaceX Command Center Globe ──────────────────────────────────────────────
+
+function ShieldGlobe({ events, stats }: { events: any[]; stats: any }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const rotationRef = useRef(0);
+  const timeRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -135,120 +138,264 @@ function ShieldGlobe({ events }: { events: any[] }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const W = canvas.width;
-    const H = canvas.height;
+    // HiDPI
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    const W = rect.width;
+    const H = rect.height;
+
     const cx = W / 2;
     const cy = H / 2;
-    const R = Math.min(W, H) * 0.35;
+    const R = Math.min(W, H) * 0.3;
 
-    // Pre-compute stable angles per event index so they don't re-randomize on redraw
-    const stableAngles = events.map(
-      (_, i) => (i / Math.max(events.length, 1)) * Math.PI * 2,
+    // Generate continent-like dot particles on sphere surface
+    const PARTICLE_COUNT = 1800;
+    const particles: Array<{
+      lat: number;
+      lon: number;
+      size: number;
+      bright: number;
+    }> = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const lat = Math.asin(2 * Math.random() - 1) * (180 / Math.PI);
+      const lon = Math.random() * 360 - 180;
+      // More particles near coastlines (rough approximation via noise)
+      const landProb =
+        Math.sin(lat * 0.05) * Math.cos(lon * 0.03) +
+        Math.sin(lat * 0.02 + lon * 0.04);
+      if (landProb > -0.2 || Math.random() < 0.15) {
+        particles.push({
+          lat,
+          lon,
+          size: 0.3 + Math.random() * 0.8,
+          bright: 0.15 + Math.random() * 0.35,
+        });
+      }
+    }
+
+    // Stable orbit positions for events
+    const eventAngles = events.map(
+      (_, i) =>
+        (i / Math.max(events.length, 1)) * Math.PI * 2 + Math.random() * 0.3,
     );
-    const stableOrbitR = events.map(() => R * (1.15 + Math.random() * 0.3));
+    const eventOrbits = events.map(() => 1.2 + Math.random() * 0.5);
+
+    const tierColors: Record<string, string> = {
+      EMERGENCY: "#ef4444",
+      HIGH: "#f59e0b",
+      ELEVATED: "#eab308",
+      MONITOR: "#3b82f6",
+      INFORMATIONAL: "#475569",
+    };
 
     function draw() {
+      timeRef.current += 0.016;
+      rotationRef.current += 0.003;
       ctx!.clearRect(0, 0, W, H);
 
-      // Earth circle
+      // ── Outer orbit rings (HUD) ──
+      ctx!.strokeStyle = "rgba(255,255,255,0.03)";
+      ctx!.lineWidth = 0.5;
+      [1.5, 2.0, 2.5].forEach((mult) => {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, R * mult, 0, Math.PI * 2);
+        ctx!.stroke();
+      });
+
+      // ── Crosshair lines ──
+      ctx!.strokeStyle = "rgba(255,255,255,0.04)";
+      ctx!.lineWidth = 0.5;
       ctx!.beginPath();
-      ctx!.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx!.fillStyle = "#0a1628";
-      ctx!.fill();
-      ctx!.strokeStyle = "rgba(16, 185, 129, 0.15)";
-      ctx!.lineWidth = 1;
+      ctx!.moveTo(cx - R * 2.8, cy);
+      ctx!.lineTo(cx + R * 2.8, cy);
+      ctx!.stroke();
+      ctx!.beginPath();
+      ctx!.moveTo(cx, cy - R * 2.8);
+      ctx!.lineTo(cx, cy + R * 2.8);
       ctx!.stroke();
 
-      // Grid lines (lat/lon)
-      ctx!.strokeStyle = "rgba(16, 185, 129, 0.06)";
-      ctx!.lineWidth = 0.5;
-      for (let lat = -60; lat <= 60; lat += 30) {
-        const y = cy + R * Math.sin((lat * Math.PI) / 180);
-        const rAtLat = R * Math.cos((lat * Math.PI) / 180);
-        ctx!.beginPath();
-        ctx!.ellipse(cx, y, rAtLat, rAtLat * 0.3, 0, 0, Math.PI * 2);
-        ctx!.stroke();
-      }
-
-      // Vertical meridian lines
-      for (let lon = 0; lon < 360; lon += 45) {
-        const angle =
-          ((lon + rotationRef.current * (180 / Math.PI)) * Math.PI) / 180;
-        const x1 = cx + R * 0.01 * Math.cos(angle);
-        const y1 = cy - R;
-        const x2 = cx + R * 0.01 * Math.cos(angle + Math.PI);
-        const y2 = cy + R;
-        ctx!.beginPath();
-        ctx!.moveTo(x1, y1);
-        ctx!.bezierCurveTo(
-          cx + R * 0.6 * Math.cos(angle),
-          cy,
-          cx + R * 0.6 * Math.cos(angle),
-          cy,
-          x2,
-          y2,
-        );
-        ctx!.strokeStyle = "rgba(16, 185, 129, 0.04)";
-        ctx!.lineWidth = 0.5;
-        ctx!.stroke();
-      }
-
-      // Atmosphere glow
-      const grad = ctx!.createRadialGradient(
+      // ── Atmosphere glow ──
+      const atmoGrad = ctx!.createRadialGradient(
         cx,
         cy,
-        R * 0.95,
+        R * 0.9,
         cx,
         cy,
-        R * 1.15,
+        R * 1.3,
       );
-      grad.addColorStop(0, "rgba(16, 185, 129, 0.08)");
-      grad.addColorStop(1, "rgba(16, 185, 129, 0)");
+      atmoGrad.addColorStop(0, "rgba(100,200,255,0.03)");
+      atmoGrad.addColorStop(0.5, "rgba(60,130,200,0.02)");
+      atmoGrad.addColorStop(1, "rgba(0,0,0,0)");
       ctx!.beginPath();
-      ctx!.arc(cx, cy, R * 1.15, 0, Math.PI * 2);
-      ctx!.fillStyle = grad;
+      ctx!.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
+      ctx!.fillStyle = atmoGrad;
       ctx!.fill();
 
-      // Plot conjunction events
-      const tierColors: Record<string, string> = {
-        EMERGENCY: "#ef4444",
-        HIGH: "#f59e0b",
-        ELEVATED: "#eab308",
-        MONITOR: "#3b82f6",
-        INFORMATIONAL: "#64748b",
-      };
+      // ── Earth sphere (dark) ──
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx!.fillStyle = "#050a12";
+      ctx!.fill();
 
-      events.forEach((event, i) => {
-        const angle = stableAngles[i] + rotationRef.current;
-        const orbitR = stableOrbitR[i];
-        const x = cx + orbitR * Math.cos(angle);
-        const y = cy + orbitR * Math.sin(angle) * 0.6;
-
-        const color = tierColors[event.riskTier] ?? "#64748b";
-
-        // Connection line to earth surface
+      // ── Particle dots on sphere ──
+      const rot = rotationRef.current;
+      particles.forEach((p) => {
+        const lonRad = (p.lon + rot * (180 / Math.PI)) * (Math.PI / 180);
+        const latRad = p.lat * (Math.PI / 180);
+        const px = Math.cos(latRad) * Math.sin(lonRad);
+        const pz = Math.cos(latRad) * Math.cos(lonRad);
+        if (pz < -0.05) return; // Behind globe
+        const py = Math.sin(latRad);
+        const screenX = cx + px * R;
+        const screenY = cy - py * R;
+        const depth = (pz + 1) / 2;
+        const alpha = p.bright * depth;
         ctx!.beginPath();
-        ctx!.moveTo(x, y);
-        const surfAngle = Math.atan2(y - cy, x - cx);
-        ctx!.lineTo(cx + R * Math.cos(surfAngle), cy + R * Math.sin(surfAngle));
-        ctx!.strokeStyle = color + "30";
-        ctx!.lineWidth = 0.5;
-        ctx!.stroke();
-
-        // Satellite glow
-        ctx!.beginPath();
-        ctx!.arc(x, y, 8, 0, Math.PI * 2);
-        ctx!.fillStyle = color + "20";
-        ctx!.fill();
-
-        // Satellite dot
-        ctx!.beginPath();
-        ctx!.arc(x, y, 3, 0, Math.PI * 2);
-        ctx!.fillStyle = color;
+        ctx!.arc(screenX, screenY, p.size * depth, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(200,220,255,${alpha})`;
         ctx!.fill();
       });
 
-      rotationRef.current += 0.002;
+      // ── Grid lines on sphere ──
+      ctx!.strokeStyle = "rgba(100,160,220,0.04)";
+      ctx!.lineWidth = 0.3;
+      for (let lat = -60; lat <= 60; lat += 30) {
+        ctx!.beginPath();
+        for (let lon = 0; lon <= 360; lon += 2) {
+          const lonRad = (lon + rot * (180 / Math.PI)) * (Math.PI / 180);
+          const latRad = lat * (Math.PI / 180);
+          const px = Math.cos(latRad) * Math.sin(lonRad);
+          const pz = Math.cos(latRad) * Math.cos(lonRad);
+          if (pz < 0) continue;
+          const py = Math.sin(latRad);
+          const sx = cx + px * R;
+          const sy = cy - py * R;
+          if (lon === 0 || pz < 0.01) ctx!.moveTo(sx, sy);
+          else ctx!.lineTo(sx, sy);
+        }
+        ctx!.stroke();
+      }
+
+      // ── Equator ring ──
+      ctx!.strokeStyle = "rgba(100,200,255,0.06)";
+      ctx!.lineWidth = 0.5;
+      ctx!.beginPath();
+      ctx!.ellipse(cx, cy, R, R * 0.08, 0, 0, Math.PI * 2);
+      ctx!.stroke();
+
+      // ── Conjunction event satellites ──
+      events.forEach((event, i) => {
+        const angle = eventAngles[i] + rotationRef.current * 0.8;
+        const orbitR = R * eventOrbits[i];
+        const x = cx + orbitR * Math.cos(angle);
+        const y = cy + orbitR * Math.sin(angle) * 0.55;
+        const color = tierColors[event.riskTier] || "#475569";
+        const pulse = Math.sin(timeRef.current * 3 + i) * 0.3 + 0.7;
+
+        // Orbit path (faint)
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, orbitR, orbitR * 0.55, 0, 0, Math.PI * 2);
+        ctx!.strokeStyle = color + "10";
+        ctx!.lineWidth = 0.3;
+        ctx!.stroke();
+
+        // Connection line
+        const surfAngle = Math.atan2(y - cy, x - cx);
+        ctx!.beginPath();
+        ctx!.moveTo(x, y);
+        ctx!.lineTo(
+          cx + R * Math.cos(surfAngle),
+          cy + R * Math.sin(surfAngle) * 0.95,
+        );
+        ctx!.strokeStyle = color + "25";
+        ctx!.lineWidth = 0.5;
+        ctx!.setLineDash([3, 3]);
+        ctx!.stroke();
+        ctx!.setLineDash([]);
+
+        // Glow
+        const glow = ctx!.createRadialGradient(x, y, 0, x, y, 12 * pulse);
+        glow.addColorStop(0, color + "40");
+        glow.addColorStop(1, color + "00");
+        ctx!.beginPath();
+        ctx!.arc(x, y, 12 * pulse, 0, Math.PI * 2);
+        ctx!.fillStyle = glow;
+        ctx!.fill();
+
+        // Dot
+        ctx!.beginPath();
+        ctx!.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx!.fillStyle = color;
+        ctx!.fill();
+
+        // Label for EMERGENCY/HIGH
+        if (event.riskTier === "EMERGENCY" || event.riskTier === "HIGH") {
+          ctx!.font = "9px Inter, system-ui, sans-serif";
+          ctx!.fillStyle = color + "CC";
+          ctx!.textAlign = "left";
+          ctx!.fillText(event.noradId || "", x + 8, y - 4);
+          ctx!.fillStyle = color + "80";
+          ctx!.fillText(event.riskTier, x + 8, y + 6);
+        }
+      });
+
+      // ── HUD corners ──
+      ctx!.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx!.lineWidth = 1;
+      const m = 16;
+      const cornerLen = 24;
+      // Top-left
+      ctx!.beginPath();
+      ctx!.moveTo(m, m + cornerLen);
+      ctx!.lineTo(m, m);
+      ctx!.lineTo(m + cornerLen, m);
+      ctx!.stroke();
+      // Top-right
+      ctx!.beginPath();
+      ctx!.moveTo(W - m - cornerLen, m);
+      ctx!.lineTo(W - m, m);
+      ctx!.lineTo(W - m, m + cornerLen);
+      ctx!.stroke();
+      // Bottom-left
+      ctx!.beginPath();
+      ctx!.moveTo(m, H - m - cornerLen);
+      ctx!.lineTo(m, H - m);
+      ctx!.lineTo(m + cornerLen, H - m);
+      ctx!.stroke();
+      // Bottom-right
+      ctx!.beginPath();
+      ctx!.moveTo(W - m - cornerLen, H - m);
+      ctx!.lineTo(W - m, H - m);
+      ctx!.lineTo(W - m, H - m - cornerLen);
+      ctx!.stroke();
+
+      // ── HUD text overlay ──
+      ctx!.font = "10px Inter, monospace";
+      ctx!.fillStyle = "rgba(255,255,255,0.2)";
+      ctx!.textAlign = "left";
+      ctx!.fillText("CAELEX SHIELD", m + 4, m + 14);
+      ctx!.fillText("CONJUNCTION ASSESSMENT", m + 4, m + 26);
+      ctx!.textAlign = "right";
+      ctx!.fillText(`${events.length} ACTIVE`, W - m - 4, m + 14);
+      ctx!.fillText(
+        new Date().toISOString().slice(11, 19) + " UTC",
+        W - m - 4,
+        m + 26,
+      );
+
+      // Bottom HUD bar
+      ctx!.fillStyle = "rgba(255,255,255,0.12)";
+      ctx!.textAlign = "center";
+      const tierCounts = { EMERGENCY: 0, HIGH: 0, ELEVATED: 0, MONITOR: 0 };
+      events.forEach((e: any) => {
+        if (e.riskTier in tierCounts) (tierCounts as any)[e.riskTier]++;
+      });
+      const statusText = `EMRG:${tierCounts.EMERGENCY}  HIGH:${tierCounts.HIGH}  ELEV:${tierCounts.ELEVATED}  MON:${tierCounts.MONITOR}`;
+      ctx!.fillText(statusText, cx, H - m - 4);
+
       animRef.current = requestAnimationFrame(draw);
     }
 
@@ -258,13 +405,13 @@ function ShieldGlobe({ events }: { events: any[] }) {
   }, [events.length]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={600}
-      height={400}
-      className="w-full h-[300px]"
-      style={{ imageRendering: "auto" }}
-    />
+    <div className="relative bg-black rounded-xl overflow-hidden border border-white/[0.04]">
+      <canvas
+        ref={canvasRef}
+        className="w-full"
+        style={{ height: "420px", imageRendering: "auto" }}
+      />
+    </div>
   );
 }
 
@@ -850,30 +997,31 @@ export default function ShieldPage() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[var(--glass-bg-surface,transparent)]">
+    <div className="min-h-screen bg-black">
       <GlassMotion>
-        <div className="p-6 space-y-6">
-          {/* ── Top Section: Header + Actions ─────────────────────────── */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-display-sm font-bold text-white flex items-center gap-3">
-                <Shield className="w-7 h-7 text-emerald-400" />
-                Shield
+        <div className="p-4 md:p-6 space-y-4">
+          {/* ── Command Center Header ───────────────────────────────── */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h1 className="text-[15px] font-semibold text-white tracking-wide uppercase">
+                Shield — Conjunction Assessment
               </h1>
-              <p className="text-slate-400 text-body-lg mt-1">
-                Conjunction Assessment &amp; Collision Avoidance Monitoring
-              </p>
+              <span className="text-[11px] font-mono text-white/20 hidden md:inline">
+                {new Date().toISOString().slice(0, 19).replace("T", " ")} UTC
+              </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="secondary"
-                size="md"
-                icon={<RefreshCw className="w-4 h-4" />}
+            <div className="flex items-center gap-2">
+              <button
                 onClick={handleRefresh}
-                loading={loading}
+                disabled={loading}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-white/40 hover:text-white border border-white/[0.06] rounded hover:border-white/[0.12] transition-all disabled:opacity-30"
               >
+                <RefreshCw
+                  className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
+                />
                 Refresh
-              </Button>
+              </button>
             </div>
           </div>
 
@@ -1047,7 +1195,7 @@ export default function ShieldPage() {
                     },
                   )}
                 </div>
-                <ShieldGlobe events={events} />
+                <ShieldGlobe events={events} stats={stats} />
               </Card>
             </div>
 
