@@ -21,6 +21,7 @@ const ENTRIES: BlogEntry[] = [
   {
     id: "agentic",
     slug: "agentic-system",
+    href: "/sentinel",
     category: "Product",
     title: "Caelex Agentic System",
     pill: "Sentinel",
@@ -42,6 +43,7 @@ const ENTRIES: BlogEntry[] = [
   {
     id: "ground-stations",
     slug: "ground-stations-critical-infrastructure",
+    href: "/sentinel",
     category: "NIS2 · Critical Infrastructure",
     title: "Ground Stations as Critical Infrastructure",
     pill: "Ground Infra",
@@ -52,7 +54,7 @@ const ENTRIES: BlogEntry[] = [
   {
     id: "comply-engine",
     slug: "comply-engine",
-    href: "/assessment",
+    href: "/comply",
     category: "Regulatory Intelligence Engine",
     title: "The Compliance Engine",
     pill: "Comply",
@@ -74,6 +76,7 @@ const ENTRIES: BlogEntry[] = [
   {
     id: "ecosystem",
     slug: "ecosystem",
+    href: "/network",
     category: "Stakeholder Network · Secure Collaboration",
     title: "The Compliance Network",
     pill: "Network",
