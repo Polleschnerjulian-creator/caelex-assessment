@@ -75,6 +75,7 @@ type TabId =
   | "compliance"
   | "decision"
   | "documentation"
+  | "timeline"
   | "coordination";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
@@ -93,6 +94,11 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
     id: "documentation",
     label: "Documentation",
     icon: <FileText className="w-4 h-4" />,
+  },
+  {
+    id: "timeline",
+    label: "Timeline",
+    icon: <Clock className="w-4 h-4" />,
   },
   {
     id: "coordination",
@@ -320,6 +326,22 @@ export default function ShieldEventDetailPage() {
   >([]);
   const [newNote, setNewNote] = useState("");
 
+  // P2P Coordination API state
+  const [coordEntries, setCoordEntries] = useState<any[]>([]);
+  const [coordLoading, setCoordLoading] = useState(false);
+  const [coordMessage, setCoordMessage] = useState("");
+  const [coordOperator, setCoordOperator] = useState("");
+  const [coordStatus, setCoordStatus] = useState("initiated");
+  const [coordSubmitting, setCoordSubmitting] = useState(false);
+
+  // Timeline tab state
+  const [timeline, setTimeline] = useState<any[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+
+  // Maneuver Calculator state
+  const [maneuverCalc, setManeuverCalc] = useState<any>(null);
+  const [calcLoading, setCalcLoading] = useState(false);
+
   // Threat object DISCOS enrichment state
   const [threatObject, setThreatObject] = useState<any>(null);
   const [threatLoading, setThreatLoading] = useState(false);
@@ -381,6 +403,42 @@ export default function ShieldEventDetailPage() {
         .finally(() => setComplianceLoading(false));
     }
   }, [activeTab, eventId, compliance]);
+
+  // Fetch timeline when timeline tab selected
+  useEffect(() => {
+    if (activeTab === "timeline" && timeline.length === 0) {
+      setTimelineLoading(true);
+      fetch(`/api/shield/events/${eventId}/timeline`)
+        .then((r) => r.json())
+        .then((d) => setTimeline(d.timeline || []))
+        .catch(() => {})
+        .finally(() => setTimelineLoading(false));
+    }
+  }, [activeTab, eventId, timeline.length]);
+
+  // Fetch maneuver calculator when decision tab selected
+  useEffect(() => {
+    if (activeTab === "decision" && !maneuverCalc && event) {
+      setCalcLoading(true);
+      fetch(`/api/shield/events/${eventId}/maneuver-calc`)
+        .then((r) => r.json())
+        .then((d) => setManeuverCalc(d))
+        .catch(() => {})
+        .finally(() => setCalcLoading(false));
+    }
+  }, [activeTab, eventId, maneuverCalc, event]);
+
+  // Fetch coordination entries when coordination tab selected
+  useEffect(() => {
+    if (activeTab === "coordination" && coordEntries.length === 0) {
+      setCoordLoading(true);
+      fetch(`/api/shield/events/${eventId}/coordinate`)
+        .then((r) => r.json())
+        .then((d) => setCoordEntries(d.data || []))
+        .catch(() => {})
+        .finally(() => setCoordLoading(false));
+    }
+  }, [activeTab, eventId, coordEntries.length]);
 
   // ── Decision Submission ────────────────────────────────────────────────────
 
@@ -623,6 +681,32 @@ export default function ShieldEventDetailPage() {
     setNewNote("");
   };
 
+  const handleSubmitCoordination = async () => {
+    if (!coordMessage.trim()) return;
+    setCoordSubmitting(true);
+    try {
+      const body: Record<string, unknown> = { message: coordMessage.trim() };
+      if (coordOperator.trim()) body.contactedOperator = coordOperator.trim();
+      if (coordStatus) body.coordinationStatus = coordStatus;
+      const res = await fetch(`/api/shield/events/${eventId}/coordinate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCoordEntries((prev) => [data.data || data, ...prev]);
+        setCoordMessage("");
+        setCoordOperator("");
+        setCoordStatus("initiated");
+      }
+    } catch {
+      // silently ignore
+    } finally {
+      setCoordSubmitting(false);
+    }
+  };
+
   // ── Loading State ──────────────────────────────────────────────────────────
 
   if (loading) {
@@ -768,6 +852,8 @@ export default function ShieldEventDetailPage() {
         <DecisionTab
           event={event}
           factors={factors}
+          maneuverCalc={maneuverCalc}
+          calcLoading={calcLoading}
           canShowDecisionForm={canShowDecisionForm}
           decisionType={decisionType}
           setDecisionType={setDecisionType}
@@ -957,6 +1043,98 @@ export default function ShieldEventDetailPage() {
         </div>
       )}
 
+      {activeTab === "timeline" && (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <Clock className="w-4 h-4 inline mr-2" />
+                Event Timeline
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {timelineLoading ? (
+                <div className="py-8 text-center">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-[var(--accent-primary)]" />
+                </div>
+              ) : timeline.length === 0 ? (
+                <p className="text-body text-[var(--text-secondary)] py-8 text-center">
+                  No timeline data available
+                </p>
+              ) : (
+                <div className="relative">
+                  <div className="absolute left-[11px] top-2 bottom-2 w-px bg-[var(--border-subtle)]" />
+                  <div className="space-y-4">
+                    {timeline.map((entry: any, i: number) => (
+                      <div key={i} className="flex gap-4 relative">
+                        <div
+                          className={`w-[23px] h-[23px] rounded-full flex items-center justify-center flex-shrink-0 z-10 ${
+                            entry.type === "created"
+                              ? "bg-emerald-500/20 border border-emerald-500/40"
+                              : entry.type === "cdm_received"
+                                ? "bg-blue-500/20 border border-blue-500/40"
+                                : entry.type === "tier_change"
+                                  ? "bg-amber-500/20 border border-amber-500/40"
+                                  : entry.type === "decision"
+                                    ? "bg-purple-500/20 border border-purple-500/40"
+                                    : entry.type === "maneuver"
+                                      ? "bg-red-500/20 border border-red-500/40"
+                                      : "bg-slate-500/20 border border-slate-500/40"
+                          }`}
+                        >
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              entry.type === "created"
+                                ? "bg-emerald-400"
+                                : entry.type === "cdm_received"
+                                  ? "bg-blue-400"
+                                  : entry.type === "tier_change"
+                                    ? "bg-amber-400"
+                                    : entry.type === "decision"
+                                      ? "bg-purple-400"
+                                      : entry.type === "maneuver"
+                                        ? "bg-red-400"
+                                        : "bg-slate-400"
+                            }`}
+                          />
+                        </div>
+                        <div className="flex-1 pb-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-body font-medium text-[var(--text-primary)]">
+                              {entry.title}
+                            </p>
+                            <span className="text-micro px-1.5 py-0.5 rounded bg-[var(--fill-light)] text-[var(--text-tertiary)] uppercase tracking-wider">
+                              {entry.type.replace(/_/g, " ")}
+                            </span>
+                          </div>
+                          {entry.description && (
+                            <p className="text-caption text-[var(--text-secondary)] mt-0.5">
+                              {entry.description}
+                            </p>
+                          )}
+                          <p className="text-micro text-[var(--text-tertiary)] mt-1">
+                            {new Date(entry.timestamp).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </GlassMotion>
+      )}
+
       {activeTab === "coordination" && (
         <div className="space-y-6">
           {/* Quick Actions */}
@@ -987,66 +1165,134 @@ export default function ShieldEventDetailPage() {
             </div>
           </GlassMotion>
 
-          {/* Communication Log */}
+          {/* P2P Coordination Log */}
           <GlassMotion>
             <Card variant="elevated">
               <CardHeader>
                 <CardTitle>
                   <MessageSquare className="w-4 h-4 inline mr-2" />
-                  Coordination Notes
+                  P2P Coordination
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-small text-blue-400">
-                  Notes are stored locally for this session. For permanent
-                  records, generate a CA Report.
-                </div>
-
-                {/* Add Note Form */}
-                <div className="space-y-2">
+                {/* Submit new coordination entry */}
+                <div className="space-y-3 p-4 rounded-lg glass-surface border border-[var(--glass-border-subtle)]">
+                  <p className="text-body font-medium text-[var(--text-primary)]">
+                    New Coordination Entry
+                  </p>
                   <textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Add a coordination note..."
+                    value={coordMessage}
+                    onChange={(e) => setCoordMessage(e.target.value)}
+                    placeholder="Describe coordination action or communication..."
                     rows={3}
                     maxLength={2000}
                     className="w-full p-3 rounded-lg glass-surface border border-[var(--glass-border-subtle)] text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-caption text-[var(--text-secondary)] block mb-1">
+                        Contacted Operator (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={coordOperator}
+                        onChange={(e) => setCoordOperator(e.target.value)}
+                        placeholder="e.g. SpaceX, OneWeb..."
+                        className="w-full p-2 rounded-lg glass-surface border border-[var(--glass-border-subtle)] text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-caption text-[var(--text-secondary)] block mb-1">
+                        Status
+                      </label>
+                      <select
+                        value={coordStatus}
+                        onChange={(e) => setCoordStatus(e.target.value)}
+                        className="w-full p-2 rounded-lg glass-surface border border-[var(--glass-border-subtle)] text-body text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 bg-transparent"
+                      >
+                        <option value="initiated">Initiated</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="agreed">Agreed</option>
+                        <option value="declined">Declined</option>
+                        <option value="no_response">No Response</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+                  </div>
                   <Button
                     variant="primary"
                     size="sm"
-                    disabled={!newNote.trim()}
-                    onClick={handleAddNote}
+                    disabled={!coordMessage.trim()}
+                    loading={coordSubmitting}
+                    onClick={handleSubmitCoordination}
                     icon={<Send className="w-4 h-4" />}
                   >
-                    Add Note
+                    Submit Coordination Entry
                   </Button>
                 </div>
 
-                {/* Notes List */}
-                {coordNotes.length > 0 ? (
+                {/* Coordination Entries */}
+                {coordLoading ? (
+                  <div className="py-6 text-center">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-emerald-400" />
+                  </div>
+                ) : coordEntries.length > 0 ? (
                   <div className="space-y-3 pt-2 border-t border-[var(--separator)]">
-                    {coordNotes.map((note, idx) => (
-                      <div key={idx} className="p-3 rounded-lg glass-surface">
+                    <p className="text-caption font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                      Coordination History ({coordEntries.length})
+                    </p>
+                    {coordEntries.map((entry: any, idx: number) => (
+                      <div
+                        key={entry.id ?? idx}
+                        className="p-3 rounded-lg glass-surface space-y-1"
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          {entry.contactedOperator && (
+                            <span className="text-caption font-semibold text-[var(--text-primary)]">
+                              {entry.contactedOperator}
+                            </span>
+                          )}
+                          {entry.coordinationStatus && (
+                            <span
+                              className={`text-micro px-1.5 py-0.5 rounded uppercase tracking-wider font-medium ${
+                                entry.coordinationStatus === "agreed" ||
+                                entry.coordinationStatus === "completed"
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : entry.coordinationStatus === "declined" ||
+                                      entry.coordinationStatus === "no_response"
+                                    ? "bg-red-500/20 text-red-400"
+                                    : entry.coordinationStatus === "in_progress"
+                                      ? "bg-blue-500/20 text-blue-400"
+                                      : "bg-slate-500/20 text-slate-400"
+                              }`}
+                            >
+                              {entry.coordinationStatus.replace(/_/g, " ")}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-body text-[var(--text-primary)] whitespace-pre-wrap">
-                          {note.text}
+                          {entry.message}
                         </p>
-                        <p className="text-micro text-[var(--text-tertiary)] mt-2">
-                          {note.timestamp.toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
+                        <p className="text-micro text-[var(--text-tertiary)] mt-1">
+                          {entry.createdAt
+                            ? new Date(entry.createdAt).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
+                            : ""}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-body text-[var(--text-secondary)] text-center py-4">
-                    No coordination notes yet.
+                    No coordination entries yet.
                   </p>
                 )}
               </CardContent>
@@ -1955,6 +2201,8 @@ function OverviewTab({
 function DecisionTab({
   event,
   factors,
+  maneuverCalc,
+  calcLoading,
   canShowDecisionForm,
   decisionType,
   setDecisionType,
@@ -1987,6 +2235,8 @@ function DecisionTab({
 }: {
   event: any;
   factors: any;
+  maneuverCalc: any;
+  calcLoading: boolean;
   canShowDecisionForm: boolean;
   decisionType: string;
   setDecisionType: (v: string) => void;
@@ -2157,6 +2407,128 @@ function DecisionTab({
           </span>
         </div>
       )}
+
+      {/* Maneuver Analysis */}
+      {calcLoading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-emerald-400 mr-2" />
+          <span className="text-body text-[var(--text-secondary)]">
+            Computing maneuver parameters...
+          </span>
+        </div>
+      ) : maneuverCalc?.result ? (
+        <GlassMotion>
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>
+                <Fuel className="w-4 h-4 inline mr-2" />
+                Maneuver Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Feasibility Badge */}
+              <div className="flex items-center gap-3">
+                <span
+                  className={`px-3 py-1 rounded-full text-body font-semibold border ${
+                    maneuverCalc.result.feasibility === "recommended"
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      : maneuverCalc.result.feasibility === "marginal"
+                        ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                        : "bg-red-500/20 text-red-400 border-red-500/30"
+                  }`}
+                >
+                  {maneuverCalc.result.feasibility === "recommended"
+                    ? "Recommended"
+                    : maneuverCalc.result.feasibility === "marginal"
+                      ? "Marginal"
+                      : "Not Recommended"}
+                </span>
+                {maneuverCalc.result.maneuverType && (
+                  <span className="text-caption text-[var(--text-secondary)]">
+                    {maneuverCalc.result.maneuverType}
+                  </span>
+                )}
+              </div>
+
+              {/* Key Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg glass-surface">
+                  <p className="text-caption text-[var(--text-secondary)] mb-1">
+                    Delta-V
+                  </p>
+                  <p
+                    className={`text-subtitle font-bold font-mono ${
+                      maneuverCalc.result.feasibility === "recommended"
+                        ? "text-emerald-400"
+                        : maneuverCalc.result.feasibility === "marginal"
+                          ? "text-amber-400"
+                          : "text-red-400"
+                    }`}
+                  >
+                    {maneuverCalc.result.deltaVMs != null
+                      ? `${maneuverCalc.result.deltaVMs.toFixed(3)} m/s`
+                      : "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg glass-surface">
+                  <p className="text-caption text-[var(--text-secondary)] mb-1">
+                    Fuel
+                  </p>
+                  <p className="text-subtitle font-bold font-mono text-[var(--text-primary)]">
+                    {maneuverCalc.result.fuelConsumptionKg != null
+                      ? `${maneuverCalc.result.fuelConsumptionKg.toFixed(2)} kg`
+                      : "N/A"}
+                  </p>
+                  {maneuverCalc.result.fuelPercentUsed != null && (
+                    <p className="text-caption text-[var(--text-tertiary)]">
+                      {maneuverCalc.result.fuelPercentUsed.toFixed(1)}% of
+                      budget
+                    </p>
+                  )}
+                </div>
+                <div className="p-3 rounded-lg glass-surface">
+                  <p className="text-caption text-[var(--text-secondary)] mb-1">
+                    Optimal Window
+                  </p>
+                  <p className="text-subtitle font-bold font-mono text-[var(--text-primary)]">
+                    {maneuverCalc.result.optimalWindowHours != null
+                      ? `${maneuverCalc.result.optimalWindowHours.toFixed(1)}h`
+                      : "N/A"}
+                    <span className="text-caption text-[var(--text-tertiary)] font-normal ml-1">
+                      before TCA
+                    </span>
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg glass-surface">
+                  <p className="text-caption text-[var(--text-secondary)] mb-1">
+                    Latest Window
+                  </p>
+                  <p className="text-subtitle font-bold font-mono text-amber-400">
+                    {maneuverCalc.result.latestWindowHours != null
+                      ? `${maneuverCalc.result.latestWindowHours.toFixed(1)}h`
+                      : "N/A"}
+                    <span className="text-caption text-[var(--text-tertiary)] font-normal ml-1">
+                      before TCA
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Explanation */}
+              {maneuverCalc.result.explanation && (
+                <div className="p-3 rounded-lg glass-surface">
+                  <p className="text-caption text-[var(--text-secondary)] mb-1">
+                    Analysis
+                  </p>
+                  <p className="text-body text-[var(--text-primary)]">
+                    {maneuverCalc.result.explanation}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </GlassMotion>
+      ) : null}
 
       {/* Decision Form or Display */}
       {canShowDecisionForm ? (
