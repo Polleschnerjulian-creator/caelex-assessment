@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
@@ -22,6 +22,8 @@ import {
   TrendingDown,
   ArrowRight,
   Zap,
+  Globe,
+  Calendar,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -117,6 +119,153 @@ function formatLabel(value: string): string {
     .replace(/_/g, " ")
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Globe Component ───────────────────────────────────────────────────────────
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function ShieldGlobe({ events }: { events: any[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
+  const rotationRef = useRef(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    const R = Math.min(W, H) * 0.35;
+
+    // Pre-compute stable angles per event index so they don't re-randomize on redraw
+    const stableAngles = events.map(
+      (_, i) => (i / Math.max(events.length, 1)) * Math.PI * 2,
+    );
+    const stableOrbitR = events.map(() => R * (1.15 + Math.random() * 0.3));
+
+    function draw() {
+      ctx!.clearRect(0, 0, W, H);
+
+      // Earth circle
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx!.fillStyle = "#0a1628";
+      ctx!.fill();
+      ctx!.strokeStyle = "rgba(16, 185, 129, 0.15)";
+      ctx!.lineWidth = 1;
+      ctx!.stroke();
+
+      // Grid lines (lat/lon)
+      ctx!.strokeStyle = "rgba(16, 185, 129, 0.06)";
+      ctx!.lineWidth = 0.5;
+      for (let lat = -60; lat <= 60; lat += 30) {
+        const y = cy + R * Math.sin((lat * Math.PI) / 180);
+        const rAtLat = R * Math.cos((lat * Math.PI) / 180);
+        ctx!.beginPath();
+        ctx!.ellipse(cx, y, rAtLat, rAtLat * 0.3, 0, 0, Math.PI * 2);
+        ctx!.stroke();
+      }
+
+      // Vertical meridian lines
+      for (let lon = 0; lon < 360; lon += 45) {
+        const angle =
+          ((lon + rotationRef.current * (180 / Math.PI)) * Math.PI) / 180;
+        const x1 = cx + R * 0.01 * Math.cos(angle);
+        const y1 = cy - R;
+        const x2 = cx + R * 0.01 * Math.cos(angle + Math.PI);
+        const y2 = cy + R;
+        ctx!.beginPath();
+        ctx!.moveTo(x1, y1);
+        ctx!.bezierCurveTo(
+          cx + R * 0.6 * Math.cos(angle),
+          cy,
+          cx + R * 0.6 * Math.cos(angle),
+          cy,
+          x2,
+          y2,
+        );
+        ctx!.strokeStyle = "rgba(16, 185, 129, 0.04)";
+        ctx!.lineWidth = 0.5;
+        ctx!.stroke();
+      }
+
+      // Atmosphere glow
+      const grad = ctx!.createRadialGradient(
+        cx,
+        cy,
+        R * 0.95,
+        cx,
+        cy,
+        R * 1.15,
+      );
+      grad.addColorStop(0, "rgba(16, 185, 129, 0.08)");
+      grad.addColorStop(1, "rgba(16, 185, 129, 0)");
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, R * 1.15, 0, Math.PI * 2);
+      ctx!.fillStyle = grad;
+      ctx!.fill();
+
+      // Plot conjunction events
+      const tierColors: Record<string, string> = {
+        EMERGENCY: "#ef4444",
+        HIGH: "#f59e0b",
+        ELEVATED: "#eab308",
+        MONITOR: "#3b82f6",
+        INFORMATIONAL: "#64748b",
+      };
+
+      events.forEach((event, i) => {
+        const angle = stableAngles[i] + rotationRef.current;
+        const orbitR = stableOrbitR[i];
+        const x = cx + orbitR * Math.cos(angle);
+        const y = cy + orbitR * Math.sin(angle) * 0.6;
+
+        const color = tierColors[event.riskTier] ?? "#64748b";
+
+        // Connection line to earth surface
+        ctx!.beginPath();
+        ctx!.moveTo(x, y);
+        const surfAngle = Math.atan2(y - cy, x - cx);
+        ctx!.lineTo(cx + R * Math.cos(surfAngle), cy + R * Math.sin(surfAngle));
+        ctx!.strokeStyle = color + "30";
+        ctx!.lineWidth = 0.5;
+        ctx!.stroke();
+
+        // Satellite glow
+        ctx!.beginPath();
+        ctx!.arc(x, y, 8, 0, Math.PI * 2);
+        ctx!.fillStyle = color + "20";
+        ctx!.fill();
+
+        // Satellite dot
+        ctx!.beginPath();
+        ctx!.arc(x, y, 3, 0, Math.PI * 2);
+        ctx!.fillStyle = color;
+        ctx!.fill();
+      });
+
+      rotationRef.current += 0.002;
+      animRef.current = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return () => cancelAnimationFrame(animRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={600}
+      height={400}
+      className="w-full h-[300px]"
+      style={{ imageRendering: "auto" }}
+    />
+  );
 }
 
 // ── Dynamic Chart Components ─────────────────────────────────────────────────
@@ -375,7 +524,7 @@ export default function ShieldPage() {
 
   // ── State ────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<
-    "events" | "analytics" | "settings"
+    "events" | "forecast" | "anomalies" | "settings"
   >("events");
   const [stats, setStats] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -405,7 +554,6 @@ export default function ShieldPage() {
   const [anomaliesLoading, setAnomaliesLoading] = useState(false);
   const [maneuverSummary, setManeuverSummary] = useState<any>(null);
   const [maneuverSummaryLoading, setManeuverSummaryLoading] = useState(false);
-  const [sortMode, setSortMode] = useState<"priority" | "date">("date");
   const [priorityEvents, setPriorityEvents] = useState<any[]>([]);
   const [priorityLoading, setPriorityLoading] = useState(false);
 
@@ -555,47 +703,47 @@ export default function ShieldPage() {
     }
   }, []);
 
-  // Initial load: stats + events + fleet summary
+  // Initial load: stats + events + fleet summary + priority queue
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchStats(), fetchEvents(), fetchFleetSummary()]).finally(
-      () => setLoading(false),
-    );
-  }, [fetchStats, fetchEvents, fetchFleetSummary]);
+    Promise.all([
+      fetchStats(),
+      fetchEvents(),
+      fetchFleetSummary(),
+      fetchPriorityQueue(),
+    ]).finally(() => setLoading(false));
+  }, [fetchStats, fetchEvents, fetchFleetSummary, fetchPriorityQueue]);
 
-  // Load analytics + forecast + anomalies + maneuver summary when tab selected
+  // Load forecast when forecast tab selected
   useEffect(() => {
-    if (activeTab === "analytics") {
-      if (!analytics) fetchAnalytics();
+    if (activeTab === "forecast") {
       if (!forecast) fetchForecast();
-      if (anomalies.length === 0) fetchAnomalies();
       if (!maneuverSummary) fetchManeuverSummary();
+      if (!analytics) fetchAnalytics();
     }
   }, [
     activeTab,
-    analytics,
     forecast,
-    anomalies.length,
     maneuverSummary,
-    fetchAnalytics,
+    analytics,
     fetchForecast,
-    fetchAnomalies,
     fetchManeuverSummary,
+    fetchAnalytics,
   ]);
 
-  // Load config when tab selected
+  // Load anomalies when anomalies tab selected
+  useEffect(() => {
+    if (activeTab === "anomalies" && anomalies.length === 0) {
+      fetchAnomalies();
+    }
+  }, [activeTab, anomalies.length, fetchAnomalies]);
+
+  // Load config when settings tab selected
   useEffect(() => {
     if (activeTab === "settings" && !config) {
       fetchConfig();
     }
   }, [activeTab, config, fetchConfig]);
-
-  // Fetch priority queue when sort mode changes to priority
-  useEffect(() => {
-    if (sortMode === "priority" && priorityEvents.length === 0) {
-      fetchPriorityQueue();
-    }
-  }, [sortMode, priorityEvents.length, fetchPriorityQueue]);
 
   // Reset offset when filters change
   useEffect(() => {
@@ -672,14 +820,30 @@ export default function ShieldPage() {
 
   const handleRefresh = () => {
     setLoading(true);
-    Promise.all([fetchStats(), fetchEvents()]).finally(() => setLoading(false));
+    Promise.all([
+      fetchStats(),
+      fetchEvents(),
+      fetchFleetSummary(),
+      fetchPriorityQueue(),
+    ]).finally(() => setLoading(false));
   };
+
+  // ── Derived stats ────────────────────────────────────────────────────────
+
+  // Find nearest TCA across all events for countdown
+  const nearestTca = events
+    .filter((e) => new Date(e.tca).getTime() > Date.now())
+    .sort((a, b) => new Date(a.tca).getTime() - new Date(b.tca).getTime())[0];
+
+  // Events this week count (use stats if available)
+  const eventsThisWeek = stats?.eventsThisWeek ?? 0;
 
   // ── Tab definitions ──────────────────────────────────────────────────────
 
   const tabs = [
     { key: "events" as const, label: "Events", icon: Activity },
-    { key: "analytics" as const, label: "Analytics", icon: BarChart3 },
+    { key: "forecast" as const, label: "Forecast", icon: BarChart3 },
+    { key: "anomalies" as const, label: "Anomalies", icon: Zap },
     { key: "settings" as const, label: "Settings", icon: Settings },
   ];
 
@@ -688,20 +852,271 @@ export default function ShieldPage() {
   return (
     <div className="min-h-screen bg-[var(--glass-bg-surface,transparent)]">
       <GlassMotion>
-        <div className="p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-display-sm font-bold text-white flex items-center gap-3">
-              <Shield className="w-7 h-7 text-emerald-400" />
-              Shield
-            </h1>
-            <p className="text-slate-400 text-body-lg mt-1">
-              Conjunction Assessment & Collision Avoidance Compliance
-            </p>
+        <div className="p-6 space-y-6">
+          {/* ── Top Section: Header + Actions ─────────────────────────── */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-display-sm font-bold text-white flex items-center gap-3">
+                <Shield className="w-7 h-7 text-emerald-400" />
+                Shield
+              </h1>
+              <p className="text-slate-400 text-body-lg mt-1">
+                Conjunction Assessment &amp; Collision Avoidance Monitoring
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="secondary"
+                size="md"
+                icon={<RefreshCw className="w-4 h-4" />}
+                onClick={handleRefresh}
+                loading={loading}
+              >
+                Refresh
+              </Button>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 p-1 glass-elevated rounded-lg w-fit">
+          {/* ── Stats Bar: 4 cards ──────────────────────────────────────── */}
+          <GlassStagger className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Active Events */}
+            <motion.div variants={glassItemVariants}>
+              <Card variant="metric" className="border-t-emerald-500">
+                <CardContent>
+                  <p className="text-caption text-slate-400 mb-1 flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5" />
+                    Active Events
+                  </p>
+                  <p className="text-display-sm font-bold text-white">
+                    {stats?.activeEvents ?? "--"}
+                  </p>
+                  {stats && (
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      {stats.emergencyCount > 0 && (
+                        <span className="text-micro text-red-400 font-semibold">
+                          {stats.emergencyCount} EMRG
+                        </span>
+                      )}
+                      {stats.highCount > 0 && (
+                        <span className="text-micro text-amber-400 font-semibold">
+                          {stats.highCount} HIGH
+                        </span>
+                      )}
+                      {stats.elevatedCount > 0 && (
+                        <span className="text-micro text-yellow-400 font-semibold">
+                          {stats.elevatedCount} ELEV
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Fleet Risk */}
+            <motion.div variants={glassItemVariants}>
+              <Card
+                variant="metric"
+                className={`${
+                  fleetSummary?.emergencyCount > 0
+                    ? "border-t-red-500"
+                    : fleetSummary?.highCount > 0
+                      ? "border-t-amber-500"
+                      : "border-t-blue-500"
+                }`}
+              >
+                <CardContent>
+                  <p className="text-caption text-slate-400 mb-1 flex items-center gap-1.5">
+                    <Satellite className="w-3.5 h-3.5" />
+                    Fleet Risk
+                  </p>
+                  {fleetSummaryLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-slate-400 mt-1" />
+                  ) : fleetSummary ? (
+                    <>
+                      <p className="text-display-sm font-bold text-white">
+                        {fleetSummary.satellitesWithActiveEvents}
+                        <span className="text-body text-slate-500 font-normal">
+                          /{fleetSummary.totalSatellites}
+                        </span>
+                      </p>
+                      <p className="text-micro text-slate-500 mt-1">
+                        satellites with active events
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-display-sm font-bold text-slate-500">
+                      --
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Next TCA Countdown */}
+            <motion.div variants={glassItemVariants}>
+              <Card variant="metric" className="border-t-orange-500">
+                <CardContent>
+                  <p className="text-caption text-slate-400 mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Next TCA
+                  </p>
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-slate-400 mt-1" />
+                  ) : nearestTca ? (
+                    <>
+                      <p className="text-display-sm font-bold text-orange-400">
+                        {formatTcaCountdown(nearestTca.tca)}
+                      </p>
+                      <p className="text-micro text-slate-500 mt-1 truncate">
+                        {nearestTca.conjunctionId ?? nearestTca.id}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-display-sm font-bold text-slate-500">
+                      --
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Events This Week */}
+            <motion.div variants={glassItemVariants}>
+              <Card variant="metric" className="border-t-purple-500">
+                <CardContent>
+                  <p className="text-caption text-slate-400 mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Events This Week
+                  </p>
+                  <p className="text-display-sm font-bold text-white">
+                    {stats
+                      ? eventsThisWeek > 0
+                        ? eventsThisWeek
+                        : totalEvents
+                      : "--"}
+                  </p>
+                  <p className="text-micro text-slate-500 mt-1">
+                    {stats?.overdueDecisions
+                      ? `${stats.overdueDecisions} overdue`
+                      : "no overdue decisions"}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </GlassStagger>
+
+          {/* ── Main Content: Globe + Priority Queue ────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Globe Widget (8 cols) */}
+            <div className="lg:col-span-8">
+              <Card variant="elevated" padding="md" className="h-full">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="w-4 h-4 text-emerald-400" />
+                  <h2 className="text-body font-semibold text-white">
+                    Conjunction Map
+                  </h2>
+                  <span className="ml-auto text-micro text-slate-500">
+                    {
+                      events.filter((e) => e.riskTier !== "INFORMATIONAL")
+                        .length
+                    }{" "}
+                    active conjunctions
+                  </span>
+                </div>
+                {/* Globe legend */}
+                <div className="flex items-center gap-4 mb-3 flex-wrap">
+                  {(["EMERGENCY", "HIGH", "ELEVATED", "MONITOR"] as const).map(
+                    (tier) => {
+                      const dot: Record<string, string> = {
+                        EMERGENCY: "bg-red-500",
+                        HIGH: "bg-amber-500",
+                        ELEVATED: "bg-yellow-500",
+                        MONITOR: "bg-blue-500",
+                      };
+                      return (
+                        <div key={tier} className="flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${dot[tier]}`}
+                          />
+                          <span className="text-micro text-slate-400">
+                            {tier}
+                          </span>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+                <ShieldGlobe events={events} />
+              </Card>
+            </div>
+
+            {/* Priority Queue (4 cols) */}
+            <div className="lg:col-span-4">
+              <Card variant="elevated" padding="md" className="h-full">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <h2 className="text-body font-semibold text-white">
+                    Priority Queue
+                  </h2>
+                </div>
+                {priorityLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+                  </div>
+                ) : priorityEvents.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Shield className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                    <p className="text-small text-slate-400">
+                      No urgent events
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 overflow-y-auto max-h-[260px] pr-1">
+                    {priorityEvents.slice(0, 8).map((pe: any) => (
+                      <button
+                        key={pe.eventId}
+                        onClick={() =>
+                          router.push(`/dashboard/shield/${pe.eventId}`)
+                        }
+                        className="w-full text-left p-2.5 rounded-lg glass-surface hover:glass-elevated transition-all duration-200 border border-transparent hover:border-white/10"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-small font-medium text-white truncate">
+                              {pe.satelliteName ?? pe.conjunctionId}
+                            </p>
+                            <p className="text-micro text-slate-500 mt-0.5 truncate">
+                              {pe.conjunctionId}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 px-1.5 py-0.5 rounded text-micro font-semibold uppercase ${
+                              TIER_COLORS[pe.tier] ?? TIER_COLORS.INFORMATIONAL
+                            }`}
+                          >
+                            {pe.tier}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="text-micro text-slate-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatTcaCountdown(pe.tca)}
+                          </span>
+                          <span className="text-micro font-mono text-slate-400">
+                            Pc {formatPc(pe.pc)}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          </div>
+
+          {/* ── Tabs ────────────────────────────────────────────────────── */}
+          <div className="flex gap-1 p-1 rounded-lg glass-surface w-fit">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -727,224 +1142,7 @@ export default function ShieldPage() {
 
           {/* ── Tab: Events ─────────────────────────────────────────────── */}
           {activeTab === "events" && (
-            <div className="space-y-6">
-              {/* Stats Row */}
-              {stats && (
-                <GlassStagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-emerald-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Active Events
-                        </p>
-                        <p className="text-display-sm font-bold text-white">
-                          {stats.activeEvents}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-red-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Emergency
-                        </p>
-                        <p className="text-display-sm font-bold text-red-400">
-                          {stats.emergencyCount}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-amber-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">High</p>
-                        <p className="text-display-sm font-bold text-amber-400">
-                          {stats.highCount}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-yellow-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Elevated
-                        </p>
-                        <p className="text-display-sm font-bold text-yellow-400">
-                          {stats.elevatedCount}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-blue-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Monitor
-                        </p>
-                        <p className="text-display-sm font-bold text-blue-400">
-                          {stats.monitorCount}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-orange-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Overdue
-                        </p>
-                        <p className="text-display-sm font-bold text-orange-400">
-                          {stats.overdueDecisions}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </GlassStagger>
-              )}
-
-              {/* Fleet Overview */}
-              {fleetSummaryLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
-                  <span className="ml-2 text-small text-slate-400">
-                    Loading fleet overview...
-                  </span>
-                </div>
-              ) : fleetSummary ? (
-                <Card variant="elevated" padding="md">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Satellite className="w-4 h-4 text-emerald-400" />
-                    <h2 className="text-body font-semibold text-white">
-                      Fleet Overview
-                    </h2>
-                  </div>
-
-                  {/* Fleet Summary Cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div className="glass-surface rounded-lg p-3">
-                      <p className="text-micro text-slate-500 uppercase mb-1">
-                        Active Events
-                      </p>
-                      <p className="text-title font-bold text-white">
-                        {fleetSummary.totalActiveEvents}
-                      </p>
-                    </div>
-                    <div className="glass-surface rounded-lg p-3">
-                      <p className="text-micro text-slate-500 uppercase mb-1">
-                        Emergency
-                      </p>
-                      <p className="text-title font-bold text-red-400">
-                        {fleetSummary.emergencyCount}
-                      </p>
-                    </div>
-                    <div className="glass-surface rounded-lg p-3">
-                      <p className="text-micro text-slate-500 uppercase mb-1">
-                        Overdue Decisions
-                      </p>
-                      <p className="text-title font-bold text-amber-400">
-                        {fleetSummary.overdueDecisions}
-                      </p>
-                    </div>
-                    <div className="glass-surface rounded-lg p-3">
-                      <p className="text-micro text-slate-500 uppercase mb-1">
-                        Satellites w/ Events
-                      </p>
-                      <p className="text-title font-bold text-white">
-                        {fleetSummary.satellitesWithActiveEvents}
-                        <span className="text-small text-slate-500 font-normal">
-                          /{fleetSummary.totalSatellites}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Satellite Status Table — only show if >1 satellite */}
-                  {fleetSummary.satellites &&
-                    fleetSummary.satellites.length > 1 && (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-small">
-                          <thead>
-                            <tr className="text-left text-micro text-slate-500 uppercase border-b border-white/5">
-                              <th className="pb-2 pr-4">Satellite</th>
-                              <th className="pb-2 pr-4">Active Events</th>
-                              <th className="pb-2 pr-4">Highest Tier</th>
-                              <th className="pb-2">Oldest TCA</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fleetSummary.satellites
-                              .filter((s: any) => s.activeEventCount > 0)
-                              .map((sat: any) => (
-                                <tr
-                                  key={sat.noradId}
-                                  className="border-b border-white/5 last:border-0"
-                                >
-                                  <td className="py-2 pr-4 text-slate-200 font-medium">
-                                    {sat.name}
-                                    <span className="text-slate-500 ml-1 text-micro">
-                                      {sat.noradId}
-                                    </span>
-                                  </td>
-                                  <td className="py-2 pr-4 text-slate-300">
-                                    {sat.activeEventCount}
-                                  </td>
-                                  <td className="py-2 pr-4">
-                                    {sat.highestTier ? (
-                                      <span
-                                        className={`px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
-                                          TIER_COLORS[sat.highestTier] ??
-                                          TIER_COLORS.INFORMATIONAL
-                                        }`}
-                                      >
-                                        {sat.highestTier}
-                                      </span>
-                                    ) : (
-                                      <span className="text-slate-500">--</span>
-                                    )}
-                                  </td>
-                                  <td className="py-2 text-slate-300">
-                                    {sat.oldestUnresolvedTca
-                                      ? formatTcaCountdown(
-                                          sat.oldestUnresolvedTca,
-                                        )
-                                      : "--"}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                </Card>
-              ) : null}
-
-              {/* Priority Sort Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-small text-slate-400">Sort by:</span>
-                <button
-                  onClick={() => setSortMode("priority")}
-                  className={`px-3 py-1.5 rounded-md text-small font-medium transition-all duration-200 ${
-                    sortMode === "priority"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
-                  }`}
-                >
-                  Priority
-                </button>
-                <button
-                  onClick={() => setSortMode("date")}
-                  className={`px-3 py-1.5 rounded-md text-small font-medium transition-all duration-200 ${
-                    sortMode === "date"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
-                  }`}
-                >
-                  Date
-                </button>
-              </div>
-
+            <div className="space-y-4">
               {/* Filter Bar */}
               <Card variant="elevated" padding="md">
                 <div className="flex flex-col sm:flex-row gap-3 items-end">
@@ -990,122 +1188,11 @@ export default function ShieldPage() {
                       onChange={(e) => setNoradSearch(e.target.value)}
                     />
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    icon={<RefreshCw className="w-4 h-4" />}
-                    onClick={handleRefresh}
-                    loading={loading}
-                  >
-                    Refresh
-                  </Button>
                 </div>
               </Card>
 
-              {/* Event Cards — Priority Mode */}
-              {sortMode === "priority" ? (
-                priorityLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-                  </div>
-                ) : priorityEvents.length === 0 ? (
-                  <Card variant="elevated" padding="lg">
-                    <div className="text-center py-12">
-                      <Shield className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                      <p className="text-body-lg text-slate-400">
-                        No active events in priority queue
-                      </p>
-                      <p className="text-small text-slate-500 mt-1">
-                        All conjunction events are resolved or closed.
-                      </p>
-                    </div>
-                  </Card>
-                ) : (
-                  <GlassStagger className="space-y-3">
-                    {priorityEvents.map((pe: any) => (
-                      <motion.div key={pe.eventId} variants={glassItemVariants}>
-                        <Card
-                          variant="interactive"
-                          padding="md"
-                          onClick={() =>
-                            router.push(`/dashboard/shield/${pe.eventId}`)
-                          }
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e: React.KeyboardEvent) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              router.push(`/dashboard/shield/${pe.eventId}`);
-                            }
-                          }}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="min-w-0">
-                                <p className="text-body font-medium text-white truncate">
-                                  {pe.conjunctionId}
-                                </p>
-                                <p className="text-caption text-slate-500 mt-0.5">
-                                  {pe.satelliteName}
-                                </p>
-                              </div>
-                              <span
-                                className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
-                                  TIER_COLORS[pe.tier] ??
-                                  TIER_COLORS.INFORMATIONAL
-                                }`}
-                              >
-                                {pe.tier}
-                              </span>
-                              <span
-                                className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-medium ${
-                                  STATUS_COLORS[pe.status] ?? STATUS_COLORS.NEW
-                                }`}
-                              >
-                                {formatLabel(pe.status)}
-                              </span>
-                              <span className="shrink-0 px-2 py-0.5 rounded-full text-micro font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                Score: {Math.round(pe.priorityScore)}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-6 text-small">
-                              <div className="text-right">
-                                <p className="text-slate-500 text-micro uppercase">
-                                  TCA
-                                </p>
-                                <p className="text-slate-300 font-medium flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {formatTcaCountdown(pe.tca)}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-slate-500 text-micro uppercase">
-                                  Pc
-                                </p>
-                                <p className="text-slate-300 font-mono font-medium">
-                                  {formatPc(pe.pc)}
-                                </p>
-                              </div>
-                              {pe.hoursWithoutDecision !== null && (
-                                <div className="text-right">
-                                  <p className="text-slate-500 text-micro uppercase">
-                                    Waiting
-                                  </p>
-                                  <p className="text-amber-400 font-mono font-medium">
-                                    {Math.round(pe.hoursWithoutDecision)}h
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </GlassStagger>
-                )
-              ) : /* Event Cards — Date Mode (default) */
-              loading ? (
+              {/* Event List */}
+              {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
                 </div>
@@ -1123,7 +1210,7 @@ export default function ShieldPage() {
                   </div>
                 </Card>
               ) : (
-                <GlassStagger className="space-y-3">
+                <GlassStagger className="space-y-2">
                   {events.map((event: any) => (
                     <motion.div key={event.id} variants={glassItemVariants}>
                       <Card
@@ -1142,20 +1229,8 @@ export default function ShieldPage() {
                         }}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          {/* Left: ID + badges */}
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="min-w-0">
-                              <p className="text-body font-medium text-white truncate">
-                                {event.conjunctionId}
-                              </p>
-                              <p className="text-caption text-slate-500 mt-0.5">
-                                {event.noradId}{" "}
-                                <span className="text-slate-600 mx-1">
-                                  &rarr;
-                                </span>{" "}
-                                {event.threatNoradId}
-                              </p>
-                            </div>
+                          {/* Left: Tier badge + names */}
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <span
                               className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
                                 TIER_COLORS[event.riskTier] ??
@@ -1164,26 +1239,26 @@ export default function ShieldPage() {
                             >
                               {event.riskTier}
                             </span>
-                            <span
-                              className={`shrink-0 px-2 py-0.5 rounded-full text-micro font-medium ${
-                                STATUS_COLORS[event.status] ?? STATUS_COLORS.NEW
-                              }`}
-                            >
-                              {formatLabel(event.status)}
-                            </span>
+                            <div className="min-w-0">
+                              <p className="text-body font-medium text-white truncate">
+                                {event.satelliteName ?? event.noradId}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-caption text-slate-500 truncate">
+                                  {event.threatObjectName ??
+                                    event.threatNoradId}
+                                </span>
+                                {event.threatObjectType && (
+                                  <span className="shrink-0 px-1.5 py-0.5 rounded text-micro bg-slate-700/50 text-slate-400 border border-slate-600/30">
+                                    {event.threatObjectType}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           {/* Right: Metrics */}
-                          <div className="flex items-center gap-6 text-small">
-                            <div className="text-right">
-                              <p className="text-slate-500 text-micro uppercase">
-                                TCA
-                              </p>
-                              <p className="text-slate-300 font-medium flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatTcaCountdown(event.tca)}
-                              </p>
-                            </div>
+                          <div className="flex items-center gap-4 text-small shrink-0">
                             <div className="text-right">
                               <p className="text-slate-500 text-micro uppercase">
                                 Pc
@@ -1192,7 +1267,7 @@ export default function ShieldPage() {
                                 {formatPc(event.latestPc)}
                               </p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right hidden sm:block">
                               <p className="text-slate-500 text-micro uppercase">
                                 Miss Dist
                               </p>
@@ -1202,6 +1277,30 @@ export default function ShieldPage() {
                                   ? `${event.latestMissDistance.toFixed(0)}m`
                                   : "N/A"}
                               </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-slate-500 text-micro uppercase">
+                                TCA
+                              </p>
+                              <p className="text-slate-300 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatTcaCountdown(event.tca)}
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-micro font-medium ${
+                                  STATUS_COLORS[event.status] ??
+                                  STATUS_COLORS.NEW
+                                }`}
+                              >
+                                {formatLabel(event.status)}
+                              </span>
+                              {event.latestDecision && (
+                                <span className="px-2 py-0.5 rounded-full text-micro font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                  {formatLabel(event.latestDecision)}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1244,44 +1343,73 @@ export default function ShieldPage() {
             </div>
           )}
 
-          {/* ── Tab: Analytics ──────────────────────────────────────────── */}
-          {activeTab === "analytics" && (
+          {/* ── Tab: Forecast ─────────────────────────────────────────── */}
+          {activeTab === "forecast" && (
             <div className="space-y-6">
-              {/* Anomaly Alerts Banner */}
-              {anomaliesLoading ? (
+              {/* Maneuver Summary */}
+              {maneuverSummaryLoading ? (
                 <div className="flex items-center gap-2 py-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                   <span className="text-small text-slate-400">
-                    Checking for anomalies...
+                    Loading maneuver summary...
                   </span>
                 </div>
-              ) : anomalies.length > 0 ? (
-                <Card
-                  variant="elevated"
-                  padding="md"
-                  className="border-l-4 border-l-amber-500"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="w-4 h-4 text-amber-400" />
-                    <p className="text-body font-semibold text-amber-400">
-                      {anomalies.length} satellite
-                      {anomalies.length !== 1 ? "s" : ""} show
-                      {anomalies.length === 1 ? "s" : ""} unusual conjunction
-                      activity
-                    </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    {anomalies.map((a: any, i: number) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-2 text-small"
-                      >
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                        <span className="text-slate-300">{a.message}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+              ) : maneuverSummary ? (
+                <GlassStagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-orange-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Maneuvers (Week)
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.maneuversExecuted}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-cyan-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Total Delta-V
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.totalDeltaV}
+                          <span className="text-body text-slate-500 font-normal ml-1">
+                            m/s
+                          </span>
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-blue-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Avg Response Time
+                        </p>
+                        <p className="text-display-sm font-bold text-white">
+                          {maneuverSummary.averageResponseTimeHours > 0
+                            ? `${maneuverSummary.averageResponseTimeHours}h`
+                            : "N/A"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div variants={glassItemVariants}>
+                    <Card variant="metric" className="border-t-amber-500">
+                      <CardContent>
+                        <p className="text-caption text-slate-400 mb-1">
+                          Risks Accepted
+                        </p>
+                        <p className="text-display-sm font-bold text-amber-400">
+                          {maneuverSummary.risksAccepted}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </GlassStagger>
               ) : null}
 
               {/* 7-Day Forecast */}
@@ -1379,230 +1507,239 @@ export default function ShieldPage() {
                 </Card>
               ) : null}
 
-              {/* Fleet Maneuver Summary */}
-              {maneuverSummaryLoading ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                  <span className="text-small text-slate-400">
-                    Loading maneuver summary...
-                  </span>
-                </div>
-              ) : maneuverSummary ? (
-                <GlassStagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-orange-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Maneuvers (Week)
-                        </p>
-                        <p className="text-display-sm font-bold text-white">
-                          {maneuverSummary.maneuversExecuted}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-cyan-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Total Delta-V
-                        </p>
-                        <p className="text-display-sm font-bold text-white">
-                          {maneuverSummary.totalDeltaV}
-                          <span className="text-body text-slate-500 font-normal ml-1">
-                            m/s
-                          </span>
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-blue-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Avg Response Time
-                        </p>
-                        <p className="text-display-sm font-bold text-white">
-                          {maneuverSummary.averageResponseTimeHours > 0
-                            ? `${maneuverSummary.averageResponseTimeHours}h`
-                            : "N/A"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div variants={glassItemVariants}>
-                    <Card variant="metric" className="border-t-amber-500">
-                      <CardContent>
-                        <p className="text-caption text-slate-400 mb-1">
-                          Risks Accepted
-                        </p>
-                        <p className="text-display-sm font-bold text-amber-400">
-                          {maneuverSummary.risksAccepted}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </GlassStagger>
-              ) : null}
-
+              {/* Analytics Charts */}
               {analyticsLoading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
                 </div>
               ) : analytics ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>CDMs per Week</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.cdmsPerWeek.length > 0 ? (
+                        <CdmsPerWeekChart data={analytics.cdmsPerWeek} />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No CDM data available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>Events by Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.eventsByStatus.length > 0 ? (
+                        <EventsByStatusChart data={analytics.eventsByStatus} />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No event data available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>Events by Risk Tier</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.eventsByTier.length > 0 ? (
+                        <EventsByTierChart data={analytics.eventsByTier} />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No tier data available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>Decision Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.decisionBreakdown.length > 0 ? (
+                        <DecisionBreakdownChart
+                          data={analytics.decisionBreakdown}
+                        />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No decisions recorded yet
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>Pc Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.pcDistribution.some(
+                        (b: any) => b.count > 0,
+                      ) ? (
+                        <PcDistributionChart data={analytics.pcDistribution} />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No Pc data available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="elevated" padding="md">
+                    <CardHeader>
+                      <CardTitle>Events Timeline (90d)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.eventsTimeline.length > 0 ? (
+                        <EventsTimelineChart
+                          data={buildTimelineData(analytics.eventsTimeline)}
+                        />
+                      ) : (
+                        <p className="text-small text-slate-500 text-center py-8">
+                          No timeline data available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {/* ── Tab: Anomalies ────────────────────────────────────────── */}
+          {activeTab === "anomalies" && (
+            <div className="space-y-4">
+              {anomaliesLoading ? (
+                <div className="flex items-center gap-2 py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+                  <span className="text-small text-slate-400">
+                    Scanning for anomalies...
+                  </span>
+                </div>
+              ) : anomalies.length > 0 ? (
                 <>
-                  {/* Summary Metrics */}
-                  <GlassStagger className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <motion.div variants={glassItemVariants}>
-                      <Card variant="metric" className="border-t-cyan-500">
-                        <CardContent>
-                          <p className="text-caption text-slate-400 mb-1">
-                            Avg Response Time
-                          </p>
-                          <p className="text-display-sm font-bold text-white">
-                            {analytics.avgResponseTimeHours !== null &&
-                            analytics.avgResponseTimeHours !== undefined
-                              ? `${analytics.avgResponseTimeHours.toFixed(1)}h`
-                              : "N/A"}
-                          </p>
-                        </CardContent>
+                  <Card
+                    variant="elevated"
+                    padding="md"
+                    className="border-l-4 border-l-amber-500"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="w-4 h-4 text-amber-400" />
+                      <p className="text-body font-semibold text-amber-400">
+                        {anomalies.length} satellite
+                        {anomalies.length !== 1 ? "s" : ""} showing unusual
+                        conjunction activity
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {anomalies.map((a: any, i: number) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 p-3 rounded-lg glass-surface"
+                        >
+                          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-small text-slate-200">
+                              {a.message}
+                            </p>
+                            {a.satelliteName && (
+                              <p className="text-micro text-slate-500 mt-0.5">
+                                {a.satelliteName}{" "}
+                                {a.noradId && `(NORAD ${a.noradId})`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* Fleet overview for anomaly context */}
+                  {fleetSummary?.satellites &&
+                    fleetSummary.satellites.length > 1 && (
+                      <Card variant="elevated" padding="md">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Satellite className="w-4 h-4 text-emerald-400" />
+                          <h2 className="text-body font-semibold text-white">
+                            Fleet Status
+                          </h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-small">
+                            <thead>
+                              <tr className="text-left text-micro text-slate-500 uppercase border-b border-white/5">
+                                <th className="pb-2 pr-4">Satellite</th>
+                                <th className="pb-2 pr-4">Active Events</th>
+                                <th className="pb-2 pr-4">Highest Tier</th>
+                                <th className="pb-2">Next TCA</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {fleetSummary.satellites
+                                .filter((s: any) => s.activeEventCount > 0)
+                                .map((sat: any) => (
+                                  <tr
+                                    key={sat.noradId}
+                                    className="border-b border-white/5 last:border-0"
+                                  >
+                                    <td className="py-2 pr-4 text-slate-200 font-medium">
+                                      {sat.name}
+                                      <span className="text-slate-500 ml-1 text-micro">
+                                        {sat.noradId}
+                                      </span>
+                                    </td>
+                                    <td className="py-2 pr-4 text-slate-300">
+                                      {sat.activeEventCount}
+                                    </td>
+                                    <td className="py-2 pr-4">
+                                      {sat.highestTier ? (
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-micro font-semibold uppercase ${
+                                            TIER_COLORS[sat.highestTier] ??
+                                            TIER_COLORS.INFORMATIONAL
+                                          }`}
+                                        >
+                                          {sat.highestTier}
+                                        </span>
+                                      ) : (
+                                        <span className="text-slate-500">
+                                          --
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="py-2 text-slate-300">
+                                      {sat.oldestUnresolvedTca
+                                        ? formatTcaCountdown(
+                                            sat.oldestUnresolvedTca,
+                                          )
+                                        : "--"}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </Card>
-                    </motion.div>
-                    <motion.div variants={glassItemVariants}>
-                      <Card variant="metric" className="border-t-amber-500">
-                        <CardContent>
-                          <p className="text-caption text-slate-400 mb-1">
-                            Total Fuel Consumed
-                          </p>
-                          <p className="text-display-sm font-bold text-white">
-                            {analytics.totalFuelConsumedPct.toFixed(2)}%
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                    <motion.div variants={glassItemVariants}>
-                      <Card variant="metric" className="border-t-purple-500">
-                        <CardContent>
-                          <p className="text-caption text-slate-400 mb-1">
-                            Maneuvers (90d)
-                          </p>
-                          <p className="text-display-sm font-bold text-white">
-                            {analytics.maneuverCount}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </GlassStagger>
-
-                  {/* Charts Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>CDMs per Week</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.cdmsPerWeek.length > 0 ? (
-                          <CdmsPerWeekChart data={analytics.cdmsPerWeek} />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No CDM data available
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>Events by Status</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.eventsByStatus.length > 0 ? (
-                          <EventsByStatusChart
-                            data={analytics.eventsByStatus}
-                          />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No event data available
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>Events by Risk Tier</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.eventsByTier.length > 0 ? (
-                          <EventsByTierChart data={analytics.eventsByTier} />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No tier data available
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>Decision Breakdown</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.decisionBreakdown.length > 0 ? (
-                          <DecisionBreakdownChart
-                            data={analytics.decisionBreakdown}
-                          />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No decisions recorded yet
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>Pc Distribution</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.pcDistribution.some(
-                          (b: any) => b.count > 0,
-                        ) ? (
-                          <PcDistributionChart
-                            data={analytics.pcDistribution}
-                          />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No Pc data available
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="elevated" padding="md">
-                      <CardHeader>
-                        <CardTitle>Events Timeline (90d)</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {analytics.eventsTimeline.length > 0 ? (
-                          <EventsTimelineChart
-                            data={buildTimelineData(analytics.eventsTimeline)}
-                          />
-                        ) : (
-                          <p className="text-small text-slate-500 text-center py-8">
-                            No timeline data available
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                    )}
                 </>
               ) : (
                 <Card variant="elevated" padding="lg">
                   <div className="text-center py-12">
-                    <BarChart3 className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                    <p className="text-body-lg text-slate-400">
-                      Failed to load analytics data
+                    <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                    <p className="text-body-lg text-slate-300">
+                      No anomalies detected
+                    </p>
+                    <p className="text-small text-slate-500 mt-1">
+                      All satellites are operating within normal conjunction
+                      frequency bounds.
                     </p>
                   </div>
                 </Card>
@@ -1610,7 +1747,7 @@ export default function ShieldPage() {
             </div>
           )}
 
-          {/* ── Tab: Settings ──────────────────────────────────────────── */}
+          {/* ── Tab: Settings ────────────────────────────────────────── */}
           {activeTab === "settings" && (
             <div className="space-y-6">
               {configLoading ? (
