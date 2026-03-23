@@ -27,9 +27,11 @@ const navSections = {
         { label: "Insurance", href: "/modules/insurance" },
       ],
     },
+    { label: "Shield", href: "/platform" },
+    { label: "Sentinel", href: "/platform" },
+    { label: "Ephemeris", href: "/systems/ephemeris" },
+    { label: "Verity", href: "/verity" },
     { label: "Resources", href: "/resources" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Security", href: "/security" },
   ],
   solutions: [
     {
@@ -49,7 +51,6 @@ const navSections = {
     { label: "Blog", href: "/blog" },
     { label: "Careers", href: "/careers" },
     { label: "Contact", href: "/contact" },
-    { label: "Documentation", href: "/docs/api" },
   ],
 };
 
@@ -450,19 +451,19 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         ))}
                       </div>
 
-                      <div className="h-px bg-white/[0.08] my-8" />
-                      <div className="flex flex-col gap-0.5">
+                      {/* Auth — prominent, above divider */}
+                      <div className="flex flex-col gap-1 mt-6">
                         <Link
                           href="/login"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
+                          className="py-2 text-[18px] font-normal text-white/80 hover:text-white transition-colors duration-200"
                         >
                           Log in
                         </Link>
                         <Link
                           href="/signup"
                           onClick={closeMenu}
-                          className="py-1.5 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
+                          className="py-2 text-[18px] font-normal text-white/80 hover:text-white transition-colors duration-200"
                         >
                           Create account
                         </Link>
@@ -581,7 +582,24 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       ))}
                     </div>
 
-                    <div className="mt-10">
+                    {/* LinkedIn */}
+                    <a
+                      href="https://www.linkedin.com/company/caelex"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 py-2.5 mt-4 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-white/[0.04]"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                      </svg>
+                      LinkedIn
+                    </a>
+
+                    <div className="mt-8">
                       <Link
                         href="/demo"
                         onClick={closeMenu}
