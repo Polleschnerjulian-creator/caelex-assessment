@@ -927,44 +927,183 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* ── Liquid Glass Tokens ─────────────────────────────────── */
+  --glass-bg-base: #06080f;
+  --glass-bg-gradient: radial-gradient(
+    ellipse at 20% 50%,
+    rgba(15, 23, 42, 1) 0%,
+    rgba(6, 8, 15, 1) 70%
+  );
+  --glass-bg-accent-glow: radial-gradient(
+    ellipse at 80% 15%,
+    rgba(56, 189, 248, 0.025) 0%,
+    transparent 50%
+  );
+  --glass-bg-secondary-glow: radial-gradient(
+    ellipse at 50% 90%,
+    rgba(99, 50, 180, 0.012) 0%,
+    transparent 50%
+  );
+
+  --glass-bg-1: rgba(255, 255, 255, 0.025);
+  --glass-blur-1: 20px;
+  --glass-border-1: rgba(255, 255, 255, 0.055);
+  --glass-shadow-1: 0 2px 12px rgba(0, 0, 0, 0.15);
+
+  --glass-bg-2: rgba(255, 255, 255, 0.045);
+  --glass-blur-2: 24px;
+  --glass-border-2: rgba(255, 255, 255, 0.08);
+  --glass-shadow-2:
+    0 4px 24px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  --glass-bg-3: rgba(255, 255, 255, 0.07);
+  --glass-blur-3: 32px;
+  --glass-border-3: rgba(255, 255, 255, 0.11);
+  --glass-shadow-3:
+    0 8px 40px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.4);
+
+  --glass-hover: rgba(255, 255, 255, 0.06);
+  --glass-active: rgba(255, 255, 255, 0.1);
+  --glass-focus-ring: 0 0 0 2px rgba(56, 189, 248, 0.4);
+
+  --glass-text-primary: rgba(255, 255, 255, 0.92);
+  --glass-text-secondary: rgba(255, 255, 255, 0.55);
+  --glass-text-muted: rgba(255, 255, 255, 0.35);
+
+  --glass-radius-sm: 8px;
+  --glass-radius-md: 12px;
+  --glass-radius-lg: 16px;
+  --glass-radius-xl: 20px;
+
+  --glass-specular-size: 250px;
+  --glass-specular-opacity: 0.07;
 }
 
 /* ─── Dashboard Wallpaper ─── */
 .dashboard-wallpaper {
-  background: #060610;
+  background: var(--glass-bg-base);
+  background-image:
+    var(--glass-bg-gradient), var(--glass-bg-accent-glow),
+    var(--glass-bg-secondary-glow);
+  min-height: 100vh;
 }
 
-/* ─── V2 Glassmorphism Components ─── */
+/* ─── Liquid Glass Utility Classes ─── */
 
-/* Layer 2 cards — no own backdrop-filter, just opacity differentiation */
-.caelex-v2 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  transition: all var(--duration-normal) var(--ease-out);
+.caelex-v2 .glass-subtle {
+  background: var(--glass-bg-1);
+  backdrop-filter: blur(var(--glass-blur-1));
+  -webkit-backdrop-filter: blur(var(--glass-blur-1));
+  border: 1px solid var(--glass-border-1);
+  box-shadow: var(--glass-shadow-1);
 }
 
-.caelex-v2 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  transform: translateY(-1px);
+.caelex-v2 .glass {
+  background: var(--glass-bg-2);
+  backdrop-filter: blur(var(--glass-blur-2));
+  -webkit-backdrop-filter: blur(var(--glass-blur-2));
+  border: 1px solid var(--glass-border-2);
+  box-shadow: var(--glass-shadow-2);
+  position: relative;
+  overflow: hidden;
 }
 
 .caelex-v2 .glass-elevated {
+  background: var(--glass-bg-3);
+  backdrop-filter: blur(var(--glass-blur-3));
+  -webkit-backdrop-filter: blur(var(--glass-blur-3));
+  border: 1px solid var(--glass-border-3);
+  box-shadow: var(--glass-shadow-3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top-edge light reflection */
+.caelex-v2 .glass::before,
+.caelex-v2 .glass-elevated::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Interactive glass transitions */
+.caelex-v2 .glass-interactive {
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.caelex-v2 .glass-interactive:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--glass-shadow-3);
+  transform: translateY(-1px);
+}
+.caelex-v2 .glass-interactive:active {
+  background: var(--glass-active);
+  transform: translateY(0);
+}
+
+/* Inputs on glass surfaces */
+.caelex-v2 .glass input,
+.caelex-v2 .glass select,
+.caelex-v2 .glass textarea {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--glass-text-primary);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+.caelex-v2 .glass input:focus,
+.caelex-v2 .glass select:focus,
+.caelex-v2 .glass textarea:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: var(--glass-focus-ring);
+  outline: none;
+}
+
+/* Keep backward compat: glass-card maps to glass */
+.caelex-v2 .glass-card {
+  background: var(--glass-bg-2);
+  backdrop-filter: blur(var(--glass-blur-2));
+  -webkit-backdrop-filter: blur(var(--glass-blur-2));
+  border: 1px solid var(--glass-border-2);
+  box-shadow: var(--glass-shadow-2);
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.caelex-v2 .glass-card:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--glass-shadow-3);
+  transform: translateY(-1px);
 }
 
 .caelex-v2 .glass-inset {
   background: rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-inset);
+  border-radius: var(--glass-radius-sm);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* V2 Animations — Dark Neumorphic */

@@ -144,67 +144,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="caelex-v2 min-h-screen dashboard-wallpaper">
-      {/* Ambient gradient orbs — must be real DOM for backdrop-filter to pick up */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        aria-hidden="true"
-        style={{ zIndex: 0 }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)",
-            top: "-10%",
-            left: "-5%",
-            filter: "blur(80px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)",
-            bottom: "-10%",
-            right: "-5%",
-            filter: "blur(80px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(236,72,153,0.15) 0%, transparent 70%)",
-            top: "40%",
-            left: "40%",
-            filter: "blur(80px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: 350,
-            height: 350,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(6,182,212,0.2) 0%, transparent 70%)",
-            top: "10%",
-            right: "20%",
-            filter: "blur(80px)",
-          }}
-        />
-      </div>
-
+    <div className="caelex-v2 dashboard-wallpaper">
       {/* Sidebar */}
       <Sidebar
         user={
@@ -232,18 +172,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           }
         }
       `}</style>
-      <div
-        className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[22px] lg:overflow-hidden"
-        style={{
-          position: "relative",
-          zIndex: 1,
-          background: "rgba(255, 255, 255, 0.05)",
-          backdropFilter: "blur(16px) saturate(180%)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.37)",
-        }}
-      >
+      <div className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle">
         {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
         )}
