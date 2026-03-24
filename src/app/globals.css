@@ -932,36 +932,6 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 /* ─── Dashboard Wallpaper ─── */
 .dashboard-wallpaper {
   background: #060610;
-  position: relative;
-}
-.dashboard-wallpaper::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      circle 600px at 10% 20%,
-      rgba(139, 92, 246, 0.25) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      circle 500px at 85% 75%,
-      rgba(59, 130, 246, 0.2) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      circle 400px at 50% 50%,
-      rgba(236, 72, 153, 0.12) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      circle 350px at 70% 15%,
-      rgba(6, 182, 212, 0.15) 0%,
-      transparent 70%
-    );
-  filter: blur(60px);
 }
 
 /* ─── V2 Glassmorphism Components ─── */
