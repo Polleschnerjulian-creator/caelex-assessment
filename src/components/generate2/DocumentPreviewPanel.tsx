@@ -11,7 +11,7 @@ import { GenerationProgress } from "./GenerationProgress";
 import { ReadinessRing } from "./ReadinessRing";
 import { ReasoningPreview } from "./ReasoningPreview";
 import { ConsistencyReport } from "./ConsistencyReport";
-import { innerGlass } from "./styles";
+import { innerGlass, innerGlassDarkClass } from "./styles";
 import type {
   NCADocumentType,
   DocumentTypeMeta,
@@ -106,15 +106,18 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-8">
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+          className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 ${innerGlassDarkClass}`}
           style={innerGlass}
         >
-          <FileText size={28} className="text-slate-400" />
+          <FileText
+            size={28}
+            className="text-slate-400 dark:text-white/[0.4]"
+          />
         </div>
-        <h3 className="text-lg font-medium text-slate-600">
+        <h3 className="text-lg font-medium text-slate-600 dark:text-white/[0.7]">
           Select a document type
         </h3>
-        <p className="text-sm text-slate-400 mt-2 max-w-md">
+        <p className="text-sm text-slate-400 dark:text-white/[0.4] mt-2 max-w-md">
           Choose an NCA document from the left panel to preview its readiness
           and generate submission-ready content.
         </p>
@@ -139,8 +142,12 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col h-full">
         <div className="px-6 pt-6 pb-2">
-          <h3 className="text-lg font-semibold text-slate-800">{meta.title}</h3>
-          <p className="text-sm text-slate-500 mt-1">{meta.articleRef}</p>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white/[0.92]">
+            {meta.title}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-white/[0.45] mt-1">
+            {meta.articleRef}
+          </p>
         </div>
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <GenerationProgress
@@ -159,12 +166,14 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-black/[0.06] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-white/[0.92]">
               {meta.title}
             </h3>
-            <p className="text-sm text-slate-500">{meta.articleRef}</p>
+            <p className="text-sm text-slate-500 dark:text-white/[0.45]">
+              {meta.articleRef}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {actionRequiredCount > 0 && (
@@ -181,7 +190,7 @@ export function DocumentPreviewPanel({
             )}
             <button
               onClick={onRegenerate}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-black/[0.08] text-sm text-slate-600 hover:bg-white/40 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-black/[0.08] dark:border-white/[0.08] text-sm text-slate-600 dark:text-white/[0.55] hover:bg-white/40 dark:hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
               aria-label="Regenerate document"
             >
               <RefreshCw size={14} aria-hidden="true" />
@@ -212,7 +221,7 @@ export function DocumentPreviewPanel({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {documentContent.map((section, idx) => (
             <div key={idx} className="mb-8">
-              <h4 className="text-base font-semibold text-slate-800 mb-3 pb-2 border-b border-black/[0.06]">
+              <h4 className="text-base font-semibold text-slate-800 dark:text-white/[0.92] mb-3 pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
                 {section.title}
               </h4>
               <div className="space-y-2">
@@ -242,7 +251,7 @@ export function DocumentPreviewPanel({
                     return (
                       <p
                         key={blockIdx}
-                        className="text-sm text-slate-600 leading-relaxed"
+                        className="text-sm text-slate-600 dark:text-white/[0.55] leading-relaxed"
                       >
                         {text}
                       </p>
@@ -252,7 +261,7 @@ export function DocumentPreviewPanel({
                     return (
                       <h5
                         key={blockIdx}
-                        className={`font-semibold text-slate-700 ${
+                        className={`font-semibold text-slate-700 dark:text-white/[0.8] ${
                           block.level === 2 ? "text-sm mt-4" : "text-xs mt-3"
                         }`}
                       >
@@ -264,7 +273,7 @@ export function DocumentPreviewPanel({
                     return (
                       <ul
                         key={blockIdx}
-                        className={`text-sm text-slate-600 space-y-1 pl-4 ${
+                        className={`text-sm text-slate-600 dark:text-white/[0.55] space-y-1 pl-4 ${
                           block.ordered ? "list-decimal" : "list-disc"
                         }`}
                       >
@@ -278,16 +287,16 @@ export function DocumentPreviewPanel({
                     return (
                       <div
                         key={blockIdx}
-                        className="overflow-x-auto rounded-xl my-2"
+                        className={`overflow-x-auto rounded-xl my-2 ${innerGlassDarkClass}`}
                         style={innerGlass}
                       >
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-white/30">
+                            <tr className="bg-white/30 dark:bg-white/[0.04]">
                               {block.headers.map((h, i) => (
                                 <th
                                   key={i}
-                                  className="px-3 py-2 text-left text-slate-500 font-medium border-b border-black/[0.06]"
+                                  className="px-3 py-2 text-left text-slate-500 dark:text-white/[0.45] font-medium border-b border-black/[0.06] dark:border-white/[0.06]"
                                 >
                                   {h}
                                 </th>
@@ -298,12 +307,12 @@ export function DocumentPreviewPanel({
                             {block.rows.map((row, rowIdx) => (
                               <tr
                                 key={rowIdx}
-                                className="border-b border-black/[0.04]"
+                                className="border-b border-black/[0.04] dark:border-white/[0.04]"
                               >
                                 {row.map((cell, cellIdx) => (
                                   <td
                                     key={cellIdx}
-                                    className="px-3 py-2 text-slate-600"
+                                    className="px-3 py-2 text-slate-600 dark:text-white/[0.55]"
                                   >
                                     {cell}
                                   </td>
@@ -320,10 +329,12 @@ export function DocumentPreviewPanel({
                       <div key={blockIdx} className="space-y-1">
                         {block.items.map((kv, i) => (
                           <div key={i} className="text-sm">
-                            <span className="text-slate-500 font-medium">
+                            <span className="text-slate-500 dark:text-white/[0.45] font-medium">
                               {kv.key}:
                             </span>{" "}
-                            <span className="text-slate-700">{kv.value}</span>
+                            <span className="text-slate-700 dark:text-white/[0.7]">
+                              {kv.value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -347,7 +358,10 @@ export function DocumentPreviewPanel({
                   }
                   if (block.type === "divider") {
                     return (
-                      <hr key={blockIdx} className="border-black/[0.06] my-3" />
+                      <hr
+                        key={blockIdx}
+                        className="border-black/[0.06] dark:border-white/[0.06] my-3"
+                      />
                     );
                   }
                   return null;
@@ -364,20 +378,27 @@ export function DocumentPreviewPanel({
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">{meta.title}</h3>
-        <p className="text-sm text-slate-500 mt-1">{meta.description}</p>
-        <p className="text-xs text-slate-400 mt-1">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white/[0.92]">
+          {meta.title}
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-white/[0.45] mt-1">
+          {meta.description}
+        </p>
+        <p className="text-xs text-slate-400 dark:text-white/[0.35] mt-1">
           {meta.articleRef} | {meta.estimatedSections} sections
         </p>
       </div>
 
       {/* Readiness card */}
       {readiness && (
-        <div className="rounded-xl p-4 mb-6" style={innerGlass}>
+        <div
+          className={`rounded-xl p-4 mb-6 ${innerGlassDarkClass}`}
+          style={innerGlass}
+        >
           <div className="flex items-center gap-4">
             <ReadinessRing score={readiness.score} size={56} strokeWidth={4} />
             <div>
-              <p className="text-sm font-medium text-slate-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-white/[0.7]">
                 Data Readiness:{" "}
                 <span
                   className={
@@ -391,7 +412,7 @@ export function DocumentPreviewPanel({
                   {readiness.score}%
                 </span>
               </p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-white/[0.45] mt-0.5">
                 {readiness.presentFields}/{readiness.totalFields} required
                 fields present
               </p>
@@ -408,13 +429,13 @@ export function DocumentPreviewPanel({
       {/* NCA Targeting */}
       {ncaProfiles && ncaProfiles.length > 0 && onNCAChange && (
         <div className="mb-6">
-          <label className="text-sm font-medium text-slate-600 block mb-2">
+          <label className="text-sm font-medium text-slate-600 dark:text-white/[0.55] block mb-2">
             Target NCA
           </label>
           <select
             value={selectedNCA || ""}
             onChange={(e) => onNCAChange(e.target.value || null)}
-            className="w-full text-sm bg-white/50 border border-black/[0.08] rounded-xl px-3 py-2.5 text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            className="w-full text-sm bg-white/50 dark:bg-white/[0.05] border border-black/[0.08] dark:border-white/[0.08] rounded-xl px-3 py-2.5 text-slate-700 dark:text-white/[0.7] focus:ring-2 focus:ring-emerald-500 focus:outline-none"
           >
             <option value="">No specific NCA (generic output)</option>
             {ncaProfiles.map((nca) => (
@@ -424,7 +445,7 @@ export function DocumentPreviewPanel({
             ))}
           </select>
           {selectedNCA && ncaProfiles && (
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-xs text-slate-400 dark:text-white/[0.35] mt-1.5">
               {(() => {
                 const nca = ncaProfiles.find((n) => n.id === selectedNCA);
                 if (!nca) return null;
@@ -438,23 +459,28 @@ export function DocumentPreviewPanel({
 
       {/* Section outline */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-slate-600 mb-3">
+        <h4 className="text-sm font-medium text-slate-600 dark:text-white/[0.55] mb-3">
           Document Outline
         </h4>
-        <div className="rounded-xl overflow-hidden" style={innerGlass}>
+        <div
+          className={`rounded-xl overflow-hidden ${innerGlassDarkClass}`}
+          style={innerGlass}
+        >
           {sections.map((section, idx) => (
             <div
               key={section.number}
-              className={`flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-white/40 ${
+              className={`flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-white/40 dark:hover:bg-white/[0.04] ${
                 idx !== sections.length - 1
-                  ? "border-b border-black/[0.04]"
+                  ? "border-b border-black/[0.04] dark:border-white/[0.04]"
                   : ""
               }`}
             >
-              <span className="w-7 h-7 rounded-lg bg-black/[0.04] flex items-center justify-center text-xs font-semibold text-slate-400 shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center text-xs font-semibold text-slate-400 dark:text-white/[0.4] shrink-0">
                 {section.number}
               </span>
-              <span className="text-sm text-slate-600">{section.title}</span>
+              <span className="text-sm text-slate-600 dark:text-white/[0.55]">
+                {section.title}
+              </span>
             </div>
           ))}
         </div>
@@ -474,7 +500,7 @@ export function DocumentPreviewPanel({
       {/* Generate button */}
       <button
         onClick={onGenerate}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 dark:bg-white/[0.1] hover:bg-slate-700 dark:hover:bg-white/[0.15] text-white font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
         aria-label={
           canResume
             ? `Resume generating ${meta.shortTitle}`
@@ -486,7 +512,7 @@ export function DocumentPreviewPanel({
           ? `Resume ${meta.shortTitle}`
           : `Generate ${meta.shortTitle}`}
       </button>
-      <p className="text-xs text-slate-400 text-center mt-2">
+      <p className="text-xs text-slate-400 dark:text-white/[0.35] text-center mt-2">
         Estimated time: ~{Math.ceil(sections.length * 0.3)} min
       </p>
     </div>

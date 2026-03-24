@@ -8,7 +8,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { innerGlass } from "./styles";
+import { innerGlass, innerGlassDarkClass } from "./styles";
 import type {
   SectionPlan,
   ComplianceVerdict,
@@ -68,20 +68,20 @@ export function SectionPlanCard({
 
   return (
     <div
-      className="rounded-xl border border-black/[0.06] overflow-hidden"
+      className={`rounded-xl border border-black/[0.06] dark:border-white/[0.06] overflow-hidden ${innerGlassDarkClass}`}
       style={innerGlass}
     >
       {/* Header — always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/30 transition-colors text-left focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/30 dark:hover:bg-white/[0.04] transition-colors text-left focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
         aria-expanded={expanded}
       >
         <span className="text-sm shrink-0">
           {CONFIDENCE_ICONS[plan.confidenceLevel]}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-700 truncate">
+          <p className="text-sm font-medium text-slate-700 dark:text-white/[0.7] truncate">
             {plan.sectionIndex + 1}. {plan.sectionTitle}
           </p>
         </div>
@@ -92,19 +92,23 @@ export function SectionPlanCard({
         </span>
         <ChevronDown
           size={14}
-          className={`text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`text-slate-400 dark:text-white/[0.35] transition-transform ${expanded ? "rotate-180" : ""}`}
         />
       </button>
 
       {/* Details — expandable */}
       {expanded && (
-        <div className="px-4 pb-3 space-y-2 border-t border-black/[0.04]">
-          <p className="text-xs text-slate-500 mt-2">{plan.writingStrategy}</p>
+        <div className="px-4 pb-3 space-y-2 border-t border-black/[0.04] dark:border-white/[0.04]">
+          <p className="text-xs text-slate-500 dark:text-white/[0.45] mt-2">
+            {plan.writingStrategy}
+          </p>
 
           {plan.availableData.length > 0 && (
             <div className="text-xs">
-              <span className="text-slate-400 font-medium">Data: </span>
-              <span className="text-slate-600">
+              <span className="text-slate-400 dark:text-white/[0.35] font-medium">
+                Data:{" "}
+              </span>
+              <span className="text-slate-600 dark:text-white/[0.55]">
                 {plan.availableData
                   .map((d) => `${d.field}=${d.value}`)
                   .join(", ")}
@@ -135,7 +139,9 @@ export function SectionPlanCard({
 
           {onVerdictOverride && (
             <div className="flex items-center gap-2 pt-1">
-              <span className="text-xs text-slate-400">Override:</span>
+              <span className="text-xs text-slate-400 dark:text-white/[0.35]">
+                Override:
+              </span>
               <select
                 value={plan.complianceVerdict}
                 onChange={(e) =>
@@ -144,7 +150,7 @@ export function SectionPlanCard({
                     e.target.value as ComplianceVerdict,
                   )
                 }
-                className="text-xs bg-white/50 border border-black/[0.08] rounded-lg px-2 py-1 text-slate-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="text-xs bg-white/50 dark:bg-white/[0.05] border border-black/[0.08] dark:border-white/[0.08] rounded-lg px-2 py-1 text-slate-600 dark:text-white/[0.55] focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               >
                 <option value="compliant">Compliant</option>
                 <option value="substantially_compliant">

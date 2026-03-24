@@ -31,8 +31,8 @@ export function DocumentTypeCard({
       aria-pressed={isSelected}
       className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 group focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none ${
         isSelected
-          ? "bg-white/60 border-emerald-400/40 shadow-sm"
-          : "bg-white/0 border-transparent hover:bg-white/40 hover:border-white/40"
+          ? "bg-white/60 dark:bg-white/[0.08] border-emerald-400/40 shadow-sm dark:shadow-none"
+          : "bg-white/0 border-transparent hover:bg-white/40 dark:hover:bg-white/[0.04] hover:border-white/40 dark:hover:border-white/[0.08]"
       }`}
     >
       <div className="flex items-center gap-2.5">
@@ -46,7 +46,9 @@ export function DocumentTypeCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-caption text-slate-500">{meta.code}</span>
+            <span className="text-caption text-slate-500 dark:text-white/[0.45]">
+              {meta.code}
+            </span>
             <span
               className={`text-micro px-1.5 py-0.5 rounded border font-medium ${priorityStyles[meta.priority]}`}
             >
@@ -60,7 +62,9 @@ export function DocumentTypeCard({
           </div>
           <p
             className={`text-sm truncate mt-0.5 ${
-              isSelected ? "text-slate-900 font-medium" : "text-slate-700"
+              isSelected
+                ? "text-slate-900 dark:text-white/[0.92] font-medium"
+                : "text-slate-700 dark:text-white/[0.7]"
             }`}
           >
             {meta.shortTitle}

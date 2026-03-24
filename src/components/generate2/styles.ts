@@ -21,3 +21,10 @@ export const innerGlassDark: React.CSSProperties = {
   borderRadius: 12,
   boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
 };
+
+/**
+ * Dark-mode override classes to pair with `style={innerGlass}`.
+ * Uses `!important` via Tailwind's `!` prefix so the dark classes beat inline styles.
+ */
+export const innerGlassDarkClass =
+  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";

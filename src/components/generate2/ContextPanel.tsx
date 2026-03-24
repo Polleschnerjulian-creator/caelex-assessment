@@ -28,7 +28,7 @@ import {
   getRecommendedNext,
   estimateActionMarkers,
 } from "@/lib/generate/context-panel-utils";
-import { innerGlass } from "./styles";
+import { innerGlass, innerGlassDarkClass } from "./styles";
 
 type PanelState =
   | "empty"
@@ -163,17 +163,19 @@ function EmptyView({
     <div className="flex flex-col h-full">
       <PanelHeader
         title="Intelligence"
-        icon={<Zap size={16} className="text-slate-500" />}
+        icon={
+          <Zap size={16} className="text-slate-500 dark:text-white/[0.45]" />
+        }
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         <Section title="Package Progress">
-          <div className="p-3" style={innerGlass}>
+          <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-medium text-slate-700 dark:text-white/[0.7]">
                 {completedCount}/{totalDocs} Documents
               </span>
-              <span className="text-xs font-medium text-slate-600">
+              <span className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                 {progressPct}%
               </span>
             </div>
@@ -185,7 +187,7 @@ function EmptyView({
                 transition={{ duration: 0.6, ease: "easeOut" }}
               />
             </div>
-            <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">
+            <div className="mt-2 flex items-center gap-3 text-xs text-slate-400 dark:text-white/[0.35]">
               <span>Avg. Readiness: {avgReadiness}%</span>
             </div>
           </div>
@@ -195,18 +197,21 @@ function EmptyView({
           <Section title="Recommended Next">
             <button
               onClick={() => onSelect(recommended.type)}
-              className="w-full text-left p-3 rounded-[14px] transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              className={`w-full text-left p-3 rounded-[14px] transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] ${innerGlassDarkClass}`}
               style={innerGlass}
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-slate-500/10 flex items-center justify-center shrink-0">
-                  <ArrowRight size={12} className="text-slate-500" />
+                <div className="w-6 h-6 rounded-md bg-slate-500/10 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+                  <ArrowRight
+                    size={12}
+                    className="text-slate-500 dark:text-white/[0.45]"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-700 truncate">
+                  <p className="text-sm font-medium text-slate-700 dark:text-white/[0.7] truncate">
                     {recommended.code} — {recommended.shortTitle}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 dark:text-white/[0.35] mt-0.5">
                     {recommended.score}% ready — highest readiness
                   </p>
                 </div>
@@ -234,13 +239,13 @@ function EmptyView({
               return (
                 <div
                   key={level}
-                  className="rounded-xl p-2 text-center"
+                  className={`rounded-xl p-2 text-center ${innerGlassDarkClass}`}
                   style={innerGlass}
                 >
                   <p className={`text-lg font-semibold ${colors[level]}`}>
                     {count}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                     {labels[level]}
                   </p>
                 </div>
@@ -249,7 +254,7 @@ function EmptyView({
           </div>
         </Section>
 
-        <p className="text-xs text-slate-400 text-center px-2">
+        <p className="text-xs text-slate-400 dark:text-white/[0.35] text-center px-2">
           Select a document from the left panel to see detailed generation
           intelligence.
         </p>
@@ -298,25 +303,33 @@ function PreGenerationView({
     <div className="flex flex-col h-full">
       <PanelHeader
         title="Generation Intel"
-        icon={<Target size={16} className="text-slate-500" />}
+        icon={
+          <Target size={16} className="text-slate-500 dark:text-white/[0.45]" />
+        }
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {/* Data Input Fields */}
         <Section title="Data Input">
-          <div className="p-3 space-y-1.5" style={innerGlass}>
+          <div
+            className={`p-3 space-y-1.5 ${innerGlassDarkClass}`}
+            style={innerGlass}
+          >
             {fieldStatuses.map((field) => (
               <div key={field.name} className="flex items-center gap-2">
                 {field.isMissing ? (
                   <XCircle size={13} className="text-red-400 shrink-0" />
                 ) : (
-                  <Check size={13} className="text-slate-400 shrink-0" />
+                  <Check
+                    size={13}
+                    className="text-slate-400 dark:text-white/[0.35] shrink-0"
+                  />
                 )}
                 <span
                   className={`text-xs flex-1 ${
                     field.isMissing
                       ? "text-red-500 font-medium"
-                      : "text-slate-500"
+                      : "text-slate-500 dark:text-white/[0.45]"
                   }`}
                 >
                   {field.label}
@@ -327,7 +340,7 @@ function PreGenerationView({
                       ? "bg-red-500/10 text-red-500"
                       : field.weight === 2
                         ? "bg-amber-500/10 text-amber-600"
-                        : "bg-slate-100 text-slate-400"
+                        : "bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/[0.35]"
                   }`}
                 >
                   {field.weight === 3
@@ -344,8 +357,8 @@ function PreGenerationView({
         {/* Gap Prediction */}
         {missingCritical.length > 0 && (
           <Section title="Gap Prediction">
-            <div className="p-3" style={innerGlass}>
-              <div className="flex items-start gap-2 mb-3 pb-2.5 border-b border-black/[0.06]">
+            <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
+              <div className="flex items-start gap-2 mb-3 pb-2.5 border-b border-black/[0.06] dark:border-white/[0.06]">
                 <AlertTriangle
                   size={14}
                   className="text-amber-500 mt-0.5 shrink-0"
@@ -355,7 +368,7 @@ function PreGenerationView({
                     ~{estimatedMarkers} Action Required marker
                     {estimatedMarkers !== 1 ? "s" : ""} expected
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                     Fill missing data to reduce markers before generating.
                   </p>
                 </div>
@@ -367,11 +380,11 @@ function PreGenerationView({
                     key={gap.sectionNumber}
                     className="flex items-start gap-2"
                   >
-                    <span className="text-[10px] font-mono text-slate-400 w-4 mt-0.5 shrink-0">
+                    <span className="text-[10px] font-mono text-slate-400 dark:text-white/[0.35] w-4 mt-0.5 shrink-0">
                       {gap.sectionNumber}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-slate-600 font-medium truncate">
+                      <p className="text-xs text-slate-600 dark:text-white/[0.55] font-medium truncate">
                         {gap.sectionTitle}
                       </p>
                       <p className="text-[10px] text-amber-500 mt-0.5">
@@ -387,10 +400,13 @@ function PreGenerationView({
 
         {/* No Gaps */}
         {missingCritical.length === 0 && (
-          <div className="p-3 rounded-[14px] bg-slate-500/[0.06] border border-slate-200/60">
+          <div className="p-3 rounded-[14px] bg-slate-500/[0.06] dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06]">
             <div className="flex items-center gap-2">
-              <Check size={14} className="text-slate-500" />
-              <p className="text-xs font-medium text-slate-600">
+              <Check
+                size={14}
+                className="text-slate-500 dark:text-white/[0.45]"
+              />
+              <p className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                 All critical data present — minimal gaps expected.
               </p>
             </div>
@@ -405,18 +421,24 @@ function PreGenerationView({
                 <button
                   key={doc.type}
                   onClick={() => onSelect(doc.type)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors hover:bg-white/40"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors hover:bg-white/40 dark:hover:bg-white/[0.04]"
                 >
                   {doc.isCompleted ? (
-                    <Check size={13} className="text-slate-500 shrink-0" />
+                    <Check
+                      size={13}
+                      className="text-slate-500 dark:text-white/[0.45] shrink-0"
+                    />
                   ) : (
-                    <Circle size={13} className="text-slate-300 shrink-0" />
+                    <Circle
+                      size={13}
+                      className="text-slate-300 dark:text-white/[0.2] shrink-0"
+                    />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-600 font-medium truncate">
+                    <p className="text-xs text-slate-600 dark:text-white/[0.55] font-medium truncate">
                       {doc.code} — {doc.shortTitle}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-400 dark:text-white/[0.35]">
                       {doc.sharedFields} shared fields · {doc.score}% ready
                     </p>
                   </div>
@@ -465,14 +487,17 @@ function GeneratingView({
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           >
-            <Loader2 size={16} className="text-slate-500" />
+            <Loader2
+              size={16}
+              className="text-slate-500 dark:text-white/[0.45]"
+            />
           </motion.div>
         }
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         <Section title="Current Section">
-          <div className="p-3" style={innerGlass}>
+          <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={
@@ -487,30 +512,30 @@ function GeneratingView({
               >
                 {generationPhase === "init" && (
                   <div>
-                    <p className="text-xs font-medium text-slate-600">
+                    <p className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                       Initializing
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                       Preparing assessment data and prompts...
                     </p>
                   </div>
                 )}
                 {generationPhase === "sections" && sections[currentSection] && (
                   <div>
-                    <p className="text-xs font-medium text-slate-600">
+                    <p className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                       Section {sections[currentSection].number}
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
+                    <p className="text-[10px] text-slate-500 dark:text-white/[0.45] mt-0.5">
                       {sections[currentSection].title}
                     </p>
                   </div>
                 )}
                 {generationPhase === "finalizing" && (
                   <div>
-                    <p className="text-xs font-medium text-slate-600">
+                    <p className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                       Finalizing
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                       Assembling sections and saving document...
                     </p>
                   </div>
@@ -521,15 +546,18 @@ function GeneratingView({
         </Section>
 
         <Section title="Estimate">
-          <div className="p-3" style={innerGlass}>
+          <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
             <div className="flex items-center gap-2">
-              <Clock size={13} className="text-slate-400" />
+              <Clock
+                size={13}
+                className="text-slate-400 dark:text-white/[0.35]"
+              />
               <div>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-600 dark:text-white/[0.55]">
                   {remainingSections} section
                   {remainingSections !== 1 ? "s" : ""} remaining
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                   ~{estimatedMinutes} min estimated
                 </p>
               </div>
@@ -547,11 +575,14 @@ function GeneratingView({
                 <div
                   key={section.number}
                   className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                    isCurrent ? "bg-slate-500/[0.08]" : ""
+                    isCurrent ? "bg-slate-500/[0.08] dark:bg-white/[0.06]" : ""
                   }`}
                 >
                   {isComplete ? (
-                    <Check size={12} className="text-slate-500 shrink-0" />
+                    <Check
+                      size={12}
+                      className="text-slate-500 dark:text-white/[0.45] shrink-0"
+                    />
                   ) : isCurrent ? (
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -561,18 +592,24 @@ function GeneratingView({
                         ease: "linear",
                       }}
                     >
-                      <Loader2 size={12} className="text-slate-500 shrink-0" />
+                      <Loader2
+                        size={12}
+                        className="text-slate-500 dark:text-white/[0.45] shrink-0"
+                      />
                     </motion.div>
                   ) : (
-                    <Circle size={12} className="text-slate-300 shrink-0" />
+                    <Circle
+                      size={12}
+                      className="text-slate-300 dark:text-white/[0.2] shrink-0"
+                    />
                   )}
                   <span
                     className={`truncate ${
                       isCurrent
-                        ? "text-slate-700 font-medium"
+                        ? "text-slate-700 dark:text-white/[0.7] font-medium"
                         : isComplete
-                          ? "text-slate-500"
-                          : "text-slate-300"
+                          ? "text-slate-500 dark:text-white/[0.45]"
+                          : "text-slate-300 dark:text-white/[0.2]"
                     }`}
                   >
                     {section.title}
@@ -584,8 +621,8 @@ function GeneratingView({
         </Section>
 
         <Section title="Package">
-          <div className="p-3" style={innerGlass}>
-            <p className="text-xs text-slate-500">
+          <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
+            <p className="text-xs text-slate-500 dark:text-white/[0.45]">
               {completedCount}/{totalDocs} documents completed
             </p>
             <div className="h-1 rounded-full bg-black/[0.06] overflow-hidden mt-1.5">
@@ -651,7 +688,12 @@ function CompletedView({
     <div className="flex flex-col h-full">
       <PanelHeader
         title="Document Info"
-        icon={<FileText size={16} className="text-slate-500" />}
+        icon={
+          <FileText
+            size={16}
+            className="text-slate-500 dark:text-white/[0.45]"
+          />
+        }
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
@@ -677,20 +719,22 @@ function CompletedView({
           </div>
         </Section>
 
-        <div className="px-3 py-2 rounded-xl bg-slate-500/[0.06]">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">
+        <div className="px-3 py-2 rounded-xl bg-slate-500/[0.06] dark:bg-white/[0.03]">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/[0.35] mb-0.5">
             Reference
           </p>
-          <p className="text-xs text-slate-600">{meta.articleRef}</p>
+          <p className="text-xs text-slate-600 dark:text-white/[0.55]">
+            {meta.articleRef}
+          </p>
         </div>
 
         <Section title="Package Progress">
-          <div className="p-3" style={innerGlass}>
+          <div className={`p-3 ${innerGlassDarkClass}`} style={innerGlass}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-medium text-slate-700 dark:text-white/[0.7]">
                 {completedCount}/{totalDocs}
               </span>
-              <span className="text-xs font-medium text-slate-600">
+              <span className="text-xs font-medium text-slate-600 dark:text-white/[0.55]">
                 {progressPct}%
               </span>
             </div>
@@ -707,18 +751,21 @@ function CompletedView({
           <Section title="Generate Next">
             <button
               onClick={() => onSelect(recommended.type)}
-              className="w-full text-left p-3 rounded-[14px] transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              className={`w-full text-left p-3 rounded-[14px] transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] ${innerGlassDarkClass}`}
               style={innerGlass}
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-slate-500/10 flex items-center justify-center shrink-0">
-                  <ArrowRight size={12} className="text-slate-500" />
+                <div className="w-6 h-6 rounded-md bg-slate-500/10 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+                  <ArrowRight
+                    size={12}
+                    className="text-slate-500 dark:text-white/[0.45]"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-slate-700 truncate">
+                  <p className="text-xs font-medium text-slate-700 dark:text-white/[0.7] truncate">
                     {recommended.code} — {recommended.shortTitle}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
                     {recommended.score}% ready
                   </p>
                 </div>
@@ -734,18 +781,24 @@ function CompletedView({
                 <button
                   key={doc.type}
                   onClick={() => onSelect(doc.type)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors hover:bg-white/40"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors hover:bg-white/40 dark:hover:bg-white/[0.04]"
                 >
                   {doc.isCompleted ? (
-                    <Check size={13} className="text-slate-500 shrink-0" />
+                    <Check
+                      size={13}
+                      className="text-slate-500 dark:text-white/[0.45] shrink-0"
+                    />
                   ) : (
-                    <Circle size={13} className="text-slate-300 shrink-0" />
+                    <Circle
+                      size={13}
+                      className="text-slate-300 dark:text-white/[0.2] shrink-0"
+                    />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-600 font-medium truncate">
+                    <p className="text-xs text-slate-600 dark:text-white/[0.55] font-medium truncate">
                       {doc.code} — {doc.shortTitle}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-400 dark:text-white/[0.35]">
                       {doc.sharedFields} shared fields
                     </p>
                   </div>
@@ -766,12 +819,12 @@ function CompletedView({
                   className={`w-full text-left p-2.5 rounded-xl transition-colors ${
                     idx === 0
                       ? "bg-emerald-500/10 border border-emerald-500/20"
-                      : "hover:bg-white/40 border border-transparent"
+                      : `hover:bg-white/40 dark:hover:bg-white/[0.04] border border-transparent ${innerGlassDarkClass}`
                   }`}
                   style={idx === 0 ? undefined : innerGlass}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-slate-700 dark:text-white/[0.7]">
                       v{ver.version}
                       {idx === 0 && (
                         <span className="ml-1.5 text-emerald-600">
@@ -779,7 +832,7 @@ function CompletedView({
                         </span>
                       )}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-400 dark:text-white/[0.35]">
                       {new Date(ver.createdAt).toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "short",
@@ -788,7 +841,7 @@ function CompletedView({
                     </span>
                   </div>
                   {ver.readinessScore != null && (
-                    <div className="text-xs text-slate-400 mt-0.5">
+                    <div className="text-xs text-slate-400 dark:text-white/[0.35] mt-0.5">
                       Readiness: {ver.readinessScore}%
                       {ver.modelUsed && ` · ${ver.modelUsed}`}
                     </div>
@@ -815,10 +868,12 @@ function PanelHeader({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="px-4 py-3 border-b border-black/[0.06]">
+    <div className="px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.06]">
       <div className="flex items-center gap-2">
         {icon}
-        <h2 className="text-sm font-semibold text-slate-800">{title}</h2>
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-white/[0.92]">
+          {title}
+        </h2>
       </div>
     </div>
   );
@@ -833,7 +888,7 @@ function Section({
 }) {
   return (
     <div>
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1 mb-2">
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-white/[0.35] px-1 mb-2">
         {title}
       </h3>
       {children}
@@ -851,9 +906,14 @@ function StatBox({
   color: string;
 }) {
   return (
-    <div className="rounded-xl p-2 text-center" style={innerGlass}>
+    <div
+      className={`rounded-xl p-2 text-center ${innerGlassDarkClass}`}
+      style={innerGlass}
+    >
       <p className={`text-lg font-semibold ${color}`}>{value}</p>
-      <p className="text-[10px] text-slate-400 mt-0.5">{label}</p>
+      <p className="text-[10px] text-slate-400 dark:text-white/[0.35] mt-0.5">
+        {label}
+      </p>
     </div>
   );
 }
