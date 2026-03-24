@@ -933,21 +933,26 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 .dashboard-wallpaper {
   background:
     radial-gradient(
-      ellipse at 15% 20%,
-      rgba(74, 98, 232, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 85% 80%,
-      rgba(139, 92, 246, 0.06) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(16, 185, 129, 0.04) 0%,
+      ellipse 80% 60% at 10% 15%,
+      rgba(74, 98, 232, 0.15) 0%,
       transparent 60%
     ),
-    var(--bg-base);
+    radial-gradient(
+      ellipse 70% 50% at 90% 85%,
+      rgba(139, 92, 246, 0.12) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 50% 45%,
+      rgba(16, 185, 129, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 70% 20%,
+      rgba(30, 58, 138, 0.1) 0%,
+      transparent 50%
+    ),
+    #07070c;
   background-attachment: fixed;
 }
 
@@ -978,17 +983,17 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 .caelex-v2 .glass-elevated {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.02) 100%
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.03) 100%
   );
-  backdrop-filter: blur(48px) saturate(1.5);
-  -webkit-backdrop-filter: blur(48px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(48px) saturate(1.6);
+  -webkit-backdrop-filter: blur(48px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-lg);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .caelex-v2 .glass-inset {
