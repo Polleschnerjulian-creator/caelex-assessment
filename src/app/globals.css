@@ -980,8 +980,8 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --glass-specular-opacity: 0.07;
 }
 
-/* ─── Dashboard Wallpaper ─── */
-.dashboard-wallpaper {
+/* ─── Dashboard Wallpaper (dark mode only) ─── */
+.dark .dashboard-wallpaper {
   background: var(--glass-bg-base);
   background-image:
     var(--glass-bg-gradient), var(--glass-bg-accent-glow),
@@ -989,9 +989,9 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   min-height: 100vh;
 }
 
-/* ─── Liquid Glass Utility Classes ─── */
+/* ─── Liquid Glass Utility Classes (dark mode only) ─── */
 
-.caelex-v2 .glass-subtle {
+.dark .caelex-v2 .glass-subtle {
   background: var(--glass-bg-1);
   backdrop-filter: blur(var(--glass-blur-1));
   -webkit-backdrop-filter: blur(var(--glass-blur-1));
@@ -999,7 +999,7 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   box-shadow: var(--glass-shadow-1);
 }
 
-.caelex-v2 .glass {
+.dark .caelex-v2 .glass {
   background: var(--glass-bg-2);
   backdrop-filter: blur(var(--glass-blur-2));
   -webkit-backdrop-filter: blur(var(--glass-blur-2));
@@ -1009,7 +1009,7 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   overflow: hidden;
 }
 
-.caelex-v2 .glass-elevated {
+.dark .caelex-v2 .glass-elevated {
   background: var(--glass-bg-3);
   backdrop-filter: blur(var(--glass-blur-3));
   -webkit-backdrop-filter: blur(var(--glass-blur-3));
@@ -1019,9 +1019,9 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   overflow: hidden;
 }
 
-/* Top-edge light reflection */
-.caelex-v2 .glass::before,
-.caelex-v2 .glass-elevated::before {
+/* Top-edge light reflection (dark only) */
+.dark .caelex-v2 .glass::before,
+.dark .caelex-v2 .glass-elevated::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1038,37 +1038,37 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   z-index: 1;
 }
 
-/* Interactive glass transitions */
-.caelex-v2 .glass-interactive {
+/* Interactive glass transitions (dark only) */
+.dark .caelex-v2 .glass-interactive {
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.2s ease;
 }
-.caelex-v2 .glass-interactive:hover {
+.dark .caelex-v2 .glass-interactive:hover {
   background: var(--glass-hover);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: var(--glass-shadow-3);
   transform: translateY(-1px);
 }
-.caelex-v2 .glass-interactive:active {
+.dark .caelex-v2 .glass-interactive:active {
   background: var(--glass-active);
   transform: translateY(0);
 }
 
-/* Specular highlight layer (mouse-driven) */
-.caelex-v2 .glass,
-.caelex-v2 .glass-elevated,
-.caelex-v2 .glass-card {
+/* Specular highlight layer (dark only, mouse-driven) */
+.dark .caelex-v2 .glass,
+.dark .caelex-v2 .glass-elevated,
+.dark .caelex-v2 .glass-card {
   --specular-x: 50%;
   --specular-y: 50%;
   --specular-opacity: 0;
 }
 
-.caelex-v2 .glass::after,
-.caelex-v2 .glass-elevated::after,
-.caelex-v2 .glass-card::after {
+.dark .caelex-v2 .glass::after,
+.dark .caelex-v2 .glass-elevated::after,
+.dark .caelex-v2 .glass-card::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1085,10 +1085,10 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   mix-blend-mode: soft-light;
 }
 
-/* Inputs on glass surfaces */
-.caelex-v2 .glass input,
-.caelex-v2 .glass select,
-.caelex-v2 .glass textarea {
+/* Inputs on glass surfaces (dark only) */
+.dark .caelex-v2 .glass input,
+.dark .caelex-v2 .glass select,
+.dark .caelex-v2 .glass textarea {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--glass-text-primary);
@@ -1096,17 +1096,17 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
     border-color 0.2s ease,
     background 0.2s ease;
 }
-.caelex-v2 .glass input:focus,
-.caelex-v2 .glass select:focus,
-.caelex-v2 .glass textarea:focus {
+.dark .caelex-v2 .glass input:focus,
+.dark .caelex-v2 .glass select:focus,
+.dark .caelex-v2 .glass textarea:focus {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(56, 189, 248, 0.4);
   box-shadow: var(--glass-focus-ring);
   outline: none;
 }
 
-/* Keep backward compat: glass-card maps to glass */
-.caelex-v2 .glass-card {
+/* glass-card (dark only) */
+.dark .caelex-v2 .glass-card {
   background: var(--glass-bg-2);
   backdrop-filter: blur(var(--glass-blur-2));
   -webkit-backdrop-filter: blur(var(--glass-blur-2));
@@ -1120,14 +1120,14 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
     box-shadow 0.2s ease,
     transform 0.2s ease;
 }
-.caelex-v2 .glass-card:hover {
+.dark .caelex-v2 .glass-card:hover {
   background: var(--glass-hover);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: var(--glass-shadow-3);
   transform: translateY(-1px);
 }
 
-.caelex-v2 .glass-inset {
+.dark .caelex-v2 .glass-inset {
   background: rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--glass-radius-sm);
