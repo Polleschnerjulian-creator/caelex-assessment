@@ -66,7 +66,7 @@ export default function SentinelPage() {
       <section className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center justify-center overflow-hidden">
         {/* Background image */}
         <Image
-          src="/sentinel-hero.png"
+          src="/sentinel-hero.jpg"
           alt=""
           fill
           priority
