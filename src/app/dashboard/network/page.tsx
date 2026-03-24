@@ -80,7 +80,7 @@ const TABS: { id: StakeholderType; label: string }[] = [
 
 // ─── Glass Styles ───
 
-const glassPanel: React.CSSProperties = {
+const glassPanelLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.55)",
   backdropFilter: "blur(24px) saturate(1.4)",
   WebkitBackdropFilter: "blur(24px) saturate(1.4)",
@@ -91,7 +91,17 @@ const glassPanel: React.CSSProperties = {
   overflow: "hidden",
 };
 
-const innerGlass: React.CSSProperties = {
+const glassPanelDark: React.CSSProperties = {
+  background: "var(--glass-bg-2)",
+  backdropFilter: "blur(var(--glass-blur-2))",
+  WebkitBackdropFilter: "blur(var(--glass-blur-2))",
+  border: "1px solid var(--glass-border-2)",
+  borderRadius: 20,
+  boxShadow: "var(--glass-shadow-2)",
+  overflow: "hidden",
+};
+
+const innerGlassLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.45)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
@@ -99,6 +109,13 @@ const innerGlass: React.CSSProperties = {
   borderRadius: 14,
   boxShadow:
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
+const innerGlassDarkStyle: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.03)",
+  border: "1px solid rgba(255, 255, 255, 0.06)",
+  borderRadius: 14,
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
 };
 
 // ─── Sidebar Stat ───
@@ -118,7 +135,9 @@ function SidebarStat({
     <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/30 transition-colors">
       <span className={color}>{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-500 truncate">{label}</p>
+        <p className="text-xs text-slate-500 dark:text-white/[0.55] truncate">
+          {label}
+        </p>
       </div>
       <span className={`text-sm font-semibold ${color}`}>{value}</span>
     </div>
@@ -138,6 +157,22 @@ export default function NetworkHubPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const glassPanel = isDark ? glassPanelDark : glassPanelLight;
+  const innerGlass = isDark ? innerGlassDarkStyle : innerGlassLight;
 
   const [activeTab, setActiveTab] = useState<StakeholderType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -207,10 +242,10 @@ export default function NetworkHubPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
             Loading Compliance Network...
           </p>
         </div>
@@ -222,7 +257,7 @@ export default function NetworkHubPage() {
 
   if (error && !stats) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="rounded-2xl p-6" style={innerGlass}>
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -236,7 +271,7 @@ export default function NetworkHubPage() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Sidebar ─── */}
       <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
         <div className="px-5 pt-5 pb-3">
@@ -371,7 +406,7 @@ export default function NetworkHubPage() {
                     ? "No matching stakeholders"
                     : "No stakeholders yet"}
                 </h3>
-                <p className="text-small text-slate-500 mb-6 max-w-sm mx-auto">
+                <p className="text-small text-slate-500 dark:text-white/[0.55] mb-6 max-w-sm mx-auto">
                   {searchQuery
                     ? "Try adjusting your search or filter criteria."
                     : "Invite your first stakeholder to start building your compliance network. Share data rooms, request attestations, and track engagement activity."}
@@ -428,7 +463,7 @@ export default function NetworkHubPage() {
               Network Activity
             </h3>
             {activities.length === 0 ? (
-              <p className="text-sm text-slate-500 py-4 text-center">
+              <p className="text-sm text-slate-500 dark:text-white/[0.55] py-4 text-center">
                 No recent activity.
               </p>
             ) : (

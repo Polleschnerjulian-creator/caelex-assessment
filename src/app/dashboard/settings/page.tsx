@@ -776,7 +776,7 @@ export default function SettingsPage() {
       : currentNav.label);
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
       {/* ── Left Sidebar ── */}
       <div
         className="w-[272px] shrink-0 flex flex-col border-r border-black/[0.06] dark:border-white/[0.06]"

@@ -57,6 +57,11 @@ const innerGlass: React.CSSProperties = {
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
 };
 
+const glassPanelDarkClass =
+  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
+const innerGlassDarkClass =
+  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
+
 // ─── Input style ───
 
 const inputClass =
@@ -378,7 +383,10 @@ function MissionTimelineGantt() {
       </div>
 
       {/* Desktop Gantt view */}
-      <div className="hidden md:block" style={innerGlass}>
+      <div
+        className={`hidden md:block ${innerGlassDarkClass}`}
+        style={innerGlass}
+      >
         <div className="p-4">
           {/* Time axis */}
           <div className="relative h-8 mb-2 ml-48 border-b border-black/[0.06] dark:border-white/5">
@@ -853,10 +861,12 @@ function TimelinePageContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Loading timeline...</p>
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
+            Loading timeline...
+          </p>
         </div>
       </div>
     );
@@ -865,9 +875,12 @@ function TimelinePageContent() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Navigation + Stats + Filters ─── */}
-      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
             Timeline
@@ -932,7 +945,10 @@ function TimelinePageContent() {
             />
 
             {/* Completion Ring */}
-            <div className="mt-3 rounded-xl p-3" style={innerGlass}>
+            <div
+              className={`mt-3 rounded-xl p-3 ${innerGlassDarkClass}`}
+              style={innerGlass}
+            >
               <div className="flex items-center gap-3">
                 <div className="relative w-11 h-11">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 44 44">
@@ -1033,7 +1049,10 @@ function TimelinePageContent() {
       </div>
 
       {/* ─── Right Panel — Main Content ─── */}
-      <div className="flex-1 min-w-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`flex-1 min-w-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
@@ -1099,7 +1118,10 @@ function TimelinePageContent() {
                 )}
 
                 {/* Upcoming Deadlines */}
-                <div className="rounded-2xl p-4" style={innerGlass}>
+                <div
+                  className={`rounded-2xl p-4 ${innerGlassDarkClass}`}
+                  style={innerGlass}
+                >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-white">
                       <Clock size={16} className="text-slate-400" />
@@ -1183,7 +1205,10 @@ function TimelinePageContent() {
                 </div>
 
                 {/* Categories Summary */}
-                <div className="rounded-2xl p-4" style={innerGlass}>
+                <div
+                  className={`rounded-2xl p-4 ${innerGlassDarkClass}`}
+                  style={innerGlass}
+                >
                   <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-3">
                     By Category
                   </h3>
@@ -1221,7 +1246,10 @@ function TimelinePageContent() {
 
             {/* ─── Calendar View ─── */}
             {activeStep === "calendar" && (
-              <div className="rounded-2xl p-4" style={innerGlass}>
+              <div
+                className={`rounded-2xl p-4 ${innerGlassDarkClass}`}
+                style={innerGlass}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-white">
                     <Calendar size={18} className="text-slate-400" />
@@ -1305,7 +1333,10 @@ function TimelinePageContent() {
             {activeStep === "reminders" && (
               <div className="space-y-5">
                 {/* Reminder Schedule */}
-                <div className="rounded-2xl p-4" style={innerGlass}>
+                <div
+                  className={`rounded-2xl p-4 ${innerGlassDarkClass}`}
+                  style={innerGlass}
+                >
                   <h3 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">
                     Reminder Schedule
                   </h3>
@@ -1332,7 +1363,10 @@ function TimelinePageContent() {
                 </div>
 
                 {/* Notification Channels */}
-                <div className="rounded-2xl p-4" style={innerGlass}>
+                <div
+                  className={`rounded-2xl p-4 ${innerGlassDarkClass}`}
+                  style={innerGlass}
+                >
                   <h3 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">
                     Notification Channels
                   </h3>

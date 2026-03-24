@@ -37,7 +37,7 @@ interface RegulatoryUpdate {
 
 // ─── Glass Styles ───
 
-const glassPanel: React.CSSProperties = {
+const glassPanelLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.55)",
   backdropFilter: "blur(24px) saturate(1.4)",
   WebkitBackdropFilter: "blur(24px) saturate(1.4)",
@@ -48,7 +48,17 @@ const glassPanel: React.CSSProperties = {
   overflow: "hidden",
 };
 
-const innerGlass: React.CSSProperties = {
+const glassPanelDark: React.CSSProperties = {
+  background: "var(--glass-bg-2)",
+  backdropFilter: "blur(var(--glass-blur-2))",
+  WebkitBackdropFilter: "blur(var(--glass-blur-2))",
+  border: "1px solid var(--glass-border-2)",
+  borderRadius: 20,
+  boxShadow: "var(--glass-shadow-2)",
+  overflow: "hidden",
+};
+
+const innerGlassLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.45)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
@@ -56,6 +66,13 @@ const innerGlass: React.CSSProperties = {
   borderRadius: 14,
   boxShadow:
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
+const innerGlassDarkStyle: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.03)",
+  border: "1px solid rgba(255, 255, 255, 0.06)",
+  borderRadius: 14,
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
 };
 
 // ─── Severity Config ───
@@ -121,6 +138,22 @@ export default function RegulatoryFeedPage() {
   const { t } = useLanguage();
   const [updates, setUpdates] = useState<RegulatoryUpdate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const glassPanel = isDark ? glassPanelDark : glassPanelLight;
+  const innerGlass = isDark ? innerGlassDarkStyle : innerGlassLight;
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -193,7 +226,7 @@ export default function RegulatoryFeedPage() {
 
   return (
     <FeatureGate module="regulatory-feed">
-      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
         {/* ─── Left Sidebar ─── */}
         <div
           className="flex flex-col w-[260px] flex-shrink-0"
@@ -203,7 +236,7 @@ export default function RegulatoryFeedPage() {
             <h1 className="text-lg font-semibold text-slate-800 dark:text-white">
               {t("regulatoryFeed.title")}
             </h1>
-            <p className="text-small text-slate-500 mt-0.5">
+            <p className="text-small text-slate-500 dark:text-white/[0.55] mt-0.5">
               {t("regulatoryFeed.subtitle")}
             </p>
           </div>
@@ -373,16 +406,29 @@ function SidebarStat({
   value: number;
   accent?: string;
 }) {
+  const dark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   return (
     <div
       className="flex items-center justify-between px-3 py-2 rounded-lg"
-      style={{
-        background: "rgba(255, 255, 255, 0.3)",
-        border: "1px solid rgba(255, 255, 255, 0.35)",
-        borderRadius: 10,
-      }}
+      style={
+        dark
+          ? {
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.06)",
+              borderRadius: 10,
+            }
+          : {
+              background: "rgba(255, 255, 255, 0.3)",
+              border: "1px solid rgba(255, 255, 255, 0.35)",
+              borderRadius: 10,
+            }
+      }
     >
-      <span className="text-small text-slate-500">{label}</span>
+      <span className="text-small text-slate-500 dark:text-white/[0.55]">
+        {label}
+      </span>
       <span
         className={`text-body font-semibold ${accent || "text-slate-800 dark:text-white"}`}
       >
@@ -495,7 +541,9 @@ function FeedItem({
                 <p className="text-caption font-medium text-slate-500 uppercase tracking-wider mb-1">
                   {t("regulatoryFeed.matchReason")}
                 </p>
-                <p className="text-body text-slate-500">{update.matchReason}</p>
+                <p className="text-body text-slate-500 dark:text-white/[0.55]">
+                  {update.matchReason}
+                </p>
               </div>
 
               {/* Actions */}
@@ -536,23 +584,34 @@ function FeedItem({
 }
 
 function EmptyState({ t }: { t: (key: string) => string }) {
+  const dark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   return (
     <div className="flex items-center justify-center h-full">
       <div className="text-center">
         <div
           className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6"
-          style={{
-            background: "rgba(255, 255, 255, 0.3)",
-            border: "1px solid rgba(255, 255, 255, 0.35)",
-            borderRadius: 14,
-          }}
+          style={
+            dark
+              ? {
+                  background: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                  borderRadius: 14,
+                }
+              : {
+                  background: "rgba(255, 255, 255, 0.3)",
+                  border: "1px solid rgba(255, 255, 255, 0.35)",
+                  borderRadius: 14,
+                }
+          }
         >
           <Radio size={28} className="text-slate-400" strokeWidth={1.5} />
         </div>
         <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">
           {t("regulatoryFeed.noUpdates")}
         </h3>
-        <p className="text-body-lg text-slate-500 max-w-md mx-auto">
+        <p className="text-body-lg text-slate-500 dark:text-white/[0.55] max-w-md mx-auto">
           {t("regulatoryFeed.noUpdatesDescription")}
         </p>
       </div>

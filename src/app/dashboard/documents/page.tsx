@@ -109,6 +109,11 @@ const innerGlass: React.CSSProperties = {
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
 };
 
+const glassPanelDarkClass =
+  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
+const innerGlassDarkClass =
+  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
+
 // ─── Tab Definitions ───
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -151,10 +156,10 @@ const categoryIcons: Record<string, React.ReactNode> = {
 // ─── Input class (glass style) ───
 
 const inputClass =
-  "w-full bg-white/40 border border-black/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all";
+  "w-full bg-white/40 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all";
 
 const selectClass =
-  "w-full bg-white/40 border border-black/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all appearance-none";
+  "w-full bg-white/40 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/40 transition-all appearance-none";
 
 // ─── Page Content ───
 
@@ -291,10 +296,12 @@ function DocumentsPageContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Loading Document Vault...</p>
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
+            Loading Document Vault...
+          </p>
         </div>
       </div>
     );
@@ -303,9 +310,12 @@ function DocumentsPageContent() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Navigation + Stats ─── */}
-      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
             Document Vault
@@ -372,7 +382,10 @@ function DocumentsPageContent() {
             />
 
             {/* Completeness Ring */}
-            <div className="mt-4 rounded-xl p-3" style={innerGlass}>
+            <div
+              className={`mt-4 rounded-xl p-3 ${innerGlassDarkClass}`}
+              style={innerGlass}
+            >
               <div className="flex items-center gap-3">
                 <CompletenessRing value={stats.completeness} size={44} />
                 <div>
@@ -401,7 +414,10 @@ function DocumentsPageContent() {
       </div>
 
       {/* ─── Main Content Panel ─── */}
-      <div className="flex-1 min-w-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`flex-1 min-w-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -543,7 +559,7 @@ function OverviewTab({
         {Object.keys(documentsByCategory).length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8">
             <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
+              className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${innerGlassDarkClass}`}
               style={innerGlass}
             >
               <FileText size={24} className="text-slate-400" />
@@ -590,7 +606,7 @@ function OverviewTab({
                     </span>
                   </div>
                   <div
-                    className="rounded-xl overflow-hidden"
+                    className={`rounded-xl overflow-hidden ${innerGlassDarkClass}`}
                     style={innerGlass}
                   >
                     {docs.map((doc, idx) => (
@@ -693,7 +709,10 @@ function UploadTab({
           </p>
         </div>
 
-        <div className="rounded-xl p-5 space-y-5" style={innerGlass}>
+        <div
+          className={`rounded-xl p-5 space-y-5 ${innerGlassDarkClass}`}
+          style={innerGlass}
+        >
           {/* Metadata Form */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Document Name *">
@@ -888,7 +907,10 @@ function ExpiryTab({
           </span>
         </div>
         {expiringDocuments.length === 0 ? (
-          <div className="rounded-xl p-8 text-center" style={innerGlass}>
+          <div
+            className={`rounded-xl p-8 text-center ${innerGlassDarkClass}`}
+            style={innerGlass}
+          >
             <CheckCircle2
               size={36}
               className="mx-auto text-emerald-500/50 mb-3"
@@ -901,7 +923,10 @@ function ExpiryTab({
             </p>
           </div>
         ) : (
-          <div className="rounded-xl overflow-hidden" style={innerGlass}>
+          <div
+            className={`rounded-xl overflow-hidden ${innerGlassDarkClass}`}
+            style={innerGlass}
+          >
             {expiringDocuments.map((doc, idx) => {
               const days = getDaysUntilExpiry(new Date(doc.expiryDate!));
               const isUrgent = days !== null && days <= 30;
@@ -993,7 +1018,10 @@ function ComplianceTab({
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-5">
       {/* Overall Completeness */}
-      <div className="rounded-xl p-5" style={innerGlass}>
+      <div
+        className={`rounded-xl p-5 ${innerGlassDarkClass}`}
+        style={innerGlass}
+      >
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="text-base font-semibold text-slate-800 dark:text-white">
@@ -1029,7 +1057,7 @@ function ComplianceTab({
           return (
             <div
               key={module.module}
-              className="rounded-xl p-4"
+              className={`rounded-xl p-4 ${innerGlassDarkClass}`}
               style={innerGlass}
             >
               <div className="flex items-center justify-between mb-2.5">

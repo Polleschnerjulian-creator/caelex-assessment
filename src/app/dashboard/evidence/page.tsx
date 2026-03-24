@@ -61,7 +61,7 @@ interface DashboardData {
 
 // ── Glass Styles ────────────────────────────────────────────────────────────
 
-const glassPanel: React.CSSProperties = {
+const glassPanelLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.55)",
   backdropFilter: "blur(24px) saturate(1.4)",
   WebkitBackdropFilter: "blur(24px) saturate(1.4)",
@@ -72,7 +72,17 @@ const glassPanel: React.CSSProperties = {
   overflow: "hidden",
 };
 
-const innerGlass: React.CSSProperties = {
+const glassPanelDark: React.CSSProperties = {
+  background: "var(--glass-bg-2)",
+  backdropFilter: "blur(var(--glass-blur-2))",
+  WebkitBackdropFilter: "blur(var(--glass-blur-2))",
+  border: "1px solid var(--glass-border-2)",
+  borderRadius: 20,
+  boxShadow: "var(--glass-shadow-2)",
+  overflow: "hidden",
+};
+
+const innerGlassLight: React.CSSProperties = {
   background: "rgba(255, 255, 255, 0.45)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
@@ -80,6 +90,13 @@ const innerGlass: React.CSSProperties = {
   borderRadius: 14,
   boxShadow:
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+};
+
+const innerGlassDarkStyle: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.03)",
+  border: "1px solid rgba(255, 255, 255, 0.06)",
+  borderRadius: 14,
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -172,6 +189,22 @@ export default function EvidenceCoveragePage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const glassPanel = isDark ? glassPanelDark : glassPanelLight;
+  const innerGlass = isDark ? innerGlassDarkStyle : innerGlassLight;
 
   const fetchData = useCallback(async () => {
     try {
@@ -198,13 +231,15 @@ export default function EvidenceCoveragePage() {
   // ── Loading ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent items-center justify-center">
         <div
           className="flex flex-col items-center gap-3 p-8"
           style={glassPanel}
         >
           <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-          <p className="text-sm text-slate-500">Loading evidence data...</p>
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
+            Loading evidence data...
+          </p>
         </div>
       </div>
     );
@@ -213,13 +248,13 @@ export default function EvidenceCoveragePage() {
   // ── Error ───────────────────────────────────────────────────────────────
   if (error || !data) {
     return (
-      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent items-center justify-center">
         <div
           className="flex flex-col items-center gap-4 p-8"
           style={glassPanel}
         >
           <AlertTriangle className="w-8 h-8 text-red-500" />
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
             {error || "Failed to load evidence data"}
           </p>
           <button
@@ -250,7 +285,7 @@ export default function EvidenceCoveragePage() {
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
       <div className="flex flex-col w-[260px] shrink-0 p-5" style={glassPanel}>
         {/* Title */}
@@ -273,7 +308,9 @@ export default function EvidenceCoveragePage() {
           <div className="p-3 rounded-xl" style={innerGlass}>
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="text-xs text-slate-500">Total Evidence</span>
+              <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                Total Evidence
+              </span>
             </div>
             <p className="text-xl font-semibold text-slate-800 dark:text-white">
               {overviewStats.totalEvidence}
@@ -283,7 +320,9 @@ export default function EvidenceCoveragePage() {
           <div className="p-3 rounded-xl" style={innerGlass}>
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-xs text-slate-500">Accepted</span>
+              <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                Accepted
+              </span>
             </div>
             <p className="text-xl font-semibold text-emerald-600">
               {overviewStats.acceptedEvidence}
@@ -293,7 +332,9 @@ export default function EvidenceCoveragePage() {
           <div className="p-3 rounded-xl" style={innerGlass}>
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs text-slate-500">Pending</span>
+              <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                Pending
+              </span>
             </div>
             <p className="text-xl font-semibold text-amber-500">
               {overviewStats.pendingEvidence}
@@ -303,7 +344,9 @@ export default function EvidenceCoveragePage() {
           <div className="p-3 rounded-xl" style={innerGlass}>
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="text-xs text-slate-500">Coverage %</span>
+              <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                Coverage %
+              </span>
             </div>
             <p className="text-xl font-semibold text-slate-800 dark:text-white">
               {overallCoveragePct}%
@@ -314,7 +357,9 @@ export default function EvidenceCoveragePage() {
           <div className="p-3 rounded-xl" style={innerGlass}>
             <div className="flex items-center gap-2 mb-1.5">
               <Link2 className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs text-slate-500">Chain Integrity</span>
+              <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                Chain Integrity
+              </span>
             </div>
             {chainIntegrity.verified ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600">
@@ -357,7 +402,9 @@ export default function EvidenceCoveragePage() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
                   <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
                 </div>
-                <span className="text-xs text-slate-500">Total Evidence</span>
+                <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                  Total Evidence
+                </span>
               </div>
               <p className="text-2xl font-semibold text-slate-800 dark:text-white">
                 {overviewStats.totalEvidence}
@@ -375,7 +422,9 @@ export default function EvidenceCoveragePage() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 </div>
-                <span className="text-xs text-slate-500">Accepted</span>
+                <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                  Accepted
+                </span>
               </div>
               <p className="text-2xl font-semibold text-emerald-600">
                 {overviewStats.acceptedEvidence}
@@ -393,7 +442,9 @@ export default function EvidenceCoveragePage() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20">
                   <Clock className="w-3.5 h-3.5 text-amber-500" />
                 </div>
-                <span className="text-xs text-slate-500">Pending</span>
+                <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                  Pending
+                </span>
               </div>
               <p className="text-2xl font-semibold text-amber-500">
                 {overviewStats.pendingEvidence}
@@ -411,7 +462,9 @@ export default function EvidenceCoveragePage() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
                   <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
                 </div>
-                <span className="text-xs text-slate-500">Coverage</span>
+                <span className="text-xs text-slate-500 dark:text-white/[0.55]">
+                  Coverage
+                </span>
               </div>
               <p className="text-2xl font-semibold text-slate-800 dark:text-white">
                 {overallCoveragePct}%
@@ -455,7 +508,7 @@ export default function EvidenceCoveragePage() {
                         style={{ width: `${reg.coveragePct}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-slate-500 dark:text-white/[0.55]">
                       {reg.coveredRequirements} of {reg.totalRequirements}{" "}
                       requirements covered
                     </p>
@@ -479,7 +532,7 @@ export default function EvidenceCoveragePage() {
                 Recent Evidence
               </h2>
               {recentEvidence.length === 0 ? (
-                <p className="text-sm text-slate-500 py-8 text-center">
+                <p className="text-sm text-slate-500 dark:text-white/[0.55] py-8 text-center">
                   No evidence records yet
                 </p>
               ) : (
@@ -495,7 +548,7 @@ export default function EvidenceCoveragePage() {
                           <p className="text-sm font-medium text-slate-800 dark:text-white truncate">
                             {item.title}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 dark:text-white/[0.55]">
                             {getRegulationLabel(item.regulationType)} &middot;{" "}
                             {formatDate(item.updatedAt)}
                           </p>
@@ -524,7 +577,7 @@ export default function EvidenceCoveragePage() {
                 Gap Summary
               </h2>
               {gapsByCategory.length === 0 ? (
-                <p className="text-sm text-slate-500 py-8 text-center">
+                <p className="text-sm text-slate-500 dark:text-white/[0.55] py-8 text-center">
                   No regulatory requirements configured
                 </p>
               ) : (
@@ -537,10 +590,10 @@ export default function EvidenceCoveragePage() {
                     return (
                       <div key={cat.category}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm text-slate-500 capitalize">
+                          <span className="text-sm text-slate-500 dark:text-white/[0.55] capitalize">
                             {cat.category.replace(/_/g, " ")}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-500 dark:text-white/[0.55]">
                             {cat.gaps > 0 ? (
                               <span className="text-red-500">
                                 {cat.gaps} gap{cat.gaps !== 1 ? "s" : ""}
@@ -578,7 +631,7 @@ export default function EvidenceCoveragePage() {
               <Link2 className="w-4 h-4 text-slate-400" />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-500">
+                  <span className="text-sm font-medium text-slate-500 dark:text-white/[0.55]">
                     Evidence Hash-Chain Integrity
                   </span>
                   {chainIntegrity.verified ? (
@@ -593,7 +646,7 @@ export default function EvidenceCoveragePage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-white/[0.55] mt-0.5">
                   {chainIntegrity.totalRecords} hashed record
                   {chainIntegrity.totalRecords !== 1 ? "s" : ""} &middot; Last
                   verified {formatDate(chainIntegrity.lastVerified)}

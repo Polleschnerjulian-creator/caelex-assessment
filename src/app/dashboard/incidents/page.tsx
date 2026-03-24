@@ -118,6 +118,11 @@ const innerGlass: React.CSSProperties = {
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
 };
 
+const glassPanelDarkClass =
+  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
+const innerGlassDarkClass =
+  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
+
 // ─── Constants ───
 
 const SEVERITY_CONFIG: Record<
@@ -493,10 +498,12 @@ function IncidentsContent() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] items-center justify-center">
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={28} className="animate-spin text-indigo-500" />
-          <p className="text-sm text-slate-500">Loading incidents...</p>
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
+            Loading incidents...
+          </p>
         </div>
       </div>
     );
@@ -505,15 +512,18 @@ function IncidentsContent() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Sidebar ─── */}
-      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         {/* Title */}
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
             Incident Management
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-white/[0.55] mt-0.5">
             NIS2 incident response
           </p>
         </div>
@@ -548,8 +558,8 @@ function IncidentsContent() {
           ].map((stat) => (
             <div
               key={stat.label}
+              className={`p-3 flex flex-col gap-1 ${innerGlassDarkClass}`}
               style={innerGlass}
-              className="p-3 flex flex-col gap-1"
             >
               <div className="flex items-center gap-1.5">
                 <stat.icon size={12} className={stat.color} />
@@ -565,7 +575,7 @@ function IncidentsContent() {
         </div>
 
         {/* Divider */}
-        <div className="mx-4 border-t border-white/30 my-1" />
+        <div className="mx-4 border-t border-black/[0.06] dark:border-white/10 my-1" />
 
         {/* Severity Filters */}
         <div className="px-4 pt-3 pb-1">
@@ -632,7 +642,7 @@ function IncidentsContent() {
         <div className="px-4 pb-4">
           <button
             onClick={() => fetchIncidents()}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/30 transition-all"
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/30 transition-all ${innerGlassDarkClass}`}
             style={innerGlass}
           >
             <RefreshCw size={13} />
@@ -642,7 +652,10 @@ function IncidentsContent() {
       </div>
 
       {/* ─── Right Panel — Main Content ─── */}
-      <div className="flex-1 flex flex-col min-w-0" style={glassPanel}>
+      <div
+        className={`flex-1 flex flex-col min-w-0 ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Urgent deadline alert */}
           <AnimatePresence>
@@ -678,7 +691,7 @@ function IncidentsContent() {
           {incidents.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center mb-4"
+                className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 ${innerGlassDarkClass}`}
                 style={innerGlass}
               >
                 <Shield
@@ -710,7 +723,11 @@ function IncidentsContent() {
                 const urgentMs = incident.urgentDeadlineMs;
 
                 return (
-                  <div key={incident.id} style={innerGlass}>
+                  <div
+                    key={incident.id}
+                    className={innerGlassDarkClass}
+                    style={innerGlass}
+                  >
                     {/* Row */}
                     <button
                       onClick={() => fetchExpanded(incident.id)}

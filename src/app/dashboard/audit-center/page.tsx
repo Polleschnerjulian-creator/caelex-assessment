@@ -147,6 +147,11 @@ const innerGlass: React.CSSProperties = {
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
 };
 
+const glassPanelDarkClass =
+  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
+const innerGlassDarkClass =
+  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
+
 // ─── Sidebar Tab Definitions ───
 
 type Tab = "evidence" | "attestations";
@@ -338,10 +343,12 @@ function AuditCenterContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Loading Audit Center...</p>
+          <p className="text-sm text-slate-500 dark:text-white/[0.55]">
+            Loading Audit Center...
+          </p>
         </div>
       </div>
     );
@@ -349,8 +356,11 @@ function AuditCenterContent() {
 
   if (error && !overview) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
-        <div className="rounded-2xl p-6" style={innerGlass}>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
+        <div
+          className={`rounded-2xl p-6 ${innerGlassDarkClass}`}
+          style={innerGlass}
+        >
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <p className="text-sm text-red-600">{error}</p>
@@ -377,9 +387,12 @@ function AuditCenterContent() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-3 gap-3">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Sidebar ─── */}
-      <div className="w-[260px] shrink-0 flex flex-col" style={glassPanel}>
+      <div
+        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
             Audit Center
@@ -445,7 +458,10 @@ function AuditCenterContent() {
           />
 
           {/* Compliance Score Ring */}
-          <div className="mt-4 rounded-xl p-3" style={innerGlass}>
+          <div
+            className={`mt-4 rounded-xl p-3 ${innerGlassDarkClass}`}
+            style={innerGlass}
+          >
             <div className="flex items-center gap-3">
               <ComplianceRing
                 value={overview.complianceScore}
@@ -480,7 +496,10 @@ function AuditCenterContent() {
       </div>
 
       {/* ─── Right Panel — Main Content ─── */}
-      <div className="flex-1 flex flex-col min-w-0" style={glassPanel}>
+      <div
+        className={`flex-1 flex flex-col min-w-0 ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
         {/* Error Banner */}
         {error && (
           <div className="mx-5 mt-4 flex items-center gap-3 p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20">
@@ -568,7 +587,7 @@ function AuditCenterContent() {
 
             {/* ─── Filter Bar ─── */}
             <div
-              className="flex items-center gap-2 flex-wrap p-2 rounded-xl"
+              className={`flex items-center gap-2 flex-wrap p-2 rounded-xl ${innerGlassDarkClass}`}
               style={innerGlass}
             >
               <div className="flex items-center gap-1.5 text-[11px] tracking-wide font-medium text-slate-400 px-2">
@@ -605,7 +624,10 @@ function AuditCenterContent() {
                 Module Compliance ({filteredModules.length})
               </h3>
 
-              <div className="rounded-xl overflow-hidden" style={innerGlass}>
+              <div
+                className={`rounded-xl overflow-hidden ${innerGlassDarkClass}`}
+                style={innerGlass}
+              >
                 {filteredModules.map((mod, idx) => {
                   const isExpanded = expandedModules.has(mod.module);
                   const rc = regulationColors[mod.regulationType] || {
@@ -772,7 +794,10 @@ function AuditCenterContent() {
                   Action Items ({filteredActions.length})
                 </h3>
 
-                <div className="rounded-xl overflow-hidden" style={innerGlass}>
+                <div
+                  className={`rounded-xl overflow-hidden ${innerGlassDarkClass}`}
+                  style={innerGlass}
+                >
                   {filteredActions.slice(0, 20).map((item, idx) => {
                     const rc = regulationColors[item.regulationType] || {
                       ...defaultRegColor,
@@ -840,7 +865,10 @@ function AuditCenterContent() {
                 Export & Verification
               </h3>
 
-              <div className="rounded-xl p-4" style={innerGlass}>
+              <div
+                className={`rounded-xl p-4 ${innerGlassDarkClass}`}
+                style={innerGlass}
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     {
@@ -1036,7 +1064,7 @@ function MetricCard({
   chainStatus?: { valid: boolean; checkedEntries: number } | null;
 }) {
   return (
-    <div className="rounded-xl p-4" style={innerGlass}>
+    <div className={`rounded-xl p-4 ${innerGlassDarkClass}`} style={innerGlass}>
       <div className="flex items-center gap-2 mb-2">
         <span className={iconColor}>{icon}</span>
         <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">

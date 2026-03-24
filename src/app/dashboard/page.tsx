@@ -843,7 +843,7 @@ function DashboardContent() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-4 overflow-hidden">
+      <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-4 overflow-hidden">
         <div className="animate-pulse space-y-4 h-full">
           <div className="h-10 bg-white/30 dark:bg-white/5 rounded-2xl w-1/3" />
           <div className="grid grid-cols-4 gap-3">
@@ -868,7 +868,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] overflow-y-auto">
+    <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent overflow-y-auto">
       {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
@@ -1260,7 +1260,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322] p-4">
+        <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-white/30 dark:bg-white/5 rounded-2xl w-1/3" />
             <div className="grid grid-cols-4 gap-3">
