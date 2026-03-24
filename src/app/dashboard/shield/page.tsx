@@ -24,6 +24,12 @@ import {
   Zap,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
+
+const ShieldGlobe3DLazy = dynamic(
+  () => import("@/components/dashboard/ShieldGlobe3D"),
+  { ssr: false },
+);
+
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -1800,7 +1806,7 @@ export default function ShieldPage() {
       <div className="flex-1 relative overflow-hidden min-h-0">
         {/* Globe fills the entire center area */}
         <div className="absolute inset-0 bg-black">
-          <ShieldGlobe events={events} stats={stats} />
+          <ShieldGlobe3DLazy />
         </div>
 
         {/* ── LEFT PANELS (overlaid on globe) ──────────────────────────── */}
