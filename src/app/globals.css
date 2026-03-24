@@ -935,9 +935,9 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   background-image:
     linear-gradient(
       to bottom,
-      rgba(5, 5, 8, 0.15) 0%,
-      rgba(5, 5, 8, 0.05) 50%,
-      rgba(5, 5, 8, 0.4) 100%
+      rgba(5, 5, 8, 0.1) 0%,
+      transparent 40%,
+      rgba(5, 5, 8, 0.2) 100%
     ),
     url("/images/dashboard-wallpaper.jpg");
   background-size: cover;

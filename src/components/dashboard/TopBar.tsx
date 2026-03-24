@@ -17,12 +17,9 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
       <header
         className="h-14 px-6 lg:px-8 flex items-center justify-between lg:mt-3 lg:mr-3"
         style={{
-          background: "var(--sidebar-glass-bg)",
-          backdropFilter: "blur(40px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(40px) saturate(1.8)",
-          border: "1px solid var(--sidebar-glass-border)",
-          borderRadius: 16,
-          boxShadow: "var(--sidebar-glass-shadow)",
+          background: "rgba(255, 255, 255, 0.03)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          borderRadius: 0,
         }}
       >
         {/* Left */}
