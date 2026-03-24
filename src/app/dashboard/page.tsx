@@ -242,14 +242,14 @@ const glassPanel: React.CSSProperties = {
 };
 
 const glassPanelDark: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.05)",
-  backdropFilter: "blur(40px) saturate(1.4)",
-  WebkitBackdropFilter: "blur(40px) saturate(1.4)",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-  borderTop: "1px solid rgba(255, 255, 255, 0.15)",
+  background: "rgba(15, 15, 25, 0.55)",
+  backdropFilter: "blur(12px) saturate(1.3)",
+  WebkitBackdropFilter: "blur(12px) saturate(1.3)",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  borderTop: "1px solid rgba(255, 255, 255, 0.12)",
   borderRadius: 20,
   boxShadow:
-    "0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+    "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
   overflow: "hidden",
 };
 
