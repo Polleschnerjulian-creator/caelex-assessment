@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/landing/Navigation";
+import SentinelHeroText from "@/components/landing/SentinelHeroText";
 import {
   Bot,
   ShieldCheck,
@@ -60,10 +61,10 @@ const features = [
 export default function SentinelPage() {
   return (
     <div className="min-h-screen bg-[#09090B]">
-      <Navigation theme="light" />
+      <Navigation theme="dark" />
 
       {/* Hero */}
-      <section className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen min-h-[600px] max-h-[1000px] flex items-end overflow-hidden">
         {/* Background image */}
         <Image
           src="/sentinel-hero.jpg"
@@ -72,18 +73,13 @@ export default function SentinelPage() {
           priority
           className="object-cover object-center"
         />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/45" />
+        {/* Lighter dark overlay */}
+        <div className="absolute inset-0 bg-black/25" />
         {/* Bottom gradient fade into page background */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#09090B] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#09090B] to-transparent" />
 
-        <div className="relative z-10 text-center">
-          <h1 className="font-display text-[clamp(4rem,12vw,10rem)] font-bold tracking-[-0.03em] text-white leading-[0.9] uppercase">
-            Sentinel
-          </h1>
-          <p className="font-body text-[clamp(14px,1.5vw,18px)] text-white/60 mt-4 tracking-[0.2em] uppercase">
-            Autonomous Compliance Evidence
-          </p>
+        <div className="relative z-10 px-6 md:px-12 pb-12 md:pb-16 max-w-[1280px] mx-auto w-full">
+          <SentinelHeroText />
         </div>
       </section>
 
