@@ -1366,20 +1366,34 @@ export function Generate2Page() {
     (r) => r.documentType === selectedType,
   );
 
-  const glassPanel: React.CSSProperties = {
-    background: "rgba(255, 255, 255, 0.55)",
-    backdropFilter: "blur(24px) saturate(1.4)",
-    WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-    border: "1px solid rgba(255, 255, 255, 0.45)",
-    borderRadius: 20,
-    boxShadow:
-      "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-    overflow: "hidden",
-  };
+  const isDark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
+  const glassPanel: React.CSSProperties = isDark
+    ? {
+        background: "var(--glass-bg-2)",
+        backdropFilter: "blur(var(--glass-blur-2))",
+        WebkitBackdropFilter: "blur(var(--glass-blur-2))",
+        border: "1px solid var(--glass-border-2)",
+        borderRadius: "var(--glass-radius-xl)",
+        boxShadow: "var(--glass-shadow-2)",
+        overflow: "hidden",
+      }
+    : {
+        background: "rgba(255, 255, 255, 0.55)",
+        backdropFilter: "blur(24px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+        border: "1px solid rgba(255, 255, 255, 0.45)",
+        borderRadius: 20,
+        boxShadow:
+          "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+        overflow: "hidden",
+      };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
         <div className="flex flex-col items-center gap-3">
           <div
             className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
@@ -1395,7 +1409,7 @@ export function Generate2Page() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:from-[#0f1729] dark:via-[#111d35] dark:to-[#0c1322]">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
       {/* H-4: Save failure warning banner */}
       {saveError && (
         <div
