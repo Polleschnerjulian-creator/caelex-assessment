@@ -136,6 +136,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-space-grotesk)", "sans-serif"],
+        body: ["var(--font-ibm-plex)", "sans-serif"],
         instrument: [
           "var(--font-instrument)",
           "var(--font-inter)",
