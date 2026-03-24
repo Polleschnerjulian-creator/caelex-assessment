@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/landing/Navigation";
 import {
@@ -62,81 +63,27 @@ export default function SentinelPage() {
       <Navigation theme="light" />
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
-        {/* Gradient mesh environment */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(ellipse at 20% 50%, rgba(14, 165, 233, 0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 80%, rgba(14, 165, 233, 0.03) 0%, transparent 50%)
-            `,
-          }}
+      <section className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center justify-center overflow-hidden">
+        {/* Background image */}
+        <Image
+          src="/sentinel-hero.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-center"
         />
-        {/* Subtle dot grid */}
-        <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/45" />
+        {/* Bottom gradient fade into page background */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#09090B] to-transparent" />
 
-        <div className="relative max-w-[1280px] mx-auto px-6 md:px-12">
-          <p className="font-display text-[11px] font-medium uppercase tracking-[0.15em] text-sky-400 mb-4">
-            Caelex Sentinel
-          </p>
-          <h1 className="font-display text-[clamp(2.5rem,5vw,3rem)] font-bold tracking-[-0.015em] text-zinc-50 leading-[1.1] max-w-3xl">
-            Autonomous compliance evidence
+        <div className="relative z-10 text-center">
+          <h1 className="font-display text-[clamp(4rem,12vw,10rem)] font-bold tracking-[-0.03em] text-white leading-[0.9] uppercase">
+            Sentinel
           </h1>
-          <p className="font-body text-[16px] text-zinc-400 mt-5 max-w-2xl leading-relaxed">
-            Deploy autonomous compliance agents on your ground infrastructure.
-            Continuous monitoring. Cryptographic evidence. Zero manual
-            intervention.
+          <p className="font-body text-[clamp(14px,1.5vw,18px)] text-white/60 mt-4 tracking-[0.2em] uppercase">
+            Autonomous Compliance Evidence
           </p>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center gap-8 md:gap-12 mt-10">
-            {[
-              { value: "Ed25519", label: "Evidence Packets" },
-              { value: "SHA-256", label: "Hash-Chain Integrity" },
-              { value: "0.97+", label: "Trust Score" },
-            ].map((stat, i) => (
-              <div
-                key={stat.label}
-                className="flex items-center gap-8 md:gap-12"
-              >
-                {i > 0 && (
-                  <div className="w-px h-8 bg-white/10 hidden md:block mr-0" />
-                )}
-                <div>
-                  <p className="font-mono text-[22px] font-medium text-zinc-50 tracking-tight">
-                    {stat.value}
-                  </p>
-                  <p className="font-body text-[11px] text-zinc-500 uppercase tracking-wider mt-0.5">
-                    {stat.label}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4 mt-10">
-            <Link
-              href="/assessment"
-              className="inline-flex items-center h-[40px] px-5 bg-sky-500 text-white text-[14px] font-body font-medium rounded-[6px] hover:bg-sky-600 transition-all duration-150 shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_8px_rgba(14,165,233,0.25)] hover:-translate-y-px"
-            >
-              Start Assessment
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex items-center h-[40px] px-5 bg-white/[0.06] backdrop-blur-sm text-white text-[14px] font-body font-medium rounded-[6px] border border-white/[0.1] hover:bg-white/[0.1] hover:border-white/[0.18] transition-all duration-150"
-            >
-              Request Demo
-            </Link>
-          </div>
         </div>
       </section>
 
