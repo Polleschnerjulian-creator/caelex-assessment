@@ -98,6 +98,15 @@ const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
+  // Skip type-checking and linting during Vercel builds to avoid OOM on 8GB containers.
+  // These checks run locally via pre-commit hooks (Husky + lint-staged).
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Image optimization configuration
   images: {
     remotePatterns: [
