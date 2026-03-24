@@ -1120,7 +1120,7 @@ const CdmsPerWeekChart = dynamic(
         data: Array<{ week: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
               <XAxis
@@ -1152,7 +1152,7 @@ const EventsByStatusChart = dynamic(
         data: Array<{ status: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
@@ -1190,7 +1190,7 @@ const EventsByTierChart = dynamic(
         data: Array<{ tier: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
@@ -1239,7 +1239,7 @@ const DecisionBreakdownChart = dynamic(
         data: Array<{ decision: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
               <XAxis
@@ -1280,7 +1280,7 @@ const PcDistributionChart = dynamic(
         data: Array<{ label: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
               <XAxis dataKey="label" tick={axisTick} />
@@ -1313,7 +1313,7 @@ const EventsTimelineChart = dynamic(
         data: Array<{ date: string; count: number }>;
       }) {
         return (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
               <XAxis
@@ -1385,7 +1385,7 @@ export default function ShieldPage() {
 
   // Bottom section tab for secondary views
   const [bottomTab, setBottomTab] = useState<
-    "events" | "forecast" | "anomalies" | "settings"
+    "events" | "anomalies" | "settings"
   >("events");
 
   // ── Data Fetching ────────────────────────────────────────────────────────
@@ -1527,7 +1527,7 @@ export default function ShieldPage() {
     }
   }, []);
 
-  // Initial load: stats + events + fleet summary + priority queue
+  // Initial load: all data for grid layout
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -1535,32 +1535,21 @@ export default function ShieldPage() {
       fetchEvents(),
       fetchFleetSummary(),
       fetchPriorityQueue(),
+      fetchAnalytics(),
+      fetchForecast(),
+      fetchManeuverSummary(),
+      fetchAnomalies(),
     ]).finally(() => setLoading(false));
-  }, [fetchStats, fetchEvents, fetchFleetSummary, fetchPriorityQueue]);
-
-  // Load forecast when forecast tab selected
-  useEffect(() => {
-    if (bottomTab === "forecast") {
-      if (!forecast) fetchForecast();
-      if (!maneuverSummary) fetchManeuverSummary();
-      if (!analytics) fetchAnalytics();
-    }
   }, [
-    bottomTab,
-    forecast,
-    maneuverSummary,
-    analytics,
+    fetchStats,
+    fetchEvents,
+    fetchFleetSummary,
+    fetchPriorityQueue,
+    fetchAnalytics,
     fetchForecast,
     fetchManeuverSummary,
-    fetchAnalytics,
+    fetchAnomalies,
   ]);
-
-  // Load anomalies when anomalies tab selected
-  useEffect(() => {
-    if (bottomTab === "anomalies" && anomalies.length === 0) {
-      fetchAnomalies();
-    }
-  }, [bottomTab, anomalies.length, fetchAnomalies]);
 
   // Load config when settings tab selected
   useEffect(() => {
@@ -1666,7 +1655,6 @@ export default function ShieldPage() {
 
   const tabs = [
     { key: "events" as const, label: "EVENTS", icon: Activity },
-    { key: "forecast" as const, label: "FORECAST", icon: BarChart3 },
     { key: "anomalies" as const, label: "ANOMALIES", icon: Zap },
     { key: "settings" as const, label: "CONFIG", icon: Settings },
   ];
@@ -1696,7 +1684,7 @@ export default function ShieldPage() {
   // Cinematic intro screen
   if (!introComplete) {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+      <div className="fixed inset-0 z-50 bg-[#050a12] flex items-center justify-center">
         <motion.div
           className="flex flex-col items-center gap-5"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -1730,7 +1718,7 @@ export default function ShieldPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <p className="text-[11px] font-medium uppercase tracking-[0.4em] text-white/30 mb-1">
+            <p className="text-[11px] font-medium uppercase tracking-[0.4em] text-cyan-400/30 mb-1">
               Caelex
             </p>
             <h1 className="text-[32px] font-light tracking-[0.3em] text-white uppercase">
@@ -1767,72 +1755,88 @@ export default function ShieldPage() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // COMMAND CENTER UI
+  // COMMAND CENTER UI — Grid Layout
   // ═══════════════════════════════════════════════════════════════════════════
 
   return (
     <motion.div
-      className="h-screen bg-black text-white flex flex-col overflow-hidden"
+      className="h-screen bg-[#050a12] text-white flex flex-col overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
       {/* ── TOP BAR ───────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-10 flex items-center justify-between px-4 border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="shrink-0 h-10 flex items-center justify-between px-4 border-b border-cyan-500/[0.08] bg-[#060d1a]">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-light uppercase tracking-[0.2em] text-white/60">
+          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-400/70">
             Shield
           </span>
           <span className="text-[10px] uppercase tracking-[0.12em] text-white/20">
             Conjunction Assessment
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-[10px] font-mono tracking-wider text-white/25">
+        <div className="flex items-center gap-6">
+          {stats && (
+            <div className="flex items-center gap-4">
+              {stats.emergencyCount > 0 && (
+                <span className="flex items-center gap-1.5 text-[10px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-red-400">
+                    {stats.emergencyCount} EMRG
+                  </span>
+                </span>
+              )}
+              {stats.overdueDecisions > 0 && (
+                <span className="text-[10px] font-mono text-amber-400">
+                  {stats.overdueDecisions} OVERDUE
+                </span>
+              )}
+            </div>
+          )}
+          <span className="text-[10px] font-mono tracking-wider text-cyan-400/30">
             {utcTime} UTC
           </span>
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-white/25 hover:text-white/50 transition-colors disabled:opacity-30"
+            className="text-white/25 hover:text-cyan-400/60 transition-colors disabled:opacity-30"
           >
             <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {/* ── COMMAND CENTER: Globe + Overlaid Panels ───────────────────────── */}
-      <div className="flex-1 relative overflow-hidden min-h-0">
-        {/* Globe fills the entire center area */}
-        <div className="absolute inset-0 bg-black">
-          <ShieldGlobe3DLazy />
-        </div>
-
-        {/* ── LEFT PANELS (overlaid on globe) ──────────────────────────── */}
-        <div className="absolute left-4 top-4 bottom-4 w-[200px] flex flex-col gap-3 z-10 pointer-events-none">
+      {/* ── MAIN GRID: 3 Columns ──────────────────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-[200px_1fr_280px] min-h-0">
+        {/* ── LEFT COLUMN: Key Metrics ────────────────────────────────────── */}
+        <div className="flex flex-col gap-2 p-3 border-r border-white/[0.04] overflow-y-auto bg-[#060d1a]/50">
           {/* Active Events */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
+          <div className="relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-500/20 rounded-bl" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-500/20 rounded-br" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-1.5">
               Active Events
             </p>
-            <p className="text-[32px] font-light text-white leading-none">
-              {stats?.activeEvents ?? "--"}
+            <p className="text-[36px] font-extralight text-white leading-none tabular-nums">
+              {stats?.activeEvents ?? <span className="text-white/15">--</span>}
             </p>
             {stats && (
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                 {stats.emergencyCount > 0 && (
-                  <span className="text-[10px] font-mono text-red-400">
+                  <span className="text-[9px] font-mono text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
                     {stats.emergencyCount} EMRG
                   </span>
                 )}
                 {stats.highCount > 0 && (
-                  <span className="text-[10px] font-mono text-amber-400">
+                  <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                     {stats.highCount} HIGH
                   </span>
                 )}
                 {stats.elevatedCount > 0 && (
-                  <span className="text-[10px] font-mono text-yellow-400">
+                  <span className="text-[9px] font-mono text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded">
                     {stats.elevatedCount} ELEV
                   </span>
                 )}
@@ -1841,73 +1845,114 @@ export default function ShieldPage() {
           </div>
 
           {/* Fleet Risk */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
+          <div className="relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-500/20 rounded-bl" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-500/20 rounded-br" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-1.5">
               Fleet Risk
             </p>
             {fleetSummaryLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-white/20" />
             ) : fleetSummary ? (
               <>
-                <p className="text-[24px] font-light text-white leading-none">
-                  {fleetSummary.satellitesWithActiveEvents}
-                  <span className="text-[14px] text-white/20 font-light">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[28px] font-extralight text-white leading-none tabular-nums">
+                    {fleetSummary.satellitesWithActiveEvents}
+                  </span>
+                  <span className="text-[14px] text-white/15 font-extralight">
                     /{fleetSummary.totalSatellites}
                   </span>
-                </p>
-                <p className="text-[10px] text-white/20 mt-1">
-                  satellites at risk
+                </div>
+                <p className="text-[9px] text-white/20 mt-1 uppercase tracking-wider">
+                  Satellites at risk
                 </p>
               </>
             ) : (
-              <p className="text-[24px] font-light text-white/20">--</p>
+              <p className="text-[28px] font-extralight text-white/15 leading-none">
+                --
+              </p>
             )}
           </div>
 
           {/* Next TCA */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
+          <div className="relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-500/20 rounded-bl" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-500/20 rounded-br" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-1.5">
               Next TCA
             </p>
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin text-white/20" />
             ) : nearestTca ? (
               <>
-                <p className="text-[20px] font-mono font-light text-amber-400 leading-none">
+                <p className="text-[22px] font-mono font-extralight text-amber-400 leading-none tabular-nums">
                   {formatTcaCountdown(nearestTca.tca)}
                 </p>
-                <p className="text-[10px] font-mono text-white/20 mt-1 truncate">
+                <p className="text-[9px] font-mono text-white/15 mt-1.5 truncate">
                   {nearestTca.conjunctionId ?? nearestTca.id}
                 </p>
               </>
             ) : (
-              <p className="text-[20px] font-light text-white/20">--</p>
+              <p className="text-[22px] font-extralight text-white/15 leading-none">
+                --
+              </p>
             )}
           </div>
 
-          {/* Weekly Count */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
+          {/* This Week */}
+          <div className="relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-500/20 rounded-bl" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-500/20 rounded-br" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-1.5">
               This Week
             </p>
-            <p className="text-[24px] font-light text-white leading-none">
-              {stats
-                ? eventsThisWeek > 0
-                  ? eventsThisWeek
-                  : totalEvents
-                : "--"}
+            <p className="text-[28px] font-extralight text-white leading-none tabular-nums">
+              {stats ? (
+                eventsThisWeek > 0 ? (
+                  eventsThisWeek
+                ) : (
+                  totalEvents
+                )
+              ) : (
+                <span className="text-white/15">--</span>
+              )}
             </p>
-            <p className="text-[10px] text-white/20 mt-1">
+            <p className="text-[9px] text-white/20 mt-1 uppercase tracking-wider">
               {stats?.overdueDecisions
                 ? `${stats.overdueDecisions} overdue`
                 : "no overdue"}
             </p>
           </div>
 
-          {/* Globe Legend */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3 mt-auto">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
-              Tier Legend
+          {/* Maneuver Summary */}
+          {maneuverSummary && (
+            <div className="relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+              <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+              <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-1.5">
+                Maneuvers / Wk
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[20px] font-extralight text-white leading-none tabular-nums">
+                  {maneuverSummary.maneuversExecuted}
+                </span>
+                <span className="text-[9px] font-mono text-white/20">
+                  {maneuverSummary.totalDeltaV} m/s
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Tier Legend */}
+          <div className="mt-auto relative p-3 rounded bg-white/[0.02] border border-white/[0.04]">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-2">
+              Risk Tiers
             </p>
             {(["EMERGENCY", "HIGH", "ELEVATED", "MONITOR"] as const).map(
               (tier) => (
@@ -1915,7 +1960,7 @@ export default function ShieldPage() {
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${TIER_DOT_COLORS[tier]}`}
                   />
-                  <span className="text-[10px] text-white/30 uppercase tracking-wider">
+                  <span className="text-[9px] text-white/25 uppercase tracking-wider font-mono">
                     {tier}
                   </span>
                 </div>
@@ -1924,12 +1969,146 @@ export default function ShieldPage() {
           </div>
         </div>
 
-        {/* ── RIGHT PANEL: Priority Queue + Forecast ───────────────────── */}
-        <div className="absolute right-4 top-4 bottom-4 w-[260px] flex flex-col gap-3 z-10 pointer-events-none">
+        {/* ── CENTER: Globe + Mini Charts ──────────────────────────────────── */}
+        <div className="flex flex-col min-h-0">
+          {/* Globe Area */}
+          <div className="flex-1 relative min-h-0">
+            <div className="absolute inset-0 bg-[#050a12]">
+              <ShieldGlobe3DLazy />
+            </div>
+            {/* HUD overlays on globe */}
+            <div className="absolute top-3 left-4 pointer-events-none">
+              <p className="text-[9px] font-mono text-cyan-500/25 uppercase tracking-[0.3em]">
+                Caelex Shield
+              </p>
+              <p className="text-[8px] font-mono text-white/[0.08] uppercase tracking-[0.2em]">
+                Orbital Conjunction Monitoring
+              </p>
+            </div>
+            <div className="absolute top-3 right-4 pointer-events-none text-right">
+              <p className="text-[9px] font-mono text-cyan-500/25">
+                {events.length} TRACKED
+              </p>
+            </div>
+            {/* Bottom HUD readout on globe */}
+            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-4">
+                {(["EMERGENCY", "HIGH", "ELEVATED", "MONITOR"] as const).map(
+                  (tier) => {
+                    const count = events.filter(
+                      (e: any) => e.riskTier === tier,
+                    ).length;
+                    if (count === 0) return null;
+                    return (
+                      <span key={tier} className="flex items-center gap-1.5">
+                        <span
+                          className={`w-1 h-1 rounded-full ${TIER_DOT_COLORS[tier]}`}
+                        />
+                        <span
+                          className={`text-[9px] font-mono ${TIER_TEXT_COLORS[tier]} opacity-50`}
+                        >
+                          {count}
+                        </span>
+                      </span>
+                    );
+                  },
+                )}
+              </div>
+              <span className="text-[8px] font-mono text-white/[0.08]">
+                {new Date().toISOString().slice(0, 10)}
+              </span>
+            </div>
+          </div>
+
+          {/* ── Mini Charts Row ────────────────────────────────────────── */}
+          <div
+            className="shrink-0 grid grid-cols-3 gap-2 p-2 border-t border-white/[0.04] bg-[#060d1a]/50"
+            style={{ height: "180px" }}
+          >
+            {/* CDMs per Week */}
+            <div className="relative rounded bg-white/[0.02] border border-white/[0.04] p-2.5 flex flex-col overflow-hidden">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/15" />
+              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/15" />
+              <p className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/40 mb-1 shrink-0">
+                CDMs / Week
+              </p>
+              <div className="flex-1 min-h-0">
+                {analytics?.cdmsPerWeek?.length > 0 ? (
+                  <CdmsPerWeekChart data={analytics.cdmsPerWeek} />
+                ) : analyticsLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="w-3 h-3 animate-spin text-white/10" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[8px] text-white/[0.08]">
+                      Awaiting data
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Events by Tier */}
+            <div className="relative rounded bg-white/[0.02] border border-white/[0.04] p-2.5 flex flex-col overflow-hidden">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/15" />
+              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/15" />
+              <p className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/40 mb-1 shrink-0">
+                Events by Tier
+              </p>
+              <div className="flex-1 min-h-0">
+                {analytics?.eventsByTier?.length > 0 ? (
+                  <EventsByTierChart data={analytics.eventsByTier} />
+                ) : analyticsLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="w-3 h-3 animate-spin text-white/10" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[8px] text-white/[0.08]">
+                      Awaiting data
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Events Timeline */}
+            <div className="relative rounded bg-white/[0.02] border border-white/[0.04] p-2.5 flex flex-col overflow-hidden">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/15" />
+              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/15" />
+              <p className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/40 mb-1 shrink-0">
+                90d Timeline
+              </p>
+              <div className="flex-1 min-h-0">
+                {analytics?.eventsTimeline?.length > 0 ? (
+                  <EventsTimelineChart
+                    data={buildTimelineData(analytics.eventsTimeline)}
+                  />
+                ) : analyticsLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="w-3 h-3 animate-spin text-white/10" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[8px] text-white/[0.08]">
+                      Awaiting data
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN: Priority Queue + Forecast ──────────────────────── */}
+        <div className="flex flex-col gap-2 p-3 border-l border-white/[0.04] overflow-y-auto bg-[#060d1a]/50">
           {/* Priority Queue */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3 flex-1 flex flex-col min-h-0">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3 flex items-center gap-2">
-              <Zap className="w-3 h-3 text-amber-400/60" />
+          <div className="relative flex-1 flex flex-col min-h-0 rounded bg-white/[0.02] border border-white/[0.04] p-3">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-3 flex items-center gap-2 shrink-0">
+              <Zap className="w-3 h-3 text-amber-400/50" />
               Priority Queue
             </p>
             {priorityLoading ? (
@@ -1938,25 +2117,25 @@ export default function ShieldPage() {
               </div>
             ) : priorityEvents.length === 0 ? (
               <div className="flex flex-col items-center justify-center flex-1">
-                <Shield className="w-6 h-6 text-white/10 mb-2" />
-                <p className="text-[10px] text-white/20">No urgent events</p>
+                <Shield className="w-5 h-5 text-white/[0.06] mb-2" />
+                <p className="text-[9px] text-white/15">No urgent events</p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto space-y-1.5 min-h-0 pr-1">
-                {priorityEvents.slice(0, 8).map((pe: any) => (
+              <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1">
+                {priorityEvents.slice(0, 10).map((pe: any) => (
                   <button
                     key={pe.eventId}
                     onClick={() =>
                       router.push(`/dashboard/shield/${pe.eventId}`)
                     }
-                    className="w-full text-left p-2 rounded border border-transparent hover:border-white/[0.08] hover:bg-white/[0.03] transition-all"
+                    className="w-full text-left p-2 rounded border border-transparent hover:border-cyan-500/[0.08] hover:bg-white/[0.02] transition-all group"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-light text-white truncate">
+                        <p className="text-[10px] font-light text-white/70 truncate group-hover:text-white transition-colors">
                           {pe.satelliteName ?? pe.conjunctionId}
                         </p>
-                        <p className="text-[9px] font-mono text-white/20 mt-0.5 truncate">
+                        <p className="text-[8px] font-mono text-white/15 mt-0.5 truncate">
                           {pe.conjunctionId}
                         </p>
                       </div>
@@ -1968,11 +2147,11 @@ export default function ShieldPage() {
                       />
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[9px] font-mono text-white/30 flex items-center gap-1">
+                      <span className="text-[8px] font-mono text-white/25 flex items-center gap-1">
                         <Clock className="w-2.5 h-2.5" />
                         {formatTcaCountdown(pe.tca)}
                       </span>
-                      <span className="text-[9px] font-mono text-white/30">
+                      <span className="text-[8px] font-mono text-white/25">
                         Pc {formatPc(pe.pc)}
                       </span>
                     </div>
@@ -1982,22 +2161,26 @@ export default function ShieldPage() {
             )}
           </div>
 
-          {/* Mini Forecast Sparkline */}
-          <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-2">
+          {/* 7D Forecast */}
+          <div className="relative shrink-0 rounded bg-white/[0.02] border border-white/[0.04] p-3">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/20 rounded-tl" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/20 rounded-tr" />
+            <p className="text-[9px] uppercase tracking-[0.2em] text-cyan-400/40 mb-2">
               7d Forecast
             </p>
-            {forecast && forecast.length > 0 ? (
+            {forecastLoading ? (
+              <Loader2 className="w-3 h-3 animate-spin text-white/15" />
+            ) : forecast && forecast.length > 0 ? (
               <div className="space-y-1.5">
-                {forecast.slice(0, 3).map((f: any) => (
+                {forecast.slice(0, 4).map((f: any) => (
                   <div
                     key={f.noradId}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-[10px] text-white/40 truncate mr-2 flex-1">
+                    <span className="text-[9px] text-white/30 truncate mr-2 flex-1">
                       {f.satelliteName}
                     </span>
-                    <span className="text-[10px] font-mono text-white/60 shrink-0">
+                    <span className="text-[9px] font-mono text-white/50 shrink-0 w-6 text-right">
                       {f.expectedConjunctions7d}
                     </span>
                     {f.trend === "increasing" ? (
@@ -2005,35 +2188,69 @@ export default function ShieldPage() {
                     ) : f.trend === "decreasing" ? (
                       <TrendingDown className="w-2.5 h-2.5 text-emerald-400 ml-1 shrink-0" />
                     ) : (
-                      <ArrowRight className="w-2.5 h-2.5 text-white/20 ml-1 shrink-0" />
+                      <ArrowRight className="w-2.5 h-2.5 text-white/15 ml-1 shrink-0" />
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-white/15">No forecast data</p>
+              <p className="text-[9px] text-white/[0.08]">No forecast data</p>
             )}
           </div>
+
+          {/* Anomalies Mini */}
+          {anomalies.length > 0 && (
+            <div className="relative shrink-0 rounded bg-amber-500/[0.03] border border-amber-500/[0.08] p-3">
+              <p className="text-[9px] uppercase tracking-[0.2em] text-amber-400/50 mb-2 flex items-center gap-1.5">
+                <AlertTriangle className="w-3 h-3" />
+                {anomalies.length} Anomal{anomalies.length !== 1 ? "ies" : "y"}
+              </p>
+              <div className="space-y-1">
+                {anomalies.slice(0, 3).map((a: any, i: number) => (
+                  <p key={i} className="text-[9px] text-amber-400/40 truncate">
+                    {a.satelliteName ?? a.message}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Decision Breakdown Mini */}
+          {analytics?.decisionBreakdown?.length > 0 && (
+            <div
+              className="relative shrink-0 rounded bg-white/[0.02] border border-white/[0.04] p-2.5 flex flex-col"
+              style={{ height: "150px" }}
+            >
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/15" />
+              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/15" />
+              <p className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/40 mb-1 shrink-0">
+                Decisions
+              </p>
+              <div className="flex-1 min-h-0">
+                <DecisionBreakdownChart data={analytics.decisionBreakdown} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION: Tabs + Event List ──────────────────────────────── */}
+      {/* ── BOTTOM: Event Table ───────────────────────────────────────────── */}
       <div
-        className="shrink-0 border-t border-white/[0.06] bg-black flex flex-col"
-        style={{ height: "42%" }}
+        className="shrink-0 border-t border-cyan-500/[0.08] bg-[#060d1a]/80 flex flex-col"
+        style={{ height: "30%" }}
       >
-        {/* Tab bar */}
-        <div className="shrink-0 flex items-center gap-0 px-4 h-9 border-b border-white/[0.04]">
+        {/* Tab bar + filters */}
+        <div className="shrink-0 flex items-center gap-0 px-4 h-8 border-b border-white/[0.04]">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.key}
                 onClick={() => setBottomTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 h-full text-[10px] uppercase tracking-[0.12em] border-b transition-all ${
+                className={`flex items-center gap-1.5 px-3 h-full text-[9px] uppercase tracking-[0.15em] border-b transition-all ${
                   bottomTab === tab.key
-                    ? "text-emerald-400 border-emerald-400"
-                    : "text-white/25 border-transparent hover:text-white/40"
+                    ? "text-cyan-400 border-cyan-400"
+                    : "text-white/20 border-transparent hover:text-white/35"
                 }`}
               >
                 <Icon className="w-3 h-3" />
@@ -2041,13 +2258,12 @@ export default function ShieldPage() {
               </button>
             );
           })}
-          {/* Filters inline for events tab */}
           {bottomTab === "events" && (
             <div className="ml-auto flex items-center gap-2">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-6 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 focus:outline-none focus:border-white/[0.12] appearance-none"
+                className="h-6 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 focus:outline-none focus:border-cyan-500/20 appearance-none"
               >
                 <option value="">All Status</option>
                 {STATUS_LIST.filter(Boolean).map((s) => (
@@ -2059,7 +2275,7 @@ export default function ShieldPage() {
               <select
                 value={tierFilter}
                 onChange={(e) => setTierFilter(e.target.value)}
-                className="h-6 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 focus:outline-none focus:border-white/[0.12] appearance-none"
+                className="h-6 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 focus:outline-none focus:border-cyan-500/20 appearance-none"
               >
                 <option value="">All Tiers</option>
                 {TIER_LIST.filter(Boolean).map((t) => (
@@ -2073,15 +2289,15 @@ export default function ShieldPage() {
                 placeholder="NORAD ID"
                 value={noradSearch}
                 onChange={(e) => setNoradSearch(e.target.value)}
-                className="h-6 w-24 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 placeholder:text-white/15 focus:outline-none focus:border-white/[0.12]"
+                className="h-6 w-24 px-2 text-[10px] bg-white/[0.03] border border-white/[0.06] rounded text-white/60 placeholder:text-white/15 focus:outline-none focus:border-cyan-500/20"
               />
             </div>
           )}
         </div>
 
-        {/* Tab content area (scrollable) */}
+        {/* Tab content */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          {/* ── EVENTS TAB ─────────────────────────────────────────────── */}
+          {/* ── EVENTS TAB ──────────────────────────────────────────────── */}
           {bottomTab === "events" && (
             <div>
               {loading ? (
@@ -2090,7 +2306,7 @@ export default function ShieldPage() {
                 </div>
               ) : events.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Shield className="w-8 h-8 text-white/10 mb-3" />
+                  <Shield className="w-8 h-8 text-white/[0.06] mb-3" />
                   <p className="text-[11px] text-white/30">
                     No conjunction events
                   </p>
@@ -2100,8 +2316,7 @@ export default function ShieldPage() {
                 </div>
               ) : (
                 <>
-                  {/* Table header */}
-                  <div className="grid grid-cols-[60px_1fr_1fr_100px_100px_80px_80px] gap-2 px-4 py-2 text-[10px] uppercase tracking-[0.12em] text-white/20 border-b border-white/[0.04] sticky top-0 bg-black z-10">
+                  <div className="grid grid-cols-[60px_1fr_1fr_100px_100px_80px_80px] gap-2 px-4 py-2 text-[9px] uppercase tracking-[0.12em] text-white/20 border-b border-white/[0.04] sticky top-0 bg-[#060d1a] z-10">
                     <span>Tier</span>
                     <span>Satellite</span>
                     <span>Threat</span>
@@ -2110,16 +2325,14 @@ export default function ShieldPage() {
                     <span className="text-right">TCA</span>
                     <span className="text-right">Status</span>
                   </div>
-                  {/* Table rows */}
                   {events.map((event: any) => (
                     <button
                       key={event.id}
                       onClick={() =>
                         router.push(`/dashboard/shield/${event.id}`)
                       }
-                      className="w-full grid grid-cols-[60px_1fr_1fr_100px_100px_80px_80px] gap-2 px-4 py-2.5 text-left border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
+                      className="w-full grid grid-cols-[60px_1fr_1fr_100px_100px_80px_80px] gap-2 px-4 py-2 text-left border-b border-white/[0.04] hover:bg-cyan-500/[0.02] transition-colors group"
                     >
-                      {/* Tier dot */}
                       <span className="flex items-center gap-2">
                         <span
                           className={`w-2 h-2 rounded-full ${
@@ -2142,45 +2355,31 @@ export default function ShieldPage() {
                                 : event.riskTier?.slice(0, 4)}
                         </span>
                       </span>
-
-                      {/* Satellite */}
-                      <span className="text-[11px] font-light text-white truncate group-hover:text-white">
+                      <span className="text-[11px] font-light text-white/60 truncate group-hover:text-white transition-colors">
                         {event.satelliteName ?? event.noradId}
                       </span>
-
-                      {/* Threat */}
-                      <span className="text-[11px] font-light text-white/40 truncate">
+                      <span className="text-[11px] font-light text-white/30 truncate">
                         {event.threatObjectName ?? event.threatNoradId ?? "--"}
                       </span>
-
-                      {/* Pc */}
-                      <span className="text-[11px] font-mono tabular-nums text-white/60 text-right">
+                      <span className="text-[11px] font-mono tabular-nums text-white/50 text-right">
                         {formatPc(event.latestPc)}
                       </span>
-
-                      {/* Miss Distance */}
-                      <span className="text-[11px] font-mono tabular-nums text-white/40 text-right">
+                      <span className="text-[11px] font-mono tabular-nums text-white/30 text-right">
                         {event.latestMissDistance !== null &&
                         event.latestMissDistance !== undefined
                           ? `${event.latestMissDistance.toFixed(0)}m`
                           : "N/A"}
                       </span>
-
-                      {/* TCA */}
-                      <span className="text-[11px] font-mono text-white/50 text-right">
+                      <span className="text-[11px] font-mono text-white/40 text-right">
                         {formatTcaCountdown(event.tca)}
                       </span>
-
-                      {/* Status */}
-                      <span className="text-[10px] text-white/30 text-right uppercase truncate">
+                      <span className="text-[10px] text-white/25 text-right uppercase truncate">
                         {formatLabel(event.status)}
                       </span>
                     </button>
                   ))}
-
-                  {/* Pagination */}
                   {totalEvents > LIMIT && (
-                    <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center justify-between px-4 py-2">
                       <p className="text-[10px] font-mono text-white/20">
                         {offset + 1}&ndash;
                         {Math.min(offset + LIMIT, totalEvents)} of {totalEvents}
@@ -2210,232 +2409,7 @@ export default function ShieldPage() {
             </div>
           )}
 
-          {/* ── FORECAST TAB ───────────────────────────────────────────── */}
-          {bottomTab === "forecast" && (
-            <div className="p-4 space-y-4">
-              {/* Maneuver Summary */}
-              {maneuverSummaryLoading ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-white/20" />
-                  <span className="text-[10px] text-white/30">
-                    Loading maneuver summary...
-                  </span>
-                </div>
-              ) : maneuverSummary ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    {
-                      label: "Maneuvers (Week)",
-                      value: maneuverSummary.maneuversExecuted,
-                      color: "text-white",
-                    },
-                    {
-                      label: "Total Delta-V",
-                      value: `${maneuverSummary.totalDeltaV} m/s`,
-                      color: "text-white",
-                    },
-                    {
-                      label: "Avg Response",
-                      value:
-                        maneuverSummary.averageResponseTimeHours > 0
-                          ? `${maneuverSummary.averageResponseTimeHours}h`
-                          : "N/A",
-                      color: "text-white",
-                    },
-                    {
-                      label: "Risks Accepted",
-                      value: maneuverSummary.risksAccepted,
-                      color: "text-amber-400",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3"
-                    >
-                      <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-1">
-                        {item.label}
-                      </p>
-                      <p
-                        className={`text-[18px] font-light ${item.color} font-mono`}
-                      >
-                        {item.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-
-              {/* 7-Day Forecast Table */}
-              {forecastLoading ? (
-                <div className="flex items-center gap-2 py-4">
-                  <Loader2 className="w-4 h-4 animate-spin text-white/20" />
-                  <span className="text-[10px] text-white/30">
-                    Computing forecast...
-                  </span>
-                </div>
-              ) : forecast && forecast.length > 0 ? (
-                <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                    7-Day Conjunction Forecast
-                  </p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-left text-[10px] uppercase tracking-[0.1em] text-white/20 border-b border-white/[0.04]">
-                          <th className="pb-2 pr-4 font-normal">Satellite</th>
-                          <th className="pb-2 pr-4 font-normal">Expected</th>
-                          <th className="pb-2 pr-4 font-normal">Trend</th>
-                          <th className="pb-2 font-normal">Confidence</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {forecast.map((f: any) => (
-                          <tr
-                            key={f.noradId}
-                            className="border-b border-white/[0.04] last:border-0"
-                          >
-                            <td className="py-2 pr-4 text-[11px] text-white/60 font-light">
-                              {f.satelliteName}
-                              <span className="text-white/20 ml-1 font-mono text-[9px]">
-                                {f.noradId}
-                              </span>
-                            </td>
-                            <td className="py-2 pr-4 text-[11px] font-mono text-white/50">
-                              {f.expectedConjunctions7d}
-                            </td>
-                            <td className="py-2 pr-4">
-                              {f.trend === "increasing" ? (
-                                <span className="flex items-center gap-1 text-[10px] text-red-400">
-                                  <TrendingUp className="w-3 h-3" />
-                                  UP
-                                </span>
-                              ) : f.trend === "decreasing" ? (
-                                <span className="flex items-center gap-1 text-[10px] text-emerald-400">
-                                  <TrendingDown className="w-3 h-3" />
-                                  DOWN
-                                </span>
-                              ) : (
-                                <span className="flex items-center gap-1 text-[10px] text-white/30">
-                                  <ArrowRight className="w-3 h-3" />
-                                  STABLE
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2 text-[10px] text-white/30 uppercase">
-                              {f.confidence === "insufficient_data"
-                                ? "LOW DATA"
-                                : f.confidence}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : forecast && forecast.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <BarChart3 className="w-8 h-8 text-white/10 mb-3" />
-                  <p className="text-[11px] text-white/30">No forecast data</p>
-                  <p className="text-[10px] text-white/15 mt-1">
-                    Needs 7+ days of CDM data.
-                  </p>
-                </div>
-              ) : null}
-
-              {/* Analytics Charts */}
-              {analyticsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-white/20" />
-                </div>
-              ) : analytics ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      CDMs per Week
-                    </p>
-                    {analytics.cdmsPerWeek.length > 0 ? (
-                      <CdmsPerWeekChart data={analytics.cdmsPerWeek} />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      Events by Status
-                    </p>
-                    {analytics.eventsByStatus.length > 0 ? (
-                      <EventsByStatusChart data={analytics.eventsByStatus} />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      Events by Risk Tier
-                    </p>
-                    {analytics.eventsByTier.length > 0 ? (
-                      <EventsByTierChart data={analytics.eventsByTier} />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      Decision Breakdown
-                    </p>
-                    {analytics.decisionBreakdown.length > 0 ? (
-                      <DecisionBreakdownChart
-                        data={analytics.decisionBreakdown}
-                      />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      Pc Distribution
-                    </p>
-                    {analytics.pcDistribution.some((b: any) => b.count > 0) ? (
-                      <PcDistributionChart data={analytics.pcDistribution} />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3">
-                      Events Timeline (90d)
-                    </p>
-                    {analytics.eventsTimeline.length > 0 ? (
-                      <EventsTimelineChart
-                        data={buildTimelineData(analytics.eventsTimeline)}
-                      />
-                    ) : (
-                      <p className="text-[10px] text-white/15 text-center py-8">
-                        No data
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {/* ── ANOMALIES TAB ──────────────────────────────────────────── */}
+          {/* ── ANOMALIES TAB ────────────────────────────────────────────── */}
           {bottomTab === "anomalies" && (
             <div className="p-4 space-y-4">
               {anomaliesLoading ? (
@@ -2479,12 +2453,11 @@ export default function ShieldPage() {
                     </div>
                   </div>
 
-                  {/* Fleet status table */}
                   {fleetSummary?.satellites &&
                     fleetSummary.satellites.length > 1 && (
                       <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
                         <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-3 flex items-center gap-2">
-                          <Satellite className="w-3 h-3 text-emerald-400/60" />
+                          <Satellite className="w-3 h-3 text-cyan-400/60" />
                           Fleet Status
                         </p>
                         <table className="w-full">
@@ -2565,7 +2538,7 @@ export default function ShieldPage() {
             </div>
           )}
 
-          {/* ── SETTINGS TAB ───────────────────────────────────────────── */}
+          {/* ── SETTINGS TAB ─────────────────────────────────────────────── */}
           {bottomTab === "settings" && (
             <div className="p-4">
               {configLoading ? (
@@ -2577,15 +2550,13 @@ export default function ShieldPage() {
                   <p className="text-[10px] uppercase tracking-[0.15em] text-white/30">
                     Conjunction Assessment Configuration
                   </p>
-
-                  {/* Pc Thresholds */}
                   <div>
                     <p className="text-[11px] font-light text-white/60 mb-3">
                       Probability of Collision Thresholds
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <Input
-                        label="Emergency Pc Threshold"
+                        label="Emergency Pc"
                         type="number"
                         step="any"
                         value={config.emergencyPcThreshold}
@@ -2596,10 +2567,10 @@ export default function ShieldPage() {
                               parseFloat(e.target.value) || 0,
                           })
                         }
-                        hint="EMERGENCY classification threshold"
+                        hint="EMERGENCY tier"
                       />
                       <Input
-                        label="High Pc Threshold"
+                        label="High Pc"
                         type="number"
                         step="any"
                         value={config.highPcThreshold}
@@ -2609,10 +2580,10 @@ export default function ShieldPage() {
                             highPcThreshold: parseFloat(e.target.value) || 0,
                           })
                         }
-                        hint="HIGH classification threshold"
+                        hint="HIGH tier"
                       />
                       <Input
-                        label="Elevated Pc Threshold"
+                        label="Elevated Pc"
                         type="number"
                         step="any"
                         value={config.elevatedPcThreshold}
@@ -2623,10 +2594,10 @@ export default function ShieldPage() {
                               parseFloat(e.target.value) || 0,
                           })
                         }
-                        hint="ELEVATED classification threshold"
+                        hint="ELEVATED tier"
                       />
                       <Input
-                        label="Monitor Pc Threshold"
+                        label="Monitor Pc"
                         type="number"
                         step="any"
                         value={config.monitorPcThreshold}
@@ -2636,17 +2607,15 @@ export default function ShieldPage() {
                             monitorPcThreshold: parseFloat(e.target.value) || 0,
                           })
                         }
-                        hint="MONITOR classification threshold"
+                        hint="MONITOR tier"
                       />
                     </div>
                   </div>
-
-                  {/* Notification Settings */}
                   <div>
                     <p className="text-[11px] font-light text-white/60 mb-3">
-                      Notification Settings
+                      Notifications & Lifecycle
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[11px] font-light text-white/40 mb-1">
                           Notify on Tier
@@ -2659,7 +2628,7 @@ export default function ShieldPage() {
                               notifyOnTier: e.target.value,
                             })
                           }
-                          className="w-full h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded text-[11px] text-white/60 focus:outline-none focus:border-white/[0.12]"
+                          className="w-full h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded text-[11px] text-white/60 focus:outline-none focus:border-cyan-500/20"
                         >
                           {TIER_LIST.filter(Boolean).map((t) => (
                             <option key={t} value={t}>
@@ -2667,41 +2636,9 @@ export default function ShieldPage() {
                             </option>
                           ))}
                         </select>
-                        <p className="text-[10px] text-white/20 mt-1">
-                          Minimum tier for notifications
-                        </p>
                       </div>
-                      <div className="flex items-center gap-3 pt-5">
-                        <input
-                          type="checkbox"
-                          id="emergencyEmailAll"
-                          checked={config.emergencyEmailAll}
-                          onChange={(e) =>
-                            setConfig({
-                              ...config,
-                              emergencyEmailAll: e.target.checked,
-                            })
-                          }
-                          className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-emerald-500 focus:ring-emerald-500/20"
-                        />
-                        <label
-                          htmlFor="emergencyEmailAll"
-                          className="text-[11px] text-white/50"
-                        >
-                          Email all team on Emergency
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Auto-Close */}
-                  <div>
-                    <p className="text-[11px] font-light text-white/60 mb-3">
-                      Event Lifecycle
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Input
-                        label="Auto-Close After TCA (hours)"
+                        label="Auto-Close After TCA (h)"
                         type="number"
                         min={1}
                         max={168}
@@ -2713,40 +2650,11 @@ export default function ShieldPage() {
                               parseInt(e.target.value) || 24,
                           })
                         }
-                        hint="Hours after TCA to auto-close events"
+                        hint="Hours after TCA"
                       />
-                    </div>
-                  </div>
-
-                  {/* NCA Settings */}
-                  <div>
-                    <p className="text-[11px] font-light text-white/60 mb-3">
-                      NCA (National Competent Authority)
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 pt-1">
-                        <input
-                          type="checkbox"
-                          id="ncaAutoNotify"
-                          checked={config.ncaAutoNotify}
-                          onChange={(e) =>
-                            setConfig({
-                              ...config,
-                              ncaAutoNotify: e.target.checked,
-                            })
-                          }
-                          className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-emerald-500 focus:ring-emerald-500/20"
-                        />
-                        <label
-                          htmlFor="ncaAutoNotify"
-                          className="text-[11px] text-white/50"
-                        >
-                          Auto-notify NCA on Emergency
-                        </label>
-                      </div>
                       <Input
                         label="NCA Jurisdiction"
-                        placeholder="e.g., DE, FR, UK"
+                        placeholder="e.g., DE, FR"
                         value={config.ncaJurisdiction ?? ""}
                         onChange={(e) =>
                           setConfig({
@@ -2757,20 +2665,44 @@ export default function ShieldPage() {
                         hint="ISO country code"
                       />
                     </div>
+                    <div className="flex items-center gap-6 mt-4">
+                      <label className="flex items-center gap-2 text-[11px] text-white/50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.emergencyEmailAll}
+                          onChange={(e) =>
+                            setConfig({
+                              ...config,
+                              emergencyEmailAll: e.target.checked,
+                            })
+                          }
+                          className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-cyan-500 focus:ring-cyan-500/20"
+                        />
+                        Email all on Emergency
+                      </label>
+                      <label className="flex items-center gap-2 text-[11px] text-white/50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.ncaAutoNotify}
+                          onChange={(e) =>
+                            setConfig({
+                              ...config,
+                              ncaAutoNotify: e.target.checked,
+                            })
+                          }
+                          className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-cyan-500 focus:ring-cyan-500/20"
+                        />
+                        Auto-notify NCA
+                      </label>
+                    </div>
                   </div>
-
-                  {/* LeoLabs Integration */}
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <p className="text-[11px] font-light text-white/60">
                         LeoLabs Integration
                       </p>
                       <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase ${
-                          leolabsEnabled
-                            ? "text-emerald-400 border border-emerald-500/20"
-                            : "text-white/20 border border-white/[0.06]"
-                        }`}
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase ${leolabsEnabled ? "text-cyan-400 border border-cyan-500/20" : "text-white/20 border border-white/[0.06]"}`}
                       >
                         {leolabsEnabled ? "Connected" : "Disabled"}
                       </span>
@@ -2810,31 +2742,23 @@ export default function ShieldPage() {
                         </div>
                       </div>
                       <div className="flex flex-col gap-3 pt-1">
-                        <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 text-[11px] text-white/50 cursor-pointer">
                           <input
                             type="checkbox"
-                            id="leolabsEnabled"
                             checked={leolabsEnabled}
                             onChange={(e) =>
                               setLeolabsEnabled(e.target.checked)
                             }
-                            className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-emerald-500 focus:ring-emerald-500/20"
+                            className="w-4 h-4 rounded border-white/10 bg-white/[0.03] text-cyan-500 focus:ring-cyan-500/20"
                           />
-                          <label
-                            htmlFor="leolabsEnabled"
-                            className="text-[11px] text-white/50"
-                          >
-                            Enable LeoLabs CDM source
-                          </label>
-                        </div>
+                          Enable LeoLabs CDM source
+                        </label>
                         <p className="text-[10px] text-white/20">
                           CDMs merged with Space-Track data.
                         </p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Save */}
                   <div className="flex items-center gap-4 pt-4 border-t border-white/[0.04]">
                     <Button
                       variant="primary"
