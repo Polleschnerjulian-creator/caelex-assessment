@@ -933,24 +933,14 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 .dashboard-wallpaper {
   background:
     radial-gradient(
-      ellipse 80% 60% at 10% 15%,
-      rgba(74, 98, 232, 0.15) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 70% 50% at 90% 85%,
-      rgba(139, 92, 246, 0.12) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 50% 45%,
-      rgba(16, 185, 129, 0.06) 0%,
+      ellipse at 20% 50%,
+      rgba(30, 40, 80, 0.15) 0%,
       transparent 50%
     ),
     radial-gradient(
-      ellipse 90% 70% at 70% 20%,
-      rgba(30, 58, 138, 0.1) 0%,
-      transparent 50%
+      ellipse at 80% 20%,
+      rgba(40, 20, 60, 0.1) 0%,
+      transparent 45%
     ),
     #07070c;
   background-attachment: fixed;
