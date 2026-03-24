@@ -93,17 +93,73 @@ export default function ShieldGlobe3D() {
     window.addEventListener("touchend", onTouchEnd);
     window.addEventListener("touchmove", onTouchMove);
 
-    // ── Earth with REAL colors (no grayscale) ──
+    // ── Earth — dark cinematic look with cyan city lights ──
     const textureLoader = new THREE.TextureLoader();
     textureLoader.crossOrigin = "anonymous";
+
     const dayMap = textureLoader.load(
       "https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg",
     );
     dayMap.anisotropy = 16;
 
+    // Load night lights texture for cyan glow
+    const nightMap = textureLoader.load(
+      "https://unpkg.com/three-globe@2.31.1/example/img/earth-night.jpg",
+    );
+    nightMap.anisotropy = 16;
+
+    const earthVert = `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vUv = uv;
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+
+    const earthFrag = `
+      uniform sampler2D dayMap;
+      uniform sampler2D nightMap;
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+
+      void main() {
+        vec3 day = texture2D(dayMap, vUv).rgb;
+        vec3 night = texture2D(nightMap, vUv).rgb;
+
+        // Convert day texture to dark desaturated base
+        float lum = dot(day, vec3(0.299, 0.587, 0.114));
+        // Dark teal-tinted land, very dark ocean
+        vec3 darkBase = vec3(lum * 0.15, lum * 0.2, lum * 0.25);
+
+        // City lights in cyan/teal
+        float lightIntensity = dot(night, vec3(0.299, 0.587, 0.114));
+        vec3 cityGlow = vec3(0.1, 0.7, 0.9) * lightIntensity * 1.5;
+
+        // Fresnel edge glow (atmosphere)
+        vec3 viewDir = normalize(-vPosition);
+        float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 3.0);
+        vec3 atmosphere = vec3(0.15, 0.4, 0.55) * fresnel * 0.6;
+
+        vec3 finalColor = darkBase + cityGlow + atmosphere;
+        gl_FragColor = vec4(finalColor, 1.0);
+      }
+    `;
+
     const earth = new THREE.Mesh(
       new THREE.SphereGeometry(1, 200, 200),
-      new THREE.MeshBasicMaterial({ map: dayMap }),
+      new THREE.ShaderMaterial({
+        vertexShader: earthVert,
+        fragmentShader: earthFrag,
+        uniforms: {
+          dayMap: { value: dayMap },
+          nightMap: { value: nightMap },
+        },
+      }),
     );
     scene.add(earth);
 
