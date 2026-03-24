@@ -175,12 +175,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <div
         className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[22px] lg:overflow-hidden"
         style={{
-          background: "rgba(10, 10, 18, 0.45)",
-          backdropFilter: "blur(16px) saturate(1.3)",
-          WebkitBackdropFilter: "blur(16px) saturate(1.3)",
-          border: "1px solid rgba(255, 255, 255, 0.06)",
-          boxShadow:
-            "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+          position: "relative",
+          zIndex: 1,
+          background: "rgba(255, 255, 255, 0.05)",
+          backdropFilter: "blur(16px) saturate(180%)",
+          WebkitBackdropFilter: "blur(16px) saturate(180%)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.37)",
         }}
       >
         {!isEphemerisPage && !isFullscreenPage && (
