@@ -740,18 +740,18 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --cx-warning: #f59e0b;
   --cx-danger: #ef4444;
 
-  /* ─── Background Surfaces (5-tier elevation) ─── */
-  --bg-base: #0a0a0f;
-  --bg-surface-1: #111118;
-  --bg-surface-2: #16161f;
-  --bg-surface-3: #1c1c27;
-  --bg-surface-4: #22222e;
+  /* ─── Background Surfaces (5-tier elevation, semi-transparent for glassmorphism) ─── */
+  --bg-base: #07070c;
+  --bg-surface-1: rgba(17, 17, 24, 0.6);
+  --bg-surface-2: rgba(22, 22, 31, 0.6);
+  --bg-surface-3: rgba(28, 28, 39, 0.6);
+  --bg-surface-4: rgba(34, 34, 46, 0.6);
 
   /* Backward-compatible surface aliases */
-  --surface-base: #0a0a0f;
-  --surface-raised: #16161f;
-  --surface-sunken: #111118;
-  --surface-overlay: #22222e;
+  --surface-base: #07070c;
+  --surface-raised: rgba(22, 22, 31, 0.6);
+  --surface-sunken: rgba(17, 17, 24, 0.6);
+  --surface-overlay: rgba(34, 34, 46, 0.6);
 
   /* ─── Glass Surfaces ─── */
   --glass-bg: rgba(255, 255, 255, 0.06);
@@ -886,14 +886,14 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --fill-inset: rgba(0, 0, 0, 0.2);
   --separator: rgba(255, 255, 255, 0.04);
   --separator-strong: rgba(255, 255, 255, 0.06);
-  --topbar-bg: rgba(17, 17, 24, 0.8);
+  --topbar-bg: rgba(17, 17, 24, 0.5);
 
   /* ─── Sidebar Glass Panel (dark mode) ─── */
-  --sidebar-glass-bg: rgba(12, 12, 20, 0.8);
-  --sidebar-glass-border: rgba(255, 255, 255, 0.08);
+  --sidebar-glass-bg: rgba(12, 12, 20, 0.55);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.1);
   --sidebar-glass-shadow:
     0 8px 40px rgba(0, 0, 0, 0.35), 0 2px 12px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   --sidebar-toggle-bg: rgba(30, 30, 45, 0.9);
   --sidebar-toggle-border: rgba(255, 255, 255, 0.08);
   --sidebar-tooltip-bg: rgba(255, 255, 255, 0.95);
@@ -929,43 +929,70 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --ease-smooth: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* ─── Dashboard Wallpaper ─── */
+.dashboard-wallpaper {
+  background:
+    radial-gradient(
+      ellipse at 15% 20%,
+      rgba(74, 98, 232, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 85% 80%,
+      rgba(139, 92, 246, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(16, 185, 129, 0.04) 0%,
+      transparent 60%
+    ),
+    var(--bg-base);
+  background-attachment: fixed;
+}
+
 /* ─── V2 Glassmorphism Components ─── */
 
 .caelex-v2 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: all var(--duration-normal) var(--ease-out);
 }
 
 .caelex-v2 .glass-card:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
-  box-shadow: var(--shadow-lg);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 
 .caelex-v2 .glass-elevated {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.01) 100%
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 100%
   );
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(48px) saturate(1.5);
+  -webkit-backdrop-filter: blur(48px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-lg);
   box-shadow:
-    var(--shadow-lg),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .caelex-v2 .glass-inset {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-inset);

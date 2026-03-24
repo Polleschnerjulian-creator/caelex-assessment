@@ -144,7 +144,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="caelex-v2 min-h-screen bg-[var(--bg-base)]">
+    <div className="caelex-v2 min-h-screen bg-[var(--bg-base)] dashboard-wallpaper">
       {/* Sidebar */}
       <Sidebar
         user={
