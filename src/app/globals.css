@@ -1057,6 +1057,34 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   transform: translateY(0);
 }
 
+/* Specular highlight layer (mouse-driven) */
+.caelex-v2 .glass,
+.caelex-v2 .glass-elevated,
+.caelex-v2 .glass-card {
+  --specular-x: 50%;
+  --specular-y: 50%;
+  --specular-opacity: 0;
+}
+
+.caelex-v2 .glass::after,
+.caelex-v2 .glass-elevated::after,
+.caelex-v2 .glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    var(--glass-specular-size) circle at var(--specular-x) var(--specular-y),
+    rgba(255, 255, 255, var(--glass-specular-opacity)) 0%,
+    transparent 100%
+  );
+  opacity: var(--specular-opacity);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+  mix-blend-mode: soft-light;
+}
+
 /* Inputs on glass surfaces */
 .caelex-v2 .glass input,
 .caelex-v2 .glass select,

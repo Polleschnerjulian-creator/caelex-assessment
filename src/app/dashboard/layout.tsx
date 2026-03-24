@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
 import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
+import GlassSpecular from "@/components/dashboard/GlassSpecular";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
   LanguageProvider,
@@ -145,6 +146,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="caelex-v2 dashboard-wallpaper">
+      <GlassSpecular />
       {/* Sidebar */}
       <Sidebar
         user={
