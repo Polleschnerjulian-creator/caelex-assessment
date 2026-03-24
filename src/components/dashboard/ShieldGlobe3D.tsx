@@ -3,8 +3,56 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-export default function ShieldGlobe3D() {
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface GlobeSatellite {
+  noradId: string;
+  name: string;
+  altitudeKm?: number | null;
+  inclinationDeg?: number | null;
+  orbitType?: string | null;
+  status?: string | null;
+}
+
+export interface GlobeEvent {
+  noradId: string;
+  riskTier: string;
+}
+
+interface Props {
+  satellites?: GlobeSatellite[];
+  events?: GlobeEvent[];
+}
+
+// ── Risk tier colors ─────────────────────────────────────────────────────────
+
+const TIER_HEX: Record<string, number> = {
+  EMERGENCY: 0xef4444,
+  HIGH: 0xf59e0b,
+  ELEVATED: 0xeab308,
+  MONITOR: 0x3b82f6,
+  INFORMATIONAL: 0x475569,
+};
+
+const DEFAULT_SAT_COLOR = 0x22d3ee; // cyan-400
+
+// ── Altitude → orbit radius (logarithmic scale to keep visible) ──────────────
+
+function altToRadius(altKm: number | null | undefined): number {
+  const alt = altKm ?? 550; // default LEO
+  // Earth radius = 1.0 in scene. Scale: 200km→1.04, 2000km→1.15, 35786km→1.55
+  const earthR = 6371;
+  const ratio = (earthR + alt) / earthR;
+  // Compress with log to keep GEO visible near globe
+  return 1.0 + Math.log(ratio) * 0.35;
+}
+
+export default function ShieldGlobe3D({ satellites = [], events = [] }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const satsRef = useRef(satellites);
+  const eventsRef = useRef(events);
+  satsRef.current = satellites;
+  eventsRef.current = events;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -102,7 +150,6 @@ export default function ShieldGlobe3D() {
     );
     dayMap.anisotropy = 16;
 
-    // Load night lights texture for cyan glow
     const nightMap = textureLoader.load(
       "https://unpkg.com/three-globe@2.31.1/example/img/earth-night.jpg",
     );
@@ -256,10 +303,152 @@ export default function ShieldGlobe3D() {
       ),
     );
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SATELLITE ORBITS & DOTS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const satGroup = new THREE.Group();
+    scene.add(satGroup);
+
+    // Track satellite meshes for animation
+    interface SatVis {
+      dot: THREE.Mesh;
+      glow: THREE.Mesh;
+      orbitRadius: number;
+      inclination: number; // radians
+      speed: number;
+      phase: number; // starting angle
+      color: THREE.Color;
+    }
+    const satVisuals: SatVis[] = [];
+
+    function buildSatellites() {
+      // Clear previous
+      while (satGroup.children.length > 0) {
+        const child = satGroup.children[0];
+        satGroup.remove(child);
+        if (child instanceof THREE.Mesh || child instanceof THREE.Line) {
+          child.geometry.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m) => m.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      }
+      satVisuals.length = 0;
+
+      const sats = satsRef.current;
+      const evts = eventsRef.current;
+
+      // Build risk map: noradId → highest tier
+      const riskMap = new Map<string, string>();
+      for (const e of evts) {
+        const existing = riskMap.get(e.noradId);
+        const tierOrder = [
+          "EMERGENCY",
+          "HIGH",
+          "ELEVATED",
+          "MONITOR",
+          "INFORMATIONAL",
+        ];
+        if (
+          !existing ||
+          tierOrder.indexOf(e.riskTier) < tierOrder.indexOf(existing)
+        ) {
+          riskMap.set(e.noradId, e.riskTier);
+        }
+      }
+
+      for (let si = 0; si < sats.length; si++) {
+        const sat = sats[si];
+        const orbitR = altToRadius(sat.altitudeKm);
+        const incRad = ((sat.inclinationDeg ?? 45) * Math.PI) / 180;
+        const tier = sat.noradId ? riskMap.get(sat.noradId) : undefined;
+        const colorHex = tier
+          ? (TIER_HEX[tier] ?? DEFAULT_SAT_COLOR)
+          : DEFAULT_SAT_COLOR;
+        const color = new THREE.Color(colorHex);
+
+        // ── Orbit ring ──
+        const ringPts: THREE.Vector3[] = [];
+        for (let i = 0; i <= 256; i++) {
+          const a = (i / 256) * Math.PI * 2;
+          const x = Math.cos(a) * orbitR;
+          const z = Math.sin(a) * orbitR;
+          // Rotate by inclination around X axis
+          const y2 = z * Math.sin(incRad);
+          const z2 = z * Math.cos(incRad);
+          ringPts.push(new THREE.Vector3(x, y2, z2));
+        }
+        const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
+        const ringLine = new THREE.Line(
+          ringGeo,
+          new THREE.LineBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: tier ? 0.15 : 0.06,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          }),
+        );
+        // Rotate entire ring to spread orbits visually
+        ringLine.rotation.y = (si / Math.max(sats.length, 1)) * Math.PI * 2;
+        satGroup.add(ringLine);
+
+        // ── Satellite dot ──
+        const dotGeo = new THREE.SphereGeometry(tier ? 0.018 : 0.012, 8, 8);
+        const dotMat = new THREE.MeshBasicMaterial({
+          color: colorHex,
+          transparent: true,
+          opacity: 0.9,
+        });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        satGroup.add(dot);
+
+        // ── Glow sprite around dot ──
+        const glowGeo = new THREE.SphereGeometry(tier ? 0.04 : 0.025, 8, 8);
+        const glowMat = new THREE.MeshBasicMaterial({
+          color: colorHex,
+          transparent: true,
+          opacity: tier ? 0.3 : 0.12,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        satGroup.add(glow);
+
+        // Unique speed per satellite (faster for lower orbits)
+        const speed = 0.0008 + (1.0 / orbitR) * 0.0015;
+        const phase =
+          (si / Math.max(sats.length, 1)) * Math.PI * 2 + Math.random() * 0.5;
+
+        satVisuals.push({
+          dot,
+          glow,
+          orbitRadius: orbitR,
+          inclination: incRad,
+          speed,
+          phase,
+          color,
+        });
+      }
+    }
+
+    // Initial build
+    buildSatellites();
+
+    // Rebuild when data changes (check periodically)
+    let lastSatCount = satsRef.current.length;
+    let lastEvtCount = eventsRef.current.length;
+
     // ── Animate ──
     let animId: number;
+    let time = 0;
     function animate() {
       animId = requestAnimationFrame(animate);
+      time += 0.016;
+
       if (!orbit.isDragging) orbit.targetRotY += orbit.autoSpeed;
       orbit.rotX += (orbit.targetRotX - orbit.rotX) * orbit.damping;
       orbit.rotY += (orbit.targetRotY - orbit.rotY) * orbit.damping;
@@ -271,6 +460,45 @@ export default function ShieldGlobe3D() {
         orbit.zoom * Math.cos(orbit.rotY) * Math.cos(orbit.rotX);
       camera.lookAt(0, 0, 0);
       scanLine.rotation.y += 0.002;
+
+      // Check if satellite data changed
+      if (
+        satsRef.current.length !== lastSatCount ||
+        eventsRef.current.length !== lastEvtCount
+      ) {
+        lastSatCount = satsRef.current.length;
+        lastEvtCount = eventsRef.current.length;
+        buildSatellites();
+      }
+
+      // Animate satellite positions along orbits
+      for (let i = 0; i < satVisuals.length; i++) {
+        const sv = satVisuals[i];
+        const angle = sv.phase + time * sv.speed * 60;
+        // Spread rotation per satellite
+        const lonOffset = (i / Math.max(satVisuals.length, 1)) * Math.PI * 2;
+
+        const x = Math.cos(angle) * sv.orbitRadius;
+        const z = Math.sin(angle) * sv.orbitRadius;
+        // Apply inclination
+        const y = z * Math.sin(sv.inclination);
+        const z2 = z * Math.cos(sv.inclination);
+
+        // Rotate to match ring orientation
+        const cosL = Math.cos(lonOffset);
+        const sinL = Math.sin(lonOffset);
+        const fx = x * cosL - z2 * sinL;
+        const fz = x * sinL + z2 * cosL;
+
+        sv.dot.position.set(fx, y, fz);
+        sv.glow.position.set(fx, y, fz);
+
+        // Pulse glow for emergency/high
+        const pulse = 0.8 + Math.sin(time * 3 + i) * 0.2;
+        (sv.glow.material as THREE.MeshBasicMaterial).opacity =
+          (sv.orbitRadius > 1.1 ? 0.3 : 0.12) * pulse;
+      }
+
       renderer.render(scene, camera);
     }
     animate();
@@ -298,6 +526,7 @@ export default function ShieldGlobe3D() {
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

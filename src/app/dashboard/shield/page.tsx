@@ -1106,8 +1106,8 @@ const CdmsPerWeekChart = dynamic(
   () =>
     import("recharts").then((mod) => {
       const {
-        BarChart,
-        Bar,
+        AreaChart,
+        Area,
         XAxis,
         YAxis,
         CartesianGrid,
@@ -1121,17 +1121,29 @@ const CdmsPerWeekChart = dynamic(
       }) {
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="cdmGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
               <XAxis
                 dataKey="week"
                 tick={axisTick}
                 tickFormatter={(v: string) => v.slice(5)}
               />
-              <YAxis tick={axisTick} />
+              <YAxis tick={axisTick} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#22d3ee"
+                strokeWidth={1.5}
+                fill="url(#cdmGrad)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         );
       };
@@ -1180,10 +1192,16 @@ const EventsByStatusChart = dynamic(
 const EventsByTierChart = dynamic(
   () =>
     import("recharts").then((mod) => {
-      const { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } = mod;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const renderTierLabel = (props: any) =>
-        `${formatLabel(String(props.tier ?? ""))} ${((Number(props.percent) || 0) * 100).toFixed(0)}%`;
+      const {
+        BarChart,
+        Bar,
+        XAxis,
+        YAxis,
+        CartesianGrid,
+        Tooltip,
+        ResponsiveContainer,
+        Cell,
+      } = mod;
       return function EventsByTierChartInner({
         data,
       }: {
@@ -1191,17 +1209,33 @@ const EventsByTierChart = dynamic(
       }) {
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="count"
-                nameKey="tier"
-                cx="50%"
-                cy="50%"
-                outerRadius={90}
-                label={renderTierLabel}
-                labelLine={false}
-              >
+            <BarChart data={data} layout="vertical" barCategoryGap="20%">
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={gridStroke}
+                horizontal={false}
+              />
+              <XAxis type="number" tick={axisTick} allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="tier"
+                tick={axisTick}
+                width={50}
+                tickFormatter={(v: string) =>
+                  v === "EMERGENCY"
+                    ? "EMRG"
+                    : v === "ELEVATED"
+                      ? "ELEV"
+                      : v === "INFORMATIONAL"
+                        ? "INFO"
+                        : v.slice(0, 4)
+                }
+              />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                labelFormatter={(label: any) => formatLabel(String(label))}
+              />
+              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                 {data.map((entry: { tier: string }, i: number) => (
                   <Cell
                     key={i}
@@ -1211,9 +1245,8 @@ const EventsByTierChart = dynamic(
                     }
                   />
                 ))}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         );
       };
@@ -1376,6 +1409,9 @@ export default function ShieldPage() {
   const [priorityEvents, setPriorityEvents] = useState<any[]>([]);
   const [priorityLoading, setPriorityLoading] = useState(false);
 
+  // Fleet satellites (for globe)
+  const [fleetSatellites, setFleetSatellites] = useState<any[]>([]);
+
   // LeoLabs integration
   const [leolabsKey, setLeolabsKey] = useState("");
   const [leolabsEnabled, setLeolabsEnabled] = useState(false);
@@ -1524,6 +1560,18 @@ export default function ShieldPage() {
       /* silently fail */
     } finally {
       setPriorityLoading(false);
+    }
+  }, []);
+
+  const fetchFleet = useCallback(async () => {
+    try {
+      const res = await fetch("/api/satellites/fleet");
+      if (res.ok) {
+        const json = await res.json();
+        setFleetSatellites(json.spacecraft ?? []);
+      }
+    } catch {
+      /* silently fail */
     }
   }, []);
 
@@ -1974,7 +2022,7 @@ export default function ShieldPage() {
           {/* Globe Area */}
           <div className="flex-1 relative min-h-0">
             <div className="absolute inset-0 bg-[#050a12]">
-              <ShieldGlobe3DLazy />
+              <ShieldGlobe3DLazy satellites={fleetSatellites} events={events} />
             </div>
             {/* HUD overlays on globe */}
             <div className="absolute top-3 left-4 pointer-events-none">
