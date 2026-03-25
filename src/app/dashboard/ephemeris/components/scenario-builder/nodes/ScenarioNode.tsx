@@ -3,7 +3,7 @@
 import React, { memo, useCallback, useRef } from "react";
 import { Handle, Position, useStore, type NodeProps } from "@xyflow/react";
 import { X } from "lucide-react";
-import { FORGE, GLASS } from "../../../theme";
+import { useForgeTheme, MONO_FONT } from "../../../theme";
 import { CATEGORY_COLORS, type ScenarioNodeData } from "../types";
 import {
   BLOCK_DEFINITIONS,
@@ -21,18 +21,18 @@ interface ScenarioNodeDataWithCallbacks extends ScenarioNodeData {
 
 // ─── Severity helpers ────────────────────────────────────────────────────────
 
-function getSeverityColor(level?: string): string {
+function getSeverityColor(level: string | undefined, forge: any): string {
   switch (level) {
     case "LOW":
-      return FORGE.nominal;
+      return forge.nominal;
     case "MEDIUM":
-      return FORGE.watch;
+      return forge.watch;
     case "HIGH":
-      return FORGE.warning;
+      return forge.warning;
     case "CRITICAL":
-      return FORGE.critical;
+      return forge.critical;
     default:
-      return FORGE.textMuted;
+      return forge.textMuted;
   }
 }
 
@@ -44,6 +44,8 @@ function formatDelta(delta: number): string {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 function ScenarioNode({ id, data }: NodeProps) {
+  const { forge, glass, isDark } = useForgeTheme();
+
   const d = data as unknown as ScenarioNodeDataWithCallbacks;
   const zoom = useStore((s) => s.transform[2]);
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -73,7 +75,7 @@ function ScenarioNode({ id, data }: NodeProps) {
   const definition = BLOCK_DEFINITIONS.find((b) => b.id === d.definitionId);
   if (!definition) return null;
 
-  const categoryColor = CATEGORY_COLORS[definition.category] ?? FORGE.textMuted;
+  const categoryColor = CATEGORY_COLORS[definition.category] ?? forge.textMuted;
   const IconComponent = ICON_MAP[definition.icon];
 
   const isComputing = d.computeState === "computing";
@@ -84,23 +86,60 @@ function ScenarioNode({ id, data }: NodeProps) {
   const showParams = zoom >= 0.5;
   const showFullControls = zoom >= 0.6;
 
+  const borderSep = isDark
+    ? "1px solid rgba(255,255,255,0.04)"
+    : "1px solid rgba(0,0,0,0.06)";
+
   return (
     <div
       ref={nodeRef}
       className="forge-node-spawn"
-      style={nodeStyle(categoryColor)}
+      style={{
+        width: 240,
+        background: glass.bg,
+        backdropFilter: `blur(${glass.blur}px)`,
+        WebkitBackdropFilter: `blur(${glass.blur}px)`,
+        border: `1px solid ${glass.border}`,
+        borderLeft: `3px solid ${categoryColor}`,
+        borderRadius: glass.nodeRadius,
+        padding: 10,
+        position: "relative",
+        boxShadow: `${glass.shadow}, ${glass.insetGlow}`,
+        transition: "box-shadow 200ms ease, border-color 200ms ease",
+      }}
       onMouseLeave={handleNodeMouseLeave}
     >
       {/* Input handle */}
       <Handle
         type="target"
         position={Position.Left}
-        style={handleTargetStyle(categoryColor)}
+        style={{
+          width: 8,
+          height: 8,
+          background: isDark ? "#0A0A0F" : "rgba(255,255,255,0.9)",
+          border: `2px solid ${categoryColor}`,
+          borderRadius: "50%",
+        }}
       />
 
       {/* Header: icon + name + delete */}
-      <div style={headerStyle}>
-        <div style={headerLeftStyle}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 6,
+          marginBottom: 6,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            minWidth: 0,
+          }}
+        >
           {IconComponent && (
             <IconComponent
               style={{
@@ -111,12 +150,38 @@ function ScenarioNode({ id, data }: NodeProps) {
               }}
             />
           )}
-          <span style={nameStyle}>{definition.name}</span>
+          <span
+            style={{
+              fontFamily: MONO_FONT,
+              fontSize: 11,
+              fontWeight: 700,
+              color: forge.textPrimary,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {definition.name}
+          </span>
         </div>
         <button
           onClick={handleDelete}
           className="forge-node-delete"
-          style={deleteBtnStyle}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 20,
+            height: 20,
+            borderRadius: 4,
+            border: "none",
+            background: "transparent",
+            color: forge.textMuted,
+            cursor: "pointer",
+            flexShrink: 0,
+            opacity: 0,
+            transition: "opacity 0.15s ease, color 0.15s ease",
+          }}
           aria-label="Delete block"
         >
           <X style={{ width: 12, height: 12 }} />
@@ -125,7 +190,17 @@ function ScenarioNode({ id, data }: NodeProps) {
 
       {/* Parameters — zoom-adaptive */}
       {showParams && definition.parameterDefs.length > 0 && (
-        <div className="nodrag nopan nowheel" style={paramsContainerStyle}>
+        <div
+          className="nodrag nopan nowheel"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            borderTop: borderSep,
+            paddingTop: 8,
+            marginTop: 2,
+          }}
+        >
           {definition.parameterDefs.map((pDef) => {
             if (showFullControls) {
               // Full inline controls
@@ -133,10 +208,41 @@ function ScenarioNode({ id, data }: NodeProps) {
                 const sp = pDef as SliderParameterDef;
                 const val = (d.parameters[sp.key] as number) ?? sp.defaultValue;
                 return (
-                  <div key={sp.key} style={paramRowStyle}>
-                    <div style={paramHeaderStyle}>
-                      <span style={paramLabelStyle}>{sp.label}</span>
-                      <span style={paramValueStyle}>
+                  <div
+                    key={sp.key}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 3,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: MONO_FONT,
+                          fontSize: 9,
+                          fontWeight: 600,
+                          letterSpacing: "0.05em",
+                          color: forge.textTertiary,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {sp.label}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: MONO_FONT,
+                          fontSize: 10,
+                          fontWeight: 600,
+                          color: forge.textSecondary,
+                        }}
+                      >
                         {val}
                         {sp.unit}
                       </span>
@@ -152,7 +258,13 @@ function ScenarioNode({ id, data }: NodeProps) {
                       }
                       onPointerDown={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
-                      style={sliderStyle(categoryColor)}
+                      style={{
+                        width: "100%",
+                        height: 4,
+                        appearance: "auto",
+                        cursor: "pointer",
+                        accentColor: categoryColor,
+                      }}
                     />
                   </div>
                 );
@@ -161,8 +273,26 @@ function ScenarioNode({ id, data }: NodeProps) {
                 const sp = pDef as SelectParameterDef;
                 const val = (d.parameters[sp.key] as string) ?? sp.defaultValue;
                 return (
-                  <div key={sp.key} style={paramRowStyle}>
-                    <span style={paramLabelStyle}>{sp.label}</span>
+                  <div
+                    key={sp.key}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 3,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: MONO_FONT,
+                        fontSize: 9,
+                        fontWeight: 600,
+                        letterSpacing: "0.05em",
+                        color: forge.textTertiary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {sp.label}
+                    </span>
                     <select
                       value={val}
                       onChange={(e) =>
@@ -170,7 +300,22 @@ function ScenarioNode({ id, data }: NodeProps) {
                       }
                       onPointerDown={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
-                      style={selectStyle}
+                      style={{
+                        fontFamily: MONO_FONT,
+                        fontSize: 10,
+                        fontWeight: 500,
+                        color: forge.textSecondary,
+                        background: isDark
+                          ? "rgba(255,255,255,0.03)"
+                          : "rgba(255,255,255,0.4)",
+                        border: isDark
+                          ? "1px solid rgba(255,255,255,0.06)"
+                          : "1px solid rgba(255,255,255,0.6)",
+                        borderRadius: 6,
+                        padding: "2px 4px",
+                        outline: "none",
+                        cursor: "pointer",
+                      }}
                     >
                       {sp.options.map((opt) => (
                         <option key={opt} value={opt}>
@@ -189,7 +334,17 @@ function ScenarioNode({ id, data }: NodeProps) {
             const unit =
               pDef.type === "slider" ? (pDef as SliderParameterDef).unit : "";
             return (
-              <span key={pDef.key} style={paramSummaryStyle}>
+              <span
+                key={pDef.key}
+                style={{
+                  fontFamily: MONO_FONT,
+                  fontSize: 9,
+                  color: forge.textTertiary,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
                 {pDef.label}: {String(val ?? pDef.defaultValue)}
                 {unit}
               </span>
@@ -200,18 +355,27 @@ function ScenarioNode({ id, data }: NodeProps) {
 
       {/* Result footer */}
       {(isComputing || hasResult) && (
-        <div style={resultFooterStyle}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderTop: borderSep,
+            paddingTop: 6,
+            marginTop: 6,
+          }}
+        >
           {hasResult && d.stepResult && (
             <>
               <span
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily: MONO_FONT,
                   fontSize: 12,
                   fontWeight: 700,
                   color:
                     d.stepResult.horizonDelta >= 0
-                      ? FORGE.nominal
-                      : FORGE.critical,
+                      ? forge.nominal
+                      : forge.critical,
                 }}
               >
                 {"\u0394"}H {formatDelta(d.stepResult.horizonDelta)}
@@ -221,13 +385,33 @@ function ScenarioNode({ id, data }: NodeProps) {
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  background: getSeverityColor(d.stepResult.severityLevel),
+                  background: getSeverityColor(
+                    d.stepResult.severityLevel,
+                    forge,
+                  ),
                   flexShrink: 0,
+                  ...(isDark
+                    ? {
+                        boxShadow: `0 0 6px ${getSeverityColor(d.stepResult.severityLevel, forge)}60`,
+                      }
+                    : {}),
                 }}
               />
             </>
           )}
-          {isComputing && <span style={shimmerStyle}>computing...</span>}
+          {isComputing && (
+            <span
+              style={{
+                fontFamily: MONO_FONT,
+                fontSize: 10,
+                fontWeight: 500,
+                color: forge.textMuted,
+                animation: "shimmer 1.5s ease-in-out infinite alternate",
+              }}
+            >
+              computing...
+            </span>
+          )}
         </div>
       )}
 
@@ -235,168 +419,20 @@ function ScenarioNode({ id, data }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        style={handleSourceStyle(categoryColor)}
+        style={{
+          width: 8,
+          height: 8,
+          background: categoryColor,
+          border: isDark
+            ? "2px solid #0A0A0F"
+            : "2px solid rgba(255,255,255,0.9)",
+          outline: `1px solid ${categoryColor}`,
+          borderRadius: "50%",
+          ...(isDark ? { boxShadow: `0 0 8px ${categoryColor}50` } : {}),
+        }}
       />
     </div>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const nodeStyle = (categoryColor: string): React.CSSProperties => ({
-  width: 240,
-  background: GLASS.bg,
-  backdropFilter: `blur(${GLASS.blur}px)`,
-  WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-  border: `1px solid ${GLASS.border}`,
-  borderLeft: `3px solid ${categoryColor}`,
-  borderRadius: GLASS.nodeRadius,
-  padding: 10,
-  position: "relative",
-  boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
-  transition: "box-shadow 200ms ease, border-color 200ms ease",
-});
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 6,
-  marginBottom: 6,
-};
-
-const headerLeftStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
-  minWidth: 0,
-};
-
-const nameStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 11,
-  fontWeight: 700,
-  color: FORGE.textPrimary,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-};
-
-const deleteBtnStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 20,
-  height: 20,
-  borderRadius: 4,
-  border: "none",
-  background: "transparent",
-  color: FORGE.textMuted,
-  cursor: "pointer",
-  flexShrink: 0,
-  opacity: 0,
-  transition: "opacity 0.15s ease, color 0.15s ease",
-};
-
-const paramsContainerStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  borderTop: "1px solid rgba(0,0,0,0.06)",
-  paddingTop: 8,
-  marginTop: 2,
-};
-
-const paramRowStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 3,
-};
-
-const paramHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-
-const paramLabelStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 9,
-  fontWeight: 600,
-  letterSpacing: "0.05em",
-  color: FORGE.textTertiary,
-  textTransform: "uppercase",
-};
-
-const paramValueStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 10,
-  fontWeight: 600,
-  color: FORGE.textSecondary,
-};
-
-const sliderStyle = (accentColor: string): React.CSSProperties => ({
-  width: "100%",
-  height: 4,
-  appearance: "auto",
-  cursor: "pointer",
-  accentColor,
-});
-
-const selectStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 10,
-  fontWeight: 500,
-  color: FORGE.textSecondary,
-  background: "rgba(255,255,255,0.4)",
-  border: "1px solid rgba(255,255,255,0.6)",
-  borderRadius: 6,
-  padding: "2px 4px",
-  outline: "none",
-  cursor: "pointer",
-};
-
-const paramSummaryStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 9,
-  color: FORGE.textTertiary,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-};
-
-const resultFooterStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  borderTop: "1px solid rgba(0,0,0,0.06)",
-  paddingTop: 6,
-  marginTop: 6,
-};
-
-const shimmerStyle: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
-  fontSize: 10,
-  fontWeight: 500,
-  color: FORGE.textMuted,
-  animation: "shimmer 1.5s ease-in-out infinite alternate",
-};
-
-const handleTargetStyle = (color: string): React.CSSProperties => ({
-  width: 8,
-  height: 8,
-  background: "rgba(255,255,255,0.9)",
-  border: `2px solid ${color}`,
-  borderRadius: "50%",
-});
-
-const handleSourceStyle = (color: string): React.CSSProperties => ({
-  width: 8,
-  height: 8,
-  background: color,
-  border: "2px solid rgba(255,255,255,0.9)",
-  outline: `1px solid ${color}`,
-  borderRadius: "50%",
-});
 
 export default memo(ScenarioNode);

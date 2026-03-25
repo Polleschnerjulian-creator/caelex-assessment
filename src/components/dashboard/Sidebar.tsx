@@ -30,7 +30,6 @@ import {
   Radio,
   BarChart3,
   FileSearch,
-  Orbit,
   Sparkles,
   Users,
   Calendar,
@@ -916,14 +915,6 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 {t("sidebar.regulatoryFeed")}
-              </NavItem>
-              <NavItem
-                href="/dashboard/mission-control"
-                icon={<Orbit size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                {t("sidebar.missionControl")}
               </NavItem>
               <NavItem
                 href="/dashboard/evidence"

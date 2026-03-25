@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Search } from "lucide-react";
 import { BLOCK_DEFINITIONS, BLOCK_CATEGORIES } from "../block-definitions";
 import { CATEGORY_COLORS } from "../types";
-import { FORGE, GLASS } from "../../../theme";
+import { useForgeTheme } from "../../../theme";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -25,6 +25,8 @@ export default function SlashCommand({
   onSelectBlock,
   onClose,
 }: SlashCommandProps) {
+  const { forge, glass } = useForgeTheme();
+
   const [query, setQuery] = useState("");
   const [highlightIndex, setHighlightIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -140,12 +142,12 @@ export default function SlashCommand({
           pointerEvents: isOpen ? "auto" : "none",
           transition: "transform 180ms ease, opacity 180ms ease",
           zIndex: 51,
-          background: GLASS.bg,
-          backdropFilter: `blur(${GLASS.blur}px)`,
-          WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-          borderRadius: GLASS.panelRadius,
-          boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
-          border: `1px solid ${GLASS.border}`,
+          background: glass.bg,
+          backdropFilter: `blur(${glass.blur}px)`,
+          WebkitBackdropFilter: `blur(${glass.blur}px)`,
+          borderRadius: glass.panelRadius,
+          boxShadow: `${glass.shadow}, ${glass.insetGlow}`,
+          border: `1px solid ${glass.border}`,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -162,7 +164,7 @@ export default function SlashCommand({
             borderBottom: "1px solid rgba(0,0,0,0.06)",
           }}
         >
-          <Search size={16} color={FORGE.textTertiary} />
+          <Search size={16} color={forge.textTertiary} />
           <input
             ref={inputRef}
             type="text"
@@ -178,7 +180,7 @@ export default function SlashCommand({
               outline: "none",
               background: "transparent",
               fontSize: 14,
-              color: FORGE.textPrimary,
+              color: forge.textPrimary,
               fontFamily: "inherit",
             }}
           />
@@ -198,7 +200,7 @@ export default function SlashCommand({
               style={{
                 padding: "20px 14px",
                 textAlign: "center",
-                color: FORGE.textMuted,
+                color: forge.textMuted,
                 fontSize: 13,
               }}
             >
@@ -216,7 +218,7 @@ export default function SlashCommand({
                   fontWeight: 600,
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
-                  color: FORGE.textTertiary,
+                  color: forge.textTertiary,
                 }}
               >
                 {group.label}
@@ -227,7 +229,7 @@ export default function SlashCommand({
                 const globalIndex = flatList.indexOf(block);
                 const isHighlighted = globalIndex === highlightIndex;
                 const dotColor =
-                  CATEGORY_COLORS[block.category] ?? FORGE.textMuted;
+                  CATEGORY_COLORS[block.category] ?? forge.textMuted;
 
                 return (
                   <div
@@ -264,7 +266,7 @@ export default function SlashCommand({
                         style={{
                           fontSize: 13,
                           fontWeight: 500,
-                          color: FORGE.textPrimary,
+                          color: forge.textPrimary,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -275,7 +277,7 @@ export default function SlashCommand({
                       <div
                         style={{
                           fontSize: 11,
-                          color: FORGE.textTertiary,
+                          color: forge.textTertiary,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",

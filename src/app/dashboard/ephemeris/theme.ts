@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 // ─── Color Palettes ──────────────────────────────────────────────────────────
 
@@ -58,9 +58,9 @@ export function useEphemerisTheme(): EphemerisColors {
   return isDark ? DARK : LIGHT;
 }
 
-// ─── Forge Theme (always light) ─────────────────────────────────────────────
+// ─── Forge Theme ─────────────────────────────────────────────────────────────
 
-export const FORGE = {
+const FORGE_LIGHT = {
   canvasBg: "#FAFAF9",
   gridDot: "#D4D4D0",
   nodeBg: "#FFFFFF",
@@ -89,15 +89,40 @@ export const FORGE = {
   accent: "#2563EB",
 } as const;
 
-export type ForgeColors = typeof FORGE;
+const FORGE_DARK = {
+  canvasBg: "#0A0A0F",
+  gridDot: "rgba(255,255,255,0.08)",
+  nodeBg: "rgba(255,255,255,0.03)",
+  nodeBorder: "rgba(255,255,255,0.06)",
+  nodeBorderHover: "rgba(255,255,255,0.08)",
+  nodeShadow:
+    "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+  nodeShadowHover:
+    "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+  toolbarBg: "rgba(10,10,15,0.6)",
+  toolbarBorder: "rgba(255,255,255,0.04)",
+  toolbarShadow: "0 2px 12px rgba(0,0,0,0.5)",
+  textPrimary: "rgba(255,255,255,0.85)",
+  textSecondary: "rgba(255,255,255,0.7)",
+  textTertiary: "rgba(255,255,255,0.3)",
+  textMuted: "rgba(255,255,255,0.2)",
+  originBorder: "#00D4AA",
+  originGlow: "0 0 0 3px rgba(0,212,170,0.3), 0 0 16px rgba(0,212,170,0.15)",
+  edgeNominal: "#00D4AA",
+  edgeWarning: "#FF8C42",
+  edgeCritical: "#FF4757",
+  edgeComputing: "rgba(255,255,255,0.3)",
+  edgeIdle: "rgba(255,255,255,0.1)",
+  nominal: "#00D4AA",
+  warning: "#FF8C42",
+  critical: "#FF4757",
+  watch: "#FF8C42",
+  accent: "#7B8CFF",
+} as const;
 
-export function useForgeTheme(): ForgeColors {
-  return FORGE;
-}
+// ─── Liquid Glass Tokens ─────────────────────────────────────────────────────
 
-// ─── Glassmorphism Design Tokens ────────────────────────────────────────────
-
-export const GLASS = {
+const GLASS_LIGHT = {
   bg: "rgba(255,255,255,0.72)",
   bgHover: "rgba(255,255,255,0.78)",
   bgSidebar: "rgba(255,255,255,0.72)",
@@ -114,4 +139,96 @@ export const GLASS = {
   panelRadius: 12,
 } as const;
 
-export type GlassTokens = typeof GLASS;
+const GLASS_DARK = {
+  bg: "rgba(255,255,255,0.03)",
+  bgHover: "rgba(255,255,255,0.04)",
+  bgSidebar: "rgba(255,255,255,0.01)",
+  bgToolbar: "rgba(10,10,15,0.6)",
+  border: "rgba(255,255,255,0.06)",
+  borderHover: "rgba(255,255,255,0.08)",
+  borderSidebar: "rgba(255,255,255,0.04)",
+  shadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+  shadowHover:
+    "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+  shadowToolbar:
+    "0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+  insetGlow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+  blur: 40,
+  nodeRadius: 16,
+  panelRadius: 12,
+} as const;
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export type ForgeColors = {
+  [K in keyof typeof FORGE_LIGHT]: string;
+};
+export type GlassTokens = {
+  [K in keyof typeof GLASS_LIGHT]: (typeof GLASS_LIGHT)[K] extends number
+    ? number
+    : string;
+};
+
+export interface ForgeThemeValue {
+  forge: ForgeColors;
+  glass: GlassTokens;
+  isDark: boolean;
+}
+
+// ─── Context ─────────────────────────────────────────────────────────────────
+
+const ForgeThemeContext = createContext<ForgeThemeValue>({
+  forge: FORGE_LIGHT,
+  glass: GLASS_LIGHT,
+  isDark: false,
+});
+
+export { ForgeThemeContext };
+
+// ─── Hook — dynamic, respects system dark mode ──────────────────────────────
+
+export function useForgeTheme(): ForgeThemeValue {
+  return useContext(ForgeThemeContext);
+}
+
+// ─── Backwards-compat static exports (for any non-component consumers) ──────
+
+export const FORGE = FORGE_LIGHT;
+export const GLASS = GLASS_LIGHT;
+
+// ─── System dark mode detection ─────────────────────────────────────────────
+
+export function useSystemDarkMode(): boolean {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const check = () => document.documentElement.classList.contains("dark");
+    setIsDark(check());
+
+    // Watch HTML class changes (app-level dark mode toggle)
+    const observer = new MutationObserver(() => setIsDark(check()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
+// ─── Mono font stack ──────────────────────────────────────────────────────────
+
+export const MONO_FONT =
+  "var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SF Mono', monospace";
+
+// ─── Resolved tokens for provider ───────────────────────────────────────────
+
+export function resolveForgeTheme(isDark: boolean): ForgeThemeValue {
+  return {
+    forge: isDark ? FORGE_DARK : FORGE_LIGHT,
+    glass: isDark ? GLASS_DARK : GLASS_LIGHT,
+    isDark,
+  };
+}

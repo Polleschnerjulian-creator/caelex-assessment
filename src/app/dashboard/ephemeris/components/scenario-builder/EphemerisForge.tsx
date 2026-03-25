@@ -16,7 +16,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { useForgeTheme, GLASS } from "../../theme";
+import {
+  useForgeTheme,
+  useSystemDarkMode,
+  resolveForgeTheme,
+  ForgeThemeContext,
+} from "../../theme";
 import { useForgeGraph } from "./useForgeGraph";
 import { useForgeComputation } from "./useForgeComputation";
 import { FORGE_NODE_TYPES, type SatelliteOriginData } from "./types";
@@ -54,7 +59,7 @@ function EphemerisForgeInner({
   satelliteState,
   onBack,
 }: EphemerisForgeProps) {
-  const forgeTheme = useForgeTheme();
+  const { forge: forgeTheme, glass: GLASS, isDark } = useForgeTheme();
 
   // Build origin data from satellite state
   const originData: SatelliteOriginData = useMemo(
@@ -239,6 +244,59 @@ function EphemerisForgeInner({
         background: forgeTheme.canvasBg,
       }}
     >
+      {/* Ambient depth orbs — dark mode only */}
+      {isDark && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            overflow: "hidden",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              width: 500,
+              height: 500,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%)",
+              top: "10%",
+              right: "15%",
+              filter: "blur(60px)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(123,140,255,0.04) 0%, transparent 70%)",
+              bottom: "20%",
+              left: "10%",
+              filter: "blur(80px)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              width: 300,
+              height: 300,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255,71,87,0.03) 0%, transparent 70%)",
+              top: "50%",
+              left: "40%",
+              filter: "blur(60px)",
+            }}
+          />
+        </div>
+      )}
+
       {/* Full-bleed React Flow Canvas */}
       <ReactFlow
         nodes={nodesWithCallbacks}
@@ -331,11 +389,13 @@ function EphemerisForgeInner({
             width: 56,
             height: 56,
             borderRadius: 18,
-            border: "1px solid rgba(0,0,0,0.08)",
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(24px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+            background: isDark
+              ? "rgba(255,255,255,0.06)"
+              : "rgba(255,255,255,0.85)",
+            backdropFilter: `blur(${GLASS.blur}px) saturate(1.4)`,
+            WebkitBackdropFilter: `blur(${GLASS.blur}px) saturate(1.4)`,
+            boxShadow: GLASS.shadow,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -406,9 +466,14 @@ function EphemerisForgeInner({
 // ─── Exported Wrapper (provides ReactFlowProvider) ──────────────────────────
 
 export default function EphemerisForge(props: EphemerisForgeProps) {
+  const isDark = useSystemDarkMode();
+  const themeValue = React.useMemo(() => resolveForgeTheme(isDark), [isDark]);
+
   return (
-    <ReactFlowProvider>
-      <EphemerisForgeInner {...props} />
-    </ReactFlowProvider>
+    <ForgeThemeContext.Provider value={themeValue}>
+      <ReactFlowProvider>
+        <EphemerisForgeInner {...props} />
+      </ReactFlowProvider>
+    </ForgeThemeContext.Provider>
   );
 }

@@ -457,6 +457,10 @@ function FeedItem({
 }) {
   const config = SEVERITY_CONFIG[update.severity] || SEVERITY_CONFIG.LOW;
   const SeverityIcon = config.icon;
+  const dark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+  const itemStyle = dark ? innerGlassDarkStyle : innerGlassLight;
 
   return (
     <motion.div
@@ -465,7 +469,7 @@ function FeedItem({
       animate={{ opacity: update.isRead ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      style={innerGlass}
+      style={itemStyle}
       className="overflow-hidden"
     >
       {/* Main row */}

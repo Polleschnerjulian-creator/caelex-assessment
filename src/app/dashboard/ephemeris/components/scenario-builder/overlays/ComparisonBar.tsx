@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Node, Edge } from "@xyflow/react";
-import { FORGE, GLASS } from "../../../theme";
+import { useForgeTheme } from "../../../theme";
 import {
   FORGE_NODE_TYPES,
   type ResultNodeData,
@@ -24,18 +24,18 @@ interface CompletedResult {
   result: SimulationResults;
 }
 
-function severityColor(s: string): string {
+function severityColor(s: string, forge: any): string {
   switch (s) {
     case "LOW":
-      return FORGE.nominal;
+      return forge.nominal;
     case "MEDIUM":
-      return FORGE.watch;
+      return forge.watch;
     case "HIGH":
-      return FORGE.warning;
+      return forge.warning;
     case "CRITICAL":
-      return FORGE.critical;
+      return forge.critical;
     default:
-      return FORGE.textTertiary;
+      return forge.textTertiary;
   }
 }
 
@@ -58,6 +58,8 @@ const mono: React.CSSProperties = {
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
 export default function ComparisonBar({ nodes }: ComparisonBarProps) {
+  const { forge, glass } = useForgeTheme();
+
   const completed = useMemo<CompletedResult[]>(() => {
     return nodes
       .filter((n) => n.type === FORGE_NODE_TYPES.RESULT)
@@ -113,12 +115,12 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 45,
-        background: GLASS.bg,
-        backdropFilter: `blur(${GLASS.blur}px)`,
-        WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-        border: `1px solid ${GLASS.border}`,
-        borderRadius: GLASS.panelRadius,
-        boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
+        background: glass.bg,
+        backdropFilter: `blur(${glass.blur}px)`,
+        WebkitBackdropFilter: `blur(${glass.blur}px)`,
+        border: `1px solid ${glass.border}`,
+        borderRadius: glass.panelRadius,
+        boxShadow: `${glass.shadow}, ${glass.insetGlow}`,
         padding: "16px 24px",
         display: "flex",
         flexDirection: "column",
@@ -154,7 +156,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                 style={{
                   fontSize: 11,
                   fontWeight: 600,
-                  color: FORGE.textTertiary,
+                  color: forge.textTertiary,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -167,7 +169,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                 <span
                   style={{
                     fontSize: 11,
-                    color: FORGE.textMuted,
+                    color: forge.textMuted,
                   }}
                 >
                   ΔH
@@ -177,7 +179,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                     ...mono,
                     fontSize: 16,
                     fontWeight: 600,
-                    color: isDeltaBetter ? FORGE.nominal : FORGE.critical,
+                    color: isDeltaBetter ? forge.nominal : forge.critical,
                   }}
                 >
                   {delta >= 0 ? "+" : ""}
@@ -199,7 +201,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                     fontSize: 10,
                     fontWeight: 600,
                     color: "#fff",
-                    background: severityColor(severity),
+                    background: severityColor(severity, forge),
                     borderRadius: 4,
                     padding: "2px 6px",
                     textTransform: "uppercase",
@@ -213,7 +215,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
                     ...mono,
                     fontSize: 12,
                     fontWeight: 500,
-                    color: isCostBetter ? FORGE.nominal : FORGE.critical,
+                    color: isCostBetter ? forge.nominal : forge.critical,
                   }}
                 >
                   {formatCost(cost)}
@@ -228,7 +230,7 @@ export default function ComparisonBar({ nodes }: ComparisonBarProps) {
       <div
         style={{
           fontSize: 12,
-          color: FORGE.textSecondary,
+          color: forge.textSecondary,
           textAlign: "center",
           lineHeight: 1.4,
           ...mono,

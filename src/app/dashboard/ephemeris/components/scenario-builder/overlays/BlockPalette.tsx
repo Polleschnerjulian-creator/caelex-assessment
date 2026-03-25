@@ -8,7 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { FORGE, GLASS } from "../../../theme";
+import { useForgeTheme } from "../../../theme";
 import { CATEGORY_COLORS } from "../types";
 import { BLOCK_DEFINITIONS, BLOCK_CATEGORIES } from "../block-definitions";
 import { ICON_MAP } from "../icon-map";
@@ -35,6 +35,8 @@ export default function BlockPalette({
   collapsed,
   onToggleCollapse,
 }: BlockPaletteProps) {
+  const { forge, glass, isDark } = useForgeTheme();
+
   const [query, setQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set(BLOCK_CATEGORIES.map((c) => c.id)),
@@ -92,12 +94,12 @@ export default function BlockPalette({
     top: 72,
     bottom: 24,
     zIndex: 40,
-    background: GLASS.bg,
-    backdropFilter: `blur(${GLASS.blur}px)`,
-    WebkitBackdropFilter: `blur(${GLASS.blur}px)`,
-    border: `1px solid ${GLASS.border}`,
-    borderRadius: GLASS.panelRadius,
-    boxShadow: `${GLASS.shadow}, ${GLASS.insetGlow}`,
+    background: glass.bg,
+    backdropFilter: `blur(${glass.blur}px)`,
+    WebkitBackdropFilter: `blur(${glass.blur}px)`,
+    border: `1px solid ${glass.border}`,
+    borderRadius: glass.panelRadius,
+    boxShadow: `${glass.shadow}, ${glass.insetGlow}`,
     transition: "left 200ms ease, width 200ms ease, opacity 200ms ease",
     overflow: "hidden",
   };
@@ -122,7 +124,7 @@ export default function BlockPalette({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: FORGE.textTertiary,
+            color: forge.textTertiary,
             padding: 4,
           }}
         >
@@ -148,15 +150,18 @@ export default function BlockPalette({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: isDark
+            ? "1px solid rgba(255,255,255,0.04)"
+            : "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <span
           style={{
             fontSize: 11,
-            fontWeight: 700,
-            color: FORGE.textPrimary,
-            letterSpacing: "0.06em",
+            fontWeight: isDark ? 600 : 700,
+            color: isDark ? "rgba(255,255,255,0.3)" : forge.textPrimary,
+            letterSpacing: isDark ? "0.15em" : "0.06em",
+            textTransform: "uppercase",
           }}
         >
           BLOCKS
@@ -168,7 +173,7 @@ export default function BlockPalette({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: FORGE.textTertiary,
+            color: forge.textTertiary,
             padding: 2,
           }}
         >
@@ -180,21 +185,30 @@ export default function BlockPalette({
       <div
         style={{
           padding: "8px 12px",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: isDark
+            ? "1px solid rgba(255,255,255,0.04)"
+            : "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: "rgba(255,255,255,0.5)",
-            border: "1px solid rgba(255,255,255,0.6)",
-            borderRadius: 8,
-            padding: "6px 8px",
+            gap: isDark ? 8 : 6,
+            background: isDark
+              ? "rgba(255,255,255,0.03)"
+              : "rgba(255,255,255,0.5)",
+            border: isDark
+              ? "1px solid rgba(255,255,255,0.05)"
+              : "1px solid rgba(255,255,255,0.6)",
+            borderRadius: isDark ? 10 : 8,
+            padding: isDark ? "8px 12px" : "6px 8px",
           }}
         >
-          <Search size={13} color={FORGE.textMuted} />
+          <Search
+            size={13}
+            color={isDark ? "rgba(255,255,255,0.2)" : forge.textMuted}
+          />
           <input
             type="text"
             value={query}
@@ -205,7 +219,7 @@ export default function BlockPalette({
               background: "none",
               outline: "none",
               fontSize: 12,
-              color: FORGE.textPrimary,
+              color: forge.textPrimary,
               width: "100%",
             }}
           />
@@ -216,7 +230,7 @@ export default function BlockPalette({
       <div style={{ flex: 1, overflowY: "auto", padding: "4px 0" }}>
         {filteredGroups.map((group) => {
           const isExpanded = expandedCategories.has(group.id);
-          const catColor = CATEGORY_COLORS[group.id] ?? FORGE.textMuted;
+          const catColor = CATEGORY_COLORS[group.id] ?? forge.textMuted;
 
           return (
             <div key={group.id}>
@@ -236,24 +250,25 @@ export default function BlockPalette({
                 }}
               >
                 {isExpanded ? (
-                  <ChevronDown size={12} color={FORGE.textTertiary} />
+                  <ChevronDown size={12} color={forge.textTertiary} />
                 ) : (
-                  <ChevronRight size={12} color={FORGE.textTertiary} />
+                  <ChevronRight size={12} color={forge.textTertiary} />
                 )}
                 <div
                   style={{
-                    width: 8,
-                    height: 8,
+                    width: isDark ? 6 : 8,
+                    height: isDark ? 6 : 8,
                     borderRadius: "50%",
                     background: catColor,
                     flexShrink: 0,
+                    ...(isDark ? { boxShadow: `0 0 8px ${catColor}40` } : {}),
                   }}
                 />
                 <span
                   style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: FORGE.textSecondary,
+                    color: forge.textSecondary,
                     letterSpacing: "0.01em",
                   }}
                 >
@@ -262,7 +277,7 @@ export default function BlockPalette({
                 <span
                   style={{
                     fontSize: 10,
-                    color: FORGE.textMuted,
+                    color: forge.textMuted,
                     marginLeft: "auto",
                   }}
                 >
@@ -294,11 +309,21 @@ export default function BlockPalette({
                         }}
                         onMouseEnter={(e) => {
                           (e.currentTarget as HTMLElement).style.background =
-                            "rgba(255,255,255,0.5)";
+                            isDark
+                              ? "rgba(255,255,255,0.04)"
+                              : "rgba(255,255,255,0.5)";
+                          if (isDark) {
+                            (e.currentTarget as HTMLElement).style.border =
+                              "1px solid rgba(255,255,255,0.06)";
+                          }
                         }}
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLElement).style.background =
                             "none";
+                          if (isDark) {
+                            (e.currentTarget as HTMLElement).style.border =
+                              "1px solid transparent";
+                          }
                         }}
                       >
                         {IconComp && (
@@ -315,7 +340,7 @@ export default function BlockPalette({
                           <div
                             style={{
                               fontSize: 12,
-                              color: FORGE.textPrimary,
+                              color: forge.textPrimary,
                               fontWeight: 500,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
@@ -327,7 +352,7 @@ export default function BlockPalette({
                           <div
                             style={{
                               fontSize: 10,
-                              color: FORGE.textMuted,
+                              color: forge.textMuted,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -351,7 +376,7 @@ export default function BlockPalette({
               padding: "20px 12px",
               textAlign: "center",
               fontSize: 12,
-              color: FORGE.textMuted,
+              color: forge.textMuted,
             }}
           >
             No blocks match &quot;{query}&quot;

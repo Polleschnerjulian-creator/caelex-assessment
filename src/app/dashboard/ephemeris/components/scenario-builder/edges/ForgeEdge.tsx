@@ -1,22 +1,8 @@
 "use client";
 
 import { BaseEdge, getBezierPath, type EdgeProps } from "@xyflow/react";
-import { FORGE } from "../../../theme";
+import { useForgeTheme } from "../../../theme";
 import type { EdgeSeverity, ForgeEdgeData } from "../types";
-
-// ─── Severity → Color ────────────────────────────────────────────────────────
-
-const SEVERITY_COLOR: Record<NonNullable<EdgeSeverity> | "idle", string> = {
-  nominal: FORGE.edgeNominal,
-  warning: FORGE.edgeWarning,
-  critical: FORGE.edgeCritical,
-  computing: FORGE.edgeComputing,
-  idle: "#94A3B8",
-};
-
-function edgeColor(severity: EdgeSeverity): string {
-  return SEVERITY_COLOR[severity ?? "idle"];
-}
 
 // ─── ForgeEdge ───────────────────────────────────────────────────────────────
 
@@ -31,6 +17,20 @@ export default function ForgeEdge({
   data,
   selected,
 }: EdgeProps) {
+  const { forge } = useForgeTheme();
+
+  // Severity → color (resolved inside component for dark mode)
+  function edgeColor(severity: EdgeSeverity): string {
+    const map: Record<string, string> = {
+      nominal: forge.edgeNominal,
+      warning: forge.edgeWarning,
+      critical: forge.edgeCritical,
+      computing: forge.edgeComputing,
+      idle: forge.edgeIdle,
+    };
+    return map[severity ?? "idle"] ?? forge.edgeIdle;
+  }
+
   const { severity = null } = (data as ForgeEdgeData | undefined) ?? {};
   const color = edgeColor(severity);
   const isComputing = severity === "computing";
@@ -95,7 +95,7 @@ export default function ForgeEdge({
 
       {/* Reverse pulse for CRITICAL severity */}
       {isCritical && (
-        <circle r={6} fill={FORGE.edgeCritical} opacity={0.7}>
+        <circle r={6} fill={forge.edgeCritical} opacity={0.7}>
           <animateMotion
             dur="2s"
             repeatCount="indefinite"
