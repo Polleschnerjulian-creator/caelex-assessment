@@ -53,8 +53,8 @@ export default function BlockPalette({
     return () => window.removeEventListener("sidebar-width-change", handler);
   }, []);
 
-  // left = sidebar left (12) + sidebar width + gap (8)
-  const paletteLeft = 12 + sidebarWidth + 8;
+  // Dark mode: flush against sidebar. Light mode: floating with gap.
+  const paletteLeft = isDark ? sidebarWidth : 12 + sidebarWidth + 8;
 
   const filteredGroups = useMemo(() => {
     if (!query.trim()) return BLOCKS_BY_CATEGORY;
@@ -91,15 +91,19 @@ export default function BlockPalette({
   const glassBase: React.CSSProperties = {
     position: "fixed",
     left: paletteLeft,
-    top: 72,
-    bottom: 24,
+    top: isDark ? 0 : 72,
+    bottom: isDark ? 0 : 24,
     zIndex: 40,
-    background: glass.bg,
+    background: isDark ? glass.bgSidebar : glass.bg,
     backdropFilter: `blur(${glass.blur}px)`,
     WebkitBackdropFilter: `blur(${glass.blur}px)`,
     border: `1px solid ${glass.border}`,
-    borderRadius: glass.panelRadius,
-    boxShadow: `${glass.shadow}, ${glass.insetGlow}`,
+    borderLeft: isDark ? "none" : `1px solid ${glass.border}`,
+    borderRadius: isDark ? 0 : glass.panelRadius,
+    boxShadow: isDark ? "none" : `${glass.shadow}, ${glass.insetGlow}`,
+    borderRight: isDark
+      ? `1px solid ${glass.borderSidebar}`
+      : `1px solid ${glass.border}`,
     transition: "left 200ms ease, width 200ms ease, opacity 200ms ease",
     overflow: "hidden",
   };

@@ -102,7 +102,7 @@ function EphemerisForgeInner({
   });
 
   // Local state
-  const [showMinimap, setShowMinimap] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   const [radialMenuPos, setRadialMenuPos] = useState<{
     x: number;

@@ -445,7 +445,7 @@ function SatelliteOriginNode({ data }: NodeProps) {
             : "2px solid rgba(255,255,255,0.9)",
           outline: isDark ? undefined : `2px solid ${forge.originBorder}`,
           borderRadius: "50%",
-          ...(isDark ? { boxShadow: "0 0 12px rgba(0,212,170,0.5)" } : {}),
+          ...(isDark ? { boxShadow: "0 0 6px rgba(0,212,170,0.25)" } : {}),
         }}
       />
 
