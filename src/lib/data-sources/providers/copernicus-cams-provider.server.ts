@@ -90,13 +90,16 @@ function statsEvalscript(band: string): string {
   return `//VERSION=3
 function setup() {
   return {
-    input: ["${band}", "dataMask"],
-    output: [{ id: "output", bands: 1, sampleType: "FLOAT32" }]
+    input: [{ bands: ["${band}", "dataMask"] }],
+    output: [
+      { id: "output", bands: 1, sampleType: "FLOAT32" },
+      { id: "dataMask", bands: 1 }
+    ]
   };
 }
 function evaluatePixel(s) {
-  if (s.dataMask === 0) return [NaN];
-  return [s.${band}];
+  if (s.dataMask === 0) return { output: [NaN], dataMask: [0] };
+  return { output: [s.${band}], dataMask: [1] };
 }`;
 }
 
@@ -218,18 +221,36 @@ async function fetchStats(
     }>;
   };
 
-  const entry = json.data?.[0];
-  if (!entry) return null;
+  const entries = json.data;
+  if (!entries || entries.length === 0) return null;
 
-  const stats = entry.outputs?.output?.bands?.B0?.stats;
-  if (!stats || stats.sampleCount === 0) return null;
+  // Aggregate across all daily intervals
+  let totalMean = 0;
+  let globalMin = Infinity;
+  let globalMax = -Infinity;
+  let totalStDev = 0;
+  let totalCount = 0;
+  let validDays = 0;
+
+  for (const entry of entries) {
+    const stats = entry.outputs?.output?.bands?.B0?.stats;
+    if (!stats || stats.sampleCount === 0) continue;
+    totalMean += stats.mean;
+    globalMin = Math.min(globalMin, stats.min);
+    globalMax = Math.max(globalMax, stats.max);
+    totalStDev += stats.stDev;
+    totalCount += stats.sampleCount;
+    validDays++;
+  }
+
+  if (validDays === 0) return null;
 
   return {
-    mean: stats.mean,
-    min: stats.min,
-    max: stats.max,
-    stDev: stats.stDev,
-    count: stats.sampleCount,
+    mean: totalMean / validDays,
+    min: globalMin === Infinity ? 0 : globalMin,
+    max: globalMax === -Infinity ? 0 : globalMax,
+    stDev: totalStDev / validDays,
+    count: totalCount,
   };
 }
 
