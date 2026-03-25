@@ -381,3 +381,76 @@ export async function fetchObjectCatalog(
     };
   }
 }
+
+// ─── Atmospheric Data (Copernicus Sentinel-5P) ──────────────────────────────
+
+import { copernicusProvider } from "./providers/copernicus-cams-provider.server";
+import type { AtmosphericData } from "./types-environmental";
+
+/**
+ * Fetch atmospheric data from Copernicus Sentinel-5P TROPOMI.
+ *
+ * EU-only source — no US fallback exists for satellite atmospheric composition.
+ * Returns NO2, CO, aerosol index statistics for a given area and time range.
+ */
+export async function fetchAtmosphericData(
+  lat: number,
+  lon: number,
+  radiusKm: number,
+  dateRange: { from: string; to: string },
+): Promise<DataFetchResult<AtmosphericData>> {
+  const start = Date.now();
+
+  if (!copernicusProvider.isConfigured()) {
+    return {
+      data: null,
+      source: copernicusProvider.getInfo(),
+      fetchedAt: now(),
+      fallbackUsed: false,
+      primaryFailureReason:
+        "COPERNICUS_CLIENT_ID / COPERNICUS_CLIENT_SECRET not configured",
+      durationMs: Date.now() - start,
+    };
+  }
+
+  try {
+    const data = await copernicusProvider.fetchAtmosphericStats(
+      lat,
+      lon,
+      radiusKm,
+      dateRange,
+    );
+    const durationMs = Date.now() - start;
+
+    console.info(
+      `[DataRouter] fetchAtmosphericData lat=${lat} lon=${lon} ` +
+        `source=${copernicusProvider.getInfo().name} ` +
+        `measurements=${data?.measurements.length ?? 0} durationMs=${durationMs}`,
+    );
+
+    return {
+      data,
+      source: copernicusProvider.getInfo(),
+      fetchedAt: now(),
+      fallbackUsed: false,
+      primaryFailureReason: null,
+      durationMs,
+    };
+  } catch (err) {
+    const durationMs = Date.now() - start;
+    const reason = err instanceof Error ? err.message : "unknown error";
+
+    console.error(
+      `[DataRouter] fetchAtmosphericData failed: ${reason} durationMs=${durationMs}`,
+    );
+
+    return {
+      data: null,
+      source: copernicusProvider.getInfo(),
+      fetchedAt: now(),
+      fallbackUsed: false,
+      primaryFailureReason: reason,
+      durationMs,
+    };
+  }
+}

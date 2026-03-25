@@ -40,6 +40,7 @@ import {
   type EFDGrade,
 } from "@/data/environmental-requirements";
 import AstraButton from "@/components/astra/AstraButton";
+import CopernicusVerification from "./components/CopernicusVerification";
 
 type WizardStep = "mission_profile" | "calculator" | "suppliers" | "report";
 
@@ -595,6 +596,20 @@ function EnvironmentalPageContent() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Copernicus Satellite Verification — shown when EFD is calculated */}
+        {selectedAssessment?.efdGrade && (
+          <div style={{ marginTop: 20 }}>
+            <CopernicusVerification
+              assessmentId={selectedAssessment.id}
+              launchVehicle={selectedAssessment.launchVehicle}
+              isDark={
+                typeof document !== "undefined" &&
+                document.documentElement.classList.contains("dark")
+              }
+            />
+          </div>
+        )}
       </div>
     </div>
   );
