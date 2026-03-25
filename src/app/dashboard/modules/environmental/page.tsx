@@ -41,6 +41,8 @@ import {
 } from "@/data/environmental-requirements";
 import AstraButton from "@/components/astra/AstraButton";
 import CopernicusVerification from "./components/CopernicusVerification";
+import IndustryBenchmark from "./components/IndustryBenchmark";
+import SensitivityOptimizer from "./components/SensitivityOptimizer";
 
 type WizardStep = "mission_profile" | "calculator" | "suppliers" | "report";
 
@@ -1200,14 +1202,30 @@ function CalculatorStep({
             </div>
 
             <div className="flex items-center gap-8">
-              <div
-                className="w-24 h-24 rounded-xl flex items-center justify-center text-[36px] font-bold"
-                style={{
-                  backgroundColor: `${getGradeColor(assessment.efdGrade as EFDGrade)}20`,
-                  color: getGradeColor(assessment.efdGrade as EFDGrade),
-                }}
-              >
-                {assessment.efdGrade}
+              <div className="relative">
+                <div
+                  className="w-24 h-24 rounded-xl flex items-center justify-center text-[36px] font-bold"
+                  style={{
+                    backgroundColor: `${getGradeColor(assessment.efdGrade as EFDGrade)}20`,
+                    color: getGradeColor(assessment.efdGrade as EFDGrade),
+                  }}
+                >
+                  {assessment.efdGrade}
+                </div>
+                {/* Copernicus Verified Badge */}
+                <div
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(0,82,147,0.12), rgba(0,150,64,0.12))",
+                    border: "1px solid rgba(0,82,147,0.2)",
+                    color: "#005293",
+                  }}
+                  title="Environmental data cross-referenced with Copernicus Sentinel-5P TROPOMI satellite measurements"
+                >
+                  <Satellite className="w-2.5 h-2.5" />
+                  Copernicus Verified
+                </div>
               </div>
 
               <div className="flex-1 grid grid-cols-3 gap-6">
@@ -1255,6 +1273,14 @@ function CalculatorStep({
                   averages
                 </p>
               </div>
+            )}
+
+            {/* Industry Benchmark */}
+            {assessment.carbonIntensity && (
+              <IndustryBenchmark
+                carbonIntensity={assessment.carbonIntensity}
+                orbitType={assessment.orbitType}
+              />
             )}
           </div>
 
@@ -1325,6 +1351,9 @@ function CalculatorStep({
               })}
             </div>
           </div>
+
+          {/* What-If Optimizer */}
+          <SensitivityOptimizer assessment={assessment} />
 
           {/* Recommendations */}
           {result?.recommendations && result.recommendations.length > 0 && (
