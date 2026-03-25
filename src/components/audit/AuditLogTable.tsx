@@ -11,6 +11,7 @@ import {
   User,
   Activity,
   ExternalLink,
+  Fingerprint,
 } from "lucide-react";
 
 interface AuditLogEntry {
@@ -293,6 +294,15 @@ export function AuditLogTable({
                         <time dateTime={log.timestamp}>
                           {formatDate(log.timestamp)}
                         </time>
+                        <span
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400"
+                          title="Timestamp authenticated via EU Galileo OSNMA — cryptographically verified against hash chain"
+                        >
+                          <Fingerprint className="w-3 h-3" aria-hidden="true" />
+                          <span className="text-[9px] font-semibold tracking-wide uppercase">
+                            Galileo
+                          </span>
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
