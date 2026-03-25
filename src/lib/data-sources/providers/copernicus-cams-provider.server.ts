@@ -112,12 +112,21 @@ function setup() {
 }
 function evaluatePixel(s) {
   if (s.dataMask === 0) return [0, 0, 0, 0];
-  let v = Math.max(0, s.NO2 * 1e5);
-  let r = Math.min(1, v * 4);
-  let g = Math.min(1, Math.max(0, 0.8 - Math.abs(v - 0.3) * 3));
-  let b = Math.min(1, Math.max(0, 0.9 - v * 2));
-  let a = Math.min(1, v * 8 + 0.15);
-  return [r * 255, g * 255, b * 255, a * 255];
+  let v = Math.min(1, Math.max(0, s.NO2 * 20000));
+  let r, g, b;
+  if (v < 0.25) {
+    r = 0.1; g = 0.2 + v * 3; b = 0.6 + v;
+  } else if (v < 0.5) {
+    let t = (v - 0.25) * 4;
+    r = t * 0.3; g = 0.9; b = 0.9 - t * 0.9;
+  } else if (v < 0.75) {
+    let t = (v - 0.5) * 4;
+    r = 0.3 + t * 0.7; g = 0.9 - t * 0.5; b = 0;
+  } else {
+    let t = (v - 0.75) * 4;
+    r = 1; g = 0.4 - t * 0.4; b = 0;
+  }
+  return [r * 255, g * 255, b * 255, 220];
 }`;
 
 const MAP_EVALSCRIPT_CO = `//VERSION=3
@@ -129,12 +138,21 @@ function setup() {
 }
 function evaluatePixel(s) {
   if (s.dataMask === 0) return [0, 0, 0, 0];
-  let v = Math.max(0, s.CO * 30);
-  let r = Math.min(1, v * 2);
-  let g = Math.min(1, Math.max(0, 1 - v * 1.5));
-  let b = Math.min(1, Math.max(0, 0.3 - v));
-  let a = Math.min(1, v * 5 + 0.15);
-  return [r * 255, g * 255, b * 255, a * 255];
+  let v = Math.min(1, Math.max(0, s.CO * 25));
+  let r, g, b;
+  if (v < 0.25) {
+    r = 0.1; g = 0.2 + v * 3; b = 0.6 + v;
+  } else if (v < 0.5) {
+    let t = (v - 0.25) * 4;
+    r = t * 0.3; g = 0.9; b = 0.9 - t * 0.9;
+  } else if (v < 0.75) {
+    let t = (v - 0.5) * 4;
+    r = 0.3 + t * 0.7; g = 0.9 - t * 0.5; b = 0;
+  } else {
+    let t = (v - 0.75) * 4;
+    r = 1; g = 0.4 - t * 0.4; b = 0;
+  }
+  return [r * 255, g * 255, b * 255, 220];
 }`;
 
 const MAP_EVALSCRIPTS: Record<string, string> = {
