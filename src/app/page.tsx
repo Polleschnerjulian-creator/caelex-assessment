@@ -1,4 +1,5 @@
 import Hero from "@/components/landing/Hero";
+import BlogShowcase from "@/components/landing/BlogShowcase";
 import MissionStatement from "@/components/landing/MissionStatement";
 import SoftwareShowcase from "@/components/landing/SoftwareShowcase";
 import CtaBanner from "@/components/landing/CtaBanner";
@@ -10,6 +11,7 @@ export default function Home() {
       <SoftwareApplicationJsonLd />
       <Hero />
       <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">
+        <BlogShowcase />
         <MissionStatement />
         <SoftwareShowcase />
         <CtaBanner />

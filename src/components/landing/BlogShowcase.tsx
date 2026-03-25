@@ -3,8 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useMotionValue, useSpring, PanInfo } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BlogEntry {
   id: string;
@@ -217,18 +216,7 @@ export default function BlogShowcase() {
               className="flex-shrink-0"
               style={{ width: cardWidth || "38vw" }}
             >
-              <Link
-                href={entry.href ?? `/blog/${entry.slug}`}
-                className="group block"
-                draggable={false}
-                onClick={(e) => {
-                  // Prevent navigation when dragging
-                  const expected = inset - activeIndex * (cardWidth + GAP_PX);
-                  if (Math.abs(rawX.get() - expected) > 5) {
-                    e.preventDefault();
-                  }
-                }}
-              >
+              <div className="group block" draggable={false}>
                 {/* Image */}
                 <div className="relative w-full h-[55vw] md:h-[24vw] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-5 md:mb-6">
                   <Image
@@ -255,13 +243,8 @@ export default function BlogShowcase() {
                       {entry.description}
                     </p>
                   </div>
-                  <ArrowUpRight
-                    size={22}
-                    className="flex-shrink-0 mt-2 text-[#9CA3AF] group-hover:text-[#111827] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    aria-hidden="true"
-                  />
                 </div>
-              </Link>
+              </div>
             </div>
           ))}
         </motion.div>
