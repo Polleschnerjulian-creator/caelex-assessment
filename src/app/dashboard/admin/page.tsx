@@ -245,6 +245,41 @@ export default function AdminDashboard() {
                 : "Activate Demo Mode"}
           </button>
         </div>
+
+        {/* Guided Tour */}
+        <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-body font-medium text-[var(--text-primary)]">
+                Platform Tour
+              </h4>
+              <p className="text-small text-[var(--text-tertiary)] mt-0.5">
+                Auto-guided walkthrough of key features. Ideal for video
+                recording and presentations.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                window.dispatchEvent(
+                  new CustomEvent("demo-tour", {
+                    detail: { action: "start" },
+                  }),
+                );
+              }}
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 text-body font-medium rounded-lg bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 transition-colors"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+              Start Platform Tour
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Info Banner */}

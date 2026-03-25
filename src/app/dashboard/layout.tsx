@@ -12,6 +12,7 @@ import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
 import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
 import GlassSpecular from "@/components/dashboard/GlassSpecular";
+import DemoTour from "@/components/demo/DemoTour";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
   LanguageProvider,
@@ -233,6 +234,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           sidebarMargin={contentMargin}
         />
       )}
+
+      {/* Demo Tour Overlay */}
+      <DemoTour />
     </div>
   );
 }
