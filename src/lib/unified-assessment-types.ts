@@ -555,6 +555,7 @@ export interface RedactedUnifiedResult {
       number: string;
       title: string;
       relevance: string;
+      applicableActivities?: string[];
     }[];
     moduleStatuses: {
       id: string;

@@ -29,13 +29,17 @@ import {
 
 // ─── Types ───
 
+export interface MergedArticle extends Article {
+  applicableActivities: string[];
+}
+
 export interface MergedSpaceActResult {
   applies: boolean;
   operatorTypes: string[];
   regime: RegimeType;
   regimeLabel: string;
   regimeReason: string;
-  applicableArticles: Article[];
+  applicableArticles: MergedArticle[];
   applicableCount: number;
   totalArticles: number;
   applicablePercentage: number;
@@ -89,13 +93,18 @@ export function mergeMultiActivityResults(
 
   if (results.length === 1) {
     const r = results[0];
+    const activityLabel =
+      r.operatorAbbreviation || r.operatorTypeLabel || "UNKNOWN";
     return {
       applies: true,
       operatorTypes: [r.operatorTypeLabel],
       regime: r.regime,
       regimeLabel: r.regimeLabel,
       regimeReason: r.regimeReason,
-      applicableArticles: r.applicableArticles,
+      applicableArticles: r.applicableArticles.map((article) => ({
+        ...article,
+        applicableActivities: [activityLabel],
+      })),
       applicableCount: r.applicableCount,
       totalArticles: r.totalArticles,
       applicablePercentage: r.applicablePercentage,
@@ -108,13 +117,23 @@ export function mergeMultiActivityResults(
     };
   }
 
-  // Deduplicate articles by number
-  const articleMap = new Map<string | number, Article>();
+  // Deduplicate articles by number, merging applicableActivities
+  const articleMap = new Map<string, MergedArticle>();
   for (const result of results) {
+    const activityLabel =
+      result.operatorAbbreviation || result.operatorTypeLabel || "UNKNOWN";
     for (const article of result.applicableArticles) {
       const key = String(article.number);
-      if (!articleMap.has(key)) {
-        articleMap.set(key, article);
+      const existing = articleMap.get(key);
+      if (existing) {
+        if (!existing.applicableActivities.includes(activityLabel)) {
+          existing.applicableActivities.push(activityLabel);
+        }
+      } else {
+        articleMap.set(key, {
+          ...article,
+          applicableActivities: [activityLabel],
+        });
       }
     }
   }
@@ -375,6 +394,7 @@ export function buildUnifiedResult(
             number: String(a.number),
             title: a.title,
             relevance: a.compliance_type || "mandatory",
+            applicableActivities: a.applicableActivities,
           })),
           moduleStatuses: spaceActResult.moduleStatuses.map((m) => ({
             id: m.id,

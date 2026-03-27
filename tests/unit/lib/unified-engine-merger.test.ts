@@ -1718,3 +1718,153 @@ describe("buildUnifiedResult: incident timeline", () => {
     expect(result.nis2.incidentTimeline).toHaveLength(0);
   });
 });
+
+// ─── Article deduplication with multi-activity context ───
+
+describe("mergeMultiActivityResults: multi-activity article context", () => {
+  it("merges applicableActivities when same article appears in two results with different activities", () => {
+    const result1 = createMockResult({
+      operatorTypeLabel: "Spacecraft Operator",
+      operatorAbbreviation: "SCO",
+      applicableArticles: [
+        createMockArticle(1, "Subject Matter"),
+        createMockArticle(10, "Authorization"),
+      ],
+    });
+    const result2 = createMockResult({
+      operatorTypeLabel: "Launch Operator",
+      operatorAbbreviation: "LO",
+      applicableArticles: [
+        createMockArticle(1, "Subject Matter"),
+        createMockArticle(20, "Launch Requirements"),
+      ],
+    });
+
+    const merged = mergeMultiActivityResults([result1, result2]);
+
+    // Article 1 appears in both results — should have both activities
+    const article1 = merged.applicableArticles.find(
+      (a) => String(a.number) === "1",
+    );
+    expect(article1).toBeDefined();
+    expect(article1!.applicableActivities).toEqual(["SCO", "LO"]);
+
+    // Article 10 is unique to SCO
+    const article10 = merged.applicableArticles.find(
+      (a) => String(a.number) === "10",
+    );
+    expect(article10).toBeDefined();
+    expect(article10!.applicableActivities).toEqual(["SCO"]);
+
+    // Article 20 is unique to LO
+    const article20 = merged.applicableArticles.find(
+      (a) => String(a.number) === "20",
+    );
+    expect(article20).toBeDefined();
+    expect(article20!.applicableActivities).toEqual(["LO"]);
+  });
+
+  it("assigns single-element applicableActivities for unique articles", () => {
+    const result1 = createMockResult({
+      operatorTypeLabel: "Spacecraft Operator",
+      operatorAbbreviation: "SCO",
+      applicableArticles: [createMockArticle(5, "Unique Art 5")],
+    });
+    const result2 = createMockResult({
+      operatorTypeLabel: "Launch Operator",
+      operatorAbbreviation: "LO",
+      applicableArticles: [createMockArticle(6, "Unique Art 6")],
+    });
+
+    const merged = mergeMultiActivityResults([result1, result2]);
+
+    expect(merged.applicableArticles).toHaveLength(2);
+    for (const article of merged.applicableArticles) {
+      expect(article.applicableActivities).toHaveLength(1);
+    }
+    const art5 = merged.applicableArticles.find(
+      (a) => String(a.number) === "5",
+    );
+    const art6 = merged.applicableArticles.find(
+      (a) => String(a.number) === "6",
+    );
+    expect(art5!.applicableActivities).toEqual(["SCO"]);
+    expect(art6!.applicableActivities).toEqual(["LO"]);
+  });
+
+  it("does not duplicate activity labels when same activity appears twice for same article", () => {
+    const result1 = createMockResult({
+      operatorAbbreviation: "SCO",
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+    const result2 = createMockResult({
+      operatorAbbreviation: "SCO",
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+
+    const merged = mergeMultiActivityResults([result1, result2]);
+    const article1 = merged.applicableArticles.find(
+      (a) => String(a.number) === "1",
+    );
+    expect(article1!.applicableActivities).toEqual(["SCO"]);
+  });
+
+  it("merges three activities for the same article", () => {
+    const result1 = createMockResult({
+      operatorAbbreviation: "SCO",
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+    const result2 = createMockResult({
+      operatorAbbreviation: "LO",
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+    const result3 = createMockResult({
+      operatorAbbreviation: "SSP",
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+
+    const merged = mergeMultiActivityResults([result1, result2, result3]);
+    const article1 = merged.applicableArticles.find(
+      (a) => String(a.number) === "1",
+    );
+    expect(article1!.applicableActivities).toEqual(["SCO", "LO", "SSP"]);
+  });
+
+  it("falls back to operatorTypeLabel when operatorAbbreviation is missing", () => {
+    const result1 = createMockResult({
+      operatorTypeLabel: "Spacecraft Operator",
+      operatorAbbreviation: undefined as unknown as string,
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+    const result2 = createMockResult({
+      operatorTypeLabel: "Launch Operator",
+      operatorAbbreviation: undefined as unknown as string,
+      applicableArticles: [createMockArticle(1, "Subject")],
+    });
+
+    const merged = mergeMultiActivityResults([result1, result2]);
+    const article1 = merged.applicableArticles.find(
+      (a) => String(a.number) === "1",
+    );
+    expect(article1!.applicableActivities).toEqual([
+      "Spacecraft Operator",
+      "Launch Operator",
+    ]);
+  });
+
+  it("adds applicableActivities for single-result pass-through", () => {
+    const singleResult = createMockResult({
+      operatorAbbreviation: "SCO",
+      applicableArticles: [
+        createMockArticle(1, "Subject"),
+        createMockArticle(2, "Scope"),
+      ],
+    });
+
+    const merged = mergeMultiActivityResults([singleResult]);
+
+    for (const article of merged.applicableArticles) {
+      expect(article.applicableActivities).toEqual(["SCO"]);
+    }
+  });
+});
