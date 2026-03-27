@@ -296,6 +296,7 @@ model AuditLog {
 
   @@index([userId])
   @@index([organizationId])
+  @@index([organizationId, timestamp])
   @@index([entityType, entityId])
   @@index([timestamp])
   @@index([action])
@@ -1856,6 +1857,7 @@ model Document {
   @@index([status])
   @@index([moduleType])
   @@index([organizationId])
+  @@index([organizationId, status])
   @@index([userId, status, expiryDate])
 }
 
