@@ -12,8 +12,14 @@ import type { SpaceLawComplianceResult } from "@/lib/space-law-types";
 // Mock server-only
 vi.mock("server-only", () => ({}));
 
-const { mergeMultiActivityResults, buildUnifiedResult } =
-  await import("@/lib/unified-engine-merger.server");
+const {
+  mergeMultiActivityResults,
+  buildUnifiedResult,
+  calculateConfidenceScore,
+  calculateOverallRisk,
+  CONFIDENCE_FIELDS,
+  RISK_SCORING_CONFIG,
+} = await import("@/lib/unified-engine-merger.server");
 
 const { getDefaultUnifiedAnswers } =
   await import("@/lib/unified-assessment-types");
@@ -362,13 +368,14 @@ describe("buildUnifiedResult", () => {
     expect(result.euSpaceAct.applies).toBe(false);
   });
 
-  it("calculates confidence score based on answered fields", () => {
+  it("calculates confidence score based on answered fields (quality-weighted)", () => {
+    // Multi-item arrays get full credit; single-item arrays get half credit
     const fullAnswers = {
       ...getDefaultUnifiedAnswers(),
       establishmentCountry: "DE",
       entitySize: "large" as const,
-      activityTypes: ["SCO" as const],
-      serviceTypes: ["SATCOM"],
+      activityTypes: ["SCO" as const, "LO" as const],
+      serviceTypes: ["SATCOM", "EO"],
       primaryOrbitalRegime: "LEO" as const,
       operatesConstellation: false,
       servesEUCustomers: true,
@@ -381,7 +388,7 @@ describe("buildUnifiedResult", () => {
       hasEncryption: true,
       hasAccessControl: true,
       hasVulnerabilityManagement: true,
-      interestedJurisdictions: ["FR"],
+      interestedJurisdictions: ["FR", "DE"],
       hasInsurance: true,
     };
 
@@ -622,12 +629,12 @@ describe("calculateOverallRisk (via buildUnifiedResult)", () => {
     expect(result.overallSummary.overallRisk).toBe("high");
   });
 
-  it("returns 'high' when standard regime + essential classification with no gaps", () => {
+  it("returns 'medium' when standard regime + essential classification with no gaps (inherent risk)", () => {
     const nis2 = createNIS2Result({
       entityClassification: "essential",
       applicableCount: 10,
     });
-    // all cybersecurity checks true => 0 gaps
+    // all cybersecurity checks true => 0 gaps, but standard+essential adds +4 inherent risk
     const answers = {
       ...getDefaultUnifiedAnswers(),
       hasCybersecurityPolicy: true,
@@ -659,21 +666,23 @@ describe("calculateOverallRisk (via buildUnifiedResult)", () => {
       isDefenseOnly: false,
     };
     const result = buildUnifiedResult(spaceAct, nis2, null, answers);
-    expect(result.overallSummary.overallRisk).toBe("high");
+    // Standard+essential adds 4 inherent risk (>= medium threshold of 4)
+    expect(result.overallSummary.overallRisk).toBe("medium");
   });
 
-  it("returns 'medium' when space act applies but no NIS2 and few gaps", () => {
+  it("returns 'medium' when space act applies with moderate gaps", () => {
     const nis2 = createNIS2Result({
       entityClassification: "out_of_scope",
       applicableCount: 0,
     });
+    // 2 medium-weight gaps: risk_management (2.5) + business_continuity (1.5) = 4
     const answers = {
       ...getDefaultUnifiedAnswers(),
       hasCybersecurityPolicy: true,
       hasRiskManagement: false,
       hasIncidentResponsePlan: true,
       hasSupplyChainSecurity: true,
-      hasBusinessContinuityPlan: true,
+      hasBusinessContinuityPlan: false,
       hasSecurityTraining: true,
       hasEncryption: true,
       hasAccessControl: true,
@@ -698,6 +707,7 @@ describe("calculateOverallRisk (via buildUnifiedResult)", () => {
       isDefenseOnly: false,
     };
     const result = buildUnifiedResult(spaceAct, nis2, null, answers);
+    // risk_management (2.5) + business_continuity (1.5) = 4 >= medium threshold
     expect(result.overallSummary.overallRisk).toBe("medium");
   });
 });
@@ -1866,5 +1876,258 @@ describe("mergeMultiActivityResults: multi-activity article context", () => {
     for (const article of merged.applicableArticles) {
       expect(article.applicableActivities).toEqual(["SCO"]);
     }
+  });
+});
+
+// ─── Quality-weighted confidence score (direct function tests) ───
+
+describe("calculateConfidenceScore (quality-weighted)", () => {
+  it("returns 0 for empty answers", () => {
+    const score = calculateConfidenceScore({});
+    expect(score).toBe(0);
+  });
+
+  it("required fields (weight 2) contribute more than standard fields (weight 1)", () => {
+    // Only required fields answered (establishmentCountry=2, entitySize=2, activityTypes=2)
+    const requiredOnly = calculateConfidenceScore({
+      establishmentCountry: "DE",
+      entitySize: "large",
+      activityTypes: ["SCO", "LO"],
+    });
+
+    // Only standard fields answered (3 fields at weight 1 each)
+    const standardOnly = calculateConfidenceScore({
+      hasCybersecurityPolicy: true,
+      hasRiskManagement: true,
+      hasIncidentResponsePlan: true,
+    });
+
+    // Required fields contribute 6/21 = 28.6%, standard contribute 3/21 = 14.3%
+    expect(requiredOnly).toBeGreaterThan(standardOnly);
+  });
+
+  it("single-item arrays get half credit vs multi-item arrays", () => {
+    const singleItem = calculateConfidenceScore({
+      activityTypes: ["SCO"],
+    });
+    const multiItem = calculateConfidenceScore({
+      activityTypes: ["SCO", "LO"],
+    });
+
+    // Single item gets 50% of the field weight, multi gets 100%
+    expect(multiItem).toBeGreaterThan(singleItem);
+    expect(singleItem).toBeGreaterThan(0);
+  });
+
+  it("returns 100 when all fields are fully answered (multi-item arrays)", () => {
+    const score = calculateConfidenceScore({
+      establishmentCountry: "DE",
+      entitySize: "large",
+      activityTypes: ["SCO", "LO"],
+      serviceTypes: ["SATCOM", "EO"],
+      primaryOrbitalRegime: "LEO",
+      operatesConstellation: true,
+      servesEUCustomers: true,
+      servesCriticalInfrastructure: true,
+      hasCybersecurityPolicy: true,
+      hasRiskManagement: true,
+      hasIncidentResponsePlan: true,
+      hasSupplyChainSecurity: true,
+      hasBusinessContinuityPlan: true,
+      hasEncryption: true,
+      hasAccessControl: true,
+      hasVulnerabilityManagement: true,
+      interestedJurisdictions: ["FR", "DE"],
+      hasInsurance: true,
+    });
+    expect(score).toBe(100);
+  });
+
+  it("empty string values are not counted", () => {
+    const score = calculateConfidenceScore({
+      establishmentCountry: "",
+    });
+    expect(score).toBe(0);
+  });
+
+  it("empty arrays are not counted", () => {
+    const score = calculateConfidenceScore({
+      activityTypes: [],
+    });
+    expect(score).toBe(0);
+  });
+
+  it("null values are not counted", () => {
+    const score = calculateConfidenceScore({
+      establishmentCountry: null,
+      entitySize: null,
+    });
+    expect(score).toBe(0);
+  });
+
+  it("important fields (weight 1.5) contribute more than standard fields", () => {
+    // One important field (primaryOrbitalRegime = 1.5)
+    const importantOnly = calculateConfidenceScore({
+      primaryOrbitalRegime: "LEO",
+    });
+    // One standard field (hasEncryption = 1)
+    const standardOnly = calculateConfidenceScore({
+      hasEncryption: true,
+    });
+    expect(importantOnly).toBeGreaterThan(standardOnly);
+  });
+});
+
+// ─── Severity-weighted risk scoring (direct function tests) ───
+
+describe("calculateOverallRisk (severity-weighted)", () => {
+  it("returns low with empty gaps when neither framework applies", () => {
+    const result = calculateOverallRisk(
+      false,
+      "exempt",
+      false,
+      "out_of_scope",
+      0,
+      {},
+    );
+    expect(result.level).toBe("low");
+    expect(result.weightedScore).toBe(0);
+    expect(result.gaps).toEqual([]);
+  });
+
+  it("cybersecurity gaps have higher severity than administrative gaps", () => {
+    // Cybersecurity policy gap = weight 3
+    const cyberResult = calculateOverallRisk(
+      true,
+      "standard",
+      true,
+      "essential",
+      1,
+      {
+        hasCybersecurityPolicy: false,
+      },
+    );
+    // Insurance gap = weight 1.5
+    const adminResult = calculateOverallRisk(
+      true,
+      "standard",
+      true,
+      "essential",
+      1,
+      {
+        hasInsurance: false,
+      },
+    );
+
+    const cyberGapWeight =
+      cyberResult.gaps.find((g) => g.type === "cybersecurity_policy")?.weight ??
+      0;
+    const adminGapWeight =
+      adminResult.gaps.find((g) => g.type === "insurance_coverage")?.weight ??
+      0;
+
+    expect(cyberGapWeight).toBeGreaterThan(adminGapWeight);
+  });
+
+  it("multiple high-severity gaps push to critical", () => {
+    // cybersecurity_policy (3) + incident_response (3) + risk_management (2.5) +
+    // supply_chain_security (2) + standard+essential bonus (4) = 14.5 >= 12
+    const result = calculateOverallRisk(
+      true,
+      "standard",
+      true,
+      "essential",
+      4,
+      {
+        hasCybersecurityPolicy: false,
+        hasIncidentResponsePlan: false,
+        hasRiskManagement: false,
+        hasSupplyChainSecurity: false,
+      },
+    );
+    expect(result.level).toBe("critical");
+    expect(result.weightedScore).toBeGreaterThanOrEqual(
+      RISK_SCORING_CONFIG.thresholds.critical,
+    );
+    expect(result.gaps).toHaveLength(4);
+  });
+
+  it("returns structured RiskResult with gaps detail", () => {
+    const result = calculateOverallRisk(
+      true,
+      "standard",
+      false,
+      "out_of_scope",
+      1,
+      {
+        hasIncidentResponsePlan: false,
+      },
+    );
+    expect(result).toHaveProperty("level");
+    expect(result).toHaveProperty("weightedScore");
+    expect(result).toHaveProperty("gaps");
+    expect(result.gaps[0]).toEqual({
+      type: "incident_response",
+      weight: RISK_SCORING_CONFIG.gapWeights.incident_response.weight,
+    });
+  });
+
+  it("standard+essential with no gaps returns medium (inherent risk)", () => {
+    const result = calculateOverallRisk(
+      true,
+      "standard",
+      true,
+      "essential",
+      0,
+      {
+        hasCybersecurityPolicy: true,
+        hasRiskManagement: true,
+        hasIncidentResponsePlan: true,
+      },
+    );
+    // 0 gap weight + 4 regime bonus = 4 >= medium threshold
+    expect(result.level).toBe("medium");
+    expect(result.weightedScore).toBe(4);
+  });
+
+  it("includes debris mitigation gap for SCO activities", () => {
+    const result = calculateOverallRisk(
+      true,
+      "standard",
+      false,
+      "out_of_scope",
+      0,
+      {
+        activityTypes: ["SCO"],
+        hasDebrisMitigationPlan: false,
+      },
+    );
+    expect(result.gaps).toContainEqual({
+      type: "debris_mitigation",
+      weight: RISK_SCORING_CONFIG.gapWeights.debris_mitigation.weight,
+    });
+  });
+
+  it("does not include debris mitigation gap for non-SCO/LO activities", () => {
+    const result = calculateOverallRisk(
+      true,
+      "standard",
+      false,
+      "out_of_scope",
+      0,
+      {
+        activityTypes: ["SSP"],
+        hasDebrisMitigationPlan: false,
+      },
+    );
+    expect(
+      result.gaps.find((g) => g.type === "debris_mitigation"),
+    ).toBeUndefined();
+  });
+
+  it("falls back to count-based scoring when answers not provided", () => {
+    // Legacy fallback: 7+ gaps = critical
+    const result = calculateOverallRisk(true, "standard", true, "essential", 7);
+    expect(result.level).toBe("critical");
   });
 });

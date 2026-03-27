@@ -285,45 +285,62 @@ function buildCrossFrameworkOverlap(
   return overlaps;
 }
 
-// ─── Confidence Score ───
+// ─── Confidence Score (quality-weighted) ───
 
-function calculateConfidenceScore(
+interface ConfidenceField {
+  key: keyof UnifiedAssessmentAnswers;
+  weight: number; // 2 = required, 1.5 = important, 1 = standard
+}
+
+export const CONFIDENCE_FIELDS: ConfidenceField[] = [
+  { key: "establishmentCountry", weight: 2 },
+  { key: "entitySize", weight: 2 },
+  { key: "activityTypes", weight: 2 },
+  { key: "primaryOrbitalRegime", weight: 1.5 },
+  { key: "operatesConstellation", weight: 1.5 },
+  { key: "servesEUCustomers", weight: 1.5 },
+  { key: "serviceTypes", weight: 1 },
+  { key: "servesCriticalInfrastructure", weight: 1 },
+  { key: "hasCybersecurityPolicy", weight: 1 },
+  { key: "hasRiskManagement", weight: 1 },
+  { key: "hasIncidentResponsePlan", weight: 1 },
+  { key: "hasSupplyChainSecurity", weight: 1 },
+  { key: "hasBusinessContinuityPlan", weight: 1 },
+  { key: "hasEncryption", weight: 1 },
+  { key: "hasAccessControl", weight: 1 },
+  { key: "hasVulnerabilityManagement", weight: 1 },
+  { key: "interestedJurisdictions", weight: 1 },
+  { key: "hasInsurance", weight: 1 },
+];
+
+export function calculateConfidenceScore(
   answers: Partial<UnifiedAssessmentAnswers>,
 ): number {
-  const applicableFields: (keyof UnifiedAssessmentAnswers)[] = [
-    "establishmentCountry",
-    "entitySize",
-    "activityTypes",
-    "serviceTypes",
-    "primaryOrbitalRegime",
-    "operatesConstellation",
-    "servesEUCustomers",
-    "servesCriticalInfrastructure",
-    "hasCybersecurityPolicy",
-    "hasRiskManagement",
-    "hasIncidentResponsePlan",
-    "hasSupplyChainSecurity",
-    "hasBusinessContinuityPlan",
-    "hasEncryption",
-    "hasAccessControl",
-    "hasVulnerabilityManagement",
-    "interestedJurisdictions",
-    "hasInsurance",
-  ];
+  let totalWeight = 0;
+  let earnedWeight = 0;
 
-  let answered = 0;
-  for (const field of applicableFields) {
-    const value = answers[field];
-    if (value !== null && value !== undefined) {
-      if (Array.isArray(value)) {
-        if (value.length > 0) answered++;
+  for (const field of CONFIDENCE_FIELDS) {
+    totalWeight += field.weight;
+    const value = answers[field.key];
+    if (value === null || value === undefined) continue;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) continue;
+      if (value.length === 1) {
+        earnedWeight += field.weight * 0.5;
       } else {
-        answered++;
+        earnedWeight += field.weight;
       }
+    } else if (typeof value === "string") {
+      if (value.trim() === "") continue;
+      earnedWeight += field.weight;
+    } else {
+      earnedWeight += field.weight;
     }
   }
 
-  return Math.round((answered / applicableFields.length) * 100);
+  if (totalWeight === 0) return 0;
+  return Math.round((earnedWeight / totalWeight) * 100);
 }
 
 // ─── NIS2 Incident Timeline ───
@@ -499,13 +516,15 @@ export function buildUnifiedResult(
   const totalRequirements =
     euSpaceAct.applicableArticleCount + (nis2Result?.applicableCount || 0);
 
-  const overallRisk = calculateOverallRisk(
+  const riskResult = calculateOverallRisk(
     euSpaceAct.applies,
     euSpaceAct.regime,
     nis2Applies,
     nis2Classification,
     complianceGapCount,
+    answers,
   );
+  const overallRisk = riskResult.level;
 
   const estimatedMonths = calculateEstimatedMonths(
     euSpaceAct.applies,
@@ -613,19 +632,179 @@ function buildNIS2PriorityActions(
   return actions.slice(0, 5);
 }
 
-function calculateOverallRisk(
+// ─── Risk Scoring (gap severity weighted) ───
+
+export const RISK_SCORING_CONFIG = {
+  gapWeights: {
+    cybersecurity_policy: { weight: 3, rationale: "Core NIS2 requirement" },
+    incident_response: {
+      weight: 3,
+      rationale: "Legal obligation (24h/72h reporting)",
+    },
+    risk_management: {
+      weight: 2.5,
+      rationale: "Core NIS2 Art. 21 requirement",
+    },
+    supply_chain_security: {
+      weight: 2,
+      rationale: "NIS2 Art. 21(2)(d) + EU Space Act Art. 77",
+    },
+    debris_mitigation: { weight: 2, rationale: "EU Space Act mandatory" },
+    spacecraft_registration: { weight: 2, rationale: "Legal prerequisite" },
+    business_continuity: { weight: 1.5, rationale: "Operational resilience" },
+    encryption: { weight: 1.5, rationale: "Data protection requirement" },
+    access_control: { weight: 1.5, rationale: "Security baseline" },
+    vulnerability_management: { weight: 1.5, rationale: "Ongoing security" },
+    insurance_coverage: { weight: 1.5, rationale: "Financial compliance" },
+    security_training: { weight: 1, rationale: "Awareness requirement" },
+    penetration_testing: { weight: 1, rationale: "Verification practice" },
+    environmental_footprint: { weight: 1, rationale: "Reporting obligation" },
+    administrative_docs: { weight: 1, rationale: "Supporting documentation" },
+  },
+  thresholds: { critical: 12, high: 8, medium: 4 },
+} as const;
+
+export interface RiskResult {
+  level: "low" | "medium" | "high" | "critical";
+  weightedScore: number;
+  gaps: Array<{ type: string; weight: number }>;
+}
+
+/**
+ * Build the list of identified gaps and their weights from assessment answers.
+ */
+function buildGapsFromAnswers(
+  answers: Partial<UnifiedAssessmentAnswers>,
+): Array<{ type: string; weight: number }> {
+  const gaps: Array<{ type: string; weight: number }> = [];
+  const w = RISK_SCORING_CONFIG.gapWeights;
+
+  if (answers.hasCybersecurityPolicy === false) {
+    gaps.push({
+      type: "cybersecurity_policy",
+      weight: w.cybersecurity_policy.weight,
+    });
+  }
+  if (answers.hasIncidentResponsePlan === false) {
+    gaps.push({
+      type: "incident_response",
+      weight: w.incident_response.weight,
+    });
+  }
+  if (answers.hasRiskManagement === false) {
+    gaps.push({ type: "risk_management", weight: w.risk_management.weight });
+  }
+  if (answers.hasSupplyChainSecurity === false) {
+    gaps.push({
+      type: "supply_chain_security",
+      weight: w.supply_chain_security.weight,
+    });
+  }
+  if (answers.hasBusinessContinuityPlan === false) {
+    gaps.push({
+      type: "business_continuity",
+      weight: w.business_continuity.weight,
+    });
+  }
+  if (answers.hasEncryption === false) {
+    gaps.push({ type: "encryption", weight: w.encryption.weight });
+  }
+  if (answers.hasAccessControl === false) {
+    gaps.push({ type: "access_control", weight: w.access_control.weight });
+  }
+  if (answers.hasVulnerabilityManagement === false) {
+    gaps.push({
+      type: "vulnerability_management",
+      weight: w.vulnerability_management.weight,
+    });
+  }
+  if (answers.hasInsurance === false) {
+    gaps.push({
+      type: "insurance_coverage",
+      weight: w.insurance_coverage.weight,
+    });
+  }
+  if (answers.hasSecurityTraining === false) {
+    gaps.push({
+      type: "security_training",
+      weight: w.security_training.weight,
+    });
+  }
+  if (answers.conductsPenetrationTesting === false) {
+    gaps.push({
+      type: "penetration_testing",
+      weight: w.penetration_testing.weight,
+    });
+  }
+  // Space-specific gaps
+  const activityTypes = answers.activityTypes || [];
+  if (
+    !answers.hasDebrisMitigationPlan &&
+    (activityTypes.includes("SCO") || activityTypes.includes("LO"))
+  ) {
+    gaps.push({
+      type: "debris_mitigation",
+      weight: w.debris_mitigation.weight,
+    });
+  }
+
+  return gaps;
+}
+
+export function calculateOverallRisk(
   spaceActApplies: boolean,
   spaceActRegime: string,
   nis2Applies: boolean,
   nis2Classification: string,
   complianceGapCount: number,
-): string {
-  if (!spaceActApplies && !nis2Applies) return "low";
-  if (complianceGapCount >= 7) return "critical";
-  if (complianceGapCount >= 4) return "high";
-  if (spaceActRegime === "standard" && nis2Classification === "essential")
-    return "high";
-  return "medium";
+  answers?: Partial<UnifiedAssessmentAnswers>,
+): RiskResult {
+  // When neither framework applies, always low risk
+  if (!spaceActApplies && !nis2Applies) {
+    return { level: "low", weightedScore: 0, gaps: [] };
+  }
+
+  // Build weighted gaps from answers if provided, otherwise fall back to count-based
+  const gaps = answers ? buildGapsFromAnswers(answers) : [];
+  const weightedScore = gaps.reduce((sum, g) => sum + g.weight, 0);
+
+  // Add regime/classification bonus to weighted score
+  let adjustedScore = weightedScore;
+  if (spaceActRegime === "standard" && nis2Classification === "essential") {
+    adjustedScore += 4; // Both heavy frameworks = inherent risk increase
+  }
+
+  const { thresholds } = RISK_SCORING_CONFIG;
+  let level: RiskResult["level"];
+
+  if (gaps.length > 0 || answers) {
+    // Use weighted scoring when we have answer-level detail
+    if (adjustedScore >= thresholds.critical) {
+      level = "critical";
+    } else if (adjustedScore >= thresholds.high) {
+      level = "high";
+    } else if (adjustedScore >= thresholds.medium) {
+      level = "medium";
+    } else {
+      level = "low";
+    }
+  } else {
+    // Legacy fallback for callers without answers
+    if (complianceGapCount >= 7) {
+      level = "critical";
+    } else if (complianceGapCount >= 4) {
+      level = "high";
+    } else if (
+      spaceActRegime === "standard" &&
+      nis2Classification === "essential"
+    ) {
+      level = "high";
+    } else {
+      level = "medium";
+    }
+  }
+
+  return { level, weightedScore: adjustedScore, gaps };
 }
 
 function calculateEstimatedMonths(
