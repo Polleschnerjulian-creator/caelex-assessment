@@ -11,7 +11,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import {
   calculateCompliance,
   loadSpaceActDataFromDisk,
@@ -22,40 +21,14 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import type { AssessmentAnswers } from "@/lib/types";
 import { logger } from "@/lib/logger";
-
-const answersSchema = z.object({
-  activityType: z
-    .enum([
-      "spacecraft",
-      "launch_vehicle",
-      "launch_site",
-      "isos",
-      "data_provider",
-    ])
-    .nullable()
-    .optional(),
-  entitySize: z
-    .enum(["small", "research", "medium", "large"])
-    .nullable()
-    .optional(),
-  primaryOrbit: z.enum(["LEO", "MEO", "GEO", "beyond"]).nullable().optional(),
-  establishment: z
-    .enum(["eu", "third_country_eu_services", "third_country_no_eu"])
-    .nullable()
-    .optional(),
-  constellationSize: z.number().min(0).max(100000).nullable().optional(),
-  isDefenseOnly: z.boolean().nullable().optional(),
-  hasPostLaunchAssets: z.boolean().nullable().optional(),
-  operatesConstellation: z.boolean().nullable().optional(),
-  offersEUServices: z.boolean().nullable().optional(),
-});
-
-const calculateBodySchema = z.object({
-  answers: answersSchema,
-  startedAt: z.number().optional(),
-});
+import { EUSpaceActCalculateSchema } from "@/lib/validations";
+import {
+  createSuccessResponse,
+  createValidationError,
+  createEngineErrorResponse,
+} from "@/lib/api-response";
+import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,21 +48,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const parsed = calculateBodySchema.safeParse(body);
+    const parsed = EUSpaceActCalculateSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
-    const { answers, startedAt } = parsed.data;
+    const { startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
     if (startedAt && typeof startedAt === "number") {
       const elapsed = Date.now() - startedAt;
       // If assessment completed in under 3 seconds, it's likely a bot
-      if (elapsed < 3000) {
+      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
         return NextResponse.json(
           { error: "Assessment completed too quickly. Please try again." },
           { status: 429 },
@@ -98,29 +68,31 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Calculate Compliance ───
-    const data = loadSpaceActDataFromDisk();
-    const result = calculateCompliance(answers as AssessmentAnswers, data);
+    try {
+      const data = loadSpaceActDataFromDisk();
+      const result = calculateCompliance(parsed.data.answers, data);
 
-    // ─── Redact sensitive article details before sending to client ───
-    const redactedResult = redactArticlesForClient(result);
+      // ─── Redact sensitive article details before sending to client ───
+      const redactedResult = redactArticlesForClient(result);
 
-    return NextResponse.json(
-      { result: redactedResult },
-      {
-        status: 200,
-        headers: {
-          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-          // Prevent caching of assessment results
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-          "X-Robots-Tag": "noindex, nofollow",
-        },
-      },
-    );
+      const response = createSuccessResponse({ result: redactedResult });
+      response.headers.set(
+        "X-RateLimit-Remaining",
+        rateLimitResult.remaining.toString(),
+      );
+      // Prevent caching of assessment results
+      response.headers.set(
+        "Cache-Control",
+        "no-store, no-cache, must-revalidate",
+      );
+      response.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return response;
+    } catch (error) {
+      logger.error("Assessment calculation error", error);
+      return createEngineErrorResponse(error);
+    }
   } catch (error) {
     logger.error("Assessment calculation error", error);
-    return NextResponse.json(
-      { error: "Failed to calculate compliance assessment" },
-      { status: 500 },
-    );
+    return createEngineErrorResponse(error);
   }
 }
