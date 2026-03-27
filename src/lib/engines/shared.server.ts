@@ -21,7 +21,7 @@ export interface FavorabilityInput {
   legislationStatus: "enacted" | "draft" | "none";
   processingWeeks: { min: number; max: number };
   hasGovernmentIndemnification: boolean;
-  liabilityRegime: "capped" | "negotiable" | "unlimited";
+  liabilityRegime: "capped" | "negotiable" | "unlimited" | "tiered";
   regulatoryMaturityYear: number;
   countryCode: string;
   hasNationalRegistry: boolean;

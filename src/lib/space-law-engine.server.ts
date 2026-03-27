@@ -32,6 +32,11 @@ import type {
 } from "@/data/uk-space-industry-act";
 import type { UkAssessmentResult } from "./uk-space-engine.server";
 
+import {
+  calculateFavorabilityScore as sharedFavorabilityScore,
+  type FavorabilityInput,
+} from "@/lib/engines/shared.server";
+
 // ─── Lazy import for jurisdiction data ───
 
 let _jurisdictionDataModule:
@@ -246,48 +251,21 @@ function deriveUkFavorabilityScore(
 ): { score: number; factors: string[] } {
   // Start with the standard favorability calculation from metadata
   // to maintain consistency with other jurisdictions
-  let score = 50;
-  const factors: string[] = [];
+  const base = sharedFavorabilityScore({
+    legislationStatus: ukJurisdictionData.legislation.status,
+    processingWeeks: ukJurisdictionData.timeline.typicalProcessingWeeks,
+    hasGovernmentIndemnification:
+      ukJurisdictionData.insuranceLiability.governmentIndemnification,
+    liabilityRegime: ukJurisdictionData.insuranceLiability.liabilityRegime,
+    regulatoryMaturityYear: ukJurisdictionData.legislation.yearEnacted,
+    countryCode: ukJurisdictionData.countryCode,
+    hasNationalRegistry: ukJurisdictionData.registration.nationalRegistryExists,
+    activityType: answers.activityType ?? undefined,
+    entitySize: answers.entitySize ?? undefined,
+  });
 
-  // Timeline factor
-  const avgWeeks =
-    (ukJurisdictionData.timeline.typicalProcessingWeeks.min +
-      ukJurisdictionData.timeline.typicalProcessingWeeks.max) /
-    2;
-  if (avgWeeks <= 10) {
-    score += 15;
-    factors.push("Fast licensing timeline");
-  } else if (avgWeeks <= 16) {
-    score += 8;
-    factors.push("Moderate licensing timeline");
-  } else {
-    score -= 5;
-    factors.push("Longer licensing timeline");
-  }
-
-  // Government indemnification
-  if (ukJurisdictionData.insuranceLiability.governmentIndemnification) {
-    score += 10;
-    factors.push("Government indemnification available");
-  }
-
-  // Liability regime
-  if (ukJurisdictionData.insuranceLiability.liabilityRegime === "capped") {
-    score += 8;
-    factors.push("Capped liability regime");
-  }
-
-  // Regulatory maturity
-  if (ukJurisdictionData.legislation.yearEnacted <= 2018) {
-    score += 5;
-    factors.push("Established regulatory framework");
-  }
-
-  // National registry
-  if (ukJurisdictionData.registration.nationalRegistryExists) {
-    score += 3;
-    factors.push("National space registry maintained");
-  }
+  let score = base.score;
+  const factors = base.factors;
 
   // UK-specific enrichments from the detailed UK engine
   factors.push(
@@ -522,88 +500,22 @@ function calculateFavorabilityScore(
   data: JurisdictionLaw,
   answers: SpaceLawAssessmentAnswers,
 ): { score: number; factors: string[] } {
-  let score = 50; // Base score
-  const factors: string[] = [];
-
-  // No law = low score
-  if (data.legislation.status === "none") {
-    return {
-      score: 20,
-      factors: [
-        "No comprehensive space law — regulatory uncertainty",
-        "EU Space Act (2030) will provide framework",
-      ],
-    };
-  }
-
-  // Timeline (faster = better)
-  const avgWeeks =
-    (data.timeline.typicalProcessingWeeks.min +
-      data.timeline.typicalProcessingWeeks.max) /
-    2;
-  if (avgWeeks <= 10) {
-    score += 15;
-    factors.push("Fast licensing timeline");
-  } else if (avgWeeks <= 16) {
-    score += 8;
-    factors.push("Moderate licensing timeline");
-  } else {
-    score -= 5;
-    factors.push("Longer licensing timeline");
-  }
-
-  // Government indemnification (yes = better)
-  if (data.insuranceLiability.governmentIndemnification) {
-    score += 10;
-    factors.push("Government indemnification available");
-  }
-
-  // Insurance flexibility
-  if (data.insuranceLiability.liabilityRegime === "capped") {
-    score += 8;
-    factors.push("Capped liability regime");
-  } else if (data.insuranceLiability.liabilityRegime === "negotiable") {
-    score += 5;
-    factors.push("Negotiable liability terms");
-  }
-
-  // Regulatory maturity
-  if (data.legislation.yearEnacted <= 2010) {
-    score += 10;
-    factors.push("Mature regulatory framework");
-  } else if (data.legislation.yearEnacted <= 2018) {
-    score += 5;
-    factors.push("Established regulatory framework");
-  }
-
-  // Special provisions (Luxembourg space resources)
-  if (data.countryCode === "LU" && answers.activityType === "space_resources") {
-    score += 15;
-    factors.push("Explicit space resources legislation");
-  }
-
-  // Small entity benefits
-  if (answers.entitySize === "small") {
-    if (data.countryCode === "NL") {
-      score += 5;
-      factors.push("Reduced insurance thresholds for small satellites");
-    }
-    if (data.countryCode === "LU") {
-      score += 5;
-      factors.push("Flexible thresholds for smaller operators");
-    }
-  }
-
-  // National registry (organized = better)
-  if (data.registration.nationalRegistryExists) {
-    score += 3;
-    factors.push("National space registry maintained");
-  }
-
-  // Clamp score to 0-100
-  score = Math.max(0, Math.min(100, score));
-
-  return { score, factors };
+  return sharedFavorabilityScore({
+    legislationStatus: data.legislation.status,
+    processingWeeks: data.timeline.typicalProcessingWeeks,
+    hasGovernmentIndemnification:
+      data.insuranceLiability.governmentIndemnification,
+    liabilityRegime: data.insuranceLiability.liabilityRegime,
+    regulatoryMaturityYear: data.legislation.yearEnacted,
+    countryCode: data.countryCode,
+    hasNationalRegistry: data.registration.nationalRegistryExists,
+    specialProvisions: {
+      spaceResources: data.countryCode === "LU",
+      smallEntity: ["NL", "LU"].includes(data.countryCode),
+    },
+    activityType: answers.activityType ?? undefined,
+    entitySize: answers.entitySize ?? undefined,
+  });
 }
 
 // ─── Comparison Matrix ───
