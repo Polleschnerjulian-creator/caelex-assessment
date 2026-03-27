@@ -73,16 +73,71 @@ export interface RRSMethodology {
   description: string;
 }
 
-// ─── Weights ───
+// ─── Scoring Configuration ───
 
-const WEIGHTS = {
-  authorizationReadiness: 0.25,
-  cybersecurityPosture: 0.2,
-  operationalCompliance: 0.2,
-  jurisdictionalCoverage: 0.15,
-  regulatoryTrajectory: 0.1,
-  governanceProcess: 0.1,
+/**
+ * Central scoring configuration for the Regulatory Readiness Score.
+ *
+ * Every weight and factor budget includes a `rationale` explaining WHY that
+ * specific value was chosen.  This makes the scoring model auditable and
+ * makes future re-calibration intentional rather than arbitrary.
+ */
+export const RRS_SCORING_CONFIG = {
+  components: {
+    authorizationReadiness: {
+      weight: 0.25,
+      rationale:
+        "Authorization is the regulatory prerequisite for any space activity — without it, operations are illegal",
+      factors: {
+        auth_workflow: {
+          maxPoints: 40,
+          rationale: "Workflow completion is the primary readiness indicator",
+        },
+        auth_documents: {
+          maxPoints: 35,
+          rationale: "Document completeness drives NCA submission success",
+        },
+        auth_articles: {
+          maxPoints: 25,
+          rationale: "Article-level tracking shows depth of understanding",
+        },
+      },
+    },
+    cybersecurityPosture: {
+      weight: 0.2,
+      rationale:
+        "NIS2 compliance is legally mandatory for space operators classified as essential/important entities",
+    },
+    operationalCompliance: {
+      weight: 0.2,
+      rationale:
+        "Debris, environmental, and insurance obligations are ongoing operational requirements",
+    },
+    jurisdictionalCoverage: {
+      weight: 0.15,
+      rationale:
+        "Multi-jurisdiction readiness reduces regulatory risk and enables market access",
+    },
+    regulatoryTrajectory: {
+      weight: 0.1,
+      rationale:
+        "Improvement trend signals organizational commitment and reduces future risk",
+    },
+    governanceProcess: {
+      weight: 0.1,
+      rationale:
+        "Audit trails and evidence management are foundational for any regulatory engagement",
+    },
+  },
 } as const;
+
+/** Flat weight lookup derived from the config — used in the methodology export. */
+const WEIGHTS: Record<string, number> = Object.fromEntries(
+  Object.entries(RRS_SCORING_CONFIG.components).map(([key, cfg]) => [
+    key,
+    cfg.weight,
+  ]),
+);
 
 const METHODOLOGY_VERSION = "1.0";
 
@@ -344,20 +399,21 @@ async function fetchGovernanceData(organizationId: string) {
 function computeAuthorizationReadiness(
   data: Awaited<ReturnType<typeof fetchAuthorizationData>>,
 ): RRSComponentScore {
+  const cfg = RRS_SCORING_CONFIG.components.authorizationReadiness.factors;
   const factors: RRSFactor[] = [];
 
-  // Factor 1: Workflow status (40 pts)
+  // Factor 1: Workflow status
   const workflowFactor: RRSFactor = {
     id: "auth_workflow",
     name: "Authorization Workflow Status",
-    maxPoints: 40,
+    maxPoints: cfg.auth_workflow.maxPoints,
     earnedPoints: 0,
     description: "Current state of authorization process",
   };
   if (data.workflows.length > 0) {
     const latest = data.workflows[0];
     const statusPoints: Record<string, number> = {
-      approved: 40,
+      approved: cfg.auth_workflow.maxPoints,
       submitted: 30,
       ready_for_submission: 25,
       in_progress: 15,
@@ -367,11 +423,11 @@ function computeAuthorizationReadiness(
   }
   factors.push(workflowFactor);
 
-  // Factor 2: Document completeness (35 pts)
+  // Factor 2: Document completeness
   const docFactor: RRSFactor = {
     id: "auth_documents",
     name: "Authorization Document Completeness",
-    maxPoints: 35,
+    maxPoints: cfg.auth_documents.maxPoints,
     earnedPoints: 0,
     description: "Required documents uploaded and verified",
   };
@@ -379,15 +435,15 @@ function computeAuthorizationReadiness(
     const allDocs = data.workflows.flatMap((w) => w.documents);
     const readyDocs = allDocs.filter((d) => d.status === "ready");
     const rate = allDocs.length > 0 ? readyDocs.length / allDocs.length : 0;
-    docFactor.earnedPoints = Math.round(rate * 35);
+    docFactor.earnedPoints = Math.round(rate * cfg.auth_documents.maxPoints);
   }
   factors.push(docFactor);
 
-  // Factor 3: Article tracking coverage (25 pts)
+  // Factor 3: Article tracking coverage
   const articleFactor: RRSFactor = {
     id: "auth_articles",
     name: "Article Tracking Coverage",
-    maxPoints: 25,
+    maxPoints: cfg.auth_articles.maxPoints,
     earnedPoints: 0,
     description: "EU Space Act articles tracked and addressed",
   };
@@ -397,12 +453,15 @@ function computeAuthorizationReadiness(
   ).length;
   if (totalTracked > 0) {
     articleFactor.earnedPoints = Math.round(
-      (compliantArticles / totalTracked) * 25,
+      (compliantArticles / totalTracked) * cfg.auth_articles.maxPoints,
     );
   }
   factors.push(articleFactor);
 
-  return buildComponentScore(factors, WEIGHTS.authorizationReadiness);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.authorizationReadiness.weight,
+  );
 }
 
 function computeCybersecurityPosture(
@@ -435,7 +494,10 @@ function computeCybersecurityPosture(
     description: `${f.enactedRef} — ${f.name}`,
   }));
 
-  return buildComponentScore(factors, WEIGHTS.cybersecurityPosture);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.cybersecurityPosture.weight,
+  );
 }
 
 function computeOperationalCompliance(
@@ -509,7 +571,10 @@ function computeOperationalCompliance(
   }
   factors.push(supFactor);
 
-  return buildComponentScore(factors, WEIGHTS.operationalCompliance);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.operationalCompliance.weight,
+  );
 }
 
 function computeJurisdictionalCoverage(
@@ -562,7 +627,10 @@ function computeJurisdictionalCoverage(
   }
   factors.push(multiFactor);
 
-  return buildComponentScore(factors, WEIGHTS.jurisdictionalCoverage);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.jurisdictionalCoverage.weight,
+  );
 }
 
 function computeRegulatoryTrajectory(
@@ -625,7 +693,10 @@ function computeRegulatoryTrajectory(
   }
   factors.push(activityFactor);
 
-  return buildComponentScore(factors, WEIGHTS.regulatoryTrajectory);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.regulatoryTrajectory.weight,
+  );
 }
 
 function computeGovernanceProcess(
@@ -690,7 +761,10 @@ function computeGovernanceProcess(
   }
   factors.push(evidenceFactor);
 
-  return buildComponentScore(factors, WEIGHTS.governanceProcess);
+  return buildComponentScore(
+    factors,
+    RRS_SCORING_CONFIG.components.governanceProcess.weight,
+  );
 }
 
 // ─── Helpers ───
