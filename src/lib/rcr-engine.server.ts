@@ -33,14 +33,34 @@ import { subDays, subMonths, startOfQuarter, format } from "date-fns";
 
 // ─── Constants ───
 
-const RCR_METHODOLOGY_VERSION = "1.0.0";
-const VALIDITY_DAYS = 90;
-const MAX_INCIDENT_PENALTY = 15;
-const MAX_NCA_PENALTY = 15;
-const INCIDENT_PENALTY_PER = 3;
-const NCA_PENALTY_PER = 5;
-const TEMPORAL_DECAY_THRESHOLD_DAYS = 180;
-const TEMPORAL_DECAY_RATE_PER_MONTH = 0.1;
+/**
+ * Documented penalty and scoring configuration for the RCR engine.
+ *
+ * Each penalty includes a rationale explaining why the specific values
+ * were chosen, enabling future auditors and maintainers to evaluate
+ * and adjust parameters with full context.
+ */
+export const RCR_PENALTY_CONFIG = {
+  incidents: {
+    penaltyPer: 3,
+    maxPenalty: 15,
+    rationale:
+      "Each unresolved incident signals active regulatory risk; capped to prevent single-dimension domination",
+  },
+  ncaSubmissions: {
+    penaltyPer: 5,
+    maxPenalty: 15,
+    rationale:
+      "Pending NCA submissions indicate incomplete authorization process",
+  },
+  temporalDecay: {
+    thresholdDays: 180,
+    ratePerMonth: 0.1,
+    rationale: "10% per month reflects data staleness risk after 6 months",
+  },
+  validityDays: 90,
+  methodologyVersion: "1.0.0",
+} as const;
 
 // ─── Types ───
 
@@ -280,53 +300,77 @@ interface CorrelationAdjustment {
 }
 
 /**
+ * Sentinel value for rules that apply to any component scoring above 80,
+ * excluding the component named in the condition itself.
+ */
+const ANY_ABOVE_80 = "__any_above_80__";
+
+/**
+ * Data-driven correlation rules that detect cross-component inconsistencies.
+ *
+ * Each rule defines a condition over component scores, a target component
+ * (or sentinel for wildcard matching), and a documented rationale.
+ */
+export const RCR_CORRELATION_RULES = [
+  {
+    id: "cyber_auth_inconsistency",
+    condition: (scores: Record<string, number>) =>
+      scores.cybersecurityPosture < 50 && scores.authorizationReadiness > 80,
+    adjustment: -5,
+    component: "authorizationReadiness",
+    rationale:
+      "High auth readiness with poor cybersecurity indicates superficial compliance",
+  },
+  {
+    id: "jurisdiction_ops_inconsistency",
+    condition: (scores: Record<string, number>) =>
+      scores.jurisdictionalCoverage < 30 && scores.operationalCompliance > 70,
+    adjustment: -5,
+    component: "operationalCompliance",
+    rationale:
+      "Operational score inconsistent with weak jurisdictional coverage",
+  },
+  {
+    id: "governance_weakness",
+    condition: (scores: Record<string, number>) =>
+      scores.governanceProcess < 30,
+    adjustment: -3,
+    component: ANY_ABOVE_80,
+    rationale: "Any high score is suspect when governance is weak (< 30)",
+  },
+];
+
+/**
  * Apply cross-component correlation checks that flag inconsistencies
  * and deduct points where scores are logically contradictory.
  *
- * Rules:
- *   1. cybersecurity < 50 but authorization > 80 → deduct 5 from authorization
- *   2. environmental < 30 but operational > 70 → deduct 5 from operational
- *   3. governance < 30 but any other component > 80 → deduct 3 from that component
+ * Iterates over RCR_CORRELATION_RULES; rules with the __any_above_80__
+ * sentinel expand to every component scoring > 80 (excluding governance).
  */
 function computeCorrelationAdjustments(
   scores: Record<string, number>,
 ): CorrelationAdjustment[] {
   const adjustments: CorrelationAdjustment[] = [];
 
-  // Rule 1: Cyber < 50, Authorization > 80
-  if (scores.cybersecurityPosture < 50 && scores.authorizationReadiness > 80) {
-    adjustments.push({
-      component: "authorizationReadiness",
-      deduction: 5,
-      reason:
-        "Authorization score inconsistent with weak cybersecurity posture (Art. 8 NIS2 cross-dependency)",
-    });
-  }
+  for (const rule of RCR_CORRELATION_RULES) {
+    if (!rule.condition(scores)) continue;
 
-  // Rule 2: Environmental scoring is embedded in operational compliance.
-  // We use the environmental sub-score from the operational component's factors.
-  // Since we get aggregate component scores, use jurisdictional as proxy for env
-  // Note: The environmental factor is inside operationalCompliance. We check the
-  // component-level score as the best available proxy.
-  if (scores.jurisdictionalCoverage < 30 && scores.operationalCompliance > 70) {
-    adjustments.push({
-      component: "operationalCompliance",
-      deduction: 5,
-      reason:
-        "Operational score inconsistent with weak jurisdictional coverage (multi-jurisdiction risk)",
-    });
-  }
-
-  // Rule 3: Governance < 30, any other > 80
-  if (scores.governanceProcess < 30) {
-    for (const [key, value] of Object.entries(scores)) {
-      if (key !== "governanceProcess" && value > 80) {
-        adjustments.push({
-          component: key,
-          deduction: 3,
-          reason: `${key} score of ${value} inconsistent with weak governance (< 30)`,
-        });
+    if (rule.component === ANY_ABOVE_80) {
+      for (const [key, value] of Object.entries(scores)) {
+        if (key !== "governanceProcess" && value > 80) {
+          adjustments.push({
+            component: key,
+            deduction: Math.abs(rule.adjustment),
+            reason: `${key} score of ${value} inconsistent with weak governance (< 30)`,
+          });
+        }
       }
+    } else {
+      adjustments.push({
+        component: rule.component,
+        deduction: Math.abs(rule.adjustment),
+        reason: rule.rationale,
+      });
     }
   }
 
@@ -349,10 +393,12 @@ function computeTemporalConfidence(
   const ageMs = now.getTime() - componentLastAssessmentDate.getTime();
   const ageDays = ageMs / (1000 * 60 * 60 * 24);
 
-  if (ageDays <= TEMPORAL_DECAY_THRESHOLD_DAYS) return 1.0;
+  if (ageDays <= RCR_PENALTY_CONFIG.temporalDecay.thresholdDays) return 1.0;
 
-  const additionalMonths = (ageDays - TEMPORAL_DECAY_THRESHOLD_DAYS) / 30;
-  const decayFactor = 1.0 - additionalMonths * TEMPORAL_DECAY_RATE_PER_MONTH;
+  const additionalMonths =
+    (ageDays - RCR_PENALTY_CONFIG.temporalDecay.thresholdDays) / 30;
+  const decayFactor =
+    1.0 - additionalMonths * RCR_PENALTY_CONFIG.temporalDecay.ratePerMonth;
   return Math.max(0.1, decayFactor); // Floor at 10%
 }
 
@@ -403,8 +449,8 @@ async function computeRegulatoryEventPenalties(
 
     if (unresolvedIncidents > 0) {
       const deduction = Math.min(
-        unresolvedIncidents * INCIDENT_PENALTY_PER,
-        MAX_INCIDENT_PENALTY,
+        unresolvedIncidents * RCR_PENALTY_CONFIG.incidents.penaltyPer,
+        RCR_PENALTY_CONFIG.incidents.maxPenalty,
       );
       penalties.push({
         type: "incident",
@@ -425,8 +471,8 @@ async function computeRegulatoryEventPenalties(
 
   if (pendingSubmissions > 0) {
     const deduction = Math.min(
-      pendingSubmissions * NCA_PENALTY_PER,
-      MAX_NCA_PENALTY,
+      pendingSubmissions * RCR_PENALTY_CONFIG.ncaSubmissions.penaltyPer,
+      RCR_PENALTY_CONFIG.ncaSubmissions.maxPenalty,
     );
     penalties.push({
       type: "nca_submission",
@@ -1044,7 +1090,7 @@ export async function computeRCR(organizationId: string): Promise<RCRResult> {
   );
 
   const validUntil = new Date(now);
-  validUntil.setDate(validUntil.getDate() + VALIDITY_DAYS);
+  validUntil.setDate(validUntil.getDate() + RCR_PENALTY_CONFIG.validityDays);
 
   return {
     organizationId,
@@ -1061,7 +1107,7 @@ export async function computeRCR(organizationId: string): Promise<RCRResult> {
     confidence: Math.round(overallConfidence * 100) / 100,
     validUntil,
     peerPercentile,
-    methodologyVersion: RCR_METHODOLOGY_VERSION,
+    methodologyVersion: RCR_PENALTY_CONFIG.methodologyVersion,
     computedAt: now,
   };
 }
@@ -1153,7 +1199,7 @@ export async function getRatingHistory(organizationId: string) {
  */
 export function getRCRMethodologyDocument(): RCRMethodology {
   return {
-    version: RCR_METHODOLOGY_VERSION,
+    version: RCR_PENALTY_CONFIG.methodologyVersion,
     effectiveDate: "2026-01-01",
     gradingScale: [
       {
@@ -1340,14 +1386,14 @@ export function getRCRMethodologyDocument(): RCRMethodology {
         description:
           "Each unresolved incident (status not in [resolved, closed]) incurs a 3-point " +
           "deduction from the final numeric score, applied after weighted aggregation.",
-        impact: `${INCIDENT_PENALTY_PER} points per incident, max ${MAX_INCIDENT_PENALTY} total`,
+        impact: `${RCR_PENALTY_CONFIG.incidents.penaltyPer} points per incident, max ${RCR_PENALTY_CONFIG.incidents.maxPenalty} total`,
       },
       {
         name: "Pending NCA Submission Penalty",
         description:
           "Each NCA submission in DRAFT or SUBMITTED status (not yet RECEIVED/ACKNOWLEDGED) " +
           "incurs a 5-point deduction from the final numeric score.",
-        impact: `${NCA_PENALTY_PER} points per submission, max ${MAX_NCA_PENALTY} total`,
+        impact: `${RCR_PENALTY_CONFIG.ncaSubmissions.penaltyPer} points per submission, max ${RCR_PENALTY_CONFIG.ncaSubmissions.maxPenalty} total`,
       },
     ],
     correlationChecks: [
