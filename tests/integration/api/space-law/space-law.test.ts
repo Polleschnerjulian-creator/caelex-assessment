@@ -464,11 +464,11 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.result).toBeDefined();
-    expect(data.result.jurisdictions).toBeDefined();
-    expect(data.result.comparisonMatrix).toBeDefined();
-    expect(data.result.euSpaceActPreview).toBeDefined();
-    expect(data.result.recommendations).toBeDefined();
+    expect(data.data.result).toBeDefined();
+    expect(data.data.result.jurisdictions).toBeDefined();
+    expect(data.data.result.comparisonMatrix).toBeDefined();
+    expect(data.data.result.euSpaceActPreview).toBeDefined();
+    expect(data.data.result.recommendations).toBeDefined();
   });
 
   it("should call calculateSpaceLawCompliance with the provided answers", async () => {
@@ -627,7 +627,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -646,7 +646,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -666,7 +666,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -686,7 +686,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -706,7 +706,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -726,7 +726,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -746,7 +746,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -766,7 +766,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -786,7 +786,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -806,7 +806,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -826,7 +826,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -846,7 +846,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
     expect(data.details).toBeDefined();
   });
 
@@ -919,9 +919,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe(
-      "Failed to calculate space law compliance assessment",
-    );
+    expect(data.error).toBe("Assessment calculation failed");
   });
 
   it("should return 500 when redaction throws an error", async () => {
@@ -941,9 +939,7 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe(
-      "Failed to calculate space law compliance assessment",
-    );
+    expect(data.error).toBe("Assessment calculation failed");
   });
 
   // ─── Edge Cases ───

@@ -31,8 +31,8 @@ describe("Button Component", () => {
     it("should apply secondary variant styles", () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-[var(--surface-raised)]");
-      expect(button.className).toContain("border-[var(--border-default)]");
+      expect(button.className).toContain("bg-[var(--fill-light)]");
+      expect(button.className).toContain("border-[var(--fill-strong)]");
     });
 
     it("should apply ghost variant styles", () => {

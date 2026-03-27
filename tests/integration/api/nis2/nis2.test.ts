@@ -344,8 +344,8 @@ describe("GET /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.assessments).toBeDefined();
-    expect(data.assessments).toHaveLength(1);
+    expect(data.data.assessments).toBeDefined();
+    expect(data.data.assessments).toHaveLength(1);
     expect(prisma.nIS2Assessment.findMany).toHaveBeenCalledWith({
       where: { userId: TEST_USER_ID, organizationId: "ctest123org" },
       include: { requirements: true },
@@ -361,7 +361,7 @@ describe("GET /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.assessments).toEqual([]);
+    expect(data.data.assessments).toEqual([]);
   });
 
   it("should return 500 on database error", async () => {
@@ -436,7 +436,7 @@ describe("POST /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 200 with assessment on valid input", async () => {
@@ -462,11 +462,11 @@ describe("POST /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.assessment).toBeDefined();
-    expect(data.entityClassification).toBeDefined();
-    expect(data.classificationReason).toBeDefined();
-    expect(data.applicableRequirements).toBeDefined();
-    expect(Array.isArray(data.applicableRequirements)).toBe(true);
+    expect(data.data.assessment).toBeDefined();
+    expect(data.data.entityClassification).toBeDefined();
+    expect(data.data.classificationReason).toBeDefined();
+    expect(data.data.applicableRequirements).toBeDefined();
+    expect(Array.isArray(data.data.applicableRequirements)).toBe(true);
   });
 
   it("should return 500 on database error during creation", async () => {
@@ -529,7 +529,7 @@ describe("GET /api/nis2/[assessmentId]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.assessment).toBeDefined();
+    expect(data.data.assessment).toBeDefined();
     expect(prisma.nIS2Assessment.findFirst).toHaveBeenCalledWith({
       where: { id: "nis2-assessment-1", userId: TEST_USER_ID },
       include: { requirements: true },
@@ -609,7 +609,7 @@ describe("PATCH /api/nis2/[assessmentId]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.assessment).toBeDefined();
+    expect(data.data.assessment).toBeDefined();
   });
 
   it("should return 500 on database error", async () => {
@@ -681,7 +681,7 @@ describe("DELETE /api/nis2/[assessmentId]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.success).toBe(true);
+    expect(data.data.success).toBe(true);
     expect(prisma.nIS2Assessment.delete).toHaveBeenCalledWith({
       where: { id: "nis2-assessment-1" },
     });
@@ -743,9 +743,9 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.result).toBeDefined();
-    expect(data.result.entityClassification).toBeDefined();
-    expect(data.result.applicableRequirements).toBeDefined();
+    expect(data.data.result).toBeDefined();
+    expect(data.data.result.entityClassification).toBeDefined();
+    expect(data.data.result.applicableRequirements).toBeDefined();
   });
 
   it("should return 400 for invalid JSON body", async () => {
@@ -778,7 +778,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for invalid entitySize value", async () => {
@@ -797,7 +797,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for invalid boolean fields", async () => {
@@ -817,7 +817,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 429 for bot-like fast completion", async () => {
@@ -919,6 +919,6 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 });

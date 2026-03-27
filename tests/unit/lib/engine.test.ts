@@ -1127,4 +1127,70 @@ describe("Compliance Engine", () => {
       expect(redacted.keyDates).toEqual(fullResult.keyDates);
     });
   });
+
+  // ═══════════════════════════════════════════
+  // Constellation Size Boundaries
+  // ═══════════════════════════════════════════
+
+  describe("constellation size boundaries", () => {
+    it("handles constellationSize = 0", () => {
+      const answers = makeAnswers({
+        operatesConstellation: true,
+        constellationSize: 0,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+
+      // constellationSize 0 should be treated as single satellite
+      expect(result).toBeDefined();
+      expect(result.operatorType).toBeDefined();
+    });
+
+    it("handles constellationSize = 1", () => {
+      const answers = makeAnswers({
+        operatesConstellation: true,
+        constellationSize: 1,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+
+      // constellationSize 1 is below "small_constellation" threshold (2)
+      expect(result).toBeDefined();
+      expect(result.operatorType).toBeDefined();
+    });
+
+    it("handles constellationSize = 100000", () => {
+      const answers = makeAnswers({
+        operatesConstellation: true,
+        constellationSize: 100000,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+
+      // Very large constellation (mega_constellation tier: 1000+)
+      expect(result).toBeDefined();
+      expect(result.operatorType).toBeDefined();
+      // Should not crash or throw
+    });
+
+    it("handles constellationSize = null with operatesConstellation = true", () => {
+      const answers = makeAnswers({
+        operatesConstellation: true,
+        constellationSize: null,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+
+      expect(result).toBeDefined();
+      expect(result.operatorType).toBeDefined();
+    });
+
+    it("handles operatesConstellation = false ignoring constellationSize", () => {
+      const answers = makeAnswers({
+        operatesConstellation: false,
+        constellationSize: 5000,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+
+      expect(result).toBeDefined();
+      // Should still work even though constellationSize is set
+      expect(result.operatorType).toBeDefined();
+    });
+  });
 });

@@ -1142,17 +1142,16 @@ describe("Notification Service", () => {
 
   describe("isInQuietHours (via createNotification)", () => {
     it("should handle overnight quiet hours (e.g., 22:00-08:00)", async () => {
-      // We test this indirectly by setting quiet hours from 22:00 to 08:00
-      // Since we can't control the current time easily, we set hours
-      // to a range that definitely covers or misses the current time.
-      // Use a range that always includes current time: 00:00-23:59 (non-overnight)
+      // We test this indirectly by setting quiet hours from 00:00 to 23:59
+      // which covers all day. Severity must be INFO (not WARNING/CRITICAL)
+      // because WARNING+ notifications are never suppressed by quiet hours.
       vi.mocked(prisma.notification.create).mockResolvedValue({
         id: "notif-1",
         userId: "user-1",
         type: "DEADLINE_REMINDER",
         title: "Test",
         message: "Test",
-        severity: "WARNING",
+        severity: "INFO",
       } as never);
       vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
         userId: "user-1",
@@ -1171,6 +1170,7 @@ describe("Notification Service", () => {
       });
 
       // Should be in quiet hours (non-overnight range covers all day)
+      // and INFO severity is suppressible, so no email should be sent
       expect(sendEmail).not.toHaveBeenCalled();
     });
 

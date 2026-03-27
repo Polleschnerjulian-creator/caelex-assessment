@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// ─── Mock server-only ───
+vi.mock("server-only", () => ({}));
+
 // ─── Mock rate limiter ───
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, remaining: 9 }),
@@ -90,7 +93,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.result).toBeDefined();
+    expect(data.data.result).toBeDefined();
     expect(mockCalculateCompliance).toHaveBeenCalledTimes(1);
     expect(mockRedactArticlesForClient).toHaveBeenCalledWith(
       mockComplianceResult,
@@ -139,7 +142,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for invalid entitySize", async () => {
@@ -151,7 +154,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for invalid primaryOrbit", async () => {
@@ -163,7 +166,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for invalid establishment", async () => {
@@ -175,7 +178,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for negative constellationSize", async () => {
@@ -187,7 +190,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should return 400 for non-boolean isDefenseOnly", async () => {
@@ -199,7 +202,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid input");
+    expect(data.error).toBe("Validation failed");
   });
 
   // ─── Anti-Bot: Timing Validation ───
@@ -249,7 +252,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe("Failed to calculate compliance assessment");
+    expect(data.error).toBe("Assessment calculation failed");
   });
 
   // ─── Null fields are allowed ───

@@ -1,5 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
+
+// Mock logger before importing the module under test
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 import { redact, safeLog } from "@/lib/verity/utils/redaction";
+import { logger } from "@/lib/logger";
 
 describe("redact", () => {
   it("redacts actual_value", () => {
@@ -44,23 +56,19 @@ describe("redact", () => {
 });
 
 describe("safeLog", () => {
-  it("calls console.log with redacted data", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+  it("calls logger.info with redacted data", () => {
     safeLog("test", { actual_value: 42, id: "test" });
-    expect(spy).toHaveBeenCalledWith(
+    expect(logger.info).toHaveBeenCalledWith(
       "[Verity] test",
       expect.objectContaining({
         actual_value: "[REDACTED]",
         id: "test",
       }),
     );
-    spy.mockRestore();
   });
 
   it("works without data", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     safeLog("message only");
-    expect(spy).toHaveBeenCalledWith("[Verity] message only");
-    spy.mockRestore();
+    expect(logger.info).toHaveBeenCalledWith("[Verity] message only");
   });
 });

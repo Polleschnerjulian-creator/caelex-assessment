@@ -12,7 +12,7 @@ describe("Badge Component", () => {
     it("should apply default variant styles", () => {
       render(<Badge>Default</Badge>);
       const badge = screen.getByText("Default");
-      expect(badge.className).toContain("bg-[var(--surface-sunken)]");
+      expect(badge.className).toContain("bg-[var(--fill-medium)]");
     });
 
     it("should apply success variant styles", () => {
@@ -47,7 +47,7 @@ describe("Badge Component", () => {
       render(<Badge variant="outline">Outline</Badge>);
       const badge = screen.getByText("Outline");
       expect(badge.className).toContain("bg-transparent");
-      expect(badge.className).toContain("border-[var(--border-default)]");
+      expect(badge.className).toContain("border-[var(--fill-strong)]");
     });
 
     it("should apply small size", () => {

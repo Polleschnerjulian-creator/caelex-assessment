@@ -2131,3 +2131,65 @@ describe("calculateOverallRisk (severity-weighted)", () => {
     expect(result.level).toBe("critical");
   });
 });
+
+// ═══════════════════════════════════════════
+// Boundary Conditions
+// ═══════════════════════════════════════════
+
+describe("boundary conditions", () => {
+  it("handles empty activity types after filter gracefully", () => {
+    // mergeMultiActivityResults with an empty array should return out_of_scope
+    const result = mergeMultiActivityResults([]);
+    expect(result.applies).toBe(false);
+    expect(result.regime).toBe("out_of_scope");
+    expect(result.applicableArticles).toEqual([]);
+    expect(result.operatorTypes).toEqual([]);
+    expect(result.regimeReason).toBe("No applicable activity types");
+  });
+
+  it("confidence score is 0 with all null/undefined fields", () => {
+    const score = calculateConfidenceScore({});
+    expect(score).toBe(0);
+  });
+
+  it("confidence score is 0 with all fields explicitly null", () => {
+    const answers = getDefaultUnifiedAnswers();
+    // Set all fields to null to verify 0 confidence
+    for (const key of Object.keys(answers)) {
+      (answers as Record<string, unknown>)[key] = null;
+    }
+    const score = calculateConfidenceScore(answers);
+    expect(score).toBe(0);
+  });
+
+  it("confidence score is 100 with all fields fully populated", () => {
+    // Provide values for all CONFIDENCE_FIELDS
+    const answers: Record<string, unknown> = {};
+    for (const field of CONFIDENCE_FIELDS) {
+      if (field.key === "activityTypes") {
+        answers[field.key] = ["spacecraft", "launch_vehicle"];
+      } else if (field.key === "selectedJurisdictions") {
+        answers[field.key] = ["FR", "DE"];
+      } else {
+        answers[field.key] = "some_value";
+      }
+    }
+    const score = calculateConfidenceScore(answers as never);
+    expect(score).toBe(100);
+  });
+
+  it("mergeMultiActivityResults handles single result correctly", () => {
+    const singleResult = createMockResult({
+      operatorType: "spacecraft_operator",
+      operatorAbbreviation: "SCO",
+      operatorTypeLabel: "Spacecraft Operator (EU)",
+      applicableArticles: [createMockArticle(6, "Authorization")],
+      applicableCount: 1,
+    });
+    const merged = mergeMultiActivityResults([singleResult]);
+    expect(merged.applies).toBe(true);
+    expect(merged.operatorTypes).toEqual(["Spacecraft Operator (EU)"]);
+    expect(merged.applicableArticles).toHaveLength(1);
+    expect(merged.applicableArticles[0].applicableActivities).toEqual(["SCO"]);
+  });
+});

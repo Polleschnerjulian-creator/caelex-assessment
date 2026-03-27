@@ -156,11 +156,11 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.workflows).toBeDefined();
-      expect(data.workflows).toHaveLength(1);
-      expect(data.workflows[0].id).toBe("workflow-1");
-      expect(data.workflows[0].operatorType).toBe("spacecraft_operator");
-      expect(data.workflows[0].documents).toHaveLength(1);
+      expect(data.data.workflows).toBeDefined();
+      expect(data.data.workflows).toHaveLength(1);
+      expect(data.data.workflows[0].id).toBe("workflow-1");
+      expect(data.data.workflows[0].operatorType).toBe("spacecraft_operator");
+      expect(data.data.workflows[0].documents).toHaveLength(1);
     });
 
     it("should return empty array when no workflows exist", async () => {
@@ -174,7 +174,7 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.workflows).toEqual([]);
+      expect(data.data.workflows).toEqual([]);
     });
 
     it("should include user profile in response", async () => {
@@ -188,11 +188,11 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.user).toBeDefined();
-      expect(data.user.operatorType).toBe("spacecraft_operator");
-      expect(data.user.establishmentCountry).toBe("DE");
-      expect(data.user.isThirdCountry).toBe(false);
-      expect(data.user.organization).toBe("Test Space GmbH");
+      expect(data.data.user).toBeDefined();
+      expect(data.data.user.operatorType).toBe("spacecraft_operator");
+      expect(data.data.user.establishmentCountry).toBe("DE");
+      expect(data.data.user.isThirdCountry).toBe(false);
+      expect(data.data.user.organization).toBe("Test Space GmbH");
 
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: "test-user-id" },
@@ -241,7 +241,7 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid input");
+      expect(data.error).toBe("Validation failed");
     });
 
     it("should return 400 when establishmentCountry is missing for EU operator", async () => {
@@ -330,13 +330,13 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.workflow).toBeDefined();
-      expect(data.workflow.id).toBe("workflow-new");
-      expect(data.workflow.operatorType).toBe("spacecraft_operator");
-      expect(data.workflow.documents).toHaveLength(2);
-      expect(data.ncaDetermination).toBeDefined();
-      expect(data.ncaDetermination.primaryNCA.id).toBe("de");
-      expect(data.ncaDetermination.pathway).toBe("national_authorization");
+      expect(data.data.workflow).toBeDefined();
+      expect(data.data.workflow.id).toBe("workflow-new");
+      expect(data.data.workflow.operatorType).toBe("spacecraft_operator");
+      expect(data.data.workflow.documents).toHaveLength(2);
+      expect(data.data.ncaDetermination).toBeDefined();
+      expect(data.data.ncaDetermination.primaryNCA.id).toBe("de");
+      expect(data.data.ncaDetermination.pathway).toBe("national_authorization");
     });
 
     it("should allow missing establishmentCountry when isThirdCountry is true", async () => {
@@ -383,8 +383,8 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.workflow).toBeDefined();
-      expect(data.workflow.id).toBe("workflow-tco");
+      expect(data.data.workflow).toBeDefined();
+      expect(data.data.workflow.id).toBe("workflow-tco");
     });
 
     it("should call logAuditEvent on successful creation", async () => {

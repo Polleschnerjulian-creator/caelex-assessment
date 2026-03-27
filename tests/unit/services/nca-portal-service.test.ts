@@ -44,52 +44,74 @@ vi.mock("@/lib/prisma", () => ({
     nIS2Assessment: {
       findMany: vi.fn(),
     },
+    nCADocument: {
+      findMany: vi.fn(),
+    },
+    verityAttestation: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
 // ─── Mock nca-submission-service ───
 
-vi.mock("@/lib/services/nca-submission-service", () => ({
-  NCA_AUTHORITY_INFO: {
-    DE_BMWK: {
-      name: "Federal Ministry for Economic Affairs and Climate Action",
-      country: "Germany",
-      portalUrl: "https://www.bmwk.de",
-      description: "German national authority for space activities",
+vi.mock("@/lib/services/nca-submission-service", async () => {
+  const prismaModule =
+    await vi.importMock<typeof import("@/lib/prisma")>("@/lib/prisma");
+  return {
+    updatePriority: vi.fn(
+      async (id: string, userId: string, priority: string) => {
+        const submission = await prismaModule.prisma.nCASubmission.findFirst({
+          where: { id, userId },
+        });
+        if (!submission) throw new Error("Submission not found");
+        return prismaModule.prisma.nCASubmission.update({
+          where: { id },
+          data: { priority },
+        });
+      },
+    ),
+    NCA_AUTHORITY_INFO: {
+      DE_BMWK: {
+        name: "Federal Ministry for Economic Affairs and Climate Action",
+        country: "Germany",
+        portalUrl: "https://www.bmwk.de",
+        description: "German national authority for space activities",
+      },
+      FR_CNES: {
+        name: "Centre National d'Études Spatiales",
+        country: "France",
+        portalUrl: "https://cnes.fr",
+        description: "French space agency",
+      },
+      IT_ASI: {
+        name: "Agenzia Spaziale Italiana",
+        country: "Italy",
+        portalUrl: "https://www.asi.it",
+        description: "Italian space agency",
+      },
+      OTHER: {
+        name: "Other Authority",
+        country: "Other",
+        description: "Other national or international authority",
+      },
     },
-    FR_CNES: {
-      name: "Centre National d'Études Spatiales",
-      country: "France",
-      portalUrl: "https://cnes.fr",
-      description: "French space agency",
-    },
-    IT_ASI: {
-      name: "Agenzia Spaziale Italiana",
-      country: "Italy",
-      portalUrl: "https://www.asi.it",
-      description: "Italian space agency",
-    },
-    OTHER: {
-      name: "Other Authority",
-      country: "Other",
-      description: "Other national or international authority",
-    },
-  },
-  getSubmissionStatusLabel: vi.fn((status: string) => {
-    const labels: Record<string, string> = {
-      DRAFT: "Draft",
-      SUBMITTED: "Submitted",
-      RECEIVED: "Received",
-      UNDER_REVIEW: "Under Review",
-      INFORMATION_REQUESTED: "Information Requested",
-      ACKNOWLEDGED: "Acknowledged",
-      APPROVED: "Approved",
-      REJECTED: "Rejected",
-      WITHDRAWN: "Withdrawn",
-    };
-    return labels[status] || status;
-  }),
-}));
+    getSubmissionStatusLabel: vi.fn((status: string) => {
+      const labels: Record<string, string> = {
+        DRAFT: "Draft",
+        SUBMITTED: "Submitted",
+        RECEIVED: "Received",
+        UNDER_REVIEW: "Under Review",
+        INFORMATION_REQUESTED: "Information Requested",
+        ACKNOWLEDGED: "Acknowledged",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        WITHDRAWN: "Withdrawn",
+      };
+      return labels[status] || status;
+    }),
+  };
+});
 
 // ─── Mock authorization-documents ───
 
@@ -758,6 +780,10 @@ describe("NCA Portal Service", () => {
       vi.mocked(prisma.nIS2Assessment.findMany).mockResolvedValueOnce(
         (overrides.nis2Assessments ?? []) as never,
       );
+      vi.mocked(prisma.nCADocument.findMany).mockResolvedValueOnce([] as never);
+      vi.mocked(prisma.verityAttestation.findMany).mockResolvedValueOnce(
+        [] as never,
+      );
 
       vi.mocked(prisma.submissionPackage.create).mockResolvedValueOnce({
         id: PACKAGE_ID,
@@ -991,6 +1017,10 @@ describe("NCA Portal Service", () => {
         [] as never,
       );
       vi.mocked(prisma.nIS2Assessment.findMany).mockResolvedValueOnce(
+        [] as never,
+      );
+      vi.mocked(prisma.nCADocument.findMany).mockResolvedValueOnce([] as never);
+      vi.mocked(prisma.verityAttestation.findMany).mockResolvedValueOnce(
         [] as never,
       );
       vi.mocked(prisma.submissionPackage.create).mockResolvedValueOnce({
@@ -1799,6 +1829,10 @@ describe("NCA Portal Service", () => {
         [] as never,
       );
       vi.mocked(prisma.nIS2Assessment.findMany).mockResolvedValueOnce(
+        [] as never,
+      );
+      vi.mocked(prisma.nCADocument.findMany).mockResolvedValueOnce([] as never);
+      vi.mocked(prisma.verityAttestation.findMany).mockResolvedValueOnce(
         [] as never,
       );
       vi.mocked(prisma.submissionPackage.create).mockResolvedValueOnce({

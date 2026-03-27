@@ -18,23 +18,22 @@ describe("Card Components", () => {
     it("should apply default variant styles", () => {
       const { container } = render(<Card>Default</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-[var(--surface-raised)]");
-      expect(card.className).toContain("border-[var(--border-subtle)]");
-      expect(card.className).toContain("shadow-[var(--v2-shadow-soft)]");
+      expect(card.className).toContain("bg-[var(--bg-surface-2)]");
+      expect(card.className).toContain("border-[var(--fill-medium)]");
+      expect(card.className).toContain("shadow-[var(--shadow-sm)]");
     });
 
     it("should apply glass variant styles", () => {
       const { container } = render(<Card variant="glass">Glass</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-[var(--surface-raised)]");
-      expect(card.className).toContain("shadow-[var(--v2-shadow-soft)]");
+      expect(card.className).toContain("bg-[var(--glass-bg)]");
+      expect(card.className).toContain("shadow-[var(--shadow-md)]");
     });
 
     it("should apply elevated variant styles", () => {
       const { container } = render(<Card variant="elevated">Elevated</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-[var(--surface-raised)]");
-      expect(card.className).toContain("shadow-[var(--v2-shadow-md)]");
+      expect(card.className).toContain("glass-elevated");
     });
 
     it("should apply interactive variant styles", () => {
@@ -43,7 +42,7 @@ describe("Card Components", () => {
       );
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("cursor-pointer");
-      expect(card.className).toContain("hover:shadow-[var(--v2-shadow-md)]");
+      expect(card.className).toContain("hover:shadow-[var(--shadow-lg)]");
     });
 
     it("should apply no padding", () => {
@@ -83,7 +82,7 @@ describe("Card Components", () => {
     it("should have rounded corners", () => {
       const { container } = render(<Card>Rounded</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("rounded-[var(--v2-radius-md)]");
+      expect(card.className).toContain("rounded-[var(--radius-lg)]");
     });
   });
 
@@ -145,7 +144,7 @@ describe("Card Components", () => {
     it("should apply text styles", () => {
       const { container } = render(<CardTitle>Title</CardTitle>);
       const title = container.firstChild as HTMLElement;
-      expect(title.className).toContain("text-title");
+      expect(title.className).toContain("text-[15px]");
       expect(title.className).toContain("font-semibold");
       expect(title.className).toContain("text-[var(--text-primary)]");
     });
@@ -177,7 +176,7 @@ describe("Card Components", () => {
         <CardDescription>Description</CardDescription>,
       );
       const description = container.firstChild as HTMLElement;
-      expect(description.className).toContain("text-body");
+      expect(description.className).toContain("text-[13px]");
       expect(description.className).toContain("text-[var(--text-secondary)]");
     });
 
@@ -234,7 +233,7 @@ describe("Card Components", () => {
       const { container } = render(<CardFooter>Footer</CardFooter>);
       const footer = container.firstChild as HTMLElement;
       expect(footer.className).toContain("border-t");
-      expect(footer.className).toContain("border-[var(--border-default)]");
+      expect(footer.className).toContain("border-[var(--separator)]");
     });
 
     it("should have margin top and padding top", () => {

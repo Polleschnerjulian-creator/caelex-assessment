@@ -101,8 +101,8 @@ describe("ComplianceHorizonDisplay", () => {
       />,
     );
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv.className).toContain("bg-[#F7F8FA]");
-    expect(outerDiv.className).toContain("border-[#E5E7EB]");
+    expect(outerDiv.className).toContain("bg-[var(--fill-subtle)]");
+    expect(outerDiv.className).toContain("border-[var(--separator-strong)]");
   });
 
   it("displays breach regulation info when available", () => {
