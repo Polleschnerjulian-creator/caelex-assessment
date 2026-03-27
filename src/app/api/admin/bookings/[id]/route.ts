@@ -101,7 +101,10 @@ export async function PATCH(
           },
         });
       } catch (e) {
-        console.warn("Failed to delete calendar event for cancelled booking:", e);
+        console.warn(
+          "Failed to delete calendar event for cancelled booking:",
+          e,
+        );
       }
     }
 
@@ -118,7 +121,10 @@ export async function PATCH(
           },
         });
       } catch (e) {
-        console.warn("Failed to update calendar event for completed booking:", e);
+        console.warn(
+          "Failed to update calendar event for completed booking:",
+          e,
+        );
       }
     }
 

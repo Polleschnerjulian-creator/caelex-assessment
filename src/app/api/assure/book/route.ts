@@ -214,7 +214,10 @@ export async function POST(request: NextRequest) {
         logger.warn("Failed to create HubCalendarEvent for booking", {
           email,
           scheduledAt: scheduledDate.toISOString(),
-          error: calendarError instanceof Error ? calendarError.message : String(calendarError),
+          error:
+            calendarError instanceof Error
+              ? calendarError.message
+              : String(calendarError),
         });
       }
     }
