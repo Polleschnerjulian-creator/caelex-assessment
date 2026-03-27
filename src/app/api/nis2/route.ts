@@ -229,23 +229,43 @@ export async function POST(request: Request) {
         answers,
       );
       // Batch auto-assess requirements (avoid N+1 sequential updates)
-      const autoUpdates = autoAssessments
-        .filter((auto) => auto.suggestedStatus === "partial" && auto.reason)
-        .map((auto) =>
-          prisma.nIS2RequirementStatus.updateMany({
-            where: {
-              assessmentId: assessment.id,
-              requirementId: auto.requirementId,
-              status: "not_assessed",
-            },
-            data: {
-              status: auto.suggestedStatus,
-              notes: auto.reason,
-            },
-          }),
-        );
-      const autoResults = await Promise.all(autoUpdates);
-      const autoAssessedCount = autoResults.filter((r) => r.count > 0).length;
+      const applicableAutos = autoAssessments.filter(
+        (auto) => auto.suggestedStatus === "partial" && auto.reason,
+      );
+
+      let autoAssessedCount = 0;
+
+      if (applicableAutos.length > 0) {
+        const partialIds = applicableAutos.map((a) => a.requirementId);
+
+        // Batch 1: Update status for all partial requirements at once
+        const batchResult = await prisma.nIS2RequirementStatus.updateMany({
+          where: {
+            assessmentId: assessment.id,
+            requirementId: { in: partialIds },
+            status: "not_assessed",
+          },
+          data: { status: "partial" },
+        });
+        autoAssessedCount = batchResult.count;
+
+        // Batch 2: Update notes individually (they differ per requirement)
+        const noteUpdates = applicableAutos
+          .filter((a) => a.reason)
+          .map((auto) =>
+            prisma.nIS2RequirementStatus.updateMany({
+              where: {
+                assessmentId: assessment.id,
+                requirementId: auto.requirementId,
+              },
+              data: { notes: auto.reason },
+            }),
+          );
+
+        if (noteUpdates.length > 0) {
+          await prisma.$transaction(noteUpdates);
+        }
+      }
 
       // Recalculate maturity score after auto-assessment
       if (autoAssessedCount > 0) {
