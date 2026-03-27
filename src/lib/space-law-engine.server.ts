@@ -34,6 +34,7 @@ import type { UkAssessmentResult } from "./uk-space-engine.server";
 
 import {
   calculateFavorabilityScore as sharedFavorabilityScore,
+  EngineDataError,
   type FavorabilityInput,
 } from "@/lib/engines/shared.server";
 
@@ -47,14 +48,36 @@ let _crossRefModule: typeof import("@/data/space-law-cross-references") | null =
 
 async function getJurisdictionData() {
   if (!_jurisdictionDataModule) {
-    _jurisdictionDataModule = await import("@/data/national-space-laws");
+    try {
+      _jurisdictionDataModule = await import("@/data/national-space-laws");
+    } catch (error) {
+      throw new EngineDataError(
+        "National space laws data could not be loaded",
+        {
+          engine: "space-law",
+          dataFile: "national-space-laws.ts",
+          cause: error,
+        },
+      );
+    }
   }
   return _jurisdictionDataModule.JURISDICTION_DATA;
 }
 
 async function getCrossReferences() {
   if (!_crossRefModule) {
-    _crossRefModule = await import("@/data/space-law-cross-references");
+    try {
+      _crossRefModule = await import("@/data/space-law-cross-references");
+    } catch (error) {
+      throw new EngineDataError(
+        "Space law cross-references data could not be loaded",
+        {
+          engine: "space-law",
+          dataFile: "space-law-cross-references.ts",
+          cause: error,
+        },
+      );
+    }
   }
   return _crossRefModule.SPACE_LAW_CROSS_REFERENCES;
 }

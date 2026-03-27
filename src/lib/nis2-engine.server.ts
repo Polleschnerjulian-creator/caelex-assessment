@@ -22,6 +22,7 @@ import {
   RedactedNIS2Requirement,
 } from "./nis2-types";
 import { CROSS_REFERENCES } from "@/data/cross-references";
+import { EngineDataError } from "@/lib/engines/shared.server";
 
 // ─── Lazy import for NIS2 requirements (loaded when first needed) ───
 // We use dynamic import pattern to avoid loading the full requirements data
@@ -31,7 +32,15 @@ let _nis2RequirementsModule: typeof import("@/data/nis2-requirements") | null =
 
 async function getNIS2RequirementsModule() {
   if (!_nis2RequirementsModule) {
-    _nis2RequirementsModule = await import("@/data/nis2-requirements");
+    try {
+      _nis2RequirementsModule = await import("@/data/nis2-requirements");
+    } catch (error) {
+      throw new EngineDataError("NIS2 requirements data could not be loaded", {
+        engine: "nis2",
+        dataFile: "nis2-requirements.ts",
+        cause: error,
+      });
+    }
   }
   return _nis2RequirementsModule;
 }
@@ -344,20 +353,14 @@ export async function calculateNIS2Compliance(
   let applicableRequirements: NIS2Requirement[] = [];
   let totalNIS2Requirements = 0;
 
-  try {
-    const reqModule = await getNIS2RequirementsModule();
-    if (reqModule.NIS2_REQUIREMENTS) {
-      totalNIS2Requirements = reqModule.NIS2_REQUIREMENTS.length;
-      if (classification !== "out_of_scope") {
-        applicableRequirements = reqModule.getApplicableNIS2Requirements
-          ? reqModule.getApplicableNIS2Requirements(classification, answers)
-          : reqModule.NIS2_REQUIREMENTS;
-      }
+  const reqModule = await getNIS2RequirementsModule();
+  if (reqModule.NIS2_REQUIREMENTS) {
+    totalNIS2Requirements = reqModule.NIS2_REQUIREMENTS.length;
+    if (classification !== "out_of_scope") {
+      applicableRequirements = reqModule.getApplicableNIS2Requirements
+        ? reqModule.getApplicableNIS2Requirements(classification, answers)
+        : reqModule.NIS2_REQUIREMENTS;
     }
-  } catch {
-    // If requirements file not yet available, return empty
-    applicableRequirements = [];
-    totalNIS2Requirements = 0;
   }
 
   // 3. Calculate EU Space Act overlap

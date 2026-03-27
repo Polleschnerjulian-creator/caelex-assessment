@@ -32,6 +32,7 @@ import {
   Section,
 } from "./types";
 import { MODULES, COMPLIANCE_TYPE_MAP } from "@/data/modules";
+import { EngineDataError } from "@/lib/engines/shared.server";
 
 // ─── Module-level cache for regulatory data ───
 // Loaded once per cold start, stays in memory for the lifetime of the serverless function
@@ -51,8 +52,16 @@ export function loadSpaceActDataFromDisk(): SpaceActData {
     "data",
     "caelex-eu-space-act-engine.json",
   );
-  const raw = readFileSync(filePath, "utf-8");
-  cachedData = JSON.parse(raw) as SpaceActData;
+  try {
+    const raw = readFileSync(filePath, "utf-8");
+    cachedData = JSON.parse(raw) as SpaceActData;
+  } catch (error) {
+    throw new EngineDataError("EU Space Act data could not be loaded", {
+      engine: "eu-space-act",
+      dataFile: "caelex-eu-space-act-engine.json",
+      cause: error,
+    });
+  }
   return cachedData;
 }
 
