@@ -175,6 +175,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Auto-create HubCalendarEvent for scheduled bookings
+    if (scheduledDate) {
+      try {
+        const adminUser = await prisma.user.findFirst({
+          where: { role: "admin" },
+          select: {
+            id: true,
+            organizationMemberships: {
+              select: { organizationId: true },
+              take: 1,
+            },
+          },
+        });
+
+        if (adminUser && adminUser.organizationMemberships.length > 0) {
+          const orgId = adminUser.organizationMemberships[0].organizationId;
+          const berlinDate = toZonedTime(scheduledDate, "Europe/Berlin");
+          const startTime = format(berlinDate, "HH:mm");
+          const endDate = new Date(scheduledDate.getTime() + 30 * 60 * 1000);
+          const berlinEnd = toZonedTime(endDate, "Europe/Berlin");
+          const endTime = format(berlinEnd, "HH:mm");
+
+          await prisma.hubCalendarEvent.create({
+            data: {
+              organizationId: orgId,
+              title: `Demo: ${name} — ${company}`,
+              description: `Demo-Termin mit ${name} (${email})${company ? `\nUnternehmen: ${company}` : ""}${operatorType ? `\nOperator: ${operatorType}` : ""}${message ? `\nNachricht: ${message}` : ""}`,
+              date: scheduledDate,
+              startTime,
+              endTime,
+              color: "#10B981",
+              creatorId: adminUser.id,
+            },
+          });
+        }
+      } catch (calendarError) {
+        logger.warn("Failed to create HubCalendarEvent for booking", {
+          email,
+          scheduledAt: scheduledDate.toISOString(),
+          error: calendarError instanceof Error ? calendarError.message : String(calendarError),
+        });
+      }
+    }
+
     // Format scheduled time for emails
     const formattedDate = scheduledDate
       ? format(

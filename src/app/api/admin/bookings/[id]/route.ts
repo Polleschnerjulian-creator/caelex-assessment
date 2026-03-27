@@ -91,6 +91,54 @@ export async function PATCH(
       }
     }
 
+    // Sync HubCalendarEvent based on new status
+    if (status === "CANCELLED") {
+      try {
+        await prisma.hubCalendarEvent.deleteMany({
+          where: {
+            title: { startsWith: `Demo: ${existing.name}` },
+            date: existing.scheduledAt,
+          },
+        });
+      } catch (e) {
+        console.warn("Failed to delete calendar event for cancelled booking:", e);
+      }
+    }
+
+    if (status === "COMPLETED") {
+      try {
+        await prisma.hubCalendarEvent.updateMany({
+          where: {
+            title: { startsWith: `Demo: ${existing.name}` },
+            date: existing.scheduledAt,
+          },
+          data: {
+            color: "#6B7280", // Gray — completed
+            title: `✓ Demo: ${existing.name} — ${existing.company}`,
+          },
+        });
+      } catch (e) {
+        console.warn("Failed to update calendar event for completed booking:", e);
+      }
+    }
+
+    if (status === "NO_SHOW") {
+      try {
+        await prisma.hubCalendarEvent.updateMany({
+          where: {
+            title: { startsWith: `Demo: ${existing.name}` },
+            date: existing.scheduledAt,
+          },
+          data: {
+            color: "#EF4444", // Red — no show
+            title: `✗ Demo: ${existing.name} — ${existing.company}`,
+          },
+        });
+      } catch (e) {
+        console.warn("Failed to update calendar event for no-show booking:", e);
+      }
+    }
+
     logger.info("Booking updated", {
       id,
       status,
