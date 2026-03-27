@@ -311,6 +311,120 @@ export const InsuranceAssessmentSchema = z.object({
   turnoversShareSpace: z.coerce.number().min(0).max(100).optional(),
 });
 
+// ─── Assessment Calculation Schemas ───
+
+export const EUSpaceActAnswersSchema = z.object({
+  activityType: z
+    .enum([
+      "spacecraft",
+      "launch_vehicle",
+      "launch_site",
+      "isos",
+      "data_provider",
+    ])
+    .nullable()
+    .optional(),
+  entitySize: z
+    .enum(["small", "research", "medium", "large"])
+    .nullable()
+    .optional(),
+  primaryOrbit: z.enum(["LEO", "MEO", "GEO", "beyond"]).nullable().optional(),
+  establishment: z
+    .enum(["eu", "third_country_eu_services", "third_country_no_eu"])
+    .nullable()
+    .optional(),
+  constellationSize: z.number().min(0).max(100000).nullable().optional(),
+  isDefenseOnly: z.boolean().nullable().optional(),
+  hasPostLaunchAssets: z.boolean().nullable().optional(),
+  operatesConstellation: z.boolean().nullable().optional(),
+  offersEUServices: z.boolean().nullable().optional(),
+});
+
+export const EUSpaceActCalculateSchema = z.object({
+  answers: EUSpaceActAnswersSchema,
+  startedAt: z.number().optional(),
+});
+
+export const NIS2CalculateAnswersSchema = z.object({
+  sector: z.enum(["space"]).nullable().optional(),
+  spaceSubSector: z
+    .enum([
+      "ground_infrastructure",
+      "satellite_communications",
+      "spacecraft_manufacturing",
+      "launch_services",
+      "earth_observation",
+      "navigation",
+      "space_situational_awareness",
+    ])
+    .nullable()
+    .optional(),
+  entitySize: z
+    .enum(["micro", "small", "medium", "large"])
+    .nullable()
+    .optional(),
+  employeeCount: z.number().nullable().optional(),
+  annualRevenue: z.number().nullable().optional(),
+  memberStateCount: z.number().int().min(0).max(27).nullable().optional(),
+  isEUEstablished: z.boolean().nullable().optional(),
+  operatesGroundInfra: z.boolean().nullable().optional(),
+  operatesSatComms: z.boolean().nullable().optional(),
+  manufacturesSpacecraft: z.boolean().nullable().optional(),
+  providesLaunchServices: z.boolean().nullable().optional(),
+  providesEOData: z.boolean().nullable().optional(),
+  hasISO27001: z.boolean().nullable().optional(),
+  hasExistingCSIRT: z.boolean().nullable().optional(),
+  hasRiskManagement: z.boolean().nullable().optional(),
+});
+
+export const NIS2CalculateSchema = z.object({
+  answers: NIS2CalculateAnswersSchema,
+  startedAt: z.number().optional(),
+});
+
+export const SpaceLawCalculateAnswersSchema = z.object({
+  selectedJurisdictions: z
+    .array(z.enum(["FR", "DE", "UK", "NL", "AT", "BE", "DK", "IT", "LU", "NO"]))
+    .min(1),
+  activityType: z.string().min(1),
+  entitySize: z
+    .enum(["micro", "small", "medium", "large"])
+    .nullable()
+    .optional(),
+});
+
+export const SpaceLawCalculateSchema = z.object({
+  answers: SpaceLawCalculateAnswersSchema,
+  startedAt: z.number().optional(),
+});
+
+export const UnifiedCalculateAnswersSchema = z.object({
+  establishmentCountry: z.string().min(2).max(3),
+  entitySize: z.enum(["micro", "small", "medium", "large"]),
+  activityTypes: z.array(z.string()).optional().default([]),
+  serviceTypes: z.array(z.string()).optional().default([]),
+  primaryOrbitalRegime: z.string().nullable().optional(),
+  operatesConstellation: z.boolean().nullable().optional(),
+  constellationSize: z.string().nullable().optional(),
+  servesEUCustomers: z.boolean().nullable().optional(),
+  servesCriticalInfrastructure: z.boolean().nullable().optional(),
+  hasCybersecurityPolicy: z.boolean().nullable().optional(),
+  hasRiskManagement: z.boolean().nullable().optional(),
+  hasIncidentResponsePlan: z.boolean().nullable().optional(),
+  hasSupplyChainSecurity: z.boolean().nullable().optional(),
+  hasBusinessContinuityPlan: z.boolean().nullable().optional(),
+  hasEncryption: z.boolean().nullable().optional(),
+  hasAccessControl: z.boolean().nullable().optional(),
+  hasVulnerabilityManagement: z.boolean().nullable().optional(),
+  interestedJurisdictions: z.array(z.string()).optional().default([]),
+  hasInsurance: z.boolean().nullable().optional(),
+});
+
+export const UnifiedCalculateSchema = z.object({
+  answers: UnifiedCalculateAnswersSchema,
+  startedAt: z.number().optional(),
+});
+
 // ─── Query Schemas ───
 
 /**
@@ -712,3 +826,13 @@ export type InsuranceAssessmentInput = z.infer<
   typeof InsuranceAssessmentSchema
 >;
 export type QueryParams = z.infer<typeof QueryParamsSchema>;
+export type EUSpaceActAnswersInput = z.infer<typeof EUSpaceActAnswersSchema>;
+export type NIS2CalculateAnswersInput = z.infer<
+  typeof NIS2CalculateAnswersSchema
+>;
+export type SpaceLawCalculateAnswersInput = z.infer<
+  typeof SpaceLawCalculateAnswersSchema
+>;
+export type UnifiedCalculateAnswersInput = z.infer<
+  typeof UnifiedCalculateAnswersSchema
+>;
