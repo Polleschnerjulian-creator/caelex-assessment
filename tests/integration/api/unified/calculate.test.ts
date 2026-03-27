@@ -186,9 +186,10 @@ describe("POST /api/unified/calculate", () => {
     expect(response.status).toBe(400);
     const data = await response.json();
     expect(data.error).toContain("too quickly");
+    expect(data.code).toBe("VALIDATION_ERROR");
   });
 
-  it("accepts assessments over 5 seconds (unauthenticated)", async () => {
+  it("accepts assessments over minimum duration (unauthenticated)", async () => {
     const request = makeRequest({
       answers: validAnswers,
       startedAt: Date.now() - 6000, // 6 seconds ago
@@ -210,7 +211,7 @@ describe("POST /api/unified/calculate", () => {
     expect(response.status).toBe(200);
   });
 
-  it("returns 400 for missing required fields", async () => {
+  it("returns 400 for missing required fields (Zod validation)", async () => {
     const request = makeRequest({
       answers: {},
       startedAt: Date.now() - 10000,
@@ -219,7 +220,8 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.error).toContain("Missing required");
+    expect(data.error).toBe("Validation failed");
+    expect(data.code).toBe("VALIDATION_ERROR");
   });
 
   it("calls real EU Space Act engine for SCO", async () => {
@@ -286,10 +288,10 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result).toBeDefined();
-    expect(data.result.euSpaceAct.applies).toBe(true);
-    expect(data.result.euSpaceAct.applicableArticleCount).toBe(2);
-    expect(data.result.euSpaceAct.applicableArticles).toHaveLength(2);
+    expect(data.data.result).toBeDefined();
+    expect(data.data.result.euSpaceAct.applies).toBe(true);
+    expect(data.data.result.euSpaceAct.applicableArticleCount).toBe(2);
+    expect(data.data.result.euSpaceAct.applicableArticles).toHaveLength(2);
   });
 
   it("returns module statuses from engine", async () => {
@@ -301,9 +303,13 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result.euSpaceAct.moduleStatuses).toBeDefined();
-    expect(data.result.euSpaceAct.moduleStatuses.length).toBeGreaterThan(0);
-    expect(data.result.euSpaceAct.moduleStatuses[0]).toHaveProperty("status");
+    expect(data.data.result.euSpaceAct.moduleStatuses).toBeDefined();
+    expect(data.data.result.euSpaceAct.moduleStatuses.length).toBeGreaterThan(
+      0,
+    );
+    expect(data.data.result.euSpaceAct.moduleStatuses[0]).toHaveProperty(
+      "status",
+    );
   });
 
   it("returns NIS2 incident timeline", async () => {
@@ -315,8 +321,8 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result.nis2.incidentTimeline).toBeDefined();
-    expect(data.result.nis2.incidentTimeline).toHaveLength(3);
+    expect(data.data.result.nis2.incidentTimeline).toBeDefined();
+    expect(data.data.result.nis2.incidentTimeline).toHaveLength(3);
   });
 
   it("handles defense-only exemption", async () => {
@@ -334,7 +340,7 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result.euSpaceAct.applies).toBe(false);
+    expect(data.data.result.euSpaceAct.applies).toBe(false);
     // Engine should not be called for defense-only
     expect(mockCalculateCompliance).not.toHaveBeenCalled();
   });
@@ -365,10 +371,10 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result.confidenceScore).toBeDefined();
-    expect(typeof data.result.confidenceScore).toBe("number");
-    expect(data.result.confidenceScore).toBeGreaterThanOrEqual(0);
-    expect(data.result.confidenceScore).toBeLessThanOrEqual(100);
+    expect(data.data.result.confidenceScore).toBeDefined();
+    expect(typeof data.data.result.confidenceScore).toBe("number");
+    expect(data.data.result.confidenceScore).toBeGreaterThanOrEqual(0);
+    expect(data.data.result.confidenceScore).toBeLessThanOrEqual(100);
   });
 
   it("includes cross-framework overlap in result", async () => {
@@ -380,7 +386,7 @@ describe("POST /api/unified/calculate", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.result.crossFrameworkOverlap).toBeDefined();
-    expect(Array.isArray(data.result.crossFrameworkOverlap)).toBe(true);
+    expect(data.data.result.crossFrameworkOverlap).toBeDefined();
+    expect(Array.isArray(data.data.result.crossFrameworkOverlap)).toBe(true);
   });
 });

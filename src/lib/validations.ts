@@ -398,27 +398,37 @@ export const SpaceLawCalculateSchema = z.object({
   startedAt: z.number().optional(),
 });
 
-export const UnifiedCalculateAnswersSchema = z.object({
-  establishmentCountry: z.string().min(2).max(3),
-  entitySize: z.enum(["micro", "small", "medium", "large"]),
-  activityTypes: z.array(z.string()).optional().default([]),
-  serviceTypes: z.array(z.string()).optional().default([]),
-  primaryOrbitalRegime: z.string().nullable().optional(),
-  operatesConstellation: z.boolean().nullable().optional(),
-  constellationSize: z.string().nullable().optional(),
-  servesEUCustomers: z.boolean().nullable().optional(),
-  servesCriticalInfrastructure: z.boolean().nullable().optional(),
-  hasCybersecurityPolicy: z.boolean().nullable().optional(),
-  hasRiskManagement: z.boolean().nullable().optional(),
-  hasIncidentResponsePlan: z.boolean().nullable().optional(),
-  hasSupplyChainSecurity: z.boolean().nullable().optional(),
-  hasBusinessContinuityPlan: z.boolean().nullable().optional(),
-  hasEncryption: z.boolean().nullable().optional(),
-  hasAccessControl: z.boolean().nullable().optional(),
-  hasVulnerabilityManagement: z.boolean().nullable().optional(),
-  interestedJurisdictions: z.array(z.string()).optional().default([]),
-  hasInsurance: z.boolean().nullable().optional(),
-});
+export const UnifiedCalculateAnswersSchema = z
+  .object({
+    establishmentCountry: z.string().min(2).max(3),
+    entitySize: z.enum(["micro", "small", "medium", "large"]),
+    activityTypes: z.array(z.string()).optional().default([]),
+    serviceTypes: z.array(z.string()).optional().default([]),
+    primaryOrbitalRegime: z.string().nullable().optional(),
+    operatesConstellation: z.boolean().nullable().optional(),
+    constellationSize: z.string().nullable().optional(),
+    servesEUCustomers: z.boolean().nullable().optional(),
+    providesServicesToEU: z.boolean().nullable().optional(),
+    isDefenseOnly: z.boolean().nullable().optional(),
+    defenseInvolvement: z
+      .enum(["none", "partial", "full"])
+      .nullable()
+      .optional(),
+    servesCriticalInfrastructure: z.boolean().nullable().optional(),
+    hasCybersecurityPolicy: z.boolean().nullable().optional(),
+    hasRiskManagement: z.boolean().nullable().optional(),
+    hasIncidentResponsePlan: z.boolean().nullable().optional(),
+    hasSupplyChainSecurity: z.boolean().nullable().optional(),
+    hasBusinessContinuityPlan: z.boolean().nullable().optional(),
+    hasSecurityTraining: z.boolean().nullable().optional(),
+    hasEncryption: z.boolean().nullable().optional(),
+    hasAccessControl: z.boolean().nullable().optional(),
+    hasVulnerabilityManagement: z.boolean().nullable().optional(),
+    conductsPenetrationTesting: z.boolean().nullable().optional(),
+    interestedJurisdictions: z.array(z.string()).optional().default([]),
+    hasInsurance: z.boolean().nullable().optional(),
+  })
+  .passthrough();
 
 export const UnifiedCalculateSchema = z.object({
   answers: UnifiedCalculateAnswersSchema,
