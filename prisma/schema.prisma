@@ -202,7 +202,8 @@ model AuthorizationWorkflow {
   launchCountry String? // For launch operators
 
   // Status
-  status String @default("not_started") // not_started | in_progress | submitted | under_review | approved | rejected
+  status  String @default("not_started") // not_started | in_progress | submitted | under_review | approved | rejected
+  version Int    @default(0)
 
   // Timeline
   targetSubmission DateTime?

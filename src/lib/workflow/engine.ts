@@ -144,13 +144,37 @@ export class WorkflowEngine<TContext = Record<string, unknown>> {
 
   /**
    * Execute a specific transition
+   *
+   * @param currentState - The current workflow state
+   * @param event - The transition event to execute
+   * @param context - The workflow context
+   * @param expectedVersion - Optional version for optimistic locking. When provided,
+   *   the context must contain a `version` field matching this value, otherwise the
+   *   transition is rejected with a conflict error.
    */
   async executeTransition(
     currentState: WorkflowState,
     event: string,
     context: TContext,
+    expectedVersion?: number,
   ): Promise<TransitionResult> {
     const timestamp = new Date();
+
+    // Optimistic locking: check version if expectedVersion is provided
+    if (expectedVersion !== undefined) {
+      const contextVersion = (context as Record<string, unknown>).version;
+      if (contextVersion !== expectedVersion) {
+        return {
+          success: false,
+          previousState: currentState,
+          currentState,
+          transitionEvent: event,
+          error: `Version conflict: expected version ${expectedVersion} but found ${contextVersion}. The workflow was modified by another request.`,
+          timestamp,
+        };
+      }
+    }
+
     const state = this.definition.states[currentState];
 
     if (!state) {
@@ -246,12 +270,22 @@ export class WorkflowEngine<TContext = Record<string, unknown>> {
         );
       }
 
+      // Compute new version for optimistic locking
+      const contextVersion = (context as Record<string, unknown>).version;
+      const newVersion =
+        expectedVersion !== undefined
+          ? expectedVersion + 1
+          : typeof contextVersion === "number"
+            ? contextVersion + 1
+            : undefined;
+
       return {
         success: true,
         previousState: currentState,
         currentState: targetState,
         transitionEvent: event,
         timestamp,
+        newVersion,
       };
     } catch (error) {
       const errorMessage =

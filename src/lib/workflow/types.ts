@@ -125,6 +125,8 @@ export interface TransitionResult {
   transitionEvent: string;
   error?: string;
   timestamp: Date;
+  /** New version after a successful transition (optimistic locking) */
+  newVersion?: number;
 }
 
 /**
