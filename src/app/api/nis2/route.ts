@@ -10,7 +10,6 @@
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { decrypt, isEncrypted } from "@/lib/encryption";
@@ -21,6 +20,12 @@ import {
 import { generateAutoAssessments } from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 import { getSafeErrorMessage } from "@/lib/validations";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationError,
+  ErrorCode,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
 // GET /api/nis2 - Get all NIS2 assessments for user
@@ -28,7 +33,7 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -68,12 +73,13 @@ export async function GET() {
       })),
     );
 
-    return NextResponse.json({ assessments: decryptedAssessments });
+    return createSuccessResponse({ assessments: decryptedAssessments });
   } catch (error) {
     logger.error("Error fetching NIS2 assessments", error);
-    return NextResponse.json(
-      { error: getSafeErrorMessage(error, "Internal server error") },
-      { status: 500 },
+    return createErrorResponse(
+      getSafeErrorMessage(error, "Internal server error"),
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -83,7 +89,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -121,10 +127,7 @@ export async function POST(request: Request) {
 
     const parsed = createSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     const {
@@ -312,7 +315,7 @@ export async function POST(request: Request) {
         }
       : null;
 
-    return NextResponse.json({
+    return createSuccessResponse({
       assessment: decryptedAssessment,
       entityClassification: classification.classification,
       classificationReason: classification.reason,
@@ -322,9 +325,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("Error creating NIS2 assessment", error);
-    return NextResponse.json(
-      { error: getSafeErrorMessage(error, "Internal server error") },
-      { status: 500 },
+    return createErrorResponse(
+      getSafeErrorMessage(error, "Internal server error"),
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }

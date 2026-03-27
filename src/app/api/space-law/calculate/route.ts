@@ -6,7 +6,7 @@
  * Rate limited: 10 requests per hour per IP (public endpoint).
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import {
   calculateSpaceLawCompliance,
@@ -19,6 +19,14 @@ import {
 } from "@/lib/ratelimit";
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import type { SpaceLawAssessmentAnswers } from "@/lib/space-law-types";
+import {
+  createSuccessResponse,
+  createValidationError,
+  createEngineErrorResponse,
+  ErrorCode,
+  createErrorResponse,
+} from "@/lib/api-response";
+import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
 import { logger } from "@/lib/logger";
 
 const spaceLawAnswersSchema = z.object({
@@ -71,15 +79,16 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+      return createErrorResponse(
+        "Invalid JSON body",
+        ErrorCode.VALIDATION_ERROR,
+        400,
+      );
     }
 
     const parsed = spaceLawBodySchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     const { answers, startedAt } = parsed.data;
@@ -87,38 +96,38 @@ export async function POST(request: NextRequest) {
     // ─── Anti-Bot: Timing Validation ───
     if (startedAt && typeof startedAt === "number") {
       const elapsed = Date.now() - startedAt;
-      if (elapsed < 3000) {
-        return NextResponse.json(
-          { error: "Assessment completed too quickly. Please try again." },
-          { status: 429 },
+      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
+        return createErrorResponse(
+          "Assessment completed too quickly. Please try again.",
+          ErrorCode.RATE_LIMITED,
+          429,
         );
       }
     }
 
     // ─── Calculate ───
+    // Zod validates shape; cast needed because inferred enum types differ from domain type aliases
     const result = await calculateSpaceLawCompliance(
-      answers as SpaceLawAssessmentAnswers,
+      answers as unknown as SpaceLawAssessmentAnswers,
     );
 
     // ─── Redact ───
     const redactedResult = redactSpaceLawResultForClient(result);
 
-    return NextResponse.json(
-      { result: redactedResult },
-      {
-        status: 200,
-        headers: {
-          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-          "X-Robots-Tag": "noindex, nofollow",
-        },
-      },
+    const response = createSuccessResponse({ result: redactedResult });
+    response.headers.set(
+      "X-RateLimit-Remaining",
+      rateLimitResult.remaining.toString(),
     );
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate",
+    );
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+
+    return response;
   } catch (error) {
     logger.error("Space law assessment calculation error", error);
-    return NextResponse.json(
-      { error: "Failed to calculate space law compliance assessment" },
-      { status: 500 },
-    );
+    return createEngineErrorResponse(error);
   }
 }

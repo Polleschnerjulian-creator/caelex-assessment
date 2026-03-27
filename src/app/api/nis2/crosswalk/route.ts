@@ -12,7 +12,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { calculateNIS2Compliance } from "@/lib/nis2-engine.server";
 import {
   buildUnifiedComplianceMatrix,
@@ -21,6 +21,11 @@ import {
   getCrossRegulationSummary,
 } from "@/lib/services/cross-regulation-service";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  ErrorCode,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
 // GET /api/nis2/crosswalk?assessmentId=xxx
@@ -28,16 +33,17 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
     const assessmentId = request.nextUrl.searchParams.get("assessmentId");
 
     if (!assessmentId) {
-      return NextResponse.json(
-        { error: "assessmentId query parameter is required" },
-        { status: 400 },
+      return createErrorResponse(
+        "assessmentId query parameter is required",
+        ErrorCode.VALIDATION_ERROR,
+        400,
       );
     }
 
@@ -50,9 +56,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!assessment) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -90,7 +97,7 @@ export async function GET(request: NextRequest) {
         getCrossRegulationSummary(),
       ]);
 
-    return NextResponse.json({
+    return createSuccessResponse({
       assessmentId,
       entityClassification: complianceResult.entityClassification,
       unifiedMatrix,
@@ -100,9 +107,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error("Error fetching NIS2 crosswalk", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }

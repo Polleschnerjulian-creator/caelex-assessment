@@ -11,9 +11,15 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationError,
+  ErrorCode,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
 const VALID_STATUSES = [
@@ -29,16 +35,17 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
     const assessmentId = request.nextUrl.searchParams.get("assessmentId");
 
     if (!assessmentId) {
-      return NextResponse.json(
-        { error: "assessmentId query parameter is required" },
-        { status: 400 },
+      return createErrorResponse(
+        "assessmentId query parameter is required",
+        ErrorCode.VALIDATION_ERROR,
+        400,
       );
     }
 
@@ -51,9 +58,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!assessment) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -80,12 +88,13 @@ export async function GET(request: NextRequest) {
       })),
     );
 
-    return NextResponse.json({ requirements: decryptedRequirements });
+    return createSuccessResponse({ requirements: decryptedRequirements });
   } catch (error) {
     logger.error("Error fetching NIS2 requirements", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -95,7 +104,7 @@ export async function PATCH(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -121,10 +130,7 @@ export async function PATCH(request: Request) {
 
     const parsed = requirementSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     const {
@@ -146,9 +152,10 @@ export async function PATCH(request: Request) {
     });
 
     if (!assessment) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -252,12 +259,13 @@ export async function PATCH(request: Request) {
           : updated.evidenceNotes,
     };
 
-    return NextResponse.json({ requirement: decryptedUpdated });
+    return createSuccessResponse({ requirement: decryptedUpdated });
   } catch (error) {
     logger.error("Error updating NIS2 requirement", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }

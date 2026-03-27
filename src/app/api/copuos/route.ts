@@ -1,26 +1,45 @@
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import {
   getApplicableGuidelines,
   getSatelliteCategory,
 } from "@/data/copuos-iadc-requirements";
-import type {
-  CopuosMissionProfile,
-  OrbitRegime,
-  MissionType,
-} from "@/data/copuos-iadc-requirements";
+import type { CopuosMissionProfile } from "@/data/copuos-iadc-requirements";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationError,
+  ErrorCode,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
+
+const OrbitRegimeEnum = z.enum([
+  "LEO",
+  "MEO",
+  "GEO",
+  "HEO",
+  "GTO",
+  "cislunar",
+  "deep_space",
+]);
+
+const MissionTypeEnum = z.enum([
+  "commercial",
+  "scientific",
+  "governmental",
+  "educational",
+  "military",
+]);
 
 // GET /api/copuos - Get user's COPUOS assessments
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -33,12 +52,13 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ assessments });
+    return createSuccessResponse({ assessments });
   } catch (error) {
     logger.error("Error fetching COPUOS assessments", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -48,7 +68,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     // Rate limiting
@@ -63,24 +83,10 @@ export async function POST(request: Request) {
     const createSchema = z.object({
       assessmentName: z.string().optional(),
       missionName: z.string().optional(),
-      orbitRegime: z.enum([
-        "LEO",
-        "MEO",
-        "GEO",
-        "HEO",
-        "GTO",
-        "cislunar",
-        "deep_space",
-      ]),
+      orbitRegime: OrbitRegimeEnum,
       altitudeKm: z.number().optional(),
       inclinationDeg: z.number().optional(),
-      missionType: z.enum([
-        "commercial",
-        "scientific",
-        "governmental",
-        "educational",
-        "military",
-      ]),
+      missionType: MissionTypeEnum,
       satelliteMassKg: z.number().positive(),
       hasManeuverability: z.boolean().optional().default(false),
       hasPropulsion: z.boolean().optional().default(false),
@@ -96,10 +102,7 @@ export async function POST(request: Request) {
 
     const parsed = createSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     const {
@@ -127,10 +130,10 @@ export async function POST(request: Request) {
 
     // Create profile for getting applicable guidelines
     const profile: CopuosMissionProfile = {
-      orbitRegime: orbitRegime as OrbitRegime,
+      orbitRegime,
       altitudeKm,
       inclinationDeg,
-      missionType: missionType as MissionType,
+      missionType,
       satelliteCategory,
       satelliteMassKg,
       hasManeuverability,
@@ -213,15 +216,16 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    return NextResponse.json({
+    return createSuccessResponse({
       assessment: assessmentWithStatuses,
       applicableGuidelinesCount: applicableGuidelines.length,
     });
   } catch (error) {
     logger.error("Error creating COPUOS assessment", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }

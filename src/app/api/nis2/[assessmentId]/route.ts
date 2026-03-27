@@ -11,7 +11,6 @@
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { decrypt, isEncrypted } from "@/lib/encryption";
 import {
@@ -23,8 +22,14 @@ import {
   generateRecommendations,
 } from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
-import { logger } from "@/lib/logger";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationError,
+  ErrorCode,
+} from "@/lib/api-response";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // GET /api/nis2/[assessmentId] - Get assessment details with requirement metadata
 export async function GET(
@@ -34,7 +39,7 @@ export async function GET(
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const { assessmentId } = await params;
@@ -51,9 +56,10 @@ export async function GET(
     });
 
     if (!assessment) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -148,16 +154,17 @@ export async function GET(
       requirements: decryptedRequirements,
     };
 
-    return NextResponse.json({
+    return createSuccessResponse({
       assessment: decryptedAssessment,
       requirementMeta,
       recommendations,
     });
   } catch (error) {
     logger.error("Error fetching NIS2 assessment", error);
-    return NextResponse.json(
-      { error: getSafeErrorMessage(error, "Internal server error") },
-      { status: 500 },
+    return createErrorResponse(
+      getSafeErrorMessage(error, "Internal server error"),
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -170,7 +177,7 @@ export async function PATCH(
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const { assessmentId } = await params;
@@ -225,10 +232,7 @@ export async function PATCH(
 
     const parsed = patchSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     // Verify ownership
@@ -240,9 +244,10 @@ export async function PATCH(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -471,7 +476,7 @@ export async function PATCH(
       })),
     );
 
-    return NextResponse.json({
+    return createSuccessResponse({
       assessment: {
         ...updated,
         requirements: decryptedUpdatedRequirements,
@@ -479,9 +484,10 @@ export async function PATCH(
     });
   } catch (error) {
     logger.error("Error updating NIS2 assessment", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -494,7 +500,7 @@ export async function DELETE(
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const { assessmentId } = await params;
@@ -509,9 +515,10 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "Assessment not found" },
-        { status: 404 },
+      return createErrorResponse(
+        "Assessment not found",
+        ErrorCode.NOT_FOUND,
+        404,
       );
     }
 
@@ -536,12 +543,13 @@ export async function DELETE(
       userAgent,
     });
 
-    return NextResponse.json({ success: true });
+    return createSuccessResponse({ success: true });
   } catch (error) {
     logger.error("Error deleting NIS2 assessment", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }

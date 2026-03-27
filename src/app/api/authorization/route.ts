@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   logAuditEvent,
@@ -9,6 +8,12 @@ import {
 } from "@/lib/audit";
 import { determineNCA } from "@/data/ncas";
 import { getRequiredDocuments } from "@/data/authorization-documents";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationError,
+  ErrorCode,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
 // GET /api/authorization - Get user's authorization workflow(s)
@@ -16,7 +21,7 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -43,12 +48,13 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ workflows, user });
+    return createSuccessResponse({ workflows, user });
   } catch (error) {
     logger.error("Error fetching authorization workflows", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
@@ -58,7 +64,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
     const userId = session.user.id;
@@ -74,10 +80,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const parsed = createWorkflowSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return createValidationError(parsed.error);
     }
 
     const {
@@ -90,9 +93,10 @@ export async function POST(request: Request) {
 
     // Validate required fields
     if (!isThirdCountry && !establishmentCountry) {
-      return NextResponse.json(
-        { error: "establishmentCountry is required for EU operators" },
-        { status: 400 },
+      return createErrorResponse(
+        "establishmentCountry is required for EU operators",
+        ErrorCode.VALIDATION_ERROR,
+        400,
       );
     }
 
@@ -178,7 +182,7 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    return NextResponse.json({
+    return createSuccessResponse({
       workflow,
       ncaDetermination: {
         primaryNCA: ncaDetermination.primaryNCA,
@@ -192,9 +196,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("Error creating authorization workflow", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    return createErrorResponse(
+      "Internal server error",
+      ErrorCode.ENGINE_ERROR,
+      500,
     );
   }
 }
