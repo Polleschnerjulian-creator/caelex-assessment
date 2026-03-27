@@ -47,11 +47,17 @@ const ORG_KEY_PREFIX = "org:";
 // OWASP 2024+ recommended scrypt parameters
 const SCRYPT_PARAMS = { N: 32768, r: 8, p: 1 };
 
-// Key derivation cache (derived once per process)
-let cachedKey: Buffer | null = null;
+// TTL for cached encryption keys — limits exposure window if process is compromised
+const KEY_CACHE_TTL_MS = 3600000; // 1 hour
 
-// Per-organization key cache (LRU-style with max 100 entries)
-const orgKeyCache = new Map<string, { key: Buffer; lastUsed: number }>();
+// Key derivation cache with TTL
+let cachedKey: { key: Buffer; expiresAt: number } | null = null;
+
+// Per-organization key cache (LRU-style with max 100 entries, with TTL)
+const orgKeyCache = new Map<
+  string,
+  { key: Buffer; lastUsed: number; expiresAt: number }
+>();
 const MAX_ORG_KEY_CACHE_SIZE = 100;
 
 /**
@@ -59,8 +65,8 @@ const MAX_ORG_KEY_CACHE_SIZE = 100;
  * Uses scrypt for key derivation (memory-hard, resistant to brute force).
  */
 async function getKey(): Promise<Buffer> {
-  if (cachedKey) {
-    return cachedKey;
+  if (cachedKey && Date.now() < cachedKey.expiresAt) {
+    return cachedKey.key;
   }
 
   const encryptionKey = process.env.ENCRYPTION_KEY;
@@ -76,13 +82,14 @@ async function getKey(): Promise<Buffer> {
     throw new Error("ENCRYPTION_KEY must be at least 32 characters");
   }
 
-  cachedKey = await scryptAsync(
+  const derivedKey = await scryptAsync(
     encryptionKey,
     encryptionSalt,
     32,
     SCRYPT_PARAMS,
   );
-  return cachedKey;
+  cachedKey = { key: derivedKey, expiresAt: Date.now() + KEY_CACHE_TTL_MS };
+  return derivedKey;
 }
 
 /**
@@ -91,11 +98,15 @@ async function getKey(): Promise<Buffer> {
  * This ensures each tenant's data is encrypted with a unique key.
  */
 async function getOrgKey(organizationId: string): Promise<Buffer> {
-  // Check cache first
+  // Check cache first (with TTL validation)
   const cached = orgKeyCache.get(organizationId);
-  if (cached) {
+  if (cached && Date.now() < cached.expiresAt) {
     cached.lastUsed = Date.now();
     return cached.key;
+  }
+  // Remove expired entry if present
+  if (cached) {
+    orgKeyCache.delete(organizationId);
   }
 
   // Derive master key first
@@ -122,8 +133,12 @@ async function getOrgKey(organizationId: string): Promise<Buffer> {
     }
   }
 
-  // Cache the derived key
-  orgKeyCache.set(organizationId, { key: orgKey, lastUsed: Date.now() });
+  // Cache the derived key with TTL
+  orgKeyCache.set(organizationId, {
+    key: orgKey,
+    lastUsed: Date.now(),
+    expiresAt: Date.now() + KEY_CACHE_TTL_MS,
+  });
 
   return orgKey;
 }
