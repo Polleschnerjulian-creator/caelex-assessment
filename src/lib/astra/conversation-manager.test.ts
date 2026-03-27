@@ -615,12 +615,12 @@ describe("shouldSummarize", () => {
   });
 
   it("returns false when exactly at threshold", async () => {
-    mockPrisma.astraMessage.count.mockResolvedValue(15);
+    mockPrisma.astraMessage.count.mockResolvedValue(10);
     expect(await shouldSummarize("conv-1")).toBe(false);
   });
 
   it("returns true when just above threshold", async () => {
-    mockPrisma.astraMessage.count.mockResolvedValue(16);
+    mockPrisma.astraMessage.count.mockResolvedValue(11);
     expect(await shouldSummarize("conv-1")).toBe(true);
   });
 });

@@ -20,8 +20,9 @@ import type {
 // ─── Constants ───
 
 const MAX_MESSAGES_IN_CONTEXT = 10;
-const SUMMARIZE_THRESHOLD = 15;
+const SUMMARIZE_THRESHOLD = 10;
 const MAX_MESSAGE_LENGTH = 10000;
+const MAX_TOTAL_MESSAGES = 200;
 
 // ─── Conversation CRUD ───
 
@@ -102,6 +103,15 @@ export async function addMessage(
   conversationId: string,
   message: Omit<AstraConversationMessage, "id" | "timestamp">,
 ): Promise<AstraConversationMessage> {
+  // Force summarization if conversation has hit the hard limit
+  const messageCount = await prisma.astraMessage.count({
+    where: { conversationId },
+  });
+
+  if (messageCount >= MAX_TOTAL_MESSAGES) {
+    await summarizeOlderMessages(conversationId);
+  }
+
   // Truncate content if too long
   const truncatedContent =
     message.content.length > MAX_MESSAGE_LENGTH
