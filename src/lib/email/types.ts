@@ -14,11 +14,21 @@ export interface EmailConfig {
   };
 }
 
+export interface EmailAttachment {
+  /** Content of the attached file */
+  content: string | Buffer;
+  /** Filename for the attachment */
+  filename: string;
+  /** MIME content type (e.g. "text/calendar; method=REQUEST") */
+  contentType?: string;
+}
+
 export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: EmailAttachment[];
   // Tracking metadata
   userId?: string;
   notificationType?: NotificationType;

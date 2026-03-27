@@ -9,6 +9,7 @@ import {
 } from "./resend-client";
 import type {
   EmailConfig,
+  EmailAttachment,
   SendEmailOptions,
   EmailResult,
   DeadlineReminderData,
@@ -120,6 +121,7 @@ async function sendViaResend(
   subject: string,
   html: string,
   text?: string,
+  attachments?: EmailAttachment[],
 ): Promise<EmailResult> {
   const resend = getResendClient();
 
@@ -134,6 +136,13 @@ async function sendViaResend(
       subject,
       html,
       text: text || stripHtml(html),
+      ...(attachments?.length && {
+        attachments: attachments.map((a) => ({
+          content: a.content,
+          filename: a.filename,
+          contentType: a.contentType,
+        })),
+      }),
     });
 
     if (error) {
@@ -155,6 +164,7 @@ async function sendViaSmtp(
   subject: string,
   html: string,
   text?: string,
+  attachments?: EmailAttachment[],
 ): Promise<EmailResult> {
   try {
     const config = getSmtpConfig();
@@ -166,6 +176,13 @@ async function sendViaSmtp(
       subject,
       html,
       text: text || stripHtml(html),
+      ...(attachments?.length && {
+        attachments: attachments.map((a) => ({
+          content: a.content,
+          filename: a.filename,
+          contentType: a.contentType,
+        })),
+      }),
     });
 
     return { success: true, messageId: result.messageId };
@@ -186,6 +203,7 @@ export async function sendEmail(
     subject,
     html,
     text,
+    attachments,
     userId,
     notificationType,
     entityType,
@@ -206,9 +224,9 @@ export async function sendEmail(
   try {
     // Use Resend as primary provider, SMTP as fallback
     if (provider === "resend") {
-      result = await sendViaResend(to, subject, html, text);
+      result = await sendViaResend(to, subject, html, text, attachments);
     } else {
-      result = await sendViaSmtp(to, subject, html, text);
+      result = await sendViaSmtp(to, subject, html, text, attachments);
     }
 
     // Log notification

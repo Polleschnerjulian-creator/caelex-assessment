@@ -32,6 +32,59 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function escapeIcal(str: string): string {
+  return str.replace(/[\\;,\n]/g, (match) => {
+    if (match === "\n") return "\\n";
+    return "\\" + match;
+  });
+}
+
+function formatIcalDate(date: Date): string {
+  return date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
+}
+
+function generateBookingICS(booking: {
+  name: string;
+  email: string;
+  company: string;
+  scheduledAt: Date;
+  id: string;
+}): string {
+  const start = formatIcalDate(booking.scheduledAt);
+  const end = formatIcalDate(
+    new Date(booking.scheduledAt.getTime() + 30 * 60 * 1000),
+  ); // 30 min
+  const now = formatIcalDate(new Date());
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Caelex//Demo Booking//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:REQUEST",
+    "BEGIN:VEVENT",
+    `UID:booking-${booking.id}@caelex.eu`,
+    `DTSTAMP:${now}`,
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    `SUMMARY:Caelex Demo — ${escapeIcal(booking.company)}`,
+    `DESCRIPTION:Demo call with Caelex team\\nContact: ${escapeIcal(booking.name)} (${escapeIcal(booking.email)})`,
+    `ORGANIZER;CN=Caelex:MAILTO:cs@caelex.eu`,
+    `ATTENDEE;CN=${escapeIcal(booking.name)}:MAILTO:${booking.email}`,
+    "STATUS:CONFIRMED",
+    "BEGIN:VALARM",
+    "TRIGGER:-PT15M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Caelex Demo in 15 minutes",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
 // ─── Validation Schema ───
 
 const bookingSchema = z.object({
@@ -255,12 +308,31 @@ export async function POST(request: NextRequest) {
 
       const nextStepsText = formattedDate
         ? `<p style="line-height: 1.7; margin: 0 0 16px 0;">
-                Your onboarding call has been scheduled. We'll send you a calendar invite shortly.
+                Your onboarding call has been scheduled. A calendar invite is attached to this email.
               </p>`
         : `<p style="line-height: 1.7; margin: 0 0 16px 0;">
                 Thank you for booking a call with us. We've received your details
                 and our team will reach out within 24 hours to schedule your onboarding session.
               </p>`;
+
+      // Generate ICS calendar attachment for scheduled bookings
+      const icsAttachments = scheduledDate
+        ? [
+            {
+              filename: "caelex-demo.ics",
+              content: Buffer.from(
+                generateBookingICS({
+                  name,
+                  email,
+                  company,
+                  scheduledAt: scheduledDate,
+                  id: demoRequest.id,
+                }),
+              ),
+              contentType: "text/calendar; method=REQUEST",
+            },
+          ]
+        : undefined;
 
       await sendEmail({
         to: email,
@@ -284,7 +356,7 @@ export async function POST(request: NextRequest) {
               <div style="background: #f8faf9; border-radius: 12px; padding: 20px; border: 1px solid #e5ebe8;">
                 <p style="margin: 0 0 8px 0; font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">What happens next</p>
                 <ol style="margin: 0; padding: 0 0 0 20px; line-height: 1.8; color: #555;">
-                  ${formattedDate ? "<li>You'll receive a calendar invite</li>" : "<li>Our team reviews your profile (within 24h)</li>"}
+                  ${formattedDate ? "<li>Open the attached calendar invite to add it to your calendar</li>" : "<li>Our team reviews your profile (within 24h)</li>"}
                   <li>We have a brief onboarding call</li>
                   <li>You complete setup in under 30 minutes</li>
                   <li>You get full access to Caelex Assure</li>
@@ -298,6 +370,7 @@ export async function POST(request: NextRequest) {
             </div>
           </div>
         `,
+        attachments: icsAttachments,
       });
     } catch (emailError) {
       logger.error("Failed to send booking confirmation email", emailError, {
