@@ -184,6 +184,7 @@ export function detectTopics(message: string): string[] {
 export async function buildUserContext(
   userId: string,
   organizationId: string,
+  topics: string[] = [],
 ): Promise<AstraUserContext> {
   try {
     // Fetch organization basic info
@@ -204,6 +205,16 @@ export async function buildUserContext(
       };
     }
 
+    // Determine which assessments to fetch based on detected topics
+    const isGeneral = topics.includes("general") || topics.length === 0;
+
+    const needsDebris = isGeneral || topics.includes("debris");
+    const needsCyber =
+      isGeneral || topics.includes("cybersecurity") || topics.includes("nis2");
+    const needsInsurance = isGeneral || topics.includes("insurance");
+    const needsNis2 =
+      isGeneral || topics.includes("nis2") || topics.includes("cybersecurity");
+
     // Fetch user's assessments separately (they're linked to users, not orgs)
     const [
       debrisAssessment,
@@ -211,36 +222,44 @@ export async function buildUserContext(
       insuranceAssessment,
       nis2Assessment,
     ] = await Promise.all([
-      prisma.debrisAssessment.findFirst({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        select: {
-          complianceScore: true,
-          orbitType: true,
-        },
-      }),
-      prisma.cybersecurityAssessment.findFirst({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        select: {
-          maturityScore: true,
-        },
-      }),
-      prisma.insuranceAssessment.findFirst({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        select: {
-          complianceScore: true,
-          calculatedTPL: true,
-        },
-      }),
-      prisma.nIS2Assessment.findFirst({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        select: {
-          entityClassification: true,
-        },
-      }),
+      needsDebris
+        ? prisma.debrisAssessment.findFirst({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            select: {
+              complianceScore: true,
+              orbitType: true,
+            },
+          })
+        : Promise.resolve(null),
+      needsCyber
+        ? prisma.cybersecurityAssessment.findFirst({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            select: {
+              maturityScore: true,
+            },
+          })
+        : Promise.resolve(null),
+      needsInsurance
+        ? prisma.insuranceAssessment.findFirst({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            select: {
+              complianceScore: true,
+              calculatedTPL: true,
+            },
+          })
+        : Promise.resolve(null),
+      needsNis2
+        ? prisma.nIS2Assessment.findFirst({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            select: {
+              entityClassification: true,
+            },
+          })
+        : Promise.resolve(null),
     ]);
 
     // Build compliance scores
@@ -508,11 +527,11 @@ export async function buildCompleteContext(
   pageContext?: AstraContext,
   missionData?: AstraMissionData,
 ): Promise<{ userContext: AstraUserContext; contextString: string }> {
-  // Build user context from database
-  const userContext = await buildUserContext(userId, organizationId);
-
-  // Detect topics from the message
+  // Detect topics from the message first to enable selective DB queries
   const topics = detectTopics(message);
+
+  // Build user context from database (filtered by detected topics)
+  const userContext = await buildUserContext(userId, organizationId, topics);
 
   // Build topic-specific context
   const contextString = await buildTopicContext(
