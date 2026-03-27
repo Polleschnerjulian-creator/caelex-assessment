@@ -172,6 +172,23 @@ function getIncidentReportingTimeline(): NIS2ComplianceResult["incidentReporting
   };
 }
 
+// ─── EU Space Act Overlap Configuration ───
+
+const OVERLAP_CONFIG = {
+  supersedes: {
+    estimatedSavingsWeeks: 3,
+    confidenceLevel: "estimated" as const,
+    source:
+      "Internal estimate — not empirically validated. Based on assumption that superseding requirement eliminates full duplication.",
+  },
+  overlaps: {
+    estimatedSavingsWeeks: 1.5,
+    confidenceLevel: "estimated" as const,
+    source:
+      "Internal estimate — not empirically validated. Based on assumption that overlapping requirements share ~50% implementation effort.",
+  },
+};
+
 // ─── EU Space Act Overlap Calculation ───
 
 function calculateEUSpaceActOverlap(
@@ -182,6 +199,8 @@ function calculateEUSpaceActOverlap(
       count: 0,
       totalPotentialSavingsWeeks: 0,
       overlappingRequirements: [],
+      confidenceLevel: OVERLAP_CONFIG.supersedes.confidenceLevel,
+      estimationSource: OVERLAP_CONFIG.supersedes.source,
     };
   }
 
@@ -212,20 +231,22 @@ function calculateEUSpaceActOverlap(
       };
     });
 
-  // Estimate ~2 weeks saved per overlapping requirement
+  // Estimate savings per overlapping requirement (see OVERLAP_CONFIG for methodology notes)
   const totalPotentialSavingsWeeks =
     overlappingRequirements.filter(
       (r) => r.effortType === "single_implementation",
     ).length *
-      3 +
+      OVERLAP_CONFIG.supersedes.estimatedSavingsWeeks +
     overlappingRequirements.filter((r) => r.effortType === "partial_overlap")
       .length *
-      1.5;
+      OVERLAP_CONFIG.overlaps.estimatedSavingsWeeks;
 
   return {
     count: overlappingRequirements.length,
     totalPotentialSavingsWeeks: Math.round(totalPotentialSavingsWeeks),
     overlappingRequirements,
+    confidenceLevel: OVERLAP_CONFIG.supersedes.confidenceLevel,
+    estimationSource: OVERLAP_CONFIG.supersedes.source,
   };
 }
 

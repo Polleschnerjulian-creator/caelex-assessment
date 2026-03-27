@@ -243,6 +243,8 @@ export interface NIS2ComplianceResult {
         | "partial_overlap"
         | "separate_effort";
     }[];
+    confidenceLevel: "estimated" | "validated";
+    estimationSource: string;
   };
 
   // Supervisory authority
