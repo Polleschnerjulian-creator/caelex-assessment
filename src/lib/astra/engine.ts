@@ -43,6 +43,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 4096;
 const MAX_TOOL_ITERATIONS = 10; // Safety limit for tool call loops
+const STREAM_INACTIVITY_TIMEOUT_MS = 30000; // 30 seconds
 
 // Initialize client lazily to avoid errors when API key not set
 let anthropicClient: Anthropic | null = null;
@@ -343,12 +344,47 @@ export class AstraEngine implements IAstraEngine {
         temperature: 0.7,
       });
 
-      // Forward text chunks in real-time
+      // Inactivity timeout: abort stream if no data received within threshold
+      let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+
+      const resetInactivityTimer = () => {
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+          stream.abort();
+        }, STREAM_INACTIVITY_TIMEOUT_MS);
+      };
+
+      resetInactivityTimer();
+
+      // Forward text chunks in real-time and reset inactivity timer
       stream.on("text", (text) => {
+        resetInactivityTimer();
         onTextChunk(text);
       });
 
-      const response = await stream.finalMessage();
+      let response: Anthropic.Message;
+      try {
+        response = await stream.finalMessage();
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+      } catch (error) {
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+        if (
+          error instanceof Error &&
+          (error.message.includes("abort") ||
+            error.name === "AbortError" ||
+            error.message.includes("aborted"))
+        ) {
+          console.warn("ASTRA: Stream aborted due to inactivity timeout");
+          return {
+            responseText:
+              "The AI response timed out. Please try again with a simpler question.",
+            toolCalls: allToolCalls,
+            tokensUsed: totalTokens,
+          };
+        }
+        throw error;
+      }
+
       totalTokens += response.usage.input_tokens + response.usage.output_tokens;
 
       const toolUseBlocks = response.content.filter(
