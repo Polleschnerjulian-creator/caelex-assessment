@@ -8,6 +8,7 @@ import {
   mapScoreToLetterGrade,
   ASSESSMENT_MIN_DURATION_MS,
   EngineDataError,
+  getOrgMemberUserIds,
 } from "./shared.server";
 
 describe("clampScore", () => {
@@ -112,5 +113,38 @@ describe("EngineDataError", () => {
     expect(err.name).toBe("EngineDataError");
     expect(err.message).toBe("test");
     expect(err.context.engine).toBe("nis2");
+  });
+
+  it("stores cause when provided", () => {
+    const cause = new Error("original");
+    const err = new EngineDataError("wrapped", {
+      engine: "nis2",
+      dataFile: "x",
+      cause,
+    });
+    expect(err.context.cause).toBe(cause);
+  });
+
+  it("cause is undefined when not provided", () => {
+    const err = new EngineDataError("test", { engine: "nis2", dataFile: "x" });
+    expect(err.context.cause).toBeUndefined();
+  });
+});
+
+describe("getOrgMemberUserIds", () => {
+  it("returns an array of user ID strings", async () => {
+    const mockPrisma = {
+      organizationMember: {
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ userId: "user-1" }, { userId: "user-2" }]),
+      },
+    };
+    const result = await getOrgMemberUserIds(mockPrisma, "org-123");
+    expect(result).toEqual(["user-1", "user-2"]);
+    expect(mockPrisma.organizationMember.findMany).toHaveBeenCalledWith({
+      where: { organizationId: "org-123" },
+      select: { userId: true },
+    });
   });
 });
