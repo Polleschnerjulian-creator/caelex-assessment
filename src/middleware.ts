@@ -36,14 +36,66 @@ import {
 let apiRateLimiter: Ratelimit | null = null;
 let authRateLimiter: Ratelimit | null = null;
 let redisWarningLogged = false;
+let fallbackWarningLogged = false;
 
 function logRedisWarningOnce(): void {
   if (redisWarningLogged || process.env.NODE_ENV !== "production") return;
   redisWarningLogged = true;
   console.warn(
-    "[SECURITY] Rate limiting disabled — Redis not configured. " +
+    "[SECURITY] Redis not configured — using in-memory rate limit fallback. " +
+      "This is NOT safe for multi-instance deployments. " +
       "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
   );
+}
+
+function logFallbackWarningOnce(): void {
+  if (fallbackWarningLogged) return;
+  fallbackWarningLogged = true;
+  console.warn(
+    "[SECURITY] Middleware rate limiting using in-memory fallback. " +
+      "Rate limits are per-instance only and will not work correctly " +
+      "across multiple serverless instances.",
+  );
+}
+
+// ─── In-Memory Fallback Rate Limiter (Edge-compatible) ───
+// Minimal implementation for when Redis is unavailable.
+// Uses more conservative limits than Redis since in-memory state
+// is not shared across serverless instances.
+
+const inMemoryBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function inMemoryLimit(
+  key: string,
+  max: number,
+  windowMs: number,
+): { success: boolean; limit: number; remaining: number; reset: number } {
+  const now = Date.now();
+  const bucket = inMemoryBuckets.get(key);
+
+  // Lazy cleanup: evict expired entries when map grows large
+  if (inMemoryBuckets.size > 10000) {
+    const keysToDelete: string[] = [];
+    inMemoryBuckets.forEach((v, k) => {
+      if (v.resetAt < now) keysToDelete.push(k);
+    });
+    keysToDelete.forEach((k) => inMemoryBuckets.delete(k));
+  }
+
+  if (!bucket || bucket.resetAt < now) {
+    const resetAt = now + windowMs;
+    inMemoryBuckets.set(key, { count: 1, resetAt });
+    return { success: true, limit: max, remaining: max - 1, reset: resetAt };
+  }
+
+  bucket.count++;
+  const remaining = Math.max(0, max - bucket.count);
+  return {
+    success: bucket.count <= max,
+    limit: max,
+    remaining,
+    reset: bucket.resetAt,
+  };
 }
 
 function getApiRateLimiter(): Ratelimit | null {
@@ -324,44 +376,64 @@ export default async function middleware(req: NextRequest) {
         pathname.startsWith("/api/auth") ||
         pathname === "/api/signup" ||
         pathname === "/api/login";
-      const limiter = isAuthRoute ? getAuthRateLimiter() : getApiRateLimiter();
+      const redisLimiter = isAuthRoute
+        ? getAuthRateLimiter()
+        : getApiRateLimiter();
 
-      // Fail-open: if Redis is not configured, log warning and allow request through.
-      // Authenticated routes are already protected by session checks; rate limiting
-      // is defense-in-depth. Blocking all API traffic when Redis is absent is worse
-      // than temporarily running without rate limits.
-      if (!limiter) {
-        logRedisWarningOnce();
+      const ip = getSanitizedClientIp(req);
+      let result: {
+        success: boolean;
+        limit: number;
+        remaining: number;
+        reset: number;
+      };
+
+      if (redisLimiter) {
+        // Primary path: Redis-backed distributed rate limiting
+        const redisResult = await redisLimiter.limit(`ip:${ip}`);
+        result = {
+          success: redisResult.success,
+          limit: redisResult.limit,
+          remaining: redisResult.remaining,
+          reset: redisResult.reset,
+        };
+      } else {
+        // Fallback: in-memory rate limiting (per-instance only)
+        logFallbackWarningOnce();
+        // Use more conservative limits since state is not shared across instances:
+        // API: 30/min (vs 100/min Redis), Auth: 5/min (vs 10/min Redis)
+        const fallbackMax = isAuthRoute ? 5 : 30;
+        const fallbackWindowMs = 60000; // 1 minute
+        result = inMemoryLimit(
+          `mw:${isAuthRoute ? "auth" : "api"}:ip:${ip}`,
+          fallbackMax,
+          fallbackWindowMs,
+        );
       }
 
-      if (limiter) {
-        const ip = getSanitizedClientIp(req);
-        const result = await limiter.limit(`ip:${ip}`);
-
-        if (!result.success) {
-          const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
-          return applySecurityHeaders(
-            new NextResponse(
-              JSON.stringify({
-                error: "Too Many Requests",
-                message: "Rate limit exceeded. Please try again later.",
-                retryAfter,
-              }),
-              {
-                status: 429,
-                headers: {
-                  "Content-Type": "application/json",
-                  "Retry-After": retryAfter.toString(),
-                  "X-RateLimit-Limit": result.limit.toString(),
-                  "X-RateLimit-Remaining": "0",
-                  "X-RateLimit-Reset": result.reset.toString(),
-                },
+      if (!result.success) {
+        const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
+        return applySecurityHeaders(
+          new NextResponse(
+            JSON.stringify({
+              error: "Too Many Requests",
+              message: "Rate limit exceeded. Please try again later.",
+              retryAfter,
+            }),
+            {
+              status: 429,
+              headers: {
+                "Content-Type": "application/json",
+                "Retry-After": retryAfter.toString(),
+                "X-RateLimit-Limit": result.limit.toString(),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": result.reset.toString(),
               },
-            ),
-            pathname,
-            nonce,
-          );
-        }
+            },
+          ),
+          pathname,
+          nonce,
+        );
       }
     }
   }
