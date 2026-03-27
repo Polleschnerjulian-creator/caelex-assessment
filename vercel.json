@@ -48,7 +48,7 @@
     },
     {
       "path": "/api/cron/compute-rrs",
-      "schedule": "0 7 * * *"
+      "schedule": "10 7 * * *"
     },
     {
       "path": "/api/cron/compute-rcr",
@@ -72,7 +72,7 @@
     },
     {
       "path": "/api/cron/sentinel-auto-attest",
-      "schedule": "15 */4 * * *"
+      "schedule": "30 */4 * * *"
     },
     {
       "path": "/api/cron/sentinel-heartbeat",
@@ -84,7 +84,7 @@
     },
     {
       "path": "/api/cron/cdm-polling",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 */4 * * *"
     },
     {
       "path": "/api/cron/ca-cleanup",
@@ -96,7 +96,7 @@
     },
     {
       "path": "/api/cron/nca-deadlines",
-      "schedule": "0 7 * * *"
+      "schedule": "20 7 * * *"
     }
   ]
 }
