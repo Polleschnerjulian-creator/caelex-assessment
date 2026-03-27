@@ -7,7 +7,11 @@ import { GlassStagger, glassItemVariants } from "@/components/ui/GlassMotion";
 import { motion } from "framer-motion";
 import AssetMetricsBar from "@/components/nexus/AssetMetricsBar";
 import AssetTable, { type Asset } from "@/components/nexus/AssetTable";
-import RiskDistributionChart from "@/components/nexus/RiskDistributionChart";
+import dynamic from "next/dynamic";
+const RiskDistributionChart = dynamic(
+  () => import("@/components/nexus/RiskDistributionChart"),
+  { ssr: false },
+);
 import AddAssetWizard from "@/components/nexus/AddAssetWizard";
 import type { CreateAssetInput } from "@/lib/nexus/validations";
 

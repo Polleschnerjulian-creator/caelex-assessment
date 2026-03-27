@@ -32,6 +32,7 @@ export default function OptionCard({
     <motion.button
       role="radio"
       aria-checked={isSelected}
+      aria-label={`${label}: ${description}`}
       tabIndex={0}
       onClick={onClick}
       onKeyDown={handleKeyDown}

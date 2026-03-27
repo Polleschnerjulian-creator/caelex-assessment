@@ -61,7 +61,10 @@ export default function QuestionStep({
 
           {/* Subtitle */}
           {question.subtitle && (
-            <p className="text-subtitle text-white/70 leading-relaxed">
+            <p
+              id="question-subtitle"
+              className="text-subtitle text-white/70 leading-relaxed"
+            >
               {question.subtitle}
             </p>
           )}
@@ -71,6 +74,7 @@ export default function QuestionStep({
         <div
           role="radiogroup"
           aria-label={question.title}
+          aria-describedby={question.subtitle ? "question-subtitle" : undefined}
           className="space-y-3 max-w-2xl mx-auto"
         >
           {question.options.map((option: QuestionOption) => (

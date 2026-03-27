@@ -337,19 +337,21 @@ export default function AssessmentWizard() {
 
         {/* Question */}
         {currentQuestion && (
-          <QuestionStep
-            question={currentQuestion}
-            questionNumber={state.currentStep}
-            selectedValue={
-              state.answers[currentQuestion.id as keyof AssessmentAnswers] as
-                | string
-                | boolean
-                | number
-                | null
-            }
-            onSelect={handleSelect}
-            direction={direction}
-          />
+          <div role="region" aria-label="Assessment question">
+            <QuestionStep
+              question={currentQuestion}
+              questionNumber={state.currentStep}
+              selectedValue={
+                state.answers[currentQuestion.id as keyof AssessmentAnswers] as
+                  | string
+                  | boolean
+                  | number
+                  | null
+              }
+              onSelect={handleSelect}
+              direction={direction}
+            />
+          </div>
         )}
 
         {/* Light regime indicator */}
