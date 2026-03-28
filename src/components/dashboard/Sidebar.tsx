@@ -386,6 +386,14 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/environmental": "environmental",
   "/dashboard/modules/insurance": "insurance",
   "/dashboard/modules/supervision": "supervision",
+  "/dashboard/modules/copuos": "copuos",
+  "/dashboard/modules/registration": "registration",
+  "/dashboard/modules/export-control": "export-control",
+  "/dashboard/modules/uk-space": "uk-space",
+  "/dashboard/modules/us-regulatory": "us-regulatory",
+  "/dashboard/modules/spectrum": "spectrum",
+  "/dashboard/digital-twin": "digital-twin",
+  "/dashboard/evidence": "evidence",
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
   "/dashboard/audit-center": "audit-center",
@@ -400,6 +408,12 @@ const EU_MODULES = [
   "/dashboard/modules/environmental",
   "/dashboard/modules/insurance",
   "/dashboard/modules/supervision",
+  "/dashboard/modules/copuos",
+  "/dashboard/modules/registration",
+  "/dashboard/modules/export-control",
+  "/dashboard/modules/uk-space",
+  "/dashboard/modules/us-regulatory",
+  "/dashboard/modules/spectrum",
 ];
 
 // ─── Sidebar ────────────────────────────────────────────────────────────────
@@ -705,7 +719,7 @@ export default function Sidebar({
 
             <ModuleGroup
               title={t("sidebar.euRegulations")}
-              count={7}
+              count={13}
               isExpanded={expandedGroups.eu}
               onToggle={() => toggleGroup("eu")}
               hasActiveItem={activeGroup === "eu"}
@@ -785,6 +799,70 @@ export default function Sidebar({
                 )}
                 collapsed={collapsed}
               />
+              <CompactModuleItem
+                href="/dashboard/modules/copuos"
+                icon={<Satellite size={14} strokeWidth={1.5} />}
+                label="COPUOS/IADC"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/copuos")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/registration"
+                icon={<ClipboardCheck size={14} strokeWidth={1.5} />}
+                label="Registration"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/registration")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/registration",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/export-control"
+                icon={<FileSearch size={14} strokeWidth={1.5} />}
+                label="Export Control"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/export-control")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/export-control",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/uk-space"
+                icon={<Building2 size={14} strokeWidth={1.5} />}
+                label="UK Space Act"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/uk-space")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/uk-space",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/us-regulatory"
+                icon={<BarChart3 size={14} strokeWidth={1.5} />}
+                label="US Regulatory"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/us-regulatory")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/us-regulatory",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/spectrum"
+                icon={<Radio size={14} strokeWidth={1.5} />}
+                label="Spectrum/ITU"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/spectrum")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/spectrum",
+                )}
+                collapsed={collapsed}
+              />
             </ModuleGroup>
           </div>
 
@@ -801,6 +879,22 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Sentinel
+              </NavItem>
+              <NavItem
+                href="/dashboard/digital-twin"
+                icon={<LayoutGrid size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Digital Twin
+              </NavItem>
+              <NavItem
+                href="/dashboard/evidence"
+                icon={<FolderKanban size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Evidence
               </NavItem>
             </div>
           </div>

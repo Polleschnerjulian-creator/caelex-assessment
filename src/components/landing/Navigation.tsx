@@ -205,9 +205,6 @@ const SEARCH_PAGES = [
   { title: "Request a Demo", href: "/demo", category: "Company" },
   { title: "Blog", href: "/blog", category: "Resource" },
   { title: "Careers", href: "/careers", category: "Company" },
-  { title: "Blog", href: "/blog", category: "Content" },
-  { title: "Careers", href: "/careers", category: "Company" },
-  { title: "Contact", href: "/contact", category: "Company" },
 ];
 
 export default function Navigation({ theme = "dark" }: NavigationProps) {
