@@ -71,8 +71,8 @@ export default function Hero() {
             <div className="flex flex-col gap-6">
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button href="/assessment" variant="white" size="md">
-                  Start Assessment
+                <Button href="/get-started" variant="white" size="md">
+                  Get Started
                 </Button>
                 <Button href="/demo" variant="white-outline" size="md">
                   Request Demo

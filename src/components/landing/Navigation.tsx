@@ -354,7 +354,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               <div className="flex items-center gap-3">
                 {/* Get Started CTA — white bg, subtle border, soft radius */}
                 <Link
-                  href="/assessment"
+                  href="/get-started"
                   className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-all duration-300"
                 >
                   Get Started
@@ -422,7 +422,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
 
                     <div className="flex items-center gap-3">
                       <Link
-                        href="/assessment"
+                        href="/get-started"
                         onClick={closeMenu}
                         className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
                       >
@@ -663,11 +663,11 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         Request Demo
                       </Link>
                       <Link
-                        href="/assessment"
+                        href="/get-started"
                         onClick={closeMenu}
                         className="inline-flex items-center justify-center w-full h-12 mt-2 text-[14px] font-medium rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
                       >
-                        Start Free Assessment
+                        Get Started
                       </Link>
                     </div>
                   </motion.div>
@@ -716,7 +716,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     </Link>
                     <div className="flex items-center gap-3">
                       <Link
-                        href="/assessment"
+                        href="/get-started"
                         onClick={closeSearch}
                         className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
                       >
