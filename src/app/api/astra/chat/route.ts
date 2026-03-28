@@ -21,8 +21,8 @@ import type {
 } from "@/lib/astra/types";
 import { logger } from "@/lib/logger";
 
-// Rate limit tier for ASTRA (10 requests per hour for standard users)
-const ASTRA_RATE_LIMIT_TIER = "assessment" as const;
+// Rate limit tier for ASTRA (60 requests per hour — copilot needs frequent interaction)
+const ASTRA_RATE_LIMIT_TIER = "astra_chat" as const;
 
 // ─── POST Handler ───
 
@@ -171,6 +171,16 @@ export async function POST(request: NextRequest) {
 
       const stream = new ReadableStream({
         async start(controller) {
+          // SSE heartbeat every 15s to keep connection alive
+          const heartbeat = setInterval(() => {
+            try {
+              controller.enqueue(encoder.encode(": keepalive\n\n"));
+            } catch {
+              // Stream may have closed
+              clearInterval(heartbeat);
+            }
+          }, 15_000);
+
           try {
             const { response, conversationId: convId } =
               await engine.processMessageStreamingWithConversation(
@@ -211,6 +221,7 @@ export async function POST(request: NextRequest) {
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`),
             );
+            clearInterval(heartbeat);
             controller.close();
 
             // Audit (non-blocking)
@@ -230,6 +241,7 @@ export async function POST(request: NextRequest) {
               },
             }).catch(() => {});
           } catch (error) {
+            clearInterval(heartbeat);
             logger.error("ASTRA Streaming Error", error);
             controller.enqueue(
               encoder.encode(
