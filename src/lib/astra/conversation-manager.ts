@@ -22,8 +22,16 @@ import type {
 
 const MAX_MESSAGES_IN_CONTEXT = 10;
 const SUMMARIZE_THRESHOLD = 10;
-const MAX_MESSAGE_LENGTH = 10000;
+export const MAX_MESSAGE_LENGTH = 10000;
 const MAX_TOTAL_MESSAGES = 200;
+
+// ─── Result Types ───
+
+export interface AddMessageResult {
+  message: AstraConversationMessage;
+  wasTruncated: boolean;
+  originalLength?: number;
+}
 
 // ─── Conversation CRUD ───
 
@@ -103,7 +111,7 @@ export async function getOrCreateConversation(
 export async function addMessage(
   conversationId: string,
   message: Omit<AstraConversationMessage, "id" | "timestamp">,
-): Promise<AstraConversationMessage> {
+): Promise<AddMessageResult> {
   // Force summarization if conversation has hit the hard limit
   const messageCount = await prisma.astraMessage.count({
     where: { conversationId },
@@ -114,10 +122,10 @@ export async function addMessage(
   }
 
   // Truncate content if too long
-  const truncatedContent =
-    message.content.length > MAX_MESSAGE_LENGTH
-      ? message.content.substring(0, MAX_MESSAGE_LENGTH) + "... [truncated]"
-      : message.content;
+  const wasTruncated = message.content.length > MAX_MESSAGE_LENGTH;
+  const truncatedContent = wasTruncated
+    ? message.content.substring(0, MAX_MESSAGE_LENGTH) + "... [truncated]"
+    : message.content;
 
   const dbMessage = await prisma.astraMessage.create({
     data: {
@@ -141,13 +149,17 @@ export async function addMessage(
     data: { updatedAt: new Date() },
   });
 
-  return mapDbMessageToType(dbMessage);
+  return {
+    message: mapDbMessageToType(dbMessage),
+    wasTruncated,
+    originalLength: wasTruncated ? message.content.length : undefined,
+  };
 }
 
 export async function addUserMessage(
   conversationId: string,
   content: string,
-): Promise<AstraConversationMessage> {
+): Promise<AddMessageResult> {
   return addMessage(conversationId, {
     role: "user",
     content,
@@ -165,7 +177,7 @@ export async function addAssistantMessage(
     tokensUsed?: number;
   },
 ): Promise<AstraConversationMessage> {
-  const message = await addMessage(conversationId, {
+  const result = await addMessage(conversationId, {
     role: "assistant",
     content,
     toolCalls: options?.toolCalls,
@@ -177,12 +189,12 @@ export async function addAssistantMessage(
   // Update token count if provided
   if (options?.tokensUsed) {
     await prisma.astraMessage.update({
-      where: { id: message.id },
+      where: { id: result.message.id },
       data: { tokensUsed: options.tokensUsed },
     });
   }
 
-  return message;
+  return result.message;
 }
 
 // ─── History Retrieval ───

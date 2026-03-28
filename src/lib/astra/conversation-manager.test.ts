@@ -349,12 +349,14 @@ describe("addMessage", () => {
       role: "user",
       content: "Hello",
     });
-    expect(result.id).toBe("msg-new");
-    expect(result.role).toBe("user");
+    expect(result.message.id).toBe("msg-new");
+    expect(result.message.role).toBe("user");
+    expect(result.wasTruncated).toBe(false);
+    expect(result.originalLength).toBeUndefined();
     expect(mockPrisma.astraConversation.update).toHaveBeenCalled();
   });
 
-  it("truncates long messages", async () => {
+  it("truncates long messages and returns truncation info", async () => {
     const longContent = "x".repeat(11000);
     mockPrisma.astraMessage.create.mockResolvedValue(
       makeDbMessage({
@@ -364,7 +366,7 @@ describe("addMessage", () => {
     );
     mockPrisma.astraConversation.update.mockResolvedValue({});
 
-    await addMessage("conv-1", {
+    const result = await addMessage("conv-1", {
       role: "user",
       content: longContent,
     });
@@ -372,6 +374,8 @@ describe("addMessage", () => {
     const createCall = mockPrisma.astraMessage.create.mock.calls[0][0];
     expect(createCall.data.content.length).toBeLessThan(longContent.length);
     expect(createCall.data.content).toContain("... [truncated]");
+    expect(result.wasTruncated).toBe(true);
+    expect(result.originalLength).toBe(11000);
   });
 
   it("stores toolCalls as JSON string", async () => {
@@ -447,8 +451,9 @@ describe("addUserMessage", () => {
     mockPrisma.astraConversation.update.mockResolvedValue({});
 
     const result = await addUserMessage("conv-1", "Hello");
-    expect(result.role).toBe("user");
-    expect(result.content).toBe("Hello");
+    expect(result.message.role).toBe("user");
+    expect(result.message.content).toBe("Hello");
+    expect(result.wasTruncated).toBe(false);
   });
 });
 

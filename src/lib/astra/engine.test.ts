@@ -143,6 +143,7 @@ vi.mock("./conversation-manager", () => ({
   shouldSummarize: (...args: unknown[]) => mockShouldSummarize(...args),
   summarizeOlderMessages: (...args: unknown[]) =>
     mockSummarizeOlderMessages(...args),
+  MAX_MESSAGE_LENGTH: 10000,
 }));
 
 // ─── Import after mocks ───
@@ -996,10 +997,13 @@ describe("AstraEngine", () => {
       });
 
       mockAddUserMessage.mockResolvedValue({
-        id: "msg-1",
-        role: "user",
-        content: "Hello",
-        timestamp: new Date(),
+        message: {
+          id: "msg-1",
+          role: "user",
+          content: "Hello",
+          timestamp: new Date(),
+        },
+        wasTruncated: false,
       });
 
       mockAddAssistantMessage.mockResolvedValue({

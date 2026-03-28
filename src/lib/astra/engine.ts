@@ -35,7 +35,9 @@ import {
   getHistoryForLLM,
   shouldSummarize,
   summarizeOlderMessages,
+  MAX_MESSAGE_LENGTH,
 } from "./conversation-manager";
+import type { AddMessageResult } from "./conversation-manager";
 
 // ─── Retry Utility ───
 
@@ -552,7 +554,12 @@ export class AstraEngine implements IAstraEngine {
     conversationId?: string,
     pageContext?: AstraContext,
     missionData?: AstraMissionData,
-  ): Promise<{ response: AstraResponse; conversationId: string }> {
+  ): Promise<{
+    response: AstraResponse;
+    conversationId: string;
+    wasTruncated?: boolean;
+    originalLength?: number;
+  }> {
     // Get or create conversation
     const conversation = await getOrCreateConversation(
       conversationId,
@@ -561,7 +568,7 @@ export class AstraEngine implements IAstraEngine {
     );
 
     // Add user message to conversation
-    await addUserMessage(conversation.id, message);
+    const addResult = await addUserMessage(conversation.id, message);
 
     // Get conversation history for context
     const history = this.config.enableHistory
@@ -612,6 +619,8 @@ export class AstraEngine implements IAstraEngine {
     return {
       response,
       conversationId: conversation.id,
+      wasTruncated: addResult.wasTruncated || undefined,
+      originalLength: addResult.originalLength,
     };
   }
 
@@ -627,7 +636,12 @@ export class AstraEngine implements IAstraEngine {
     conversationId?: string,
     pageContext?: AstraContext,
     missionData?: AstraMissionData,
-  ): Promise<{ response: AstraResponse; conversationId: string }> {
+  ): Promise<{
+    response: AstraResponse;
+    conversationId: string;
+    wasTruncated?: boolean;
+    originalLength?: number;
+  }> {
     const startTime = Date.now();
 
     const conversation = await getOrCreateConversation(
@@ -636,7 +650,7 @@ export class AstraEngine implements IAstraEngine {
       organizationId,
     );
 
-    await addUserMessage(conversation.id, message);
+    const addResult = await addUserMessage(conversation.id, message);
 
     const history = this.config.enableHistory
       ? await getHistoryForLLM(conversation.id)
@@ -673,7 +687,12 @@ export class AstraEngine implements IAstraEngine {
           confidence: response.confidence,
           toolCalls: response.metadata?.toolCalls,
         });
-        return { response, conversationId: conversation.id };
+        return {
+          response,
+          conversationId: conversation.id,
+          wasTruncated: addResult.wasTruncated || undefined,
+          originalLength: addResult.originalLength,
+        };
       }
 
       const mode = this.detectMode(message, pageContext);
@@ -718,7 +737,12 @@ export class AstraEngine implements IAstraEngine {
         await summarizeOlderMessages(conversation.id);
       }
 
-      return { response, conversationId: conversation.id };
+      return {
+        response,
+        conversationId: conversation.id,
+        wasTruncated: addResult.wasTruncated || undefined,
+        originalLength: addResult.originalLength,
+      };
     } catch (error) {
       console.error("ASTRA Engine streaming error:", error);
 

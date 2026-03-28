@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { AstraEngine } from "@/lib/astra/engine";
+import { MAX_MESSAGE_LENGTH } from "@/lib/astra/conversation-manager";
 import { buildUserContext } from "@/lib/astra/context-builder";
 import type {
   AstraChatRequest,
@@ -182,22 +183,38 @@ export async function POST(request: NextRequest) {
           }, 15_000);
 
           try {
-            const { response, conversationId: convId } =
-              await engine.processMessageStreamingWithConversation(
-                body.message,
-                userId,
-                organizationId,
-                (chunk: string) => {
-                  controller.enqueue(
-                    encoder.encode(
-                      `data: ${JSON.stringify({ type: "text", text: chunk })}\n\n`,
-                    ),
-                  );
-                },
-                body.conversationId,
-                pageContext,
-                body.missionData,
+            const {
+              response,
+              conversationId: convId,
+              wasTruncated,
+              originalLength,
+            } = await engine.processMessageStreamingWithConversation(
+              body.message,
+              userId,
+              organizationId,
+              (chunk: string) => {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: "text", text: chunk })}\n\n`,
+                  ),
+                );
+              },
+              body.conversationId,
+              pageContext,
+              body.missionData,
+            );
+
+            // Send truncation warning before metadata if message was truncated
+            if (wasTruncated) {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    type: "warning",
+                    message: `Your message was truncated from ${originalLength?.toLocaleString()} to ${MAX_MESSAGE_LENGTH.toLocaleString()} characters. Consider sending shorter messages for best results.`,
+                  })}\n\n`,
+                ),
               );
+            }
 
             // Send metadata
             controller.enqueue(
@@ -266,7 +283,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Non-Streaming Mode ───
-    const { response, conversationId } =
+    const { response, conversationId, wasTruncated, originalLength } =
       await engine.processMessageWithConversation(
         body.message,
         userId,
@@ -293,11 +310,15 @@ export async function POST(request: NextRequest) {
     });
 
     // ─── Return Response ───
-    const chatResponse: AstraChatResponse = {
+    const chatResponse: AstraChatResponse & { truncationWarning?: string } = {
       conversationId,
       response,
       remainingQueries: rateLimitResult.remaining,
     };
+
+    if (wasTruncated) {
+      chatResponse.truncationWarning = `Your message was truncated from ${originalLength?.toLocaleString()} to ${MAX_MESSAGE_LENGTH.toLocaleString()} characters. Consider sending shorter messages for best results.`;
+    }
 
     return NextResponse.json(chatResponse);
   } catch (error) {
