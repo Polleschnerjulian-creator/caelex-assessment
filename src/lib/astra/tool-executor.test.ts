@@ -1917,21 +1917,18 @@ describe("get_nca_deadlines handler", () => {
 
   it("returns upcoming deadlines", async () => {
     const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
-    // First call: upcoming submissions
-    mockPrisma.nCASubmission.findMany
-      .mockResolvedValueOnce([
-        {
-          id: "sub-1",
-          ncaAuthority: "CNES",
-          ncaAuthorityName: "CNES France",
-          status: "SUBMITTED",
-          followUpDeadline: futureDate,
-          slaDeadline: null,
-          followUpRequired: true,
-        },
-      ])
-      // Second call: overdue submissions
-      .mockResolvedValueOnce([]);
+    // Single combined query returns all relevant submissions
+    mockPrisma.nCASubmission.findMany.mockResolvedValueOnce([
+      {
+        id: "sub-1",
+        ncaAuthority: "CNES",
+        ncaAuthorityName: "CNES France",
+        status: "SUBMITTED",
+        followUpDeadline: futureDate,
+        slaDeadline: null,
+        followUpRequired: true,
+      },
+    ]);
     mockPrisma.nCACorrespondence.findMany.mockResolvedValueOnce([]);
 
     const result = await executeTool(
@@ -1947,17 +1944,18 @@ describe("get_nca_deadlines handler", () => {
 
   it("returns overdue items", async () => {
     const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-    mockPrisma.nCASubmission.findMany
-      .mockResolvedValueOnce([]) // upcoming
-      .mockResolvedValueOnce([
-        // overdue
-        {
-          id: "sub-2",
-          ncaAuthority: "BNetzA",
-          ncaAuthorityName: "BNetzA Germany",
-          followUpDeadline: pastDate,
-        },
-      ]);
+    // Single combined query returns overdue submission
+    mockPrisma.nCASubmission.findMany.mockResolvedValueOnce([
+      {
+        id: "sub-2",
+        ncaAuthority: "BNetzA",
+        ncaAuthorityName: "BNetzA Germany",
+        status: "SUBMITTED",
+        followUpDeadline: pastDate,
+        slaDeadline: null,
+        followUpRequired: true,
+      },
+    ]);
     mockPrisma.nCACorrespondence.findMany.mockResolvedValueOnce([]);
 
     const result = await executeTool(
@@ -1971,19 +1969,18 @@ describe("get_nca_deadlines handler", () => {
 
   it("returns sla deadlines", async () => {
     const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-    mockPrisma.nCASubmission.findMany
-      .mockResolvedValueOnce([
-        {
-          id: "sub-3",
-          ncaAuthority: "CNES",
-          ncaAuthorityName: "CNES France",
-          status: "IN_REVIEW",
-          followUpDeadline: null,
-          slaDeadline: futureDate,
-          followUpRequired: false,
-        },
-      ])
-      .mockResolvedValueOnce([]);
+    // Single combined query returns SLA deadline submission
+    mockPrisma.nCASubmission.findMany.mockResolvedValueOnce([
+      {
+        id: "sub-3",
+        ncaAuthority: "CNES",
+        ncaAuthorityName: "CNES France",
+        status: "IN_REVIEW",
+        followUpDeadline: null,
+        slaDeadline: futureDate,
+        followUpRequired: false,
+      },
+    ]);
     mockPrisma.nCACorrespondence.findMany.mockResolvedValueOnce([]);
 
     const result = await executeTool(
@@ -1998,9 +1995,7 @@ describe("get_nca_deadlines handler", () => {
   });
 
   it("returns pending responses", async () => {
-    mockPrisma.nCASubmission.findMany
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([]);
+    mockPrisma.nCASubmission.findMany.mockResolvedValueOnce([]);
     mockPrisma.nCACorrespondence.findMany.mockResolvedValueOnce([
       {
         id: "corr-1",
