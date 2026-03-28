@@ -6,6 +6,7 @@
  */
 
 import "server-only";
+import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import type {
   AstraConversation,
@@ -257,7 +258,7 @@ export async function summarizeOlderMessages(
   if (messagesToSummarize.length === 0) return;
 
   // Create a summary of the older messages
-  const summaryText = createSummaryText(messagesToSummarize);
+  const summaryText = await createSummaryText(messagesToSummarize);
 
   // Update conversation with summary
   await prisma.astraConversation.update({
@@ -279,15 +280,59 @@ export async function summarizeOlderMessages(
   });
 }
 
-function createSummaryText(
+async function createSummaryText(
+  messages: Array<{ role: string; content: string }>,
+): Promise<string> {
+  // Format messages for summarization
+  const messageLog = messages
+    .map(
+      (m) =>
+        `${m.role === "user" ? "User" : "Assistant"}: ${m.content.substring(0, 500)}`,
+    )
+    .join("\n\n");
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return fallbackSummary(messages);
+    }
+
+    const client = new Anthropic({ apiKey });
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 500,
+      temperature: 0.3,
+      system:
+        "You are summarizing a conversation about space regulatory compliance. Create a concise summary (max 300 words) that preserves: (1) key questions asked, (2) compliance topics discussed, (3) specific articles/regulations referenced, (4) any action items or recommendations given. Write in third person.",
+      messages: [
+        {
+          role: "user",
+          content: `Summarize this conversation:\n\n${messageLog}`,
+        },
+      ],
+    });
+
+    const textBlock = response.content.find(
+      (b): b is Anthropic.TextBlock => b.type === "text",
+    );
+    return textBlock?.text || fallbackSummary(messages);
+  } catch (error) {
+    console.warn(
+      "LLM summarization failed, falling back to keyword extraction:",
+      error,
+    );
+    return fallbackSummary(messages);
+  }
+}
+
+// Keep the old keyword-based version as fallback
+function fallbackSummary(
   messages: Array<{ role: string; content: string }>,
 ): string {
   const userMessages = messages.filter((m) => m.role === "user");
   const topics = extractTopicsFromMessages(userMessages);
-
-  const summary = `Previous conversation covered: ${topics.join(", ")}.`;
-
-  return summary;
+  return `Previous conversation covered: ${topics.join(", ")}.`;
 }
 
 function extractTopicsFromMessages(

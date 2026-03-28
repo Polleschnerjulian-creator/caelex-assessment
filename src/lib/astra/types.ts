@@ -343,6 +343,7 @@ export interface AstraEngine {
     conversationHistory: AstraConversationMessage[],
     context?: AstraContext,
     missionData?: AstraMissionData,
+    conversationSummary?: string,
   ): Promise<AstraResponse>;
 
   /** Get a contextual greeting for the user */

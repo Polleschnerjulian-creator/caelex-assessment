@@ -891,6 +891,44 @@ describe("AstraEngine", () => {
       const lastMsg = createCall.messages[createCall.messages.length - 1];
       expect(lastMsg.content).toBe("Hello");
     });
+
+    it("injects conversation summary as first messages when provided", async () => {
+      const engine = new AstraEngine();
+      await engine.processMessage(
+        "Follow up question",
+        defaultUserContext,
+        emptyHistory,
+        undefined,
+        undefined,
+        "The user previously asked about debris mitigation under Art. 31.",
+      );
+
+      const createCall = mockMessagesCreate.mock.calls[0][0];
+      // 2 summary messages + 1 current = 3
+      expect(createCall.messages.length).toBe(3);
+      expect(createCall.messages[0].role).toBe("user");
+      expect(createCall.messages[0].content).toContain(
+        "Previous conversation summary",
+      );
+      expect(createCall.messages[0].content).toContain(
+        "debris mitigation under Art. 31",
+      );
+      expect(createCall.messages[1].role).toBe("assistant");
+      expect(createCall.messages[1].content).toContain(
+        "context from our previous conversation",
+      );
+    });
+
+    it("does not inject summary when not provided", async () => {
+      const engine = new AstraEngine();
+      await engine.processMessage("Hello", defaultUserContext, emptyHistory);
+
+      const createCall = mockMessagesCreate.mock.calls[0][0];
+      expect(createCall.messages.length).toBe(1); // Only current message
+      expect(createCall.messages[0].content).not.toContain(
+        "Previous conversation summary",
+      );
+    });
   });
 
   // ─── executeTools ───
@@ -1100,6 +1138,34 @@ describe("AstraEngine", () => {
         pageContext,
         { missionName: "LEO-1" },
       );
+    });
+
+    it("passes conversation summary to processMessage when available", async () => {
+      mockGetOrCreateConversation.mockResolvedValue({
+        id: "conv-1",
+        userId: "user-1",
+        organizationId: "org-1",
+        mode: "general",
+        summary: "User previously discussed debris mitigation under Art. 31.",
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const engine = new AstraEngine();
+      await engine.processMessageWithConversation(
+        "Follow up question",
+        "user-1",
+        "org-1",
+      );
+
+      // The summary should be injected as the first two messages
+      const createCall = mockMessagesCreate.mock.calls[0][0];
+      expect(createCall.messages[0].role).toBe("user");
+      expect(createCall.messages[0].content).toContain(
+        "Previous conversation summary",
+      );
+      expect(createCall.messages[1].role).toBe("assistant");
     });
   });
 });

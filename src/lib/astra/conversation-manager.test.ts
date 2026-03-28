@@ -1,39 +1,55 @@
 /**
  * Tests for ASTRA Conversation Manager
  *
- * conversation-manager.ts imports "server-only" and prisma.
- * We mock both, then test all exported CRUD / utility functions.
+ * conversation-manager.ts imports "server-only", prisma, and @anthropic-ai/sdk.
+ * We mock all three, then test all exported CRUD / utility functions.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Mocks ───
 
 vi.mock("server-only", () => ({}));
 
-const { mockPrisma } = vi.hoisted(() => {
-  return {
-    mockPrisma: {
-      astraConversation: {
-        create: vi.fn(),
-        findFirst: vi.fn(),
-        findUnique: vi.fn(),
-        findMany: vi.fn(),
-        update: vi.fn(),
-        deleteMany: vi.fn(),
+const { mockPrisma, mockMessagesCreate, MockAnthropicClass } = vi.hoisted(
+  () => {
+    const mockMessagesCreate = vi.fn();
+
+    class MockAnthropicClass {
+      messages = {
+        create: mockMessagesCreate,
+      };
+    }
+
+    return {
+      mockPrisma: {
+        astraConversation: {
+          create: vi.fn(),
+          findFirst: vi.fn(),
+          findUnique: vi.fn(),
+          findMany: vi.fn(),
+          update: vi.fn(),
+          deleteMany: vi.fn(),
+        },
+        astraMessage: {
+          create: vi.fn(),
+          update: vi.fn(),
+          count: vi.fn(),
+          deleteMany: vi.fn(),
+        },
       },
-      astraMessage: {
-        create: vi.fn(),
-        update: vi.fn(),
-        count: vi.fn(),
-        deleteMany: vi.fn(),
-      },
-    },
-  };
-});
+      mockMessagesCreate,
+      MockAnthropicClass,
+    };
+  },
+);
 
 vi.mock("@/lib/prisma", () => ({
   prisma: mockPrisma,
+}));
+
+vi.mock("@anthropic-ai/sdk", () => ({
+  default: MockAnthropicClass,
 }));
 
 // ─── Import after mocks ───
@@ -628,8 +644,22 @@ describe("shouldSummarize", () => {
 // ─── summarizeOlderMessages ───
 
 describe("summarizeOlderMessages", () => {
+  let originalApiKey: string | undefined;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Save and clear ANTHROPIC_API_KEY so tests use the keyword-based fallback
+    originalApiKey = process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+
+  afterEach(() => {
+    // Restore original env var
+    if (originalApiKey !== undefined) {
+      process.env.ANTHROPIC_API_KEY = originalApiKey;
+    } else {
+      delete process.env.ANTHROPIC_API_KEY;
+    }
   });
 
   it("does nothing when conversation not found", async () => {
@@ -698,7 +728,7 @@ describe("summarizeOlderMessages", () => {
     expect(updateCall.data.summary).toContain("---");
   });
 
-  it("extracts relevant topics in summary text", async () => {
+  it("extracts relevant topics in fallback summary text", async () => {
     const messages = Array.from({ length: 20 }, (_, i) =>
       makeDbMessage({
         id: `msg-${i}`,
@@ -722,6 +752,80 @@ describe("summarizeOlderMessages", () => {
     const updateCall = mockPrisma.astraConversation.update.mock.calls[0][0];
     expect(updateCall.data.summary).toContain("debris mitigation");
     expect(updateCall.data.summary).toContain("cybersecurity/NIS2");
+  });
+
+  it("uses LLM summarization when API key is available", async () => {
+    process.env.ANTHROPIC_API_KEY = "test-key";
+
+    mockMessagesCreate.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: "The user asked about debris mitigation under EU Space Act Art. 31-37 and cybersecurity requirements under NIS2.",
+        },
+      ],
+    });
+
+    const messages = Array.from({ length: 20 }, (_, i) =>
+      makeDbMessage({
+        id: `msg-${i}`,
+        role: i % 2 === 0 ? "user" : "assistant",
+        content:
+          i % 2 === 0
+            ? "Tell me about debris and cybersecurity"
+            : "Here is the info about regulations",
+      }),
+    );
+
+    mockPrisma.astraConversation.findUnique.mockResolvedValue({
+      id: "conv-1",
+      summary: null,
+      messages,
+    });
+    mockPrisma.astraConversation.update.mockResolvedValue({});
+    mockPrisma.astraMessage.deleteMany.mockResolvedValue({ count: 10 });
+
+    await summarizeOlderMessages("conv-1");
+
+    expect(mockMessagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "claude-sonnet-4-6",
+        max_tokens: 500,
+        temperature: 0.3,
+      }),
+    );
+
+    const updateCall = mockPrisma.astraConversation.update.mock.calls[0][0];
+    expect(updateCall.data.summary).toContain("debris mitigation");
+    expect(updateCall.data.summary).toContain("NIS2");
+  });
+
+  it("falls back to keyword extraction when LLM fails", async () => {
+    process.env.ANTHROPIC_API_KEY = "test-key";
+
+    mockMessagesCreate.mockRejectedValue(new Error("API error"));
+
+    const messages = Array.from({ length: 20 }, (_, i) =>
+      makeDbMessage({
+        id: `msg-${i}`,
+        role: i % 2 === 0 ? "user" : "assistant",
+        content: i % 2 === 0 ? "Tell me about debris" : "Here is the info",
+      }),
+    );
+
+    mockPrisma.astraConversation.findUnique.mockResolvedValue({
+      id: "conv-1",
+      summary: null,
+      messages,
+    });
+    mockPrisma.astraConversation.update.mockResolvedValue({});
+    mockPrisma.astraMessage.deleteMany.mockResolvedValue({ count: 10 });
+
+    await summarizeOlderMessages("conv-1");
+
+    const updateCall = mockPrisma.astraConversation.update.mock.calls[0][0];
+    // Falls back to keyword-based summary
+    expect(updateCall.data.summary).toContain("debris mitigation");
   });
 
   it("skips when no messages to summarize", async () => {

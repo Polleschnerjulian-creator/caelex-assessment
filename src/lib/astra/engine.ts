@@ -126,6 +126,7 @@ export class AstraEngine implements IAstraEngine {
     conversationHistory: AstraConversationMessage[],
     pageContext?: AstraContext,
     missionData?: AstraMissionData,
+    conversationSummary?: string,
   ): Promise<AstraResponse> {
     const startTime = Date.now();
 
@@ -155,6 +156,7 @@ export class AstraEngine implements IAstraEngine {
         message,
         conversationHistory,
         contextString,
+        conversationSummary,
       );
 
       // Call Anthropic API with tool loop
@@ -530,13 +532,14 @@ export class AstraEngine implements IAstraEngine {
       }),
     );
 
-    // Process the message
+    // Process the message (pass conversation summary for context continuity)
     const response = await this.processMessage(
       message,
       userContext,
       conversationMessages,
       pageContext,
       missionData,
+      conversation.summary,
     );
 
     // Save assistant response to conversation
@@ -624,6 +627,7 @@ export class AstraEngine implements IAstraEngine {
         message,
         conversationMessages,
         contextString,
+        conversation.summary,
       );
 
       const { responseText, toolCalls, tokensUsed } =
@@ -756,8 +760,21 @@ export class AstraEngine implements IAstraEngine {
     currentMessage: string,
     history: AstraConversationMessage[],
     contextString: string,
+    conversationSummary?: string,
   ): AnthropicMessage[] {
     const messages: AnthropicMessage[] = [];
+
+    // Inject conversation summary as prior context if available
+    if (conversationSummary) {
+      messages.push({
+        role: "user",
+        content: `[Previous conversation summary: ${conversationSummary}]`,
+      });
+      messages.push({
+        role: "assistant",
+        content: "Understood, I have context from our previous conversation.",
+      });
+    }
 
     // Add history (excluding system messages)
     for (const msg of history) {
