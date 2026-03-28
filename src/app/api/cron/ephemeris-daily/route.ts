@@ -294,10 +294,10 @@ async function persistState(
   satelliteName: string,
   state: Awaited<ReturnType<typeof calculateSatelliteComplianceState>>,
 ): Promise<void> {
-  const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
+  const stateJson = structuredClone(toPublicState(state));
 
-  const moduleScores = JSON.parse(JSON.stringify(state.modules));
-  const dataSources = JSON.parse(JSON.stringify(state.dataSources));
+  const moduleScores = structuredClone(state.modules);
+  const dataSources = structuredClone(state.dataSources);
 
   await prisma.satelliteComplianceState.upsert({
     where: {
@@ -336,13 +336,11 @@ async function appendHistory(
   noradId: string,
   state: Awaited<ReturnType<typeof calculateSatelliteComplianceState>>,
 ): Promise<void> {
-  const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
+  const stateJson = structuredClone(toPublicState(state));
 
   // Serialize active alerts
   const alerts =
-    state.activeAlerts.length > 0
-      ? JSON.parse(JSON.stringify(state.activeAlerts))
-      : null;
+    state.activeAlerts.length > 0 ? structuredClone(state.activeAlerts) : null;
 
   // Derive forecast percentiles from compliance horizon confidence
   const horizonDays = state.complianceHorizon.daysUntilFirstBreach;
@@ -351,7 +349,7 @@ async function appendHistory(
     state.complianceHorizon.confidence,
   );
 
-  const moduleScores = JSON.parse(JSON.stringify(state.modules));
+  const moduleScores = structuredClone(state.modules);
 
   await prisma.satelliteComplianceStateHistory.create({
     data: {

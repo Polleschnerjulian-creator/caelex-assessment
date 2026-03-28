@@ -95,15 +95,15 @@ export async function evaluateAndAttest(
       trustLevel: attestation.evidence.trust_level,
       collectedAt: new Date(evidence.collected_at),
       sentinelAnchor: attestation.evidence.sentinel_anchor
-        ? JSON.parse(JSON.stringify(attestation.evidence.sentinel_anchor))
+        ? structuredClone(attestation.evidence.sentinel_anchor)
         : null,
       crossVerification: attestation.evidence.cross_verification
-        ? JSON.parse(JSON.stringify(attestation.evidence.cross_verification))
+        ? structuredClone(attestation.evidence.cross_verification)
         : null,
       issuerKeyId: attestation.issuer.key_id,
       issuerPublicKey: attestation.issuer.public_key,
       signature: attestation.signature,
-      fullAttestation: JSON.parse(JSON.stringify(attestation)),
+      fullAttestation: structuredClone(attestation),
       expiresAt: new Date(attestation.expires_at),
     },
   });

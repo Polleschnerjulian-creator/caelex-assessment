@@ -89,13 +89,13 @@ export async function POST(request: Request) {
         complyLinked: true,
         complyOrgId: organizationId,
         rrsScore: rrsScore.overallScore,
-        rrsComponents: JSON.parse(JSON.stringify(rrsComponents)),
+        rrsComponents: structuredClone(rrsComponents),
       },
       update: {
         complyLinked: true,
         complyOrgId: organizationId,
         rrsScore: rrsScore.overallScore,
-        rrsComponents: JSON.parse(JSON.stringify(rrsComponents)),
+        rrsComponents: structuredClone(rrsComponents),
       },
     });
 

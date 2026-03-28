@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
         targetNCA: targetNCA || null,
         overallStrategy: plan.overallStrategy,
         estimatedComplianceLevel: plan.estimatedComplianceLevel,
-        sections: JSON.parse(JSON.stringify(plan.sections)),
-        crossReferences: JSON.parse(JSON.stringify(plan.crossReferences)),
+        sections: structuredClone(plan.sections),
+        crossReferences: structuredClone(plan.crossReferences),
         userModified: false,
       },
     });

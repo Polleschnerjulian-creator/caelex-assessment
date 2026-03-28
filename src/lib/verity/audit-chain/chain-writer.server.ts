@@ -39,7 +39,7 @@ export async function appendToChain(params: {
       eventType,
       entityId,
       entityType,
-      eventData: JSON.parse(JSON.stringify(eventData)),
+      eventData: structuredClone(eventData),
       entryHash,
       previousHash,
     },

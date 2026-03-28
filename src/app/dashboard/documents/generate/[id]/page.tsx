@@ -34,7 +34,7 @@ export default async function GeneratedDocumentPage({
       title={doc.title}
       documentType={doc.documentType}
       status={doc.status}
-      sections={JSON.parse(JSON.stringify(sections))}
+      sections={structuredClone(sections)}
       createdAt={doc.createdAt.toISOString()}
       modelUsed={doc.modelUsed}
     />

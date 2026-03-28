@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         issuerKeyId: issuerKey.keyId,
         issuerPublicKey: issuerKey.publicKeyHex,
         signature: attestation.signature,
-        fullAttestation: JSON.parse(JSON.stringify(attestation)),
+        fullAttestation: structuredClone(attestation),
         encryptedSecret: manualSecretHash,
         issuedAt: new Date(attestation.issued_at),
         expiresAt: new Date(attestation.expires_at),

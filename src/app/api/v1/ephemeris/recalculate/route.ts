@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Persist the state (upsert SatelliteComplianceState)
-    const stateJson = JSON.parse(JSON.stringify(toPublicState(internalState)));
-    const moduleScores = JSON.parse(JSON.stringify(internalState.modules));
-    const dataSources = JSON.parse(JSON.stringify(internalState.dataSources));
+    const stateJson = structuredClone(toPublicState(internalState));
+    const moduleScores = structuredClone(internalState.modules);
+    const dataSources = structuredClone(internalState.dataSources);
 
     await prisma.satelliteComplianceState.upsert({
       where: {
@@ -118,9 +118,9 @@ export async function POST(request: NextRequest) {
       data: {
         noradId: norad_id,
         operatorId: membership.organizationId,
-        stateJson: JSON.parse(JSON.stringify(toPublicState(internalState))),
+        stateJson: structuredClone(toPublicState(internalState)),
         overallScore: internalState.overallScore,
-        moduleScores: JSON.parse(JSON.stringify(internalState.modules)),
+        moduleScores: structuredClone(internalState.modules),
         horizonDays,
         horizonRegulation:
           internalState.complianceHorizon.firstBreachRegulation,

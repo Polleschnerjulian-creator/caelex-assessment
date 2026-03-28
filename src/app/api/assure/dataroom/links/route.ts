@@ -181,7 +181,7 @@ export async function POST(request: Request) {
         canPrint: data.canPrint,
         watermark: data.watermark,
         accessibleFolders: data.accessibleFolders
-          ? JSON.parse(JSON.stringify(data.accessibleFolders))
+          ? structuredClone(data.accessibleFolders)
           : null,
       },
     });

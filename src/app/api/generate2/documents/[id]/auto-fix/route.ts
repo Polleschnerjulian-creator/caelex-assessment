@@ -84,9 +84,9 @@ export async function POST(
       await prisma.nCADocument.update({
         where: { id: documentId },
         data: {
-          content: JSON.parse(JSON.stringify(result.updatedSections)),
+          content: structuredClone(result.updatedSections),
           isEdited: true,
-          editedContent: JSON.parse(JSON.stringify(result.updatedSections)),
+          editedContent: structuredClone(result.updatedSections),
         },
       });
     }

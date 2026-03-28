@@ -159,9 +159,9 @@ export async function POST(request: Request) {
         version: existingCount + 1,
         includedSections: ["metrics", "milestones", "financials"],
         customizations: input.customSections
-          ? JSON.parse(JSON.stringify(input.customSections))
+          ? structuredClone(input.customSections)
           : null,
-        profileSnapshot: JSON.parse(JSON.stringify(updateContent)),
+        profileSnapshot: structuredClone(updateContent),
       },
       include: {
         createdBy: {

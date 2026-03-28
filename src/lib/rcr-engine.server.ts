@@ -1135,8 +1135,8 @@ export async function computeAndSaveRCR(
       methodologyVersion: result.methodologyVersion,
       confidence: result.confidence,
       validUntil: result.validUntil,
-      componentScores: JSON.parse(JSON.stringify(result.components)),
-      riskRegister: JSON.parse(JSON.stringify(result.riskRegister)),
+      componentScores: structuredClone(result.components),
+      riskRegister: structuredClone(result.riskRegister),
       peerPercentile: result.peerPercentile,
       actionType: result.actionType as
         | "INITIAL"

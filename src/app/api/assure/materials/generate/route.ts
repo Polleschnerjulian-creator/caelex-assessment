@@ -95,7 +95,7 @@ export async function POST(request: Request) {
         version: existingCount + 1,
         includedSections: data.includedSections ?? [],
         customizations: data.customizations ?? Prisma.JsonNull,
-        profileSnapshot: JSON.parse(JSON.stringify(profile)),
+        profileSnapshot: structuredClone(profile),
       },
     });
 

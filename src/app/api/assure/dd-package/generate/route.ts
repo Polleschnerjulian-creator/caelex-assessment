@@ -203,7 +203,7 @@ export async function POST(request: Request) {
       data: {
         organizationId,
         createdById: session.user.id,
-        content: JSON.parse(JSON.stringify(content)),
+        content: structuredClone(content),
         rrsScore: result.overallScore,
         grade: result.grade,
         status: result.status,

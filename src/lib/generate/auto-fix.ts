@@ -19,7 +19,7 @@ export function applyAutoFixes(
   assessmentData: Record<string, unknown>,
 ): AutoFixResult {
   // Deep clone sections to avoid mutation
-  let updated: ParsedSection[] = JSON.parse(JSON.stringify(sections));
+  let updated: ParsedSection[] = structuredClone(sections);
   const appliedFixes: Array<{ findingId: string; description: string }> = [];
 
   for (const finding of findings) {

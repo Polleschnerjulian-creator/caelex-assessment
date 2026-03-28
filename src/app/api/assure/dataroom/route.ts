@@ -86,8 +86,8 @@ export async function GET(request: Request) {
         data: {
           organizationId,
           name: `${membership.organization.name} — Investor Data Room`,
-          folders: JSON.parse(JSON.stringify(defaultFolders)),
-          checklistItems: JSON.parse(JSON.stringify(checklistItems)),
+          folders: structuredClone(defaultFolders),
+          checklistItems: structuredClone(checklistItems),
         },
         include: {
           documents: {

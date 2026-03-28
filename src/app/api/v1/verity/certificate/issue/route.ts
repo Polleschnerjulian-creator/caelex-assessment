@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         certificateId: certificate.certificate_id,
         operatorId: session.user.id,
         satelliteNorad: satellite_norad_id ?? null,
-        certificate: JSON.parse(JSON.stringify(certificate)),
+        certificate: structuredClone(certificate),
         claimsCount: certificate.claims.length,
         regulationRefs: certificate.claims.map((c) => c.regulation_ref),
         minTrustLevel: certificate.evidence_summary.min_trust_level,

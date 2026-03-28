@@ -202,7 +202,7 @@ export async function POST(
         );
       }
 
-      finalContent = JSON.parse(JSON.stringify(fullParsed.data.parsedSections));
+      finalContent = structuredClone(fullParsed.data.parsedSections);
       rawContent = fullParsed.data.rawContent;
       actionRequiredCount = fullParsed.data.actionRequiredCount;
       evidencePlaceholderCount = fullParsed.data.evidencePlaceholderCount;
