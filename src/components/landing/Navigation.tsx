@@ -379,6 +379,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       </Link>
                       <div className="flex items-center rounded-lg bg-white overflow-hidden">
                         <button
+                          onClick={() => {
+                            setSearchOpen(true);
+                            setMenuOpen(false);
+                          }}
                           className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
                           aria-label="Search"
                         >
@@ -669,14 +673,6 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       </Link>
                       <div className="flex items-center rounded-lg bg-white overflow-hidden">
                         <button
-                          onClick={closeSearch}
-                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
-                          aria-label="Close search"
-                        >
-                          <X size={16} strokeWidth={2} />
-                        </button>
-                        <div className="w-px h-5 bg-black/10" />
-                        <button
                           onClick={() => {
                             closeSearch();
                             setMenuOpen(true);
@@ -685,6 +681,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           aria-label="Open menu"
                         >
                           <Menu size={16} strokeWidth={2} />
+                        </button>
+                        <div className="w-px h-5 bg-black/10" />
+                        <button
+                          onClick={closeSearch}
+                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          aria-label="Close search"
+                        >
+                          <X size={16} strokeWidth={2} />
                         </button>
                       </div>
                     </div>
