@@ -185,6 +185,26 @@ const SEARCH_PAGES = [
   { title: "Free Assessment", href: "/assessment", category: "Tool" },
   { title: "API Documentation", href: "/docs/api", category: "Developer" },
   { title: "Verity — Compliance Proof", href: "/verity", category: "Product" },
+  {
+    title: "Sentinel — Satellite Monitoring",
+    href: "/sentinel",
+    category: "Product",
+  },
+  {
+    title: "Ephemeris — Compliance Forecasting",
+    href: "/systems/ephemeris",
+    category: "Product",
+  },
+  {
+    title: "ASTRA — AI Compliance Copilot",
+    href: "/dashboard/astra",
+    category: "Product",
+  },
+  { title: "About Caelex", href: "/about", category: "Company" },
+  { title: "Contact", href: "/contact", category: "Company" },
+  { title: "Request a Demo", href: "/demo", category: "Company" },
+  { title: "Blog", href: "/blog", category: "Resource" },
+  { title: "Careers", href: "/careers", category: "Company" },
   { title: "Blog", href: "/blog", category: "Content" },
   { title: "Careers", href: "/careers", category: "Company" },
   { title: "Contact", href: "/contact", category: "Company" },
@@ -254,13 +274,44 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     setSearchQuery("");
   }, []);
 
+  // ESC to close search
+  useEffect(() => {
+    if (!searchOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [searchOpen, closeSearch]);
+
   const searchResults =
     searchQuery.trim().length >= 2
-      ? SEARCH_PAGES.filter(
-          (p) =>
-            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.category.toLowerCase().includes(searchQuery.toLowerCase()),
-        ).slice(0, 8)
+      ? (() => {
+          const q = searchQuery.toLowerCase().trim();
+          // Score each page: exact match > starts with > includes > fuzzy
+          const scored = SEARCH_PAGES.map((p) => {
+            const title = p.title.toLowerCase();
+            const cat = p.category.toLowerCase();
+            let score = 0;
+            if (title === q) score = 100;
+            else if (title.startsWith(q)) score = 80;
+            else if (title.includes(q)) score = 60;
+            else if (cat.includes(q)) score = 40;
+            // Simple fuzzy: check if each character of query exists in order
+            else {
+              let qi = 0;
+              for (let i = 0; i < title.length && qi < q.length; i++) {
+                if (title[i] === q[qi]) qi++;
+              }
+              if (qi >= q.length * 0.7) score = 20;
+            }
+            return { ...p, score };
+          })
+            .filter((p) => p.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 8);
+          return scored;
+        })()
       : [];
 
   // On landing page: start transparent/white over dark hero, transition when scrolled
@@ -653,7 +704,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
 
             <div className="relative h-full flex flex-col">
               {/* Header */}
-              <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12">
+              <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 relative z-10">
                 <div className="flex items-center justify-between h-20">
                   <div className="flex items-center justify-between w-full px-5 py-2.5">
                     <Link
@@ -712,11 +763,13 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       }
                     }}
                     placeholder="Start typing to search"
-                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] text-white placeholder-[#444] outline-none caret-white border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
+                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] placeholder-[#444] outline-none caret-white border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
                     style={{
                       backgroundColor: "transparent",
                       border: "none",
                       boxShadow: "none",
+                      color: "#ffffff",
+                      WebkitTextFillColor: "#ffffff",
                     }}
                   />
                   <div className="h-px bg-[#333] mt-4" />
