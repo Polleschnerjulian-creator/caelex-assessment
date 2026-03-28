@@ -5,6 +5,7 @@
  * Requires API key with `read:compliance` scope.
  */
 
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, type ApiContext } from "@/lib/api-auth";
 import { performGapAnalysis } from "@/lib/services/ace-evidence-service.server";
@@ -27,7 +28,7 @@ async function handler(request: NextRequest, context: ApiContext) {
 
     return apiSuccess(analysis);
   } catch (error) {
-    console.error("[evidence/gaps]", error);
+    logger.error("[evidence/gaps]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

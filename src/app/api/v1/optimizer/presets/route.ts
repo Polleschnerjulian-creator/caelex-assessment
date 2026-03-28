@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { WEIGHT_PRESETS } from "@/lib/optimizer/weight-presets";
 
@@ -11,7 +12,7 @@ export async function GET() {
     }));
     return NextResponse.json({ data: presets });
   } catch (error) {
-    console.error("[optimizer/presets]", error);
+    logger.error("[optimizer/presets]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

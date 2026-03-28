@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -54,7 +55,7 @@ export async function GET(
 
     return NextResponse.json({ comments });
   } catch (err) {
-    console.error("[hub/tasks/[id]/comments] GET error:", err);
+    logger.error("[hub/tasks/[id]/comments] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -119,7 +120,7 @@ export async function POST(
 
     return NextResponse.json({ comment }, { status: 201 });
   } catch (err) {
-    console.error("[hub/tasks/[id]/comments] POST error:", err);
+    logger.error("[hub/tasks/[id]/comments] POST error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

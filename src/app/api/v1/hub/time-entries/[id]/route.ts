@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -81,7 +82,7 @@ export async function PATCH(
 
     return NextResponse.json({ entry });
   } catch (err) {
-    console.error("[hub/time-entries/[id]] PATCH error:", err);
+    logger.error("[hub/time-entries/[id]] PATCH error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -129,7 +130,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[hub/time-entries/[id]] DELETE error:", err);
+    logger.error("[hub/time-entries/[id]] DELETE error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

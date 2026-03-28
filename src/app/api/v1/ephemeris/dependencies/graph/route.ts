@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -23,7 +24,7 @@ export async function GET() {
 
     return NextResponse.json({ graph });
   } catch (error) {
-    console.error("Failed to build dependency graph:", error);
+    logger.error("Failed to build dependency graph:", error);
     return NextResponse.json(
       { error: "Failed to build dependency graph" },
       { status: 500 },

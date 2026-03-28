@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyChain } from "@/lib/verity/audit-chain/chain-verifier";
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[audit-chain/verify]", error);
+    logger.error("[audit-chain/verify]", error);
     return NextResponse.json(
       { error: "Failed to verify audit chain" },
       { status: 500 },

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -78,7 +79,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[hub/tasks/reorder] PATCH error:", err);
+    logger.error("[hub/tasks/reorder] PATCH error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

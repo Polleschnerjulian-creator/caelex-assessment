@@ -5,6 +5,7 @@
  * Requires API key with `read:compliance` scope.
  */
 
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, ApiContext } from "@/lib/api-auth";
 import { MODULES } from "@/data/modules";
@@ -57,7 +58,7 @@ export const GET = withApiAuth(
         { timestamp: new Date().toISOString() },
       );
     } catch (error) {
-      console.error("[compliance/modules]", error);
+      logger.error("[compliance/modules]", error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 },

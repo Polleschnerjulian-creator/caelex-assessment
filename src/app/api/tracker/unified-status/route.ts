@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { logger } from "@/lib/logger";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -183,7 +184,7 @@ export async function GET() {
       totalRegulations: Object.keys(regulations).length,
     });
   } catch (error) {
-    console.error("Unified status error:", error);
+    logger.error("Unified status error:", error);
     return NextResponse.json(
       { error: "Failed to fetch unified status" },
       { status: 500 },

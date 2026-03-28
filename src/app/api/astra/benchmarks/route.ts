@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json({ data: { report } });
   } catch (error) {
-    console.error("[astra-benchmarks]", error);
+    logger.error("[astra-benchmarks]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

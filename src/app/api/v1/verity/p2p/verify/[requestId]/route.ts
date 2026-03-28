@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -75,7 +76,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("[p2p/verify/[requestId]]", error);
+    logger.error("[p2p/verify/[requestId]]", error);
     return NextResponse.json(
       { error: "Failed to verify request" },
       { status: 500 },

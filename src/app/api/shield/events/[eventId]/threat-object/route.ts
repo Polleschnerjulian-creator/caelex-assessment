@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -72,7 +73,7 @@ export async function GET(
         : null,
     });
   } catch (error) {
-    console.error("Error fetching threat object:", error);
+    logger.error("Error fetching threat object:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

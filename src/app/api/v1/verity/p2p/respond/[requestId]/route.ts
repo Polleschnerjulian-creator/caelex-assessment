@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -126,7 +127,7 @@ export async function POST(
       attestationIds: updated.attestationIds,
     });
   } catch (error) {
-    console.error("[p2p/respond/[requestId]]", error);
+    logger.error("[p2p/respond/[requestId]]", error);
     return NextResponse.json(
       { error: "Failed to respond to verification request" },
       { status: 500 },

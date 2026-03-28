@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ entry });
   } catch (err) {
-    console.error("[hazards/[hazardId]] GET error:", err);
+    logger.error("[hazards/[hazardId]] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -177,7 +178,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ entry });
   } catch (err) {
-    console.error("[hazards/[hazardId]] PUT error:", err);
+    logger.error("[hazards/[hazardId]] PUT error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

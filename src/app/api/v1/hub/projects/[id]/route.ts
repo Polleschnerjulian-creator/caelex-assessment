@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -59,7 +60,7 @@ export async function GET(
 
     return NextResponse.json({ project });
   } catch (err) {
-    console.error("[hub/projects/[id]] GET error:", err);
+    logger.error("[hub/projects/[id]] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -132,7 +133,7 @@ export async function PATCH(
 
     return NextResponse.json({ project });
   } catch (err) {
-    console.error("[hub/projects/[id]] PATCH error:", err);
+    logger.error("[hub/projects/[id]] PATCH error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -177,7 +178,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[hub/projects/[id]] DELETE error:", err);
+    logger.error("[hub/projects/[id]] DELETE error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

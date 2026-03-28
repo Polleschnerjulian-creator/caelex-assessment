@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -70,7 +71,7 @@ export async function PATCH(
 
     return NextResponse.json({ certificate: updated });
   } catch (error) {
-    console.error("[verity/certificate/visibility]", error);
+    logger.error("[verity/certificate/visibility]", error);
     return NextResponse.json(
       { error: "Failed to update certificate visibility" },
       { status: 500 },

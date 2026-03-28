@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ fileKey });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("[upload-file] Error:", errMsg, error);
+    logger.error("[upload-file] Error: " + errMsg, error);
     return NextResponse.json(
       { error: errMsg || "Failed to upload file" },
       { status: 500 },

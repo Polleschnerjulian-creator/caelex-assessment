@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -51,7 +52,7 @@ export async function GET() {
 
     return NextResponse.json({ certificates });
   } catch (error) {
-    console.error("[verity/certificate/list]", error);
+    logger.error("[verity/certificate/list]", error);
     return NextResponse.json(
       { error: "Failed to fetch certificates" },
       { status: 500 },

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -36,7 +37,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[onboarding/profile]", error);
+    logger.error("[onboarding/profile]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

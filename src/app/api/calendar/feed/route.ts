@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { logger } from "@/lib/logger";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -135,7 +136,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Calendar feed error:", error);
+    logger.error("Calendar feed error:", error);
     return NextResponse.json(
       { error: "Failed to generate calendar feed" },
       { status: 500 },

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -723,7 +724,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       entries: upsertResults,
     });
   } catch (err) {
-    console.error("[missions/[missionId]/hazards/sync] POST error:", err);
+    logger.error("[missions/[missionId]/hazards/sync] POST error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

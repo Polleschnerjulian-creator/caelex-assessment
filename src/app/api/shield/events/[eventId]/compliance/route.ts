@@ -10,6 +10,7 @@
  * - Maneuver impact (if applicable)
  */
 
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -126,7 +127,7 @@ export async function GET(
       maneuverImpact,
     });
   } catch (error) {
-    console.error("Error computing compliance assessment:", error);
+    logger.error("Error computing compliance assessment:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

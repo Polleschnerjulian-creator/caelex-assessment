@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -42,7 +43,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete dependency:", error);
+    logger.error("Failed to delete dependency:", error);
     return NextResponse.json(
       { error: "Failed to delete dependency" },
       { status: 500 },

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -120,7 +121,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ entries });
   } catch (err) {
-    console.error("[missions/[missionId]/hazards] GET error:", err);
+    logger.error("[missions/[missionId]/hazards] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

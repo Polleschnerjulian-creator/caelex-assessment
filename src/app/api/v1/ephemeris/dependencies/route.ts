@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ dependencies });
   } catch (error) {
-    console.error("Failed to fetch dependencies:", error);
+    logger.error("Failed to fetch dependencies:", error);
     return NextResponse.json(
       { error: "Failed to fetch dependencies" },
       { status: 500 },
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
-    console.error("Failed to create dependency:", error);
+    logger.error("Failed to create dependency:", error);
     return NextResponse.json(
       { error: "Failed to create dependency" },
       { status: 500 },

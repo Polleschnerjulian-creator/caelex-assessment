@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -279,7 +280,7 @@ export async function POST(request: Request) {
         );
     }
   } catch (error) {
-    console.error(`[MCP] Tool execution error for ${tool}:`, error);
+    logger.error(`[MCP] Tool execution error for ${tool}:`, error);
     return NextResponse.json(
       { error: "Tool execution failed" },
       { status: 500 },

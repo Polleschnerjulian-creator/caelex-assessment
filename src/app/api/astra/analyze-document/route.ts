@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: { analysis } });
   } catch (error) {
-    console.error("[astra-analyze-document]", error);
+    logger.error("[astra-analyze-document]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

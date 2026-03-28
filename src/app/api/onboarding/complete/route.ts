@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -16,7 +17,7 @@ export async function PATCH() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[onboarding/complete]", error);
+    logger.error("[onboarding/complete]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

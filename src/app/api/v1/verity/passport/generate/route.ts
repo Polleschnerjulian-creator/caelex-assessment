@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("[passport/generate]", error);
+    logger.error("[passport/generate]", error);
     return NextResponse.json(
       { error: "Failed to generate passport" },
       { status: 500 },

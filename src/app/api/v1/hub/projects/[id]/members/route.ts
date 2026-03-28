@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -83,7 +84,7 @@ export async function POST(
 
     return NextResponse.json({ member }, { status: existing ? 200 : 201 });
   } catch (err) {
-    console.error("[hub/projects/[id]/members] POST error:", err);
+    logger.error("[hub/projects/[id]/members] POST error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

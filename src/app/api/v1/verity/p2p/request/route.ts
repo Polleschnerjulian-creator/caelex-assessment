@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ requestId, status: "PENDING" }, { status: 201 });
   } catch (error) {
-    console.error("[p2p/request]", error);
+    logger.error("[p2p/request]", error);
     return NextResponse.json(
       { error: "Failed to create verification request" },
       { status: 500 },

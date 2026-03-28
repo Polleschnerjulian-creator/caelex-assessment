@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: { workflows: getAvailableWorkflows() } });
   } catch (error) {
-    console.error("[astra-workflows]", error);
+    logger.error("[astra-workflows]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

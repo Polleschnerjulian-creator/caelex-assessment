@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { computeComplianceScore } from "@/lib/verity/score/calculator";
@@ -60,7 +61,7 @@ export async function GET(
       score,
     });
   } catch (error) {
-    console.error("[verity/score]", error);
+    logger.error("[verity/score]", error);
     return NextResponse.json(
       { error: "Failed to compute compliance score" },
       { status: 500 },

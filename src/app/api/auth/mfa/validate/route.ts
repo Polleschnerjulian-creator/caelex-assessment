@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     if (!mfaConfig || !mfaConfig.enabled) {
       // MFA config was deleted or disabled, but the JWT still has mfaRequired=true.
       // Auto-heal: update the JWT to clear mfaRequired and let the user through.
-      console.warn(
+      logger.warn(
         "[MFA] No active MFA config found but session has mfaRequired. Auto-healing JWT.",
       );
       const healResponse = NextResponse.json({
@@ -350,7 +350,7 @@ export async function POST(request: Request) {
             maxAge: 24 * 60 * 60,
           });
         } else {
-          console.warn("[MFA] getToken returned null — JWT cookie not updated");
+          logger.warn("[MFA] getToken returned null — JWT cookie not updated");
         }
       }
     } catch (jwtError) {

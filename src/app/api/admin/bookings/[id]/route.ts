@@ -101,8 +101,8 @@ export async function PATCH(
           },
         });
       } catch (e) {
-        console.warn(
-          "Failed to delete calendar event for cancelled booking:",
+        logger.error(
+          "Failed to delete calendar event for cancelled booking",
           e,
         );
       }
@@ -121,8 +121,8 @@ export async function PATCH(
           },
         });
       } catch (e) {
-        console.warn(
-          "Failed to update calendar event for completed booking:",
+        logger.error(
+          "Failed to update calendar event for completed booking",
           e,
         );
       }
@@ -141,7 +141,7 @@ export async function PATCH(
           },
         });
       } catch (e) {
-        console.warn("Failed to update calendar event for no-show booking:", e);
+        logger.error("Failed to update calendar event for no-show booking", e);
       }
     }
 

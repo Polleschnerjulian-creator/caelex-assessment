@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -62,7 +63,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[verity/certificate/revoke]", error);
+    logger.error("[verity/certificate/revoke]", error);
     return NextResponse.json(
       { error: "Failed to revoke certificate" },
       { status: 500 },

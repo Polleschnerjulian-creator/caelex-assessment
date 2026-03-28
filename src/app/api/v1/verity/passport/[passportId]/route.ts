@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -77,7 +78,7 @@ export async function GET(
 
     return NextResponse.json({ passport });
   } catch (error) {
-    console.error("[passport/[passportId]]", error);
+    logger.error("[passport/[passportId]]", error);
     return NextResponse.json(
       { error: "Failed to retrieve passport" },
       { status: 500 },

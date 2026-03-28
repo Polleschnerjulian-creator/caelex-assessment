@@ -6,6 +6,7 @@
  * Requires API key with `read:compliance` scope.
  */
 
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, type ApiContext } from "@/lib/api-auth";
 import { calculateEvidenceScore } from "@/lib/services/ace-evidence-service.server";
@@ -18,7 +19,7 @@ async function handler(_request: NextRequest, context: ApiContext) {
 
     return apiSuccess(score);
   } catch (error) {
-    console.error("[evidence/score]", error);
+    logger.error("[evidence/score]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

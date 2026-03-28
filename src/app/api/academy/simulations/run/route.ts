@@ -360,7 +360,7 @@ export async function POST(request: Request) {
       }
     } catch {
       // NIS2 engine failure is non-fatal for scoring
-      console.warn("[Academy Simulation] NIS2 engine call failed, skipping");
+      logger.warn("[Academy Simulation] NIS2 engine call failed, skipping");
     }
 
     // Score the simulation

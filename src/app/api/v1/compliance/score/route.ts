@@ -5,6 +5,7 @@
  * Requires API key with `read:compliance` scope.
  */
 
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, ApiContext } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
@@ -95,7 +96,7 @@ export const GET = withApiAuth(
         { timestamp: new Date().toISOString() },
       );
     } catch (error) {
-      console.error("[compliance/score]", error);
+      logger.error("[compliance/score]", error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 },

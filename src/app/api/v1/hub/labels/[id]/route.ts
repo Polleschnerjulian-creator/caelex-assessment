@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -45,7 +46,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[hub/labels/[id]] DELETE error:", err);
+    logger.error("[hub/labels/[id]] DELETE error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
