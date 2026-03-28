@@ -72,7 +72,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
     .filter((c) => c.tools.length > 0);
 
   return (
-    <div className="w-[320px] flex-shrink-0 border-l border-slate-200 dark:border-white/10 bg-white dark:bg-dark-bg flex flex-col h-full">
+    <div className="w-[320px] flex-shrink-0 border-l border-slate-200 dark:border-white/10 bg-white glass-surface flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-12 border-b border-slate-200 dark:border-white/10 flex-shrink-0">
         <span className="text-body font-medium text-slate-700 dark:text-white/70">
@@ -99,7 +99,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tools..."
-            className="w-full bg-white/[0.04] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-caption text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+            className="w-full glass-elevated rounded-lg pl-8 pr-3 py-1.5 text-caption text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
           />
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                 onClick={() => toggleCategory(cat)}
                 className="w-full flex items-center gap-2 px-4 py-1.5 text-left hover:bg-white/[0.02] transition-colors"
               >
-                <span className="text-cyan-400/60">{meta?.icon}</span>
+                <span className="text-emerald-400/60">{meta?.icon}</span>
                 <span className="text-caption font-medium text-white/45 flex-1">
                   {meta?.label || cat}
                 </span>
@@ -139,7 +139,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                     return (
                       <div
                         key={tool.name}
-                        className="mx-2 mb-1 rounded-lg border border-white/[0.05] bg-white/[0.01]"
+                        className="mx-2 mb-1 rounded-lg glass-surface"
                       >
                         <button
                           onClick={() =>
@@ -166,7 +166,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                                 const isRequired = requiredParams.includes(key);
                                 return (
                                   <div key={key} className="flex gap-1.5">
-                                    <span className="text-micro font-mono text-cyan-400/60">
+                                    <span className="text-micro font-mono text-emerald-400/60">
                                       {key}
                                       {isRequired && (
                                         <span className="text-red-400/60">

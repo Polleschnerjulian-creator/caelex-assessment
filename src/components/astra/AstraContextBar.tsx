@@ -35,9 +35,11 @@ export default function AstraContextBar({
   }
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/[0.04] border-b border-cyan-500/10">
-      <span className="text-cyan-400/60">{icon}</span>
-      <span className="text-caption font-medium text-cyan-400/80">{label}</span>
+    <div className="flex items-center gap-2 px-4 py-2 glass-surface border-b border-emerald-500/10">
+      <span className="text-emerald-400/60">{icon}</span>
+      <span className="text-caption font-medium text-emerald-400/80">
+        {label}
+      </span>
       <span className="text-micro text-white/30 truncate flex-1">{detail}</span>
       <button
         onClick={onDismiss}

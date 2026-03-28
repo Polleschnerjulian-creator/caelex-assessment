@@ -29,12 +29,12 @@ export default function AstraToolExecutionCard({
   if (!toolCalls.length) return null;
 
   return (
-    <div className="mt-2 rounded-lg border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+    <div className="mt-2 rounded-lg glass-surface overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/[0.02] transition-colors"
       >
-        <Wrench size={12} className="text-cyan-400 flex-shrink-0" />
+        <Wrench size={12} className="text-emerald-400 flex-shrink-0" />
         <span className="text-caption text-white/45 flex-1">
           Used {toolCalls.length} tool{toolCalls.length !== 1 ? "s" : ""}
         </span>

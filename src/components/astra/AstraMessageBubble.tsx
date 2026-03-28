@@ -70,7 +70,7 @@ function renderMarkdown(text: string): React.ReactNode {
           parts.push(
             <code
               key={partKey++}
-              className="px-1 py-0.5 rounded bg-white/10 text-cyan-300 text-caption font-mono"
+              className="px-1 py-0.5 rounded bg-white/[0.06] text-emerald-300 text-caption font-mono"
             >
               {codeMatch[1]}
             </code>,
@@ -217,9 +217,9 @@ function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
 
 function SourceBadge({ source }: { source: AstraSource }) {
   const confidenceColor = {
-    HIGH: "border-green-500/30 hover:bg-green-500/10",
+    HIGH: "border-emerald-500/30 hover:bg-emerald-500/10",
     MEDIUM: "border-amber-500/30 hover:bg-amber-500/10",
-    LOW: "border-red-500/30 hover:bg-red-500/10",
+    LOW: "border-white/[0.08] hover:bg-white/[0.04]",
   }[source.confidence];
 
   return (
@@ -227,13 +227,13 @@ function SourceBadge({ source }: { source: AstraSource }) {
       href={source.url || "#"}
       target={source.url ? "_blank" : undefined}
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.03] border ${confidenceColor} transition-colors cursor-pointer group`}
+      className={`inline-flex items-center gap-1 glass-interactive glass-surface rounded-full px-2 py-0.5 border ${confidenceColor} transition-colors cursor-pointer group`}
       title={`${source.regulation} ${source.article}${source.title ? ` - ${source.title}` : ""}`}
     >
       <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
         {source.regulation}
       </span>
-      <span className="text-micro font-medium text-cyan-400">
+      <span className="text-micro font-medium text-emerald-400">
         {source.article}
       </span>
       {source.url && (
@@ -256,10 +256,10 @@ function ActionButton({
   onClick: () => void;
 }) {
   const priorityStyles = {
-    high: "bg-cyan-500/15 border-cyan-500/30 hover:bg-cyan-500/25 text-cyan-400",
+    high: "glass-interactive glass-surface border-emerald-500/30 hover:bg-emerald-500/15 text-emerald-400",
     medium:
-      "bg-white/[0.04] border-white/10 hover:bg-white/[0.08] text-white/70",
-    low: "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-white/45",
+      "glass-interactive glass-surface hover:bg-white/[0.08] text-white/70",
+    low: "glass-interactive glass-surface hover:bg-white/[0.04] text-white/50",
   }[action.priority];
 
   return (
@@ -287,9 +287,9 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
   };
 
   return (
-    <div className="mt-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+    <div className="mt-3 p-3 rounded-lg glass-elevated">
       <div className="flex items-center gap-2 mb-2">
-        <Shield size={14} className="text-cyan-400" />
+        <Shield size={14} className="text-emerald-400" />
         <span className="text-caption font-medium text-white/70">
           Compliance Impact: {impact.module}
         </span>
@@ -386,8 +386,8 @@ export default function AstraMessageBubble({
     >
       {/* ASTRA avatar */}
       {isAstra && (
-        <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Zap size={13} className="text-cyan-400" />
+        <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Zap size={13} className="text-emerald-400" />
         </div>
       )}
 
@@ -395,8 +395,8 @@ export default function AstraMessageBubble({
       <div
         className={`max-w-[85%] ${
           isAstra
-            ? "bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-cyan-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl"
-            : "bg-cyan-500/10 border border-cyan-500/20 rounded-tl-xl rounded-bl-xl rounded-br-xl"
+            ? "glass-elevated border-l-2 border-l-emerald-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl"
+            : "glass-surface bg-emerald-500/[0.04] rounded-tl-xl rounded-bl-xl rounded-br-xl"
         } ${message.type === "text" ? "px-3.5 py-2.5" : "px-3.5 pt-2.5 pb-1"}`}
       >
         {/* AI-generated indicator + Confidence (for ASTRA messages) */}
@@ -413,7 +413,7 @@ export default function AstraMessageBubble({
         {message.content && (
           <div
             className={`text-small leading-relaxed ${
-              isAstra ? "text-white/70" : "text-cyan-100 whitespace-pre-wrap"
+              isAstra ? "text-white/70" : "text-emerald-100 whitespace-pre-wrap"
             }`}
           >
             {isAstra ? renderMarkdown(message.content) : message.content}
@@ -485,7 +485,7 @@ export default function AstraMessageBubble({
         {/* Timestamp */}
         <p
           className={`text-[9px] mt-1.5 ${
-            isAstra ? "text-white/40" : "text-cyan-400/30"
+            isAstra ? "text-white/30" : "text-emerald-400/30"
           }`}
         >
           {message.timestamp.toLocaleTimeString("de-DE", {

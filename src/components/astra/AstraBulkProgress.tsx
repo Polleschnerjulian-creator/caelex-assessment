@@ -64,7 +64,7 @@ export default function AstraBulkProgress({
   }, [items, isGenerating, checkedCount]);
 
   return (
-    <div className="my-2 bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
+    <div className="my-2 glass-elevated rounded-lg p-3">
       {/* Item list */}
       <div className="space-y-1 mb-3">
         {items.map((item) => {
@@ -80,7 +80,7 @@ export default function AstraBulkProgress({
                 disabled={isGenerating || isDone}
                 className={`flex-shrink-0 ${
                   item.checked
-                    ? "text-cyan-400"
+                    ? "text-emerald-400"
                     : "text-white/40 hover:text-white/60"
                 } ${isGenerating || isDone ? "cursor-not-allowed" : ""}`}
               >
@@ -118,7 +118,7 @@ export default function AstraBulkProgress({
           </div>
           <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full transition-all duration-300"
               style={{
                 width: `${checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0}%`,
               }}
@@ -132,7 +132,7 @@ export default function AstraBulkProgress({
         <button
           onClick={handleGenerate}
           disabled={isGenerating || checkedCount === 0}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 rounded-lg text-caption font-medium text-cyan-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 rounded-lg text-caption font-medium text-emerald-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>

@@ -41,7 +41,7 @@ export default function AstraConversationList({
   }, [fetchConversations]);
 
   return (
-    <div className="w-[280px] flex-shrink-0 border-r border-white/10 bg-[#08080A] flex flex-col h-full">
+    <div className="w-[280px] flex-shrink-0 border-r border-white/10 glass-surface flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-12 border-b border-white/10 flex-shrink-0">
         <span className="text-body font-medium text-white/70">
@@ -60,7 +60,7 @@ export default function AstraConversationList({
       <div className="px-3 py-2 border-b border-white/[0.06]">
         <button
           onClick={resetChat}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/[0.06] hover:bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 text-small font-medium transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] hover:bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 text-small font-medium transition-colors"
         >
           <Plus size={14} />
           New Chat
@@ -86,7 +86,7 @@ export default function AstraConversationList({
                 key={conv.id}
                 className={`group mx-2 mb-0.5 rounded-lg transition-colors ${
                   isActive
-                    ? "bg-cyan-500/[0.08] border border-cyan-500/15"
+                    ? "bg-emerald-500/[0.08] border border-emerald-500/15"
                     : "hover:bg-white/[0.02] border border-transparent"
                 }`}
               >
@@ -97,7 +97,7 @@ export default function AstraConversationList({
                   <div className="flex items-center justify-between mb-0.5">
                     <span
                       className={`text-micro uppercase tracking-wider font-medium ${
-                        isActive ? "text-cyan-400/70" : "text-white/40"
+                        isActive ? "text-emerald-400/70" : "text-white/40"
                       }`}
                     >
                       {conv.mode}

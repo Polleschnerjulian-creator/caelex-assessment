@@ -105,9 +105,9 @@ export default function AstraFullPage() {
     return (
       <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-light-bg dark:bg-dark-bg">
         <div className="max-w-md w-full px-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
-              <ShieldCheck size={28} className="text-cyan-400" />
+          <div className="flex flex-col items-center text-center glass-floating rounded-2xl p-8">
+            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
+              <ShieldCheck size={28} className="text-emerald-400" />
             </div>
             <h2 className="text-heading font-semibold text-slate-900 dark:text-white mb-2">
               ASTRA AI Einwilligung
@@ -125,21 +125,21 @@ export default function AstraFullPage() {
             </p>
             <ul className="text-small text-slate-500 dark:text-white/45 space-y-2 mb-6 text-left">
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
                 <span>Gesprachsdaten werden verschlusselt gespeichert</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
                 <span>Keine Weitergabe an Dritte</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
                 <span>Einwilligung jederzeit widerrufbar</span>
               </li>
             </ul>
             <button
               onClick={handleAcceptConsent}
-              className="px-8 py-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 text-body-lg font-medium transition-colors"
+              className="px-8 py-3 rounded-xl glass-interactive bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 text-emerald-400 text-body-lg font-medium transition-colors"
             >
               Einverstanden &mdash; ASTRA aktivieren
             </button>
@@ -148,7 +148,7 @@ export default function AstraFullPage() {
               <a
                 href="/legal/privacy"
                 target="_blank"
-                className="text-cyan-500/60 hover:text-cyan-400 underline"
+                className="text-emerald-500/60 hover:text-emerald-400 underline"
               >
                 Datenschutzerkl&auml;rung
               </a>{" "}
@@ -183,7 +183,7 @@ export default function AstraFullPage() {
       {/* Center Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Chat Header */}
-        <div className="flex items-center justify-between px-4 h-12 border-b border-slate-200 dark:border-white/10 bg-white/[0.01] flex-shrink-0">
+        <div className="flex items-center justify-between px-4 h-12 glass-surface border-b border-white/[0.06] flex-shrink-0">
           <div className="flex items-center gap-2">
             {/* Toggle Conversations */}
             <button
@@ -195,13 +195,13 @@ export default function AstraFullPage() {
               <PanelLeftOpen size={16} />
             </button>
 
-            <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
-              <Zap size={12} className="text-cyan-400" />
+            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
+              <Zap size={12} className="text-emerald-400" />
             </div>
             <span className="text-body font-medium text-slate-900 dark:text-white">
               ASTRA
             </span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium uppercase tracking-wider">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium uppercase tracking-wider">
               Beta
             </span>
 
@@ -232,7 +232,7 @@ export default function AstraFullPage() {
               onClick={() => setShowToolBrowser(!showToolBrowser)}
               className={`p-1.5 rounded-lg transition-colors ${
                 showToolBrowser
-                  ? "text-cyan-400 bg-cyan-500/10"
+                  ? "text-emerald-400 bg-emerald-500/10"
                   : "text-white/30 hover:text-white/70 hover:bg-white/[0.04]"
               }`}
               aria-label="Toggle tool browser"
@@ -291,21 +291,21 @@ export default function AstraFullPage() {
                 aria-label="ASTRA is typing"
                 role="status"
               >
-                <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                  <Zap size={13} className="text-cyan-400" />
+                <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <Zap size={13} className="text-emerald-400" />
                 </div>
-                <div className="bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-cyan-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
+                <div className="glass-elevated border-l-2 border-l-emerald-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
                   <div className="flex gap-1">
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     />
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     />
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     />
                   </div>

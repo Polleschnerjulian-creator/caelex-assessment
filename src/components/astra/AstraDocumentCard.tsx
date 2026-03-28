@@ -67,11 +67,11 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
   };
 
   return (
-    <div className="bg-white/[0.04] border border-white/10 rounded-lg p-4 my-2">
+    <div className="glass-elevated rounded-lg p-4 my-2">
       {/* Header */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="p-2 rounded-lg bg-cyan-500/10">
-          <FileText size={16} className="text-cyan-400" />
+        <div className="p-2 rounded-lg bg-emerald-500/10">
+          <FileText size={16} className="text-emerald-400" />
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-body font-medium text-white truncate">
