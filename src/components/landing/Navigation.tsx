@@ -403,8 +403,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Background — pure black for max contrast */}
-            <div className="absolute inset-0 bg-black" />
+            {/* Background — clean white */}
+            <div className="absolute inset-0 bg-white" />
 
             <div className="relative h-full flex flex-col overflow-y-auto">
               {/* Header */}
@@ -417,24 +417,24 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       className="transition-opacity duration-300 hover:opacity-70"
                       aria-label="Caelex — Go to homepage"
                     >
-                      <Logo size={34} className="text-white" />
+                      <Logo size={34} className="text-[#1d1d1f]" />
                     </Link>
 
                     <div className="flex items-center gap-3">
                       <Link
                         href="/get-started"
                         onClick={closeMenu}
-                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-[#1d1d1f] text-white hover:bg-[#333] transition-all duration-300"
                       >
                         Get Started
                       </Link>
-                      <div className="flex items-center rounded-lg bg-white overflow-hidden">
+                      <div className="flex items-center rounded-lg bg-[#F3F4F6] overflow-hidden">
                         <button
                           onClick={() => {
                             setSearchOpen(true);
                             setMenuOpen(false);
                           }}
-                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
                           aria-label="Search"
                         >
                           <Search
@@ -443,10 +443,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                             aria-hidden="true"
                           />
                         </button>
-                        <div className="w-px h-5 bg-black/10" />
+                        <div className="w-px h-5 bg-[#D1D5DB]" />
                         <button
                           onClick={closeMenu}
-                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
                           aria-label="Close menu"
                         >
                           <X size={16} strokeWidth={2} aria-hidden="true" />
@@ -457,7 +457,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 </div>
               </div>
 
-              <div className="w-full border-t border-white/[0.08]" />
+              <div className="w-full border-t border-[#E5E7EB]" />
 
               {/* Multi-column Body */}
               <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
@@ -470,7 +470,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     transition={{ duration: 0.3, delay: 0.05 }}
                   >
                     <p
-                      style={{ color: "#999" }}
+                      style={{ color: "#86868b" }}
                       className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-8"
                     >
                       Navigation
@@ -484,8 +484,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                               onClick={closeMenu}
                               className={`block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] transition-all duration-200 ${
                                 pathname === link.href
-                                  ? "text-white"
-                                  : "text-white hover:text-[#999]"
+                                  ? "text-[#1d1d1f]"
+                                  : "text-[#1d1d1f] hover:text-[#86868b]"
                               }`}
                             >
                               {link.label}
@@ -496,9 +496,11 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                                   key={child.label}
                                   href={child.href}
                                   onClick={closeMenu}
-                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-[#888] hover:text-white transition-colors duration-200"
+                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
                                 >
-                                  <span className="text-[#555]">&#8627;</span>
+                                  <span className="text-[#c8cacd]">
+                                    &#8627;
+                                  </span>
                                   {child.label}
                                 </Link>
                               ))}
@@ -511,14 +513,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         <Link
                           href="/login"
                           onClick={closeMenu}
-                          className="py-2 text-[18px] font-normal text-white/80 hover:text-white transition-colors duration-200"
+                          className="py-2 text-[18px] font-normal text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
                         >
                           Log in
                         </Link>
                         <Link
                           href="/signup"
                           onClick={closeMenu}
-                          className="py-2 text-[18px] font-normal text-white/80 hover:text-white transition-colors duration-200"
+                          className="py-2 text-[18px] font-normal text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
                         >
                           Create account
                         </Link>
@@ -535,7 +537,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                   >
                     <div className="flex items-center justify-between mb-8">
                       <p
-                        style={{ color: "#999" }}
+                        style={{ color: "#86868b" }}
                         className="text-[11px] font-semibold uppercase tracking-[0.2em]"
                       >
                         Latest News
@@ -543,7 +545,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999] hover:text-white transition-colors"
+                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999] hover:text-[#1d1d1f] transition-colors"
                       >
                         Newsroom &rarr;
                       </Link>
@@ -558,24 +560,24 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           onClick={closeMenu}
                           className="group block"
                         >
-                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-white/[0.03] border border-white/[0.06]">
+                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#F3F4F6] border border-[#E5E7EB]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={news.image}
                               alt=""
-                              className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                               loading="lazy"
                             />
                           </div>
                           <p
-                            style={{ color: "#888" }}
+                            style={{ color: "#9a9ea3" }}
                             className="text-[11px] mb-1.5 uppercase tracking-wider"
                           >
                             {news.category} &middot; {news.date}
                           </p>
                           <p
-                            style={{ color: "#e5e5e5" }}
-                            className="text-[14px] font-medium leading-snug group-hover:text-white transition-colors"
+                            style={{ color: "#2d2d2d" }}
+                            className="text-[14px] font-medium leading-snug group-hover:text-[#1d1d1f] transition-colors"
                           >
                             {news.title}
                           </p>
@@ -584,15 +586,15 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     </div>
 
                     {/* Platform Description */}
-                    <div className="mt-8 pt-6 border-t border-white/[0.08]">
+                    <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
                       <p
-                        style={{ color: "#999" }}
+                        style={{ color: "#86868b" }}
                         className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-4"
                       >
                         Platform
                       </p>
                       <p
-                        style={{ color: "#aaa" }}
+                        style={{ color: "#6e6e73" }}
                         className="text-[14px] leading-relaxed"
                       >
                         Compliance intelligence for European space operations.
@@ -603,7 +605,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/platform"
                         onClick={closeMenu}
-                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#999] hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#999] hover:text-[#1d1d1f] transition-colors"
                       >
                         Learn more
                         <ArrowRight size={12} />
@@ -619,7 +621,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     transition={{ duration: 0.3, delay: 0.15 }}
                   >
                     <p
-                      style={{ color: "#999" }}
+                      style={{ color: "#86868b" }}
                       className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-8"
                     >
                       Quick Links
@@ -630,7 +632,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className="py-2.5 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-white/[0.04] last:border-0"
+                          className="py-2.5 text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200 border-b border-[#E5E7EB] last:border-0"
                         >
                           {link.label}
                         </Link>
@@ -642,7 +644,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       href="https://www.linkedin.com/company/caelex"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 py-2.5 mt-4 text-[14px] text-[#aaa] hover:text-white transition-colors duration-200 border-b border-white/[0.04]"
+                      className="flex items-center gap-2.5 py-2.5 mt-4 text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200 border-b border-[#E5E7EB]"
                     >
                       <svg
                         className="w-5 h-5"
@@ -658,7 +660,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/demo"
                         onClick={closeMenu}
-                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-[#262626] text-white hover:bg-white hover:text-black transition-all duration-300"
+                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-[#E5E7EB] text-[#1d1d1f] hover:bg-[#1d1d1f] hover:text-white transition-all duration-300"
                       >
                         Request Demo
                       </Link>
@@ -676,11 +678,11 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
 
               {/* Footer */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8">
-                <div className="border-t border-white/[0.06] pt-5 flex items-center justify-between">
-                  <p style={{ color: "#555" }} className="text-[11px]">
+                <div className="border-t border-[#E5E7EB] pt-5 flex items-center justify-between">
+                  <p style={{ color: "#9a9ea3" }} className="text-[11px]">
                     European Space Compliance Intelligence
                   </p>
-                  <p style={{ color: "#555" }} className="text-[11px]">
+                  <p style={{ color: "#9a9ea3" }} className="text-[11px]">
                     &copy; {new Date().getFullYear()} Caelex
                   </p>
                 </div>
@@ -700,7 +702,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="absolute inset-0 bg-[#111111]" />
+            <div className="absolute inset-0 bg-white" />
 
             <div className="relative h-full flex flex-col">
               {/* Header */}
@@ -712,31 +714,31 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       onClick={closeSearch}
                       className="transition-opacity duration-300 hover:opacity-70"
                     >
-                      <Logo size={34} className="text-white" />
+                      <Logo size={34} className="text-[#1d1d1f]" />
                     </Link>
                     <div className="flex items-center gap-3">
                       <Link
                         href="/get-started"
                         onClick={closeSearch}
-                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-[#1d1d1f] text-white hover:bg-[#333] transition-all duration-300"
                       >
                         Get Started
                       </Link>
-                      <div className="flex items-center rounded-lg bg-white overflow-hidden">
+                      <div className="flex items-center rounded-lg bg-[#F3F4F6] overflow-hidden">
                         <button
                           onClick={() => {
                             closeSearch();
                             setMenuOpen(true);
                           }}
-                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
                           aria-label="Open menu"
                         >
                           <Menu size={16} strokeWidth={2} />
                         </button>
-                        <div className="w-px h-5 bg-black/10" />
+                        <div className="w-px h-5 bg-[#D1D5DB]" />
                         <button
                           onClick={closeSearch}
-                          className="flex items-center justify-center w-10 h-10 text-black/50 hover:text-black hover:bg-black/5 transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
                           aria-label="Close search"
                         >
                           <X size={16} strokeWidth={2} />
@@ -763,16 +765,16 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       }
                     }}
                     placeholder="Start typing to search"
-                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] placeholder-[#444] outline-none caret-white border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
+                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] placeholder-[#c8cacd] outline-none caret-[#1d1d1f] border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
                     style={{
                       backgroundColor: "transparent",
                       border: "none",
                       boxShadow: "none",
-                      color: "#ffffff",
-                      WebkitTextFillColor: "#ffffff",
+                      color: "#1d1d1f",
+                      WebkitTextFillColor: "#1d1d1f",
                     }}
                   />
-                  <div className="h-px bg-[#333] mt-4" />
+                  <div className="h-px bg-[#E5E7EB] mt-4" />
                 </div>
 
                 {/* Search Results */}
@@ -789,23 +791,23 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         onClick={closeSearch}
                         className="flex items-center justify-between py-3 group"
                       >
-                        <span className="text-[18px] text-[#ccc] group-hover:text-white transition-colors">
+                        <span className="text-[18px] text-[#6e6e73] group-hover:text-[#1d1d1f] transition-colors">
                           {result.title}
                         </span>
-                        <span className="text-[12px] uppercase tracking-wider text-[#555] group-hover:text-[#888] transition-colors">
+                        <span className="text-[12px] uppercase tracking-wider text-[#9a9ea3] group-hover:text-[#6e6e73] transition-colors">
                           {result.category}
                         </span>
                       </Link>
                     ))}
                   </motion.div>
                 ) : searchQuery.length > 0 ? (
-                  <p style={{ color: "#555" }} className="text-[16px]">
+                  <p style={{ color: "#9a9ea3" }} className="text-[16px]">
                     No results for &ldquo;{searchQuery}&rdquo;
                   </p>
                 ) : (
                   /* Popular Searches */
                   <div className="flex items-center gap-4 flex-wrap">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a9ea3]">
                       Popular Searches
                     </span>
                     {POPULAR_SEARCHES.map((item) => (
@@ -813,7 +815,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                         key={item.label}
                         href={item.href}
                         onClick={closeSearch}
-                        className="text-[15px] text-[#999] hover:text-white underline underline-offset-4 decoration-[#333] hover:decoration-white transition-all duration-200"
+                        className="text-[15px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-4 decoration-[#d2d2d7] hover:decoration-[#1d1d1f] transition-all duration-200"
                       >
                         {item.label}
                       </Link>
