@@ -43,6 +43,63 @@ import {
   propagateChange,
 } from "@/lib/ontology";
 
+// ─── Input Validation Helpers ───
+
+/**
+ * Safely extract and validate a string input field.
+ * Returns the value if valid, defaultValue if missing/invalid.
+ */
+function getString(
+  input: Record<string, unknown>,
+  key: string,
+  defaultValue?: string,
+): string | undefined {
+  const value = input[key];
+  if (typeof value === "string" && value.length <= 10000) return value.trim();
+  return defaultValue;
+}
+
+function getBoolean(
+  input: Record<string, unknown>,
+  key: string,
+  defaultValue = false,
+): boolean {
+  const value = input[key];
+  if (typeof value === "boolean") return value;
+  return defaultValue;
+}
+
+function getNumber(
+  input: Record<string, unknown>,
+  key: string,
+  defaultValue?: number,
+): number | undefined {
+  const value = input[key];
+  if (typeof value === "number" && isFinite(value)) return value;
+  return defaultValue;
+}
+
+function getStringEnum<T extends string>(
+  input: Record<string, unknown>,
+  key: string,
+  validValues: readonly T[],
+  defaultValue?: T,
+): T | undefined {
+  const value = getString(input, key);
+  if (value && (validValues as readonly string[]).includes(value))
+    return value as T;
+  return defaultValue;
+}
+
+function getStringArray(input: Record<string, unknown>, key: string): string[] {
+  const value = input[key];
+  if (Array.isArray(value))
+    return value
+      .filter((v): v is string => typeof v === "string")
+      .slice(0, 100);
+  return [];
+}
+
 // ─── Main Executor ───
 
 export async function executeTool(
@@ -135,8 +192,13 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Compliance Tools ───
 
   check_compliance_status: async (input, userContext) => {
-    const targetModule = input.module as string | undefined;
-    const includeDetails = input.includeDetails as boolean | undefined;
+    const targetModule = getStringEnum(input, "module", [
+      "debris",
+      "cybersecurity",
+      "insurance",
+      "nis2",
+    ] as const);
+    const includeDetails = getBoolean(input, "includeDetails");
 
     // Query user's assessments (assessments are linked to users, not orgs)
     const [
@@ -231,8 +293,10 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_article_requirements: async (input) => {
-    const articleNumber = input.articleNumber as string;
-    const operatorType = input.operatorType as string | undefined;
+    const articleNumber = getString(input, "articleNumber");
+    if (!articleNumber)
+      return { found: false, error: "articleNumber is required" };
+    const operatorType = getString(input, "operatorType");
 
     // Extract base article number (e.g., "58" from "58(2)(a)")
     const baseNumber = articleNumber.match(/^\d+/)?.[0] || articleNumber;
@@ -293,8 +357,18 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   run_gap_analysis: async (input, userContext) => {
-    const targetModule = input.module as string | undefined;
-    const priorityFilter = input.priorityFilter as string | undefined;
+    const targetModule = getStringEnum(input, "module", [
+      "debris",
+      "cybersecurity",
+      "insurance",
+      "nis2",
+    ] as const);
+    const priorityFilter = getStringEnum(input, "priorityFilter", [
+      "critical",
+      "high",
+      "medium",
+      "low",
+    ] as const);
     const includeRecommendations = input.includeRecommendations !== false;
 
     // Get current compliance status
@@ -422,8 +496,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   check_cross_regulation_overlap: async (input) => {
-    const sourceRegulation = input.sourceRegulation as string;
-    const targetRegulation = input.targetRegulation as string | undefined;
+    const sourceRegulation = getString(input, "sourceRegulation");
+    if (!sourceRegulation) return { error: "sourceRegulation is required" };
+    const targetRegulation = getString(input, "targetRegulation");
     const includeEffortEstimates = input.includeEffortEstimates !== false;
 
     if (targetRegulation) {
@@ -477,8 +552,10 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   compare_jurisdictions: async (input) => {
-    const jurisdictions = input.jurisdictions as string[];
-    const comparisonFactors = input.comparisonFactors as string[] | undefined;
+    const jurisdictions = getStringArray(input, "jurisdictions");
+    const comparisonFactors = getStringArray(input, "comparisonFactors");
+    const comparisonFactorsOrUndefined =
+      comparisonFactors.length > 0 ? comparisonFactors : undefined;
 
     if (jurisdictions.length < 2) {
       return { error: "At least 2 jurisdictions required for comparison" };
@@ -499,7 +576,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         ncaName: p.ncaName,
       };
 
-      const factors = comparisonFactors || [
+      const factors = comparisonFactorsOrUndefined || [
         "processingTime",
         "insuranceMinimums",
         "fees",
@@ -545,7 +622,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_deadline_timeline: async (input, userContext) => {
-    const daysAhead = Math.min((input.daysAhead as number) || 90, 365);
+    const daysAhead = Math.min(getNumber(input, "daysAhead", 90)!, 365);
 
     const now = new Date();
     const futureDate = new Date(
@@ -593,7 +670,21 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Assessment Tools ───
 
   get_assessment_results: async (input, userContext) => {
-    const assessmentType = input.assessmentType as string;
+    const assessmentType = getStringEnum(input, "assessmentType", [
+      "debris",
+      "cybersecurity",
+      "insurance",
+      "nis2",
+      "environmental",
+    ] as const);
+    if (!assessmentType) {
+      const raw = getString(input, "assessmentType");
+      return {
+        error: raw
+          ? `Unknown assessment type: ${raw}`
+          : "assessmentType is required",
+      };
+    }
 
     // Map assessment types to Prisma models
     const assessmentQueries: Record<string, () => Promise<unknown>> = {
@@ -646,8 +737,10 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
 
   get_operator_classification: async (input, userContext) => {
     const includeObligations = input.includeObligations !== false;
-    const includeApplicableArticles =
-      input.includeApplicableArticles as boolean;
+    const includeApplicableArticles = getBoolean(
+      input,
+      "includeApplicableArticles",
+    );
 
     const operatorType = userContext.operatorType;
     if (!operatorType) {
@@ -696,6 +789,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   get_nis2_classification: async (input, userContext) => {
     const includeRequirements = input.includeRequirements !== false;
     const includeTimelines = input.includeTimelines !== false;
+    // Note: these booleans use !== false pattern (defaulting to true) intentionally
 
     // Try to get from assessment
     const assessment = await prisma.nIS2Assessment.findFirst({
@@ -750,9 +844,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Document Tools ───
 
   list_documents: async (input, userContext) => {
-    const category = input.category as string | undefined;
-    const status = input.status as string | undefined;
-    const expiringWithinDays = input.expiringWithinDays as number | undefined;
+    const category = getString(input, "category");
+    const status = getString(input, "status");
+    const expiringWithinDays = getNumber(input, "expiringWithinDays");
 
     const where: Record<string, unknown> = { userId: userContext.userId };
     if (category) where.category = category;
@@ -784,7 +878,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   check_document_completeness: async (input, userContext) => {
-    const targetModule = input.module as string;
+    const targetModule = getString(input, "module");
+    if (!targetModule) return { error: "module is required" };
 
     // Define required documents per module
     const requiredDocs: Record<string, string[]> = {
@@ -844,7 +939,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   generate_compliance_report: async (input, userContext) => {
-    const reportType = input.reportType as string;
+    const reportType = getString(input, "reportType");
+    if (!reportType) return { error: "reportType is required" };
 
     // Map report types to Generate 2.0 NCA document types
     const typeMap: Record<string, string> = {
@@ -888,8 +984,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   generate_authorization_application: async (input, userContext) => {
-    const jurisdiction = input.jurisdiction as string;
-    const applicationType = input.applicationType as string;
+    const jurisdiction = getString(input, "jurisdiction");
+    if (!jurisdiction) return { error: "jurisdiction is required" };
+    const applicationType = getString(input, "applicationType") || "standard";
 
     const jurisdictionProfile = getJurisdictionByCode(jurisdiction);
     if (!jurisdictionProfile) {
@@ -1057,8 +1154,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Knowledge Tools ───
 
   search_regulation: async (input) => {
-    const query = input.query as string;
-    const maxResults = Math.min((input.maxResults as number) || 5, 10);
+    const query = getString(input, "query");
+    if (!query) return { error: "query is required" };
+    const maxResults = Math.min(getNumber(input, "maxResults", 5)!, 10);
 
     // Search across regulatory knowledge
     const articleMatches = searchArticles(query).slice(0, maxResults);
@@ -1093,8 +1191,10 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_article_detail: async (input) => {
-    const regulation = input.regulation as string;
-    const article = input.article as string;
+    const regulation = getString(input, "regulation");
+    if (!regulation) return { error: "regulation is required" };
+    const article = getString(input, "article");
+    if (!article) return { error: "article is required" };
 
     if (regulation === "eu_space_act") {
       const articleData = getArticleByNumber(article);
@@ -1117,8 +1217,10 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_cross_references: async (input) => {
-    const sourceRegulation = input.sourceRegulation as string;
-    const sourceArticle = input.sourceArticle as string;
+    const sourceRegulation = getString(input, "sourceRegulation");
+    if (!sourceRegulation) return { error: "sourceRegulation is required" };
+    const sourceArticle = getString(input, "sourceArticle");
+    if (!sourceArticle) return { error: "sourceArticle is required" };
 
     const mappings = getMappingsForArticle(sourceArticle);
 
@@ -1136,7 +1238,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   explain_term: async (input) => {
-    const term = input.term as string;
+    const term = getString(input, "term");
+    if (!term) return { error: "term is required" };
     const includeExamples = input.includeExamples !== false;
 
     const termData = getTermByAbbreviation(term) || searchTerms(term)[0];
@@ -1165,8 +1268,15 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Advisory Tools ───
 
   assess_regulatory_impact: async (input) => {
-    const scenarioType = input.scenarioType as string;
-    const scenarioDetails = input.scenarioDetails as Record<string, string>;
+    const scenarioType = getString(input, "scenarioType");
+    if (!scenarioType) return { error: "scenarioType is required" };
+    const scenarioDetails = (
+      typeof input.scenarioDetails === "object" &&
+      input.scenarioDetails !== null &&
+      !Array.isArray(input.scenarioDetails)
+        ? input.scenarioDetails
+        : {}
+    ) as Record<string, string>;
 
     // General guidance based on scenario type
     const impacts: Record<string, string[]> = {
@@ -1212,8 +1322,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   suggest_compliance_path: async (input) => {
-    const goal = input.goal as string;
-    const targetDate = input.targetDate as string | undefined;
+    const goal = getString(input, "goal");
+    if (!goal) return { error: "goal is required" };
+    const targetDate = getString(input, "targetDate");
 
     const paths: Record<
       string,
@@ -1287,8 +1398,14 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   estimate_compliance_cost_time: async (input) => {
-    const complianceStep = input.complianceStep as string;
-    const organizationSize = (input.organizationSize as string) || "sme";
+    const complianceStep = getString(input, "complianceStep");
+    if (!complianceStep) return { error: "complianceStep is required" };
+    const organizationSize = getStringEnum(
+      input,
+      "organizationSize",
+      ["startup", "sme", "large_enterprise"] as const,
+      "sme",
+    )!;
 
     const estimates: Record<
       string,
@@ -1348,9 +1465,9 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── NCA Portal Tools ───
 
   get_nca_submissions: async (input, userContext) => {
-    const ncaAuthority = input.ncaAuthority as string | undefined;
-    const status = input.status as string | undefined;
-    const activeOnly = input.activeOnly as boolean | undefined;
+    const ncaAuthority = getString(input, "ncaAuthority");
+    const status = getString(input, "status");
+    const activeOnly = getBoolean(input, "activeOnly");
 
     const terminalStatuses = ["APPROVED", "REJECTED", "WITHDRAWN"];
 
@@ -1389,8 +1506,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_submission_detail: async (input, userContext) => {
-    const submissionId = input.submissionId as string | undefined;
-    const ncaAuthority = input.ncaAuthority as string | undefined;
+    const submissionId = getString(input, "submissionId");
+    const ncaAuthority = getString(input, "ncaAuthority");
 
     let submission;
 
@@ -1488,7 +1605,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   check_package_completeness: async (input, userContext) => {
-    const ncaAuthority = input.ncaAuthority as string;
+    const ncaAuthority = getString(input, "ncaAuthority");
+    if (!ncaAuthority) return { error: "ncaAuthority is required" };
 
     // Check if user has an org membership
     const membership = await prisma.organizationMember.findFirst({
@@ -1533,7 +1651,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   },
 
   get_nca_deadlines: async (input, userContext) => {
-    const daysAhead = (input.daysAhead as number) || 30;
+    const daysAhead = getNumber(input, "daysAhead", 30)!;
     const now = new Date();
     const futureDate = new Date(
       now.getTime() + daysAhead * 24 * 60 * 60 * 1000,
@@ -1677,23 +1795,41 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       };
     }
 
+    const category = getString(input, "category");
+    if (!category) return { error: "category is required" };
+    const title = getString(input, "title");
+    if (!title) return { error: "title is required" };
+    const description = getString(input, "description");
+    if (!description) return { error: "description is required" };
+    const detectedBy = getString(input, "detectedBy") || "user_report";
+    const detectedAtStr = getString(input, "detectedAt");
+    const detectedAt = detectedAtStr ? new Date(detectedAtStr) : undefined;
+    // Validate affectedAssets is an array of objects if provided
+    const rawAssets = input.affectedAssets;
+    const affectedAssets = Array.isArray(rawAssets)
+      ? rawAssets
+          .filter(
+            (a): a is Record<string, unknown> =>
+              typeof a === "object" && a !== null,
+          )
+          .map((a) => ({
+            assetName:
+              typeof a.assetName === "string" ? a.assetName : "Unknown",
+            cosparId: typeof a.cosparId === "string" ? a.cosparId : undefined,
+            noradId: typeof a.noradId === "string" ? a.noradId : undefined,
+          }))
+          .slice(0, 50)
+      : undefined;
+
     const result = await createIncidentWithAutopilot(
       {
         supervisionId: config.id,
-        category: input.category as IncidentCategory,
-        title: input.title as string,
-        description: input.description as string,
-        detectedBy: input.detectedBy as string,
-        detectedAt: input.detectedAt
-          ? new Date(input.detectedAt as string)
-          : undefined,
-        affectedAssets: input.affectedAssets as
-          | Array<{
-              assetName: string;
-              cosparId?: string;
-              noradId?: string;
-            }>
-          | undefined,
+        category: category as IncidentCategory,
+        title,
+        description,
+        detectedBy,
+        detectedAt,
+        affectedAssets,
       },
       userContext.userId,
     );
@@ -1719,17 +1855,18 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     const { getIncidentCommandData } =
       await import("@/lib/services/incident-autopilot");
 
-    let incidentId = input.incidentId as string | undefined;
+    let incidentId = getString(input, "incidentId");
+    const incidentNumber = getString(input, "incidentNumber");
 
     // Look up by number if needed
-    if (!incidentId && input.incidentNumber) {
+    if (!incidentId && incidentNumber) {
       const incident = await prisma.incident.findFirst({
-        where: { incidentNumber: input.incidentNumber as string },
+        where: { incidentNumber },
         select: { id: true },
       });
       if (!incident) {
         return {
-          error: `Incident ${input.incidentNumber} not found.`,
+          error: `Incident ${incidentNumber} not found.`,
         };
       }
       incidentId = incident.id;
@@ -1766,11 +1903,11 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     }
 
     const incidents = await listActiveIncidents(config.id, {
-      category: input.category as string | undefined,
-      severity: input.severity as string | undefined,
+      category: getString(input, "category"),
+      severity: getString(input, "severity"),
     });
 
-    const limit = (input.limit as number) || 20;
+    const limit = getNumber(input, "limit", 20)!;
     const limited = incidents.slice(0, limit);
 
     const overdueCount = limited.reduce(
@@ -1797,8 +1934,19 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       await import("@/lib/services/incident-notification-templates");
     const { decrypt, isEncrypted } = await import("@/lib/encryption");
 
-    const incidentId = input.incidentId as string;
-    const phase = input.phase as string;
+    const incidentId = getString(input, "incidentId");
+    if (!incidentId) return { error: "incidentId is required" };
+    const phase = getStringEnum(input, "phase", [
+      "early_warning",
+      "notification",
+      "intermediate_report",
+      "final_report",
+    ] as const);
+    if (!phase)
+      return {
+        error:
+          "phase is required and must be one of: early_warning, notification, intermediate_report, final_report",
+      };
 
     const incident = await prisma.incident.findUnique({
       where: { id: incidentId },
@@ -1830,33 +1978,26 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         ? await decrypt(incident.lessonsLearned)
         : incident.lessonsLearned;
 
-    const draft = generateNCANotificationDraft(
-      phase as
-        | "early_warning"
-        | "notification"
-        | "intermediate_report"
-        | "final_report",
-      {
-        incidentNumber: incident.incidentNumber,
-        category: incident.category,
-        severity: incident.severity,
-        title: incident.title,
-        description: description || "",
-        detectedAt: incident.detectedAt.toISOString(),
-        detectedBy: incident.detectedBy,
-        detectionMethod: incident.detectionMethod,
-        rootCause: rootCause || null,
-        impactAssessment: impactAssessment || null,
-        immediateActions: incident.immediateActions,
-        containmentMeasures: incident.containmentMeasures,
-        resolutionSteps: incident.resolutionSteps,
-        lessonsLearned: lessonsLearned || null,
-        affectedAssets: incident.affectedAssets,
-        reportedToNCA: incident.reportedToNCA,
-        ncaReferenceNumber: incident.ncaReferenceNumber,
-        resolvedAt: incident.resolvedAt?.toISOString() || null,
-      },
-    );
+    const draft = generateNCANotificationDraft(phase, {
+      incidentNumber: incident.incidentNumber,
+      category: incident.category,
+      severity: incident.severity,
+      title: incident.title,
+      description: description || "",
+      detectedAt: incident.detectedAt.toISOString(),
+      detectedBy: incident.detectedBy,
+      detectionMethod: incident.detectionMethod,
+      rootCause: rootCause || null,
+      impactAssessment: impactAssessment || null,
+      immediateActions: incident.immediateActions,
+      containmentMeasures: incident.containmentMeasures,
+      resolutionSteps: incident.resolutionSteps,
+      lessonsLearned: lessonsLearned || null,
+      affectedAssets: incident.affectedAssets,
+      reportedToNCA: incident.reportedToNCA,
+      ncaReferenceNumber: incident.ncaReferenceNumber,
+      resolvedAt: incident.resolvedAt?.toISOString() || null,
+    });
 
     // Store draft on phase record
     await prisma.incidentNIS2Phase.updateMany({
@@ -1879,11 +2020,17 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     const { advanceIncidentWorkflow } =
       await import("@/lib/services/incident-autopilot");
 
+    const incidentId = getString(input, "incidentId");
+    if (!incidentId) return { error: "incidentId is required" };
+    const event = getString(input, "event");
+    if (!event) return { error: "event is required" };
+    const notes = getString(input, "notes");
+
     const result = await advanceIncidentWorkflow(
-      input.incidentId as string,
-      input.event as string,
+      incidentId,
+      event,
       userContext.userId,
-      input.notes as string | undefined,
+      notes,
     );
 
     if (!result.success) {
@@ -1908,7 +2055,14 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       await import("@/lib/services/compliance-twin-service");
 
     const state = await getComplianceTwinState(userContext.userId);
-    const focusArea = input.focusArea as string | undefined;
+    const focusArea = getStringEnum(input, "focusArea", [
+      "score",
+      "evidence",
+      "deadlines",
+      "risk",
+      "velocity",
+      "modules",
+    ] as const);
 
     if (focusArea === "score") {
       return {
@@ -1983,14 +2137,28 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     const { simulateScenario } =
       await import("@/lib/services/whatif-simulation-service");
 
+    const scenarioType = getStringEnum(input, "scenarioType", [
+      "add_jurisdiction",
+      "change_operator_type",
+      "add_satellites",
+      "expand_operations",
+    ] as const);
+    if (!scenarioType)
+      return {
+        error:
+          "scenarioType is required and must be one of: add_jurisdiction, change_operator_type, add_satellites, expand_operations",
+      };
+    const parameters =
+      typeof input.parameters === "object" &&
+      input.parameters !== null &&
+      !Array.isArray(input.parameters)
+        ? (input.parameters as Record<string, unknown>)
+        : {};
+
     const result = await simulateScenario(userContext.userId, {
-      scenarioType: input.scenarioType as
-        | "add_jurisdiction"
-        | "change_operator_type"
-        | "add_satellites"
-        | "expand_operations",
-      name: `ASTRA Scenario: ${input.scenarioType}`,
-      parameters: (input.parameters as Record<string, unknown>) || {},
+      scenarioType,
+      name: `ASTRA Scenario: ${scenarioType}`,
+      parameters,
     });
 
     return {
@@ -2002,7 +2170,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       financialImpact: result.financialImpact,
       riskLevel: result.riskAssessment.level,
       recommendations: result.recommendations,
-      summary: `Scenario "${input.scenarioType}": Score ${result.baselineScore} → ${result.projectedScore} (${result.scoreDelta >= 0 ? "+" : ""}${result.scoreDelta}). ${result.newRequirements.length} new requirements. Financial impact: EUR ${(result.financialImpact.delta / 1_000_000).toFixed(1)}M. Risk: ${result.riskAssessment.level}.`,
+      summary: `Scenario "${scenarioType}": Score ${result.baselineScore} → ${result.projectedScore} (${result.scoreDelta >= 0 ? "+" : ""}${result.scoreDelta}). ${result.newRequirements.length} new requirements. Financial impact: EUR ${(result.financialImpact.delta / 1_000_000).toFixed(1)}M. Risk: ${result.riskAssessment.level}.`,
     };
   },
 
@@ -2052,7 +2220,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     const { auditDocument } =
       await import("@/lib/services/document-audit-service.server");
 
-    const documentId = input.documentId as string;
+    const documentId = getString(input, "documentId");
     if (!documentId) {
       return { error: "documentId is required" };
     }
@@ -2096,13 +2264,14 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   // ─── Ontology Tools ───
 
   query_ontology: async (input) => {
-    const query_type = input.query_type as string;
-    const operator_type = input.operator_type as string | undefined;
-    const jurisdictions = input.jurisdictions as string[] | undefined;
-    const domain = input.domain as string | undefined;
-    const include_proposals = input.include_proposals as boolean | undefined;
-    const node_code = input.node_code as string | undefined;
-    const depth = input.depth as number | undefined;
+    const query_type = getString(input, "query_type");
+    if (!query_type) return { error: "query_type is required" };
+    const operator_type = getString(input, "operator_type");
+    const jurisdictions = getStringArray(input, "jurisdictions");
+    const domain = getString(input, "domain");
+    const include_proposals = getBoolean(input, "include_proposals");
+    const node_code = getString(input, "node_code");
+    const depth = getNumber(input, "depth");
 
     if (query_type === "obligations") {
       if (!operator_type)
@@ -2203,11 +2372,11 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
 
     if (query_type === "impact") {
       if (!node_code) return { error: "node_code required for impact query" };
-      const change_type = input.change_type as
-        | "amended"
-        | "repealed"
-        | "new"
-        | undefined;
+      const change_type = getStringEnum(input, "change_type", [
+        "amended",
+        "repealed",
+        "new",
+      ] as const);
       if (!change_type)
         return {
           error:
@@ -2239,7 +2408,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     }
 
     if (query_type === "search") {
-      const search_query = input.search_query as string | undefined;
+      const search_query = getString(input, "search_query");
       if (!search_query)
         return { error: "search_query required for search query" };
 
