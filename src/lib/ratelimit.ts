@@ -263,6 +263,14 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:hub",
       }),
+
+      // Astra AI chat: 60 per hour per user (copilot needs frequent interaction)
+      astra_chat: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:astra_chat",
+      }),
     }
   : null;
 
@@ -362,6 +370,7 @@ const fallbackLimiters = {
   verity_public: new InMemoryRateLimiter(10, 3600000),
   nexus: new InMemoryRateLimiter(15, 3600000),
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
+  astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
 };
 
 // ─── Public API ───
@@ -392,7 +401,8 @@ export type RateLimitType =
   | "sentinel_expensive"
   | "verity_public"
   | "nexus"
-  | "hub";
+  | "hub"
+  | "astra_chat";
 
 /**
  * Check rate limit for an identifier.
