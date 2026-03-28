@@ -8,6 +8,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { AstraUserContext, AstraContext, AstraMissionData } from "./types";
+import { sanitizeForPrompt } from "./sanitize";
 
 // ─── Topic Detection Keywords ───
 
@@ -375,18 +376,18 @@ export async function buildTopicContext(
     if (pageContext.mode === "article") {
       contextSections.push(`
 ## Current Article Context
-The user is viewing EU Space Act ${pageContext.articleRef}: "${pageContext.title}"
-Severity: ${pageContext.severity}
+The user is viewing EU Space Act ${sanitizeForPrompt(pageContext.articleRef, 100)}: ${sanitizeForPrompt(pageContext.title)}
+Severity: ${sanitizeForPrompt(pageContext.severity, 50)}
 `);
     } else if (pageContext.mode === "category") {
       contextSections.push(`
 ## Current Category Context
-The user is exploring the ${pageContext.categoryLabel} category with ${pageContext.articles.length} articles.
+The user is exploring the ${sanitizeForPrompt(pageContext.categoryLabel, 100)} category with ${pageContext.articles.length} articles.
 `);
     } else if (pageContext.mode === "module") {
       contextSections.push(`
 ## Current Module Context
-The user is in the ${pageContext.moduleName} module.
+The user is in the ${sanitizeForPrompt(pageContext.moduleName, 100)} module.
 `);
     }
   }
@@ -395,7 +396,7 @@ The user is in the ${pageContext.moduleName} module.
   if (missionData && Object.keys(missionData).length > 0) {
     const missionDetails = Object.entries(missionData)
       .filter(([, v]) => v !== undefined && v !== null)
-      .map(([k, v]) => `- ${formatKey(k)}: ${v}`)
+      .map(([k, v]) => `- ${formatKey(k)}: ${sanitizeForPrompt(String(v))}`)
       .join("\n");
 
     if (missionDetails) {
@@ -414,8 +415,8 @@ ${missionDetails}
           contextSections.push(`
 ## Debris Assessment Status
 - Assessment completed: Yes
-- Orbit regime: ${userContext.assessments.debris.orbitRegime || "Not specified"}
-- Risk level: ${userContext.assessments.debris.riskLevel || "Not assessed"}
+- Orbit regime: ${userContext.assessments.debris.orbitRegime ? sanitizeForPrompt(userContext.assessments.debris.orbitRegime, 50) : "Not specified"}
+- Risk level: ${userContext.assessments.debris.riskLevel ? sanitizeForPrompt(userContext.assessments.debris.riskLevel, 50) : "Not assessed"}
 - Compliance score: ${userContext.complianceScores?.debris || "N/A"}%
 `);
         } else {
@@ -432,14 +433,14 @@ The user has not completed a debris mitigation assessment. They may need guidanc
 ## Cybersecurity Assessment Status
 - Assessment completed: Yes
 - Maturity level: ${userContext.assessments.cybersecurity.maturityLevel || "Not determined"}
-- Framework: ${userContext.assessments.cybersecurity.framework || "Not specified"}
+- Framework: ${userContext.assessments.cybersecurity.framework ? sanitizeForPrompt(userContext.assessments.cybersecurity.framework, 100) : "Not specified"}
 - Compliance score: ${userContext.complianceScores?.cybersecurity || "N/A"}%
 `);
         }
         if (userContext.assessments?.nis2) {
           contextSections.push(`
 ## NIS2 Status
-- Entity classification: ${userContext.assessments.nis2.entityType || "Not classified"}
+- Entity classification: ${userContext.assessments.nis2.entityType ? sanitizeForPrompt(userContext.assessments.nis2.entityType, 100) : "Not classified"}
 - Requirements: ${userContext.assessments.nis2.completedRequirements || 0}/${userContext.assessments.nis2.applicableRequirements || "TBD"} completed
 `);
         }
@@ -460,8 +461,8 @@ The user has not completed a debris mitigation assessment. They may need guidanc
         if (userContext.authorizationStatus) {
           contextSections.push(`
 ## Authorization Workflow Status
-- Current state: ${userContext.authorizationStatus.state}
-- Current step: ${userContext.authorizationStatus.currentStep || "N/A"}
+- Current state: ${sanitizeForPrompt(userContext.authorizationStatus.state, 100)}
+- Current step: ${userContext.authorizationStatus.currentStep ? sanitizeForPrompt(userContext.authorizationStatus.currentStep, 100) : "N/A"}
 - Documents: ${userContext.authorizationStatus.completedDocuments || 0}/${userContext.authorizationStatus.totalDocuments || "TBD"} completed
 `);
         }
@@ -471,7 +472,7 @@ The user has not completed a debris mitigation assessment. They may need guidanc
         if (userContext.jurisdiction) {
           contextSections.push(`
 ## Current Jurisdiction
-The organization is registered/targeting: ${userContext.jurisdiction}
+The organization is registered/targeting: ${sanitizeForPrompt(userContext.jurisdiction, 100)}
 `);
         }
         break;
@@ -480,7 +481,7 @@ The organization is registered/targeting: ${userContext.jurisdiction}
         if (userContext.operatorType) {
           contextSections.push(`
 ## Operator Classification
-The organization is classified as: ${userContext.operatorType}
+The organization is classified as: ${sanitizeForPrompt(userContext.operatorType, 100)}
 `);
         }
         break;
@@ -495,7 +496,7 @@ The organization is classified as: ${userContext.operatorType}
     const deadlineList = userContext.upcomingDeadlines
       .map(
         (d) =>
-          `- ${d.title}: ${new Date(d.date).toLocaleDateString()} (${d.priority})`,
+          `- ${sanitizeForPrompt(d.title)}: ${new Date(d.date).toLocaleDateString()} (${sanitizeForPrompt(d.priority, 50)})`,
       )
       .join("\n");
 

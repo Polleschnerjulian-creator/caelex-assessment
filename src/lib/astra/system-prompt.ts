@@ -7,6 +7,7 @@
 
 import type { AstraUserContext, ConversationMode } from "./types";
 import { REGULATORY_KNOWLEDGE_SUMMARY } from "./regulatory-knowledge";
+import { sanitizeForPrompt } from "./sanitize";
 
 // ─── Core Identity ───
 
@@ -261,7 +262,7 @@ function buildUserContextSection(context: AstraUserContext): string {
     `
 ## User Context
 
-You are assisting a user from **${context.organizationName}**.
+You are assisting a user from **${sanitizeForPrompt(context.organizationName)}**.
 `,
   ];
 
@@ -269,9 +270,9 @@ You are assisting a user from **${context.organizationName}**.
   if (context.jurisdiction || context.operatorType) {
     sections.push(`
 ### Organization Profile
-- Jurisdiction: ${context.jurisdiction || "Not specified"}
-- Operator Type: ${context.operatorType || "Not determined"}
-- NIS2 Classification: ${context.nis2Classification || "Not assessed"}
+- Jurisdiction: ${context.jurisdiction ? sanitizeForPrompt(context.jurisdiction, 100) : "Not specified"}
+- Operator Type: ${context.operatorType ? sanitizeForPrompt(context.operatorType, 100) : "Not determined"}
+- NIS2 Classification: ${context.nis2Classification ? sanitizeForPrompt(context.nis2Classification, 50) : "Not assessed"}
 `);
   }
 
@@ -296,28 +297,28 @@ ${scores}
     if (context.assessments.euSpaceAct) {
       const a = context.assessments.euSpaceAct;
       assessmentStatus.push(
-        `- EU Space Act: ${a.completed ? "Completed" : "In Progress"}, Operator Type: ${a.operatorType || "TBD"}, Articles: ${a.completedArticles || 0}/${a.applicableArticles || "TBD"}`,
+        `- EU Space Act: ${a.completed ? "Completed" : "In Progress"}, Operator Type: ${a.operatorType ? sanitizeForPrompt(a.operatorType, 100) : "TBD"}, Articles: ${a.completedArticles || 0}/${a.applicableArticles || "TBD"}`,
       );
     }
 
     if (context.assessments.nis2) {
       const a = context.assessments.nis2;
       assessmentStatus.push(
-        `- NIS2: ${a.completed ? "Completed" : "In Progress"}, Entity Type: ${a.entityType || "TBD"}, Requirements: ${a.completedRequirements || 0}/${a.applicableRequirements || "TBD"}`,
+        `- NIS2: ${a.completed ? "Completed" : "In Progress"}, Entity Type: ${a.entityType ? sanitizeForPrompt(a.entityType, 100) : "TBD"}, Requirements: ${a.completedRequirements || 0}/${a.applicableRequirements || "TBD"}`,
       );
     }
 
     if (context.assessments.debris) {
       const a = context.assessments.debris;
       assessmentStatus.push(
-        `- Debris: ${a.completed ? "Completed" : "In Progress"}, Orbit: ${a.orbitRegime || "TBD"}, Risk: ${a.riskLevel || "TBD"}`,
+        `- Debris: ${a.completed ? "Completed" : "In Progress"}, Orbit: ${a.orbitRegime ? sanitizeForPrompt(a.orbitRegime, 50) : "TBD"}, Risk: ${a.riskLevel ? sanitizeForPrompt(a.riskLevel, 50) : "TBD"}`,
       );
     }
 
     if (context.assessments.cybersecurity) {
       const a = context.assessments.cybersecurity;
       assessmentStatus.push(
-        `- Cybersecurity: ${a.completed ? "Completed" : "In Progress"}, Maturity: Level ${a.maturityLevel || "TBD"}, Framework: ${a.framework || "TBD"}`,
+        `- Cybersecurity: ${a.completed ? "Completed" : "In Progress"}, Maturity: Level ${a.maturityLevel || "TBD"}, Framework: ${a.framework ? sanitizeForPrompt(a.framework, 100) : "TBD"}`,
       );
     }
 
@@ -341,8 +342,8 @@ ${assessmentStatus.join("\n")}
     const auth = context.authorizationStatus;
     sections.push(`
 ### Authorization Workflow
-- State: ${auth.state}
-- Current Step: ${auth.currentStep || "N/A"}
+- State: ${sanitizeForPrompt(auth.state, 100)}
+- Current Step: ${auth.currentStep ? sanitizeForPrompt(auth.currentStep, 100) : "N/A"}
 - Documents: ${auth.completedDocuments || 0}/${auth.totalDocuments || "TBD"} completed
 `);
   }
@@ -353,7 +354,7 @@ ${assessmentStatus.join("\n")}
       .slice(0, 5)
       .map(
         (d) =>
-          `- ${d.title} (${d.module}): ${new Date(d.date).toLocaleDateString()} [${d.priority}]`,
+          `- ${sanitizeForPrompt(d.title)} (${sanitizeForPrompt(d.module, 100)}): ${new Date(d.date).toLocaleDateString()} [${sanitizeForPrompt(d.priority, 50)}]`,
       )
       .join("\n");
     sections.push(`
@@ -387,15 +388,15 @@ export function getGreetingPrompt(
   moduleName?: string,
 ): string {
   if (articleRef) {
-    return `Generate a brief, helpful greeting for a user who wants to discuss ${articleRef} of the EU Space Act. Mention that you can explain requirements, check their compliance status, or help generate related documentation. Keep it under 3 sentences.`;
+    return `Generate a brief, helpful greeting for a user who wants to discuss ${sanitizeForPrompt(articleRef, 100)} of the EU Space Act. Mention that you can explain requirements, check their compliance status, or help generate related documentation. Keep it under 3 sentences.`;
   }
 
   if (moduleName) {
-    return `Generate a brief, helpful greeting for a user exploring the ${moduleName} compliance module. Offer to answer questions, run assessments, or explain requirements. Keep it under 3 sentences.`;
+    return `Generate a brief, helpful greeting for a user exploring the ${sanitizeForPrompt(moduleName, 100)} compliance module. Offer to answer questions, run assessments, or explain requirements. Keep it under 3 sentences.`;
   }
 
   if (userContext?.organizationName) {
-    return `Generate a brief, personalized greeting for ${userContext.organizationName}. Acknowledge their compliance progress if any data is available: ${JSON.stringify(userContext.complianceScores || {})}. Offer to help with their regulatory questions. Keep it under 3 sentences.`;
+    return `Generate a brief, personalized greeting for ${sanitizeForPrompt(userContext.organizationName)}. Acknowledge their compliance progress if any data is available: ${JSON.stringify(userContext.complianceScores || {})}. Offer to help with their regulatory questions. Keep it under 3 sentences.`;
   }
 
   return `Generate a brief, professional greeting as ASTRA, the space regulatory compliance AI. Offer to help with EU Space Act, NIS2, national space laws, or any compliance questions. Keep it under 3 sentences.`;
