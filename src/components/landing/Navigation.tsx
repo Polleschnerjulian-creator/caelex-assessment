@@ -545,7 +545,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999] hover:text-[#1d1d1f] transition-colors"
+                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#86868b] hover:text-[#1d1d1f] transition-colors"
                       >
                         Newsroom &rarr;
                       </Link>
@@ -605,7 +605,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                       <Link
                         href="/platform"
                         onClick={closeMenu}
-                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#999] hover:text-[#1d1d1f] transition-colors"
+                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#86868b] hover:text-[#1d1d1f] transition-colors"
                       >
                         Learn more
                         <ArrowRight size={12} />
