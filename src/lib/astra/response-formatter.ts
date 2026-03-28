@@ -88,6 +88,26 @@ const LOW_CONFIDENCE_INDICATORS = [
   "depends on",
 ];
 
+const NEGATION_PREFIXES = [
+  "not ",
+  "no ",
+  "don't ",
+  "doesn't ",
+  "isn't ",
+  "aren't ",
+  "cannot ",
+  "can't ",
+  "never ",
+];
+
+function isNegated(text: string, keywordIndex: number): boolean {
+  // Check if any negation word appears within 20 chars before the keyword
+  const prefix = text
+    .substring(Math.max(0, keywordIndex - 20), keywordIndex)
+    .toLowerCase();
+  return NEGATION_PREFIXES.some((neg) => prefix.includes(neg));
+}
+
 function detectConfidence(text: string): ConfidenceLevel {
   const lowerText = text.toLowerCase();
 
@@ -111,16 +131,37 @@ function detectConfidence(text: string): ConfidenceLevel {
     return "MEDIUM";
   }
 
-  // Heuristic detection
-  const highCount = HIGH_CONFIDENCE_INDICATORS.filter((i) =>
-    lowerText.includes(i),
-  ).length;
-  const lowCount = LOW_CONFIDENCE_INDICATORS.filter((i) =>
-    lowerText.includes(i),
-  ).length;
+  // Negation-aware heuristic detection
+  let highScore = 0;
+  let lowScore = 0;
 
-  if (lowCount > highCount) return "LOW";
-  if (highCount > 2) return "HIGH";
+  for (const indicator of HIGH_CONFIDENCE_INDICATORS) {
+    let searchFrom = 0;
+    while (true) {
+      const idx = lowerText.indexOf(indicator, searchFrom);
+      if (idx === -1) break;
+
+      if (isNegated(lowerText, idx)) {
+        lowScore++; // "must not" → counts as LOW, not HIGH
+      } else {
+        highScore++;
+      }
+      searchFrom = idx + indicator.length;
+    }
+  }
+
+  for (const indicator of LOW_CONFIDENCE_INDICATORS) {
+    let searchFrom = 0;
+    while (true) {
+      const idx = lowerText.indexOf(indicator, searchFrom);
+      if (idx === -1) break;
+      lowScore++;
+      searchFrom = idx + indicator.length;
+    }
+  }
+
+  if (lowScore > highScore) return "LOW";
+  if (highScore > 2) return "HIGH";
   return "MEDIUM";
 }
 
