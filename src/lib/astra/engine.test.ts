@@ -175,6 +175,7 @@ describe("AstraEngine", () => {
     mockBuildCompleteContext.mockResolvedValue({
       userContext: defaultUserContext,
       contextString: "Test context string",
+      estimatedTokens: 5,
     });
     mockBuildSystemPrompt.mockReturnValue("System prompt");
     mockDetectTopics.mockReturnValue(["general"]);
@@ -859,6 +860,7 @@ describe("AstraEngine", () => {
       mockBuildCompleteContext.mockResolvedValue({
         userContext: defaultUserContext,
         contextString: "Debris score is 85%",
+        estimatedTokens: 5,
       });
 
       const engine = new AstraEngine();
@@ -879,6 +881,7 @@ describe("AstraEngine", () => {
       mockBuildCompleteContext.mockResolvedValue({
         userContext: defaultUserContext,
         contextString: "",
+        estimatedTokens: 0,
       });
 
       const engine = new AstraEngine();
@@ -1133,6 +1136,7 @@ describe("MockAstraEngine", () => {
     mockBuildCompleteContext.mockResolvedValue({
       userContext: defaultUserContext,
       contextString: "",
+      estimatedTokens: 0,
     });
     mockBuildSystemPrompt.mockReturnValue("System prompt");
   });

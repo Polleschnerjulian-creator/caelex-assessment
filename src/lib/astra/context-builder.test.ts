@@ -694,7 +694,7 @@ describe("buildCompleteContext", () => {
     mockPrisma.deadline.findMany.mockResolvedValue([]);
   });
 
-  it("returns both userContext and contextString", async () => {
+  it("returns userContext, contextString, and estimatedTokens", async () => {
     const result = await buildCompleteContext(
       "user-1",
       "org-1",
@@ -703,6 +703,8 @@ describe("buildCompleteContext", () => {
     expect(result.userContext).toBeDefined();
     expect(result.userContext.organizationName).toBe("SpaceCorp");
     expect(typeof result.contextString).toBe("string");
+    expect(typeof result.estimatedTokens).toBe("number");
+    expect(result.estimatedTokens).toBeGreaterThanOrEqual(0);
   });
 
   it("includes topic-detected context in contextString", async () => {

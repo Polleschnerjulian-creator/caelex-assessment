@@ -519,6 +519,16 @@ ${userContext.documentSummary.expiringWithin30Days} document(s) expiring within 
   return contextSections.join("\n");
 }
 
+// ─── Token Estimation ───
+
+/**
+ * Rough token count estimation.
+ * ~4 characters per token for English text is a common heuristic.
+ */
+function estimateTokenCount(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
 // ─── Build Complete Context ───
 
 export async function buildCompleteContext(
@@ -527,7 +537,11 @@ export async function buildCompleteContext(
   message: string,
   pageContext?: AstraContext,
   missionData?: AstraMissionData,
-): Promise<{ userContext: AstraUserContext; contextString: string }> {
+): Promise<{
+  userContext: AstraUserContext;
+  contextString: string;
+  estimatedTokens: number;
+}> {
   // Detect topics from the message first to enable selective DB queries
   const topics = detectTopics(message);
 
@@ -542,7 +556,16 @@ export async function buildCompleteContext(
     missionData,
   );
 
-  return { userContext, contextString };
+  const estimatedTokens = estimateTokenCount(contextString);
+
+  if (estimatedTokens > 50000) {
+    console.warn(
+      `[ASTRA] Context string is very large: ~${estimatedTokens} tokens. ` +
+        `Topics: ${topics.join(", ")}. Consider reducing context.`,
+    );
+  }
+
+  return { userContext, contextString, estimatedTokens };
 }
 
 // ─── Helper Functions ───
