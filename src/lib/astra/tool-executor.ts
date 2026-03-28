@@ -1659,13 +1659,13 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
 
     const terminalStatuses = ["APPROVED", "REJECTED", "WITHDRAWN"];
 
-    // Query submissions with upcoming deadlines
-    const submissions = await prisma.nCASubmission.findMany({
+    // Single query for both upcoming and overdue submissions
+    const allRelevant = await prisma.nCASubmission.findMany({
       where: {
         userId: userContext.userId,
         status: { notIn: terminalStatuses as never[] },
         OR: [
-          { followUpDeadline: { gte: now, lte: futureDate } },
+          { followUpDeadline: { lte: futureDate } },
           { slaDeadline: { gte: now, lte: futureDate } },
         ],
       },
@@ -1679,23 +1679,21 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         followUpRequired: true,
       },
       orderBy: { followUpDeadline: "asc" },
+      take: 50,
     });
 
-    // Also check for overdue items
-    const overdueSubmissions = await prisma.nCASubmission.findMany({
-      where: {
-        userId: userContext.userId,
-        status: { notIn: terminalStatuses as never[] },
-        followUpRequired: true,
-        followUpDeadline: { lt: now },
-      },
-      select: {
-        id: true,
-        ncaAuthority: true,
-        ncaAuthorityName: true,
-        followUpDeadline: true,
-      },
-    });
+    // Split into upcoming and overdue in JavaScript
+    const submissions = allRelevant.filter(
+      (s) =>
+        (s.followUpDeadline &&
+          s.followUpDeadline >= now &&
+          s.followUpDeadline <= futureDate) ||
+        (s.slaDeadline && s.slaDeadline >= now && s.slaDeadline <= futureDate),
+    );
+    const overdueSubmissions = allRelevant.filter(
+      (s) =>
+        s.followUpRequired && s.followUpDeadline && s.followUpDeadline < now,
+    );
 
     // Check correspondence requiring response
     const pendingResponses = await prisma.nCACorrespondence.findMany({
