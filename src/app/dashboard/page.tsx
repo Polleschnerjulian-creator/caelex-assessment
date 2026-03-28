@@ -70,9 +70,7 @@ const ComplianceScoreCard = dynamic(
     ),
   },
 );
-const GlassHero = dynamic(() => import("@/components/dashboard/GlassHero"), {
-  ssr: false,
-});
+// GlassHero removed — WebGL shader rendered as broken cyan bar
 
 // ─── Types ───
 
@@ -971,8 +969,7 @@ function DashboardContent() {
           </GlassPanel>
         )}
 
-        {/* ─── Glass Hero (Tier 3 WebGL refraction) ─── */}
-        <GlassHero />
+        {/* GlassHero removed — WebGL shader rendered as broken cyan bar */}
 
         {/* ─── ROW 1: KPI Metrics ─── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
