@@ -145,6 +145,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("forge-mode-change", handler);
   }, []);
 
+  // Listen for Cmd+K toggle from AstraWidget
+  useEffect(() => {
+    const handler = () => setAstraWidgetOpen((prev) => !prev);
+    window.addEventListener("astra-toggle", handler);
+    return () => window.removeEventListener("astra-toggle", handler);
+  }, []);
+
   return (
     <div className="caelex-v2 dashboard-wallpaper">
       <GlassSpecular />
@@ -169,7 +176,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         @media (min-width: 1024px) {
           .sidebar-content-area {
             margin-left: ${contentMargin}px;
-            margin-right: ${astraWidgetOpen ? 400 : 0}px;
+            margin-right: ${astraWidgetOpen ? 480 : 0}px;
             ${layoutMounted ? "transition: margin-left 300ms ease-out, margin-right 280ms cubic-bezier(0.16, 1, 0.3, 1);" : ""}
             will-change: margin-left, margin-right;
           }
