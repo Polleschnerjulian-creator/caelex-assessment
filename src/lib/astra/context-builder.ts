@@ -167,7 +167,20 @@ export function detectTopics(message: string): string[] {
   const detectedTopics: string[] = [];
 
   for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
-    if (keywords.some((kw) => lowerMessage.includes(kw))) {
+    if (
+      keywords.some((kw) => {
+        // Use word boundary regex for multi-char keywords
+        if (kw.length >= 3) {
+          const regex = new RegExp(
+            `\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+            "i",
+          );
+          return regex.test(lowerMessage);
+        }
+        // Short keywords (1-2 chars) — keep includes() to avoid false negatives
+        return lowerMessage.includes(kw);
+      })
+    ) {
       detectedTopics.push(topic);
     }
   }
