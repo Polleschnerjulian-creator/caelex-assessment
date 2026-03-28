@@ -40,10 +40,21 @@ import {
 // ─── Anthropic Client ───
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS = 4096;
-const MAX_TOOL_ITERATIONS = 10; // Safety limit for tool call loops
-const STREAM_INACTIVITY_TIMEOUT_MS = 30000; // 30 seconds
+
+// ─── Astra Configuration ───
+export const ASTRA_CONFIG = {
+  model: process.env.ASTRA_MODEL || "claude-sonnet-4-6",
+  maxTokens: parseInt(process.env.ASTRA_MAX_TOKENS || "4096", 10),
+  temperature: parseFloat(process.env.ASTRA_TEMPERATURE || "0.7"),
+  maxToolIterations: parseInt(
+    process.env.ASTRA_MAX_TOOL_ITERATIONS || "10",
+    10,
+  ),
+  streamInactivityTimeoutMs: parseInt(
+    process.env.ASTRA_STREAM_TIMEOUT_MS || "30000",
+    10,
+  ),
+} as const;
 
 // Initialize client lazily to avoid errors when API key not set
 let anthropicClient: Anthropic | null = null;
@@ -232,17 +243,17 @@ export class AstraEngine implements IAstraEngine {
     let totalTokens = 0;
     let iterations = 0;
 
-    while (iterations < MAX_TOOL_ITERATIONS) {
+    while (iterations < ASTRA_CONFIG.maxToolIterations) {
       iterations++;
 
       // Call Anthropic API
       const response = await client.messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
+        model: ASTRA_CONFIG.model,
+        max_tokens: ASTRA_CONFIG.maxTokens,
         system: systemPrompt,
         messages: messages as Anthropic.MessageParam[],
         tools: ALL_TOOLS as Anthropic.Tool[],
-        temperature: 0.7,
+        temperature: ASTRA_CONFIG.temperature,
       });
 
       totalTokens += response.usage.input_tokens + response.usage.output_tokens;
@@ -305,7 +316,9 @@ export class AstraEngine implements IAstraEngine {
     }
 
     // Hit max iterations - return what we have
-    console.warn(`ASTRA: Hit max tool iterations (${MAX_TOOL_ITERATIONS})`);
+    console.warn(
+      `ASTRA: Hit max tool iterations (${ASTRA_CONFIG.maxToolIterations})`,
+    );
     return {
       responseText:
         "I executed several tools but couldn't complete the analysis. Please try a more specific question.",
@@ -334,16 +347,16 @@ export class AstraEngine implements IAstraEngine {
     let totalTokens = 0;
     let iterations = 0;
 
-    while (iterations < MAX_TOOL_ITERATIONS) {
+    while (iterations < ASTRA_CONFIG.maxToolIterations) {
       iterations++;
 
       const stream = client.messages.stream({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
+        model: ASTRA_CONFIG.model,
+        max_tokens: ASTRA_CONFIG.maxTokens,
         system: systemPrompt,
         messages: messages as Anthropic.MessageParam[],
         tools: ALL_TOOLS as Anthropic.Tool[],
-        temperature: 0.7,
+        temperature: ASTRA_CONFIG.temperature,
       });
 
       // Inactivity timeout: abort stream if no data received within threshold
@@ -353,7 +366,7 @@ export class AstraEngine implements IAstraEngine {
         if (inactivityTimer) clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(() => {
           stream.abort();
-        }, STREAM_INACTIVITY_TIMEOUT_MS);
+        }, ASTRA_CONFIG.streamInactivityTimeoutMs);
       };
 
       resetInactivityTimer();
@@ -440,7 +453,9 @@ export class AstraEngine implements IAstraEngine {
       });
     }
 
-    console.warn(`ASTRA: Hit max tool iterations (${MAX_TOOL_ITERATIONS})`);
+    console.warn(
+      `ASTRA: Hit max tool iterations (${ASTRA_CONFIG.maxToolIterations})`,
+    );
     return {
       responseText:
         "I executed several tools but couldn't complete the analysis. Please try a more specific question.",
