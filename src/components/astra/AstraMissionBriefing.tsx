@@ -164,18 +164,18 @@ function BriefingSkeleton() {
   return (
     <div className="flex flex-col items-center px-6 py-8 gap-6">
       {/* Ring skeleton */}
-      <div className="w-[100px] h-[100px] rounded-full glass-surface animate-pulse" />
+      <div className="w-[100px] h-[100px] rounded-full bg-white/[0.06] animate-pulse" />
       {/* Greeting skeleton */}
       <div className="flex flex-col items-center gap-2">
-        <div className="h-5 w-48 rounded glass-surface animate-pulse" />
-        <div className="h-3 w-36 rounded glass-surface animate-pulse" />
+        <div className="h-5 w-48 rounded bg-white/[0.06] animate-pulse" />
+        <div className="h-3 w-36 rounded bg-white/[0.06] animate-pulse" />
       </div>
       {/* Card skeletons */}
       <div className="w-full flex flex-col gap-2">
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-16 rounded-xl glass-surface animate-pulse"
+            className="h-16 rounded-xl bg-white/[0.06] animate-pulse"
           />
         ))}
       </div>
@@ -344,8 +344,9 @@ export default function AstraMissionBriefing({
                   }
                 }}
                 className={`
-                  group w-full text-left rounded-xl border border-white/[0.06]
-                  glass-elevated glass-interactive
+                  group w-full text-left rounded-xl
+                  bg-white/[0.04] backdrop-blur-md border border-white/[0.08]
+                  hover:bg-white/[0.07] transition-all duration-200
                   border-l-2 ${config.border}
                   p-3.5 flex items-start gap-3 cursor-pointer
                 `}
@@ -383,11 +384,11 @@ export default function AstraMissionBriefing({
             key={action.label}
             onClick={() => onSendMessage(action.prompt)}
             className="
-              glass-interactive glass-surface
-              border border-white/[0.06] rounded-xl
+              bg-white/[0.04] hover:bg-white/[0.08]
+              border border-white/[0.08] rounded-xl
               px-4 py-2 flex items-center gap-2
               text-caption font-medium text-white/60
-              hover:text-white/80 transition-colors cursor-pointer
+              hover:text-white/80 transition-all duration-200 cursor-pointer
             "
           >
             <action.icon size={13} className="opacity-60" />

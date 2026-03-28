@@ -37,7 +37,7 @@ function processInline(line: string): React.ReactNode[] {
         parts.push(
           <code
             key={pk++}
-            className="px-1.5 py-0.5 rounded glass-surface text-small font-mono text-emerald-400/80"
+            className="px-1.5 py-0.5 rounded bg-white/[0.06] text-small font-mono text-emerald-400/80"
           >
             {codeMatch[1]}
           </code>,
@@ -267,12 +267,13 @@ export default function AstraWidget({
             className="
               fixed right-0 top-0 h-full w-[480px] max-w-full z-50
               flex flex-col
-              glass-floating border-l border-white/[0.06]
+              bg-[#0A0F1E]/95 backdrop-blur-2xl border-l border-white/[0.08]
               overflow-hidden
+              dark
             "
           >
             {/* ─── Header ─── */}
-            <div className="h-12 flex items-center justify-between px-4 glass-surface border-b border-white/[0.06] flex-shrink-0 relative z-10">
+            <div className="h-12 flex items-center justify-between px-4 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08] flex-shrink-0 relative z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
                 <span className="text-small font-medium tracking-wider text-white/60 uppercase">
@@ -346,11 +347,11 @@ export default function AstraWidget({
                         className="flex gap-2.5 items-start mb-2"
                       >
                         {/* Avatar */}
-                        <div className="w-6 h-6 rounded-full glass-surface border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
                           <div className="w-2 h-2 rounded-full bg-emerald-400" />
                         </div>
                         {/* Message */}
-                        <div className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl glass-elevated border border-white/[0.06] text-body leading-relaxed text-white/70 break-words">
+                        <div className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/[0.06] text-body leading-relaxed text-white/70 break-words">
                           {renderMarkdown(msg.content)}
                           {showCursor && (
                             <span className="inline-block w-0.5 h-3.5 bg-emerald-400 ml-0.5 align-text-bottom rounded-sm animate-pulse" />
@@ -363,7 +364,7 @@ export default function AstraWidget({
                   {/* Typing indicator */}
                   {isTyping && !isStreaming && (
                     <div className="flex gap-2.5 items-start mb-2">
-                      <div className="w-6 h-6 rounded-full glass-surface border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-400" />
                       </div>
                       <div className="flex gap-1.5 items-center pt-2.5">
@@ -396,7 +397,7 @@ export default function AstraWidget({
                     <button
                       key={pill}
                       onClick={() => sendMessage(pill)}
-                      className="px-3 py-1.5 rounded-xl text-caption text-white/40 border border-white/[0.06] glass-surface glass-interactive hover:text-white/60 transition-colors"
+                      className="px-3 py-1.5 rounded-xl text-caption text-white/40 border border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.08] hover:text-white/60 transition-colors"
                     >
                       {pill}
                     </button>
@@ -405,7 +406,7 @@ export default function AstraWidget({
               )}
 
               {/* Command bar input */}
-              <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2.5 glass-surface border border-white/[0.08] focus-within:border-emerald-500/30 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,0.08)] transition-all">
+              <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2.5 bg-white/[0.04] backdrop-blur-md border border-white/[0.08] focus-within:border-emerald-500/30 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,0.08)] transition-all">
                 <textarea
                   ref={inputRef}
                   value={input}
