@@ -37,6 +37,44 @@ import {
   summarizeOlderMessages,
 } from "./conversation-manager";
 
+// ─── Retry Utility ───
+
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 1000;
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = MAX_RETRIES,
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      // Only retry on transient errors
+      const isRetryable =
+        error instanceof Anthropic.APIError &&
+        (error.status === 500 || error.status === 503 || error.status === 529);
+
+      if (!isRetryable || attempt === retries) {
+        throw error;
+      }
+
+      // Exponential backoff: 1s, 2s
+      const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+      console.warn(
+        `[ASTRA] Retrying after ${error.status} error (attempt ${attempt + 1}/${retries}), waiting ${delay}ms`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
 // ─── Anthropic Client ───
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -246,15 +284,17 @@ export class AstraEngine implements IAstraEngine {
     while (iterations < ASTRA_CONFIG.maxToolIterations) {
       iterations++;
 
-      // Call Anthropic API
-      const response = await client.messages.create({
-        model: ASTRA_CONFIG.model,
-        max_tokens: ASTRA_CONFIG.maxTokens,
-        system: systemPrompt,
-        messages: messages as Anthropic.MessageParam[],
-        tools: ALL_TOOLS as Anthropic.Tool[],
-        temperature: ASTRA_CONFIG.temperature,
-      });
+      // Call Anthropic API (with retry for transient errors)
+      const response = await withRetry(() =>
+        client.messages.create({
+          model: ASTRA_CONFIG.model,
+          max_tokens: ASTRA_CONFIG.maxTokens,
+          system: systemPrompt,
+          messages: messages as Anthropic.MessageParam[],
+          tools: ALL_TOOLS as Anthropic.Tool[],
+          temperature: ASTRA_CONFIG.temperature,
+        }),
+      );
 
       totalTokens += response.usage.input_tokens + response.usage.output_tokens;
 
