@@ -8,6 +8,7 @@ import {
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
 import { createCalendarEventSchema } from "@/lib/hub/validations";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ events });
   } catch (err) {
-    console.error("[hub/calendar-events] GET error:", err);
+    logger.error("[hub/calendar-events] GET error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ event }, { status: 201 });
   } catch (err) {
-    console.error("[hub/calendar-events] POST error:", err);
+    logger.error("[hub/calendar-events] POST error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

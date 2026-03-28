@@ -1,23 +1,9 @@
-import { generateMetadata as genMeta } from "@/lib/seo";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = genMeta({
-  title: "EU Space Act Assessment",
+import { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "EU Space Act Assessment — Caelex",
   description:
-    "Assess your compliance with the EU Space Act (COM(2025) 335). Answer 8 questions to identify applicable articles, operator obligations, and authorization requirements.",
-  path: "/assessment/eu-space-act",
-  keywords: [
-    "EU Space Act assessment",
-    "space compliance check",
-    "satellite operator obligations",
-    "EU Space Act compliance tool",
-  ],
-});
-
-export default function EuSpaceActAssessmentLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+    "Assess your compliance with the EU Space Act (COM(2025) 335). Determine which of 119 articles apply to your space operations.",
+};
+export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }

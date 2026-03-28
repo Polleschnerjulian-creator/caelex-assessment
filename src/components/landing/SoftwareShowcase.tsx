@@ -10,28 +10,28 @@ const PRODUCTS = [
     tagline: "Navigate regulation,\nfrom authorization to audit.",
     description:
       "The regulatory command center. Real-time compliance posture across space law, cybersecurity directives, and national regulations — for every operator type, every jurisdiction, every mission phase.",
-    href: "#",
+    href: "/platform",
   },
   {
     name: "Sentinel",
     tagline: "Collect compliance evidence,\nfrom orbit to ground.",
     description:
       "Autonomous evidence agents deployed at operator premises. Cryptographically signed hash chains, tamper-evident audit trails, and cross-verification against public orbital data.",
-    href: "#",
+    href: "/sentinel",
   },
   {
     name: "Ephemeris",
     tagline: "Predict compliance risk,\nfrom today to end-of-life.",
     description:
       "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
-    href: "#",
+    href: "/systems/ephemeris",
   },
   {
     name: "Verity",
     tagline: "Prove compliance without\nrevealing what you know.",
     description:
       "Zero-knowledge compliance attestation. Cryptographic proofs that demonstrate regulatory adherence to auditors without exposing proprietary operational data.",
-    href: "#",
+    href: "/verity",
   },
 ];
 

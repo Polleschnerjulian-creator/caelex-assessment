@@ -8,6 +8,7 @@ import {
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
 import { updateCalendarEventSchema } from "@/lib/hub/validations";
+import { logger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -60,7 +61,7 @@ export async function PATCH(
 
     return NextResponse.json({ event });
   } catch (err) {
-    console.error("[hub/calendar-events/[id]] PATCH error:", err);
+    logger.error("[hub/calendar-events/[id]] PATCH error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -104,7 +105,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[hub/calendar-events/[id]] DELETE error:", err);
+    logger.error("[hub/calendar-events/[id]] DELETE error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
