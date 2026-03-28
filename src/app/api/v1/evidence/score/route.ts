@@ -6,16 +6,24 @@
  * Requires API key with `read:compliance` scope.
  */
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, type ApiContext } from "@/lib/api-auth";
 import { calculateEvidenceScore } from "@/lib/services/ace-evidence-service.server";
 
 async function handler(_request: NextRequest, context: ApiContext) {
-  const { organizationId } = context;
+  try {
+    const { organizationId } = context;
 
-  const score = await calculateEvidenceScore(organizationId);
+    const score = await calculateEvidenceScore(organizationId);
 
-  return apiSuccess(score);
+    return apiSuccess(score);
+  } catch (error) {
+    console.error("[evidence/score]", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }
 
 export const GET = withApiAuth(handler, {

@@ -5,26 +5,34 @@
  * Requires API key with `read:compliance` scope.
  */
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, type ApiContext } from "@/lib/api-auth";
 import { performGapAnalysis } from "@/lib/services/ace-evidence-service.server";
 import type { RegulationType } from "@prisma/client";
 
 async function handler(request: NextRequest, context: ApiContext) {
-  const { organizationId } = context;
-  const url = new URL(request.url);
+  try {
+    const { organizationId } = context;
+    const url = new URL(request.url);
 
-  // Optional filter by regulation type
-  const regulationType = url.searchParams.get(
-    "regulationType",
-  ) as RegulationType | null;
+    // Optional filter by regulation type
+    const regulationType = url.searchParams.get(
+      "regulationType",
+    ) as RegulationType | null;
 
-  const analysis = await performGapAnalysis(
-    organizationId,
-    regulationType || undefined,
-  );
+    const analysis = await performGapAnalysis(
+      organizationId,
+      regulationType || undefined,
+    );
 
-  return apiSuccess(analysis);
+    return apiSuccess(analysis);
+  } catch (error) {
+    console.error("[evidence/gaps]", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }
 
 export const GET = withApiAuth(handler, {

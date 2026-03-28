@@ -5,7 +5,7 @@
  * Requires API key with `read:compliance` scope.
  */
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, apiSuccess, ApiContext } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
@@ -20,71 +20,87 @@ function calculateGrade(score: number): string {
 
 export const GET = withApiAuth(
   async (_request: NextRequest, context: ApiContext) => {
-    const orgId = context.organizationId;
+    try {
+      const orgId = context.organizationId;
 
-    // Gather metrics for score calculation
-    const [spacecraftCount, workflowStats, deadlineStats] = await Promise.all([
-      prisma.spacecraft.count({ where: { organizationId: orgId } }),
-      prisma.authorizationWorkflow.groupBy({
-        by: ["status"],
-        where: {
-          user: {
-            organizationMemberships: { some: { organizationId: orgId } },
-          },
+      // Gather metrics for score calculation
+      const [spacecraftCount, workflowStats, deadlineStats] = await Promise.all(
+        [
+          prisma.spacecraft.count({ where: { organizationId: orgId } }),
+          prisma.authorizationWorkflow.groupBy({
+            by: ["status"],
+            where: {
+              user: {
+                organizationMemberships: { some: { organizationId: orgId } },
+              },
+            },
+            _count: true,
+          }),
+          prisma.deadline.groupBy({
+            by: ["status"],
+            where: {
+              user: {
+                organizationMemberships: { some: { organizationId: orgId } },
+              },
+            },
+            _count: true,
+          }),
+        ],
+      );
+
+      // Calculate score (0-100)
+      let score = 100;
+
+      // Deduct for incomplete workflows
+      const totalWorkflows = workflowStats.reduce(
+        (sum, s) => sum + s._count,
+        0,
+      );
+      const completedWorkflows =
+        workflowStats.find((s) => s.status === "approved")?._count || 0;
+      if (totalWorkflows > 0) {
+        const workflowCompletion = completedWorkflows / totalWorkflows;
+        score -= Math.round((1 - workflowCompletion) * 30);
+      }
+
+      // Deduct for overdue deadlines
+      const overdueDeadlines =
+        deadlineStats.find((s) => s.status === "OVERDUE")?._count || 0;
+      const totalDeadlines = deadlineStats.reduce(
+        (sum, s) => sum + s._count,
+        0,
+      );
+      if (totalDeadlines > 0) {
+        score -= Math.round((overdueDeadlines / totalDeadlines) * 20);
+      }
+
+      // Deduct if no workflows started but spacecraft exist
+      if (spacecraftCount > 0 && totalWorkflows === 0) {
+        score -= 20;
+      }
+
+      score = Math.max(0, Math.min(100, score));
+      const grade = calculateGrade(score);
+
+      return apiSuccess(
+        {
+          score,
+          grade,
+          spacecraftCount,
+          totalWorkflows,
+          completedWorkflows,
+          overdueDeadlines,
         },
-        _count: true,
-      }),
-      prisma.deadline.groupBy({
-        by: ["status"],
-        where: {
-          user: {
-            organizationMemberships: { some: { organizationId: orgId } },
-          },
-        },
-        _count: true,
-      }),
-    ]);
-
-    // Calculate score (0-100)
-    let score = 100;
-
-    // Deduct for incomplete workflows
-    const totalWorkflows = workflowStats.reduce((sum, s) => sum + s._count, 0);
-    const completedWorkflows =
-      workflowStats.find((s) => s.status === "approved")?._count || 0;
-    if (totalWorkflows > 0) {
-      const workflowCompletion = completedWorkflows / totalWorkflows;
-      score -= Math.round((1 - workflowCompletion) * 30);
+        200,
+        { timestamp: new Date().toISOString() },
+      );
+    } catch (error) {
+      console.error("[compliance/score]", error);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
-
-    // Deduct for overdue deadlines
-    const overdueDeadlines =
-      deadlineStats.find((s) => s.status === "OVERDUE")?._count || 0;
-    const totalDeadlines = deadlineStats.reduce((sum, s) => sum + s._count, 0);
-    if (totalDeadlines > 0) {
-      score -= Math.round((overdueDeadlines / totalDeadlines) * 20);
-    }
-
-    // Deduct if no workflows started but spacecraft exist
-    if (spacecraftCount > 0 && totalWorkflows === 0) {
-      score -= 20;
-    }
-
-    score = Math.max(0, Math.min(100, score));
-    const grade = calculateGrade(score);
-
-    return apiSuccess(
-      {
-        score,
-        grade,
-        spacecraftCount,
-        totalWorkflows,
-        completedWorkflows,
-        overdueDeadlines,
-      },
-      200,
-      { timestamp: new Date().toISOString() },
-    );
   },
   { requiredScopes: ["read:compliance"] },
 );
