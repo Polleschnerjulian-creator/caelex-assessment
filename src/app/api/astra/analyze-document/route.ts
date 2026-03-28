@@ -13,35 +13,43 @@ const analyzeSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const parsed = analyzeSchema.safeParse(body);
-  if (!parsed.success) {
+    const body = await request.json();
+    const parsed = analyzeSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          details: parsed.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const { documentText, moduleType, documentName } = parsed.data;
+
+    const supportedModules = getSupportedModules();
+    if (!supportedModules.includes(moduleType)) {
+      return NextResponse.json(
+        {
+          error: `Unsupported module. Available: ${supportedModules.join(", ")}`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const analysis = analyzeDocument(documentText, moduleType, documentName);
+
+    return NextResponse.json({ data: { analysis } });
+  } catch (error) {
+    console.error("[astra-analyze-document]", error);
     return NextResponse.json(
-      {
-        error: "Validation failed",
-        details: parsed.error.flatten().fieldErrors,
-      },
-      { status: 400 },
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
-
-  const { documentText, moduleType, documentName } = parsed.data;
-
-  const supportedModules = getSupportedModules();
-  if (!supportedModules.includes(moduleType)) {
-    return NextResponse.json(
-      {
-        error: `Unsupported module. Available: ${supportedModules.join(", ")}`,
-      },
-      { status: 400 },
-    );
-  }
-
-  const analysis = analyzeDocument(documentText, moduleType, documentName);
-
-  return NextResponse.json({ data: { analysis } });
 }

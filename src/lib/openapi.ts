@@ -79,7 +79,7 @@ The API uses standard HTTP status codes. Error responses include:
       description: "Production",
     },
     {
-      url: "http://localhost:3000/api/v1",
+      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://caelex.eu"}/api/v1`,
       description: "Local development",
     },
   ],

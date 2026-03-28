@@ -394,7 +394,8 @@ function redirectWithError(message: string): NextResponse {
     process.env.APP_URL ||
     process.env.NEXTAUTH_URL ||
     process.env.AUTH_URL ||
-    "http://localhost:3000";
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://caelex.eu";
   const errorUrl = `/login?error=${encodeURIComponent(message)}`;
   return NextResponse.redirect(new URL(errorUrl, baseUrl));
 }
