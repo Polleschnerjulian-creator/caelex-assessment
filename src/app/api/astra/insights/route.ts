@@ -14,10 +14,32 @@ export async function GET() {
     select: { organizationId: true },
   });
 
-  const insights = await generateInsightsForUser(
-    session.user.id,
-    membership?.organizationId || "",
-  );
+  const orgId = membership?.organizationId || "";
 
-  return NextResponse.json({ data: { insights, count: insights.length } });
+  const [insights, rrsSnapshot, deadlineCount] = await Promise.all([
+    generateInsightsForUser(session.user.id, orgId),
+    orgId
+      ? prisma.rRSSnapshot.findFirst({
+          where: { organizationId: orgId },
+          orderBy: { snapshotDate: "desc" },
+          select: { overallScore: true },
+        })
+      : Promise.resolve(null),
+    prisma.deadline.count({
+      where: {
+        userId: session.user.id,
+        status: { not: "COMPLETED" },
+        dueDate: {
+          gte: new Date(),
+          lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      },
+    }),
+  ]);
+
+  return NextResponse.json({
+    rrsScore: rrsSnapshot?.overallScore ?? 0,
+    deadlineCount,
+    insights,
+  });
 }

@@ -212,7 +212,12 @@ export default function AstraMissionBriefing({
         if (!res.ok) throw new Error("fetch failed");
         const json = await res.json();
         if (!cancelled) {
-          setData(json);
+          // API returns { rrsScore, deadlineCount, insights } directly
+          setData({
+            rrsScore: json.rrsScore ?? 0,
+            deadlineCount: json.deadlineCount ?? 0,
+            insights: json.insights ?? [],
+          });
           setLoading(false);
         }
       } catch {
