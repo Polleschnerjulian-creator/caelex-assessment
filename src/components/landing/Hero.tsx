@@ -55,16 +55,20 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <div>
-              <h1 className="font-medium tracking-[-0.03em] leading-[1.05]">
-                <span className="text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/80 block mb-1">
+              <div className="font-medium tracking-[-0.03em] leading-[1.05]">
+                <span
+                  className="block text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/80 mb-1"
+                  aria-hidden="true"
+                >
                   The World&apos;s First
                 </span>
-                <span className="text-[clamp(2.5rem,6vw,5rem)] text-white block">
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] text-white">
+                  <span className="sr-only">The World&apos;s First </span>
                   Space Compliance
                   <br />
                   OS.
-                </span>
-              </h1>
+                </h1>
+              </div>
             </div>
 
             {/* Right: CTA and Summary */}
