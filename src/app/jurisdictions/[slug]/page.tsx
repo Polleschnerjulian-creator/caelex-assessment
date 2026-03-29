@@ -12,6 +12,8 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateJurisdictionBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
+import RelatedContent from "@/components/seo/RelatedContent";
+import { TOPIC_CLUSTERS } from "@/data/topic-clusters";
 import {
   jurisdictionMetadata,
   getJurisdictionMetadata,
@@ -563,6 +565,13 @@ export default async function JurisdictionPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+
+          {/* Topic cluster cross-links for SEO */}
+          <RelatedContent
+            cluster="Jurisdictions"
+            currentPath={`/jurisdictions/${slug}`}
+            links={TOPIC_CLUSTERS["Jurisdictions"]}
+          />
         </div>
       </main>
     </div>
