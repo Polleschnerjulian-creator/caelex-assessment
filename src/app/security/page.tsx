@@ -23,6 +23,7 @@ import {
   Building2,
   ArrowRight,
   Users,
+  ShieldAlert,
 } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 
@@ -207,7 +208,7 @@ const auditItems = [
   },
   {
     icon: Clock,
-    title: "99.99% Availability",
+    title: "High Availability Infrastructure",
     description:
       "Enterprise infrastructure with automatic failover and zero-downtime deployments.",
   },
@@ -240,9 +241,15 @@ const enterpriseFeatures = [
   },
   {
     icon: ShieldCheck,
-    title: "Annual Penetration Tests",
+    title: "Security Assessments",
     description:
-      "Independent security audits by external experts — with remediation tracking.",
+      "Regular security reviews and vulnerability assessments — with remediation tracking.",
+  },
+  {
+    icon: ShieldAlert,
+    title: "Responsible Disclosure",
+    description:
+      "Found a vulnerability? Report it to security@caelex.eu. We acknowledge reports within 48 hours and work with researchers to resolve issues responsibly.",
   },
   {
     icon: Building2,
@@ -687,6 +694,16 @@ export default function SecurityPage() {
       <AISecuritySection />
       <AuditSection />
       <EnterpriseSection />
+      <p className="text-center text-[#9CA3AF] text-body mt-8">
+        Security researchers: See our{" "}
+        <a
+          href="/.well-known/security.txt"
+          className="underline hover:text-[#4B5563]"
+        >
+          security.txt
+        </a>{" "}
+        for responsible disclosure information.
+      </p>
       <CTASection />
     </main>
   );
