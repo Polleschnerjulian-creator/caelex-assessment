@@ -7,6 +7,10 @@ import {
 } from "@/data/module-page-data";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 import { ProductJsonLd } from "@/components/seo/JsonLd";
+import RelatedContent from "@/components/seo/RelatedContent";
+import { TOPIC_CLUSTERS, MODULE_CLUSTER_MAP } from "@/data/topic-clusters";
+import ModuleFAQ from "@/components/seo/ModuleFAQ";
+import { MODULE_FAQS } from "@/data/module-faqs";
 import ModulePageClient from "./ModulePageClient";
 
 // ============================================================================
@@ -61,6 +65,8 @@ export default async function ModulePage({ params }: PageProps) {
   }
 
   const { prev, next } = getAdjacentModules(slug);
+  const clusterName = MODULE_CLUSTER_MAP[slug];
+  const clusterLinks = clusterName ? TOPIC_CLUSTERS[clusterName] : undefined;
 
   return (
     <>
@@ -74,6 +80,24 @@ export default async function ModulePage({ params }: PageProps) {
 
       {/* Client component — full visual experience */}
       <ModulePageClient module={mod} prevModule={prev} nextModule={next} />
+
+      {/* FAQ section with FAQPage JSON-LD schema */}
+      {MODULE_FAQS[slug] && (
+        <div className="max-w-[900px] mx-auto px-6 md:px-12 pb-10">
+          <ModuleFAQ moduleName={mod.name} faqs={MODULE_FAQS[slug]} />
+        </div>
+      )}
+
+      {/* Topic cluster cross-links for SEO */}
+      {clusterName && clusterLinks && (
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 pb-20">
+          <RelatedContent
+            cluster={clusterName}
+            currentPath={`/modules/${slug}`}
+            links={clusterLinks}
+          />
+        </div>
+      )}
     </>
   );
 }
