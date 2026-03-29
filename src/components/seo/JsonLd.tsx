@@ -15,7 +15,8 @@ type JsonLdType =
   | "DefinedTermSet"
   | "DefinedTerm"
   | "HowTo"
-  | "Product";
+  | "Product"
+  | "VideoObject";
 
 interface JsonLdBaseProps {
   type: JsonLdType;
@@ -357,6 +358,46 @@ export function HowToJsonLd({
       text: step.text,
       ...(step.url && { url: step.url }),
     })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+// ============================================================================
+// VIDEO OBJECT SCHEMA (Hero video, promotional videos)
+// ============================================================================
+
+export function VideoObjectJsonLd({
+  name,
+  description,
+  thumbnailUrl,
+  uploadDate,
+  contentUrl,
+}: {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  contentUrl: string;
+}) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name,
+    description,
+    thumbnailUrl,
+    uploadDate,
+    contentUrl,
+    publisher: {
+      "@type": "Organization",
+      name: "Caelex",
+      url: "https://caelex.eu",
+    },
   };
 
   return (

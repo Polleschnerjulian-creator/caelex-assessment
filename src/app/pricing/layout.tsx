@@ -49,6 +49,25 @@ export default function PricingLayout({
     <>
       <SoftwareApplicationJsonLd />
       <FAQPageJsonLd faqs={pricingFaqs} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Caelex",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            offers: {
+              "@type": "AggregateOffer",
+              lowPrice: "374",
+              highPrice: "2499",
+              priceCurrency: "EUR",
+              offerCount: "3",
+            },
+          }),
+        }}
+      />
       {children}
     </>
   );
