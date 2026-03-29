@@ -144,7 +144,6 @@ const documentLinks = [
   { label: "Glossary", href: "/glossary" },
   { label: "Modules", href: "/modules" },
   { label: "Jurisdictions", href: "/jurisdictions" },
-  { label: "API Documentation", href: "/docs/api" },
   { label: "About", href: "/about" },
   { label: "Security", href: "/security" },
   { label: "Governance", href: "/governance" },

@@ -1,23 +1,24 @@
-import { generateMetadata as genMeta } from "@/lib/seo";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = genMeta({
-  title: "API Documentation",
+export const metadata: Metadata = {
+  title: "API Documentation — Caelex",
   description:
-    "Caelex API v1 documentation. Integrate space compliance checks, NIS2 classification, and regulatory assessments into your applications via REST API.",
-  path: "/docs/api",
-  keywords: [
-    "space compliance API",
-    "Caelex API docs",
-    "satellite regulation API",
-    "compliance integration",
-  ],
-});
+    "Caelex API v1 documentation. Available to authenticated users only.",
+  robots: { index: false, follow: false },
+};
 
-export default function DocsApiLayout({
+export default async function DocsApiLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/login?callbackUrl=/docs/api");
+  }
+
   return children;
 }
