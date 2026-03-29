@@ -22,7 +22,7 @@ export default function CtaBanner() {
           {/* Left: Request a Demo — light card */}
           <Link
             href="/contact"
-            className="group relative flex flex-col justify-between bg-[#F0F1F3] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#E5E7EB]"
+            className="group relative flex flex-col justify-between bg-[#F0F1F3] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#E5E7EB] focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2"
           >
             <h3 className="text-[clamp(1.75rem,4vw,2.75rem)] font-normal tracking-[-0.03em] text-[#111827] leading-[1.1]">
               Request a Demo
@@ -38,7 +38,7 @@ export default function CtaBanner() {
           {/* Right: Start Assessment — dark card */}
           <Link
             href="/assessment"
-            className="dark-section group relative flex flex-col justify-between bg-[#111827] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#1E293B]"
+            className="dark-section group relative flex flex-col justify-between bg-[#111827] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#1E293B] focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2"
           >
             <h3
               className="text-[clamp(1.75rem,4vw,2.75rem)] font-normal tracking-[-0.03em] leading-[1.1]"

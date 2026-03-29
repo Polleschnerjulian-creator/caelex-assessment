@@ -87,22 +87,26 @@ const variants: Record<ButtonVariant, string> = {
     bg-white text-black
     hover:bg-white/90
     active:bg-white/80
+    focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black
   `,
   "white-outline": `
     text-white/70 border border-white/20
     hover:border-white/40 hover:text-white
     active:bg-white/[0.04]
+    focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black
   `,
   "landing-primary": `
     bg-[#111827] text-white
     hover:bg-[#374151]
     active:bg-[#1f2937]
     shadow-[0_1px_3px_rgba(0,0,0,0.1)]
+    focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2
   `,
   "landing-outline": `
     text-[#4B5563] border border-[#D1D5DB]
     hover:border-[#111827] hover:text-[#111827]
     active:bg-[#F1F3F5]
+    focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2
   `,
 };
 

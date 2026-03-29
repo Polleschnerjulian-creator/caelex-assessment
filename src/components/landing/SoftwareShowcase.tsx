@@ -121,7 +121,10 @@ function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
 
   if (isClickable) {
     return (
-      <Link href={product.href} className="group block">
+      <Link
+        href={product.href}
+        className="group block focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2 rounded-lg"
+      >
         {inner}
       </Link>
     );
