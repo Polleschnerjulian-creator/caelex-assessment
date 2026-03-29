@@ -60,19 +60,42 @@ export function BaseLayout({ children, previewText }: BaseLayoutProps) {
               email because you have an account with Caelex.
             </Text>
             <Text style={footerLinksStyle}>
-              <Link href="https://caelex.io/dashboard" style={footerLinkStyle}>
+              <Link href="https://caelex.eu/dashboard" style={footerLinkStyle}>
                 Dashboard
               </Link>
               {" • "}
               <Link
-                href="https://caelex.io/dashboard/settings"
+                href="https://caelex.eu/dashboard/settings"
                 style={footerLinkStyle}
               >
                 Notification Settings
               </Link>
               {" • "}
-              <Link href="https://caelex.io/help" style={footerLinkStyle}>
+              <Link href="https://caelex.eu/help" style={footerLinkStyle}>
                 Help
+              </Link>
+            </Text>
+            <Text style={impressumStyle}>
+              Caelex | Julian Polleschner | Am Maselakepark 37, 13587 Berlin,
+              Germany
+            </Text>
+            <Text style={impressumStyle}>
+              cs@caelex.eu | +49 1636726480 | Kleinunternehmer gem&auml;&szlig;
+              &sect;19 UStG
+            </Text>
+            <Text style={impressumLinksStyle}>
+              <Link
+                href="https://caelex.eu/legal/impressum"
+                style={footerLinkStyle}
+              >
+                Impressum
+              </Link>
+              {" • "}
+              <Link
+                href="https://caelex.eu/legal/privacy"
+                style={footerLinkStyle}
+              >
+                Datenschutz
               </Link>
             </Text>
             <Text style={copyrightStyle}>
@@ -164,6 +187,19 @@ const footerLinkStyle: React.CSSProperties = {
   color: colors.blue400,
   fontSize: "12px",
   textDecoration: "none",
+};
+
+const impressumStyle: React.CSSProperties = {
+  color: colors.slate400,
+  fontSize: "11px",
+  lineHeight: "16px",
+  textAlign: "center" as const,
+  margin: "0 0 4px 0",
+};
+
+const impressumLinksStyle: React.CSSProperties = {
+  textAlign: "center" as const,
+  margin: "8px 0 16px 0",
 };
 
 const copyrightStyle: React.CSSProperties = {

@@ -115,11 +115,8 @@ export default function CookieConsent() {
     setMounted(true);
     const stored = getPreferences();
     if (!stored) {
-      const timer = setTimeout(() => {
-        setIsAnimating(true);
-        setVisible(true);
-      }, 1000);
-      return () => clearTimeout(timer);
+      setIsAnimating(true);
+      setVisible(true);
     }
   }, []);
 
