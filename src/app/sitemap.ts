@@ -24,103 +24,101 @@ const comparisonPages = [
 // ============================================================================
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date().toISOString();
-
-  // Static pages
+  // Static pages with realistic last-modified dates
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: now,
+      lastModified: new Date("2026-03-28"),
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/platform`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/pricing`,
-      lastModified: now,
+      lastModified: new Date("2026-03-28"),
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/about`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/demo`,
-      lastModified: now,
+      lastModified: new Date("2026-03-28"),
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/assessment`,
-      lastModified: now,
+      lastModified: new Date("2026-03-28"),
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/astra`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,
-      lastModified: now,
+      lastModified: new Date("2026-03-28"),
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/glossary`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/guides`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/modules`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/jurisdictions`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly",
       priority: 0.8,
     },
   ];
 
-  // Module pages
+  // Module pages (content rarely changes)
   const modulePages: MetadataRoute.Sitemap = moduleMetadata.map((module) => ({
     url: `${baseUrl}/modules/${module.slug}`,
-    lastModified: now,
+    lastModified: new Date("2026-03-15"),
     changeFrequency: "monthly" as const,
     priority: 0.9,
   }));
 
-  // Jurisdiction pages
+  // Jurisdiction pages (content rarely changes)
   const jurisdictionPages: MetadataRoute.Sitemap = jurisdictionMetadata.map(
     (jurisdiction) => ({
       url: `${baseUrl}/jurisdictions/${jurisdiction.slug}`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.85,
     }),
@@ -135,20 +133,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Guide pages (from content)
+  // Guide pages (from content — use actual publish/update dates)
   const guides = getAllGuides();
   const guidePages: MetadataRoute.Sitemap = guides.map((guide) => ({
     url: `${baseUrl}/guides/${guide.slug}`,
-    lastModified: now,
+    lastModified:
+      guide.updatedAt || guide.publishedAt || new Date("2026-03-01"),
     changeFrequency: "monthly" as const,
     priority: 0.9,
   }));
 
-  // Glossary term pages (from content)
+  // Glossary term pages (from content — no date field, use fixed date)
   const glossaryTerms = getAllTerms();
   const glossaryPages: MetadataRoute.Sitemap = glossaryTerms.map((term) => ({
     url: `${baseUrl}/glossary/${term.slug}`,
-    lastModified: now,
+    lastModified: new Date("2026-03-15"),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
@@ -165,77 +164,77 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const resourcePages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/resources`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/resources/faq`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/resources/timeline`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/resources/glossary`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "weekly" as const,
       priority: 0.6,
     },
     {
       url: `${baseUrl}/resources/eu-space-act`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
   ];
 
-  // Legal pages (with DE + EN variants where applicable)
+  // Legal pages (with DE + EN variants where applicable — rarely updated)
   const legalPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/legal/impressum`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/privacy`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/privacy-en`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/terms`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/terms-en`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/cookies`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/legal/cookies-en`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
@@ -245,19 +244,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const assessmentPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/assessment/eu-space-act`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/assessment/nis2`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/assessment/space-law`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.9,
     },
@@ -267,25 +266,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const additionalPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/login`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.2,
     },
     {
       url: `${baseUrl}/signup`,
-      lastModified: now,
+      lastModified: new Date("2026-01-15"),
       changeFrequency: "yearly" as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/careers`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.5,
     },
     {
       url: `${baseUrl}/docs/api`,
-      lastModified: now,
+      lastModified: new Date("2026-03-15"),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     },
