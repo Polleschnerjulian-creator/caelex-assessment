@@ -154,6 +154,7 @@ const documentLinks = [
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
   { label: "Cookie Policy", href: "/legal/cookies" },
+  { label: "Content Policy", href: "/legal/content-policy" },
   { label: "Accessibility", href: "/legal/barrierefreiheit" },
   { label: "AI Disclosure", href: "/legal/ai-disclosure" },
 ];
