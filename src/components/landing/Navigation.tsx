@@ -173,7 +173,6 @@ const SEARCH_PAGES = [
     category: "Solution",
   },
   { title: "Platform Overview", href: "/platform", category: "Platform" },
-  { title: "Pricing Plans", href: "/pricing", category: "Platform" },
   { title: "Security", href: "/security", category: "Platform" },
   {
     title: "Regulatory Timeline",

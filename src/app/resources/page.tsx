@@ -333,7 +333,7 @@ export default function ResourcesPage() {
                 </div>
               </Link>
               <Link
-                href="/pricing"
+                href="/get-started"
                 className="p-4 rounded-xl bg-[#F1F3F5] hover:bg-white hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-colors group"
               >
                 <div className="text-body-lg text-[#111827] group-hover:text-[#111827] transition-colors">

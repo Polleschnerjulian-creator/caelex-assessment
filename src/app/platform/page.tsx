@@ -539,7 +539,7 @@ export default function PlatformPage() {
             <p className="text-caption text-[#9CA3AF] mt-4">
               Available on{" "}
               <Link
-                href="/pricing"
+                href="/get-started"
                 className="underline hover:text-[#4B5563] transition-colors"
               >
                 Professional and Enterprise plans
