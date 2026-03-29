@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 const MODULES = [
@@ -16,6 +19,15 @@ const MODULES = [
 ];
 
 export default function Hero() {
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoPlaying ? videoRef.current.play() : videoRef.current.pause();
+    }
+  }, [videoPlaying]);
+
   return (
     <section
       className="dark-section relative min-h-screen bg-black text-white overflow-hidden"
@@ -24,7 +36,7 @@ export default function Hero() {
       {/* Background Video */}
       <div className="absolute inset-0" aria-hidden="true">
         <video
-          autoPlay
+          ref={videoRef}
           muted
           loop
           playsInline
@@ -33,12 +45,39 @@ export default function Hero() {
           className="absolute inset-0 w-full h-full object-cover scale-[1.08] origin-top-left"
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
+          <track
+            kind="captions"
+            src="/videos/hero-captions.vtt"
+            srcLang="en"
+            label="English"
+            default
+          />
         </video>
       </div>
 
+      {/* Video pause/play control (WCAG 2.2.2) */}
+      <button
+        onClick={() => setVideoPlaying(!videoPlaying)}
+        aria-label={
+          videoPlaying ? "Pause background video" : "Play background video"
+        }
+        className="absolute top-6 right-6 z-20 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/50 transition-all"
+      >
+        {videoPlaying ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,3 19,12 5,21" />
+          </svg>
+        )}
+      </button>
+
       {/* Dark overlay to dim the video */}
       <div
-        className="absolute inset-0 bg-black/35 pointer-events-none"
+        className="absolute inset-0 bg-black/50 pointer-events-none"
         aria-hidden="true"
       />
 
@@ -84,7 +123,7 @@ export default function Hero() {
               </div>
 
               {/* Summary */}
-              <p className="text-body text-white/85 leading-[1.7] max-w-[400px]">
+              <p className="text-body text-white leading-[1.7] max-w-[400px]">
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
@@ -100,7 +139,7 @@ export default function Hero() {
               {MODULES.map((module, i) => (
                 <li
                   key={module}
-                  className="text-body md:text-body-lg text-white/70 whitespace-nowrap font-medium list-none"
+                  className="text-body md:text-body-lg text-white/80 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
