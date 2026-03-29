@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import {
@@ -673,6 +674,12 @@ function CTASection() {
 export default function SecurityPage() {
   return (
     <main className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Security", url: "https://caelex.eu/security" },
+        ]}
+      />
       <HeroSection />
       <InfrastructureSection />
       <ApplicationSecuritySection />

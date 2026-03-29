@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -138,6 +139,12 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "About", url: "https://caelex.eu/about" },
+        ]}
+      />
       {/* Hero Section */}
       <section
         ref={heroRef}

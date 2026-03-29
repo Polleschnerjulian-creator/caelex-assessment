@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Navigation from "@/components/landing/Navigation";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Shield, Hash, EyeOff, Wifi, BookOpen, BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -130,6 +131,12 @@ const features = [
 export default function VerityPage() {
   return (
     <div className="min-h-screen bg-[#09090B]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Verity", url: "https://caelex.eu/verity" },
+        ]}
+      />
       <Navigation theme="light" />
 
       {/* Hero */}

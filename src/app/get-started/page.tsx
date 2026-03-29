@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 const INTERESTS = [
   "EU Space Act",
@@ -89,6 +90,12 @@ export default function GetStartedPage() {
 
   return (
     <div className="min-h-screen bg-[#E8EAED] relative overflow-hidden">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Get Started", url: "https://caelex.eu/get-started" },
+        ]}
+      />
       {/* Giant Caelex logo watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <Image

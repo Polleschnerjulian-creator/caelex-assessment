@@ -22,6 +22,7 @@ import {
   Layers,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "Platform | Multi-Stakeholder Compliance Network | Caelex",
@@ -181,6 +182,12 @@ const colorMap: Record<string, { bg: string; text: string; border: string }> = {
 export default function PlatformPage() {
   return (
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Platform", url: "https://caelex.eu/platform" },
+        ]}
+      />
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}

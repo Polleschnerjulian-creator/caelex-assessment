@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/landing/Navigation";
 import SentinelHeroText from "@/components/landing/SentinelHeroText";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import {
   Bot,
   ShieldCheck,
@@ -61,6 +62,12 @@ const features = [
 export default function SentinelPage() {
   return (
     <div className="min-h-screen bg-[#09090B]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Sentinel", url: "https://caelex.eu/sentinel" },
+        ]}
+      />
       <Navigation theme="dark" />
 
       {/* Hero */}

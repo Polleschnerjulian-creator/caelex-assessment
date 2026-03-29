@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import {
   ArrowRight,
   CheckCircle,
@@ -51,6 +52,12 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Request a Demo", url: "https://caelex.eu/demo" },
+        ]}
+      />
       {/* Hero */}
       <section className="pt-44 pb-10 px-6 md:px-12">
         <div className="max-w-[1400px] mx-auto">

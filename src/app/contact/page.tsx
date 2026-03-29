@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { motion } from "framer-motion";
 import {
   Send,
@@ -81,6 +82,12 @@ export default function ContactPage() {
 
   return (
     <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Contact", url: "https://caelex.eu/contact" },
+        ]}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-16 overflow-hidden">
         {/* Background Effects */}

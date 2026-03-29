@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import RegulationPicker from "@/components/assessment/RegulationPicker";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "Compliance Assessment",
@@ -38,6 +39,12 @@ export const metadata: Metadata = {
 export default function AssessmentPage() {
   return (
     <div className="landing-light bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Assessment", url: "https://caelex.eu/assessment" },
+        ]}
+      />
       <RegulationPicker />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Fragment } from "react";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
@@ -530,6 +531,12 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Pricing", url: "https://caelex.eu/pricing" },
+        ]}
+      />
       {/* ================================================================== */}
       {/* FOUNDING MEMBER BANNER */}
       {/* ================================================================== */}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import {
   MapPin,
   Clock,
@@ -75,6 +76,12 @@ const values = [
 export default function CareersPage() {
   return (
     <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Careers", url: "https://caelex.eu/careers" },
+        ]}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background Effects */}
