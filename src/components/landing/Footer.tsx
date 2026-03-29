@@ -274,6 +274,8 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                     placeholder="your@email.com"
                     required
                     aria-required="true"
+                    aria-describedby={error ? "newsletter-error" : undefined}
+                    aria-invalid={!!error}
                     className={`flex-1 md:w-[280px] rounded-l-lg px-4 py-2.5 text-body outline-none transition-colors ${
                       isLight
                         ? "bg-[#f5f5f7] border border-[#d2d2d7] text-[#1d1d1f] placeholder:text-[#86868b] focus:border-[#86868b]"
@@ -330,7 +332,11 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                 </label>
 
                 {error && (
-                  <p className="text-caption text-red-500 mt-2" role="alert">
+                  <p
+                    id="newsletter-error"
+                    className="text-caption text-red-500 mt-2"
+                    role="alert"
+                  >
                     {error}
                   </p>
                 )}

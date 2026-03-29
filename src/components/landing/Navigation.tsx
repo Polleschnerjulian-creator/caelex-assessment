@@ -213,6 +213,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const isLight = theme === "light";
@@ -263,6 +265,72 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     if (searchOpen) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
     }
+  }, [searchOpen]);
+
+  // Focus trap for menu overlay (WCAG 2.4.3)
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    // Focus first link in menu after animation
+    const timer = setTimeout(() => {
+      const menu = document.getElementById("nav-menu");
+      if (!menu) return;
+      const firstFocusable = menu.querySelector("a, button") as HTMLElement;
+      firstFocusable?.focus();
+    }, 100);
+
+    // Focus trap — Tab cycles only within menu
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const menu = document.getElementById("nav-menu");
+      if (!menu) return;
+      const focusable = menu.querySelectorAll("a, button, input");
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", handleKeyDown);
+      menuTriggerRef.current?.focus(); // Return focus on close
+    };
+  }, [menuOpen]);
+
+  // Focus trap for search overlay (WCAG 2.4.3)
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const overlay = document.getElementById("search-overlay");
+      if (!overlay) return;
+      const focusable = overlay.querySelectorAll("a, button, input");
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      searchTriggerRef.current?.focus(); // Return focus on close
+    };
   }, [searchOpen]);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -360,6 +428,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 {/* Search + Hamburger — white bg, subtle border, soft radius */}
                 <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
                   <button
+                    ref={searchTriggerRef}
                     onClick={() => {
                       setSearchOpen(true);
                       setMenuOpen(false);
@@ -371,6 +440,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                   </button>
                   <div className="w-px h-5 bg-[#E5E7EB]" />
                   <button
+                    ref={menuTriggerRef}
                     onClick={() => setMenuOpen(!menuOpen)}
                     className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
                     aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -561,7 +631,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={news.image}
-                              alt=""
+                              alt={news.title}
                               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                               loading="lazy"
                             />
@@ -693,6 +763,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
       <AnimatePresence>
         {searchOpen && (
           <motion.div
+            id="search-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search"
             className="fixed inset-0 z-[70]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

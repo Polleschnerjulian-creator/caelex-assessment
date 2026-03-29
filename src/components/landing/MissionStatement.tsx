@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 // Words that should appear in muted gray (like Palantir's "AI-driven" highlight)
 const HIGHLIGHT_WORDS = new Set(["AI-driven"]);
@@ -14,6 +14,7 @@ const CHAR_DELAY = 0.006;
 export default function MissionStatement() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const prefersReducedMotion = useReducedMotion();
 
   const words = STATEMENT.split(" ");
 
@@ -39,15 +40,27 @@ export default function MissionStatement() {
                       <motion.span
                         key={charIdx}
                         className={`inline-block ${colorClass}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={
-                          isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }
+                        initial={
+                          prefersReducedMotion
+                            ? { opacity: 1, y: 0 }
+                            : { opacity: 0, y: 8 }
                         }
-                        transition={{
-                          duration: 0.03,
-                          delay: charIdx * CHAR_DELAY,
-                          ease: "easeOut",
-                        }}
+                        animate={
+                          isInView
+                            ? { opacity: 1, y: 0 }
+                            : prefersReducedMotion
+                              ? { opacity: 1, y: 0 }
+                              : { opacity: 0, y: 8 }
+                        }
+                        transition={
+                          prefersReducedMotion
+                            ? { duration: 0 }
+                            : {
+                                duration: 0.03,
+                                delay: charIdx * CHAR_DELAY,
+                                ease: "easeOut",
+                              }
+                        }
                       >
                         {char}
                       </motion.span>
@@ -64,12 +77,21 @@ export default function MissionStatement() {
                     <motion.span
                       key={`s-${spaceIdx}`}
                       className="inline-block"
-                      initial={{ opacity: 0 }}
-                      animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                      transition={{
-                        duration: 0.01,
-                        delay: spaceIdx * CHAR_DELAY,
-                      }}
+                      initial={
+                        prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }
+                      }
+                      animate={
+                        isInView
+                          ? { opacity: 1 }
+                          : prefersReducedMotion
+                            ? { opacity: 1 }
+                            : { opacity: 0 }
+                      }
+                      transition={
+                        prefersReducedMotion
+                          ? { duration: 0 }
+                          : { duration: 0.01, delay: spaceIdx * CHAR_DELAY }
+                      }
                     >
                       &nbsp;
                     </motion.span>
@@ -81,18 +103,26 @@ export default function MissionStatement() {
             })}
             <motion.span
               className="inline-block w-[3px] h-[0.85em] bg-[#111827] ml-1 align-baseline relative top-[0.05em]"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: [0, 0, 1, 1] } : { opacity: 0 }}
+              initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 1 }
+                  : isInView
+                    ? { opacity: [0, 0, 1, 1] }
+                    : { opacity: 0 }
+              }
               transition={
-                isInView
-                  ? {
-                      delay: globalIndex * CHAR_DELAY,
-                      duration: 0.8,
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      ease: "steps(1)",
-                    }
-                  : {}
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : isInView
+                    ? {
+                        delay: globalIndex * CHAR_DELAY,
+                        duration: 0.8,
+                        repeat: Infinity,
+                        repeatType: "loop",
+                        ease: "steps(1)",
+                      }
+                    : {}
               }
             />
           </p>

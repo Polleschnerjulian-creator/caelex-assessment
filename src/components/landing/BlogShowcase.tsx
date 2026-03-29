@@ -165,6 +165,11 @@ export default function BlogShowcase() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Slide {activeIndex + 1} of {ENTRIES.length}:{" "}
+        {ENTRIES[activeIndex].title}
+      </div>
+
       {/* Header — constrained width */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 md:mb-14">
@@ -179,6 +184,33 @@ export default function BlogShowcase() {
 
           {/* Title pills */}
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+            <button
+              onClick={() => setPaused(!paused)}
+              aria-label={paused ? "Resume carousel" : "Pause carousel"}
+              aria-pressed={paused}
+              className="flex items-center justify-center w-8 h-8 rounded-full border border-[#E5E7EB] text-[#86868b] hover:text-[#1d1d1f] hover:border-[#1d1d1f] transition-colors"
+            >
+              {paused ? (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <polygon points="5,3 19,12 5,21" />
+                </svg>
+              ) : (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+              )}
+            </button>
             {ENTRIES.map((e, i) => (
               <button
                 key={e.id}
