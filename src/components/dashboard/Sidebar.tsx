@@ -392,6 +392,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/uk-space": "uk-space",
   "/dashboard/modules/us-regulatory": "us-regulatory",
   "/dashboard/modules/spectrum": "spectrum",
+  "/dashboard/modules/cra": "cra",
   "/dashboard/digital-twin": "digital-twin",
   "/dashboard/evidence": "evidence",
   "/dashboard/documents": "documents",
@@ -414,6 +415,7 @@ const EU_MODULES = [
   "/dashboard/modules/uk-space",
   "/dashboard/modules/us-regulatory",
   "/dashboard/modules/spectrum",
+  "/dashboard/modules/cra",
 ];
 
 // ─── Sidebar ────────────────────────────────────────────────────────────────
@@ -861,6 +863,15 @@ export default function Sidebar({
                 requiredPlan={getRequiredPlanLabel(
                   "/dashboard/modules/spectrum",
                 )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/cra"
+                icon={<ShieldCheck size={14} strokeWidth={1.5} />}
+                label="Cyber Resilience Act"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/cra")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/modules/cra")}
                 collapsed={collapsed}
               />
             </ModuleGroup>
