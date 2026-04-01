@@ -52,6 +52,7 @@ model User {
   comments                 Comment[] // Collaboration: user's comments
   activities               Activity[] // Collaboration: user's activities
   nis2Assessments          NIS2Assessment[] // NIS2 Directive assessments
+  craAssessments           CRAAssessment[]
   copuosAssessments        CopuosAssessment[] // COPUOS/IADC/ISO assessments
   ukSpaceAssessments       UkSpaceAssessment[] // UK Space Industry Act assessments
   usRegulatoryAssessments  UsRegulatoryAssessment[] // US Space Regulatory assessments
@@ -523,6 +524,91 @@ model NIS2RequirementStatus {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+}
+
+// ─── CRA (EU) 2024/2847 — Cyber Resilience Act Assessment ───
+
+model CRAAssessment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  // Product identification
+  productName        String
+  productVersion     String?
+  spaceProductTypeId String?
+
+  // Classification
+  economicOperatorRole    String
+  productClassification   String
+  conformityRoute         String
+  classificationReasoning Json
+  classificationConflict  Json?
+  isOutOfScope            Boolean @default(false)
+  outOfScopeReason        String?
+
+  // Product profile
+  segments                String
+  hasNetworkFunction      Boolean?
+  processesAuthData       Boolean?
+  usedInCriticalInfra     Boolean?
+  performsCryptoOps       Boolean?
+  controlsPhysicalSystem  Boolean?
+  hasMicrocontroller      Boolean?
+  isOSSComponent          Boolean?
+  isCommerciallySupplied  Boolean?
+  isSafetyCritical        Boolean?
+  hasRedundancy           Boolean?
+  processesClassifiedData Boolean?
+  isEUEstablished         Boolean?
+
+  // Existing certifications
+  hasIEC62443     Boolean?
+  hasETSIEN303645 Boolean?
+  hasCommonCriteria Boolean?
+  hasISO27001     Boolean?
+
+  // Scores
+  complianceScore   Int?
+  maturityScore     Int?
+  riskLevel         String?
+
+  // NIS2 cross-link
+  nis2OverlapCount  Int?
+  nis2AssessmentId  String?
+
+  // Report
+  reportGenerated   Boolean  @default(false)
+  reportGeneratedAt DateTime?
+
+  requirements CRARequirementStatus[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([productClassification])
+}
+
+model CRARequirementStatus {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assessmentId String
+  assessment   CRAAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String
+  status        String
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  responses     Json?
 
   @@unique([assessmentId, requirementId])
   @@index([assessmentId])
@@ -2542,6 +2628,7 @@ model Organization {
   insuranceAssessments     InsuranceAssessment[]
   environmentalAssessments EnvironmentalAssessment[]
   nis2Assessments          NIS2Assessment[]
+  craAssessments           CRAAssessment[]
 
   // Sentinel: autonomous compliance evidence agents
   sentinelAgents SentinelAgent[]
