@@ -33,15 +33,12 @@ import { EngineDataError } from "@/lib/engines/shared.server";
 
 // ─── Lazy import for CRA requirements ───
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error — cra-requirements.ts is created in Task 6; lazy import compiles fine at runtime
 let _craRequirementsModule: typeof import("@/data/cra-requirements") | null =
   null;
 
 async function getCRARequirementsModule() {
   if (!_craRequirementsModule) {
     try {
-      // @ts-expect-error — cra-requirements.ts created in Task 6
       _craRequirementsModule = await import("@/data/cra-requirements");
     } catch (error) {
       throw new EngineDataError("CRA requirements data could not be loaded", {

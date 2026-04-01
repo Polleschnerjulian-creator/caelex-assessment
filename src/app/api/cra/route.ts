@@ -7,6 +7,7 @@
  * POST /api/cra — Create a new CRA assessment
  */
 
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
@@ -147,8 +148,11 @@ export async function POST(request: Request) {
         economicOperatorRole: answers.economicOperatorRole,
         productClassification: classification.classification,
         conformityRoute: classification.conformityRoute,
-        classificationReasoning: classification.classificationReasoning,
-        classificationConflict: classification.conflict ?? null,
+        classificationReasoning:
+          classification.classificationReasoning as unknown as Prisma.InputJsonValue,
+        classificationConflict:
+          (classification.conflict as unknown as Prisma.InputJsonValue) ??
+          Prisma.JsonNull,
         isOutOfScope: classification.isOutOfScope,
         outOfScopeReason: classification.outOfScopeReason || null,
         segments: JSON.stringify(answers.segments),

@@ -84,7 +84,6 @@ export async function GET(
     > = {};
 
     try {
-      // @ts-expect-error — cra-requirements.ts created in Task 6
       const { CRA_REQUIREMENTS } = await import("@/data/cra-requirements");
       const metaMap: typeof requirementMeta = {};
       for (const req of CRA_REQUIREMENTS) {
