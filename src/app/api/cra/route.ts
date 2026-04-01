@@ -17,7 +17,10 @@ import {
   calculateCRACompliance,
   classifyCRAProduct,
 } from "@/lib/cra-engine.server";
-import { generateCRAAutoAssessments } from "@/lib/cra-auto-assessment.server";
+import {
+  generateCRAAutoAssessments,
+  generateNIS2PropagatedAssessments,
+} from "@/lib/cra-auto-assessment.server";
 import type { CRAAssessmentAnswers } from "@/lib/cra-types";
 import { CRAAssessSchema } from "@/lib/validations/api-compliance";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -254,6 +257,67 @@ export async function POST(request: Request) {
           where: { id: assessment.id },
           data: { maturityScore },
         });
+      }
+
+      // NIS2 Deep Propagation: If org has NIS2 assessments, propagate compliance
+      const latestNIS2 = await prisma.nIS2Assessment.findFirst({
+        where: {
+          userId,
+          ...(orgCtx?.organizationId
+            ? { organizationId: orgCtx.organizationId }
+            : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
+
+      if (latestNIS2) {
+        // Link CRA assessment to NIS2 assessment
+        await prisma.cRAAssessment.update({
+          where: { id: assessment.id },
+          data: { nis2AssessmentId: latestNIS2.id },
+        });
+
+        // Deep propagation
+        const nis2Propagated = await generateNIS2PropagatedAssessments(
+          complianceResult.applicableRequirements,
+          latestNIS2.id,
+        );
+
+        const propagatedPartials = nis2Propagated.filter(
+          (a) => a.suggestedStatus === "partial" && a.reason,
+        );
+
+        if (propagatedPartials.length > 0) {
+          const propagatedIds = propagatedPartials.map((a) => a.requirementId);
+
+          // Update status for NIS2-propagated requirements
+          await prisma.cRARequirementStatus.updateMany({
+            where: {
+              assessmentId: assessment.id,
+              requirementId: { in: propagatedIds },
+              status: "not_assessed", // Only update if not already auto-assessed
+            },
+            data: { status: "partial" },
+          });
+
+          // Update notes individually
+          const noteUpdates = propagatedPartials
+            .filter((a) => a.reason)
+            .map((auto) =>
+              prisma.cRARequirementStatus.updateMany({
+                where: {
+                  assessmentId: assessment.id,
+                  requirementId: auto.requirementId,
+                },
+                data: { notes: auto.reason },
+              }),
+            );
+
+          if (noteUpdates.length > 0) {
+            await prisma.$transaction(noteUpdates);
+          }
+        }
       }
     }
 
