@@ -65,6 +65,9 @@ export {
   getRelatedTerms,
 } from "./glossary";
 
+// CRA (EU) 2024/2847
+export { CRA_KNOWLEDGE } from "./cra";
+
 // ─── Combined Knowledge Base Summary ───
 
 export const REGULATORY_KNOWLEDGE_SUMMARY = `
