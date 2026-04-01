@@ -33,6 +33,23 @@ import type { CRASpaceProductType, ClassificationStep } from "@/lib/cra-types";
 
 // ─── Types ───
 
+interface SpacecraftSuggestion {
+  spacecraft: {
+    id: string;
+    name: string;
+    missionType: string;
+    status: string;
+  };
+  suggestedProducts: Array<{
+    productTypeId: string;
+    productName: string;
+    classification: string;
+    hasAssessment: boolean;
+    assessmentId?: string;
+  }>;
+  completionRate: number;
+}
+
 interface CRAAssessment {
   id: string;
   productName: string;
@@ -371,9 +388,11 @@ function ClassificationPreview({
 function CRAWizard({
   onComplete,
   onCancel,
+  prefill,
 }: {
   onComplete: () => void;
   onCancel: () => void;
+  prefill?: Partial<WizardState>;
 }) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -381,6 +400,36 @@ function CRAWizard({
   const [direction, setDirection] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Track which fields were auto-filled so we can show the indicator
+  const [prefillFields, setPrefillFields] = useState<Set<string>>(new Set());
+
+  // Apply prefill data once on mount — only fills null fields
+  useEffect(() => {
+    if (!prefill) return;
+    const filled = new Set<string>();
+    setState((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(prefill) as (keyof WizardState)[]) {
+        const val = prefill[key];
+        if (val !== undefined && val !== null && prev[key] === null) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (next as any)[key] = val;
+          filled.add(key);
+        } else if (
+          key === "segments" &&
+          Array.isArray(val) &&
+          (val as string[]).length > 0 &&
+          (prev.segments as string[]).length === 0
+        ) {
+          next.segments = val as string[];
+          filled.add(key);
+        }
+      }
+      return next;
+    });
+    if (filled.size > 0) setPrefillFields(filled);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [expandedReasoning, setExpandedReasoning] = useState(false);
 
   // Step 3 is only shown when notListed=true
@@ -991,6 +1040,11 @@ function CRAWizard({
                       setState((prev) => ({ ...prev, hasISO27001: val }))
                     }
                   />
+                  {prefillFields.has("hasISO27001") && (
+                    <p className="text-caption text-emerald-400 pl-1">
+                      (aus Ihrem Profil)
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -1356,6 +1410,49 @@ export default function CRAModulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showWizard, setShowWizard] = useState(false);
+  const [wizardPrefill, setWizardPrefill] = useState<Partial<WizardState> | undefined>(undefined);
+
+  // Fetch org profile data for pre-fill when the wizard opens
+  useEffect(() => {
+    if (!showWizard) return;
+
+    (async () => {
+      try {
+        const prefill: Partial<WizardState> = {};
+
+        // Try NIS2 assessment — it has isEUEstablished, hasISO27001,
+        // operatesGroundInfra, operatesSatComms, etc.
+        const nis2Res = await fetch("/api/nis2");
+        if (nis2Res.ok) {
+          const json = await nis2Res.json();
+          const assessmentsList =
+            json.data?.assessments ?? json.assessments ?? [];
+          if (assessmentsList.length > 0) {
+            const latest = assessmentsList[0]; // already sorted by createdAt desc
+            if (latest.isEUEstablished != null) {
+              prefill.isEUEstablished = latest.isEUEstablished;
+            }
+            if (latest.hasISO27001 != null) {
+              prefill.hasISO27001 = latest.hasISO27001;
+            }
+            // Infer segments from NIS2 sub-sector flags
+            const segs: string[] = [];
+            if (latest.operatesGroundInfra) segs.push("ground");
+            if (latest.operatesSatComms || latest.manufacturesSpacecraft) {
+              if (!segs.includes("space")) segs.push("space");
+            }
+            if (segs.length > 0) prefill.segments = segs;
+          }
+        }
+
+        if (Object.keys(prefill).length > 0) {
+          setWizardPrefill(prefill);
+        }
+      } catch {
+        // Silent fail — pre-fill is best-effort
+      }
+    })();
+  }, [showWizard]);
 
   const fetchAssessments = useCallback(async () => {
     try {
@@ -1450,11 +1547,16 @@ export default function CRAModulePage() {
         <AnimatePresence>
           {showWizard && (
             <CRAWizard
+              prefill={wizardPrefill}
               onComplete={() => {
                 setShowWizard(false);
+                setWizardPrefill(undefined);
                 fetchAssessments();
               }}
-              onCancel={() => setShowWizard(false)}
+              onCancel={() => {
+                setShowWizard(false);
+                setWizardPrefill(undefined);
+              }}
             />
           )}
         </AnimatePresence>
