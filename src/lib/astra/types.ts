@@ -241,6 +241,16 @@ export interface AstraUserContext {
       tplAmount?: number;
     };
   };
+  /** CRA product assessments */
+  craAssessments?: Array<{
+    id: string;
+    productName: string;
+    productClassification: string;
+    conformityRoute: string;
+    maturityScore: number | null;
+    nis2OverlapCount: number | null;
+    isOutOfScope: boolean;
+  }>;
   /** Authorization workflow status */
   authorizationStatus?: {
     state: string;

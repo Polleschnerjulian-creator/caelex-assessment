@@ -737,6 +737,116 @@ export const estimateComplianceCostTime: AstraToolDefinition = {
   },
 };
 
+// ─── CRA Tools ───
+
+export const getCRAAssessmentStatus: AstraToolDefinition = {
+  name: "get_cra_assessment_status",
+  description:
+    "Get the current CRA compliance status for one or all product assessments. Returns classification, maturity score, requirement completion, and NIS2 overlap for each product.",
+  input_schema: {
+    type: "object",
+    properties: {
+      assessmentId: {
+        type: "string",
+        description:
+          "Specific CRA assessment ID. If omitted, returns all assessments for the organization.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const getCRAProductClassification: AstraToolDefinition = {
+  name: "get_cra_product_classification",
+  description:
+    "Classify a space product under the CRA. Accepts either a product type ID from the taxonomy (e.g., 'obc', 'sdr', 'star_tracker') or rule-engine parameters for custom products. Returns classification (Default/Class I/Class II), conformity route, and full reasoning chain.",
+  input_schema: {
+    type: "object",
+    properties: {
+      productTypeId: {
+        type: "string",
+        description:
+          "Space product type ID from taxonomy (e.g., 'obc', 'aocs_flight_sw', 'sdr', 'star_tracker'). Use this for known product types.",
+      },
+      hasNetworkFunction: {
+        type: "boolean",
+        description:
+          "Product has network connectivity (SpaceWire, CAN, Ethernet, RF)",
+      },
+      processesAuthData: {
+        type: "boolean",
+        description: "Product processes authentication/authorization data",
+      },
+      usedInCriticalInfra: {
+        type: "boolean",
+        description: "Product is deployed in critical infrastructure",
+      },
+      performsCryptoOps: {
+        type: "boolean",
+        description: "Product performs cryptographic operations",
+      },
+      controlsPhysicalSystem: {
+        type: "boolean",
+        description: "Product controls physical systems (actuators, thrusters)",
+      },
+      isSafetyCritical: {
+        type: "boolean",
+        description: "Product is safety-critical (ECSS classification)",
+      },
+    },
+    required: [],
+  },
+};
+
+export const getCRARequirementGaps: AstraToolDefinition = {
+  name: "get_cra_requirement_gaps",
+  description:
+    "Analyze CRA compliance gaps for a product assessment. Returns non-compliant and not-assessed requirements grouped by category, with space-specific guidance for each gap.",
+  input_schema: {
+    type: "object",
+    properties: {
+      assessmentId: {
+        type: "string",
+        description: "CRA assessment ID to analyze.",
+      },
+    },
+    required: ["assessmentId"],
+  },
+};
+
+export const getCRANIS2Overlap: AstraToolDefinition = {
+  name: "get_cra_nis2_overlap",
+  description:
+    "Show the overlap between CRA and NIS2 requirements for a product. Returns which CRA requirements are partially fulfilled by existing NIS2 compliance, with estimated time savings.",
+  input_schema: {
+    type: "object",
+    properties: {
+      assessmentId: {
+        type: "string",
+        description:
+          "CRA assessment ID. If omitted, analyzes the most recent assessment.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const getCRASBOMAnalysis: AstraToolDefinition = {
+  name: "get_cra_sbom_analysis",
+  description:
+    "Get SBOM analysis results for a CRA product assessment. Returns component count, license breakdown, vulnerability tracking status, and CRA requirement compliance (cra-038, cra-039, cra-040).",
+  input_schema: {
+    type: "object",
+    properties: {
+      assessmentId: {
+        type: "string",
+        description: "CRA assessment ID with SBOM data.",
+      },
+    },
+    required: ["assessmentId"],
+  },
+};
+
 // ─── All Tools Export ───
 
 // ─── NCA Portal Tools ───
@@ -1233,6 +1343,13 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Audit Tools
   auditDocument,
+
+  // CRA Tools
+  getCRAAssessmentStatus,
+  getCRAProductClassification,
+  getCRARequirementGaps,
+  getCRANIS2Overlap,
+  getCRASBOMAnalysis,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1303,4 +1420,11 @@ export const TOOL_CATEGORIES = {
     "get_evidence_gaps",
   ],
   ontology: ["query_ontology"],
+  cra: [
+    "get_cra_assessment_status",
+    "get_cra_product_classification",
+    "get_cra_requirement_gaps",
+    "get_cra_nis2_overlap",
+    "get_cra_sbom_analysis",
+  ],
 } as const;

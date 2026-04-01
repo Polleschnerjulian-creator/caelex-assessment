@@ -158,6 +158,25 @@ const TOPIC_KEYWORDS: Record<string, string[]> = {
     "collision avoidance provider",
     "data provider",
   ],
+  cra: [
+    "cra",
+    "cyber resilience",
+    "product classification",
+    "conformity",
+    "ce marking",
+    "sbom",
+    "notified body",
+    "class I",
+    "class II",
+    "annex",
+    "2024/2847",
+    "software bill of materials",
+    "cyclonedx",
+    "spdx",
+    "vulnerability handling",
+    "post-market",
+    "manufacturer obligation",
+  ],
 };
 
 // ─── Detect Relevant Topics ───
@@ -228,6 +247,7 @@ export async function buildUserContext(
     const needsInsurance = isGeneral || topics.includes("insurance");
     const needsNis2 =
       isGeneral || topics.includes("nis2") || topics.includes("cybersecurity");
+    const needsCra = isGeneral || topics.includes("cra");
 
     // Fetch user's assessments separately (they're linked to users, not orgs)
     const [
@@ -235,6 +255,7 @@ export async function buildUserContext(
       cybersecurityAssessment,
       insuranceAssessment,
       nis2Assessment,
+      craAssessments,
     ] = await Promise.all([
       needsDebris
         ? prisma.debrisAssessment.findFirst({
@@ -271,6 +292,22 @@ export async function buildUserContext(
             orderBy: { createdAt: "desc" },
             select: {
               entityClassification: true,
+            },
+          })
+        : Promise.resolve(null),
+      needsCra
+        ? prisma.cRAAssessment.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            select: {
+              id: true,
+              productName: true,
+              productClassification: true,
+              conformityRoute: true,
+              maturityScore: true,
+              nis2OverlapCount: true,
+              isOutOfScope: true,
             },
           })
         : Promise.resolve(null),
@@ -361,6 +398,10 @@ export async function buildUserContext(
         Object.keys(complianceScores).length > 0 ? complianceScores : undefined,
       assessments:
         Object.keys(assessments).length > 0 ? assessments : undefined,
+      craAssessments:
+        craAssessments && craAssessments.length > 0
+          ? craAssessments
+          : undefined,
       upcomingDeadlines:
         upcomingDeadlines.length > 0 ? upcomingDeadlines : undefined,
     };
@@ -495,6 +536,29 @@ The organization is registered/targeting: ${sanitizeForPrompt(userContext.jurisd
           contextSections.push(`
 ## Operator Classification
 The organization is classified as: ${sanitizeForPrompt(userContext.operatorType, 100)}
+`);
+        }
+        break;
+
+      case "cra":
+        if (
+          userContext.craAssessments &&
+          userContext.craAssessments.length > 0
+        ) {
+          const craList = userContext.craAssessments
+            .map(
+              (a) =>
+                `- ${sanitizeForPrompt(a.productName, 100)}: ${sanitizeForPrompt(a.productClassification, 50)} (${sanitizeForPrompt(a.conformityRoute, 50)}), Maturity: ${a.maturityScore ?? 0}%, NIS2 Overlap: ${a.nis2OverlapCount ?? 0}`,
+            )
+            .join("\n");
+          contextSections.push(`
+## CRA Assessment Status
+${craList}
+`);
+        } else {
+          contextSections.push(`
+## CRA Assessment Status
+The user has not completed a CRA product assessment. They may need guidance on EU Cyber Resilience Act (2024/2847) requirements for their space products.
 `);
         }
         break;

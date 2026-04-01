@@ -36,6 +36,7 @@ import {
   searchTerms,
 } from "./regulatory-knowledge/glossary";
 import type { IncidentCategory } from "@/lib/services/incident-response-service";
+import type { SpaceProductSegment } from "@/lib/cra-types";
 import {
   getObligationsForOperator,
   getSubgraph,
@@ -2500,6 +2501,399 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     }
 
     return { error: `Unknown query_type: ${query_type}` };
+  },
+
+  // ─── CRA Tools ───
+
+  get_cra_assessment_status: async (input, userContext) => {
+    const assessmentId = getString(input, "assessmentId");
+
+    const where = assessmentId
+      ? { id: assessmentId, userId: userContext.userId }
+      : {
+          userId: userContext.userId,
+          ...(userContext.organizationId
+            ? { organizationId: userContext.organizationId }
+            : {}),
+        };
+
+    const assessments = await prisma.cRAAssessment.findMany({
+      where,
+      include: { requirements: true },
+      orderBy: { createdAt: "desc" },
+      take: assessmentId ? 1 : 10,
+    });
+
+    if (assessments.length === 0) {
+      return {
+        message:
+          "Keine CRA-Assessments gefunden. Der Nutzer hat noch kein CRA-Assessment erstellt. Empfehle ihm, unter /dashboard/modules/cra ein neues Assessment anzulegen.",
+      };
+    }
+
+    const summaries = assessments.map((a) => {
+      const reqs = a.requirements;
+      const total = reqs.length;
+      const compliant = reqs.filter((r) => r.status === "compliant").length;
+      const partial = reqs.filter((r) => r.status === "partial").length;
+      const nonCompliant = reqs.filter(
+        (r) => r.status === "non_compliant",
+      ).length;
+      const notAssessed = reqs.filter(
+        (r) => r.status === "not_assessed",
+      ).length;
+
+      return {
+        productName: `${a.productName}${a.productVersion ? ` v${a.productVersion}` : ""}`,
+        classification: a.productClassification,
+        conformityRoute: a.conformityRoute,
+        maturityScore: a.maturityScore ?? 0,
+        requirements: {
+          total,
+          compliant,
+          partial,
+          nonCompliant,
+          notAssessed,
+        },
+        nis2OverlapCount: a.nis2OverlapCount ?? 0,
+        assessmentId: a.id,
+        isOutOfScope: a.isOutOfScope,
+        createdAt: a.createdAt,
+      };
+    });
+
+    return {
+      assessmentCount: assessments.length,
+      assessments: summaries,
+    };
+  },
+
+  get_cra_product_classification: async (input) => {
+    const { classifyCRAProduct } = await import("@/lib/cra-engine.server");
+
+    const productTypeId = getString(input, "productTypeId");
+    const hasNetworkFunction = getBoolean(input, "hasNetworkFunction", false);
+    const processesAuthData = getBoolean(input, "processesAuthData", false);
+    const usedInCriticalInfra = getBoolean(input, "usedInCriticalInfra", false);
+    const performsCryptoOps = getBoolean(input, "performsCryptoOps", false);
+    const controlsPhysicalSystem = getBoolean(
+      input,
+      "controlsPhysicalSystem",
+      false,
+    );
+    const isSafetyCritical = getBoolean(input, "isSafetyCritical", false);
+
+    const answers = {
+      economicOperatorRole: "manufacturer" as const,
+      isEUEstablished: true,
+      spaceProductTypeId: productTypeId ?? null,
+      productName: productTypeId ?? "Custom product",
+      hasNetworkFunction,
+      processesAuthData,
+      usedInCriticalInfra,
+      performsCryptoOps,
+      controlsPhysicalSystem,
+      hasMicrocontroller: null,
+      isOSSComponent: null,
+      isCommerciallySupplied: true,
+      segments: [] as SpaceProductSegment[],
+      isSafetyCritical,
+      hasRedundancy: null,
+      processesClassifiedData: null,
+      hasIEC62443: null,
+      hasETSIEN303645: null,
+      hasCommonCriteria: null,
+      hasISO27001: null,
+    };
+
+    const result = classifyCRAProduct(answers);
+
+    const classLabels: Record<string, string> = {
+      default: "Default (Annex-free)",
+      class_I: "Class I (Annex III)",
+      class_II: "Class II (Annex IV)",
+    };
+
+    const routeLabels: Record<string, string> = {
+      self_assessment: "Self-Assessment (Module A)",
+      harmonised_standard: "Harmonised Standard (Module A + hEN)",
+      third_party_type_exam: "Third-Party Type Examination (Module B+C)",
+      full_quality_assurance: "Full Quality Assurance (Module H)",
+    };
+
+    return {
+      classification:
+        classLabels[result.classification] ?? result.classification,
+      conformityRoute:
+        routeLabels[result.conformityRoute] ?? result.conformityRoute,
+      isOutOfScope: result.isOutOfScope,
+      outOfScopeReason: result.outOfScopeReason,
+      reasoningChain: result.classificationReasoning.map((step) => ({
+        criterion: step.criterion,
+        legalBasis: step.legalBasis,
+        annexRef: step.annexRef,
+        satisfied: step.satisfied,
+        reasoning: step.reasoning,
+      })),
+      conflict: result.conflict
+        ? {
+            taxonomyClass: result.conflict.taxonomyClass,
+            ruleEngineClass: result.conflict.ruleEngineClass,
+            recommendation: result.conflict.recommendation,
+          }
+        : null,
+    };
+  },
+
+  get_cra_requirement_gaps: async (input, userContext) => {
+    const assessmentId = getString(input, "assessmentId");
+    if (!assessmentId) {
+      return { error: "assessmentId ist erforderlich." };
+    }
+
+    const assessment = await prisma.cRAAssessment.findFirst({
+      where: { id: assessmentId, userId: userContext.userId },
+      include: { requirements: true },
+    });
+
+    if (!assessment) {
+      return {
+        error:
+          "CRA-Assessment nicht gefunden oder gehört nicht zum aktuellen Nutzer.",
+      };
+    }
+
+    // Load CRA_REQUIREMENTS for space-specific guidance
+    const { CRA_REQUIREMENTS } = await import("@/data/cra-requirements");
+    const reqLookup = new Map(CRA_REQUIREMENTS.map((r) => [r.id, r]));
+
+    // Filter gaps: non-compliant or not-assessed
+    const gapStatuses = assessment.requirements.filter(
+      (r) => r.status === "non_compliant" || r.status === "not_assessed",
+    );
+
+    // Group by category
+    const grouped: Record<
+      string,
+      Array<{
+        requirementId: string;
+        status: string;
+        title: string;
+        severity: string;
+        spaceSpecificGuidance: string;
+        articleRef: string;
+        implementationTimeWeeks: number;
+      }>
+    > = {};
+
+    for (const gap of gapStatuses) {
+      const reqDef = reqLookup.get(gap.requirementId);
+      if (!reqDef) continue;
+
+      const category = reqDef.category;
+      if (!grouped[category]) grouped[category] = [];
+
+      grouped[category].push({
+        requirementId: gap.requirementId,
+        status: gap.status,
+        title: reqDef.title,
+        severity: reqDef.severity,
+        spaceSpecificGuidance: reqDef.spaceSpecificGuidance,
+        articleRef: reqDef.articleRef,
+        implementationTimeWeeks: reqDef.implementationTimeWeeks,
+      });
+    }
+
+    const totalReqs = assessment.requirements.length;
+    const totalGaps = gapStatuses.length;
+    const criticalGaps = gapStatuses.filter((g) => {
+      const def = reqLookup.get(g.requirementId);
+      return def?.severity === "critical";
+    }).length;
+
+    return {
+      productName: assessment.productName,
+      totalRequirements: totalReqs,
+      totalGaps,
+      criticalGaps,
+      gapsByCategory: grouped,
+      assessmentId: assessment.id,
+    };
+  },
+
+  get_cra_nis2_overlap: async (input, userContext) => {
+    const assessmentId = getString(input, "assessmentId");
+
+    // Find assessment (specific or most recent)
+    const assessment = assessmentId
+      ? await prisma.cRAAssessment.findFirst({
+          where: { id: assessmentId, userId: userContext.userId },
+        })
+      : await prisma.cRAAssessment.findFirst({
+          where: { userId: userContext.userId },
+          orderBy: { createdAt: "desc" },
+        });
+
+    if (!assessment) {
+      return {
+        error:
+          "Kein CRA-Assessment gefunden. Der Nutzer muss zunächst ein CRA-Assessment unter /dashboard/modules/cra erstellen.",
+      };
+    }
+
+    // Re-run the engine to get NIS2 overlap data
+    const { calculateCRACompliance } = await import("@/lib/cra-engine.server");
+
+    const answers = {
+      economicOperatorRole:
+        (assessment.economicOperatorRole as
+          | "manufacturer"
+          | "importer"
+          | "distributor") ?? "manufacturer",
+      isEUEstablished: assessment.isEUEstablished ?? true,
+      spaceProductTypeId: assessment.spaceProductTypeId,
+      productName: assessment.productName,
+      productVersion: assessment.productVersion ?? undefined,
+      hasNetworkFunction: assessment.hasNetworkFunction,
+      processesAuthData: assessment.processesAuthData,
+      usedInCriticalInfra: assessment.usedInCriticalInfra,
+      performsCryptoOps: assessment.performsCryptoOps,
+      controlsPhysicalSystem: assessment.controlsPhysicalSystem,
+      hasMicrocontroller: assessment.hasMicrocontroller,
+      isOSSComponent: assessment.isOSSComponent,
+      isCommerciallySupplied: assessment.isCommerciallySupplied,
+      segments: (assessment.segments?.split(",") ?? []) as Array<
+        "space" | "ground" | "link" | "user"
+      >,
+      isSafetyCritical: assessment.isSafetyCritical,
+      hasRedundancy: assessment.hasRedundancy,
+      processesClassifiedData: assessment.processesClassifiedData,
+      hasIEC62443: assessment.hasIEC62443,
+      hasETSIEN303645: assessment.hasETSIEN303645,
+      hasCommonCriteria: assessment.hasCommonCriteria,
+      hasISO27001: assessment.hasISO27001,
+    };
+
+    const result = await calculateCRACompliance(answers);
+    const overlap = result.nis2Overlap;
+
+    return {
+      productName: assessment.productName,
+      assessmentId: assessment.id,
+      overlappingRequirementCount: overlap.overlappingRequirementCount,
+      estimatedSavingsWeeks: overlap.estimatedSavingsRange,
+      overlappingRequirements: overlap.overlappingRequirements
+        .slice(0, 20)
+        .map((o) => ({
+          craRequirementId: o.craRequirementId,
+          nis2RequirementId: o.nis2RequirementId,
+          relationship: o.relationship,
+        })),
+      disclaimer: overlap.disclaimer,
+    };
+  },
+
+  get_cra_sbom_analysis: async (input, userContext) => {
+    const assessmentId = getString(input, "assessmentId");
+    if (!assessmentId) {
+      return { error: "assessmentId ist erforderlich." };
+    }
+
+    // Verify assessment belongs to user
+    const assessment = await prisma.cRAAssessment.findFirst({
+      where: { id: assessmentId, userId: userContext.userId },
+      include: {
+        requirements: {
+          where: {
+            requirementId: { in: ["cra-038", "cra-039", "cra-040"] },
+          },
+        },
+      },
+    });
+
+    if (!assessment) {
+      return {
+        error:
+          "CRA-Assessment nicht gefunden oder gehört nicht zum aktuellen Nutzer.",
+      };
+    }
+
+    // Find SBOM evidence in ComplianceEvidence
+    let sbomData: Record<string, unknown> | null = null;
+
+    if (userContext.organizationId) {
+      const evidence = await prisma.complianceEvidence.findFirst({
+        where: {
+          organizationId: userContext.organizationId,
+          regulationType: "CYBERSECURITY",
+          requirementId: `sbom:${assessmentId}`,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (evidence?.metadata) {
+        const metadata = evidence.metadata as Record<string, unknown>;
+        if (metadata.type === "sbom_analysis") {
+          sbomData = metadata;
+        }
+      }
+    }
+
+    // Build SBOM requirement statuses
+    const sbomReqs = assessment.requirements.map((r) => ({
+      requirementId: r.requirementId,
+      status: r.status,
+      notes: r.notes,
+    }));
+
+    if (!sbomData) {
+      return {
+        productName: assessment.productName,
+        assessmentId: assessment.id,
+        sbomUploaded: false,
+        message:
+          "Kein SBOM hochgeladen. Der Nutzer kann unter /dashboard/modules/cra/" +
+          assessmentId +
+          " ein SBOM (CycloneDX/SPDX) hochladen.",
+        sbomRequirements: sbomReqs,
+      };
+    }
+
+    const analysis = sbomData.analysis as Record<string, unknown> | undefined;
+    const compliance = sbomData.compliance as
+      | Record<string, unknown>
+      | undefined;
+
+    return {
+      productName: assessment.productName,
+      assessmentId: assessment.id,
+      sbomUploaded: true,
+      uploadedAt: sbomData.uploadedAt,
+      analysis: analysis
+        ? {
+            format: analysis.format,
+            specVersion: analysis.specVersion,
+            componentCount: analysis.componentCount,
+            openSourceCount: analysis.openSourceCount,
+            proprietaryCount: analysis.proprietaryCount,
+            licenses: analysis.licenses,
+            hasKnownVulnerableComponents: analysis.hasKnownVulnerableComponents,
+            vulnerableComponents: analysis.vulnerableComponents,
+          }
+        : null,
+      compliance: compliance
+        ? {
+            cra038_sbomGenerated: compliance.cra038_sbomGenerated,
+            cra038_details: compliance.cra038_details,
+            cra039_licensesCompliant: compliance.cra039_licensesCompliant,
+            cra039_details: compliance.cra039_details,
+            cra040_vulnerabilityTracking:
+              compliance.cra040_vulnerabilityTracking,
+            cra040_details: compliance.cra040_details,
+          }
+        : null,
+      sbomRequirements: sbomReqs,
+    };
   },
 };
 
