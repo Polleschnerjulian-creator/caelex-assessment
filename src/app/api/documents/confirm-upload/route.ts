@@ -16,6 +16,7 @@ import {
 } from "@/lib/storage/upload-service";
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
+import { createNotification } from "@/lib/services/notification-service";
 
 interface ConfirmUploadRequest {
   fileKey: string;
@@ -185,6 +186,86 @@ export async function POST(request: NextRequest) {
         storageProvider: "R2",
       },
     });
+
+    // CRA Evidence Auto-Linking (best-effort, does not block the response)
+    try {
+      const { matchDocumentToCRA } =
+        await import("@/lib/cra-evidence-matcher.server");
+      const matches = matchDocumentToCRA(
+        name,
+        category,
+        tags || [],
+        metadata.contentType,
+      );
+
+      if (matches.length > 0 && document.organizationId) {
+        // Find org's active CRA assessments
+        const craAssessments = await prisma.cRAAssessment.findMany({
+          where: {
+            organizationId: document.organizationId,
+            isOutOfScope: false,
+          },
+          select: { id: true, productName: true },
+        });
+
+        if (craAssessments.length > 0) {
+          // Create evidence records for the top matches (max 3 to avoid noise)
+          const topMatches = matches.slice(0, 3);
+          for (const match of topMatches) {
+            try {
+              await prisma.complianceEvidence.create({
+                data: {
+                  organizationId: document.organizationId,
+                  createdBy: session.user.id,
+                  regulationType: "CYBERSECURITY",
+                  requirementId: match.requirementId,
+                  title: `Auto-linked: ${name}`,
+                  description: match.reason,
+                  // Use OTHER since AUTOMATED is not an EvidenceType;
+                  // sourceType = DOCUMENT_UPLOAD marks it as auto-generated
+                  evidenceType: "OTHER",
+                  status: "DRAFT",
+                  sourceType: "DOCUMENT_UPLOAD",
+                  confidence: match.coveragePercent / 100,
+                  metadata: {
+                    autoLinked: true,
+                    matchConfidence: match.confidence,
+                    mappingType: match.mappingType,
+                    coveragePercent: match.coveragePercent,
+                    documentCategory: category,
+                  },
+                  documents: {
+                    create: { documentId: document.id },
+                  },
+                },
+              });
+
+              // Notify the uploading user about the auto-link
+              await createNotification({
+                userId: session.user.id,
+                type: "COMPLIANCE_UPDATED",
+                title: "CRA-Evidenz automatisch verknüpft",
+                message: `"${name}" wurde automatisch mit CRA-Requirement ${match.requirementId} verknüpft (${match.confidence} confidence). Bitte überprüfen.`,
+                actionUrl: `/dashboard/modules/cra`,
+                entityType: "document",
+                entityId: document.id,
+                severity: "INFO",
+                organizationId: document.organizationId,
+              });
+            } catch (innerErr) {
+              // A unique-constraint violation means evidence already exists — skip silently
+              logger.warn(
+                `CRA auto-link skipped for requirement ${match.requirementId}`,
+                innerErr,
+              );
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // Silent fail — auto-linking is best-effort and must not break document upload
+      logger.warn("CRA evidence auto-linking failed", err);
+    }
 
     // Log audit event
     await prisma.auditLog.create({
