@@ -38,6 +38,7 @@ import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
 import { CRA_REQUIREMENTS } from "@/data/cra-requirements";
 import type { ClassificationStep } from "@/lib/cra-types";
 import SBOMUpload from "@/components/cra/SBOMUpload";
+import NotifiedBodyWorkflow from "@/components/cra/NotifiedBodyWorkflow";
 
 // ─── Types ───
 
@@ -934,6 +935,19 @@ export default function CRAAssessmentDetailPage() {
             onAnalysisComplete={fetchAssessment}
           />
         )}
+
+        {/* Notified Body Workflow — Class II (mandatory) or Class I with third-party route */}
+        {!assessment.isOutOfScope &&
+          (assessment.productClassification === "class_II" ||
+            (assessment.productClassification === "class_I" &&
+              assessment.conformityRoute === "third_party_type_exam")) && (
+            <NotifiedBodyWorkflow
+              assessmentId={assessmentId}
+              productClassification={assessment.productClassification}
+              conformityRoute={assessment.conformityRoute}
+              productName={assessment.productName}
+            />
+          )}
 
         {/* Requirements Status Summary */}
         {totalReqs > 0 && (

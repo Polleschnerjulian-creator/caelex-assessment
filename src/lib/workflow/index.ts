@@ -20,6 +20,15 @@ export {
   getAuthorizationProgress,
   isAuthorizationTerminal,
   AUTHORIZATION_STATE_ORDER,
+  notifiedBodyWorkflowDefinition,
+  getNBStatusInfo,
+  getNBProgress,
+  isNBTerminal,
+  NB_STATE_ORDER,
+  NB_REQUIRED_DOCUMENTS,
+  createInitialNBWorkflowData,
+  requiresNBWorkflow,
+  isNBMandatory,
 } from "./definitions";
 
 // Types
@@ -48,3 +57,13 @@ export type {
   IncidentSeverity,
   IncidentContext,
 } from "./types";
+
+// Notified Body Workflow types (re-export from definitions)
+export type {
+  NBWorkflowState,
+  NBWorkflowData,
+  NBDocumentStatus,
+  NBCommunication,
+  NBWorkflowContext,
+  NBDocumentId,
+} from "./definitions";

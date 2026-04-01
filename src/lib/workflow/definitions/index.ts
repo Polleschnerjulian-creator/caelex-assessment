@@ -11,3 +11,24 @@ export {
   isAuthorizationTerminal,
   AUTHORIZATION_STATE_ORDER,
 } from "./authorization";
+
+export {
+  notifiedBodyWorkflowDefinition,
+  getNBStatusInfo,
+  getNBProgress,
+  isNBTerminal,
+  NB_STATE_ORDER,
+  NB_REQUIRED_DOCUMENTS,
+  createInitialNBWorkflowData,
+  requiresNBWorkflow,
+  isNBMandatory,
+} from "./notified-body";
+
+export type {
+  NBWorkflowState,
+  NBWorkflowData,
+  NBDocumentStatus,
+  NBCommunication,
+  NBWorkflowContext,
+  NBDocumentId,
+} from "./notified-body";
