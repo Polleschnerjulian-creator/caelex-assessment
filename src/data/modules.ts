@@ -120,6 +120,17 @@ export const modules: ModuleDefinition[] = [
     articleRange: "Art. 20–21, 23, 27",
     color: "rgba(139,255,255,0.5)",
   },
+  {
+    id: "cra",
+    number: "10",
+    name: "Cyber Resilience Act",
+    shortName: "CRA",
+    icon: "ShieldCheck",
+    description:
+      "EU Cyber Resilience Act (EU) 2024/2847 — product cybersecurity for space hardware and software",
+    articleRange: "Art. 6–14, Annex I–IV",
+    color: "rgba(168,139,255,0.5)",
+  },
 ];
 
 // Legacy export for backwards compatibility

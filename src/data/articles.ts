@@ -29,7 +29,8 @@ export type ComplianceModule =
   | "insurance"
   | "supervision"
   | "regulatory"
-  | "nis2";
+  | "nis2"
+  | "cra";
 
 export type ComplianceType =
   | "informational"

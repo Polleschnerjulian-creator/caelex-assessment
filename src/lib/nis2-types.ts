@@ -147,7 +147,8 @@ export type RegulationType =
   | "enisa_space"
   | "iso27001"
   | "iso24113"
-  | "ecss";
+  | "ecss"
+  | "cra";
 
 export type CrossReferenceRelationship =
   | "implements" // Source implements target's requirement
