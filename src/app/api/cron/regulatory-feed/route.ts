@@ -65,13 +65,36 @@ export async function GET(req: Request) {
           select: { id: true },
         });
 
+        // Get organizations with CRA assessments for targeted CRA notifications
+        const craOrgs = await prisma.organization.findMany({
+          where: { craAssessments: { some: {} } },
+          select: {
+            id: true,
+            members: { select: { userId: true } },
+          },
+        });
+        const craOrgIds = new Set(craOrgs.map((o) => o.id));
+
         for (const update of highPriority) {
+          const isCraUpdate = update.affectedModules.includes("cra");
           const notificationType =
             update.severity === "CRITICAL"
               ? "REGULATORY_CRITICAL_UPDATE"
               : "REGULATORY_UPDATE";
 
-          for (const org of orgs) {
+          // For CRA-specific updates, notify only orgs with CRA assessments
+          // For all other updates, notify all active orgs
+          const targetOrgs = isCraUpdate
+            ? orgs.filter((o) => craOrgIds.has(o.id))
+            : orgs;
+
+          if (isCraUpdate) {
+            logger.info(
+              `[Regulatory Feed] CRA update ${update.celexNumber} — targeting ${targetOrgs.length} orgs with CRA assessments`,
+            );
+          }
+
+          for (const org of targetOrgs) {
             try {
               await notifyOrganization(
                 org.id,

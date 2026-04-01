@@ -4,10 +4,11 @@
  * Monitors EUR-Lex CELLAR SPARQL endpoint for new legislation
  * relevant to space regulation (EU Space Act, NIS2, national space laws).
  *
- * Uses 3 SPARQL queries:
+ * Uses 4 SPARQL queries:
  * A) New delegated/implementing acts in last 7 days
  * B) Acts citing NIS2 or EU Space Programme
  * C) Acts with space-related EuroVoc descriptors
+ * D) CRA-specific: acts citing CRA (32024R2847), harmonised standards, ENISA guidelines
  *
  * Classification is rule-based (no AI cost).
  */
@@ -28,7 +29,11 @@ interface SparqlResult {
   documentType: string;
   sourceUrl: string;
   publishedAt: string;
-  matchSource: "delegated_acts" | "nis2_citation" | "space_eurovoc";
+  matchSource:
+    | "delegated_acts"
+    | "nis2_citation"
+    | "space_eurovoc"
+    | "cra_citation";
 }
 
 interface ClassifiedDocument {
@@ -133,6 +138,34 @@ function buildEuroVocQuery(): string {
   `;
 }
 
+/**
+ * Query D: CRA-specific — acts citing CRA (32024R2847), implementing acts,
+ * harmonised standards, and ENISA guidelines published in last 7 days.
+ */
+function buildCraQuery(): string {
+  return `
+    PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    SELECT DISTINCT ?celex ?title ?type ?date ?work WHERE {
+      ?work cdm:resource_legal_basis <http://publications.europa.eu/resource/celex/32024R2847> .
+      ?work cdm:resource_legal_id_celex ?celex .
+      ?work cdm:work_date_document ?date .
+      ?work cdm:resource_legal_type ?typeUri .
+      ?exp cdm:expression_belongs_to_work ?work .
+      ?exp cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG> .
+      ?exp cdm:expression_title ?title .
+
+      BIND(STRAFTER(STR(?typeUri), "resource-type/") AS ?type)
+
+      FILTER(lang(?title) = "en" || lang(?title) = "")
+      FILTER(?date >= "${getDateDaysAgo(7)}"^^xsd:date)
+    }
+    ORDER BY DESC(?date)
+    LIMIT 50
+  `;
+}
+
 // ─── Helpers ───
 
 function getDateDaysAgo(days: number): string {
@@ -213,6 +246,12 @@ const MODULE_KEYWORDS: Record<string, string[]> = {
     "sanction",
   ],
   nis2: ["nis2", "nis 2", "network and information"],
+  cra: [
+    "cyber resilience act",
+    "2024/2847",
+    "digital elements",
+    "products with digital",
+  ],
 };
 
 function classifyDocument(doc: SparqlResult): ClassifiedDocument {
@@ -228,6 +267,14 @@ function classifyDocument(doc: SparqlResult): ClassifiedDocument {
     );
   }
 
+  // CRA citation check — document has CRA (32024R2847) as its legal basis
+  if (doc.matchSource === "cra_citation") {
+    if (!affectedModules.includes("cra")) affectedModules.push("cra");
+    reasons.push(
+      "Legal basis is CRA (Regulation 2024/2847 — Cyber Resilience Act)",
+    );
+  }
+
   // EuroVoc space descriptor
   if (doc.matchSource === "space_eurovoc") {
     reasons.push("Tagged with space-related EuroVoc descriptors");
@@ -236,6 +283,17 @@ function classifyDocument(doc: SparqlResult): ClassifiedDocument {
   // Delegated act source
   if (doc.matchSource === "delegated_acts") {
     reasons.push(`New ${doc.documentType} published`);
+  }
+
+  // CRA module detection by title/CELEX keywords
+  if (
+    titleLower.includes("2024/2847") ||
+    titleLower.includes("cyber resilience") ||
+    titleLower.includes("digital elements") ||
+    doc.celexNumber.includes("32024R2847")
+  ) {
+    if (!affectedModules.includes("cra")) affectedModules.push("cra");
+    reasons.push("Title or CELEX references CRA (Regulation 2024/2847)");
   }
 
   // Keyword-based module matching
@@ -257,7 +315,40 @@ function classifyDocument(doc: SparqlResult): ClassifiedDocument {
   // Severity classification
   let severity: RegulatoryUpdateSeverity = "LOW";
 
-  if (
+  // CRA-specific severity rules (evaluated before generic rules so they take precedence)
+  if (affectedModules.includes("cra")) {
+    if (
+      titleLower.includes("harmonised standard") ||
+      titleLower.includes("harmonized standard")
+    ) {
+      severity = "CRITICAL";
+      reasons.push(
+        "New harmonised standard for CRA — Class I products may now use self-assessment route",
+      );
+    } else if (
+      titleLower.includes("delegated act") ||
+      doc.documentType === "REG_DEL" ||
+      doc.documentType === "DIR_DEL"
+    ) {
+      severity = "CRITICAL";
+      reasons.push(
+        "CRA delegated act — may modify Annex III/IV product classification lists",
+      );
+    } else if (
+      titleLower.includes("implementing act") ||
+      doc.documentType === "REG_IMPL" ||
+      doc.documentType === "DIR_IMPL" ||
+      doc.documentType === "DEC_IMPL"
+    ) {
+      severity = "HIGH";
+      reasons.push(
+        "CRA implementing act — may affect conformity assessment requirements",
+      );
+    } else {
+      // Any other CRA-related document is at minimum HIGH
+      severity = "HIGH";
+    }
+  } else if (
     titleLower.includes("space act") ||
     titleLower.includes("space regulation") ||
     titleLower.includes("eu space")
@@ -299,7 +390,7 @@ export async function processNewDocuments(): Promise<{
   const errors: string[] = [];
   const allResults: SparqlResult[] = [];
 
-  // Run all 3 queries
+  // Run all 4 queries
   const queries: Array<{
     name: string;
     query: string;
@@ -319,6 +410,11 @@ export async function processNewDocuments(): Promise<{
       name: "space_eurovoc",
       query: buildEuroVocQuery(),
       source: "space_eurovoc",
+    },
+    {
+      name: "cra_citation",
+      query: buildCraQuery(),
+      source: "cra_citation",
     },
   ];
 
@@ -415,6 +511,7 @@ export async function getRecentHighPriorityUpdates(since: Date): Promise<
     title: string;
     severity: RegulatoryUpdateSeverity;
     celexNumber: string;
+    affectedModules: string[];
   }>
 > {
   return prisma.regulatoryUpdate.findMany({
@@ -427,6 +524,7 @@ export async function getRecentHighPriorityUpdates(since: Date): Promise<
       title: true,
       severity: true,
       celexNumber: true,
+      affectedModules: true,
     },
     orderBy: { severity: "asc" },
   });
