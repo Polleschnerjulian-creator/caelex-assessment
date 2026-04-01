@@ -147,3 +147,38 @@ export const WidgetTrackSchema = z.object({
 });
 
 export type WidgetTrackInput = z.infer<typeof WidgetTrackSchema>;
+
+// ─── CRA Schemas ───
+
+export const CRAClassifySchema = z.object({
+  spaceProductTypeId: z.string().optional().nullable(),
+  productName: z.string().min(1).max(200).optional().default("Unnamed Product"),
+  economicOperatorRole: z
+    .enum(["manufacturer", "importer", "distributor"])
+    .optional()
+    .default("manufacturer"),
+  segments: z
+    .array(z.enum(["space", "ground", "link", "user"]))
+    .optional()
+    .default(["space"]),
+  hasNetworkFunction: z.boolean().nullable().optional(),
+  processesAuthData: z.boolean().nullable().optional(),
+  usedInCriticalInfra: z.boolean().nullable().optional(),
+  performsCryptoOps: z.boolean().nullable().optional(),
+  controlsPhysicalSystem: z.boolean().nullable().optional(),
+  hasMicrocontroller: z.boolean().nullable().optional(),
+  isOSSComponent: z.boolean().nullable().optional(),
+  isCommerciallySupplied: z.boolean().nullable().optional(),
+  isSafetyCritical: z.boolean().nullable().optional(),
+  isEUEstablished: z.boolean().nullable().optional(),
+});
+
+export const CRAAssessSchema = CRAClassifySchema.extend({
+  productVersion: z.string().max(50).optional(),
+  hasRedundancy: z.boolean().nullable().optional(),
+  processesClassifiedData: z.boolean().nullable().optional(),
+  hasIEC62443: z.boolean().nullable().optional(),
+  hasETSIEN303645: z.boolean().nullable().optional(),
+  hasCommonCriteria: z.boolean().nullable().optional(),
+  hasISO27001: z.boolean().nullable().optional(),
+});
