@@ -30,6 +30,7 @@ import type {
   TurnoverRange,
 } from "./unified-assessment-types";
 import { EU_MEMBER_STATES } from "./unified-assessment-types";
+import type { CRAAssessmentAnswers, SpaceProductSegment } from "./cra-types";
 
 // ─── EU Space Act Mapper ───
 
@@ -365,5 +366,54 @@ export function mapToSpaceLawAnswers(
       unified.constellationSize,
     ),
     licensingStatus: deriveLicensingStatus(unified.currentLicenses),
+  };
+}
+
+// ─── CRA Mapper ───
+
+/**
+ * Map unified assessment answers to CRA-specific answers.
+ * Phase 1: Manufacturer perspective only.
+ */
+export function mapToCRAAnswers(
+  unified: Partial<UnifiedAssessmentAnswers>,
+): CRAAssessmentAnswers {
+  const serviceTypes = unified.serviceTypes ?? [];
+
+  // Derive segments from service types
+  const segments: SpaceProductSegment[] = [];
+  if (serviceTypes.includes("SATCOM") || serviceTypes.includes("EO")) {
+    segments.push("space");
+  }
+  if (serviceTypes.includes("NAV") || serviceTypes.includes("SSA")) {
+    segments.push("ground");
+  }
+  if (segments.length === 0) segments.push("space"); // default
+
+  return {
+    economicOperatorRole: "manufacturer", // Phase 1: always manufacturer
+    isEUEstablished: unified.establishmentCountry
+      ? EU_MEMBER_STATES.includes(
+          unified.establishmentCountry as (typeof EU_MEMBER_STATES)[number],
+        )
+      : null,
+    spaceProductTypeId: null, // Must be selected separately in CRA wizard
+    productName: unified.organizationName ?? "Unnamed Product",
+    segments,
+    hasNetworkFunction: null,
+    processesAuthData: null,
+    usedInCriticalInfra: true, // Space is always critical infra (NIS2 Annex I)
+    performsCryptoOps: null,
+    controlsPhysicalSystem: null,
+    hasMicrocontroller: null,
+    isOSSComponent: null,
+    isCommerciallySupplied: null,
+    isSafetyCritical: null,
+    hasRedundancy: null,
+    processesClassifiedData: null,
+    hasIEC62443: null,
+    hasETSIEN303645: null,
+    hasCommonCriteria: null,
+    hasISO27001: unified.existingCertifications?.includes("ISO27001") ?? null,
   };
 }
