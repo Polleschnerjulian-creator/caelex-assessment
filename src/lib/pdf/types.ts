@@ -26,7 +26,9 @@ export type ReportType =
   | "assure_company_profile"
   | "assure_risk_report"
   | "investor_update"
-  | "hazard_report";
+  | "hazard_report"
+  | "cra_declaration"
+  | "cra_compliance_summary";
 
 export interface ReportMetadata {
   reportId: string;
