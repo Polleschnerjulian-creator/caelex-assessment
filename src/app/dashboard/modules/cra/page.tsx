@@ -1582,6 +1582,256 @@ export default function CRAModulePage() {
           )}
         </AnimatePresence>
 
+        {/* Spacecraft Suggestions */}
+        {suggestions && suggestions.length > 0 && !showWizard && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="border border-amber-500/30 bg-amber-500/5 rounded-xl overflow-hidden"
+          >
+            {/* Banner */}
+            <div className="flex items-start gap-3 px-5 py-4 border-b border-amber-500/20">
+              <AlertTriangle
+                size={16}
+                className="text-amber-400 flex-shrink-0 mt-0.5"
+                aria-hidden="true"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-amber-400">
+                  Basierend auf deinen {suggestions.length} registrierten
+                  Spacecraft empfehlen wir CRA-Assessments für{" "}
+                  {suggestions.reduce(
+                    (acc, s) =>
+                      acc +
+                      s.suggestedProducts.filter((p) => !p.hasAssessment)
+                        .length,
+                    0,
+                  )}{" "}
+                  Komponenten
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  Wähle eine Komponente und starte das Assessment mit
+                  vorausgefülltem Produkttyp.
+                </p>
+              </div>
+              {/* Overall completion bar */}
+              <div className="flex-shrink-0 text-right min-w-[80px]">
+                <div className="text-xs font-medium text-amber-400 mb-1">
+                  {Math.round(
+                    (suggestions.reduce(
+                      (acc, s) =>
+                        acc +
+                        s.suggestedProducts.filter((p) => p.hasAssessment)
+                          .length,
+                      0,
+                    ) /
+                      Math.max(
+                        suggestions.reduce(
+                          (acc, s) => acc + s.suggestedProducts.length,
+                          0,
+                        ),
+                        1,
+                      )) *
+                      100,
+                  )}
+                  % abgeschlossen
+                </div>
+                <div className="h-1.5 w-20 bg-amber-500/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all"
+                    style={{
+                      width: `${Math.round(
+                        (suggestions.reduce(
+                          (acc, s) =>
+                            acc +
+                            s.suggestedProducts.filter((p) => p.hasAssessment)
+                              .length,
+                          0,
+                        ) /
+                          Math.max(
+                            suggestions.reduce(
+                              (acc, s) => acc + s.suggestedProducts.length,
+                              0,
+                            ),
+                            1,
+                          )) *
+                          100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Per-spacecraft collapsible rows */}
+            <div className="divide-y divide-amber-500/10">
+              {suggestions.map((suggestion) => {
+                const isExpanded = expandedSpacecraft.has(
+                  suggestion.spacecraft.id,
+                );
+                const done = suggestion.suggestedProducts.filter(
+                  (p) => p.hasAssessment,
+                );
+
+                return (
+                  <div key={suggestion.spacecraft.id}>
+                    {/* Spacecraft header row */}
+                    <button
+                      onClick={() =>
+                        setExpandedSpacecraft((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(suggestion.spacecraft.id)) {
+                            next.delete(suggestion.spacecraft.id);
+                          } else {
+                            next.add(suggestion.spacecraft.id);
+                          }
+                          return next;
+                        })
+                      }
+                      className="w-full flex items-center justify-between px-5 py-3 hover:bg-amber-500/5 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Satellite
+                          size={14}
+                          className="text-amber-400 flex-shrink-0"
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-[var(--text-primary)]">
+                            {suggestion.spacecraft.name}
+                          </span>
+                          <span className="ml-2 text-xs text-[var(--text-tertiary)]">
+                            {suggestion.spacecraft.missionType.replace(
+                              /_/g,
+                              " ",
+                            )}
+                            {" · "}
+                            {suggestion.spacecraft.status
+                              .toLowerCase()
+                              .replace(/_/g, " ")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-xs text-[var(--text-tertiary)]">
+                          {done.length}/{suggestion.suggestedProducts.length}{" "}
+                          abgeschlossen
+                        </span>
+                        <div className="w-16 h-1.5 bg-amber-500/20 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-500 rounded-full transition-all"
+                            style={{ width: `${suggestion.completionRate}%` }}
+                          />
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp
+                            size={14}
+                            className="text-[var(--text-tertiary)]"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <ChevronDown
+                            size={14}
+                            className="text-[var(--text-tertiary)]"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expanded product grid */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {suggestion.suggestedProducts.map((product) => {
+                              const classConf =
+                                classificationConfig[product.classification] ||
+                                classificationConfig.default;
+                              const ClassIcon = classConf.icon;
+
+                              return (
+                                <div
+                                  key={product.productTypeId}
+                                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                    product.hasAssessment
+                                      ? "border-[var(--accent-success)]/20 bg-[var(--accent-success)]/5"
+                                      : "border-amber-500/20 bg-[var(--surface-sunken)]"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {product.hasAssessment ? (
+                                      <Check
+                                        size={14}
+                                        className="text-[var(--accent-success)] flex-shrink-0"
+                                        aria-hidden="true"
+                                      />
+                                    ) : (
+                                      <AlertTriangle
+                                        size={14}
+                                        className="text-amber-400 flex-shrink-0"
+                                        aria-hidden="true"
+                                      />
+                                    )}
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">
+                                        {product.productName}
+                                      </p>
+                                      <div className="flex items-center gap-1 mt-0.5">
+                                        <ClassIcon
+                                          size={10}
+                                          className={classConf.color}
+                                          aria-hidden="true"
+                                        />
+                                        <span
+                                          className={`text-micro font-medium ${classConf.color}`}
+                                        >
+                                          {classConf.label}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {product.hasAssessment ? (
+                                    <Link
+                                      href={`/dashboard/modules/cra/${product.assessmentId}`}
+                                      className="text-micro text-[var(--accent-success)] hover:underline flex-shrink-0 ml-2"
+                                    >
+                                      Ansehen
+                                    </Link>
+                                  ) : (
+                                    <button
+                                      onClick={() => {
+                                        setWizardPrefill({
+                                          spaceProductTypeId:
+                                            product.productTypeId,
+                                        });
+                                        setShowWizard(true);
+                                      }}
+                                      className="text-micro text-amber-400 hover:text-amber-300 flex-shrink-0 ml-2 whitespace-nowrap transition-colors"
+                                    >
+                                      Assessment starten →
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
         {/* Empty state */}
         {assessments.length === 0 && !error && !showWizard && (
           <motion.div
