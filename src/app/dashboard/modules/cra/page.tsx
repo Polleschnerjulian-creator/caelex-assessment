@@ -428,7 +428,7 @@ function CRAWizard({
       return next;
     });
     if (filled.size > 0) setPrefillFields(filled);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [expandedReasoning, setExpandedReasoning] = useState(false);
 
@@ -1410,7 +1410,9 @@ export default function CRAModulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showWizard, setShowWizard] = useState(false);
-  const [wizardPrefill, setWizardPrefill] = useState<Partial<WizardState> | undefined>(undefined);
+  const [wizardPrefill, setWizardPrefill] = useState<
+    Partial<WizardState> | undefined
+  >(undefined);
 
   // Fetch org profile data for pre-fill when the wizard opens
   useEffect(() => {
@@ -1477,6 +1479,25 @@ export default function CRAModulePage() {
   useEffect(() => {
     fetchAssessments();
   }, [fetchAssessments]);
+
+  const [suggestions, setSuggestions] = useState<SpacecraftSuggestion[] | null>(
+    null,
+  );
+  const [expandedSpacecraft, setExpandedSpacecraft] = useState<Set<string>>(
+    new Set(),
+  );
+
+  useEffect(() => {
+    fetch("/api/cra/suggestions")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const data = json?.data ?? json;
+        if (data?.suggestions?.length > 0) {
+          setSuggestions(data.suggestions);
+        }
+      })
+      .catch(() => {}); // Silent fail
+  }, []);
 
   if (loading) {
     return (
