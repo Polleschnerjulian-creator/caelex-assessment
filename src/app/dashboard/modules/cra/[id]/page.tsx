@@ -28,6 +28,7 @@ import {
   HelpCircle,
   Cpu,
   Info,
+  Download,
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import EvidencePanel from "@/components/audit/EvidencePanel";
@@ -36,6 +37,7 @@ import AssessmentFieldForm from "@/components/shared/AssessmentFieldForm";
 import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
 import { CRA_REQUIREMENTS } from "@/data/cra-requirements";
 import type { ClassificationStep } from "@/lib/cra-types";
+import SBOMUpload from "@/components/cra/SBOMUpload";
 
 // ─── Types ───
 
@@ -227,6 +229,9 @@ export default function CRAAssessmentDetailPage() {
   // Reasoning chain expand
   const [expandedReasoning, setExpandedReasoning] = useState(false);
 
+  // PDF generation
+  const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
+
   // Fetch assessment
   const fetchAssessment = useCallback(async () => {
     try {
@@ -316,6 +321,40 @@ export default function CRAAssessmentDetailPage() {
     } catch {
       setError("Failed to delete assessment");
       setDeleting(false);
+    }
+  };
+
+  // Generate PDF report
+  const handleGeneratePdf = async (
+    reportType: "cra_declaration" | "cra_compliance_summary",
+  ) => {
+    setGeneratingPdf(reportType);
+    try {
+      const res = await fetch(`/api/cra/${assessmentId}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ reportType }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to generate report");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        reportType === "cra_declaration"
+          ? `cra-eu-declaration-${assessmentId}.pdf`
+          : `cra-compliance-summary-${assessmentId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to generate report",
+      );
+    } finally {
+      setGeneratingPdf(null);
     }
   };
 
@@ -496,6 +535,30 @@ export default function CRAAssessmentDetailPage() {
             Back to CRA
           </button>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleGeneratePdf("cra_declaration")}
+              disabled={generatingPdf !== null}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--accent-primary)] hover:text-emerald-300 border border-[var(--accent-primary)]/20 hover:border-[var(--accent-primary)]/40 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {generatingPdf === "cra_declaration" ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Download size={14} />
+              )}
+              EU Declaration
+            </button>
+            <button
+              onClick={() => handleGeneratePdf("cra_compliance_summary")}
+              disabled={generatingPdf !== null}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--accent-primary)] hover:text-emerald-300 border border-[var(--accent-primary)]/20 hover:border-[var(--accent-primary)]/40 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {generatingPdf === "cra_compliance_summary" ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <FileText size={14} />
+              )}
+              Compliance Summary
+            </button>
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--accent-danger)] hover:text-red-300 border border-[var(--accent-danger)]/20 hover:border-[var(--accent-danger)]/40 rounded-lg transition-colors"
@@ -862,6 +925,14 @@ export default function CRAAssessmentDetailPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* SBOM Upload & Analysis */}
+        {!assessment.isOutOfScope && (
+          <SBOMUpload
+            assessmentId={assessmentId}
+            onAnalysisComplete={fetchAssessment}
+          />
         )}
 
         {/* Requirements Status Summary */}
