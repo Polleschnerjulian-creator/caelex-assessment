@@ -237,7 +237,8 @@ export default function CRAAssessmentDetailPage() {
           data.error || `Failed to load assessment (${res.status})`,
         );
       }
-      const data = await res.json();
+      const json = await res.json();
+      const data = json.data ?? json;
       setAssessment(data.assessment);
       if (data.requirementMeta) {
         setReqMeta(data.requirementMeta);
@@ -292,8 +293,8 @@ export default function CRAAssessmentDetailPage() {
         body: JSON.stringify({ productName: nameInput.trim() }),
       });
       if (!res.ok) throw new Error("Failed to update name");
-      const data = await res.json();
-      setAssessment(data.assessment);
+      const json = await res.json();
+      setAssessment((json.data ?? json).assessment);
       setEditingName(false);
     } catch {
       setError("Failed to update product name");

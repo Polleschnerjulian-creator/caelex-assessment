@@ -489,10 +489,11 @@ function CRAWizard({
         );
       }
 
-      const data = await res.json();
+      const json = await res.json();
+      const assessment = json.data?.assessment ?? json.assessment;
 
-      if (data.assessment?.id) {
-        router.push(`/dashboard/modules/cra/${data.assessment.id}`);
+      if (assessment?.id) {
+        router.push(`/dashboard/modules/cra/${assessment.id}`);
       } else {
         onComplete();
       }
@@ -1365,8 +1366,8 @@ export default function CRAModulePage() {
           errData.error || `Failed to fetch assessments (${res.status})`,
         );
       }
-      const data = await res.json();
-      setAssessments(data.assessments || []);
+      const json = await res.json();
+      setAssessments(json.data?.assessments ?? json.assessments ?? []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load assessments",
