@@ -17,6 +17,8 @@ const solutionLinks = [
   },
   { label: "Risk Assessment", href: "/assessment" },
   { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
+  { label: "CRA Product Classification", href: "/cra/classify" },
+  { label: "CRA Compliance", href: "/dashboard/modules/cra" },
   { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
   { label: "Environmental Impact", href: "/solutions/environmental-impact" },
   {
@@ -77,6 +79,7 @@ const industryLinks = [
     label: "Space Agencies & Government",
     href: "/industries/space-agencies-government",
   },
+  { label: "Space Hardware Manufacturers", href: "/cra/classify" },
   { label: "Defense & Security", href: "/industries/defense-security" },
   { label: "Insurance & Finance", href: "/assure/dashboard" },
   { label: "Legal & Consulting", href: "/industries/legal-consulting" },
@@ -124,6 +127,7 @@ const capabilityLinks = [
     label: "Automated Gap Analysis",
     href: "/capabilities/automated-gap-analysis",
   },
+  { label: "Space Product Taxonomy", href: "/cra/classify" },
   {
     label: "Cross-Regulation Mapping",
     href: "/capabilities/cross-regulation-mapping",
@@ -241,7 +245,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
               <p
                 className={`text-body leading-relaxed ${isLight ? "text-[#86868b]" : "text-white/45"}`}
               >
-                Get updates on EU Space Act, NIS2, and national space laws.
+                Get updates on EU Space Act, NIS2, CRA, and national space laws.
                 Compliance insights and deadline reminders. Unsubscribe anytime.
               </p>
             </div>
@@ -493,14 +497,14 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           >
             This platform provides regulatory guidance and compliance tooling
             based on the EU Space Act (COM(2025) 335), NIS2 Directive (EU
-            2022/2555), and national space laws across European jurisdictions.
-            Information and outputs provided by Caelex — including assessments,
-            generated documents, risk scores, and AI-assisted analysis — do not
-            constitute legal advice and should not be relied upon as a
-            substitute for professional legal counsel. For binding compliance
-            decisions, regulatory filings, and formal submissions, always
-            consult qualified legal professionals with jurisdiction-specific
-            expertise.
+            2022/2555), Cyber Resilience Act (EU 2024/2847), and national space
+            laws across European jurisdictions. Information and outputs provided
+            by Caelex — including assessments, generated documents, risk scores,
+            and AI-assisted analysis — do not constitute legal advice and should
+            not be relied upon as a substitute for professional legal counsel.
+            For binding compliance decisions, regulatory filings, and formal
+            submissions, always consult qualified legal professionals with
+            jurisdiction-specific expertise.
           </p>
         </div>
       </div>
