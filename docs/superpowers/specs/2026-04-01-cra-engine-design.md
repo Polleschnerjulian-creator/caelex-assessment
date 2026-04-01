@@ -160,6 +160,7 @@ export interface CRARequirement {
   // Cross-regulation references
   nis2Ref?: string;
   nis2RequirementIds?: string[];
+  crossRefIds?: string[]; // Direct xref IDs: ["xref-048", "xref-049"]
   iso27001Ref?: string;
   iec62443Ref?: string;
   ecssRef?: string;

@@ -190,6 +190,7 @@ export interface CRARequirement {
   };
   nis2Ref?: string;
   nis2RequirementIds?: string[];
+  crossRefIds?: string[]; // Direct xref IDs: ["xref-048", "xref-049"]
   iso27001Ref?: string;
   iec62443Ref?: string;
   ecssRef?: string;
@@ -1628,51 +1629,46 @@ function calculateNIS2Overlap(
   let savingsMin = 0;
   let savingsMax = 0;
 
-  // From cross-references
-  const craCrossRefs = CROSS_REFERENCES.filter(
-    (ref) =>
-      (ref.sourceRegulation === "cra" && ref.targetRegulation === "nis2") ||
-      (ref.sourceRegulation === "nis2" && ref.targetRegulation === "cra"),
-  );
+  // Build xref lookup by ID for O(1) access — no string parsing
+  const xrefById = new Map(CROSS_REFERENCES.map((ref) => [ref.id, ref]));
 
   for (const req of requirements) {
     if (!req.nis2RequirementIds || req.nis2RequirementIds.length === 0)
       continue;
 
+    // Use direct crossRefIds for relationship lookup
+    const reqXrefs = (req.crossRefIds ?? [])
+      .map((id) => xrefById.get(id))
+      .filter(Boolean);
+
+    // Determine relationship from cross-references, fallback to "overlaps"
+    const relationship: "implements" | "overlaps" | "extends" =
+      (reqXrefs[0]?.relationship as "implements" | "overlaps" | "extends") ??
+      "overlaps";
+
     for (const nis2Id of req.nis2RequirementIds) {
-      // Find relationship type from cross-references
-      const xref = craCrossRefs.find(
-        (ref) =>
-          ref.sourceArticle.includes(req.articleRef.split(" ")[1] || "") ||
-          ref.targetArticle.includes(req.articleRef.split(" ")[1] || ""),
-      );
-
-      const relationship =
-        (xref?.relationship as "implements" | "overlaps" | "extends") ||
-        "overlaps";
-
       overlapping.push({
         craRequirementId: req.id,
         nis2RequirementId: nis2Id,
         relationship,
       });
+    }
 
-      // Calculate savings range based on relationship
-      const weeks = req.implementationTimeWeeks;
-      switch (relationship) {
-        case "implements":
-          savingsMin += weeks * 0.7;
-          savingsMax += weeks * 0.9;
-          break;
-        case "overlaps":
-          savingsMin += weeks * 0.4;
-          savingsMax += weeks * 0.6;
-          break;
-        case "extends":
-          savingsMin += weeks * 0.1;
-          savingsMax += weeks * 0.3;
-          break;
-      }
+    // Calculate savings range based on relationship (per requirement, not per nis2Id)
+    const weeks = req.implementationTimeWeeks;
+    switch (relationship) {
+      case "implements":
+        savingsMin += weeks * 0.7;
+        savingsMax += weeks * 0.9;
+        break;
+      case "overlaps":
+        savingsMin += weeks * 0.4;
+        savingsMax += weeks * 0.6;
+        break;
+      case "extends":
+        savingsMin += weeks * 0.1;
+        savingsMax += weeks * 0.3;
+        break;
     }
   }
 
