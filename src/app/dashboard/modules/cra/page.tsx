@@ -26,7 +26,11 @@ import {
   Link2,
   User,
   Info,
+  BarChart2,
+  TrendingUp,
+  Users,
 } from "lucide-react";
+import type { CRABenchmark } from "@/lib/cra-benchmark-service.server";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { SPACE_PRODUCT_TAXONOMY } from "@/data/cra-taxonomy";
 import type { CRASpaceProductType, ClassificationStep } from "@/lib/cra-types";
@@ -1480,6 +1484,20 @@ export default function CRAModulePage() {
     fetchAssessments();
   }, [fetchAssessments]);
 
+  const [benchmark, setBenchmark] = useState<CRABenchmark | null>(null);
+
+  useEffect(() => {
+    fetch("/api/cra/benchmark")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const data = json?.data ?? json;
+        if (data?.benchmark) {
+          setBenchmark(data.benchmark);
+        }
+      })
+      .catch(() => {}); // Silent fail — benchmark is best-effort
+  }, []);
+
   const [suggestions, setSuggestions] = useState<SpacecraftSuggestion[] | null>(
     null,
   );
@@ -1979,6 +1997,203 @@ export default function CRAModulePage() {
               );
             })}
           </div>
+        )}
+
+        {/* CRA Compliance Benchmark */}
+        {benchmark && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="border border-[var(--border-default)] rounded-xl overflow-hidden bg-[var(--surface-raised)]"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <BarChart2
+                    size={15}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                    CRA Compliance Benchmark
+                  </h2>
+                  <p className="text-xs text-[var(--text-tertiary)]">
+                    Anonymisierter Branchenvergleich
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+                <Users size={12} aria-hidden="true" />
+                {benchmark.totalOrganizations} Unternehmen
+              </div>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* Percentile hero */}
+              <div className="flex items-start gap-5">
+                <div className="flex-shrink-0">
+                  <div className="text-4xl font-bold text-emerald-400 tabular-nums leading-none">
+                    {benchmark.percentile}%
+                  </div>
+                  <div className="text-xs text-[var(--text-tertiary)] mt-1 leading-tight">
+                    besser als andere
+                    <br />
+                    Unternehmen
+                  </div>
+                </div>
+
+                {/* Score comparison bars */}
+                <div className="flex-1 space-y-2.5 min-w-0">
+                  {[
+                    {
+                      label: "Ihr Score",
+                      value: Math.round(
+                        assessments.reduce(
+                          (sum, a) => sum + (a.maturityScore ?? 0),
+                          0,
+                        ) / Math.max(assessments.length, 1),
+                      ),
+                      colorClass: "bg-emerald-500",
+                      textClass: "text-emerald-400",
+                    },
+                    {
+                      label: "Durchschnitt",
+                      value: benchmark.averageMaturityScore,
+                      colorClass: "bg-slate-500",
+                      textClass: "text-[var(--text-secondary)]",
+                    },
+                    {
+                      label: "Median",
+                      value: benchmark.medianMaturityScore,
+                      colorClass: "bg-slate-600",
+                      textClass: "text-[var(--text-tertiary)]",
+                    },
+                  ].map(({ label, value, colorClass, textClass }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span
+                        className={`text-xs w-20 flex-shrink-0 ${textClass}`}
+                      >
+                        {label}
+                      </span>
+                      <div className="flex-1 h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${colorClass} rounded-full transition-all duration-700`}
+                          style={{ width: `${Math.min(value, 100)}%` }}
+                        />
+                      </div>
+                      <span
+                        className={`text-xs tabular-nums w-8 text-right ${textClass}`}
+                      >
+                        {value}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category breakdown */}
+              {benchmark.byCategory.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-2.5">
+                    Nach Kategorie
+                  </h3>
+                  <div className="space-y-2">
+                    {benchmark.byCategory.map(
+                      ({ category, avgComplianceRate, orgComplianceRate }) => {
+                        const categoryLabel = category
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase());
+                        const delta = orgComplianceRate - avgComplianceRate;
+                        return (
+                          <div
+                            key={category}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className="text-xs text-[var(--text-tertiary)] w-36 flex-shrink-0 truncate"
+                              title={categoryLabel}
+                            >
+                              {categoryLabel}
+                            </span>
+                            <div className="flex-1 relative h-3">
+                              {/* Average bar (background) */}
+                              <div className="absolute inset-0 h-2 top-0.5 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-slate-600 rounded-full"
+                                  style={{
+                                    width: `${Math.min(avgComplianceRate, 100)}%`,
+                                  }}
+                                />
+                              </div>
+                              {/* Org bar (overlay) */}
+                              <div
+                                className="absolute inset-0 h-2 top-0.5 rounded-full overflow-hidden"
+                                style={{
+                                  width: `${Math.min(orgComplianceRate, 100)}%`,
+                                }}
+                              >
+                                <div
+                                  className={`h-full rounded-full ${orgComplianceRate >= avgComplianceRate ? "bg-emerald-500" : "bg-amber-500"}`}
+                                  style={{ width: "100%" }}
+                                />
+                              </div>
+                            </div>
+                            <span
+                              className={`text-xs tabular-nums w-10 text-right flex-shrink-0 ${
+                                delta >= 0
+                                  ? "text-emerald-400"
+                                  : "text-amber-400"
+                              }`}
+                            >
+                              {delta >= 0 ? "+" : ""}
+                              {Math.round(delta)}%
+                            </span>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Top gaps */}
+              {benchmark.topGaps.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+                    <TrendingUp size={11} aria-hidden="true" />
+                    Top Gaps in der Branche
+                  </h3>
+                  <div className="space-y-1.5">
+                    {benchmark.topGaps.map((gap) => (
+                      <div
+                        key={gap.requirementId}
+                        className="flex items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-[var(--surface-sunken)]"
+                      >
+                        <span className="text-xs text-[var(--text-secondary)] truncate flex-1 min-w-0">
+                          {gap.title}
+                        </span>
+                        <span className="text-xs font-medium text-amber-400 tabular-nums flex-shrink-0">
+                          {gap.nonCompliantPercent}% non-compliant
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <p className="text-micro text-[var(--text-tertiary)] leading-relaxed">
+                Basierend auf anonymisierten Daten von{" "}
+                {benchmark.totalOrganizations} Unternehmen. Keine
+                personenbezogenen oder unternehmensbezogenen Daten werden
+                weitergegeben.
+              </p>
+            </div>
+          </motion.div>
         )}
 
         {/* NIS2 callout */}
