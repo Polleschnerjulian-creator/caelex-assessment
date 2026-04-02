@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
-import { decrypt, isEncrypted } from "@/lib/encryption";
+import { decrypt, encrypt, isEncrypted } from "@/lib/encryption";
 import {
   calculateCRACompliance,
   classifyCRAProduct,
@@ -220,19 +220,22 @@ export async function POST(request: Request) {
         autoAssessedCount = batchResult.count;
 
         // Batch 2: Update notes individually (they differ per requirement)
-        const noteUpdates = applicableAutos
-          .filter((a) => a.reason)
-          .map((auto) =>
+        const autosWithReason = applicableAutos.filter((a) => a.reason);
+
+        if (autosWithReason.length > 0) {
+          // Encrypt all notes first, then build Prisma operations
+          const encryptedNotes = await Promise.all(
+            autosWithReason.map((a) => encrypt(a.reason!)),
+          );
+          const noteUpdates = autosWithReason.map((auto, idx) =>
             prisma.cRARequirementStatus.updateMany({
               where: {
                 assessmentId: assessment.id,
                 requirementId: auto.requirementId,
               },
-              data: { notes: auto.reason },
+              data: { notes: encryptedNotes[idx] },
             }),
           );
-
-        if (noteUpdates.length > 0) {
           await prisma.$transaction(noteUpdates);
         }
       }
@@ -302,19 +305,24 @@ export async function POST(request: Request) {
           });
 
           // Update notes individually
-          const noteUpdates = propagatedPartials
-            .filter((a) => a.reason)
-            .map((auto) =>
+          const propagatedWithReason = propagatedPartials.filter(
+            (a) => a.reason,
+          );
+
+          if (propagatedWithReason.length > 0) {
+            // Encrypt all notes first, then build Prisma operations
+            const encryptedPropNotes = await Promise.all(
+              propagatedWithReason.map((a) => encrypt(a.reason!)),
+            );
+            const noteUpdates = propagatedWithReason.map((auto, idx) =>
               prisma.cRARequirementStatus.updateMany({
                 where: {
                   assessmentId: assessment.id,
                   requirementId: auto.requirementId,
                 },
-                data: { notes: auto.reason },
+                data: { notes: encryptedPropNotes[idx] },
               }),
             );
-
-          if (noteUpdates.length > 0) {
             await prisma.$transaction(noteUpdates);
           }
         }

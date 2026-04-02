@@ -175,8 +175,11 @@ export async function encrypt(plaintext: string): Promise<string> {
  * @returns Original plaintext
  */
 export async function decrypt(encryptedText: string): Promise<string> {
-  if (!encryptedText || !encryptedText.includes(":")) {
+  if (!encryptedText) {
     return encryptedText;
+  }
+  if (!encryptedText.includes(":")) {
+    throw new Error("Invalid encrypted text format: missing separator");
   }
 
   const parts = encryptedText.split(":");

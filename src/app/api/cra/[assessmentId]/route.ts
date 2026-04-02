@@ -181,7 +181,6 @@ export async function PATCH(
       hasETSIEN303645: z.boolean().nullable().optional(),
       hasCommonCriteria: z.boolean().nullable().optional(),
       hasISO27001: z.boolean().nullable().optional(),
-      maturityScore: z.number().min(0).max(100).optional(),
     });
 
     const parsed = patchSchema.safeParse(body);
@@ -251,8 +250,6 @@ export async function PATCH(
       updateData.hasCommonCriteria = data.hasCommonCriteria;
     if (data.hasISO27001 !== undefined)
       updateData.hasISO27001 = data.hasISO27001;
-    if (data.maturityScore !== undefined)
-      updateData.maturityScore = data.maturityScore;
 
     // Recalculate classification if profile fields changed
     const profileFields = [

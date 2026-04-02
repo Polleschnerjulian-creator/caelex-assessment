@@ -345,13 +345,10 @@ function SecuritySection() {
         setPasswordError(data.error || t("settings.errorChangePassword"));
       }
     } catch {
-      toast.success(
-        t("settings.passwordChanged"),
-        t("settings.passwordUpdatedSuccess"),
+      toast.error(
+        t("settings.errorChangePassword") || "Password change failed",
+        "Please try again.",
       );
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
     } finally {
       setChangingPassword(false);
     }

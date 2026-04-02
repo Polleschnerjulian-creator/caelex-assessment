@@ -253,8 +253,12 @@ async function queryNVD(
   componentName: string,
   version: string,
 ): Promise<NVDVulnerability[]> {
+  // Sanitize component name to prevent injection into NVD API query
+  const sanitizedName = componentName.slice(0, 100).replace(/[^\w\-\.@/]/g, "");
+  if (!sanitizedName) return []; // Nothing left after sanitization
+
   const params = new URLSearchParams({
-    keywordSearch: componentName,
+    keywordSearch: sanitizedName,
     resultsPerPage: "20",
     startIndex: "0",
   });
@@ -363,8 +367,9 @@ export async function checkComponentsForCVEs(
   for (let i = 0; i < components.length; i++) {
     const { name, version } = components[i];
 
-    // Sanitise: skip empty names
+    // Sanitise: skip empty names or excessively long names
     if (!name.trim()) continue;
+    if (name.length > 200) continue;
 
     // Check in-memory cache first
     const cached = getFromCache(name, version);

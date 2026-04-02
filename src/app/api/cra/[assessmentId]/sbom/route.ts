@@ -22,11 +22,12 @@ import {
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 // ─── Validation ───
 
 const sbomUploadSchema = z.object({
-  sbomContent: z.string().min(2).max(10_000_000), // Max ~10MB JSON string
+  sbomContent: z.string().min(2).max(2_000_000), // 2MB max — real SBOMs are well under this
 });
 
 // ─── Requirement ID Mapping ───
@@ -49,6 +50,17 @@ export async function POST(
       return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
     }
 
+    // Rate limit: 10/hr per user (assessment tier)
+    const ip = getIdentifier(request, session.user.id);
+    const rateLimitResult = await checkRateLimit("assessment", ip);
+    if (!rateLimitResult.success) {
+      return createErrorResponse(
+        "Too many requests",
+        ErrorCode.RATE_LIMITED,
+        429,
+      );
+    }
+
     const { assessmentId } = await params;
     const userId = session.user.id;
 
@@ -63,9 +75,10 @@ export async function POST(
       );
     }
 
-    // Verify assessment belongs to user
+    // Verify assessment belongs to user (include organizationId for evidence storage)
     const assessment = await prisma.cRAAssessment.findFirst({
       where: { id: assessmentId, userId },
+      select: { id: true, productName: true, organizationId: true },
     });
 
     if (!assessment) {
@@ -89,9 +102,8 @@ export async function POST(
     // Assess compliance
     const compliance = assessSBOMCompliance(analysis);
 
-    // Resolve organization context for evidence storage
-    const orgContext = await getCurrentOrganization(userId);
-    const organizationId = orgContext?.organizationId;
+    // Use the assessment's organization (not session org) for evidence storage
+    const organizationId = assessment.organizationId;
 
     // Store SBOM analysis as ComplianceEvidence if user has an org
     if (organizationId) {
