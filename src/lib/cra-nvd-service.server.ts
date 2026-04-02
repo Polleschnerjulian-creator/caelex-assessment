@@ -92,6 +92,7 @@ interface CacheEntry {
 const _cache = new Map<string, CacheEntry>();
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_CACHE_SIZE = 1000;
 
 function getCacheKey(name: string, version: string): string {
   return `${name.toLowerCase()}@${version.toLowerCase()}`;
@@ -117,6 +118,11 @@ function setCache(
   results: NVDVulnerability[],
 ): void {
   const key = getCacheKey(name, version);
+  // Evict oldest entry if cache has reached maximum size (LRU-style)
+  if (_cache.size >= MAX_CACHE_SIZE) {
+    const firstKey = _cache.keys().next().value;
+    if (firstKey) _cache.delete(firstKey);
+  }
   _cache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, results });
 }
 

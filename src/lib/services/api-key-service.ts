@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { ApiKey, ApiRequest, Prisma } from "@prisma/client";
 import crypto from "crypto";
+import { encrypt, decrypt } from "@/lib/encryption";
 import { logSecurityEvent } from "./security-audit-service";
 
 // ─── Types ───
@@ -143,10 +144,18 @@ export async function createApiKey(
 }
 
 /**
- * Hash an API key for secure storage
+ * Hash an API key for secure storage using HMAC-SHA256.
+ * Uses ENCRYPTION_KEY as the HMAC secret to prevent offline brute-force
+ * attacks if the database is compromised.
  */
 function hashApiKey(key: string): string {
-  return crypto.createHash("sha256").update(key).digest("hex");
+  const hmacKey = process.env.ENCRYPTION_KEY;
+  if (!hmacKey) {
+    throw new Error(
+      "ENCRYPTION_KEY environment variable is required for API key hashing",
+    );
+  }
+  return crypto.createHmac("sha256", hmacKey).update(key).digest("hex");
 }
 
 // ─── Key Validation ───

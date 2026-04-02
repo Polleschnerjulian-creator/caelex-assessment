@@ -32,10 +32,7 @@ function isValidCronSecret(header: string, secret: string): boolean {
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json(
-      { error: "CRON_SECRET not configured" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
   }
 
   const auth = request.headers.get("authorization") || "";

@@ -14,6 +14,7 @@ import {
   logApiRequest,
 } from "./services/api-key-service";
 import { verifySignature, extractRequestDetails } from "./hmac-signing.server";
+import { decrypt } from "@/lib/encryption";
 
 // ─── Types ───
 
@@ -79,12 +80,15 @@ export async function authenticateApiRequest(
       };
     }
 
+    // Decrypt the signing secret (stored encrypted at rest)
+    const decryptedSecret = await decrypt(result.apiKey.signingSecret);
+
     const url = new URL(request.url);
     const signatureHeader = request.headers.get("X-Signature");
 
     const signatureResult = verifySignature(
       signatureHeader,
-      result.apiKey.signingSecret,
+      decryptedSecret,
       request.method,
       url.pathname,
       requestBody ?? null,

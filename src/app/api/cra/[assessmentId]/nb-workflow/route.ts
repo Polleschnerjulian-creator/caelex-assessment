@@ -404,136 +404,192 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    // Find existing workflow
-    const record = await findNBWorkflowRecord(assessmentId, organizationId);
-    if (!record) {
+    // Wrap the entire read-modify-write in a serializable transaction
+    // to prevent lost updates from concurrent PATCH requests.
+    const txResult = await prisma.$transaction(
+      async (tx) => {
+        // Find existing workflow (inside transaction for consistency)
+        const record = await tx.complianceEvidence.findFirst({
+          where: {
+            organizationId,
+            evidenceType: "OTHER",
+            requirementId: `${NB_REQUIREMENT_ID}:${assessmentId}`,
+            title: NB_EVIDENCE_TITLE,
+          },
+        });
+
+        if (!record) {
+          return { error: "NOT_FOUND" as const };
+        }
+
+        const workflowData = {
+          ...(record.metadata as unknown as NBWorkflowData),
+        };
+
+        // 1. Process state transition
+        if (data.transition) {
+          const currentState = workflowData.currentState;
+          const stateDef = notifiedBodyWorkflowDefinition.states[currentState];
+
+          if (!stateDef) {
+            return {
+              error: "INVALID_STATE" as const,
+              message: `Ungültiger aktueller Status: ${currentState}`,
+            };
+          }
+
+          const transitionDef = stateDef.transitions[data.transition];
+          if (!transitionDef) {
+            return {
+              error: "INVALID_TRANSITION" as const,
+              message: `Transition "${data.transition}" ist im Status "${currentState}" nicht verfügbar. Verfügbare Transitionen: ${Object.keys(stateDef.transitions).join(", ")}`,
+            };
+          }
+
+          const targetState = transitionDef.to as NBWorkflowState;
+
+          // Check guard conditions for documents_complete transition
+          if (data.transition === "documents_complete") {
+            const mandatoryDocs = workflowData.documents.filter(
+              (d) => d.mandatory,
+            );
+            const allUploaded = mandatoryDocs.every(
+              (d) => d.status !== "missing",
+            );
+            if (!allUploaded) {
+              return {
+                error: "DOCS_INCOMPLETE" as const,
+                message: "Nicht alle Pflichtdokumente hochgeladen",
+              };
+            }
+          }
+
+          workflowData.currentState = targetState;
+          workflowData.stateHistory.push({
+            state: targetState,
+            timestamp: new Date().toISOString(),
+            note: data.transitionNote,
+          });
+
+          // Set submission date when submitting
+          if (data.transition === "submit") {
+            workflowData.submissionDate = new Date().toISOString();
+          }
+        }
+
+        // 2. Process document status update
+        if (data.documentUpdate) {
+          const docIndex = workflowData.documents.findIndex(
+            (d) => d.id === data.documentUpdate!.documentId,
+          );
+
+          if (docIndex === -1) {
+            return {
+              error: "DOC_NOT_FOUND" as const,
+              message: `Dokument "${data.documentUpdate.documentId}" nicht gefunden`,
+            };
+          }
+
+          workflowData.documents[docIndex] = {
+            ...workflowData.documents[docIndex],
+            status: data.documentUpdate.status,
+            documentId: data.documentUpdate.linkedDocumentId,
+            uploadedAt:
+              data.documentUpdate.status === "uploaded"
+                ? new Date().toISOString()
+                : workflowData.documents[docIndex].uploadedAt,
+          };
+        }
+
+        // 3. Process communication entry
+        if (data.communication) {
+          workflowData.communications.push({
+            date: new Date().toISOString(),
+            direction: data.communication.direction,
+            subject: data.communication.subject,
+            summary: data.communication.summary,
+          });
+        }
+
+        // 4. Update NB details
+        if (data.notifiedBodyName !== undefined)
+          workflowData.notifiedBodyName = data.notifiedBodyName;
+        if (data.notifiedBodyId !== undefined)
+          workflowData.notifiedBodyId = data.notifiedBodyId;
+        if (data.submissionDate !== undefined)
+          workflowData.submissionDate = data.submissionDate;
+        if (data.expectedResponseDate !== undefined)
+          workflowData.expectedResponseDate = data.expectedResponseDate;
+
+        // Determine evidence status based on workflow state
+        let evidenceStatus: "DRAFT" | "SUBMITTED" | "ACCEPTED" | "REJECTED" =
+          "DRAFT";
+        if (
+          [
+            "submitted_to_nb",
+            "under_review",
+            "additional_info_requested",
+          ].includes(workflowData.currentState)
+        ) {
+          evidenceStatus = "SUBMITTED";
+        } else if (workflowData.currentState === "approved") {
+          evidenceStatus = "ACCEPTED";
+        } else if (workflowData.currentState === "rejected") {
+          evidenceStatus = "REJECTED";
+        }
+
+        // Persist updated workflow (inside transaction)
+        await tx.complianceEvidence.update({
+          where: { id: record.id },
+          data: {
+            metadata: JSON.parse(JSON.stringify(workflowData)),
+            status: evidenceStatus,
+          },
+        });
+
+        return {
+          error: null,
+          workflowData,
+          evidenceId: record.id,
+        };
+      },
+      { isolationLevel: "Serializable" },
+    );
+
+    // Handle transaction result errors
+    if (txResult.error === "NOT_FOUND") {
       return createErrorResponse(
         "Notified-Body-Workflow nicht initialisiert — bitte zuerst POST aufrufen",
         ErrorCode.NOT_FOUND,
         404,
       );
     }
-
-    const workflowData = { ...(record.metadata as unknown as NBWorkflowData) };
-
-    // 1. Process state transition
-    if (data.transition) {
-      const currentState = workflowData.currentState;
-      const stateDef = notifiedBodyWorkflowDefinition.states[currentState];
-
-      if (!stateDef) {
-        return createErrorResponse(
-          `Ungültiger aktueller Status: ${currentState}`,
-          ErrorCode.ENGINE_ERROR,
-          500,
-        );
-      }
-
-      const transitionDef = stateDef.transitions[data.transition];
-      if (!transitionDef) {
-        return createErrorResponse(
-          `Transition "${data.transition}" ist im Status "${currentState}" nicht verfügbar. Verfügbare Transitionen: ${Object.keys(stateDef.transitions).join(", ")}`,
-          ErrorCode.VALIDATION_ERROR,
-          400,
-        );
-      }
-
-      const targetState = transitionDef.to as NBWorkflowState;
-
-      // Check guard conditions for documents_complete transition
-      if (data.transition === "documents_complete") {
-        const mandatoryDocs = workflowData.documents.filter((d) => d.mandatory);
-        const allUploaded = mandatoryDocs.every((d) => d.status !== "missing");
-        if (!allUploaded) {
-          return createErrorResponse(
-            "Nicht alle Pflichtdokumente hochgeladen",
-            ErrorCode.VALIDATION_ERROR,
-            400,
-          );
-        }
-      }
-
-      workflowData.currentState = targetState;
-      workflowData.stateHistory.push({
-        state: targetState,
-        timestamp: new Date().toISOString(),
-        note: data.transitionNote,
-      });
-
-      // Set submission date when submitting
-      if (data.transition === "submit") {
-        workflowData.submissionDate = new Date().toISOString();
-      }
-    }
-
-    // 2. Process document status update
-    if (data.documentUpdate) {
-      const docIndex = workflowData.documents.findIndex(
-        (d) => d.id === data.documentUpdate!.documentId,
+    if (txResult.error === "INVALID_STATE") {
+      return createErrorResponse(
+        txResult.message!,
+        ErrorCode.ENGINE_ERROR,
+        500,
       );
-
-      if (docIndex === -1) {
-        return createErrorResponse(
-          `Dokument "${data.documentUpdate.documentId}" nicht gefunden`,
-          ErrorCode.NOT_FOUND,
-          404,
-        );
-      }
-
-      workflowData.documents[docIndex] = {
-        ...workflowData.documents[docIndex],
-        status: data.documentUpdate.status,
-        documentId: data.documentUpdate.linkedDocumentId,
-        uploadedAt:
-          data.documentUpdate.status === "uploaded"
-            ? new Date().toISOString()
-            : workflowData.documents[docIndex].uploadedAt,
-      };
+    }
+    if (txResult.error === "INVALID_TRANSITION") {
+      return createErrorResponse(
+        txResult.message!,
+        ErrorCode.VALIDATION_ERROR,
+        400,
+      );
+    }
+    if (txResult.error === "DOCS_INCOMPLETE") {
+      return createErrorResponse(
+        txResult.message!,
+        ErrorCode.VALIDATION_ERROR,
+        400,
+      );
+    }
+    if (txResult.error === "DOC_NOT_FOUND") {
+      return createErrorResponse(txResult.message!, ErrorCode.NOT_FOUND, 404);
     }
 
-    // 3. Process communication entry
-    if (data.communication) {
-      workflowData.communications.push({
-        date: new Date().toISOString(),
-        direction: data.communication.direction,
-        subject: data.communication.subject,
-        summary: data.communication.summary,
-      });
-    }
-
-    // 4. Update NB details
-    if (data.notifiedBodyName !== undefined)
-      workflowData.notifiedBodyName = data.notifiedBodyName;
-    if (data.notifiedBodyId !== undefined)
-      workflowData.notifiedBodyId = data.notifiedBodyId;
-    if (data.submissionDate !== undefined)
-      workflowData.submissionDate = data.submissionDate;
-    if (data.expectedResponseDate !== undefined)
-      workflowData.expectedResponseDate = data.expectedResponseDate;
-
-    // Determine evidence status based on workflow state
-    let evidenceStatus: "DRAFT" | "SUBMITTED" | "ACCEPTED" | "REJECTED" =
-      "DRAFT";
-    if (
-      ["submitted_to_nb", "under_review", "additional_info_requested"].includes(
-        workflowData.currentState,
-      )
-    ) {
-      evidenceStatus = "SUBMITTED";
-    } else if (workflowData.currentState === "approved") {
-      evidenceStatus = "ACCEPTED";
-    } else if (workflowData.currentState === "rejected") {
-      evidenceStatus = "REJECTED";
-    }
-
-    // Persist updated workflow
-    await prisma.complianceEvidence.update({
-      where: { id: record.id },
-      data: {
-        metadata: JSON.parse(JSON.stringify(workflowData)),
-        status: evidenceStatus,
-      },
-    });
+    const { workflowData, evidenceId } = txResult;
 
     // Log audit event
     const { ipAddress, userAgent } = getRequestContext(request);
@@ -566,7 +622,7 @@ export async function PATCH(
     return createSuccessResponse({
       workflow: {
         ...workflowData,
-        evidenceId: record.id,
+        evidenceId,
       },
       progress: {
         mandatoryTotal: mandatoryDocs.length,

@@ -3,16 +3,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyChain } from "@/lib/verity/audit-chain/chain-verifier";
 import type { AuditChainEntry } from "@/lib/verity/audit-chain/types";
+import { auth } from "@/lib/auth";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/verity/audit-chain/verify
- * Public endpoint — no auth required.
+ * Authenticated endpoint — requires a valid session.
+ * Rate-limited to prevent abuse.
  * Body: { operatorId: string }
  * Fetches all audit chain entries for the given operatorId and runs a full
  * integrity verification, returning a ChainVerificationResult.
  */
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit
+    const ip = getIdentifier(request, session.user.id);
+    const rl = await checkRateLimit("verity_public", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
     let body: unknown;
     try {
       body = await request.json();

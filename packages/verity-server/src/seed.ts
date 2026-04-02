@@ -128,9 +128,12 @@ async function seed(): Promise<void> {
   // -----------------------------------------------------------------------
   // 4. Create signing key pair via KeyManager
   // -----------------------------------------------------------------------
-  const masterPassphrase =
-    process.env["KEY_MASTER_PASSPHRASE"] ??
-    "dev-passphrase-change-me-in-production-32chars!";
+  const masterPassphrase = process.env["KEY_MASTER_PASSPHRASE"];
+  if (!masterPassphrase) {
+    throw new Error(
+      "KEY_MASTER_PASSPHRASE environment variable is required. Cannot seed without a secure passphrase.",
+    );
+  }
 
   const keyStore = new PostgresKeyStore();
   const km = new KeyManager({

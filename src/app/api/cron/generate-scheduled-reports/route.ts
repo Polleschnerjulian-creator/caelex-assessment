@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (!CRON_SECRET) {
       logger.error("CRON_SECRET not configured");
       return NextResponse.json(
-        { error: "Service unavailable: cron authentication not configured" },
+        { error: "Service unavailable" },
         { status: 503 },
       );
     }

@@ -12,6 +12,7 @@ import {
   isR2Configured,
 } from "@/lib/storage/upload-service";
 import { logger } from "@/lib/logger";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 export async function GET(
   request: NextRequest,
@@ -25,11 +26,19 @@ export async function GET(
 
     const { id } = await params;
 
-    // Get document
+    // Get organization context for scoped access
+    const orgContext = await getCurrentOrganization(session.user.id);
+
+    // Get document — allow personal ownership OR org-level access
     const document = await prisma.document.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 

@@ -173,9 +173,10 @@ export async function appendLogEntry(
   tenantId: string,
   referencedObject: unknown,
 ): Promise<AppendResult> {
-  // 1. Fetch previous entry hash
+  // 1. Fetch previous entry hash (scoped to tenant to prevent cross-tenant hash chain contamination)
   const prevResult = await query<{ entry_hash: string }>(
-    `SELECT entry_hash FROM transparency_log ORDER BY sequence_number DESC LIMIT 1`,
+    `SELECT entry_hash FROM transparency_log WHERE tenant_id = $1 ORDER BY sequence_number DESC LIMIT 1`,
+    [tenantId],
   );
   const previousHash =
     prevResult.rows.length > 0 ? prevResult.rows[0]!.entry_hash : GENESIS_HASH;
@@ -184,9 +185,10 @@ export async function appendLogEntry(
   const payloadBytes = canonicalizeToBytes(referencedObject);
   const payloadHash = sha256Hex(payloadBytes);
 
-  // 3. Next sequence number
+  // 3. Next sequence number (scoped to tenant)
   const seqResult = await query<{ max_seq: string | null }>(
-    `SELECT MAX(sequence_number) AS max_seq FROM transparency_log`,
+    `SELECT MAX(sequence_number) AS max_seq FROM transparency_log WHERE tenant_id = $1`,
+    [tenantId],
   );
   const maxSeq = seqResult.rows[0]?.max_seq;
   const sequenceNumber =

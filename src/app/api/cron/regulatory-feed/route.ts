@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   if (!cronSecret) {
     logger.error("CRON_SECRET not configured");
     return NextResponse.json(
-      { error: "Service unavailable: cron authentication not configured" },
+      { error: "Service unavailable" },
       { status: 503 },
     );
   }

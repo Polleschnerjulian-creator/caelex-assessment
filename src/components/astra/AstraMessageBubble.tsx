@@ -366,11 +366,9 @@ export default function AstraMessageBubble({
     if (action.type === "navigate" && action.target.startsWith("/")) {
       router.push(action.target);
     } else if (action.type === "generate") {
-      // Could trigger document generation
-      console.log("Generate action:", action.target);
+      // TODO: trigger document generation for action.target
     } else if (action.type === "api_call") {
-      // Could make API call
-      console.log("API action:", action.target);
+      // TODO: make API call for action.target
     }
   };
 

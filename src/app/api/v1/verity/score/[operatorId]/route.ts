@@ -2,11 +2,12 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { computeComplianceScore } from "@/lib/verity/score/calculator";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 /**
  * GET /api/v1/verity/score/[operatorId]
  * Returns the public compliance score for an operator.
- * No auth required — public endpoint.
+ * Rate-limited to prevent abuse.
  * Optional query param: ?satellite=NORAD_ID to filter by satellite.
  */
 export async function GET(
@@ -14,6 +15,13 @@ export async function GET(
   { params }: { params: Promise<{ operatorId: string }> },
 ) {
   try {
+    // Rate limit
+    const ip = getIdentifier(request);
+    const rl = await checkRateLimit("verity_public", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { operatorId } = await params;
 
     if (!operatorId) {

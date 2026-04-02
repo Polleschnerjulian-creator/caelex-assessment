@@ -58,6 +58,12 @@ class InMemoryRateLimiter implements RateLimiter {
   private readonly cleanupTimer: ReturnType<typeof setInterval>;
 
   constructor() {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        "[SECURITY] Using in-memory rate limiter. Rate limits will not be shared across instances. Consider using Redis-backed rate limiting for production deployments.",
+      );
+    }
+
     // Periodic cleanup: evict entries whose *newest* timestamp is older than
     // the window so the Map does not grow without bound.
     this.cleanupTimer = setInterval(() => {

@@ -76,10 +76,7 @@ function computeStdDev(values: number[], mean: number): number {
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json(
-      { error: "CRON_SECRET not configured" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
   }
 
   const authHeader = request.headers.get("authorization") || "";
