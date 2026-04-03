@@ -1,5 +1,46 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { NIS2_REQUIREMENTS } from "@/data/nis2-requirements";
+import { CRA_REQUIREMENTS } from "@/data/cra-requirements";
+import { cybersecurityRequirements } from "@/data/cybersecurity-requirements";
+import { debrisRequirements } from "@/data/debris-requirements";
+import { articles } from "@/data/articles";
+
+// ─── Requirement Title Lookup ───
+
+/**
+ * Look up a human-readable title for a requirement ID across all regulation data files.
+ * Returns the title if found, or null to fall back to the raw ID.
+ */
+function getRequirementTitle(
+  regulationType: string,
+  requirementId: string,
+): string | null {
+  switch (regulationType) {
+    case "CYBERSECURITY": {
+      const req = cybersecurityRequirements.find((r) => r.id === requirementId);
+      return req?.title ?? null;
+    }
+    case "NIS2": {
+      const req = NIS2_REQUIREMENTS.find((r) => r.id === requirementId);
+      return req?.title ?? null;
+    }
+    case "CRA": {
+      const req = CRA_REQUIREMENTS.find((r) => r.id === requirementId);
+      return req?.title ?? null;
+    }
+    case "DEBRIS": {
+      const req = debrisRequirements.find((r) => r.id === requirementId);
+      return req?.title ?? null;
+    }
+    case "EU_SPACE_ACT": {
+      const art = articles.find((a) => a.id === requirementId);
+      return art ? `Art. ${art.number} — ${art.title}` : null;
+    }
+    default:
+      return null;
+  }
+}
 
 // ─── Types ───
 
@@ -67,7 +108,14 @@ export async function getAuditCenterOverview(
   organizationId: string,
   userId: string,
 ): Promise<AuditCenterOverview> {
-  // Fetch all module data in parallel
+  // Get all org member IDs for querying user-scoped assessment data
+  const orgMembers = await prisma.organizationMember.findMany({
+    where: { organizationId },
+    select: { userId: true },
+  });
+  const memberUserIds = orgMembers.map((m) => m.userId);
+
+  // Fetch all module data in parallel (org-scoped)
   const [
     articleStatuses,
     cyberAssessments,
@@ -79,41 +127,41 @@ export async function getAuditCenterOverview(
     auditLogCount,
     recentAuditCount,
   ] = await Promise.all([
-    // EU Space Act article statuses
+    // EU Space Act article statuses (across all org members)
     prisma.articleStatus.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       select: { articleId: true, status: true, updatedAt: true },
     }),
-    // Cybersecurity (latest assessment with requirements)
+    // Cybersecurity (latest assessment with requirements, across org)
     prisma.cybersecurityAssessment.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       orderBy: { updatedAt: "desc" },
       take: 1,
       include: { requirements: true },
     }),
-    // NIS2 (latest assessment with requirements)
+    // NIS2 (latest assessment with requirements, across org)
     prisma.nIS2Assessment.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       orderBy: { updatedAt: "desc" },
       take: 1,
       include: { requirements: true },
     }),
-    // Debris (latest assessment with requirements)
+    // Debris (latest assessment with requirements, across org)
     prisma.debrisAssessment.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       orderBy: { updatedAt: "desc" },
       take: 1,
       include: { requirements: true },
     }),
-    // Insurance
+    // Insurance (across org)
     prisma.insuranceAssessment.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       orderBy: { updatedAt: "desc" },
       take: 1,
     }),
-    // Environmental
+    // Environmental (across org)
     prisma.environmentalAssessment.findMany({
-      where: { userId },
+      where: { userId: { in: memberUserIds } },
       orderBy: { updatedAt: "desc" },
       take: 1,
     }),
@@ -125,14 +173,14 @@ export async function getAuditCenterOverview(
         _count: true,
       })
       .catch(() => [] as { status: string; _count: number }[]),
-    // Total audit entries
+    // Total audit entries (org-scoped)
     prisma.auditLog.count({
-      where: { userId },
+      where: { organizationId },
     }),
-    // Recent activity (last 30 days)
+    // Recent activity (last 30 days, org-scoped)
     prisma.auditLog.count({
       where: {
-        userId,
+        organizationId,
         timestamp: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       },
     }),
@@ -373,7 +421,9 @@ export async function getAuditCenterOverview(
         actionItems.push({
           regulationType: "CYBERSECURITY",
           requirementId: req.requirementId,
-          title: req.requirementId,
+          title:
+            getRequirementTitle("CYBERSECURITY", req.requirementId) ||
+            req.requirementId,
           severity: "major",
           status: req.status,
           hasEvidence: evidenceWithReqs.some(
@@ -394,7 +444,8 @@ export async function getAuditCenterOverview(
         actionItems.push({
           regulationType: "NIS2",
           requirementId: req.requirementId,
-          title: req.requirementId,
+          title:
+            getRequirementTitle("NIS2", req.requirementId) || req.requirementId,
           severity: "major",
           status: req.status,
           hasEvidence: evidenceWithReqs.some(
@@ -415,7 +466,9 @@ export async function getAuditCenterOverview(
         actionItems.push({
           regulationType: "DEBRIS",
           requirementId: req.requirementId,
-          title: req.requirementId,
+          title:
+            getRequirementTitle("DEBRIS", req.requirementId) ||
+            req.requirementId,
           severity: "minor",
           status: req.status,
           hasEvidence: evidenceWithReqs.some(
@@ -435,7 +488,8 @@ export async function getAuditCenterOverview(
       actionItems.push({
         regulationType: "EU_SPACE_ACT",
         requirementId: art.articleId,
-        title: art.articleId,
+        title:
+          getRequirementTitle("EU_SPACE_ACT", art.articleId) || art.articleId,
         severity: "major",
         status: "not_started",
         hasEvidence: evidenceWithReqs.some(

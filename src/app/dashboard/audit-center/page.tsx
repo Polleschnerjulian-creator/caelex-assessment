@@ -959,51 +959,30 @@ function AuditCenterContent() {
                   </div>
                 )}
 
-                {/* Galileo Authenticated Timestamps */}
+                {/* Tamper-Evident Audit Trail */}
                 <div className="mt-4 pt-3 border-t border-black/[0.04] dark:border-white/5">
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-500/[0.04] border border-emerald-200/40 dark:border-emerald-500/10">
                     <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      <Fingerprint
+                        size={16}
                         className="text-emerald-600 dark:text-emerald-400"
-                      >
-                        <path d="M12 2a10 10 0 1 0 10 10" />
-                        <path d="M12 12l4-4" />
-                        <circle cx="12" cy="12" r="1" />
-                        <path d="M2 12h2" />
-                        <path d="M12 2v2" />
-                        <path d="M20 12h2" />
-                        <path d="M12 20v2" />
-                      </svg>
+                      />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                          Galileo Authenticated Timestamps
+                          Tamper-Evident Audit Trail
                         </span>
                         <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                          EU GNSS
+                          SHA-256
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        All audit entries are timestamped using EU Galileo
-                        OSNMA-synchronized time and secured with SHA-256 hash
-                        chains. This provides EU-sovereign, cryptographically
-                        verified proof of when each compliance event occurred —
-                        independent of GPS or any non-EU time source.
+                        All audit entries are timestamped with server-side UTC
+                        timestamps and linked via SHA-256 hash chain. Each entry
+                        references the previous hash, creating a tamper-evident
+                        sequence of compliance events.
                       </p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-                          Regulation (EU) 2021/696 · Galileo Open Service
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -79,10 +79,65 @@ export interface ComplianceCertificateData {
   signedBy?: string;
 }
 
+// ─── PII Sanitization for Exports ───
+
+function maskIP(ip: string): string {
+  const parts = ip.split(".");
+  if (parts.length === 4) return `${parts[0]}.${parts[1]}.${parts[2]}.xxx`;
+  // IPv6 or other format — mask entirely
+  return "***";
+}
+
+const EXPORT_PII_KEYS = [
+  "email",
+  "password",
+  "token",
+  "secret",
+  "apiKey",
+  "phone",
+  "ssn",
+  "vatNumber",
+  "bankAccount",
+  "taxId",
+];
+
+function sanitizeExportValue(val: unknown): unknown {
+  if (!val || typeof val !== "object") return val;
+  const sanitized = { ...(val as Record<string, unknown>) };
+  for (const key of EXPORT_PII_KEYS) {
+    if (key in sanitized) sanitized[key] = "[REDACTED]";
+  }
+  return sanitized;
+}
+
 // ─── Core Functions ───
 
 /**
- * Get comprehensive audit summary for a user
+ * Resolve organization member IDs for the given user.
+ * Used to scope queries that lack a direct organizationId field.
+ */
+async function resolveOrgMemberIds(userId: string): Promise<string[]> {
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    orderBy: { joinedAt: "desc" },
+    select: { organizationId: true },
+  });
+  if (membership) {
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId: membership.organizationId },
+      select: { userId: true },
+    });
+    return members.map((m) => m.userId);
+  }
+  return [userId];
+}
+
+/**
+ * Get comprehensive audit summary for a user (org-scoped)
+ *
+ * SecurityEvent has no organizationId/userId — we scope by filtering
+ * via resolvedBy (which references a user) being an org member.
+ * This prevents platform-wide security stats from leaking to individual orgs.
  */
 export async function getAuditSummary(
   userId: string,
@@ -104,6 +159,25 @@ export async function getAuditSummary(
     where.entityType = { in: filters.entityTypes };
   }
 
+  // Resolve the user's organizationId for scoping
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    orderBy: { joinedAt: "desc" },
+    select: { organizationId: true },
+  });
+  const organizationId = membership?.organizationId;
+
+  // Also scope AuditLog where clause by organizationId when available
+  if (organizationId) {
+    where.organizationId = organizationId;
+  }
+
+  // SecurityEvent has no organizationId/userId fields — it's a platform-wide model.
+  // To prevent cross-org data leakage, we only count security events whose
+  // resolvedBy user belongs to this org. Unresolved events without org attribution
+  // are excluded from per-org summaries to avoid leaking other orgs' data.
+  const orgMemberIds = await resolveOrgMemberIds(userId);
+
   // Get all events for aggregation
   const [logs, securityEventCounts, unresolvedCount, recentActivity] =
     await Promise.all([
@@ -111,15 +185,17 @@ export async function getAuditSummary(
         where,
         orderBy: { timestamp: "desc" },
       }),
+      // Only count security events attributable to this org's members
       prisma.securityEvent.groupBy({
         by: ["severity"],
+        where: { resolvedBy: { in: orgMemberIds } },
         _count: true,
       }),
-      prisma.securityEvent.count({
-        where: { resolved: false },
-      }),
+      // For unresolved count, we cannot reliably attribute events without userId.
+      // Return 0 to avoid leaking platform-wide counts to individual orgs.
+      Promise.resolve(0),
       prisma.auditLog.findMany({
-        where: { userId },
+        where: { userId, ...(organizationId ? { organizationId } : {}) },
         orderBy: { timestamp: "desc" },
         take: 10,
         include: {
@@ -211,6 +287,9 @@ export async function generateAuditReportData(
     where.entityType = { in: filters.entityTypes };
   }
 
+  // Resolve org member IDs to scope SecurityEvent queries (no organizationId field on model)
+  const orgMemberIds = await resolveOrgMemberIds(userId);
+
   const [logs, summary, securityEvents] = await Promise.all([
     prisma.auditLog.findMany({
       where,
@@ -229,6 +308,9 @@ export async function generateAuditReportData(
               gte: startDate,
               lte: endDate,
             },
+            // SecurityEvent has no organizationId — scope by resolvedBy being
+            // an org member to prevent cross-org data leakage
+            resolvedBy: { in: orgMemberIds },
           },
           orderBy: { createdAt: "desc" },
           take: 100,
@@ -313,19 +395,27 @@ export async function exportAuditLogsEnhanced(
       "User Agent",
     ];
 
-    const rows = logs.map((log) => [
-      log.timestamp.toISOString(),
-      log.user?.name || "",
-      log.user?.email || "",
-      log.action,
-      log.entityType,
-      log.entityId,
-      log.description || "",
-      log.previousValue || "",
-      log.newValue || "",
-      log.ipAddress || "",
-      log.userAgent || "",
-    ]);
+    const rows = logs.map((log) => {
+      const prevParsed = log.previousValue
+        ? sanitizeExportValue(JSON.parse(log.previousValue))
+        : "";
+      const newParsed = log.newValue
+        ? sanitizeExportValue(JSON.parse(log.newValue))
+        : "";
+      return [
+        log.timestamp.toISOString(),
+        log.user?.name || "",
+        log.user?.email || "",
+        log.action,
+        log.entityType,
+        log.entityId,
+        log.description || "",
+        prevParsed ? JSON.stringify(prevParsed) : "",
+        newParsed ? JSON.stringify(newParsed) : "",
+        log.ipAddress ? maskIP(log.ipAddress) : "",
+        log.userAgent ? log.userAgent.slice(0, 50) : "",
+      ];
+    });
 
     const csvContent = [headers, ...rows]
       .map((row) =>
@@ -340,7 +430,7 @@ export async function exportAuditLogsEnhanced(
     };
   }
 
-  // JSON format
+  // JSON format — sanitize PII before exporting
   return {
     data: {
       exportedAt: new Date().toISOString(),
@@ -356,9 +446,13 @@ export async function exportAuditLogsEnhanced(
         entityType: log.entityType,
         entityId: log.entityId,
         description: log.description,
-        previousValue: log.previousValue ? JSON.parse(log.previousValue) : null,
-        newValue: log.newValue ? JSON.parse(log.newValue) : null,
-        ipAddress: log.ipAddress,
+        previousValue: log.previousValue
+          ? sanitizeExportValue(JSON.parse(log.previousValue))
+          : null,
+        newValue: log.newValue
+          ? sanitizeExportValue(JSON.parse(log.newValue))
+          : null,
+        ipAddress: log.ipAddress ? maskIP(log.ipAddress) : null,
       })),
     },
     mimeType: "application/json",

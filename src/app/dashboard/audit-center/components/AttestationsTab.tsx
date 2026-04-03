@@ -163,6 +163,8 @@ export default function AttestationsTab() {
 
   const filteredAttestations = attestations.filter((a) => {
     if (statusFilter !== "all" && a.status !== statusFilter) return false;
+    if (regulationFilter !== "all" && a.regulationRef !== regulationFilter)
+      return false;
     return true;
   });
 

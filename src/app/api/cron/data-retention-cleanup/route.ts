@@ -64,6 +64,7 @@ export async function GET(req: Request) {
     oldAstraMessages: 0,
     oldSentinelPackets: 0,
     oldCrossVerifications: 0,
+    expiredEvidence: 0,
   };
 
   try {
@@ -147,6 +148,21 @@ export async function GET(req: Request) {
       crossVerifications: oldCrossVerifications.count,
       sentinelPackets: oldSentinelPackets.count,
     });
+
+    // Batch 5: Expire evidence past validUntil date
+    const expiredEvidence = await prisma.complianceEvidence.updateMany({
+      where: {
+        status: "ACCEPTED",
+        validUntil: { lt: now },
+      },
+      data: { status: "EXPIRED" },
+    });
+    results.expiredEvidence = expiredEvidence.count;
+    if (expiredEvidence.count > 0) {
+      logger.info(
+        `Expired ${expiredEvidence.count} evidence records past validUntil`,
+      );
+    }
 
     const duration = Date.now() - startTime;
     const totalDeleted =

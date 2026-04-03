@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { getOrganizationId } from "@/lib/services/audit-center-service.server";
 import { logAuditEvent } from "@/lib/audit";
 import { logger } from "@/lib/logger";
+import { getUserRole } from "@/lib/services/organization-service";
+import { roleHasPermission } from "@/lib/permissions";
 
 // GET: Fetch single evidence with documents
 export async function GET(
@@ -117,6 +119,23 @@ export async function PATCH(
       );
     }
 
+    // RBAC: Only OWNER, ADMIN, or MANAGER can accept/reject evidence
+    if (
+      parsed.data.status &&
+      ["ACCEPTED", "REJECTED"].includes(parsed.data.status)
+    ) {
+      const userRole = await getUserRole(organizationId, session.user.id);
+      if (!userRole || !roleHasPermission(userRole, "compliance:write")) {
+        return NextResponse.json(
+          {
+            error:
+              "Insufficient permissions. Only managers and above can accept or reject evidence.",
+          },
+          { status: 403 },
+        );
+      }
+    }
+
     const updateData: Record<string, unknown> = {};
 
     if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
@@ -146,24 +165,36 @@ export async function PATCH(
       updateData.reviewedAt = new Date();
     }
 
-    const evidence = await prisma.complianceEvidence.update({
-      where: { id },
-      data: updateData,
-      include: {
-        documents: {
-          include: {
-            document: {
-              select: {
-                id: true,
-                name: true,
-                fileName: true,
-                fileSize: true,
-                mimeType: true,
+    // Use transaction to ensure org ownership is re-verified atomically with the update
+    // (prevents TOCTOU race where evidence could be reassigned between findFirst and update)
+    const evidence = await prisma.$transaction(async (tx) => {
+      const verified = await tx.complianceEvidence.findFirst({
+        where: { id, organizationId },
+      });
+      if (!verified) {
+        throw new Error(
+          "Evidence not found or does not belong to organization",
+        );
+      }
+      return tx.complianceEvidence.update({
+        where: { id },
+        data: updateData,
+        include: {
+          documents: {
+            include: {
+              document: {
+                select: {
+                  id: true,
+                  name: true,
+                  fileName: true,
+                  fileSize: true,
+                  mimeType: true,
+                },
               },
             },
           },
         },
-      },
+      });
     });
 
     // Link new documents if provided (with ownership verification)
@@ -198,17 +229,31 @@ export async function PATCH(
       }
     }
 
-    // Unlink documents if provided
+    // Unlink documents if provided — verify each document belongs to the org
     if (
       parsed.data.removeDocumentIds &&
       parsed.data.removeDocumentIds.length > 0
     ) {
-      await prisma.complianceEvidenceDocument.deleteMany({
-        where: {
-          evidenceId: id,
-          documentId: { in: parsed.data.removeDocumentIds },
-        },
+      const docsToRemove = await prisma.document.findMany({
+        where: { id: { in: parsed.data.removeDocumentIds } },
+        select: { id: true, organizationId: true },
       });
+      // Only allow unlinking documents that belong to this org (or have no org)
+      const validRemoveIds = docsToRemove
+        .filter(
+          (d) =>
+            d.organizationId === organizationId || d.organizationId === null,
+        )
+        .map((d) => d.id);
+
+      if (validRemoveIds.length > 0) {
+        await prisma.complianceEvidenceDocument.deleteMany({
+          where: {
+            evidenceId: id,
+            documentId: { in: validRemoveIds },
+          },
+        });
+      }
     }
 
     const action =

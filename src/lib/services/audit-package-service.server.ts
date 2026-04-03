@@ -190,7 +190,7 @@ export async function generateAuditPackageData(
       (s) => s.status === "compliant",
     ).length;
     const partial = articleStatuses.filter(
-      (s) => s.status === "partially_compliant",
+      (s) => s.status === "in_progress" || s.status === "under_review",
     ).length;
     const nonCompliant = articleStatuses.filter(
       (s) => s.status === "non_compliant",
