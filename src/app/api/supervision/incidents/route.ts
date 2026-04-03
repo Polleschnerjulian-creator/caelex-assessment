@@ -12,6 +12,12 @@ import {
   type IncidentCategory,
   type SeverityFactors,
 } from "@/lib/services/incident-response-service";
+import { calculatePhaseDeadlines } from "@/lib/services/incident-autopilot";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents - List incidents
@@ -20,6 +26,11 @@ export async function GET(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { searchParams } = new URL(req.url);
@@ -144,6 +155,14 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const config = await prisma.supervisionConfig.findUnique({
@@ -334,6 +353,27 @@ export async function POST(req: Request) {
 
       return newIncident;
     });
+
+    // Create NIS2 phases for the incident (FIX B-03)
+    try {
+      const phaseDeadlines = calculatePhaseDeadlines(
+        new Date(detectedAt),
+        classification.requiresNCANotification,
+      );
+      const phaseEntries = Object.entries(phaseDeadlines);
+      if (phaseEntries.length > 0) {
+        await prisma.incidentNIS2Phase.createMany({
+          data: phaseEntries.map(([phase, deadline]) => ({
+            incidentId: incident.id,
+            phase,
+            status: "pending",
+            deadline,
+          })),
+        });
+      }
+    } catch (err) {
+      logger.warn("Failed to create NIS2 phases for incident", err);
+    }
 
     return NextResponse.json({
       success: true,

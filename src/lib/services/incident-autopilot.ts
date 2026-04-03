@@ -667,29 +667,24 @@ export function calculatePhaseDeadlines(
 
   if (!isNIS2Significant) return deadlines;
 
-  // Early warning — 24h from detection
-  const earlyWarning = new Date(detectedAt);
-  earlyWarning.setHours(
-    earlyWarning.getHours() + NIS2_REPORTING_TIMELINE.earlyWarningHours,
+  // Early warning — 24h from detection (DST-safe)
+  const earlyWarning = new Date(
+    detectedAt.getTime() + NIS2_REPORTING_TIMELINE.earlyWarningHours * 3600000,
   );
   deadlines.early_warning = earlyWarning;
 
-  // Notification — 72h from detection
-  const notification = new Date(detectedAt);
-  notification.setHours(
-    notification.getHours() + NIS2_REPORTING_TIMELINE.notificationHours,
+  // Notification — 72h from detection (DST-safe)
+  const notification = new Date(
+    detectedAt.getTime() + NIS2_REPORTING_TIMELINE.notificationHours * 3600000,
   );
   deadlines.notification = notification;
 
-  // Intermediate report — 14 days (upon request, but we set a proactive deadline)
-  const intermediate = new Date(detectedAt);
-  intermediate.setDate(intermediate.getDate() + 14);
-  deadlines.intermediate_report = intermediate;
+  // intermediate_report: NOT auto-created — only created when NCA requests it
+  // per NIS2 Art. 23(4)(c), this is "upon request" of CSIRT/competent authority
 
-  // Final report — 30 days from notification (72h + 30 days)
-  const finalReport = new Date(notification);
-  finalReport.setDate(
-    finalReport.getDate() + NIS2_REPORTING_TIMELINE.finalReportDays,
+  // Final report — 30 days from notification (72h + 30 days) (DST-safe)
+  const finalReport = new Date(
+    notification.getTime() + NIS2_REPORTING_TIMELINE.finalReportDays * 86400000,
   );
   deadlines.final_report = finalReport;
 

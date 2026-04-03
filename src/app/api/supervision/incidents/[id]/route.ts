@@ -3,6 +3,11 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents/[id] - Get incident details
@@ -14,6 +19,11 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { id } = await params;
@@ -86,6 +96,14 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
+    }
+
     const { id } = await params;
 
     const config = await prisma.supervisionConfig.findUnique({
@@ -109,21 +127,29 @@ export async function PATCH(
     }
 
     const updateIncidentSchema = z.object({
-      status: z.string().optional(),
-      severity: z.string().optional(),
+      status: z
+        .enum([
+          "detected",
+          "investigating",
+          "contained",
+          "resolved",
+          "reported",
+        ])
+        .optional(),
+      severity: z.enum(["critical", "high", "medium", "low"]).optional(),
       rootCause: z.string().nullable().optional(),
       impactAssessment: z.string().nullable().optional(),
       immediateActions: z.array(z.string()).optional(),
       containmentMeasures: z.array(z.string()).optional(),
       resolutionSteps: z.array(z.string()).optional(),
       lessonsLearned: z.string().nullable().optional(),
-      containedAt: z.string().nullable().optional(),
-      resolvedAt: z.string().nullable().optional(),
+      containedAt: z.string().datetime().nullable().optional(),
+      resolvedAt: z.string().datetime().nullable().optional(),
       reportedToNCA: z.boolean().optional(),
-      ncaReportDate: z.string().nullable().optional(),
+      ncaReportDate: z.string().datetime().nullable().optional(),
       ncaReferenceNumber: z.string().nullable().optional(),
       reportedToEUSPA: z.boolean().optional(),
-      euspaReportDate: z.string().nullable().optional(),
+      euspaReportDate: z.string().datetime().nullable().optional(),
     });
 
     const body = await req.json();
@@ -198,15 +224,25 @@ export async function PATCH(
       },
     });
 
-    // Log audit event
+    // Log audit event (sanitize to omit encrypted fields)
+    const sanitizedPrevious = {
+      id: existing.id,
+      title: existing.title,
+      category: existing.category,
+      severity: existing.severity,
+      status: existing.status,
+      workflowState: existing.workflowState,
+      // Omit encrypted fields: description, rootCause, impactAssessment, lessonsLearned
+    };
+
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
         action: "incident_updated",
         entityType: "incident",
         entityId: incident.id,
-        previousValue: JSON.stringify(existing),
-        newValue: JSON.stringify(updateData),
+        previousValue: JSON.stringify(sanitizedPrevious),
+        newValue: JSON.stringify(Object.keys(updateData)),
         description: `Updated incident ${incident.incidentNumber}`,
       },
     });
@@ -256,6 +292,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
+    }
+
     const { id } = await params;
 
     const config = await prisma.supervisionConfig.findUnique({
@@ -278,24 +322,55 @@ export async function DELETE(
       );
     }
 
-    // Only allow deletion of draft/detected incidents
-    if (!["detected"].includes(existing.status)) {
+    // RBAC: Only OWNER/ADMIN/MANAGER can delete incidents
+    const member = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { role: true },
+    });
+    if (!member || !["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
       return NextResponse.json(
-        { error: "Cannot delete incident that has been escalated" },
+        { error: "Insufficient permissions to delete incidents" },
+        { status: 403 },
+      );
+    }
+
+    // Only allow deletion of newly reported incidents
+    if (existing.workflowState !== "reported") {
+      return NextResponse.json(
+        { error: "Only newly reported incidents can be deleted" },
         { status: 400 },
       );
     }
 
-    await prisma.incident.delete({ where: { id } });
+    // Clean up orphan records before deleting
+    await prisma.$transaction([
+      // Delete related deadlines
+      prisma.deadline.deleteMany({
+        where: { relatedEntityId: id, moduleSource: "SUPERVISION" },
+      }),
+      // Delete related calendar events
+      prisma.supervisionCalendarEvent.deleteMany({
+        where: { notes: { contains: id } },
+      }),
+      // Delete the incident (cascades to IncidentAsset, IncidentAttachment, IncidentNIS2Phase)
+      prisma.incident.delete({ where: { id } }),
+    ]);
 
-    // Log audit event
+    // Log audit event (sanitize to omit encrypted fields)
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
         action: "incident_deleted",
         entityType: "incident",
         entityId: id,
-        previousValue: JSON.stringify(existing),
+        previousValue: JSON.stringify({
+          id: existing.id,
+          incidentNumber: existing.incidentNumber,
+          title: existing.title,
+          category: existing.category,
+          severity: existing.severity,
+          status: existing.status,
+        }),
         description: `Deleted incident ${existing.incidentNumber}`,
       },
     });

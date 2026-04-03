@@ -18,6 +18,9 @@ import {
   Activity,
   Zap,
   RefreshCw,
+  Plus,
+  X,
+  Copy,
 } from "lucide-react";
 
 // ─── Types ───
@@ -151,6 +154,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   conjunction_event: "Conjunction",
   regulatory_breach: "Regulatory",
   nis2_significant_incident: "NIS2",
+  nis2_near_miss: "NIS2 Near Miss",
   other: "Other",
 };
 
@@ -188,7 +192,19 @@ const CATEGORY_FILTERS = [
   "spacecraft_anomaly",
   "conjunction_event",
   "regulatory_breach",
+  "nis2_near_miss",
 ] as const;
+
+const CATEGORY_DEADLINE_HOURS: Record<string, number> = {
+  spacecraft_anomaly: 24,
+  loss_of_contact: 4,
+  conjunction_event: 72,
+  debris_generation: 4,
+  cyber_incident: 4,
+  regulatory_breach: 72,
+  nis2_near_miss: 72,
+  nis2_significant_incident: 24,
+};
 
 // ─── Helpers ───
 
@@ -237,11 +253,16 @@ function IncidentsContent() {
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [draftContent, setDraftContent] = useState<string | null>(null);
+  const [draftPhase, setDraftPhase] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
   const [, setTick] = useState(0);
 
   // Tick every second for countdown updates
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    const interval = setInterval(() => setTick((t) => t + 1), 60000); // Every minute — countdown shows hours/minutes
     return () => clearInterval(interval);
   }, []);
 
@@ -277,8 +298,8 @@ function IncidentsContent() {
         }),
       );
       setIncidents(summaries);
-    } catch {
-      setIncidents([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load incidents");
     } finally {
       setLoading(false);
     }
@@ -298,14 +319,17 @@ function IncidentsContent() {
     setExpandedId(incidentId);
     setExpandLoading(true);
     try {
-      const [workflowRes, phasesRes] = await Promise.all([
+      const [workflowRes, phasesRes, detailRes] = await Promise.all([
         fetch(`/api/supervision/incidents/${incidentId}/workflow`),
         fetch(`/api/supervision/incidents/${incidentId}/nis2-phases`),
+        fetch(`/api/supervision/incidents/${incidentId}`),
       ]);
 
       const incident = incidents.find((i) => i.id === incidentId);
       const workflow = workflowRes.ok ? await workflowRes.json() : null;
       const phasesData = phasesRes.ok ? await phasesRes.json() : null;
+      const detailData = detailRes.ok ? await detailRes.json() : null;
+      const incidentDetail = detailData?.incident ?? detailData;
 
       if (incident && workflow) {
         setExpandedData({
@@ -314,15 +338,15 @@ function IncidentsContent() {
             incidentNumber: incident.incidentNumber,
             category: incident.category,
             severity: incident.severity,
-            status: incident.workflowState,
+            status: incidentDetail?.status ?? incident.workflowState,
             workflowState: incident.workflowState,
             title: incident.title,
-            description: "",
+            description: incidentDetail?.description ?? "",
             detectedAt: incident.detectedAt,
-            detectedBy: "",
-            resolvedAt: null,
-            reportedToNCA: false,
-            ncaReferenceNumber: null,
+            detectedBy: incidentDetail?.detectedBy ?? "",
+            resolvedAt: incidentDetail?.resolvedAt ?? null,
+            reportedToNCA: incidentDetail?.reportedToNCA ?? false,
+            ncaReferenceNumber: incidentDetail?.ncaReferenceNumber ?? null,
           },
           workflow: {
             currentState: workflow.currentState,
@@ -353,7 +377,14 @@ function IncidentsContent() {
               },
             }),
           ),
-          affectedAssets: [],
+          affectedAssets: (incidentDetail?.affectedAssets ?? []).map(
+            (a: Record<string, unknown>) => ({
+              id: a.id ?? "",
+              assetName: a.assetName ?? "",
+              cosparId: a.cosparId ?? null,
+              noradId: a.noradId ?? null,
+            }),
+          ),
         });
       }
     } catch {
@@ -400,43 +431,17 @@ function IncidentsContent() {
 
       if (res.ok) {
         const data = await res.json();
-        const w = window.open("", "_blank", "width=800,height=600");
-        if (w) {
-          const doc = w.document;
-          doc.open();
-          const html = doc.createElement("html");
-          const head = doc.createElement("head");
-          const title = doc.createElement("title");
-          title.textContent = data.title || "Draft Notification";
-          const style = doc.createElement("style");
-          style.textContent =
-            "body{font-family:monospace;padding:24px;background:#0A0F1E;color:#E2E8F0;white-space:pre-wrap;line-height:1.6;}h1{color:#3B82F6;font-size:18px;}";
-          head.appendChild(title);
-          head.appendChild(style);
-
-          const body = doc.createElement("body");
-          const h1 = doc.createElement("h1");
-          h1.textContent = data.title || "";
-          const p = doc.createElement("p");
-          p.style.color = "#94A3B8";
-          p.style.fontSize = "12px";
-          p.textContent = data.legalBasis || "";
-          const hr = doc.createElement("hr");
-          hr.style.borderColor = "#334155";
-          hr.style.margin = "16px 0";
-          const contentPre = doc.createElement("pre");
-          contentPre.style.whiteSpace = "pre-wrap";
-          contentPre.textContent = data.content || "";
-
-          body.appendChild(h1);
-          body.appendChild(p);
-          body.appendChild(hr);
-          body.appendChild(contentPre);
-          html.appendChild(head);
-          html.appendChild(body);
-          doc.appendChild(html);
-          doc.close();
-        }
+        const content = data.content || data.draft || data.data?.draft || "";
+        const fullDraft = [
+          data.title ? `# ${data.title}` : "",
+          data.legalBasis ? `\nLegal Basis: ${data.legalBasis}` : "",
+          "\n---\n",
+          content,
+        ]
+          .filter(Boolean)
+          .join("\n");
+        setDraftContent(fullDraft);
+        setDraftPhase(phase);
         if (expandedId === incidentId) {
           await fetchExpanded(incidentId);
         }
@@ -514,10 +519,7 @@ function IncidentsContent() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
       {/* ─── Left Panel — Sidebar ─── */}
-      <div
-        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
-        style={glassPanel}
-      >
+      <div className="w-[260px] shrink-0 flex flex-col glass-elevated rounded-[20px] overflow-hidden">
         {/* Title */}
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
@@ -558,8 +560,7 @@ function IncidentsContent() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className={`p-3 flex flex-col gap-1 ${innerGlassDarkClass}`}
-              style={innerGlass}
+              className="p-3 flex flex-col gap-1 glass-surface rounded-[14px]"
             >
               <div className="flex items-center gap-1.5">
                 <stat.icon size={12} className={stat.color} />
@@ -642,8 +643,7 @@ function IncidentsContent() {
         <div className="px-4 pb-4">
           <button
             onClick={() => fetchIncidents()}
-            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/30 transition-all ${innerGlassDarkClass}`}
-            style={innerGlass}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/30 transition-all glass-surface"
           >
             <RefreshCw size={13} />
             Refresh
@@ -652,11 +652,27 @@ function IncidentsContent() {
       </div>
 
       {/* ─── Right Panel — Main Content ─── */}
-      <div
-        className={`flex-1 flex flex-col min-w-0 ${glassPanelDarkClass}`}
-        style={glassPanel}
-      >
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      <div className="flex-1 flex flex-col min-w-0 glass-elevated rounded-[20px] overflow-hidden">
+        {/* Header with Report Incident button */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-2">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+              Active Incidents
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-white/[0.55]">
+              {incidents.length} incident{incidents.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Report Incident
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">
           {/* Urgent deadline alert */}
           <AnimatePresence>
             {hasUrgentDeadline && (
@@ -687,13 +703,26 @@ function IncidentsContent() {
             )}
           </AnimatePresence>
 
-          {/* Empty state */}
-          {incidents.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div
-                className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 ${innerGlassDarkClass}`}
-                style={innerGlass}
+          {/* Error state */}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+              <p className="text-sm">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  fetchIncidents();
+                }}
+                className="mt-2 text-sm underline hover:text-red-300 transition-colors"
               >
+                Erneut versuchen
+              </button>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!error && incidents.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-4 glass-surface">
                 <Shield
                   size={28}
                   className="text-slate-400"
@@ -725,8 +754,7 @@ function IncidentsContent() {
                 return (
                   <div
                     key={incident.id}
-                    className={innerGlassDarkClass}
-                    style={innerGlass}
+                    className="glass-surface rounded-[14px]"
                   >
                     {/* Row */}
                     <button
@@ -789,7 +817,14 @@ function IncidentsContent() {
                         <span
                           className={`text-[11px] shrink-0 ${getCountdownColor(
                             urgentMs > 0
-                              ? (urgentMs / (72 * 60 * 60 * 1000)) * 100
+                              ? (urgentMs /
+                                  ((CATEGORY_DEADLINE_HOURS[
+                                    incident.category
+                                  ] || 72) *
+                                    60 *
+                                    60 *
+                                    1000)) *
+                                  100
                               : 0,
                             urgentMs <= 0,
                           )}`}

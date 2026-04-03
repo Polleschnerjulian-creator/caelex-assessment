@@ -418,8 +418,7 @@ export function calculateNCADeadline(
   const classification = INCIDENT_CLASSIFICATION[category];
   const deadlineHours = classification?.ncaDeadlineHours || 72;
 
-  const deadline = new Date(detectedAt);
-  deadline.setHours(deadline.getHours() + deadlineHours);
+  const deadline = new Date(detectedAt.getTime() + deadlineHours * 3600000);
 
   return deadline;
 }

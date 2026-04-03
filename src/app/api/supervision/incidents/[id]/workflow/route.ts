@@ -10,6 +10,12 @@ import {
   INCIDENT_CLASSIFICATION,
   type IncidentCategory,
 } from "@/lib/services/incident-response-service";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents/[id]/workflow — Current state + available transitions
 export async function GET(
@@ -20,6 +26,11 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { id } = await params;
@@ -78,6 +89,7 @@ export async function GET(
         })),
     });
   } catch (error) {
+    logger.error("Error in workflow GET handler", error);
     return NextResponse.json(
       {
         error: "Failed to get workflow",
@@ -96,6 +108,14 @@ export async function PATCH(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { id } = await params;
@@ -136,6 +156,47 @@ export async function PATCH(
       );
     }
 
+    // RBAC: Check user role for workflow modifications
+    const member = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { role: true },
+    });
+
+    // VIEWER cannot modify incident workflow
+    if (member?.role === "VIEWER") {
+      return NextResponse.json(
+        { error: "Viewers cannot modify incident workflow" },
+        { status: 403 },
+      );
+    }
+
+    // Only MANAGER+ can close incidents — resolve the target state from the workflow engine
+    const rbacEngine = createWorkflowEngine(incidentWorkflowDefinition);
+    const rbacContext: IncidentContext = {
+      incidentId: incident.id,
+      userId: session.user.id,
+      category: incident.category as IncidentCategory,
+      severity: incident.severity as "critical" | "high" | "medium" | "low",
+      requiresNCANotification: incident.requiresNCANotification,
+      ncaDeadlineHours:
+        INCIDENT_CLASSIFICATION[incident.category as IncidentCategory]
+          ?.ncaDeadlineHours || 72,
+      reportedAt: incident.detectedAt,
+      hasActiveDeadline: !incident.reportedToNCA,
+    };
+    const targetTransition = rbacEngine
+      .getAvailableTransitions(incident.workflowState, rbacContext)
+      .find((t) => t.event === event);
+    if (
+      targetTransition?.to === "closed" &&
+      !["OWNER", "ADMIN", "MANAGER"].includes(member?.role || "")
+    ) {
+      return NextResponse.json(
+        { error: "Only managers can close incidents" },
+        { status: 403 },
+      );
+    }
+
     const result = await advanceIncidentWorkflow(
       id,
       event,
@@ -149,6 +210,7 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
+    logger.error("Error in workflow handler", error);
     return NextResponse.json(
       {
         error: "Failed to advance workflow",

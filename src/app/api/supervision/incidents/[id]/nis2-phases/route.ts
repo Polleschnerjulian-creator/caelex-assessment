@@ -3,6 +3,12 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { submitNIS2Phase } from "@/lib/services/incident-autopilot";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents/[id]/nis2-phases — All NIS2 phases with deadlines
 export async function GET(
@@ -13,6 +19,11 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { id } = await params;
@@ -71,6 +82,7 @@ export async function GET(
 
     return NextResponse.json({ phases: phaseData });
   } catch (error) {
+    logger.error("Error in NIS2 phases GET handler", error);
     return NextResponse.json(
       {
         error: "Failed to get phases",
@@ -91,10 +103,23 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
+    }
+
     const { id } = await params;
 
     const nis2PhaseSchema = z.object({
-      phase: z.string().min(1),
+      phase: z.enum([
+        "early_warning",
+        "notification",
+        "intermediate_report",
+        "final_report",
+      ]),
       referenceNumber: z.string().optional(),
     });
 
@@ -143,6 +168,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    logger.error("Error in NIS2 phases PATCH handler", error);
     return NextResponse.json(
       {
         error: "Failed to submit phase",

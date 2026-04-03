@@ -4,6 +4,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt, isEncrypted } from "@/lib/encryption";
 import { generateNCANotificationDraft } from "@/lib/services/incident-notification-templates";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // POST /api/supervision/incidents/[id]/draft-notification — Generate NCA notification draft
 export async function POST(
@@ -14,6 +20,14 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { id } = await params;
@@ -57,6 +71,21 @@ export async function POST(
     if (!incident) {
       return NextResponse.json(
         { error: "Incident not found" },
+        { status: 404 },
+      );
+    }
+
+    // Verify the NIS2 phase exists for this incident
+    const phaseRecord = await prisma.incidentNIS2Phase.findUnique({
+      where: { incidentId_phase: { incidentId: id, phase } },
+    });
+
+    if (!phaseRecord) {
+      return NextResponse.json(
+        {
+          error:
+            "NIS2 phase not found. Ensure the incident has NIS2 reporting phases configured.",
+        },
         { status: 404 },
       );
     }
@@ -119,6 +148,7 @@ export async function POST(
       phase,
     });
   } catch (error) {
+    logger.error("Error in draft-notification handler", error);
     return NextResponse.json(
       {
         error: "Failed to generate draft",
