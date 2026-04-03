@@ -147,10 +147,8 @@ const innerGlass: React.CSSProperties = {
     "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
 };
 
-const glassPanelDarkClass =
-  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
-const innerGlassDarkClass =
-  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
+const glassPanelDarkClass = "glass-elevated";
+const innerGlassDarkClass = "glass-surface";
 
 // ─── Sidebar Tab Definitions ───
 
@@ -365,6 +363,16 @@ function AuditCenterContent() {
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <p className="text-sm text-red-600">{error}</p>
           </div>
+          <button
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              fetchOverview();
+            }}
+            className="mt-4 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body transition-colors"
+          >
+            Erneut versuchen
+          </button>
         </div>
       </div>
     );
@@ -387,10 +395,43 @@ function AuditCenterContent() {
   // ─── Render ───
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
-      {/* ─── Left Panel — Sidebar ─── */}
+    <div className="flex flex-col lg:flex-row h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
+      {/* ─── Mobile Tab Bar (visible < lg) ─── */}
       <div
-        className={`w-[260px] shrink-0 flex flex-col ${glassPanelDarkClass}`}
+        className={`lg:hidden flex items-center gap-2 p-2 rounded-xl shrink-0 ${glassPanelDarkClass}`}
+        style={glassPanel}
+      >
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-white px-3">
+          Audit Center
+        </h2>
+        <div className="flex gap-1 ml-auto">
+          {sidebarTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === tab.id
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => fetchOverview(true)}
+          disabled={refreshing}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 transition-colors disabled:opacity-50 ml-1"
+        >
+          <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
+        </button>
+      </div>
+
+      {/* ─── Left Panel — Sidebar (hidden on mobile, visible on lg+) ─── */}
+      <div
+        className={`hidden lg:flex w-[260px] shrink-0 flex-col ${glassPanelDarkClass}`}
         style={glassPanel}
       >
         <div className="px-5 pt-5 pb-3">
@@ -495,9 +536,9 @@ function AuditCenterContent() {
         </div>
       </div>
 
-      {/* ─── Right Panel — Main Content ─── */}
+      {/* ─── Right Panel — Main Content (full width on mobile) ─── */}
       <div
-        className={`flex-1 flex flex-col min-w-0 ${glassPanelDarkClass}`}
+        className={`flex-1 flex flex-col min-w-0 w-full ${glassPanelDarkClass}`}
         style={glassPanel}
       >
         {/* Error Banner */}

@@ -584,10 +584,26 @@ export async function generateComplianceCertificateData(
     lastAuditDate: env?.updatedAt || null,
   });
 
-  // Calculate overall score
-  const overallScore = Math.round(
-    modules.reduce((sum, m) => sum + m.score, 0) / modules.length,
+  // Calculate overall score — separate binary modules (authorization: 0 or 100)
+  // from continuous-score modules to avoid distorting the average
+  const continuousModules = modules.filter(
+    (m) => m.name !== "Authorization & Registration",
   );
+  const authorizationModule = modules.find(
+    (m) => m.name === "Authorization & Registration",
+  );
+
+  const overallScore =
+    continuousModules.length > 0
+      ? Math.round(
+          continuousModules.reduce((sum, m) => sum + m.score, 0) /
+            continuousModules.length,
+        )
+      : 0;
+
+  // Authorization is tracked as a separate pass/fail indicator via attestations below
+  const authorizationStatus =
+    authorizationModule?.score === 100 ? "APPROVED" : "PENDING";
 
   // Generate certificate number
   const certNumber = `CAELEX-CERT-${Date.now().toString(36).toUpperCase()}-${userId.slice(-4).toUpperCase()}`;
@@ -600,12 +616,13 @@ export async function generateComplianceCertificateData(
       "Organization demonstrates comprehensive compliance with EU Space Act requirements",
     );
   }
-  if (
-    modules.find((m) => m.name === "Authorization & Registration")?.status ===
-    "compliant"
-  ) {
+  if (authorizationStatus === "APPROVED") {
     attestations.push(
       "Space activities are properly authorized under applicable national authority",
+    );
+  } else {
+    attestations.push(
+      "Authorization & Registration status: PENDING — not yet approved",
     );
   }
   if (

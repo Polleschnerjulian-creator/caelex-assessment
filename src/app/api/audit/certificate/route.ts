@@ -16,6 +16,12 @@ import { ComplianceCertificate } from "@/lib/pdf/reports/compliance-certificate"
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  getR2Client,
+  getR2BucketName,
+  isR2Configured,
+} from "@/lib/storage/r2-client";
 
 export async function POST(request: Request) {
   try {
@@ -80,6 +86,31 @@ export async function POST(request: Request) {
 
     // Calculate checksum
     const checksum = crypto.createHash("sha256").update(buffer).digest("hex");
+
+    // Upload certificate to R2 storage (best-effort — don't fail the request)
+    const storagePath = `certificates/${userId}/${certificateData.certificateNumber}.pdf`;
+    try {
+      if (isR2Configured()) {
+        const r2 = getR2Client();
+        if (r2) {
+          await r2.send(
+            new PutObjectCommand({
+              Bucket: getR2BucketName(),
+              Key: storagePath,
+              Body: Buffer.from(buffer),
+              ContentType: "application/pdf",
+              Metadata: {
+                "certificate-number": certificateData.certificateNumber,
+                "compliance-score": String(certificateData.complianceScore),
+              },
+            }),
+          );
+        }
+      }
+    } catch (err) {
+      logger.warn("Failed to store certificate in R2", err);
+      // Don't fail the request — the user still gets their download
+    }
 
     // Store certificate record
     const certificate = await prisma.reportArchive.create({

@@ -376,7 +376,8 @@ export async function getAuditCenterOverview(
         )
       : 0;
 
-  // Evidence coverage
+  // Evidence coverage — calculated as accepted evidence / total evidence records
+  // (avoids mismatch between evidence requirementId schemes and assessment requirement counts)
   const totalEvidence = evidenceCounts.reduce((s, e) => s + e._count, 0);
   const byStatus = {
     draft: evidenceCounts.find((e) => e.status === "DRAFT")?._count || 0,
@@ -387,12 +388,12 @@ export async function getAuditCenterOverview(
     expired: evidenceCounts.find((e) => e.status === "EXPIRED")?._count || 0,
   };
 
-  const totalReqsAcrossModules = modules.reduce(
-    (sum, m) => sum + m.totalRequirements,
-    0,
-  );
+  const coveragePercent =
+    totalEvidence > 0
+      ? Math.round((byStatus.accepted / totalEvidence) * 100)
+      : 0;
 
-  // Count unique requirements that have at least one evidence
+  // Count unique requirements that have at least one evidence (used for action items below)
   const evidenceWithReqs = await prisma.complianceEvidence
     .findMany({
       where: { organizationId },
@@ -402,12 +403,9 @@ export async function getAuditCenterOverview(
     .catch(() => [] as { regulationType: string; requirementId: string }[]);
 
   const evidenceCoverage: EvidenceCoverage = {
-    totalRequirements: totalReqsAcrossModules,
-    withEvidence: evidenceWithReqs.length,
-    percentage:
-      totalReqsAcrossModules > 0
-        ? Math.round((evidenceWithReqs.length / totalReqsAcrossModules) * 100)
-        : 0,
+    totalRequirements: totalEvidence,
+    withEvidence: byStatus.accepted,
+    percentage: coveragePercent,
     byStatus,
   };
 

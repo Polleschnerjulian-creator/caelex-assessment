@@ -3890,7 +3890,7 @@ model ComplianceEvidence {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([organizationId, regulationType, requirementId, title])
+  @@index([organizationId, regulationType, requirementId])
   @@index([organizationId])
   @@index([organizationId, regulationType])
   @@index([regulationType, requirementId])
