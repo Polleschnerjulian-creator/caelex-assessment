@@ -270,6 +270,87 @@ function CompactModuleItem({
   );
 }
 
+// ─── CyberSuiteOverviewItem ─────────────────────────────────────────────────
+
+interface CyberSuiteOverviewItemProps {
+  href: string;
+  onClick?: () => void;
+  collapsed?: boolean;
+}
+
+function CyberSuiteOverviewItem({
+  href,
+  onClick,
+  collapsed,
+}: CyberSuiteOverviewItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === href || pathname.startsWith(href + "/");
+
+  if (collapsed) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        aria-current={isActive ? "page" : undefined}
+        className={`group relative flex items-center justify-center w-11 h-11 mx-auto rounded-[10px] transition-colors duration-[120ms] ${isActive ? "" : ""}`}
+        style={{
+          background: isActive ? "rgba(16,185,129,0.15)" : undefined,
+        }}
+      >
+        <span
+          className={`w-5 h-5 flex-shrink-0 transition-colors duration-[120ms] ${
+            isActive
+              ? "text-emerald-400"
+              : "text-emerald-500 group-hover:text-emerald-400"
+          }`}
+        >
+          <Shield size={20} strokeWidth={1.5} />
+        </span>
+        <Tooltip label="Suite Overview" />
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      aria-current={isActive ? "page" : undefined}
+      className={`
+        group flex items-center gap-2.5 h-8 pl-8 pr-3 rounded-[10px] text-[13px]
+        transition-all duration-[120ms] ease-out
+        ${isActive ? "font-medium" : "hover:bg-[var(--sidebar-nav-hover-bg)]"}
+      `}
+      style={{
+        background: isActive ? "rgba(16,185,129,0.12)" : undefined,
+      }}
+    >
+      <span
+        className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-[120ms] ${
+          isActive
+            ? "text-emerald-400"
+            : "text-emerald-500 group-hover:text-emerald-400"
+        }`}
+      >
+        <Shield size={14} strokeWidth={1.5} />
+      </span>
+      <span
+        className={`flex-1 truncate font-medium ${
+          isActive
+            ? "text-emerald-400"
+            : "text-emerald-500 group-hover:text-emerald-400"
+        }`}
+      >
+        Suite Overview
+      </span>
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{ background: isActive ? "#34d399" : "#10b981" }}
+      />
+    </Link>
+  );
+}
+
 // ─── ModuleGroup ────────────────────────────────────────────────────────────
 
 interface ModuleGroupProps {
@@ -281,6 +362,7 @@ interface ModuleGroupProps {
   hasActiveItem?: boolean;
   groupId: string;
   collapsed?: boolean;
+  headerBadge?: React.ReactNode;
 }
 
 function ModuleGroup({
@@ -292,6 +374,7 @@ function ModuleGroup({
   hasActiveItem,
   groupId,
   collapsed,
+  headerBadge,
 }: ModuleGroupProps) {
   const panelId = `module-group-${groupId}`;
 
@@ -313,7 +396,10 @@ function ModuleGroup({
           ${hasActiveItem ? "text-[var(--sidebar-nav-color)]" : "text-[var(--sidebar-section-color)]"}
         `}
       >
-        <span className="flex-1 text-left">{title}</span>
+        <span className="flex-1 text-left flex items-center gap-1.5">
+          {title}
+          {headerBadge}
+        </span>
         <span
           className="text-[10px] min-w-[18px] text-center px-1 py-0.5 rounded-[8px] font-medium"
           style={{
@@ -379,6 +465,7 @@ function SectionHeader({
 // ─── Module & group data ────────────────────────────────────────────────────
 
 const MODULE_MAP: Record<string, string> = {
+  "/dashboard/cyber-suite": "cyber-suite",
   "/dashboard/modules/authorization": "authorization",
   "/dashboard/modules/cybersecurity": "cybersecurity",
   "/dashboard/modules/nis2": "nis2",
@@ -401,10 +488,15 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/network": "network",
 };
 
-const EU_MODULES = [
-  "/dashboard/modules/authorization",
+const CYBER_MODULES = [
+  "/dashboard/cyber-suite",
   "/dashboard/modules/cybersecurity",
   "/dashboard/modules/nis2",
+  "/dashboard/modules/cra",
+];
+
+const EU_MODULES = [
+  "/dashboard/modules/authorization",
   "/dashboard/modules/debris",
   "/dashboard/modules/environmental",
   "/dashboard/modules/insurance",
@@ -415,7 +507,6 @@ const EU_MODULES = [
   "/dashboard/modules/uk-space",
   "/dashboard/modules/us-regulatory",
   "/dashboard/modules/spectrum",
-  "/dashboard/modules/cra",
 ];
 
 // ─── Sidebar ────────────────────────────────────────────────────────────────
@@ -525,6 +616,7 @@ export default function Sidebar({
 
   // Active group detection
   const getActiveGroup = (): string | null => {
+    if (CYBER_MODULES.some((m) => pathname.startsWith(m))) return "cyber";
     if (EU_MODULES.some((m) => pathname.startsWith(m))) return "eu";
     return null;
   };
@@ -533,6 +625,7 @@ export default function Sidebar({
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
+      cyber: true,
       eu: true,
     },
   );
@@ -719,24 +812,31 @@ export default function Sidebar({
               {t("sidebar.complianceModules")}
             </SectionHeader>
 
+            {/* Cybersecurity Suite */}
             <ModuleGroup
-              title={t("sidebar.euRegulations")}
-              count={13}
-              isExpanded={expandedGroups.eu}
-              onToggle={() => toggleGroup("eu")}
-              hasActiveItem={activeGroup === "eu"}
-              groupId="eu"
+              title="Cybersecurity"
+              count={4}
+              isExpanded={expandedGroups.cyber}
+              onToggle={() => toggleGroup("cyber")}
+              hasActiveItem={activeGroup === "cyber"}
+              groupId="cyber"
               collapsed={collapsed}
+              headerBadge={
+                <span
+                  className="text-[9px] font-semibold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded"
+                  style={{
+                    background: "rgba(16,185,129,0.15)",
+                    color: "#34d399",
+                  }}
+                >
+                  Suite
+                </span>
+              }
             >
-              <CompactModuleItem
-                href="/dashboard/modules/authorization"
-                icon={<FileCheck size={14} strokeWidth={1.5} />}
-                label={t("modules.authorization")}
+              {/* Suite Overview — visually distinct parent item */}
+              <CyberSuiteOverviewItem
+                href="/dashboard/cyber-suite"
                 onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/authorization")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/authorization",
-                )}
                 collapsed={collapsed}
               />
               <CompactModuleItem
@@ -757,6 +857,37 @@ export default function Sidebar({
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/nis2")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/nis2")}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/cra"
+                icon={<ShieldCheck size={14} strokeWidth={1.5} />}
+                label="Cyber Resilience Act"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/cra")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/modules/cra")}
+                collapsed={collapsed}
+              />
+            </ModuleGroup>
+
+            <ModuleGroup
+              title={t("sidebar.euRegulations")}
+              count={10}
+              isExpanded={expandedGroups.eu}
+              onToggle={() => toggleGroup("eu")}
+              hasActiveItem={activeGroup === "eu"}
+              groupId="eu"
+              collapsed={collapsed}
+            >
+              <CompactModuleItem
+                href="/dashboard/modules/authorization"
+                icon={<FileCheck size={14} strokeWidth={1.5} />}
+                label={t("modules.authorization")}
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/authorization")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/authorization",
+                )}
                 collapsed={collapsed}
               />
               <CompactModuleItem
@@ -863,15 +994,6 @@ export default function Sidebar({
                 requiredPlan={getRequiredPlanLabel(
                   "/dashboard/modules/spectrum",
                 )}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
-                href="/dashboard/modules/cra"
-                icon={<ShieldCheck size={14} strokeWidth={1.5} />}
-                label="Cyber Resilience Act"
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/cra")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/modules/cra")}
                 collapsed={collapsed}
               />
             </ModuleGroup>
