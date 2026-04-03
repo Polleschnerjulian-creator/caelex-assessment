@@ -160,6 +160,8 @@ export const INCIDENT_CLASSIFICATION: Record<
   {
     defaultSeverity: IncidentSeverity;
     ncaDeadlineHours: number;
+    /** Separate NCA notification deadline (hours), when distinct from early warning. NIS2 Art. 23(4)(b). */
+    notificationDeadlineHours?: number;
     requiresNCANotification: boolean;
     requiresEUSPANotification: boolean;
     description: string;
@@ -217,6 +219,7 @@ export const INCIDENT_CLASSIFICATION: Record<
   nis2_significant_incident: {
     defaultSeverity: "critical",
     ncaDeadlineHours: 24, // NIS2 Art. 23(4)(a): Early warning within 24 hours
+    notificationDeadlineHours: 72, // NIS2 Art. 23(4)(b): Full incident notification within 72 hours
     requiresNCANotification: true,
     requiresEUSPANotification: false,
     description:
