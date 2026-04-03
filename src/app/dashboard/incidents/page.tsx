@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -21,6 +21,8 @@ import {
   Plus,
   X,
   Copy,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 
 // ─── Types ───
@@ -69,6 +71,7 @@ interface IncidentDetail {
     resolvedAt: string | null;
     reportedToNCA: boolean;
     ncaReferenceNumber: string | null;
+    relatedIncidentIds?: string[];
   };
   workflow: WorkflowInfo;
   nis2Phases: NIS2Phase[];
@@ -222,6 +225,9 @@ function IncidentsContent() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedData, setExpandedData] = useState<IncidentDetail | null>(null);
   const [expandLoading, setExpandLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -238,12 +244,24 @@ function IncidentsContent() {
     return () => clearInterval(interval);
   }, []);
 
+  // Debounce search input (300ms)
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [searchQuery]);
+
   const fetchIncidents = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (severityFilter !== "ALL") params.set("severity", severityFilter);
       if (categoryFilter !== "ALL") params.set("category", categoryFilter);
+      if (debouncedSearch) params.set("search", debouncedSearch);
 
       const res = await fetch(
         `/api/supervision/incidents?${params.toString()}`,
@@ -275,7 +293,7 @@ function IncidentsContent() {
     } finally {
       setLoading(false);
     }
-  }, [severityFilter, categoryFilter]);
+  }, [severityFilter, categoryFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchIncidents();
@@ -446,25 +464,26 @@ function IncidentsContent() {
     }
   };
 
-  // ─── Stats ───
-  const activeCount = incidents.filter(
-    (i) => i.workflowState !== "closed",
-  ).length;
-  const criticalCount = incidents.filter(
+  // ─── Stats (FIX U-06: exclude closed/resolved incidents) ───
+  const activeIncidents = incidents.filter(
+    (i) => i.workflowState !== "closed" && i.workflowState !== "resolved",
+  );
+  const activeCount = activeIncidents.length;
+  const criticalCount = activeIncidents.filter(
     (i) => i.severity === "critical",
   ).length;
-  const phasesDueCount = incidents.reduce(
+  const phasesDueCount = activeIncidents.reduce(
     (s, i) =>
       s +
       (i.nis2PhasesSummary?.total || 0) -
       (i.nis2PhasesSummary?.submitted || 0),
     0,
   );
-  const overdueCount = incidents.reduce(
+  const overdueCount = activeIncidents.reduce(
     (sum, i) => sum + (i.nis2PhasesSummary?.overdue || 0),
     0,
   );
-  const hasUrgentDeadline = incidents.some(
+  const hasUrgentDeadline = activeIncidents.some(
     (i) =>
       i.urgentDeadlineMs !== null &&
       i.urgentDeadlineMs < 2 * 60 * 60 * 1000 &&
@@ -545,6 +564,17 @@ function IncidentsContent() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Search */}
+        <div className="px-4 pb-2">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Incident suchen..."
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-black/[0.06] dark:border-white/10 text-body text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:border-emerald-500/50 outline-none transition-colors"
+          />
         </div>
 
         {/* Divider */}
@@ -1095,6 +1125,53 @@ function IncidentsContent() {
                                   {CATEGORY_LABELS[incident.category] ||
                                     incident.category}{" "}
                                   | Severity: {incident.severity}
+                                </div>
+
+                                {/* Action buttons: PDF Export + NCA Portal Link */}
+                                <div className="flex items-center gap-2 pt-1">
+                                  {/* FIX M-02: PDF Export */}
+                                  <a
+                                    href={`/api/supervision/incidents/${incident.id}/export-pdf`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-slate-500 bg-white/30 border border-white/40 rounded-lg hover:bg-white/50 transition-colors"
+                                  >
+                                    <Download size={12} />
+                                    PDF Export
+                                  </a>
+
+                                  {/* FIX M-04: NCA Portal Link */}
+                                  {expandedData.incident.reportedToNCA && (
+                                    <a
+                                      href={`/dashboard/nca-portal?prefill=incident&incidentId=${incident.id}`}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 transition-colors"
+                                    >
+                                      <ExternalLink size={12} />
+                                      NCA-Submission erstellen
+                                    </a>
+                                  )}
+
+                                  {/* FIX M-05: Related Incidents */}
+                                  {expandedData.incident.relatedIncidentIds &&
+                                    expandedData.incident.relatedIncidentIds
+                                      .length > 0 && (
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                          Linked:
+                                        </span>
+                                        {expandedData.incident.relatedIncidentIds.map(
+                                          (rid: string) => (
+                                            <a
+                                              key={rid}
+                                              href={`#${rid}`}
+                                              className="text-emerald-600 dark:text-emerald-400 text-[11px] hover:underline"
+                                            >
+                                              {rid.slice(0, 8)}
+                                            </a>
+                                          ),
+                                        )}
+                                      </div>
+                                    )}
                                 </div>
                               </>
                             ) : (

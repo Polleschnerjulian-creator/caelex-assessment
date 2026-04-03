@@ -164,6 +164,10 @@ export const INCIDENT_CLASSIFICATION: Record<
     notificationDeadlineHours?: number;
     requiresNCANotification: boolean;
     requiresEUSPANotification: boolean;
+    /** CRA Art. 14 — requires notification to ENISA for actively exploited vulnerabilities */
+    requiresCRANotification?: boolean;
+    craDeadlineHours?: number;
+    craNotificationRecipient?: string;
     description: string;
     articleRef: string;
   }
@@ -189,6 +193,9 @@ export const INCIDENT_CLASSIFICATION: Record<
     ncaDeadlineHours: 4,
     requiresNCANotification: true,
     requiresEUSPANotification: true,
+    requiresCRANotification: true, // CRA Art. 14 — actively exploited vulnerabilities
+    craDeadlineHours: 24, // 24h for actively exploited vulnerabilities
+    craNotificationRecipient: "ENISA",
     description: "Cybersecurity breach or attack on space systems",
     articleRef: "Art. 74-95",
   },

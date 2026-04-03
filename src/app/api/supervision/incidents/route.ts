@@ -49,10 +49,18 @@ export async function GET(req: Request) {
       return NextResponse.json({ incidents: [], total: 0 });
     }
 
+    const search = searchParams.get("search");
+
     const where: Record<string, unknown> = { supervisionId: config.id };
     if (category) where.category = category;
     if (severity) where.severity = severity;
     if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { incidentNumber: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
     const [incidents, total] = await Promise.all([
       prisma.incident.findMany({
@@ -354,6 +362,13 @@ export async function POST(req: Request) {
 
       return newIncident;
     });
+
+    // FIX C-01: CRA Art. 14 notification logging
+    if (classification.requiresCRANotification) {
+      logger.info(
+        `Incident ${incident.id} may require CRA Art. 14 notification to ${classification.craNotificationRecipient || "ENISA"} within ${classification.craDeadlineHours || 24}h`,
+      );
+    }
 
     // Create NIS2 phases for the incident (FIX B-03)
     try {

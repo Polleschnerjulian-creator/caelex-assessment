@@ -295,8 +295,9 @@ ${incident.containmentMeasures.length > 0 ? incident.containmentMeasures.map((m)
 Resolution Steps:
 ${incident.resolutionSteps.length > 0 ? incident.resolutionSteps.map((s) => `- ${s}`).join("\n") : "- None recorded"}
 
-6. CROSS-BORDER IMPACT
-${incident.impactAssessment || "No cross-border impact identified."}
+6. CROSS-BORDER IMPACT ASSESSMENT
+Cross-border impact assessment has not been completed separately. NIS2 Art. 23(4)(d) requires assessment of impact on other EU member states.
+${incident.impactAssessment ? `\nRelated operational impact: ${incident.impactAssessment}` : ""}
 
 7. LESSONS LEARNED
 ${incident.lessonsLearned || "Lessons learned review to be completed during post-mortem."}
