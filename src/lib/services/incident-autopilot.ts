@@ -17,6 +17,8 @@ import {
   notifyUser,
   notifyOrganization,
 } from "@/lib/services/notification-service";
+import { sendIncidentAlert } from "@/lib/email";
+import { logger } from "@/lib/logger";
 import {
   calculateSeverity,
   calculateNCADeadline,
@@ -268,6 +270,37 @@ export async function createIncidentWithAutopilot(
           severity: severity === "critical" ? "CRITICAL" : "WARNING",
         },
       );
+    }
+
+    // Send email alert to the user who created the incident
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
+
+      if (user?.email) {
+        const classification = INCIDENT_CLASSIFICATION[input.category];
+        const ncaDeadline = classification.requiresNCANotification
+          ? calculateNCADeadline(input.category, detectedAt)
+          : undefined;
+        const dashboardUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://app.caelex.io";
+
+        await sendIncidentAlert(user.email, userId, incident.id, {
+          recipientName: user.name || "Team",
+          incidentNumber,
+          title: input.title,
+          severity,
+          category: input.category,
+          detectedAt,
+          description: input.description,
+          ncaReportingDeadline: ncaDeadline,
+          dashboardUrl: `${dashboardUrl}/dashboard`,
+        });
+      }
+    } catch (err) {
+      logger.warn("Failed to send incident email alert", err);
     }
 
     return {

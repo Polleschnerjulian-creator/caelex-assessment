@@ -98,34 +98,6 @@ interface IncidentSummary {
   urgentDeadlineMs: number | null;
 }
 
-// ─── Glass Styles ───
-
-const glassPanel: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.55)",
-  backdropFilter: "blur(24px) saturate(1.4)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-  border: "1px solid rgba(255, 255, 255, 0.45)",
-  borderRadius: 20,
-  boxShadow:
-    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-  overflow: "hidden",
-};
-
-const innerGlass: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.45)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.5)",
-  borderRadius: 14,
-  boxShadow:
-    "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
-};
-
-const glassPanelDarkClass =
-  "dark:!bg-white/[0.04] dark:!backdrop-blur-[40px] dark:!border-white/[0.08] dark:![box-shadow:0_8px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]";
-const innerGlassDarkClass =
-  "dark:!bg-white/[0.03] dark:!border-white/[0.06] dark:![box-shadow:0_2px_8px_rgba(0,0,0,0.15)] dark:!backdrop-blur-none";
-
 // ─── Constants ───
 
 const SEVERITY_CONFIG: Record<
@@ -680,12 +652,7 @@ function IncidentsContent() {
                 initial={false}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                style={{
-                  ...innerGlass,
-                  background: "rgba(239, 68, 68, 0.08)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
-                }}
-                className="p-4 flex items-center gap-3"
+                className="p-4 flex items-center gap-3 glass-surface rounded-[14px] bg-red-500/[0.08] border border-red-500/20"
               >
                 <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center animate-pulse">
                   <AlertTriangle size={16} className="text-red-500" />
@@ -1146,6 +1113,302 @@ function IncidentsContent() {
           )}
         </div>
       </div>
+
+      {/* ─── Draft Modal (FIX U-03) ─── */}
+      <AnimatePresence>
+        {draftContent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setDraftContent(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="glass-floating rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-heading font-semibold text-slate-800 dark:text-white">
+                  NCA Draft:{" "}
+                  {draftPhase ? PHASE_NAMES[draftPhase] || draftPhase : ""}
+                </h3>
+                <button
+                  onClick={() => setDraftContent(null)}
+                  className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                >
+                  <X size={18} className="text-slate-400" />
+                </button>
+              </div>
+              <pre className="whitespace-pre-wrap text-body text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-navy-950 p-4 rounded-lg border border-slate-200 dark:border-white/5">
+                {draftContent}
+              </pre>
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(draftContent);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors"
+                >
+                  <Copy size={14} />
+                  Kopieren
+                </button>
+                <button
+                  onClick={() => setDraftContent(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg text-body font-medium transition-colors"
+                >
+                  Schlie&szlig;en
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Create Incident Modal (FIX U-01) ─── */}
+      <AnimatePresence>
+        {showCreateForm && (
+          <CreateIncidentModal
+            onClose={() => setShowCreateForm(false)}
+            onCreated={() => {
+              setShowCreateForm(false);
+              fetchIncidents();
+            }}
+            loading={createLoading}
+            setLoading={setCreateLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// ─── Create Incident Modal Component ───
+
+function CreateIncidentModal({
+  onClose,
+  onCreated,
+  loading,
+  setLoading,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+  loading: boolean;
+  setLoading: (v: boolean) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("spacecraft_anomaly");
+  const [severity, setSeverity] = useState("medium");
+  const [description, setDescription] = useState("");
+  const [detectedAt, setDetectedAt] = useState(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const CATEGORY_OPTIONS = [
+    { value: "spacecraft_anomaly", label: "Spacecraft Anomaly" },
+    { value: "loss_of_contact", label: "Loss of Contact" },
+    { value: "conjunction_event", label: "Conjunction Event" },
+    { value: "debris_generation", label: "Debris Generation" },
+    { value: "cyber_incident", label: "Cyber Incident" },
+    { value: "regulatory_breach", label: "Regulatory Breach" },
+  ];
+
+  const SEVERITY_OPTIONS = [
+    { value: "critical", label: "Critical" },
+    { value: "high", label: "High" },
+    { value: "medium", label: "Medium" },
+    { value: "low", label: "Low" },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      setFormError("Title is required");
+      return;
+    }
+    if (!description.trim()) {
+      setFormError("Description is required");
+      return;
+    }
+
+    setLoading(true);
+    setFormError(null);
+    try {
+      const res = await fetch("/api/supervision/incidents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          category,
+          severity,
+          description: description.trim(),
+          detectedAt: new Date(detectedAt).toISOString(),
+          detectedBy: "dashboard_user",
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to create incident");
+      }
+
+      onCreated();
+    } catch (err) {
+      setFormError(
+        err instanceof Error ? err.message : "Failed to create incident",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:justify-end bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 250 }}
+        className="glass-floating w-full sm:w-[480px] h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto bg-white dark:bg-navy-900 border-l border-slate-200 dark:border-white/10 sm:rounded-l-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-heading font-semibold text-slate-800 dark:text-white">
+              Report Incident
+            </h3>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            >
+              <X size={18} className="text-slate-400" />
+            </button>
+          </div>
+
+          {formError && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+              {formError}
+            </div>
+          )}
+
+          {/* Title */}
+          <div>
+            <label className="block text-small font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Brief incident title..."
+              required
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white text-body placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 glass-surface"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-small font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+              Category
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white text-body focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 glass-surface"
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Severity */}
+          <div>
+            <label className="block text-small font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+              Severity
+            </label>
+            <select
+              value={severity}
+              onChange={(e) => setSeverity(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white text-body focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 glass-surface"
+            >
+              {SEVERITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-small font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the incident in detail..."
+              required
+              rows={4}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white text-body placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none glass-surface"
+            />
+          </div>
+
+          {/* Detected At */}
+          <div>
+            <label className="block text-small font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+              Detected At
+            </label>
+            <input
+              type="datetime-local"
+              value={detectedAt}
+              onChange={(e) => setDetectedAt(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white text-body focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 glass-surface"
+            />
+          </div>
+
+          {/* Submit */}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg text-body font-medium transition-colors"
+            >
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Plus size={16} />
+              )}
+              {loading ? "Creating..." : "Create Incident"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg text-body font-medium transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 }

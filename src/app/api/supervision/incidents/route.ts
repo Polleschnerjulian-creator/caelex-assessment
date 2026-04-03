@@ -13,6 +13,7 @@ import {
   type SeverityFactors,
 } from "@/lib/services/incident-response-service";
 import { calculatePhaseDeadlines } from "@/lib/services/incident-autopilot";
+import { sendIncidentAlert } from "@/lib/email";
 import {
   checkRateLimit,
   getIdentifier,
@@ -373,6 +374,35 @@ export async function POST(req: Request) {
       }
     } catch (err) {
       logger.warn("Failed to create NIS2 phases for incident", err);
+    }
+
+    // Send email alert (FIX E-01)
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true, name: true },
+      });
+
+      if (user?.email) {
+        const dashboardUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://app.caelex.io";
+
+        await sendIncidentAlert(user.email, session.user.id, incident.id, {
+          recipientName: user.name || "Team",
+          incidentNumber,
+          title,
+          severity: severity!,
+          category,
+          detectedAt: new Date(detectedAt),
+          description,
+          ncaReportingDeadline: classification.requiresNCANotification
+            ? ncaDeadline
+            : undefined,
+          dashboardUrl: `${dashboardUrl}/dashboard`,
+        });
+      }
+    } catch (err) {
+      logger.warn("Failed to send incident email alert", err);
     }
 
     return NextResponse.json({
