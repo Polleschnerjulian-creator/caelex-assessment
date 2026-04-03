@@ -42,10 +42,11 @@ export async function GET(request: Request) {
       endDate,
     );
 
-    // Log the verification event
+    // Log the verification event — pass organizationId explicitly (FIX A-1)
     const ctx = getRequestContext(request);
     await logAuditEvent({
       userId: session.user.id,
+      organizationId: membership.organizationId,
       action: "hash_chain_verified",
       entityType: "compliance_evidence",
       entityId: membership.organizationId,

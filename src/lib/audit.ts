@@ -239,7 +239,11 @@ function sanitizeAuditValue(value: unknown): unknown {
 /**
  * Log an audit event to the database.
  * Automatically extends the SHA-256 hash chain for tamper-evident audit trails.
- * Hash computation is best-effort — failures fall back to null (never breaks logging).
+ *
+ * FIX A-1: Hash computation + insert now happen inside a Serializable transaction
+ * via createAuditEntryWithHash(). organizationId is passed explicitly from the
+ * caller (falls back to membership lookup only when not provided).
+ * Hash failures fall back to unhashed entries and trigger threshold alerts (FIX A-4).
  */
 export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   try {
@@ -251,29 +255,27 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
       ? JSON.stringify(sanitizeAuditValue(entry.newValue))
       : null;
 
-    // Compute hash chain — dynamically imported to keep client bundles clean
-    let hashFields: { entryHash: string; previousHash: string } | null = null;
-    try {
-      const { computeHashForNewEntry } = await import("./audit-hash.server");
-      hashFields = await computeHashForNewEntry(entry.userId, {
-        action: entry.action,
-        entityType: entry.entityType,
-        entityId: entry.entityId,
-        timestamp,
-        previousValue,
-        newValue,
-        description: entry.description || null,
-        ipAddress: entry.ipAddress || null,
-        userAgent: entry.userAgent || null,
-      });
-    } catch {
-      // Hash computation failed — continue without hash (backward-compatible)
+    // Resolve organizationId: prefer explicit, fall back to membership lookup
+    let organizationId = entry.organizationId || null;
+    if (!organizationId) {
+      try {
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: entry.userId },
+          orderBy: { joinedAt: "desc" },
+          select: { organizationId: true },
+        });
+        organizationId = membership?.organizationId || null;
+      } catch {
+        // Membership lookup failed — continue without org scope
+      }
     }
 
-    await prisma.auditLog.create({
-      data: {
+    // Use the transactional hash chain insert (FIX A-1)
+    try {
+      const { createAuditEntryWithHash } = await import("./audit-hash.server");
+      await createAuditEntryWithHash({
         userId: entry.userId,
-        organizationId: entry.organizationId || null,
+        organizationId,
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,
@@ -283,10 +285,27 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
         timestamp,
-        entryHash: hashFields?.entryHash || null,
-        previousHash: hashFields?.previousHash || null,
-      },
-    });
+      });
+    } catch {
+      // Dynamic import failed (e.g. client bundle) — fall back to plain insert
+      await prisma.auditLog.create({
+        data: {
+          userId: entry.userId,
+          organizationId,
+          action: entry.action,
+          entityType: entry.entityType,
+          entityId: entry.entityId,
+          previousValue,
+          newValue,
+          description: entry.description,
+          ipAddress: entry.ipAddress,
+          userAgent: entry.userAgent,
+          timestamp,
+          entryHash: null,
+          previousHash: null,
+        },
+      });
+    }
   } catch (error) {
     // Log to console but don't throw - audit logging should not break the main flow
     logger.error("Failed to log audit event", error);
@@ -294,12 +313,17 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
 }
 
 /**
- * Log multiple audit events in a batch
+ * Log multiple audit events in a batch.
+ *
+ * FIX A-2: After the fast createMany, backfill hashes sequentially per organization
+ * inside a Serializable transaction so batch entries participate in the hash chain.
  */
 export async function logAuditEventsBatch(
   entries: AuditLogEntry[],
 ): Promise<void> {
   try {
+    const timestamp = new Date();
+
     await prisma.auditLog.createMany({
       data: entries.map((entry) => ({
         userId: entry.userId,
@@ -316,8 +340,32 @@ export async function logAuditEventsBatch(
         description: entry.description,
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
+        timestamp,
+        entryHash: null,
+        previousHash: null,
       })),
     });
+
+    // Backfill hashes for the batch entries (FIX A-2)
+    // Collect unique org IDs from the batch
+    const orgIds = [
+      ...new Set(entries.map((e) => e.organizationId).filter(Boolean)),
+    ] as string[];
+
+    if (orgIds.length > 0) {
+      try {
+        const { backfillUnhashedEntries } = await import("./audit-hash.server");
+        for (const orgId of orgIds) {
+          await backfillUnhashedEntries(orgId);
+        }
+      } catch (backfillError) {
+        // Log but don't fail — entries exist, just unhashed
+        logger.error(
+          "[AUDIT] Batch hash backfill failed — entries are unhashed",
+          backfillError,
+        );
+      }
+    }
   } catch (error) {
     logger.error("Failed to log audit events batch", error);
   }
