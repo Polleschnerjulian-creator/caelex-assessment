@@ -5,6 +5,11 @@ import {
   evaluateWorkflowTransitions,
   getWorkflowSummary,
 } from "@/lib/services";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 /**
@@ -27,6 +32,14 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;
@@ -93,6 +106,14 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;
