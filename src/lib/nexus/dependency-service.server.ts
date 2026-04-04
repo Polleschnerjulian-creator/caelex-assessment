@@ -18,6 +18,7 @@ import type { ImpactAnalysisResult, DependencySuggestion } from "./types";
 async function hasCircularPath(
   startId: string,
   endId: string,
+  organizationId: string,
 ): Promise<boolean> {
   const visited = new Set<string>();
   const queue: string[] = [startId];
@@ -28,9 +29,12 @@ async function hasCircularPath(
     if (visited.has(current)) continue;
     visited.add(current);
 
-    // Get all assets that `current` depends on (current is source → targets are next)
+    // Get all assets that `current` depends on, scoped to org
     const deps = await prisma.assetDependency.findMany({
-      where: { sourceAssetId: current },
+      where: {
+        sourceAssetId: current,
+        sourceAsset: { organizationId },
+      },
       select: { targetAssetId: true },
     });
 
@@ -72,7 +76,11 @@ export async function addDependency(
   }
 
   // Circularity check: if target can reach source, adding source→target would create a cycle
-  const wouldCreateCycle = await hasCircularPath(targetAssetId, sourceAssetId);
+  const wouldCreateCycle = await hasCircularPath(
+    targetAssetId,
+    sourceAssetId,
+    organizationId,
+  );
   if (wouldCreateCycle) {
     throw new Error("Circular dependency detected");
   }

@@ -101,6 +101,10 @@ export async function updateAsset(
     where: { id, organizationId },
   });
 
+  if (!previous) {
+    throw new Error("Asset not found or access denied");
+  }
+
   const updateData: Record<string, unknown> = {};
   if (input.name !== undefined) updateData.name = input.name;
   if (input.assetType !== undefined) {
@@ -140,6 +144,9 @@ export async function updateAsset(
     updateData.operatorEntityId = input.operatorEntityId;
   if (input.metadata !== undefined) updateData.metadata = input.metadata;
 
+  // Ensure organizationId cannot be changed via updateData
+  delete updateData.organizationId;
+
   const updated = await prisma.asset.update({
     where: { id },
     data: updateData,
@@ -169,6 +176,15 @@ export async function softDeleteAsset(
   organizationId: string,
   userId: string,
 ) {
+  // Verify asset belongs to the caller's org before deleting
+  const existing = await prisma.asset.findFirst({
+    where: { id, organizationId, isDeleted: false },
+  });
+
+  if (!existing) {
+    throw new Error("Asset not found or access denied");
+  }
+
   const asset = await prisma.asset.update({
     where: { id },
     data: {
@@ -327,7 +343,16 @@ function getComplianceScore(status: string): number | null {
  */
 export async function calculateAssetComplianceScore(
   assetId: string,
+  organizationId?: string,
 ): Promise<number> {
+  // If organizationId is provided, verify the asset belongs to that org
+  if (organizationId) {
+    const asset = await prisma.asset.findFirst({
+      where: { id: assetId, organizationId },
+    });
+    if (!asset) throw new Error("Asset not found or access denied");
+  }
+
   const requirements = await prisma.assetRequirement.findMany({
     where: { assetId },
   });
@@ -369,9 +394,10 @@ export async function calculateAssetComplianceScore(
  */
 export async function calculateAssetRiskScore(
   assetId: string,
+  organizationId?: string,
 ): Promise<number> {
   const asset = await prisma.asset.findFirst({
-    where: { id: assetId },
+    where: { id: assetId, ...(organizationId ? { organizationId } : {}) },
     include: {
       requirements: true,
       vulnerabilities: true,

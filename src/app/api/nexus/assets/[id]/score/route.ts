@@ -28,8 +28,8 @@ export async function GET(
 
     const { id } = await params;
     const [complianceScore, riskScore] = await Promise.all([
-      calculateAssetComplianceScore(id),
-      calculateAssetRiskScore(id),
+      calculateAssetComplianceScore(id, orgContext.organizationId),
+      calculateAssetRiskScore(id, orgContext.organizationId),
     ]);
 
     return NextResponse.json({ complianceScore, riskScore });
