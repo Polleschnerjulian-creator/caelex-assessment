@@ -40,6 +40,7 @@ import {
   FolderKanban,
   CheckSquare,
   GitBranch,
+  Layers,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -480,7 +481,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/us-regulatory": "us-regulatory",
   "/dashboard/modules/spectrum": "spectrum",
   "/dashboard/modules/cra": "cra",
-  "/dashboard/digital-twin": "digital-twin",
+  "/dashboard/nexus": "nexus",
   "/dashboard/evidence": "evidence",
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
@@ -796,6 +797,14 @@ export default function Sidebar({
                 {t("sidebar.dashboard")}
               </NavItem>
               <NavItem
+                href="/dashboard/nexus"
+                icon={<Layers size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Asset Register
+              </NavItem>
+              <NavItem
                 href="/dashboard/tracker"
                 icon={<ListChecks size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
@@ -1012,14 +1021,6 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Sentinel
-              </NavItem>
-              <NavItem
-                href="/dashboard/digital-twin"
-                icon={<LayoutGrid size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Digital Twin
               </NavItem>
               <NavItem
                 href="/dashboard/evidence"
