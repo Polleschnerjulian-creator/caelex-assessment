@@ -1105,6 +1105,15 @@ export default function NIS2ModulePage() {
             requirements from 2030.
           </p>
         </div>
+
+        <div className="flex justify-end">
+          <a
+            href="/legal-network"
+            className="inline-flex items-center gap-1.5 text-small text-[#9ca3af] hover:text-[#111827] transition-colors"
+          >
+            Rechtliche Beratung benötigt? Anwalt finden →
+          </a>
+        </div>
       </div>
     </FeatureGate>
   );

@@ -45,12 +45,14 @@ const navSections = {
     { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
     { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
     { label: "Space Insurance", href: "/solutions/space-insurance" },
+    { label: "Legal Network", href: "/legal-network" },
   ],
   quickLinks: [
     { label: "About", href: "/about" },
     { label: "Blog", href: "/blog" },
     { label: "Careers", href: "/careers" },
     { label: "Contact", href: "/contact" },
+    { label: "Legal Network", href: "/legal-network" },
   ],
 };
 

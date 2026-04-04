@@ -949,6 +949,18 @@ export default function CRAAssessmentDetailPage() {
             />
           )}
 
+        {/* Legal network link — near Notified Body workflow */}
+        {!assessment.isOutOfScope && (
+          <div className="flex justify-end">
+            <a
+              href="/legal-network"
+              className="inline-flex items-center gap-1.5 text-small text-[#9ca3af] hover:text-[#111827] transition-colors"
+            >
+              Rechtliche Beratung benötigt? Anwalt finden →
+            </a>
+          </div>
+        )}
+
         {/* Requirements Status Summary */}
         {totalReqs > 0 && (
           <div className="grid grid-cols-5 gap-3">

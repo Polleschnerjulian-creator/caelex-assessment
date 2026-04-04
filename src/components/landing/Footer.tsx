@@ -10,6 +10,7 @@ interface FooterProps {
 }
 
 const solutionLinks = [
+  { label: "Legal Network", href: "/legal-network" },
   { label: "Regulatory Compliance", href: "/solutions/regulatory-compliance" },
   {
     label: "Authorization & Licensing",
