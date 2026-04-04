@@ -43,11 +43,24 @@ interface ModuleBreakdown {
   score: number;
 }
 
+interface NexusModuleScore {
+  score: number;
+  total: number;
+  compliant: number;
+  partial: number;
+}
+
 interface CyberSuiteScore {
   unifiedScore: number;
   grade: "A" | "B" | "C" | "D" | "F";
   themes: ThemeScore[];
   moduleBreakdowns: ModuleBreakdown[];
+  moduleScores: {
+    enisa: ModuleBreakdown | null;
+    nis2: ModuleBreakdown | null;
+    cra: ModuleBreakdown | null;
+    nexus: NexusModuleScore | null;
+  };
   evidenceCoverage: {
     totalRequirements: number;
     withEvidence: number;
@@ -363,7 +376,9 @@ export default function CyberSuitePage() {
         )}
 
         {/* ── 3. Module Cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div
+          className={`grid grid-cols-1 gap-4 ${score.moduleScores?.nexus ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        >
           {score.moduleBreakdowns.map((mod, i) => {
             const meta = MODULE_META[mod.module];
             const compliantPct =
@@ -440,6 +455,69 @@ export default function CyberSuitePage() {
               </motion.div>
             );
           })}
+
+          {/* NEXUS Assets module card */}
+          {score.moduleScores?.nexus && (
+            <motion.div
+              {...fadeIn}
+              transition={{ ...fadeIn.transition, delay: 0.25 }}
+            >
+              <Link
+                href="/dashboard/nexus"
+                className="glass-elevated rounded-xl border border-emerald-500/30 p-5 block hover:bg-white/[0.02] transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="px-2.5 py-1 text-small font-semibold rounded-lg bg-emerald-500/15 text-emerald-400">
+                    NEXUS
+                  </span>
+                  <span className="text-display-sm font-bold text-white">
+                    {score.moduleScores.nexus.score}%
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-3">
+                  <div className="h-full flex">
+                    <div
+                      className="bg-emerald-500 transition-all"
+                      style={{
+                        width: `${score.moduleScores.nexus.total > 0 ? Math.round((score.moduleScores.nexus.compliant / score.moduleScores.nexus.total) * 100) : 0}%`,
+                      }}
+                    />
+                    <div
+                      className="bg-amber-500 transition-all"
+                      style={{
+                        width: `${score.moduleScores.nexus.total > 0 ? Math.round((score.moduleScores.nexus.partial / score.moduleScores.nexus.total) * 100) : 0}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-caption text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    {score.moduleScores.nexus.compliant} Compliant
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {score.moduleScores.nexus.partial} Partial
+                  </div>
+                  <div className="flex items-center gap-1.5 col-span-2">
+                    <span className="w-2 h-2 rounded-full bg-white/20" />
+                    {score.moduleScores.nexus.total} Assets tracked
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1 text-small font-medium text-slate-400 group-hover:text-emerald-400 transition-colors">
+                  Zum Modul
+                  <ArrowRight
+                    size={14}
+                    className="group-hover:translate-x-0.5 transition-transform"
+                  />
+                </div>
+              </Link>
+            </motion.div>
+          )}
         </div>
 
         {/* ── 4. Cross-Regulation Matrix ── */}

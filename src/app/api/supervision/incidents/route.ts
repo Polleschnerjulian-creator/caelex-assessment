@@ -391,6 +391,49 @@ export async function POST(req: Request) {
       logger.warn("Failed to create NIS2 phases for incident", err);
     }
 
+    // Auto-detect affected NEXUS assets for relevant incident categories
+    try {
+      if (
+        ["cyber_incident", "loss_of_contact", "spacecraft_anomaly"].includes(
+          incident.category,
+        )
+      ) {
+        // Find the organization for this user's supervision config
+        const orgMember = await prisma.organizationMember.findFirst({
+          where: { userId: session.user.id },
+          select: { organizationId: true },
+        });
+
+        if (orgMember?.organizationId) {
+          // Find critical NEXUS assets for this org
+          const criticalAssets = await prisma.asset.findMany({
+            where: {
+              organizationId: orgMember.organizationId,
+              criticality: { in: ["CRITICAL", "HIGH"] },
+              isDeleted: false,
+            },
+            select: { id: true, name: true, assetType: true },
+            take: 5,
+          });
+
+          if (criticalAssets.length > 0) {
+            await prisma.incidentAsset.createMany({
+              data: criticalAssets.map((asset) => ({
+                incidentId: incident.id,
+                nexusAssetId: asset.id,
+                assetName: asset.name,
+                impactType: "POTENTIALLY_AFFECTED",
+                impactDescription: `Auto-detected: ${asset.assetType} asset flagged for impact assessment`,
+              })),
+              skipDuplicates: true,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      logger.warn("Failed to auto-detect affected NEXUS assets", err);
+    }
+
     // Send email alert (FIX E-01)
     try {
       const user = await prisma.user.findUnique({

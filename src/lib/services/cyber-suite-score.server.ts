@@ -33,11 +33,24 @@ export interface ModuleBreakdown {
   score: number; // 0-100
 }
 
+export interface NexusModuleScore {
+  score: number;
+  total: number;
+  compliant: number;
+  partial: number;
+}
+
 export interface CyberSuiteScore {
   unifiedScore: number; // 0-100
   grade: "A" | "B" | "C" | "D" | "F";
   themes: ThemeScore[];
   moduleBreakdowns: ModuleBreakdown[];
+  moduleScores: {
+    enisa: ModuleBreakdown | null;
+    nis2: ModuleBreakdown | null;
+    cra: ModuleBreakdown | null;
+    nexus: NexusModuleScore | null;
+  };
   evidenceCoverage: {
     totalRequirements: number;
     withEvidence: number;
@@ -147,14 +160,20 @@ export async function calculateCyberSuiteScore(
   userId: string,
   organizationId?: string,
 ): Promise<CyberSuiteScore> {
-  // 1. Fetch all requirement statuses from all 3 modules in parallel
-  const [enisaStatuses, nis2Statuses, craStatuses, evidenceRecords] =
-    await Promise.all([
-      fetchEnisaStatuses(userId, organizationId),
-      fetchNis2Statuses(userId, organizationId),
-      fetchCraStatuses(userId, organizationId),
-      fetchEvidenceCoverage(organizationId),
-    ]);
+  // 1. Fetch all requirement statuses from all 3 modules + NEXUS assets in parallel
+  const [
+    enisaStatuses,
+    nis2Statuses,
+    craStatuses,
+    evidenceRecords,
+    nexusAssets,
+  ] = await Promise.all([
+    fetchEnisaStatuses(userId, organizationId),
+    fetchNis2Statuses(userId, organizationId),
+    fetchCraStatuses(userId, organizationId),
+    fetchEvidenceCoverage(organizationId),
+    fetchNexusAssets(organizationId),
+  ]);
 
   // Build status maps: requirementId → status string
   const enisaMap = new Map(
@@ -216,7 +235,7 @@ export async function calculateCyberSuiteScore(
     { compliant: 0, partial: 0, total: 0 },
   );
 
-  const unifiedScore =
+  const themeScore =
     allThemeReqs.total > 0
       ? Math.round(
           ((allThemeReqs.compliant + 0.5 * allThemeReqs.partial) /
@@ -224,6 +243,20 @@ export async function calculateCyberSuiteScore(
             100,
         )
       : 0;
+
+  // 6b. Calculate NEXUS contribution
+  const nexusScores = nexusAssets.filter((a) => a.complianceScore !== null);
+  const avgNexusCompliance =
+    nexusScores.length > 0
+      ? nexusScores.reduce((sum, a) => sum + (a.complianceScore || 0), 0) /
+        nexusScores.length
+      : null;
+
+  // Blend NEXUS into unified score (15% weight if data exists, otherwise pure theme score)
+  const unifiedScore =
+    avgNexusCompliance !== null
+      ? Math.round(themeScore * 0.85 + avgNexusCompliance * 0.15)
+      : themeScore;
 
   // 7. Calculate per-module scores
   const moduleBreakdowns: ModuleBreakdown[] = [
@@ -269,6 +302,26 @@ export async function calculateCyberSuiteScore(
     grade: getGrade(unifiedScore),
     themes,
     moduleBreakdowns,
+    moduleScores: {
+      enisa: moduleBreakdowns.find((m) => m.module === "enisa") ?? null,
+      nis2: moduleBreakdowns.find((m) => m.module === "nis2") ?? null,
+      cra: moduleBreakdowns.find((m) => m.module === "cra") ?? null,
+      nexus:
+        avgNexusCompliance !== null
+          ? {
+              score: Math.round(avgNexusCompliance),
+              total: nexusAssets.length,
+              compliant: nexusAssets.filter(
+                (a) => (a.complianceScore || 0) >= 80,
+              ).length,
+              partial: nexusAssets.filter(
+                (a) =>
+                  (a.complianceScore || 0) >= 40 &&
+                  (a.complianceScore || 0) < 80,
+              ).length,
+            }
+          : null,
+    },
     evidenceCoverage,
     crossRegulationSynergies,
     lastCalculated: new Date(),
@@ -334,6 +387,32 @@ async function fetchCraStatuses(
   });
 
   return assessment?.requirements ?? [];
+}
+
+async function fetchNexusAssets(organizationId?: string): Promise<
+  Array<{
+    id: string;
+    complianceScore: number | null;
+    riskScore: number | null;
+    criticality: string;
+  }>
+> {
+  if (!organizationId) return [];
+
+  try {
+    return await prisma.asset.findMany({
+      where: { organizationId, isDeleted: false },
+      select: {
+        id: true,
+        complianceScore: true,
+        riskScore: true,
+        criticality: true,
+      },
+    });
+  } catch {
+    // Best-effort: if NEXUS tables are unavailable, return empty
+    return [];
+  }
 }
 
 async function fetchEvidenceCoverage(

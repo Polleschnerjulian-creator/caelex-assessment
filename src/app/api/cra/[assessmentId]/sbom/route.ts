@@ -257,6 +257,20 @@ export async function POST(
       userAgent,
     });
 
+    // NEXUS Integration: sync SBOM components into dependency graph
+    try {
+      const { syncSBOMToNexus } =
+        await import("@/lib/nexus/integrations/sbom-sync.server");
+      await syncSBOMToNexus(
+        assessmentId,
+        analysis.components,
+        assessment.organizationId || "",
+        userId,
+      );
+    } catch (err) {
+      logger.error("Failed to sync SBOM to NEXUS", err);
+    }
+
     return createSuccessResponse({
       analysis: {
         format: analysis.format,

@@ -212,6 +212,19 @@ export async function POST(request: Request, { params }: RouteParams) {
       session.user.id,
     );
 
+    // NEXUS Integration: auto-create standard assets for the new spacecraft
+    try {
+      const { autoCreateAssetsForSpacecraft } =
+        await import("@/lib/nexus/integrations/spacecraft-sync.server");
+      await autoCreateAssetsForSpacecraft(
+        spacecraft.id,
+        orgId,
+        session.user.id,
+      );
+    } catch (err) {
+      logger.error("Failed to auto-create NEXUS assets for spacecraft", err);
+    }
+
     return NextResponse.json({
       spacecraft,
       message: "Spacecraft created successfully",

@@ -355,6 +355,20 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // NEXUS Integration: link CRA assessment to matching NEXUS asset
+    try {
+      const { linkCRAAssessmentToNexus } =
+        await import("@/lib/nexus/integrations/cra-sync.server");
+      await linkCRAAssessmentToNexus(
+        assessment.id,
+        answers.spaceProductTypeId,
+        answers.productName,
+        orgCtx?.organizationId || "",
+      );
+    } catch (err) {
+      logger.error("Failed to link CRA assessment to NEXUS", err);
+    }
+
     // Decrypt sensitive fields in requirements for response
     const decryptedAssessment = assessmentWithRequirements
       ? {

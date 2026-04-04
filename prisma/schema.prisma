@@ -1590,6 +1590,9 @@ model IncidentAsset {
   nexusAssetId String?
   nexusAsset   Asset?  @relation(fields: [nexusAssetId], references: [id])
 
+  impactType        String?
+  impactDescription String? @db.Text
+
   @@index([incidentId])
   @@index([nexusAssetId])
 }

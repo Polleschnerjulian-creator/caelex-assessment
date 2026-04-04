@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
@@ -80,6 +81,8 @@ interface IncidentDetail {
     assetName: string;
     cosparId: string | null;
     noradId: string | null;
+    nexusAssetId: string | null;
+    impactType: string | null;
   }>;
 }
 
@@ -373,6 +376,8 @@ function IncidentsContent() {
               assetName: a.assetName ?? "",
               cosparId: a.cosparId ?? null,
               noradId: a.noradId ?? null,
+              nexusAssetId: (a.nexusAssetId as string) ?? null,
+              impactType: (a.impactType as string) ?? null,
             }),
           ),
         });
@@ -1126,6 +1131,49 @@ function IncidentsContent() {
                                     incident.category}{" "}
                                   | Severity: {incident.severity}
                                 </div>
+
+                                {/* NEXUS Impact Analysis */}
+                                {expandedData.affectedAssets.length > 0 && (
+                                  <div>
+                                    <h4 className="text-[10px] tracking-widest text-slate-500 uppercase mb-3">
+                                      NEXUS Impact Analysis
+                                    </h4>
+                                    <p className="text-[11px] text-slate-400 mb-2">
+                                      Betroffene Assets und abhängige Systeme
+                                    </p>
+                                    <div className="space-y-1.5">
+                                      {expandedData.affectedAssets.map(
+                                        (asset) => (
+                                          <div
+                                            key={asset.id}
+                                            className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 border border-white/30"
+                                          >
+                                            <span className="text-xs font-medium text-slate-700 dark:text-white">
+                                              {asset.assetName ||
+                                                asset.nexusAssetId ||
+                                                asset.id}
+                                            </span>
+                                            {asset.impactType && (
+                                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-medium">
+                                                {asset.impactType.replace(
+                                                  /_/g,
+                                                  " ",
+                                                )}
+                                              </span>
+                                            )}
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                    <Link
+                                      href="/dashboard/nexus"
+                                      className="inline-block mt-2 text-[11px] text-slate-400 hover:text-slate-200 transition-colors"
+                                    >
+                                      Vollständige Impact-Analyse in NEXUS
+                                      ansehen →
+                                    </Link>
+                                  </div>
+                                )}
 
                                 {/* Action buttons: PDF Export + NCA Portal Link */}
                                 <div className="flex items-center gap-2 pt-1">
