@@ -7,6 +7,11 @@ import {
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/authorization/[workflowId] - Get a specific workflow
@@ -18,6 +23,14 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;
@@ -61,6 +74,14 @@ export async function PUT(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;
@@ -216,6 +237,14 @@ export async function DELETE(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;

@@ -15,6 +15,7 @@ import {
   type TransitionResult,
 } from "@/lib/workflow";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * Document status that counts as "ready"
@@ -27,11 +28,13 @@ const READY_STATUSES = ["ready", "approved", "submitted"];
 const IN_PROGRESS_STATUSES = ["in_progress", "under_review"];
 
 /**
- * Build authorization context from workflow and documents
+ * Fetch the workflow + documents once and build context.
+ * Returns both the raw DB row and the derived AuthorizationContext so callers
+ * never need a second round-trip for the same data.
  */
-export async function buildAuthorizationContext(
+export async function buildAuthorizationContextWithWorkflow(
   workflowId: string,
-): Promise<AuthorizationContext | null> {
+) {
   const workflow = await prisma.authorizationWorkflow.findUnique({
     where: { id: workflowId },
     include: {
@@ -68,7 +71,7 @@ export async function buildAuthorizationContext(
     (doc) => doc.status === "rejected" || doc.status === "blocked",
   );
 
-  return {
+  const context: AuthorizationContext = {
     workflowId: workflow.id,
     userId: workflow.userId,
     operatorType: workflow.operatorType || "",
@@ -85,17 +88,32 @@ export async function buildAuthorizationContext(
     submittedAt: workflow.submittedAt ?? undefined,
     pathway: workflow.pathway,
   };
+
+  return { context, workflow };
 }
 
 /**
- * Evaluate and execute auto-transitions for a workflow
+ * Build authorization context from workflow and documents.
+ * Convenience wrapper — use buildAuthorizationContextWithWorkflow when you
+ * also need the raw workflow row.
+ */
+export async function buildAuthorizationContext(
+  workflowId: string,
+): Promise<AuthorizationContext | null> {
+  const result = await buildAuthorizationContextWithWorkflow(workflowId);
+  return result?.context ?? null;
+}
+
+/**
+ * Evaluate and execute auto-transitions for a workflow.
+ * Uses a single DB fetch via buildAuthorizationContextWithWorkflow.
  */
 export async function evaluateWorkflowTransitions(
   workflowId: string,
 ): Promise<EvaluationResult & { context: AuthorizationContext }> {
-  const context = await buildAuthorizationContext(workflowId);
+  const data = await buildAuthorizationContextWithWorkflow(workflowId);
 
-  if (!context) {
+  if (!data) {
     return {
       transitioned: false,
       transitions: [],
@@ -105,19 +123,7 @@ export async function evaluateWorkflowTransitions(
     };
   }
 
-  const workflow = await prisma.authorizationWorkflow.findUnique({
-    where: { id: workflowId },
-  });
-
-  if (!workflow) {
-    return {
-      transitioned: false,
-      transitions: [],
-      finalState: "unknown",
-      errors: ["Workflow not found"],
-      context,
-    };
-  }
+  const { context, workflow } = data;
 
   const engine = createWorkflowEngine(authorizationWorkflowDefinition);
   const result = await engine.evaluateTransitions(workflow.status, context);
@@ -167,27 +173,20 @@ export async function evaluateWorkflowTransitions(
 }
 
 /**
- * Get available manual transitions for a workflow
+ * Get available manual transitions for a workflow.
+ * Uses a single DB fetch via buildAuthorizationContextWithWorkflow.
  */
 export async function getAvailableTransitions(
   workflowId: string,
 ): Promise<AvailableTransition[]> {
-  const context = await buildAuthorizationContext(workflowId);
+  const data = await buildAuthorizationContextWithWorkflow(workflowId);
 
-  if (!context) {
-    return [];
-  }
-
-  const workflow = await prisma.authorizationWorkflow.findUnique({
-    where: { id: workflowId },
-  });
-
-  if (!workflow) {
+  if (!data) {
     return [];
   }
 
   const engine = createWorkflowEngine(authorizationWorkflowDefinition);
-  return engine.getAvailableTransitions(workflow.status, context);
+  return engine.getAvailableTransitions(data.workflow.status, data.context);
 }
 
 /**
@@ -199,9 +198,9 @@ export async function executeManualTransition(
   userId: string,
   additionalData?: Record<string, unknown>,
 ): Promise<TransitionResult & { context: AuthorizationContext }> {
-  const context = await buildAuthorizationContext(workflowId);
+  const data = await buildAuthorizationContextWithWorkflow(workflowId);
 
-  if (!context) {
+  if (!data) {
     return {
       success: false,
       previousState: "unknown",
@@ -212,6 +211,8 @@ export async function executeManualTransition(
       context: {} as AuthorizationContext,
     };
   }
+
+  const { context, workflow } = data;
 
   // Verify user owns this workflow
   if (context.userId !== userId) {
@@ -226,21 +227,7 @@ export async function executeManualTransition(
     };
   }
 
-  const workflow = await prisma.authorizationWorkflow.findUnique({
-    where: { id: workflowId },
-  });
-
-  if (!workflow) {
-    return {
-      success: false,
-      previousState: "unknown",
-      currentState: "unknown",
-      transitionEvent: event,
-      error: "Workflow not found",
-      timestamp: new Date(),
-      context,
-    };
-  }
+  const currentVersion = workflow.version;
 
   const engine = createWorkflowEngine(authorizationWorkflowDefinition);
   const result = await engine.executeTransition(
@@ -249,10 +236,11 @@ export async function executeManualTransition(
     context,
   );
 
-  // If successful, update the database
+  // If successful, update the database with optimistic locking
   if (result.success) {
     const updateData: Record<string, unknown> = {
       status: result.currentState,
+      version: { increment: 1 },
     };
 
     // Set timestamps based on new state
@@ -269,10 +257,22 @@ export async function executeManualTransition(
       }
     }
 
-    await prisma.authorizationWorkflow.update({
-      where: { id: workflowId },
+    const updated = await prisma.authorizationWorkflow.updateMany({
+      where: { id: workflowId, version: currentVersion },
       data: updateData,
     });
+
+    if (updated.count === 0) {
+      return {
+        success: false,
+        previousState: workflow.status,
+        currentState: workflow.status,
+        transitionEvent: event,
+        error: "Conflict: workflow was modified by another request",
+        timestamp: new Date(),
+        context,
+      };
+    }
 
     // Log audit event
     await logAuditEvent({
@@ -300,7 +300,90 @@ export async function submitWorkflowToNCA(
   await evaluateWorkflowTransitions(workflowId);
 
   // Attempt the submit transition
-  return executeManualTransition(workflowId, "submit", userId);
+  const result = await executeManualTransition(workflowId, "submit", userId);
+
+  // If successfully transitioned to submitted, auto-create NCA submission
+  if (result.success && result.currentState === "submitted") {
+    try {
+      const workflow = await prisma.authorizationWorkflow.findUnique({
+        where: { id: workflowId },
+        select: {
+          id: true,
+          userId: true,
+          primaryNCA: true,
+          primaryNCAName: true,
+          operatorType: true,
+        },
+      });
+
+      if (workflow) {
+        // Map primaryNCA code to NCAAuthority enum value
+        // primaryNCA is stored as lowercase country code (e.g., "de")
+        // NCAAuthority enum uses format like "DE_BMWK"
+        const ncaCodeMap: Record<string, string> = {
+          de: "DE_BMWK",
+          fr: "FR_CNES",
+          it: "IT_ASI",
+          es: "ES_AEE",
+          nl: "NL_NSO",
+          be: "BE_BELSPO",
+          at: "AT_FFG",
+          pl: "PL_POLSA",
+          se: "SE_SNSA",
+          dk: "DK_DTU",
+          fi: "FI_BF",
+          pt: "PT_FCT",
+          ie: "IE_EI",
+          lu: "LU_LSA",
+          cz: "CZ_CSO",
+          ro: "RO_ROSA",
+          gr: "GR_HSA",
+        };
+
+        const ncaAuthority = ncaCodeMap[workflow.primaryNCA.toLowerCase()];
+        if (ncaAuthority) {
+          const ncaSubmission = await prisma.nCASubmission.create({
+            data: {
+              userId: workflow.userId,
+              ncaAuthority: ncaAuthority as never,
+              ncaAuthorityName: workflow.primaryNCAName,
+              submissionMethod: "PORTAL",
+              submittedAt: new Date(),
+              submittedBy: workflow.userId,
+              status: "SUBMITTED",
+              statusHistory: JSON.stringify([
+                {
+                  status: "SUBMITTED",
+                  timestamp: new Date().toISOString(),
+                  notes: `Auto-generated from Authorization Workflow ${workflow.id}`,
+                },
+              ]),
+              priority: "NORMAL",
+            },
+          });
+
+          // Store the link in the workflow notes since ncaSubmissionId field doesn't exist
+          await prisma.authorizationWorkflow.update({
+            where: { id: workflow.id },
+            data: {
+              notes: JSON.stringify({
+                ncaSubmissionId: ncaSubmission.id,
+                linkedAt: new Date().toISOString(),
+              }),
+            },
+          });
+
+          logger.info(
+            `[Auth→NCA] Created NCA submission ${ncaSubmission.id} for workflow ${workflow.id}`,
+          );
+        }
+      }
+    } catch (err) {
+      logger.warn("Failed to auto-create NCA submission", err);
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -337,19 +420,13 @@ export interface WorkflowSummary {
 export async function getWorkflowSummary(
   workflowId: string,
 ): Promise<WorkflowSummary | null> {
-  const context = await buildAuthorizationContext(workflowId);
+  const data = await buildAuthorizationContextWithWorkflow(workflowId);
 
-  if (!context) {
+  if (!data) {
     return null;
   }
 
-  const workflow = await prisma.authorizationWorkflow.findUnique({
-    where: { id: workflowId },
-  });
-
-  if (!workflow) {
-    return null;
-  }
+  const { context, workflow } = data;
 
   const engine = createWorkflowEngine(authorizationWorkflowDefinition);
   const stateDef = engine.getState(workflow.status);

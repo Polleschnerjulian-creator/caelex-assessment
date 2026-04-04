@@ -17,6 +17,7 @@
 import type { WorkflowDefinition, AuthorizationContext } from "../types";
 import { createTransition, createAutoTransition } from "../engine";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Authorization Workflow Definition
@@ -203,7 +204,49 @@ export const authorizationWorkflowDefinition: WorkflowDefinition<AuthorizationCo
         );
       },
       afterTransition: async (ctx) => {
-        // Could trigger notifications, audit logs, etc.
+        // Send notifications on approval or rejection
+        if (ctx.to === "approved" || ctx.to === "rejected") {
+          try {
+            const { createNotification } =
+              await import("@/lib/services/notification-service");
+
+            const workflow = await prisma.authorizationWorkflow.findUnique({
+              where: { id: ctx.workflowId },
+              select: {
+                userId: true,
+                operatorType: true,
+              },
+            });
+
+            if (workflow) {
+              await createNotification({
+                userId: workflow.userId,
+                type:
+                  ctx.to === "approved"
+                    ? "AUTHORIZATION_APPROVED"
+                    : "AUTHORIZATION_REJECTED",
+                title:
+                  ctx.to === "approved"
+                    ? "Authorization genehmigt"
+                    : "Authorization abgelehnt",
+                message:
+                  ctx.to === "approved"
+                    ? `Ihre Authorization f\u00fcr ${workflow.operatorType || "Operator"} wurde genehmigt.`
+                    : `Ihre Authorization f\u00fcr ${workflow.operatorType || "Operator"} wurde abgelehnt. Pr\u00fcfen Sie die Begr\u00fcndung.`,
+                actionUrl: "/dashboard/modules/authorization",
+                entityType: "authorization_workflow",
+                entityId: ctx.workflowId,
+                severity: ctx.to === "approved" ? "INFO" : "URGENT",
+              });
+            }
+          } catch (err) {
+            // Best effort -- don't fail the transition
+            logger.warn(
+              `[Authorization ${ctx.workflowId}] Failed to send notification`,
+              err,
+            );
+          }
+        }
       },
       onError: async (error, ctx) => {
         logger.error(`[Authorization ${ctx.workflowId}] Error:`, error.message);

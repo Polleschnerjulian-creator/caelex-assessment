@@ -14,14 +14,27 @@ import {
   createValidationError,
   ErrorCode,
 } from "@/lib/api-response";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/authorization - Get user's authorization workflow(s)
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
+    }
+
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const userId = session.user.id;
@@ -65,6 +78,14 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return createErrorResponse("Unauthorized", ErrorCode.UNAUTHORIZED, 401);
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const userId = session.user.id;

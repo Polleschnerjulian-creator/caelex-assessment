@@ -121,6 +121,9 @@ function AuthorizationPageContent() {
   const [formTargetDate, setFormTargetDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [showAllTimeline, setShowAllTimeline] = useState(false);
 
   // Computed NCA determination for form
   const [ncaDetermination, setNcaDetermination] =
@@ -173,7 +176,15 @@ function AuthorizationPageContent() {
   };
 
   const createWorkflow = async () => {
-    if (!formOperatorType || (!formIsThirdCountry && !formCountry)) return;
+    if (!formOperatorType) {
+      setFormError("Bitte wählen Sie einen Operator-Typ.");
+      return;
+    }
+    if (!formIsThirdCountry && !formCountry) {
+      setFormError("Bitte wählen Sie ein Niederlassungsland.");
+      return;
+    }
+    setFormError(null);
 
     setCreating(true);
     setCreateError(null);
@@ -224,11 +235,21 @@ function AuthorizationPageContent() {
     });
 
     try {
-      await fetch(`/api/authorization/${selectedWorkflow.id}/documents`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ documentId, status }),
-      });
+      const res = await fetch(
+        `/api/authorization/${selectedWorkflow.id}/documents`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ documentId, status }),
+        },
+      );
+      if (!res.ok) {
+        // Revert optimistic update
+        fetchData();
+        const errData = await res.json().catch(() => ({}));
+        console.error("Document update failed:", errData);
+        return;
+      }
     } catch (error) {
       console.error("Error updating document:", error);
       // Revert on error
@@ -315,8 +336,8 @@ function AuthorizationPageContent() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
-                    ? "bg-[var(--surface-sunken)] border border-[var(--border-default)][0.1]"
-                    : "hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
+                    ? "bg-[var(--surface-sunken)] border border-[var(--border-default)]"
+                    : "hover:bg-[var(--surface-sunken)]"
                 }`}
               >
                 <div
@@ -393,7 +414,7 @@ function AuthorizationPageContent() {
                     }}
                     className={`w-full bg-[var(--surface-sunken)] border rounded-xl p-5 text-left hover:bg-[var(--surface-sunken)] transition-all ${
                       selectedWorkflow?.id === workflow.id
-                        ? "border-[var(--border-default)][0.15]"
+                        ? "border-[var(--border-default)]"
                         : "border-[var(--border-default)]"
                     }`}
                   >
@@ -486,7 +507,7 @@ function AuthorizationPageContent() {
                       <select
                         value={formOperatorType}
                         onChange={(e) => setFormOperatorType(e.target.value)}
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         <option value="">Select operator type...</option>
                         <option value="SCO">Spacecraft Operator</option>
@@ -507,7 +528,7 @@ function AuthorizationPageContent() {
                           onClick={() => setFormIsThirdCountry(false)}
                           className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             !formIsThirdCountry
-                              ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border border-[var(--border-default)][0.15]"
+                              ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border border-[var(--border-default)]"
                               : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)]"
                           }`}
                         >
@@ -517,7 +538,7 @@ function AuthorizationPageContent() {
                           onClick={() => setFormIsThirdCountry(true)}
                           className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             formIsThirdCountry
-                              ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border border-[var(--border-default)][0.15]"
+                              ? "bg-[var(--surface-sunken)] text-[var(--text-primary)] border border-[var(--border-default)]"
                               : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)]"
                           }`}
                         >
@@ -535,7 +556,7 @@ function AuthorizationPageContent() {
                         <select
                           value={formCountry}
                           onChange={(e) => setFormCountry(e.target.value)}
-                          className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                          className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                         >
                           <option value="">Select country...</option>
                           {ncas.map((nca) => (
@@ -547,30 +568,26 @@ function AuthorizationPageContent() {
                       </div>
                     )}
 
-                    {/* Launch Country (for launch operators) */}
-                    {(formOperatorType === "LO" ||
-                      formOperatorType === "LSO") &&
-                      !formIsThirdCountry && (
-                        <div>
-                          <label className="block text-small text-[var(--text-secondary)] mb-2">
-                            Launch Country (if different)
-                          </label>
-                          <select
-                            value={formLaunchCountry}
-                            onChange={(e) =>
-                              setFormLaunchCountry(e.target.value)
-                            }
-                            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
-                          >
-                            <option value="">Same as establishment</option>
-                            {ncas.map((nca) => (
-                              <option key={nca.id} value={nca.countryCode}>
-                                {nca.country}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
+                    {/* Launch Country (for launch operators only) */}
+                    {formOperatorType === "LO" && !formIsThirdCountry && (
+                      <div>
+                        <label className="block text-small text-[var(--text-secondary)] mb-2">
+                          Launch Country (if different)
+                        </label>
+                        <select
+                          value={formLaunchCountry}
+                          onChange={(e) => setFormLaunchCountry(e.target.value)}
+                          className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]"
+                        >
+                          <option value="">Same as establishment</option>
+                          {ncas.map((nca) => (
+                            <option key={nca.id} value={nca.countryCode}>
+                              {nca.country}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     {/* Target Date */}
                     <div>
@@ -581,10 +598,13 @@ function AuthorizationPageContent() {
                         type="date"
                         value={formTargetDate}
                         onChange={(e) => setFormTargetDate(e.target.value)}
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       />
                     </div>
                   </div>
+                  {formError && (
+                    <p className="text-small text-red-500 mt-2">{formError}</p>
+                  )}
                 </div>
 
                 {/* NCA Result */}
@@ -617,21 +637,19 @@ function AuthorizationPageContent() {
                             Requirements
                           </p>
                           <ul className="space-y-1.5">
-                            {ncaDetermination.requirements
-                              .slice(0, 5)
-                              .map((req, i) => (
-                                <li
-                                  key={i}
-                                  className="flex items-start gap-2 text-small text-[var(--text-secondary)]"
-                                >
-                                  <ChevronRight
-                                    size={12}
-                                    className="mt-0.5 text-[var(--text-secondary)]"
-                                    aria-hidden="true"
-                                  />
-                                  {req}
-                                </li>
-                              ))}
+                            {ncaDetermination.requirements.map((req, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-2 text-small text-[var(--text-secondary)]"
+                              >
+                                <ChevronRight
+                                  size={12}
+                                  className="mt-0.5 text-[var(--text-secondary)]"
+                                  aria-hidden="true"
+                                />
+                                {req}
+                              </li>
+                            ))}
                           </ul>
                         </div>
 
@@ -822,7 +840,7 @@ function AuthorizationPageContent() {
                     return (
                       <div
                         key={doc.id}
-                        className="bg-[var(--surface-raised)][0.015] border border-[var(--border-default)] rounded-xl p-5 hover:border-[var(--border-default)]:border-[var(--border-default)] transition-all"
+                        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5 hover:border-[var(--border-default)] transition-all"
                       >
                         <div className="flex items-start gap-4">
                           <div
@@ -905,7 +923,8 @@ function AuthorizationPageContent() {
 
                             {/* ASTRA AI Agent */}
                             <AstraButton
-                              articleId={doc.id}
+                              articleId={doc.documentType}
+                              context={`Authorization document: ${doc.name}`}
                               articleRef={doc.articleRef || doc.documentType}
                               title={doc.name}
                               severity={doc.required ? "critical" : "major"}
@@ -917,6 +936,21 @@ function AuthorizationPageContent() {
                     );
                   })}
                 </div>
+
+                {/* Submit CTA when all documents are ready */}
+                {progress.percent === 100 && (
+                  <div className="mt-6 p-4 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]">
+                    <p className="text-body font-medium text-[var(--text-primary)]">
+                      Alle Dokumente sind bereit.
+                    </p>
+                    <button
+                      onClick={() => setActiveStep(3)}
+                      className="mt-2 px-4 py-2 rounded-lg bg-[var(--text-primary)] text-white dark:text-black text-body font-medium"
+                    >
+                      Zur Einreichung →
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </motion.div>
@@ -932,7 +966,7 @@ function AuthorizationPageContent() {
             className="space-y-6"
           >
             {/* Countdown Card */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100[0.03][0.01] border border-[var(--border-default)] rounded-xl p-6">
+            <div className="bg-gradient-to-br from-slate-50/5 to-slate-100/5 border border-[var(--border-default)] rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-caption uppercase tracking-wider text-[var(--text-secondary)] mb-1">
@@ -1003,10 +1037,10 @@ function AuthorizationPageContent() {
                       <div
                         className={`absolute left-2.5 w-3 h-3 rounded-full ${
                           milestone.status === "current"
-                            ? "bg-[var(--accent-success-soft)]0"
+                            ? "bg-[var(--accent-success-soft)]"
                             : milestone.status === "completed"
                               ? "bg-[var(--accent-success)]"
-                              : "bg-[var(--surface-sunken)][0.1]"
+                              : "bg-[var(--surface-sunken)]"
                         }`}
                       />
                       <div>
@@ -1036,26 +1070,45 @@ function AuthorizationPageContent() {
                   Set individual deadlines for each document to track your
                   progress.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {selectedWorkflow.documents
-                    .filter((d) => d.required)
-                    .slice(0, 4)
-                    .map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center justify-between p-3 bg-[var(--surface-sunken)] rounded-lg"
-                      >
-                        <span className="text-small text-[var(--text-secondary)] truncate">
-                          {doc.name}
-                        </span>
-                        <span className="text-caption text-[var(--text-secondary)]">
-                          {doc.dueDate
-                            ? new Date(doc.dueDate).toLocaleDateString()
-                            : "No deadline set"}
-                        </span>
+                {(() => {
+                  const requiredDocs = selectedWorkflow.documents.filter(
+                    (d) => d.required,
+                  );
+                  const visibleDocs = showAllTimeline
+                    ? requiredDocs
+                    : requiredDocs.slice(0, 4);
+                  return (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {visibleDocs.map((doc) => (
+                          <div
+                            key={doc.id}
+                            className="flex items-center justify-between p-3 bg-[var(--surface-sunken)] rounded-lg"
+                          >
+                            <span className="text-small text-[var(--text-secondary)] truncate">
+                              {doc.name}
+                            </span>
+                            <span className="text-caption text-[var(--text-secondary)]">
+                              {doc.dueDate
+                                ? new Date(doc.dueDate).toLocaleDateString()
+                                : "No deadline set"}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                </div>
+                      {requiredDocs.length > 4 && (
+                        <button
+                          onClick={() => setShowAllTimeline(!showAllTimeline)}
+                          className="mt-3 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] transition-colors"
+                        >
+                          {showAllTimeline
+                            ? "Weniger anzeigen"
+                            : `Alle ${requiredDocs.length} anzeigen`}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </motion.div>
@@ -1150,8 +1203,8 @@ function AuthorizationPageContent() {
                                   isCompleted
                                     ? "bg-[var(--accent-success)]"
                                     : isCurrent
-                                      ? "bg-[var(--accent-success-soft)]0"
-                                      : "bg-[var(--surface-sunken)][0.1]"
+                                      ? "bg-[var(--accent-success-soft)]"
+                                      : "bg-[var(--surface-sunken)]"
                                 }`}
                               />
                             )}
@@ -1215,17 +1268,34 @@ function AuthorizationPageContent() {
                     progress.percent === 100 && (
                       <button
                         onClick={async () => {
-                          await fetch(
-                            `/api/authorization/${selectedWorkflow.id}`,
+                          setSubmitError(null);
+                          const res = await fetch(
+                            `/api/authorization/${selectedWorkflow.id}/submit`,
                             {
-                              method: "PUT",
+                              method: "POST",
                               headers: {
                                 "Content-Type": "application/json",
                                 ...csrfHeaders(),
                               },
-                              body: JSON.stringify({ status: "submitted" }),
                             },
                           );
+                          if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            const blockers = errData.blockers as
+                              | { message: string }[]
+                              | undefined;
+                            if (blockers && blockers.length > 0) {
+                              setSubmitError(
+                                blockers.map((b) => b.message).join("; "),
+                              );
+                            } else {
+                              setSubmitError(
+                                errData.error ||
+                                  `Submission failed (${res.status})`,
+                              );
+                            }
+                            return;
+                          }
                           fetchData();
                         }}
                         className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-5 py-2.5 rounded-lg font-medium text-body hover:bg-[var(--text-primary)] transition-all"
@@ -1234,6 +1304,12 @@ function AuthorizationPageContent() {
                         Mark as Submitted
                       </button>
                     )}
+                  {submitError && (
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
+                      <AlertTriangle size={14} className="flex-shrink-0" />
+                      {submitError}
+                    </div>
+                  )}
                 </div>
               </>
             )}

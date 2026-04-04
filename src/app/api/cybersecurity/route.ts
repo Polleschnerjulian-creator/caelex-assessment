@@ -239,6 +239,19 @@ export async function POST(request: Request) {
       });
     }
 
+    // Sync to authorization document status (best-effort)
+    try {
+      const { syncAssessmentToAuthorizationDocs } =
+        await import("@/lib/services/authorization-document-sync.server");
+      await syncAssessmentToAuthorizationDocs(
+        orgCtx?.organizationId || null,
+        userId,
+        "cybersecurity",
+      );
+    } catch (syncErr) {
+      logger.warn("Failed to sync to authorization docs", syncErr);
+    }
+
     return NextResponse.json({
       assessment: assessmentWithRequirements,
       isSimplifiedRegime: isSimplified,

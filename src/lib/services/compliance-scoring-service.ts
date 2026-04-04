@@ -344,17 +344,18 @@ function calculateAuthorizationScore(data: {
 
   if (data.workflows.length > 0) {
     const latestWorkflow = data.workflows[0];
-    if (latestWorkflow.status === "approved") {
-      authFactor.earnedPoints = 40;
-    } else if (latestWorkflow.status === "submitted") {
-      authFactor.earnedPoints = 30;
-    } else if (latestWorkflow.status === "ready_for_submission") {
-      authFactor.earnedPoints = 25;
-    } else if (latestWorkflow.status === "in_progress") {
-      authFactor.earnedPoints = 15;
-    } else {
-      authFactor.earnedPoints = 5;
-    }
+    // Granular scoring based on workflow progress through states
+    const statusScores: Record<string, number> = {
+      not_started: 0,
+      in_progress: 12,
+      ready_for_submission: 24,
+      submitted: 30,
+      under_review: 32,
+      approved: 40,
+      rejected: 8,
+      withdrawn: 4,
+    };
+    authFactor.earnedPoints = statusScores[latestWorkflow.status] ?? 5;
   }
 
   factors.push(authFactor);

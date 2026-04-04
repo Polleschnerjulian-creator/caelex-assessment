@@ -8,6 +8,11 @@ import {
   generateAuditDescription,
 } from "@/lib/audit";
 import { evaluateWorkflowTransitions } from "@/lib/services";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // Authorization document status transition rules
@@ -29,6 +34,14 @@ export async function PUT(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;
@@ -206,6 +219,14 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return createRateLimitResponse(rl);
     }
 
     const { workflowId } = await params;

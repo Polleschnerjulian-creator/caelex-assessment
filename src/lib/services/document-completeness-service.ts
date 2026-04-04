@@ -456,13 +456,17 @@ export async function isWorkflowReadyForSubmission(
 }
 
 /**
- * Get prioritized action items for a workflow
+ * Get prioritized action items for a workflow.
+ * Accepts an optional precomputed report to avoid redundant DB queries
+ * when the caller already has a fresh CompletenessReport.
  */
 export async function getPrioritizedActions(
   workflowId: string,
   limit = 5,
+  precomputedReport?: CompletenessReport,
 ): Promise<DocumentGap[]> {
-  const report = await calculateCompletenessReport(workflowId);
+  const report =
+    precomputedReport ?? (await calculateCompletenessReport(workflowId));
 
   if (!report) {
     return [];

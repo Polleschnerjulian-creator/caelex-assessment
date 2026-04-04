@@ -195,6 +195,19 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // Sync to authorization document status (best-effort)
+    try {
+      const { syncAssessmentToAuthorizationDocs } =
+        await import("@/lib/services/authorization-document-sync.server");
+      await syncAssessmentToAuthorizationDocs(
+        orgCtx?.organizationId || null,
+        userId,
+        "debris",
+      );
+    } catch (syncErr) {
+      logger.warn("Failed to sync to authorization docs", syncErr);
+    }
+
     return NextResponse.json({
       assessment: assessmentWithRequirements,
       applicableRequirements: applicableRequirements.map((r) => r.id),

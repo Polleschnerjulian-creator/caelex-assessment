@@ -9,6 +9,7 @@ interface AstraButtonProps {
   title: string;
   severity: string;
   regulationType: string;
+  context?: string;
 }
 
 export default function AstraButton({
@@ -17,6 +18,7 @@ export default function AstraButton({
   title,
   severity,
   regulationType,
+  context,
 }: AstraButtonProps) {
   const params = new URLSearchParams({
     article: articleId,
@@ -25,6 +27,9 @@ export default function AstraButton({
     severity,
     regulation: regulationType,
   });
+  if (context) {
+    params.set("context", context);
+  }
 
   return (
     <Link
