@@ -174,18 +174,12 @@ export default function GetStartedPage() {
         : null;
 
     return (
-      <div className="min-h-screen bg-[#0A0F1E] relative overflow-hidden">
+      <div className="min-h-screen bg-[#F7F8FA] relative overflow-hidden">
         <BreadcrumbJsonLd
           items={[
             { name: "Home", url: "https://caelex.eu" },
             { name: "Get Started", url: "https://caelex.eu/get-started" },
           ]}
-        />
-
-        {/* Subtle gradient glow */}
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.04] rounded-full blur-[120px] pointer-events-none"
-          aria-hidden="true"
         />
 
         <section className="relative z-10 pt-44 pb-20 px-6 md:px-12">
@@ -194,27 +188,27 @@ export default function GetStartedPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl p-8 md:p-12 text-center"
+              className="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm p-8 md:p-12 text-center"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-8">
-                  <Check size={28} className="text-emerald-400" />
+                <div className="w-16 h-16 rounded-full bg-[#111827] flex items-center justify-center mx-auto mb-8">
+                  <Check size={28} className="text-white" />
                 </div>
               </motion.div>
 
-              <h2 className="text-display-sm font-semibold text-white mb-3">
+              <h2 className="text-display-sm font-semibold text-[#111827] mb-3">
                 Termin angefragt
               </h2>
-              <p className="text-body-lg text-slate-400 mb-2">
+              <p className="text-body-lg text-[#6b7280] mb-2">
                 Wir melden uns innerhalb von 24 Stunden bei Ihnen.
               </p>
 
               {slotLabel && (
-                <p className="text-body text-slate-500 mb-10">
+                <p className="text-body text-[#9ca3af] mb-10">
                   Gewählter Termin: {slotLabel}
                 </p>
               )}
@@ -223,7 +217,7 @@ export default function GetStartedPage() {
 
               <Link
                 href="/cra/classify"
-                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-6 py-3 text-body-lg font-medium transition-colors duration-200"
+                className="inline-flex items-center gap-2 bg-[#111827] hover:bg-black text-white rounded-xl px-6 py-3 text-body-lg font-medium transition-colors duration-200"
               >
                 CRA Classification ausprobieren
                 <ArrowRight size={16} />
@@ -238,18 +232,12 @@ export default function GetStartedPage() {
   // ─── Main Form ───
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] relative overflow-hidden">
+    <div className="min-h-screen bg-[#F7F8FA] relative overflow-hidden">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "https://caelex.eu" },
           { name: "Get Started", url: "https://caelex.eu/get-started" },
         ]}
-      />
-
-      {/* Subtle gradient glow */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.04] rounded-full blur-[120px] pointer-events-none"
-        aria-hidden="true"
       />
 
       {/* Content */}
@@ -266,23 +254,23 @@ export default function GetStartedPage() {
               >
                 {/* Headline */}
                 <div>
-                  <p className="text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-4">
+                  <p className="text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-4">
                     Get Started
                   </p>
-                  <h1 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold text-white leading-[1.15] mb-4">
+                  <h1 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold text-[#111827] leading-[1.15] mb-4">
                     Get Started with Caelex
                   </h1>
-                  <p className="text-body-lg text-slate-400 leading-relaxed max-w-[540px]">
+                  <p className="text-body-lg text-[#6b7280] leading-relaxed max-w-[540px]">
                     Schedule a free 15-minute consultation. We&apos;ll show you
                     how Caelex maps to your specific compliance needs.
                   </p>
                 </div>
 
                 {/* Calendar Card */}
-                <div className="bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                <div className="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm p-6 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <Calendar size={18} className="text-emerald-400" />
-                    <h2 className="text-title font-semibold text-white">
+                    <Calendar size={18} className="text-[#111827]" />
+                    <h2 className="text-title font-semibold text-[#111827]">
                       Choose a time slot
                     </h2>
                   </div>
@@ -294,12 +282,12 @@ export default function GetStartedPage() {
                       {businessDays.map((day, dayIdx) => (
                         <div
                           key={dayIdx}
-                          className="text-center pb-3 border-b border-white/[0.06]"
+                          className="text-center pb-3 border-b border-[#e5e7eb]"
                         >
-                          <p className="text-caption font-semibold text-slate-400 uppercase tracking-wider">
+                          <p className="text-caption font-semibold text-[#9ca3af] uppercase tracking-wider">
                             {formatDayHeader(day).split(" ")[0]}
                           </p>
-                          <p className="text-body-lg font-medium text-slate-300 mt-0.5">
+                          <p className="text-body-lg font-medium text-[#111827] mt-0.5">
                             {formatDayHeader(day).split(" ").slice(1).join(" ")}
                           </p>
                         </div>
@@ -327,19 +315,17 @@ export default function GetStartedPage() {
                                 flex items-center justify-center gap-1.5 py-3 rounded-xl text-body font-medium transition-all duration-200
                                 ${
                                   past
-                                    ? "opacity-30 cursor-not-allowed bg-white/[0.02] border border-white/[0.04] text-slate-600"
+                                    ? "opacity-30 cursor-not-allowed bg-[#f9fafb] border border-[#e5e7eb] text-[#9ca3af]"
                                     : isSelected
-                                      ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.1)]"
-                                      : "bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:border-emerald-500/30 hover:text-slate-200 cursor-pointer"
+                                      ? "bg-[#111827] border border-[#111827] text-white"
+                                      : "bg-[#f9fafb] border border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] cursor-pointer"
                                 }
                               `}
                             >
                               <Clock
                                 size={12}
                                 className={
-                                  isSelected
-                                    ? "text-emerald-400"
-                                    : "text-slate-500"
+                                  isSelected ? "text-white" : "text-[#9ca3af]"
                                 }
                               />
                               {String(hour).padStart(2, "0")}:00
@@ -357,7 +343,7 @@ export default function GetStartedPage() {
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
-                        className="text-body text-emerald-400/80 mt-4 flex items-center gap-2"
+                        className="text-body text-[#111827] mt-4 flex items-center gap-2"
                       >
                         <Check size={14} />
                         {formatSlotForDisplay(
@@ -370,7 +356,7 @@ export default function GetStartedPage() {
                 </div>
 
                 {/* Trust signals */}
-                <div className="flex items-center gap-3 text-body text-slate-500">
+                <div className="flex items-center gap-3 text-body text-[#9ca3af]">
                   <span>15 min</span>
                   <span aria-hidden="true">&middot;</span>
                   <span>Free</span>
@@ -387,12 +373,12 @@ export default function GetStartedPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.15 }}
               >
-                <div className="bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl p-8 md:p-10">
+                <div className="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm p-8 md:p-10">
                   <div className="mb-8">
-                    <h2 className="text-heading font-semibold text-white mb-1">
+                    <h2 className="text-heading font-semibold text-[#111827] mb-1">
                       Book your call
                     </h2>
-                    <p className="text-body-lg text-slate-500">
+                    <p className="text-body-lg text-[#9ca3af]">
                       Free &middot; 15 minutes
                     </p>
                   </div>
@@ -402,7 +388,7 @@ export default function GetStartedPage() {
                     <div>
                       <label
                         htmlFor="gs-name"
-                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2.5"
+                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-2.5"
                       >
                         Full Name *
                       </label>
@@ -414,7 +400,7 @@ export default function GetStartedPage() {
                         placeholder="Your full name"
                         required
                         autoComplete="name"
-                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-5 py-3.5 text-body-lg text-white placeholder:text-white/25 focus:border-emerald-500/50 focus:outline-none transition-colors duration-200"
+                        className="w-full bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-5 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9ca3af] focus:border-[#111827] focus:outline-none transition-colors duration-200"
                       />
                     </div>
 
@@ -422,7 +408,7 @@ export default function GetStartedPage() {
                     <div>
                       <label
                         htmlFor="gs-email"
-                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2.5"
+                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-2.5"
                       >
                         Work Email *
                       </label>
@@ -434,7 +420,7 @@ export default function GetStartedPage() {
                         placeholder="you@company.com"
                         required
                         autoComplete="email"
-                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-5 py-3.5 text-body-lg text-white placeholder:text-white/25 focus:border-emerald-500/50 focus:outline-none transition-colors duration-200"
+                        className="w-full bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-5 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9ca3af] focus:border-[#111827] focus:outline-none transition-colors duration-200"
                       />
                     </div>
 
@@ -442,10 +428,10 @@ export default function GetStartedPage() {
                     <div>
                       <label
                         htmlFor="gs-company"
-                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2.5"
+                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-2.5"
                       >
                         Company{" "}
-                        <span className="normal-case tracking-normal font-normal text-slate-600">
+                        <span className="normal-case tracking-normal font-normal text-[#6b7280]">
                           (optional)
                         </span>
                       </label>
@@ -456,13 +442,13 @@ export default function GetStartedPage() {
                         onChange={(e) => setCompany(e.target.value)}
                         placeholder="Company name"
                         autoComplete="organization"
-                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-5 py-3.5 text-body-lg text-white placeholder:text-white/25 focus:border-emerald-500/50 focus:outline-none transition-colors duration-200"
+                        className="w-full bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-5 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9ca3af] focus:border-[#111827] focus:outline-none transition-colors duration-200"
                       />
                     </div>
 
                     {/* Interest chips */}
                     <div>
-                      <label className="block text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-3">
+                      <label className="block text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-3">
                         What interests you?
                       </label>
                       <div className="flex flex-wrap gap-2.5">
@@ -476,8 +462,8 @@ export default function GetStartedPage() {
                               onClick={() => toggleInterest(interest)}
                               className={`rounded-full px-4 py-2 text-body cursor-pointer transition-all duration-200 border ${
                                 isSelected
-                                  ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 font-medium"
-                                  : "bg-white/[0.06] border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-300"
+                                  ? "bg-[#111827] border-[#111827] text-white font-medium"
+                                  : "bg-[#f3f4f6] border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] hover:text-[#111827]"
                               }`}
                             >
                               {interest}
@@ -491,10 +477,10 @@ export default function GetStartedPage() {
                     <div>
                       <label
                         htmlFor="gs-message"
-                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2.5"
+                        className="block text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-2.5"
                       >
                         Message{" "}
-                        <span className="normal-case tracking-normal font-normal text-slate-600">
+                        <span className="normal-case tracking-normal font-normal text-[#6b7280]">
                           (optional)
                         </span>
                       </label>
@@ -504,7 +490,7 @@ export default function GetStartedPage() {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Tell us about your compliance needs..."
                         rows={3}
-                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-5 py-3.5 text-body-lg text-white placeholder:text-white/25 focus:border-emerald-500/50 focus:outline-none transition-colors duration-200 resize-none"
+                        className="w-full bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-5 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9ca3af] focus:border-[#111827] focus:outline-none transition-colors duration-200 resize-none"
                       />
                     </div>
 
@@ -515,7 +501,7 @@ export default function GetStartedPage() {
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          className="text-body text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-3.5"
+                          className="text-body text-red-600 bg-red-50 border border-red-200 rounded-xl px-5 py-3.5"
                           role="alert"
                         >
                           {error}
@@ -527,7 +513,7 @@ export default function GetStartedPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full flex items-center justify-center gap-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3 text-body-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2.5 bg-[#111827] hover:bg-black text-white rounded-xl py-3 text-body-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {submitting ? (
                         <>
@@ -543,11 +529,11 @@ export default function GetStartedPage() {
                     </button>
                   </form>
 
-                  <p className="text-body text-slate-500 text-center mt-6">
+                  <p className="text-body text-[#9ca3af] text-center mt-6">
                     Or email us directly at{" "}
                     <a
                       href="mailto:cs@caelex.eu"
-                      className="text-slate-400 hover:text-white transition-colors duration-200"
+                      className="text-[#6b7280] hover:text-[#111827] transition-colors duration-200"
                     >
                       cs@caelex.eu
                     </a>
