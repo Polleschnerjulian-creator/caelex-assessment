@@ -49,7 +49,16 @@ export async function PUT(
 
     const updateDocumentSchema = z.object({
       documentId: z.string().min(1),
-      status: z.string().optional(),
+      status: z
+        .enum([
+          "not_started",
+          "in_progress",
+          "ready",
+          "submitted",
+          "approved",
+          "rejected",
+        ])
+        .optional(),
       notes: z.string().optional(),
       dueDate: z.string().nullable().optional(),
     });
