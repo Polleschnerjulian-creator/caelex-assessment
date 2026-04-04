@@ -110,6 +110,9 @@ model User {
   unlockToken         String?   @unique
   unlockTokenExpires  DateTime?
 
+  // Legal Portal
+  legalAttorney LegalAttorney?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2665,6 +2668,9 @@ model Organization {
   hazardEntries       HazardEntry[]
   hazardReportVersions HazardReportVersion[]
 
+  // Legal Portal
+  legalEngagements LegalEngagement[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -5052,6 +5058,121 @@ model DataRoomAccessLog {
   createdAt DateTime @default(now())
 
   @@index([dataRoomId, createdAt])
+}
+
+// ─── LEGAL PORTAL ───
+
+model LegalFirm {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  country   String?
+  website   String?
+  barNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attorneys   LegalAttorney[]
+  engagements LegalEngagement[]
+
+  @@index([name])
+}
+
+model LegalAttorney {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  firmId    String
+  firm      LegalFirm @relation(fields: [firmId], references: [id])
+  title     String?
+  barNumber String?
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  engagements LegalEngagementAttorney[]
+  comments    LegalReviewComment[]
+
+  @@index([firmId])
+}
+
+model LegalEngagement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  firmId         String
+  firm           LegalFirm    @relation(fields: [firmId], references: [id])
+
+  engagementType String
+  title          String
+  description    String?
+  status         String       @default("pending")
+
+  scopedModules       String[]
+  scopedDataTypes     String[]
+  scopedAssessmentIds String[]
+  includeNIS2Overlap  Boolean  @default(false)
+
+  expiresAt      DateTime
+  allowExport    Boolean  @default(false)
+  ipWhitelist    String[]
+
+  invitedBy String
+  note      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  revokedAt DateTime?
+
+  attorneys  LegalEngagementAttorney[]
+  accessLogs LegalAccessLog[]
+  comments   LegalReviewComment[]
+
+  @@index([organizationId])
+  @@index([firmId])
+  @@index([status])
+}
+
+model LegalEngagementAttorney {
+  id           String   @id @default(cuid())
+  engagementId String
+  engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  attorneyId   String
+  attorney     LegalAttorney   @relation(fields: [attorneyId], references: [id])
+  acceptedAt   DateTime?
+
+  @@unique([engagementId, attorneyId])
+}
+
+model LegalAccessLog {
+  id           String   @id @default(cuid())
+  engagementId String
+  engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  attorneyId   String
+  action       String
+  resource     String
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([engagementId, createdAt])
+}
+
+model LegalReviewComment {
+  id           String   @id @default(cuid())
+  engagementId String
+  engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  attorneyId   String
+  attorney     LegalAttorney @relation(fields: [attorneyId], references: [id])
+
+  targetType  String
+  targetId    String?
+  commentType String
+  content     String  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([engagementId])
+  @@index([targetType, targetId])
 }
 
 // ============================================
