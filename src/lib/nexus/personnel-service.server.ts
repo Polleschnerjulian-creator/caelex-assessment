@@ -125,18 +125,42 @@ export async function updatePersonnel(
 }
 
 /**
- * Get all personnel for an asset.
+ * Get all personnel for an asset, enriched with linked User records.
+ *
+ * Best-effort enrichment: matches personnel by personName against User.name
+ * within the same organization. Returns `linkedUser: null` if no match found.
  */
 export async function getPersonnelForAsset(
   assetId: string,
   organizationId: string,
 ) {
-  return prisma.assetPersonnel.findMany({
+  const personnel = await prisma.assetPersonnel.findMany({
     where: {
       assetId,
       asset: { organizationId },
     },
   });
+
+  // Enrich with linked user records (best-effort match by name)
+  const enriched = await Promise.all(
+    personnel.map(async (p) => {
+      if (!p.personName) return { ...p, linkedUser: null };
+
+      const user = await prisma.user.findFirst({
+        where: {
+          name: p.personName,
+          organizationMemberships: {
+            some: { organizationId },
+          },
+        },
+        select: { id: true, name: true, image: true, email: true },
+      });
+
+      return { ...p, linkedUser: user || null };
+    }),
+  );
+
+  return enriched;
 }
 
 /**

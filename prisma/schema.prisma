@@ -6998,6 +6998,7 @@ model Asset {
   @@index([organizationId, complianceScore])
   @@index([spacecraftId])
   @@index([operatorEntityId])
+  @@index([organizationId, updatedAt])
   @@index([isDeleted])
 }
 
@@ -7043,6 +7044,8 @@ model AssetDependency {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Design: One edge per (source, target, type). Strength (HARD/REDUNDANT) is a property of the edge, not a separate edge.
+  // SPOF detection checks for HARD edges without a corresponding REDUNDANT alternative path.
   @@unique([sourceAssetId, targetAssetId, dependencyType])
   @@index([sourceAssetId])
   @@index([targetAssetId])
