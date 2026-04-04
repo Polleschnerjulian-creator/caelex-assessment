@@ -1168,6 +1168,14 @@ export default function Sidebar({
               >
                 {t("sidebar.complianceNetwork") || "Compliance Network"}
               </NavItem>
+              <NavItem
+                href="/dashboard/network/legal"
+                icon={<Scale size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Legal Engagements
+              </NavItem>
             </div>
           </div>
 
