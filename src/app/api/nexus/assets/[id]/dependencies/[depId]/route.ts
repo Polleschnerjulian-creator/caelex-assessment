@@ -4,6 +4,7 @@ import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { removeDependency } from "@/lib/nexus/dependency-service.server";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function DELETE(
   req: Request,
@@ -21,6 +22,14 @@ export async function DELETE(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id, depId } = await params;

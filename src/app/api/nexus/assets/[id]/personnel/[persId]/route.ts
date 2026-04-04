@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
 import { updatePersonnel } from "@/lib/nexus/personnel-service.server";
 import { UpdatePersonnelSchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function PATCH(
   req: Request,
@@ -24,6 +25,14 @@ export async function PATCH(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id, persId } = await params;
@@ -81,22 +90,40 @@ export async function DELETE(
       );
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { id, persId } = await params;
     const organizationId = orgContext.organizationId;
     const userId = session.user.id;
+
+    // Verify the personnel record belongs to an asset in the caller's org
+    const record = await prisma.assetPersonnel.findFirst({
+      where: {
+        id: persId,
+        asset: { id, organizationId },
+      },
+    });
+    if (!record) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     await prisma.assetPersonnel.delete({ where: { id: persId } });
 
     await logAuditEvent({
       userId,
-      action: "nexus_personnel_updated",
+      action: "nexus_personnel_deleted",
       entityType: "nexus_personnel",
       entityId: persId,
       description: "Deleted personnel",
       organizationId,
     });
 
-    void id;
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Error deleting personnel", error);

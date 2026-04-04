@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
 import { updateSupplier } from "@/lib/nexus/supplier-service.server";
 import { UpdateSupplierSchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function PATCH(
   req: Request,
@@ -24,6 +25,14 @@ export async function PATCH(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id, supId } = await params;
@@ -78,22 +87,40 @@ export async function DELETE(
       );
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { id, supId } = await params;
     const organizationId = orgContext.organizationId;
     const userId = session.user.id;
+
+    // Verify the supplier belongs to an asset in the caller's org
+    const record = await prisma.assetSupplier.findFirst({
+      where: {
+        id: supId,
+        asset: { id, organizationId },
+      },
+    });
+    if (!record) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     await prisma.assetSupplier.delete({ where: { id: supId } });
 
     await logAuditEvent({
       userId,
-      action: "nexus_supplier_updated",
+      action: "nexus_supplier_deleted",
       entityType: "nexus_supplier",
       entityId: supId,
       description: "Deleted supplier",
       organizationId,
     });
 
-    void id;
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Error deleting supplier", error);

@@ -260,7 +260,13 @@ export async function getAssetsByOrganization(
   }
 
   if (search) {
-    where.name = { contains: search, mode: "insensitive" };
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+      { externalId: { contains: search, mode: "insensitive" } },
+      { manufacturer: { contains: search, mode: "insensitive" } },
+      { location: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   if (category) {
@@ -396,6 +402,9 @@ export async function calculateAssetRiskScore(
   assetId: string,
   organizationId?: string,
 ): Promise<number> {
+  // Calculate fresh compliance score first to avoid stale data
+  const freshComplianceScore = await calculateAssetComplianceScore(assetId);
+
   const asset = await prisma.asset.findFirst({
     where: { id: assetId, ...(organizationId ? { organizationId } : {}) },
     include: {
@@ -411,9 +420,8 @@ export async function calculateAssetRiskScore(
     CRITICALITY_WEIGHTS[
       asset.criticality as keyof typeof CRITICALITY_WEIGHTS
     ] ?? 0.5;
-  const complianceScore = asset.complianceScore ?? 0;
 
-  const base = criticalityWeight * (100 - complianceScore);
+  const base = criticalityWeight * (100 - freshComplianceScore);
 
   // Count open vulnerabilities
   const openVulns = asset.vulnerabilities.filter(
@@ -462,9 +470,15 @@ export async function recalculateOrganizationScores(
     select: { id: true },
   });
 
-  for (const asset of assets) {
-    await calculateAssetComplianceScore(asset.id);
-    await calculateAssetRiskScore(asset.id);
+  const BATCH_SIZE = 10;
+  for (let i = 0; i < assets.length; i += BATCH_SIZE) {
+    const batch = assets.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (asset) => {
+        await calculateAssetComplianceScore(asset.id);
+        await calculateAssetRiskScore(asset.id);
+      }),
+    );
   }
 
   await logAuditEvent({

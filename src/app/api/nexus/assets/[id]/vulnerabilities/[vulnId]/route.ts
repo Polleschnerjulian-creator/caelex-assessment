@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
 import { updateVulnerability } from "@/lib/nexus/vulnerability-service.server";
 import { UpdateVulnerabilitySchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function PATCH(
   req: Request,
@@ -24,6 +25,14 @@ export async function PATCH(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id, vulnId } = await params;
@@ -44,7 +53,18 @@ export async function PATCH(
       organizationId,
       userId,
     );
-    void id;
+
+    // Recalculate risk score after vulnerability status change
+    if (parsed.data.status || parsed.data.severity) {
+      try {
+        const { calculateAssetRiskScore } =
+          await import("@/lib/nexus/asset-service.server");
+        await calculateAssetRiskScore(id);
+      } catch (err) {
+        logger.warn("Failed to recalculate risk score", err);
+      }
+    }
+
     return NextResponse.json({ vulnerability });
   } catch (error) {
     logger.error("Error updating vulnerability", error);
@@ -73,22 +93,40 @@ export async function DELETE(
       );
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { id, vulnId } = await params;
     const organizationId = orgContext.organizationId;
     const userId = session.user.id;
+
+    // Verify the vulnerability belongs to an asset in the caller's org
+    const record = await prisma.assetVulnerability.findFirst({
+      where: {
+        id: vulnId,
+        asset: { id, organizationId },
+      },
+    });
+    if (!record) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     await prisma.assetVulnerability.delete({ where: { id: vulnId } });
 
     await logAuditEvent({
       userId,
-      action: "nexus_vulnerability_updated",
+      action: "nexus_vulnerability_deleted",
       entityType: "nexus_vulnerability",
       entityId: vulnId,
       description: "Deleted vulnerability",
       organizationId,
     });
 
-    void id;
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Error deleting vulnerability", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, RefreshCw, Loader2, Filter } from "lucide-react";
 import { GlassStagger, glassItemVariants } from "@/components/ui/GlassMotion";
@@ -79,6 +79,7 @@ export default function NexusPage() {
   const [filters, setFilters] = useState<AssetFilters>(DEFAULT_FILTERS);
   const [showWizard, setShowWizard] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchOverview = useCallback(async () => {
     try {
@@ -159,7 +160,16 @@ export default function NexusPage() {
   ) {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    void fetchAssets(newFilters);
+
+    if (key === "search") {
+      // Debounce search to avoid excessive API calls while typing
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = setTimeout(() => {
+        void fetchAssets(newFilters);
+      }, 300);
+    } else {
+      void fetchAssets(newFilters);
+    }
   }
 
   async function handleAddAsset(data: CreateAssetInput) {

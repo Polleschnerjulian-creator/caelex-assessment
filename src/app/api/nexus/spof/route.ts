@@ -4,8 +4,9 @@ import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { getSinglePointsOfFailure } from "@/lib/nexus/dependency-service.server";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
-export async function GET(_req: Request) {
+export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

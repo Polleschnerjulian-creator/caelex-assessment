@@ -1,3 +1,4 @@
+import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getImpactAnalysis } from "../dependency-service.server";
 import type { ImpactAnalysisResult } from "../types";

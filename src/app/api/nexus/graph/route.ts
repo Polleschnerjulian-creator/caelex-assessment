@@ -4,8 +4,9 @@ import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { getDependencyGraph } from "@/lib/nexus/dependency-service.server";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
-export async function GET(_req: Request) {
+export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -18,6 +19,14 @@ export async function GET(_req: Request) {
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "assessment",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const organizationId = orgContext.organizationId;

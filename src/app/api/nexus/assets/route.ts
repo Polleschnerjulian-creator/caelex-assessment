@@ -8,6 +8,7 @@ import {
   createAsset,
 } from "@/lib/nexus/asset-service.server";
 import { AssetFiltersSchema, CreateAssetSchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function GET(req: Request) {
   try {
@@ -22,6 +23,11 @@ export async function GET(req: Request) {
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const organizationId = orgContext.organizationId;
@@ -59,6 +65,14 @@ export async function POST(req: Request) {
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const organizationId = orgContext.organizationId;

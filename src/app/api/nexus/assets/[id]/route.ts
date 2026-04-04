@@ -9,6 +9,7 @@ import {
   softDeleteAsset,
 } from "@/lib/nexus/asset-service.server";
 import { UpdateAssetSchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function GET(
   req: Request,
@@ -26,6 +27,11 @@ export async function GET(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id } = await params;
@@ -61,6 +67,14 @@ export async function PATCH(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id } = await params;
@@ -102,6 +116,14 @@ export async function DELETE(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id } = await params;

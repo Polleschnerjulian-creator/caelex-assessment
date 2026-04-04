@@ -72,17 +72,14 @@ export default function AssetAuditTab({ assetId }: AssetAuditTabProps) {
       setLoading(true);
       setError(null);
       try {
+        const pageLimit = 20;
         const params = new URLSearchParams({
-          entityType: "NEXUS_ASSET",
-          entityId: assetId,
-          page: String(pageNum),
-          limit: "20",
+          entityType: "nexus_asset",
+          limit: String(pageLimit),
+          offset: String((pageNum - 1) * pageLimit),
         });
-        // Try the nexus-specific audit endpoint first, fall back to audit-center
-        const res =
-          (await fetch(`/api/nexus/assets/${assetId}/audit?${params}`).catch(
-            () => null,
-          )) ?? (await fetch(`/api/audit-center?${params}`));
+        // Use the audit log endpoint directly with entity type filter
+        const res = await fetch(`/api/audit?${params}`);
         if (!res.ok) throw new Error("Failed to load audit events");
         const data = await res.json();
         const items: AuditEvent[] =

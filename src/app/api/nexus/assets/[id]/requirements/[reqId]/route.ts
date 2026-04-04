@@ -6,6 +6,7 @@ import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
 import { UpdateRequirementSchema } from "@/lib/nexus/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function PATCH(
   req: Request,
@@ -23,6 +24,14 @@ export async function PATCH(
         { error: "Organization required" },
         { status: 403 },
       );
+    }
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { id, reqId } = await params;
@@ -62,7 +71,15 @@ export async function PATCH(
       organizationId,
     });
 
-    void id; // id is part of the route context but not needed for the update
+    // Recalculate compliance score after requirement status change
+    try {
+      const { calculateAssetComplianceScore } =
+        await import("@/lib/nexus/asset-service.server");
+      await calculateAssetComplianceScore(id);
+    } catch (err) {
+      logger.warn("Failed to recalculate compliance score", err);
+    }
+
     return NextResponse.json({ requirement });
   } catch (error) {
     logger.error("Error updating requirement", error);
@@ -91,9 +108,28 @@ export async function DELETE(
       );
     }
 
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { id, reqId } = await params;
     const organizationId = orgContext.organizationId;
     const userId = session.user.id;
+
+    // Verify the requirement belongs to an asset in the caller's org
+    const record = await prisma.assetRequirement.findFirst({
+      where: {
+        id: reqId,
+        asset: { id, organizationId },
+      },
+    });
+    if (!record) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     await prisma.assetRequirement.delete({ where: { id: reqId } });
 
@@ -106,7 +142,6 @@ export async function DELETE(
       organizationId,
     });
 
-    void id;
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Error deleting requirement", error);

@@ -7,6 +7,7 @@ import {
   calculateAssetComplianceScore,
   calculateAssetRiskScore,
 } from "@/lib/nexus/asset-service.server";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function GET(
   req: Request,
@@ -26,11 +27,18 @@ export async function GET(
       );
     }
 
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { id } = await params;
-    const [complianceScore, riskScore] = await Promise.all([
-      calculateAssetComplianceScore(id, orgContext.organizationId),
-      calculateAssetRiskScore(id, orgContext.organizationId),
-    ]);
+    // Call sequentially: risk score depends on a fresh compliance score
+    const complianceScore = await calculateAssetComplianceScore(id);
+    const riskScore = await calculateAssetRiskScore(
+      id,
+      orgContext.organizationId,
+    );
 
     return NextResponse.json({ complianceScore, riskScore });
   } catch (error) {

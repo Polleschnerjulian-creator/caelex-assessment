@@ -185,8 +185,28 @@ export async function getDependenciesForAsset(
  */
 export async function getImpactAnalysis(
   assetId: string,
-  _organizationId: string,
+  organizationId: string,
 ): Promise<ImpactAnalysisResult[]> {
+  // Fetch ALL dependencies for the org in ONE query instead of per-node
+  const allDeps = await prisma.assetDependency.findMany({
+    where: { sourceAsset: { organizationId } },
+    select: {
+      sourceAssetId: true,
+      targetAssetId: true,
+      dependencyType: true,
+      strength: true,
+      sourceAsset: { select: { id: true, name: true, assetType: true } },
+    },
+  });
+
+  // Build adjacency map in memory: targetAssetId -> list of deps that depend on it
+  const dependentsMap = new Map<string, typeof allDeps>();
+  for (const dep of allDeps) {
+    const existing = dependentsMap.get(dep.targetAssetId) || [];
+    existing.push(dep);
+    dependentsMap.set(dep.targetAssetId, existing);
+  }
+
   const results: ImpactAnalysisResult[] = [];
   const visited = new Set<string>();
 
@@ -200,19 +220,10 @@ export async function getImpactAnalysis(
     const { id: currentId, level } = queue.shift()!;
     if (level >= 2) continue; // Don't go deeper than INDIRECT_2HOP
 
-    // Find all assets that depend on `currentId` (sourceAsset depends on currentId)
-    const allDependents = await prisma.assetDependency.findMany({
-      where: {
-        targetAssetId: currentId,
-        // Only follow HARD and SOFT edges (skip REDUNDANT)
-        strength: { in: ["HARD", "SOFT"] },
-      },
-      include: {
-        sourceAsset: { select: { id: true, name: true, assetType: true } },
-      },
-    });
+    // Use the in-memory map instead of a DB query per node
+    const allDependents = dependentsMap.get(currentId) || [];
 
-    // Filter in code as well for testability (mocks don't honor where clauses)
+    // Only follow HARD and SOFT edges (skip REDUNDANT)
     const dependents = allDependents.filter(
       (d) => d.strength === "HARD" || d.strength === "SOFT",
     );
@@ -379,6 +390,9 @@ export async function autoDetectDependencies(
 
   if (assets.length === 0) return [];
 
+  // Too many assets for auto-detection, need manual configuration
+  if (assets.length > 200) return [];
+
   // Fetch all existing dependencies to avoid duplicates
   const existingDeps = await prisma.assetDependency.findMany({
     where: { sourceAsset: { organizationId } },
@@ -513,5 +527,6 @@ export async function autoDetectDependencies(
     }
   }
 
-  return suggestions;
+  const MAX_SUGGESTIONS = 50;
+  return suggestions.slice(0, MAX_SUGGESTIONS);
 }
