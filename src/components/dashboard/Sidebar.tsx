@@ -481,6 +481,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/us-regulatory": "us-regulatory",
   "/dashboard/modules/spectrum": "spectrum",
   "/dashboard/modules/cra": "cra",
+  "/dashboard/incidents": "incidents",
   "/dashboard/nexus": "nexus",
   "/dashboard/evidence": "evidence",
   "/dashboard/documents": "documents",
@@ -494,16 +495,23 @@ const CYBER_MODULES = [
   "/dashboard/modules/cybersecurity",
   "/dashboard/modules/nis2",
   "/dashboard/modules/cra",
+  "/dashboard/incidents",
 ];
 
-const EU_MODULES = [
+const OPERATIONS_MODULES = [
   "/dashboard/modules/authorization",
+  "/dashboard/modules/registration",
+  "/dashboard/modules/supervision",
+  "/dashboard/modules/insurance",
+];
+
+const SAFETY_MODULES = [
   "/dashboard/modules/debris",
   "/dashboard/modules/environmental",
-  "/dashboard/modules/insurance",
-  "/dashboard/modules/supervision",
   "/dashboard/modules/copuos",
-  "/dashboard/modules/registration",
+];
+
+const INTERNATIONAL_MODULES = [
   "/dashboard/modules/export-control",
   "/dashboard/modules/uk-space",
   "/dashboard/modules/us-regulatory",
@@ -618,7 +626,11 @@ export default function Sidebar({
   // Active group detection
   const getActiveGroup = (): string | null => {
     if (CYBER_MODULES.some((m) => pathname.startsWith(m))) return "cyber";
-    if (EU_MODULES.some((m) => pathname.startsWith(m))) return "eu";
+    if (OPERATIONS_MODULES.some((m) => pathname.startsWith(m)))
+      return "operations";
+    if (SAFETY_MODULES.some((m) => pathname.startsWith(m))) return "safety";
+    if (INTERNATIONAL_MODULES.some((m) => pathname.startsWith(m)))
+      return "international";
     return null;
   };
 
@@ -627,7 +639,9 @@ export default function Sidebar({
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
       cyber: true,
-      eu: true,
+      operations: true,
+      safety: true,
+      international: true,
     },
   );
 
@@ -824,7 +838,7 @@ export default function Sidebar({
             {/* Cybersecurity Suite */}
             <ModuleGroup
               title="Cybersecurity"
-              count={4}
+              count={5}
               isExpanded={expandedGroups.cyber}
               onToggle={() => toggleGroup("cyber")}
               hasActiveItem={activeGroup === "cyber"}
@@ -877,15 +891,25 @@ export default function Sidebar({
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/cra")}
                 collapsed={collapsed}
               />
+              <CompactModuleItem
+                href="/dashboard/incidents"
+                icon={<AlertTriangle size={14} strokeWidth={1.5} />}
+                label={t("sidebar.incidents")}
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/incidents")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/incidents")}
+                collapsed={collapsed}
+              />
             </ModuleGroup>
 
+            {/* Operations */}
             <ModuleGroup
-              title={t("sidebar.euRegulations")}
-              count={10}
-              isExpanded={expandedGroups.eu}
-              onToggle={() => toggleGroup("eu")}
-              hasActiveItem={activeGroup === "eu"}
-              groupId="eu"
+              title="Operations"
+              count={4}
+              isExpanded={expandedGroups.operations}
+              onToggle={() => toggleGroup("operations")}
+              hasActiveItem={activeGroup === "operations"}
+              groupId="operations"
               collapsed={collapsed}
             >
               <CompactModuleItem
@@ -899,6 +923,51 @@ export default function Sidebar({
                 )}
                 collapsed={collapsed}
               />
+              <CompactModuleItem
+                href="/dashboard/modules/registration"
+                icon={<ClipboardCheck size={14} strokeWidth={1.5} />}
+                label="Registration"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/registration")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/registration",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/supervision"
+                icon={<Eye size={14} strokeWidth={1.5} />}
+                label={t("modules.supervision")}
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/supervision")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/supervision",
+                )}
+                collapsed={collapsed}
+              />
+              <CompactModuleItem
+                href="/dashboard/modules/insurance"
+                icon={<Scale size={14} strokeWidth={1.5} />}
+                label={t("modules.insurance")}
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/insurance")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/insurance",
+                )}
+                collapsed={collapsed}
+              />
+            </ModuleGroup>
+
+            {/* Safety & Environment */}
+            <ModuleGroup
+              title="Safety & Environment"
+              count={3}
+              isExpanded={expandedGroups.safety}
+              onToggle={() => toggleGroup("safety")}
+              hasActiveItem={activeGroup === "safety"}
+              groupId="safety"
+              collapsed={collapsed}
+            >
               <CompactModuleItem
                 href="/dashboard/modules/debris"
                 icon={<Trash2 size={14} strokeWidth={1.5} />}
@@ -920,28 +989,6 @@ export default function Sidebar({
                 collapsed={collapsed}
               />
               <CompactModuleItem
-                href="/dashboard/modules/insurance"
-                icon={<Scale size={14} strokeWidth={1.5} />}
-                label={t("modules.insurance")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/insurance")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/insurance",
-                )}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
-                href="/dashboard/modules/supervision"
-                icon={<Eye size={14} strokeWidth={1.5} />}
-                label={t("modules.supervision")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/supervision")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/supervision",
-                )}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
                 href="/dashboard/modules/copuos"
                 icon={<Satellite size={14} strokeWidth={1.5} />}
                 label="COPUOS/IADC"
@@ -950,17 +997,18 @@ export default function Sidebar({
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
                 collapsed={collapsed}
               />
-              <CompactModuleItem
-                href="/dashboard/modules/registration"
-                icon={<ClipboardCheck size={14} strokeWidth={1.5} />}
-                label="Registration"
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/registration")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/registration",
-                )}
-                collapsed={collapsed}
-              />
+            </ModuleGroup>
+
+            {/* International */}
+            <ModuleGroup
+              title="International"
+              count={4}
+              isExpanded={expandedGroups.international}
+              onToggle={() => toggleGroup("international")}
+              hasActiveItem={activeGroup === "international"}
+              groupId="international"
+              collapsed={collapsed}
+            >
               <CompactModuleItem
                 href="/dashboard/modules/export-control"
                 icon={<FileSearch size={14} strokeWidth={1.5} />}
@@ -1008,11 +1056,9 @@ export default function Sidebar({
             </ModuleGroup>
           </div>
 
-          {/* Data Monitoring */}
+          {/* Monitoring */}
           <div style={{ marginBottom: collapsed ? 8 : 20 }}>
-            <SectionHeader collapsed={collapsed}>
-              Evidence Collection
-            </SectionHeader>
+            <SectionHeader collapsed={collapsed}>Monitoring</SectionHeader>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/sentinel"
@@ -1023,12 +1069,12 @@ export default function Sidebar({
                 Sentinel
               </NavItem>
               <NavItem
-                href="/dashboard/evidence"
-                icon={<FolderKanban size={18} strokeWidth={1.5} />}
+                href="/dashboard/ephemeris"
+                icon={<Activity size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 collapsed={collapsed}
               >
-                Evidence
+                Ephemeris
               </NavItem>
             </div>
           </div>
@@ -1039,14 +1085,6 @@ export default function Sidebar({
               Predictive Modeling
             </SectionHeader>
             <div className="space-y-0.5">
-              <NavItem
-                href="/dashboard/ephemeris"
-                icon={<Activity size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Ephemeris
-              </NavItem>
               <NavItem
                 href="/dashboard/shield"
                 icon={<Shield size={18} strokeWidth={1.5} />}
@@ -1070,6 +1108,23 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Asset Register
+              </NavItem>
+            </div>
+          </div>
+
+          {/* Evidence Collection */}
+          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
+            <SectionHeader collapsed={collapsed}>
+              Evidence Collection
+            </SectionHeader>
+            <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/evidence"
+                icon={<FolderKanban size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Evidence
               </NavItem>
             </div>
           </div>
@@ -1127,14 +1182,6 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 {t("sidebar.timeline")}
-              </NavItem>
-              <NavItem
-                href="/dashboard/incidents"
-                icon={<AlertTriangle size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                {t("sidebar.incidents")}
               </NavItem>
               <NavItem
                 href="/dashboard/regulatory-feed"
