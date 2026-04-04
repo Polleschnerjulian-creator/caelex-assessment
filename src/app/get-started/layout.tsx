@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Get Started — Caelex",
+  title: "Get Started | Caelex",
   description:
-    "Contact the Caelex team or book a demo call. Navigate EU Space Act, NIS2, and space compliance with the world's first Space Compliance OS.",
+    "Schedule a free compliance consultation for your space operations. 15 minutes, no commitment.",
 };
 
 export default function GetStartedLayout({
