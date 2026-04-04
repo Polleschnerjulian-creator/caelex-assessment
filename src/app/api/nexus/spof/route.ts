@@ -21,6 +21,14 @@ export async function GET(req: Request) {
       );
     }
 
+    const rl = await checkRateLimit(
+      "assessment",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const organizationId = orgContext.organizationId;
     const spof = await getSinglePointsOfFailure(organizationId);
     return NextResponse.json({ spof });
