@@ -117,23 +117,23 @@ function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; bg: string; text: string }> = {
     pending: {
       label: "Pending",
-      bg: "bg-white/10",
-      text: "text-white/60",
+      bg: "bg-[var(--fill-medium)]",
+      text: "text-[var(--text-secondary)]",
     },
     active: {
       label: "Active",
-      bg: "bg-white/15",
-      text: "text-white",
+      bg: "bg-[var(--accent-primary)]/15",
+      text: "text-[var(--text-primary)]",
     },
     completed: {
       label: "Completed",
-      bg: "bg-white/10",
-      text: "text-white/50",
+      bg: "bg-[var(--fill-medium)]",
+      text: "text-[var(--text-secondary)]",
     },
     revoked: {
       label: "Revoked",
-      bg: "bg-white/5",
-      text: "text-white/40",
+      bg: "bg-[var(--fill-light)]",
+      text: "text-[var(--text-tertiary)]",
     },
   };
 
@@ -152,7 +152,7 @@ function StatusBadge({ status }: { status: string }) {
 function TypeBadge({ type }: { type: string }) {
   const found = ENGAGEMENT_TYPE_OPTIONS.find((t) => t.id === type);
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider bg-white/8 text-white/50">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider bg-[var(--fill-medium)] text-[var(--text-secondary)]">
       {found?.name || type}
     </span>
   );
@@ -179,14 +179,14 @@ function EngagementCard({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-elevated rounded-2xl p-5 border border-white/[0.06]"
+      className="glass-elevated rounded-2xl p-5 border border-[var(--separator)]"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">
             {engagement.title}
           </h3>
-          <p className="text-[12px] text-white/50 mt-0.5">
+          <p className="text-[12px] text-[var(--text-secondary)] mt-0.5">
             {engagement.firm.name}
             {engagement.firm.city && ` — ${engagement.firm.city}`}
           </p>
@@ -200,37 +200,37 @@ function EngagementCard({
 
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
             Attorneys
           </p>
-          <p className="text-xs font-medium text-white/70">
+          <p className="text-xs font-medium text-[var(--text-secondary)]">
             {engagement._count.attorneys}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
             Access Logs
           </p>
-          <p className="text-xs font-medium text-white/70">
+          <p className="text-xs font-medium text-[var(--text-secondary)]">
             {engagement._count.accessLogs}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
             Expires
           </p>
           <p
-            className={`text-xs font-medium ${isExpired ? "text-white/40" : daysLeft <= 14 ? "text-white/60" : "text-white/70"}`}
+            className={`text-xs font-medium ${isExpired ? "text-[var(--text-tertiary)]" : daysLeft <= 14 ? "text-[var(--text-secondary)]" : "text-[var(--text-secondary)]"}`}
           >
             {isExpired ? "Expired" : `${daysLeft}d left`}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+      <div className="flex items-center gap-2 pt-3 border-t border-[var(--separator)]">
         <button
           onClick={() => onView(engagement.id)}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-white/70 bg-white/[0.06] hover:bg-white/10 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-[var(--text-secondary)] bg-[var(--fill-medium)] hover:bg-[var(--fill-medium)]/80 transition-colors"
         >
           <Eye size={13} />
           View Details
@@ -238,7 +238,7 @@ function EngagementCard({
         {engagement.status !== "revoked" && (
           <button
             onClick={() => onRevoke(engagement.id)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-white/40 hover:text-white/70 bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] bg-[var(--fill-light)] hover:bg-[var(--fill-medium)] transition-colors"
           >
             <Ban size={13} />
             Revoke
@@ -365,21 +365,21 @@ function CreateEngagementModal({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg glass-floating border-l border-white/[0.08] overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg glass-floating border-l border-[var(--separator-strong)] overflow-y-auto"
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 glass-elevated px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="sticky top-0 z-10 glass-elevated px-6 py-4 border-b border-[var(--separator)] flex items-center justify-between">
               <div>
-                <h2 className="text-base font-semibold text-white">
+                <h2 className="text-base font-semibold text-[var(--text-primary)]">
                   New Engagement
                 </h2>
-                <p className="text-[12px] text-white/50 mt-0.5">
+                <p className="text-[12px] text-[var(--text-secondary)] mt-0.5">
                   Step {step} of 3
                 </p>
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+                className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--fill-medium)] transition-colors"
               >
                 <X size={18} />
               </button>
@@ -392,7 +392,9 @@ function CreateEngagementModal({
                   <div
                     key={s}
                     className={`h-1 flex-1 rounded-full transition-colors ${
-                      s <= step ? "bg-white/40" : "bg-white/10"
+                      s <= step
+                        ? "bg-[var(--accent-primary)]"
+                        : "bg-[var(--fill-medium)]"
                     }`}
                   />
                 ))}
@@ -401,15 +403,17 @@ function CreateEngagementModal({
 
             <div className="px-6 py-4">
               {error && (
-                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator-strong)]">
                   <AlertCircle
                     size={14}
-                    className="text-white/50 flex-shrink-0"
+                    className="text-[var(--text-secondary)] flex-shrink-0"
                   />
-                  <p className="text-xs text-white/60">{error}</p>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {error}
+                  </p>
                   <button
                     onClick={() => setError(null)}
-                    className="ml-auto text-white/30 hover:text-white/60"
+                    className="ml-auto text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
                   >
                     <X size={12} />
                   </button>
@@ -426,10 +430,10 @@ function CreateEngagementModal({
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <h3 className="text-sm font-medium text-white mb-1">
+                    <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
                       Engagement Type
                     </h3>
-                    <p className="text-[12px] text-white/50 mb-4">
+                    <p className="text-[12px] text-[var(--text-secondary)] mb-4">
                       Welche Art von rechtlicher Zusammenarbeit benötigen Sie?
                     </p>
 
@@ -440,27 +444,27 @@ function CreateEngagementModal({
                           onClick={() => setSelectedType(type.id)}
                           className={`w-full text-left p-4 rounded-xl border transition-all ${
                             selectedType === type.id
-                              ? "bg-white/10 border-white/20"
-                              : "bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06] hover:border-white/10"
+                              ? "bg-[var(--fill-medium)] border-[var(--accent-primary)]"
+                              : "bg-[var(--fill-light)] border-[var(--separator)] hover:bg-[var(--fill-medium)] hover:border-[var(--separator-strong)]"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                                 selectedType === type.id
-                                  ? "border-white bg-white"
-                                  : "border-white/30"
+                                  ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]"
+                                  : "border-[var(--text-tertiary)]"
                               }`}
                             >
                               {selectedType === type.id && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-black" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white">
+                              <p className="text-sm font-medium text-[var(--text-primary)]">
                                 {type.name}
                               </p>
-                              <p className="text-[11px] text-white/45 mt-0.5">
+                              <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
                                 {type.description}
                               </p>
                             </div>
@@ -480,57 +484,57 @@ function CreateEngagementModal({
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <h3 className="text-sm font-medium text-white mb-1">
+                    <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
                       Invite Attorney
                     </h3>
-                    <p className="text-[12px] text-white/50 mb-4">
+                    <p className="text-[12px] text-[var(--text-secondary)] mb-4">
                       Geben Sie die Kontaktdaten der Kanzlei und des Anwalts an.
                     </p>
 
                     <div className="space-y-4">
                       {/* Attorney Email */}
                       <div>
-                        <label className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">
+                        <label className="block text-[11px] uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                           Attorney Email *
                         </label>
                         <div className="relative">
                           <Mail
                             size={14}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
                           />
                           <input
                             type="email"
                             value={attorneyEmail}
                             onChange={(e) => setAttorneyEmail(e.target.value)}
                             placeholder="attorney@kanzlei.de"
-                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                            className="w-full bg-[var(--fill-light)] border border-[var(--separator-strong)] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
                           />
                         </div>
                       </div>
 
                       {/* Firm Name */}
                       <div>
-                        <label className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">
+                        <label className="block text-[11px] uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                           Law Firm Name *
                         </label>
                         <div className="relative">
                           <Building2
                             size={14}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
                           />
                           <input
                             type="text"
                             value={firmName}
                             onChange={(e) => setFirmName(e.target.value)}
                             placeholder="Kanzlei Name"
-                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                            className="w-full bg-[var(--fill-light)] border border-[var(--separator-strong)] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
                           />
                         </div>
                       </div>
 
                       {/* Expiry */}
                       <div>
-                        <label className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">
+                        <label className="block text-[11px] uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                           Access Duration
                         </label>
                         <div className="grid grid-cols-4 gap-1.5">
@@ -540,8 +544,8 @@ function CreateEngagementModal({
                               onClick={() => setExpiryDays(opt.value)}
                               className={`px-3 py-2 rounded-lg text-[12px] font-medium transition-colors ${
                                 expiryDays === opt.value
-                                  ? "bg-white/15 text-white border border-white/20"
-                                  : "bg-white/[0.04] text-white/50 border border-white/[0.06] hover:bg-white/[0.08]"
+                                  ? "bg-[var(--accent-primary)]/15 text-[var(--text-primary)] border border-[var(--accent-primary)]"
+                                  : "bg-[var(--fill-light)] text-[var(--text-secondary)] border border-[var(--separator)] hover:bg-[var(--fill-medium)]"
                               }`}
                             >
                               {opt.label}
@@ -551,19 +555,21 @@ function CreateEngagementModal({
                       </div>
 
                       {/* Export toggle */}
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]">
                         <div>
-                          <p className="text-sm text-white">
+                          <p className="text-sm text-[var(--text-primary)]">
                             Export Permission
                           </p>
-                          <p className="text-[11px] text-white/40 mt-0.5">
+                          <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
                             Anwalt darf Daten exportieren
                           </p>
                         </div>
                         <button
                           onClick={() => setAllowExport(!allowExport)}
                           className={`relative w-10 h-5 rounded-full transition-colors ${
-                            allowExport ? "bg-white/30" : "bg-white/10"
+                            allowExport
+                              ? "bg-[var(--accent-primary)]"
+                              : "bg-[var(--fill-medium)]"
                           }`}
                         >
                           <div
@@ -576,7 +582,7 @@ function CreateEngagementModal({
 
                       {/* Note */}
                       <div>
-                        <label className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">
+                        <label className="block text-[11px] uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                           Note (optional)
                         </label>
                         <textarea
@@ -584,7 +590,7 @@ function CreateEngagementModal({
                           onChange={(e) => setNote(e.target.value)}
                           placeholder="Zusätzliche Hinweise..."
                           rows={3}
-                          className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors resize-none"
+                          className="w-full bg-[var(--fill-light)] border border-[var(--separator)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 transition-colors resize-none"
                         />
                       </div>
                     </div>
@@ -600,59 +606,59 @@ function CreateEngagementModal({
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <h3 className="text-sm font-medium text-white mb-1">
+                    <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
                       Review & Confirm
                     </h3>
-                    <p className="text-[12px] text-white/50 mb-4">
+                    <p className="text-[12px] text-[var(--text-secondary)] mb-4">
                       Überprüfen Sie die Engagement-Details.
                     </p>
 
                     <div className="space-y-3">
                       {/* Summary items */}
-                      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-3">
+                      <div className="p-4 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)] space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-[11px] uppercase tracking-wider text-white/40">
+                          <span className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)]">
                             Type
                           </span>
-                          <span className="text-xs text-white/80 font-medium">
+                          <span className="text-xs text-[var(--text-primary)] font-medium">
                             {ENGAGEMENT_TYPE_OPTIONS.find(
                               (t) => t.id === selectedType,
                             )?.name || selectedType}
                           </span>
                         </div>
-                        <div className="border-t border-white/[0.04]" />
+                        <div className="border-t border-[var(--separator)]" />
                         <div className="flex justify-between">
-                          <span className="text-[11px] uppercase tracking-wider text-white/40">
+                          <span className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)]">
                             Attorney
                           </span>
-                          <span className="text-xs text-white/80">
+                          <span className="text-xs text-[var(--text-primary)]">
                             {attorneyEmail}
                           </span>
                         </div>
-                        <div className="border-t border-white/[0.04]" />
+                        <div className="border-t border-[var(--separator)]" />
                         <div className="flex justify-between">
-                          <span className="text-[11px] uppercase tracking-wider text-white/40">
+                          <span className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)]">
                             Firm
                           </span>
-                          <span className="text-xs text-white/80">
+                          <span className="text-xs text-[var(--text-primary)]">
                             {firmName}
                           </span>
                         </div>
-                        <div className="border-t border-white/[0.04]" />
+                        <div className="border-t border-[var(--separator)]" />
                         <div className="flex justify-between">
-                          <span className="text-[11px] uppercase tracking-wider text-white/40">
+                          <span className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)]">
                             Expiry
                           </span>
-                          <span className="text-xs text-white/80">
+                          <span className="text-xs text-[var(--text-primary)]">
                             {expiryDays} Tage
                           </span>
                         </div>
-                        <div className="border-t border-white/[0.04]" />
+                        <div className="border-t border-[var(--separator)]" />
                         <div className="flex justify-between">
-                          <span className="text-[11px] uppercase tracking-wider text-white/40">
+                          <span className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)]">
                             Export
                           </span>
-                          <span className="text-xs text-white/80">
+                          <span className="text-xs text-[var(--text-primary)]">
                             {allowExport ? "Allowed" : "Disabled"}
                           </span>
                         </div>
@@ -660,15 +666,15 @@ function CreateEngagementModal({
 
                       {/* Auto-scope preview */}
                       {autoScopeModules.length > 0 && (
-                        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <p className="text-[11px] uppercase tracking-wider text-white/40 mb-2">
+                        <div className="p-4 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]">
+                          <p className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
                             Auto-Scope Modules
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {autoScopeModules.map((mod) => (
                               <span
                                 key={mod}
-                                className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/[0.06] text-white/60"
+                                className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[var(--fill-medium)] text-[var(--text-secondary)]"
                               >
                                 {mod}
                               </span>
@@ -678,11 +684,13 @@ function CreateEngagementModal({
                       )}
 
                       {note && (
-                        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">
+                        <div className="p-4 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]">
+                          <p className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                             Note
                           </p>
-                          <p className="text-xs text-white/60">{note}</p>
+                          <p className="text-xs text-[var(--text-secondary)]">
+                            {note}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -692,13 +700,13 @@ function CreateEngagementModal({
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 glass-elevated px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
+            <div className="sticky bottom-0 glass-elevated px-6 py-4 border-t border-[var(--separator)] flex items-center justify-between">
               <button
                 onClick={() => {
                   if (step === 1) handleClose();
                   else setStep(step - 1);
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium text-white/60 hover:text-white/80 bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--fill-light)] hover:bg-[var(--fill-medium)] transition-colors"
               >
                 <ChevronLeft size={14} />
                 {step === 1 ? "Cancel" : "Back"}
@@ -711,7 +719,7 @@ function CreateEngagementModal({
                     (step === 1 && !canProceedStep1) ||
                     (step === 2 && !canProceedStep2)
                   }
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium text-white bg-white/15 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   Next
                   <ChevronRight size={14} />
@@ -720,7 +728,7 @@ function CreateEngagementModal({
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-[13px] font-medium text-white bg-white/15 hover:bg-white/20 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-[13px] font-medium text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:opacity-50 transition-colors"
                 >
                   {submitting ? (
                     <>
@@ -818,21 +826,25 @@ export default function LegalEngagementsPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08]">
-                <Scale size={20} className="text-white/70" strokeWidth={1.5} />
+              <div className="p-2.5 rounded-xl bg-[var(--fill-medium)] border border-[var(--separator-strong)]">
+                <Scale
+                  size={20}
+                  className="text-[var(--text-secondary)]"
+                  strokeWidth={1.5}
+                />
               </div>
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-xl font-semibold text-[var(--text-primary)]">
                 Legal Engagements
               </h1>
             </div>
-            <p className="text-sm text-white/50 max-w-lg">
+            <p className="text-sm text-[var(--text-secondary)] max-w-lg">
               Verwalten Sie den Zugriff Ihrer Anwaltskanzleien auf Ihre
               Compliance-Daten.
             </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/[0.08] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] transition-colors"
           >
             <Plus size={15} />
             New Engagement
@@ -844,26 +856,31 @@ export default function LegalEngagementsPage() {
           <div className="relative mb-6">
             <Search
               size={15}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
             />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search engagements..."
-              className="w-full max-w-md bg-white/[0.04] border border-white/[0.06] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/15 transition-colors"
+              className="w-full max-w-md bg-[var(--fill-light)] border border-[var(--separator)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
             />
           </div>
         )}
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-6 flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-            <AlertCircle size={15} className="text-white/50 flex-shrink-0" />
-            <p className="text-sm text-white/60 flex-1">{error}</p>
+          <div className="mb-6 flex items-center gap-3 p-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator-strong)]">
+            <AlertCircle
+              size={15}
+              className="text-[var(--text-secondary)] flex-shrink-0"
+            />
+            <p className="text-sm text-[var(--text-secondary)] flex-1">
+              {error}
+            </p>
             <button
               onClick={() => setError(null)}
-              className="text-white/30 hover:text-white/60 transition-colors"
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <X size={14} />
             </button>
@@ -874,29 +891,38 @@ export default function LegalEngagementsPage() {
         {loading && (
           <div className="flex items-center justify-center py-24">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 size={20} className="animate-spin text-white/40" />
-              <p className="text-sm text-white/40">Loading engagements...</p>
+              <Loader2
+                size={20}
+                className="animate-spin text-[var(--text-tertiary)]"
+              />
+              <p className="text-sm text-[var(--text-tertiary)]">
+                Loading engagements...
+              </p>
             </div>
           </div>
         )}
 
         {/* Empty State */}
         {!loading && engagements.length === 0 && !error && (
-          <div className="glass-elevated rounded-2xl p-12 border border-white/[0.06]">
+          <div className="glass-elevated rounded-2xl p-12 border border-[var(--separator)]">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                <Scale size={24} className="text-white/30" strokeWidth={1.5} />
+              <div className="w-14 h-14 rounded-2xl glass-elevated flex items-center justify-center mx-auto mb-4">
+                <Scale
+                  size={24}
+                  className="text-[var(--text-tertiary)]"
+                  strokeWidth={1.5}
+                />
               </div>
-              <h3 className="text-base font-medium text-white mb-2">
+              <h3 className="text-base font-medium text-[var(--text-primary)] mb-2">
                 Noch keine Legal Engagements
               </h3>
-              <p className="text-sm text-white/45 mb-6">
+              <p className="text-sm text-[var(--text-secondary)] mb-6">
                 Laden Sie eine Kanzlei ein, um Compliance-Daten sicher zu
                 teilen.
               </p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/[0.08] rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] rounded-xl transition-colors"
               >
                 <Plus size={14} />
                 New Engagement
@@ -924,7 +950,7 @@ export default function LegalEngagementsPage() {
           engagements.length > 0 &&
           filteredEngagements.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-[var(--text-tertiary)]">
                 No engagements match your search.
               </p>
             </div>

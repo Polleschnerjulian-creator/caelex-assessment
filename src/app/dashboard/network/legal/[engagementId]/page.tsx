@@ -91,10 +91,26 @@ interface EngagementDetail {
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; bg: string; text: string }> = {
-    pending: { label: "Pending", bg: "bg-white/10", text: "text-white/60" },
-    active: { label: "Active", bg: "bg-white/15", text: "text-white" },
-    completed: { label: "Completed", bg: "bg-white/10", text: "text-white/50" },
-    revoked: { label: "Revoked", bg: "bg-white/5", text: "text-white/40" },
+    pending: {
+      label: "Pending",
+      bg: "bg-[var(--fill-medium)]",
+      text: "text-[var(--text-secondary)]",
+    },
+    active: {
+      label: "Active",
+      bg: "bg-[var(--accent-primary)]/15",
+      text: "text-[var(--text-primary)]",
+    },
+    completed: {
+      label: "Completed",
+      bg: "bg-[var(--fill-medium)]",
+      text: "text-[var(--text-secondary)]",
+    },
+    revoked: {
+      label: "Revoked",
+      bg: "bg-[var(--fill-light)]",
+      text: "text-[var(--text-tertiary)]",
+    },
   };
   const c = config[status] || config.pending;
   return (
@@ -263,8 +279,13 @@ export default function EngagementDetailPage() {
       <FeatureGate module="network">
         <div className="flex items-center justify-center min-h-screen">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 size={20} className="animate-spin text-white/40" />
-            <p className="text-sm text-white/40">Loading engagement...</p>
+            <Loader2
+              size={20}
+              className="animate-spin text-[var(--text-tertiary)]"
+            />
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Loading engagement...
+            </p>
           </div>
         </div>
       </FeatureGate>
@@ -277,14 +298,17 @@ export default function EngagementDetailPage() {
     return (
       <FeatureGate module="network">
         <div className="flex items-center justify-center min-h-screen">
-          <div className="glass-elevated rounded-2xl p-6 border border-white/[0.06] max-w-sm">
+          <div className="glass-elevated rounded-2xl p-6 border border-[var(--separator)] max-w-sm">
             <div className="flex items-center gap-3">
-              <AlertCircle size={18} className="text-white/50 flex-shrink-0" />
-              <p className="text-sm text-white/60">{error}</p>
+              <AlertCircle
+                size={18}
+                className="text-[var(--text-secondary)] flex-shrink-0"
+              />
+              <p className="text-sm text-[var(--text-secondary)]">{error}</p>
             </div>
             <Link
               href="/dashboard/network/legal"
-              className="mt-4 flex items-center gap-2 text-sm text-white/50 hover:text-white/70 transition-colors"
+              className="mt-4 flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <ArrowLeft size={14} />
               Back to Engagements
@@ -310,7 +334,7 @@ export default function EngagementDetailPage() {
         {/* Back Link */}
         <Link
           href="/dashboard/network/legal"
-          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white/70 transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6"
         >
           <ArrowLeft size={14} />
           Legal Engagements
@@ -318,12 +342,17 @@ export default function EngagementDetailPage() {
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-6 flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-            <AlertCircle size={15} className="text-white/50 flex-shrink-0" />
-            <p className="text-sm text-white/60 flex-1">{error}</p>
+          <div className="mb-6 flex items-center gap-3 p-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator-strong)]">
+            <AlertCircle
+              size={15}
+              className="text-[var(--text-secondary)] flex-shrink-0"
+            />
+            <p className="text-sm text-[var(--text-secondary)] flex-1">
+              {error}
+            </p>
             <button
               onClick={() => setError(null)}
-              className="text-white/30 hover:text-white/60 transition-colors"
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <X size={14} />
             </button>
@@ -331,17 +360,21 @@ export default function EngagementDetailPage() {
         )}
 
         {/* Header */}
-        <div className="glass-elevated rounded-2xl p-6 border border-white/[0.06] mb-6">
+        <div className="glass-elevated rounded-2xl p-6 border border-[var(--separator)] mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08]">
-                <Scale size={20} className="text-white/60" strokeWidth={1.5} />
+              <div className="p-2.5 rounded-xl bg-[var(--fill-medium)] border border-[var(--separator-strong)]">
+                <Scale
+                  size={20}
+                  className="text-[var(--text-secondary)]"
+                  strokeWidth={1.5}
+                />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-white">
+                <h1 className="text-lg font-semibold text-[var(--text-primary)]">
                   {engagement.title}
                 </h1>
-                <p className="text-xs text-white/45 mt-0.5">
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                   {ENGAGEMENT_TYPE_LABELS[engagement.engagementType] ||
                     engagement.engagementType}
                 </p>
@@ -352,42 +385,44 @@ export default function EngagementDetailPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                 Law Firm
               </p>
               <div className="flex items-center gap-1.5">
-                <Building2 size={13} className="text-white/30" />
-                <p className="text-sm text-white/80">{engagement.firm.name}</p>
+                <Building2 size={13} className="text-[var(--text-tertiary)]" />
+                <p className="text-sm text-[var(--text-primary)]">
+                  {engagement.firm.name}
+                </p>
               </div>
               {engagement.firm.city && (
-                <p className="text-[11px] text-white/40 ml-5">
+                <p className="text-[11px] text-[var(--text-tertiary)] ml-5">
                   {engagement.firm.city}
                 </p>
               )}
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                 Attorneys
               </p>
               <div className="flex items-center gap-1.5">
-                <Users size={13} className="text-white/30" />
-                <p className="text-sm text-white/80">
+                <Users size={13} className="text-[var(--text-tertiary)]" />
+                <p className="text-sm text-[var(--text-primary)]">
                   {engagement._count.attorneys}
                 </p>
               </div>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                 Expires
               </p>
               <div className="flex items-center gap-1.5">
-                <Calendar size={13} className="text-white/30" />
+                <Calendar size={13} className="text-[var(--text-tertiary)]" />
                 <p
-                  className={`text-sm ${isExpired ? "text-white/40" : "text-white/80"}`}
+                  className={`text-sm ${isExpired ? "text-[var(--text-tertiary)]" : "text-[var(--text-primary)]"}`}
                 >
                   {expiryDate.toLocaleDateString("de-DE")}
                   {!isExpired && !isRevoked && (
-                    <span className="text-white/40 text-xs ml-1">
+                    <span className="text-[var(--text-tertiary)] text-xs ml-1">
                       ({daysLeft}d)
                     </span>
                   )}
@@ -395,12 +430,12 @@ export default function EngagementDetailPage() {
               </div>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                 Access Logs
               </p>
               <div className="flex items-center gap-1.5">
-                <Eye size={13} className="text-white/30" />
-                <p className="text-sm text-white/80">
+                <Eye size={13} className="text-[var(--text-tertiary)]" />
+                <p className="text-sm text-[var(--text-primary)]">
                   {engagement._count.accessLogs}
                 </p>
               </div>
@@ -408,11 +443,13 @@ export default function EngagementDetailPage() {
           </div>
 
           {engagement.note && (
-            <div className="mt-4 pt-4 border-t border-white/[0.06]">
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+            <div className="mt-4 pt-4 border-t border-[var(--separator)]">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                 Note
               </p>
-              <p className="text-xs text-white/60">{engagement.note}</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                {engagement.note}
+              </p>
             </div>
           )}
         </div>
@@ -421,30 +458,33 @@ export default function EngagementDetailPage() {
           {/* Left Column: Scope + Attorneys */}
           <div className="lg:col-span-2 space-y-6">
             {/* Scope Visualization */}
-            <div className="glass-elevated rounded-2xl p-6 border border-white/[0.06]">
-              <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Shield size={15} className="text-white/50" />
+            <div className="glass-elevated rounded-2xl p-6 border border-[var(--separator)]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <Shield size={15} className="text-[var(--text-secondary)]" />
                 Data Scope
               </h2>
 
               {/* Modules */}
               <div className="mb-4">
-                <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
+                <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
                   Shared Modules
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {engagement.scopedModules.length === 0 ? (
-                    <span className="text-xs text-white/30 italic">
+                    <span className="text-xs text-[var(--text-tertiary)] italic">
                       No modules scoped
                     </span>
                   ) : (
                     engagement.scopedModules.map((mod) => (
                       <div
                         key={mod}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08]"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--fill-medium)] border border-[var(--separator-strong)]"
                       >
-                        <CheckCircle2 size={12} className="text-white/40" />
-                        <span className="text-xs text-white/70 font-medium">
+                        <CheckCircle2
+                          size={12}
+                          className="text-[var(--text-tertiary)]"
+                        />
+                        <span className="text-xs text-[var(--text-secondary)] font-medium">
                           {MODULE_LABELS[mod] || mod}
                         </span>
                       </div>
@@ -455,19 +495,19 @@ export default function EngagementDetailPage() {
 
               {/* Data Types */}
               <div className="mb-4">
-                <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
+                <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
                   Data Types
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {engagement.scopedDataTypes.length === 0 ? (
-                    <span className="text-xs text-white/30 italic">
+                    <span className="text-xs text-[var(--text-tertiary)] italic">
                       No data types scoped
                     </span>
                   ) : (
                     engagement.scopedDataTypes.map((dt) => (
                       <span
                         key={dt}
-                        className="px-2.5 py-1 rounded-md text-[11px] text-white/55 bg-white/[0.04] border border-white/[0.06]"
+                        className="px-2.5 py-1 rounded-md text-[11px] text-[var(--text-secondary)] bg-[var(--fill-light)] border border-[var(--separator)]"
                       >
                         {dt.replace(/_/g, " ")}
                       </span>
@@ -477,33 +517,36 @@ export default function EngagementDetailPage() {
               </div>
 
               {/* NIS2 Overlap */}
-              <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2 pt-3 border-t border-[var(--separator)]">
                 <div
                   className={`w-3 h-3 rounded-sm border ${
                     engagement.includeNIS2Overlap
-                      ? "bg-white/20 border-white/30"
-                      : "border-white/15"
+                      ? "bg-[var(--accent-primary)]/20 border-[var(--accent-primary)]"
+                      : "border-[var(--separator-strong)]"
                   }`}
                 >
                   {engagement.includeNIS2Overlap && (
-                    <CheckCircle2 size={12} className="text-white/60" />
+                    <CheckCircle2
+                      size={12}
+                      className="text-[var(--text-secondary)]"
+                    />
                   )}
                 </div>
-                <span className="text-xs text-white/50">
+                <span className="text-xs text-[var(--text-secondary)]">
                   NIS2 Overlap included
                 </span>
               </div>
             </div>
 
             {/* Attorneys */}
-            <div className="glass-elevated rounded-2xl p-6 border border-white/[0.06]">
-              <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Users size={15} className="text-white/50" />
+            <div className="glass-elevated rounded-2xl p-6 border border-[var(--separator)]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <Users size={15} className="text-[var(--text-secondary)]" />
                 Attorneys ({engagement.attorneys.length})
               </h2>
 
               {engagement.attorneys.length === 0 ? (
-                <p className="text-xs text-white/40 py-4 text-center">
+                <p className="text-xs text-[var(--text-tertiary)] py-4 text-center">
                   No attorneys assigned yet. The invited attorney will appear
                   here after accepting.
                 </p>
@@ -512,30 +555,30 @@ export default function EngagementDetailPage() {
                   {engagement.attorneys.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]"
                     >
-                      <div className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center text-xs font-medium text-white/60">
+                      <div className="w-9 h-9 rounded-full bg-[var(--fill-medium)] flex items-center justify-center text-xs font-medium text-[var(--text-secondary)]">
                         {(a.attorney.user.name || a.attorney.user.email)
                           .charAt(0)
                           .toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white/80 truncate">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                           {a.attorney.user.name || a.attorney.user.email}
                         </p>
-                        <p className="text-[11px] text-white/40">
+                        <p className="text-[11px] text-[var(--text-tertiary)]">
                           {a.attorney.user.email}
                           {a.attorney.barNumber && ` | ${a.attorney.barNumber}`}
                         </p>
                       </div>
                       <div>
                         {a.acceptedAt ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/50 uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                             <CheckCircle2 size={11} />
                             Accepted
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/35 uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
                             <Clock size={11} />
                             Pending
                           </span>
@@ -548,12 +591,15 @@ export default function EngagementDetailPage() {
             </div>
 
             {/* Comments */}
-            <div className="glass-elevated rounded-2xl p-6 border border-white/[0.06]">
-              <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <MessageSquare size={15} className="text-white/50" />
+            <div className="glass-elevated rounded-2xl p-6 border border-[var(--separator)]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <MessageSquare
+                  size={15}
+                  className="text-[var(--text-secondary)]"
+                />
                 Comments ({engagement._count.comments})
               </h2>
-              <p className="text-xs text-white/40 py-4 text-center">
+              <p className="text-xs text-[var(--text-tertiary)] py-4 text-center">
                 {engagement._count.comments === 0
                   ? "No comments yet."
                   : `${engagement._count.comments} comment(s) — view in the full audit log.`}
@@ -564,8 +610,8 @@ export default function EngagementDetailPage() {
           {/* Right Column: Actions */}
           <div className="space-y-6">
             {/* Actions Panel */}
-            <div className="glass-elevated rounded-2xl p-5 border border-white/[0.06]">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-4">
+            <div className="glass-elevated rounded-2xl p-5 border border-[var(--separator)]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-4">
                 Actions
               </h3>
 
@@ -576,7 +622,7 @@ export default function EngagementDetailPage() {
                     <button
                       onClick={() => setShowExtendOptions(!showExtendOptions)}
                       disabled={actionLoading}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[13px] font-medium text-white/70 bg-white/[0.06] hover:bg-white/10 disabled:opacity-40 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[13px] font-medium text-[var(--text-secondary)] bg-[var(--fill-medium)] hover:bg-[var(--fill-medium)]/80 disabled:opacity-40 transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <Calendar size={14} />
@@ -603,7 +649,7 @@ export default function EngagementDetailPage() {
                                 key={opt.days}
                                 onClick={() => handleExtend(opt.days)}
                                 disabled={actionLoading}
-                                className="w-full text-left px-4 py-2 rounded-lg text-xs text-white/60 hover:text-white/80 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
+                                className="w-full text-left px-4 py-2 rounded-lg text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--fill-light)] hover:bg-[var(--fill-medium)] disabled:opacity-40 transition-colors"
                               >
                                 {opt.label}
                               </button>
@@ -620,7 +666,7 @@ export default function EngagementDetailPage() {
                   <button
                     onClick={handleToggleExport}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[13px] font-medium text-white/70 bg-white/[0.06] hover:bg-white/10 disabled:opacity-40 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[13px] font-medium text-[var(--text-secondary)] bg-[var(--fill-medium)] hover:bg-[var(--fill-medium)]/80 disabled:opacity-40 transition-colors"
                   >
                     <span className="flex items-center gap-2">
                       <Download size={14} />
@@ -629,7 +675,9 @@ export default function EngagementDetailPage() {
                     </span>
                     <div
                       className={`w-8 h-4 rounded-full ${
-                        engagement.allowExport ? "bg-white/25" : "bg-white/10"
+                        engagement.allowExport
+                          ? "bg-[var(--accent-primary)]"
+                          : "bg-[var(--fill-medium)]"
                       }`}
                     >
                       <div
@@ -648,7 +696,7 @@ export default function EngagementDetailPage() {
                   <button
                     onClick={handleRevoke}
                     disabled={actionLoading}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium text-white/40 hover:text-white/70 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] bg-[var(--fill-light)] hover:bg-[var(--fill-medium)] disabled:opacity-40 transition-colors"
                   >
                     <Ban size={14} />
                     Revoke Access
@@ -656,11 +704,11 @@ export default function EngagementDetailPage() {
                 )}
 
                 {isRevoked && engagement.revokedAt && (
-                  <div className="px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                    <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">
+                  <div className="px-4 py-3 rounded-xl bg-[var(--fill-light)] border border-[var(--separator)]">
+                    <p className="text-[11px] uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
                       Revoked
                     </p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       {new Date(engagement.revokedAt).toLocaleDateString(
                         "de-DE",
                         {
@@ -678,16 +726,16 @@ export default function EngagementDetailPage() {
             </div>
 
             {/* Meta Info */}
-            <div className="glass-elevated rounded-2xl p-5 border border-white/[0.06]">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-3">
+            <div className="glass-elevated rounded-2xl p-5 border border-[var(--separator)]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">
                 Details
               </h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-white/35 mb-0.5">
+                  <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
                     Created
                   </p>
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     {new Date(engagement.createdAt).toLocaleDateString(
                       "de-DE",
                       {
@@ -699,23 +747,23 @@ export default function EngagementDetailPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-white/35 mb-0.5">
+                  <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
                     Engagement ID
                   </p>
-                  <p className="text-[11px] text-white/40 font-mono truncate">
+                  <p className="text-[11px] text-[var(--text-tertiary)] font-mono truncate">
                     {engagement.id}
                   </p>
                 </div>
                 {engagement.firm.website && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-white/35 mb-0.5">
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">
                       Firm Website
                     </p>
                     <a
                       href={engagement.firm.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-white/50 hover:text-white/70 transition-colors underline underline-offset-2"
+                      className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors underline underline-offset-2"
                     >
                       {engagement.firm.website}
                     </a>
