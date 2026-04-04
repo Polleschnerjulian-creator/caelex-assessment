@@ -1,0 +1,141 @@
+<h2>Suite Overview Dashboard: Layout</h2>
+<p class="subtitle">Was soll der Kunde sehen wenn er "Suite Overview" klickt?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Score-First: Unified Cyber Score als Hero</h3>
+      <p>Großer aggregierter Score oben (0-100, A-F Grade), darunter 3 Module als Karten mit je eigenem Score und Status. Cross-Regulation Matrix unten.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="background:#0a0f1e;padding:20px;border-radius:12px;color:#e2e8f0">
+          <div style="text-align:center;padding:24px 0">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.15em;color:#64748b">Unified Cyber Score</div>
+            <div style="font-size:56px;font-weight:700;color:#10b981">72</div>
+            <div style="font-size:14px;color:#94a3b8">Grade B — Mostly Compliant</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:#64748b;text-transform:uppercase">ENISA Controls</div>
+              <div style="font-size:28px;font-weight:600;color:#f59e0b">65%</div>
+              <div style="font-size:12px;color:#94a3b8">52 Requirements</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:#64748b;text-transform:uppercase">NIS2 Directive</div>
+              <div style="font-size:28px;font-weight:600;color:#10b981">78%</div>
+              <div style="font-size:12px;color:#94a3b8">51 Requirements</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:#64748b;text-transform:uppercase">CRA</div>
+              <div style="font-size:28px;font-weight:600;color:#ef4444">34%</div>
+              <div style="font-size:12px;color:#94a3b8">40 Requirements</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:8px">Cross-Regulation Matrix</div>
+            <div style="font-size:12px;color:#94a3b8">8 overlapping requirements &bull; ~12 Wochen geschätzte Einsparung</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Action-First: Nächste Schritte als Hero</h3>
+      <p>Score kleiner oben rechts. Hero ist eine priorisierte Action-Liste: "Upload SBOM → erfüllt 3 Requirements gleichzeitig". Darunter Module-Karten und Timeline.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="background:#0a0f1e;padding:20px;border-radius:12px;color:#e2e8f0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:18px;font-weight:600">Cybersecurity Suite</div>
+              <div style="font-size:12px;color:#94a3b8">3 Regulierungen &bull; 143 Requirements</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:32px;font-weight:700;color:#10b981">72</div>
+              <div style="font-size:11px;color:#64748b">CYBER SCORE</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:#10b981;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Nächste Aktionen (Highest Impact)</div>
+            <div style="font-size:13px;color:#e2e8f0;margin-bottom:6px">1. SBOM hochladen <span style="color:#64748b">→ CRA-038 + NIS2 Supply Chain + ENISA SC-01</span></div>
+            <div style="font-size:13px;color:#e2e8f0;margin-bottom:6px">2. Vulnerability Disclosure Policy erstellen <span style="color:#64748b">→ CRA-014 + NIS2 Art. 21(2)(e)</span></div>
+            <div style="font-size:13px;color:#e2e8f0">3. Incident Response Plan dokumentieren <span style="color:#64748b">→ NIS2 Art. 23 + CRA Art. 14</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748b">ENISA</div>
+              <div style="font-size:22px;font-weight:600;color:#f59e0b">65%</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748b">NIS2</div>
+              <div style="font-size:22px;font-weight:600;color:#10b981">78%</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748b">CRA</div>
+              <div style="font-size:22px;font-weight:600;color:#ef4444">34%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Matrix-First: Cross-Regulation als Hero</h3>
+      <p>Die Cross-Regulation-Matrix ist das Hauptelement. Zeilen = Themen (Access Control, Crypto, Incident Response...), Spalten = NIS2/CRA/ENISA. Grün = compliant, Rot = Gap. Score und Aktionen sekundär.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="background:#0a0f1e;padding:20px;border-radius:12px;color:#e2e8f0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:18px;font-weight:600">Compliance Matrix</div>
+            <div style="font-size:24px;font-weight:700;color:#10b981">72 <span style="font-size:13px;color:#64748b">/ 100</span></div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <tr style="color:#64748b;text-transform:uppercase;font-size:10px;letter-spacing:0.1em">
+              <td style="padding:8px 0">Thema</td>
+              <td style="text-align:center">ENISA</td>
+              <td style="text-align:center">NIS2</td>
+              <td style="text-align:center">CRA</td>
+              <td style="text-align:center">Status</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+              <td style="padding:8px 0;color:#94a3b8">Access Control</td>
+              <td style="text-align:center">&#9989;</td>
+              <td style="text-align:center">&#9989;</td>
+              <td style="text-align:center;color:#ef4444">&#10060;</td>
+              <td style="text-align:center;color:#f59e0b">Partial</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+              <td style="padding:8px 0;color:#94a3b8">Cryptography</td>
+              <td style="text-align:center">&#9989;</td>
+              <td style="text-align:center">&#9989;</td>
+              <td style="text-align:center">&#9989;</td>
+              <td style="text-align:center;color:#10b981">Complete</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+              <td style="padding:8px 0;color:#94a3b8">Incident Response</td>
+              <td style="text-align:center;color:#ef4444">&#10060;</td>
+              <td style="text-align:center;color:#f59e0b">&#9898;</td>
+              <td style="text-align:center;color:#ef4444">&#10060;</td>
+              <td style="text-align:center;color:#ef4444">Gap</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+              <td style="padding:8px 0;color:#94a3b8">Supply Chain / SBOM</td>
+              <td style="text-align:center;color:#f59e0b">&#9898;</td>
+              <td style="text-align:center;color:#f59e0b">&#9898;</td>
+              <td style="text-align:center;color:#ef4444">&#10060;</td>
+              <td style="text-align:center;color:#ef4444">Gap</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+              <td style="padding:8px 0;color:#64748b">... 8 more themes</td>
+              <td colspan="4"></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

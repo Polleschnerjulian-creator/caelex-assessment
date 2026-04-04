@@ -13,7 +13,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
-import { hasPermission } from "@/lib/permissions";
+import { roleHasPermission } from "@/lib/permissions";
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -57,7 +57,7 @@ export async function POST(
     }
 
     // Permission check
-    if (!hasPermission(orgContext.permissions, "legal:write")) {
+    if (!roleHasPermission(orgContext.role, "legal:write")) {
       return createErrorResponse(
         "Insufficient permissions",
         ErrorCode.FORBIDDEN,

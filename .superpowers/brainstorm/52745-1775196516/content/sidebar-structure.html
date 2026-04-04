@@ -1,0 +1,84 @@
+<h2>Sidebar: Cybersecurity Suite Gruppierung</h2>
+<p class="subtitle">Wie sollen die 3 Cyber-Module in der Sidebar organisiert werden?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Nested Group unter EU Regulations</h3>
+      <p>EU Regulations bleibt der Parent. "Cybersecurity" wird ein Sub-Header mit 3 Kindern darunter. Alle anderen Module (Debris, Insurance...) bleiben auf gleicher Ebene.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:2;color:#94a3b8">
+          <div style="color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">EU Regulations &nbsp; 13</div>
+          <div style="padding-left:12px">
+            <div>Authorization</div>
+            <div style="color:#10b981;font-weight:600">&#9660; Cybersecurity</div>
+            <div style="padding-left:20px;border-left:1px solid #10b981;margin-left:8px">
+              <div>ENISA Controls</div>
+              <div>NIS2 Directive</div>
+              <div>Cyber Resilience Act</div>
+            </div>
+            <div>Debris Mitigation</div>
+            <div>Environmental</div>
+            <div>Insurance</div>
+            <div style="color:#64748b">... 6 more</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Eigene Top-Level Section "Cybersecurity"</h3>
+      <p>"Cybersecurity" wird eine eigene Section auf gleicher Ebene wie "EU Regulations" und "Evidence Collection". Die 3 Module plus ein Suite-Dashboard sind darunter. EU Regulations hat dann nur noch 10 Module.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:2;color:#94a3b8">
+          <div style="color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Cybersecurity &nbsp; <span style="color:#10b981">Suite</span></div>
+          <div style="padding-left:12px">
+            <div style="color:#10b981">&#9654; Suite Overview</div>
+            <div>ENISA Controls</div>
+            <div>NIS2 Directive</div>
+            <div>Cyber Resilience Act</div>
+          </div>
+          <div style="margin-top:16px;color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">EU Regulations &nbsp; 10</div>
+          <div style="padding-left:12px">
+            <div>Authorization</div>
+            <div>Debris Mitigation</div>
+            <div>Environmental</div>
+            <div style="color:#64748b">... 7 more</div>
+          </div>
+          <div style="margin-top:16px;color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Evidence Collection</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid: Cybersecurity Top-Level + Link in EU Regulations</h3>
+      <p>Wie B, aber in EU Regulations bleibt ein einzelner "Cybersecurity" Eintrag als Shortcut der zur Suite navigiert. Best of both worlds: klare Gruppierung PLUS Auffindbarkeit im Regulation-Kontext.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:2;color:#94a3b8">
+          <div style="color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Cybersecurity &nbsp; <span style="color:#10b981">Suite</span></div>
+          <div style="padding-left:12px">
+            <div style="color:#10b981">&#9654; Suite Overview</div>
+            <div>ENISA Controls</div>
+            <div>NIS2 Directive</div>
+            <div>Cyber Resilience Act</div>
+          </div>
+          <div style="margin-top:16px;color:#64748b;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">EU Regulations &nbsp; 11</div>
+          <div style="padding-left:12px">
+            <div>Authorization</div>
+            <div style="color:#475569">Cybersecurity &#8594; <span style="color:#10b981;font-size:11px">Suite</span></div>
+            <div>Debris Mitigation</div>
+            <div>Environmental</div>
+            <div style="color:#64748b">... 7 more</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

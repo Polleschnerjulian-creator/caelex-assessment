@@ -9,7 +9,7 @@
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
-import { hasPermission } from "@/lib/permissions";
+import { roleHasPermission } from "@/lib/permissions";
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -65,7 +65,7 @@ export async function GET(
     }
 
     // Permission check
-    if (!hasPermission(orgContext.permissions, "legal:read")) {
+    if (!roleHasPermission(orgContext.role, "legal:read")) {
       return createErrorResponse(
         "Insufficient permissions",
         ErrorCode.FORBIDDEN,
@@ -120,7 +120,7 @@ export async function PATCH(
     }
 
     // Permission check
-    if (!hasPermission(orgContext.permissions, "legal:write")) {
+    if (!roleHasPermission(orgContext.role, "legal:write")) {
       return createErrorResponse(
         "Insufficient permissions",
         ErrorCode.FORBIDDEN,
@@ -196,7 +196,7 @@ export async function DELETE(
     }
 
     // Permission check
-    if (!hasPermission(orgContext.permissions, "legal:write")) {
+    if (!roleHasPermission(orgContext.role, "legal:write")) {
       return createErrorResponse(
         "Insufficient permissions",
         ErrorCode.FORBIDDEN,
