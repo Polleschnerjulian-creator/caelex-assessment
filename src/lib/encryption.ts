@@ -369,6 +369,7 @@ export const ENCRYPTED_FIELDS: Record<string, string[]> = {
   CybersecurityRequirementStatus: ["notes", "evidenceNotes"],
   NIS2RequirementStatus: ["notes", "evidenceNotes"],
   SupervisionReport: ["content", "rejectionReason"],
+  LegalReviewComment: ["content"],
 };
 
 /**

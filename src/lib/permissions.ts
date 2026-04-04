@@ -20,7 +20,8 @@ export type PermissionCategory =
   | "api"
   | "network"
   | "assure"
-  | "academy";
+  | "academy"
+  | "legal";
 
 export type PermissionAction =
   | "read"
@@ -113,6 +114,11 @@ export const ALL_PERMISSIONS: string[] = [
   "academy:sandbox",
   "academy:instruct",
   "academy:admin",
+
+  // Legal
+  "legal:read",
+  "legal:write",
+  "legal:review",
 ];
 
 // ─── Role Permission Matrix ───
@@ -179,6 +185,10 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "academy:sandbox",
     "academy:instruct",
     "academy:admin",
+    // Legal
+    "legal:read",
+    "legal:write",
+    "legal:review",
   ],
 
   MANAGER: [
@@ -220,6 +230,9 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "academy:simulate",
     "academy:sandbox",
     "academy:instruct",
+    // Legal
+    "legal:read",
+    "legal:write",
   ],
 
   MEMBER: [
@@ -418,6 +431,11 @@ export const PERMISSION_DESCRIPTIONS: Record<string, string> = {
   "academy:sandbox": "Access the compliance sandbox",
   "academy:instruct": "Create and manage classrooms",
   "academy:admin": "Manage all Academy courses and content",
+
+  // Legal
+  "legal:read": "View legal engagements and documents",
+  "legal:write": "Create and update legal engagements",
+  "legal:review": "Review and approve legal assessments",
 };
 
 // ─── Role Descriptions ───
@@ -512,4 +530,5 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   network: "Compliance Network",
   assure: "Regulatory Readiness (Assure)",
   academy: "Academy",
+  legal: "Legal Portal",
 };
