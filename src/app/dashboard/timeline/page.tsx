@@ -26,7 +26,9 @@ import {
   Download,
   X,
   Diamond,
+  BarChart3,
 } from "lucide-react";
+import GanttView from "@/components/timeline/GanttView";
 import {
   deadlineColors,
   categoryMetadata,
@@ -72,7 +74,12 @@ const selectClass =
 
 // ─── Types ───
 
-type Step = "overview" | "calendar" | "mission-timeline" | "reminders";
+type Step =
+  | "overview"
+  | "calendar"
+  | "deadline-gantt"
+  | "mission-timeline"
+  | "reminders";
 
 interface Deadline {
   id: string;
@@ -110,6 +117,11 @@ interface CalendarEvent {
 const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <LayoutList size={16} /> },
   { id: "calendar", label: "Calendar", icon: <CalendarDays size={16} /> },
+  {
+    id: "deadline-gantt",
+    label: "Deadline Gantt",
+    icon: <BarChart3 size={16} />,
+  },
   {
     id: "mission-timeline",
     label: "Mission Timeline",
@@ -663,7 +675,7 @@ function TimelinePageContent() {
     try {
       const [dashboardRes, deadlinesRes] = await Promise.all([
         fetch("/api/timeline"),
-        fetch("/api/timeline/deadlines?status=active&limit=20"),
+        fetch("/api/timeline/deadlines?status=active&limit=100"),
       ]);
 
       if (dashboardRes.ok) {
@@ -1323,6 +1335,34 @@ function TimelinePageContent() {
                 <div className="grid grid-cols-7 border-l border-t border-black/[0.04] dark:border-white/5">
                   {renderCalendar()}
                 </div>
+              </div>
+            )}
+
+            {/* ─── Deadline Gantt ─── */}
+            {activeStep === "deadline-gantt" && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-base font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                    <BarChart3 size={18} className="text-slate-400" />
+                    Deadline Timeline
+                  </h3>
+                </div>
+                <GanttView
+                  deadlines={[
+                    ...deadlines,
+                    ...overdueDeadlines.filter(
+                      (od) => !deadlines.some((d) => d.id === od.id),
+                    ),
+                  ].filter((d) => {
+                    const matchesCat =
+                      !selectedCategoryFilter ||
+                      d.category === selectedCategoryFilter;
+                    const matchesPri =
+                      !selectedPriorityFilter ||
+                      d.priority === selectedPriorityFilter;
+                    return matchesCat && matchesPri;
+                  })}
+                />
               </div>
             )}
 
