@@ -4,7 +4,7 @@ import type { ReportConfig, ReportSection } from "../types";
 
 /**
  * Debris Mitigation Plan Data Structure
- * Based on EU Space Act Art. 12 requirements
+ * Based on EU Space Act Art. 63-73 requirements (COM(2025) 335)
  */
 export interface DebrisMitigationPlanData {
   // Header info
@@ -106,7 +106,7 @@ export function buildDebrisMitigationPlanConfig(
     content: [
       {
         type: "text",
-        value: `This Debris Mitigation Plan has been prepared in accordance with EU Space Act Article 12 and the EU Space Law Guidelines on Space Debris Mitigation. It demonstrates compliance with international standards including IADC Space Debris Mitigation Guidelines and ISO 24113.`,
+        value: `This Debris Mitigation Plan has been prepared in accordance with EU Space Act Art. 63-73 (COM(2025) 335) and the EU Space Law Guidelines on Space Debris Mitigation. It demonstrates compliance with international standards including IADC Space Debris Mitigation Guidelines and ISO 24113.`,
       },
       {
         type: "alert",
@@ -207,14 +207,14 @@ export function buildDebrisMitigationPlanConfig(
     ],
   });
 
-  // 3. Collision Avoidance (Art. 12(2)(a))
+  // 3. Collision Avoidance (Art. 64)
   sections.push({
     title: "3. Collision Avoidance Strategy",
     content: [
       {
         type: "text",
         value:
-          "Per EU Space Act Article 12(2)(a), the following collision avoidance measures are implemented:",
+          "Per EU Space Act Art. 64 (COM(2025) 335), the following collision avoidance measures are implemented:",
       },
       {
         type: "keyValue",
@@ -250,14 +250,14 @@ export function buildDebrisMitigationPlanConfig(
     ],
   });
 
-  // 4. End-of-Life Disposal (Art. 12(2)(b))
+  // 4. End-of-Life Disposal (Art. 67-72)
   sections.push({
     title: "4. End-of-Life Disposal Plan",
     content: [
       {
         type: "text",
         value:
-          "Per EU Space Act Article 12(2)(b), the following end-of-life disposal measures are planned:",
+          "Per EU Space Act Art. 67-72 (COM(2025) 335), the following end-of-life disposal measures are planned:",
       },
       {
         type: "keyValue",
@@ -446,7 +446,7 @@ export function buildDebrisMitigationPlanConfig(
       {
         type: "list",
         items: [
-          "EU Space Act (COM(2024) XXX) Article 12 - Space Debris Mitigation",
+          "EU Space Act (COM(2025) 335) Art. 63-73 - Space Debris Mitigation",
           "IADC Space Debris Mitigation Guidelines (2020 revision)",
           "ISO 24113:2019 - Space systems - Space debris mitigation requirements",
           "UN COPUOS Space Debris Mitigation Guidelines",
@@ -489,7 +489,7 @@ export function buildDebrisMitigationPlanConfig(
     },
     header: {
       title: "Debris Mitigation Plan",
-      subtitle: `${data.missionName} - EU Space Act Art. 12 Compliance`,
+      subtitle: `${data.missionName} - EU Space Act Art. 63-73 Compliance`,
       reportNumber: data.reportNumber,
       date: data.reportDate,
       logo: true,

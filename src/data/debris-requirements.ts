@@ -1,6 +1,6 @@
 /**
- * @deprecated Use `src/data/regulatory/standards/iadc-guidelines.ts` + `src/data/regulatory/standards/iso-24113.ts` instead.
- * The new regulatory layer uses IADC and ISO 24113 as primary enacted references.
+ * Debris Mitigation Requirements — EU Space Act (COM(2025) 335) Art. 63-73
+ * Primary data source for the Debris Mitigation module.
  */
 
 /**
@@ -289,6 +289,22 @@ export const debrisRequirements: DebrisRequirement[] = [
         type: "number",
         unit: "hours",
         placeholder: "e.g., 6",
+      },
+      {
+        id: "maneuverTriggerPcThreshold",
+        label: "Collision probability maneuver trigger threshold",
+        type: "select",
+        options: [
+          { value: "1e-4", label: "1\u00d710\u207b\u2074 (standard)" },
+          { value: "1e-5", label: "1\u00d710\u207b\u2075 (conservative)" },
+          {
+            value: "1e-3",
+            label: "1\u00d710\u207b\u00b3 (high-risk tolerance)",
+          },
+          { value: "custom", label: "Custom" },
+        ],
+        helpText:
+          "Probability of collision threshold that triggers a collision avoidance maneuver. IADC recommends 1\u00d710\u207b\u2074 for mandatory maneuver.",
       },
     ],
     complianceRule: {

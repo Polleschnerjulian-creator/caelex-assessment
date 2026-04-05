@@ -335,6 +335,10 @@ model DebrisAssessment {
   // CA Service
   caServiceProvider String?
 
+  // Spacecraft link
+  spacecraftId String?
+  spacecraft   Spacecraft? @relation(fields: [spacecraftId], references: [id])
+
   // Status
   complianceScore Int? // 0-100
   planGenerated   Boolean   @default(false)
@@ -348,6 +352,7 @@ model DebrisAssessment {
 
   @@index([userId])
   @@index([organizationId])
+  @@index([spacecraftId])
 }
 
 model DebrisRequirementStatus {
@@ -2819,6 +2824,7 @@ model Spacecraft {
   optimizationResults OptimizationResult[]
   assets              Asset[]
   hazardEntries       HazardEntry[]
+  debrisAssessments   DebrisAssessment[]
 
   @@index([organizationId])
   @@index([cosparId])

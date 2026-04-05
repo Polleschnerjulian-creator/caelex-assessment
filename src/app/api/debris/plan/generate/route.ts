@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   debrisRequirements,
   orbitTypeConfig,
@@ -260,6 +262,19 @@ export async function POST(request: Request) {
         planGeneratedAt: new Date(),
       },
     });
+
+    // Sync debris plan status to authorization documents (best-effort)
+    try {
+      const { syncDebrisPlanToAuthorizationDocs } =
+        await import("@/lib/services/authorization-document-sync.server");
+      await syncDebrisPlanToAuthorizationDocs(
+        assessment.organizationId,
+        true,
+        assessment.complianceScore || 0,
+      );
+    } catch (syncErr) {
+      logger.warn("Failed to sync debris plan to authorization docs", syncErr);
+    }
 
     // Log audit event
     const { ipAddress, userAgent } = getRequestContext(request);
