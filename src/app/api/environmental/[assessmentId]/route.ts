@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logger } from "@/lib/logger";
 
 // GET /api/environmental/[assessmentId] - Get assessment details
@@ -18,6 +24,9 @@ export async function GET(
 
     const { assessmentId } = await params;
     const userId = session.user.id;
+
+    const rl = await checkRateLimit("api", getIdentifier(request, userId));
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const assessment = await prisma.environmentalAssessment.findFirst({
       where: {
@@ -64,6 +73,13 @@ export async function PATCH(
 
     const { assessmentId } = await params;
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const patchSchema = z.object({
@@ -74,7 +90,7 @@ export async function PATCH(
       missionType: z
         .enum(["commercial", "research", "government", "educational"])
         .optional(),
-      spacecraftMassKg: z.number().optional(),
+      spacecraftMassKg: z.number().positive().optional(),
       spacecraftCount: z.number().optional(),
       orbitType: z
         .enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"])
@@ -108,11 +124,17 @@ export async function PATCH(
       );
     }
 
-    // Verify ownership
+    // Verify ownership with org-scoping
+    const orgContext = await getCurrentOrganization(userId);
     const existing = await prisma.environmentalAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 
@@ -179,11 +201,23 @@ export async function DELETE(
     const { assessmentId } = await params;
     const userId = session.user.id;
 
-    // Verify ownership
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
+    // Verify ownership with org-scoping
+    const orgContext = await getCurrentOrganization(userId);
     const existing = await prisma.environmentalAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 

@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSafeErrorMessage } from "@/lib/validations";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
 import { fetchAtmosphericData } from "@/lib/data-sources";
 import { getLaunchSiteForVehicle } from "@/data/launch-sites";
 
@@ -17,6 +22,12 @@ export async function GET(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(
+      "assessment",
+      getIdentifier(req, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { searchParams } = new URL(req.url);
     const assessmentId = searchParams.get("assessmentId");

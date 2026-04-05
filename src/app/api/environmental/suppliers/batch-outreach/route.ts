@@ -4,6 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendBatchOutreach } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 /**
@@ -19,6 +24,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const schema = z.object({

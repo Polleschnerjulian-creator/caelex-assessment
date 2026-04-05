@@ -5,6 +5,11 @@ import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import {
   calculateScreeningLCA,
   type MissionProfile,
   type LaunchVehicleId,
@@ -12,7 +17,7 @@ import {
 import { logger } from "@/lib/logger";
 
 // GET /api/environmental - List user's environmental assessments
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -20,6 +25,9 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit("api", getIdentifier(request, userId));
+    if (!rl.success) return createRateLimitResponse(rl);
 
     // Resolve organization context for multi-tenant scoping
     const orgContext = await getCurrentOrganization(userId);
@@ -62,6 +70,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const schema = z.object({

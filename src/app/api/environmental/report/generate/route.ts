@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import {
   launchVehicles,
   propellantProfiles,
   efdGradeThresholds,
@@ -114,6 +119,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "document_generation",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const schema = z.object({
@@ -249,7 +261,7 @@ export async function POST(request: Request) {
     );
     if (manufacturingHotspot) {
       recommendations.push(
-        "Manufacturing is a significant contributor. Request environmental data from key suppliers per Art. 99.",
+        "Manufacturing is a significant contributor. Request environmental data from key suppliers per Art. 46.",
       );
       recommendations.push(
         "Prioritize suppliers with recycled material content and renewable energy certifications.",

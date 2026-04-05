@@ -4,6 +4,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import {
   calculateScreeningLCA,
   calculateComplianceScore,
   type MissionProfile,
@@ -21,6 +27,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "assessment",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const schema = z.object({
@@ -37,11 +50,17 @@ export async function POST(request: Request) {
 
     const { assessmentId } = parsed.data;
 
-    // Get assessment
+    // Get assessment with org-scoping
+    const orgContext = await getCurrentOrganization(userId);
     const assessment = await prisma.environmentalAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 

@@ -412,6 +412,54 @@ function EnvironmentalPageContent() {
     }
   }
 
+  async function sendSupplierRequest(supplierId: string) {
+    if (!selectedAssessment) return;
+    try {
+      const res = await fetch("/api/environmental/suppliers/outreach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({
+          requestId: supplierId,
+          assessmentId: selectedAssessment.id,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to send request");
+      // Refresh supplier list to reflect updated status
+      await fetchSuppliers();
+    } catch (err) {
+      console.error("Failed to send supplier outreach:", err);
+      setError("Failed to send supplier request email");
+    }
+  }
+
+  async function downloadPdf() {
+    if (!selectedAssessment) return;
+    try {
+      const res = await fetch("/api/environmental/report/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ assessmentId: selectedAssessment.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error || "Failed to download PDF");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `efd-report-${selectedAssessment.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+      setError("Failed to download PDF");
+    }
+  }
+
   async function generateReport() {
     if (!selectedAssessment) return;
 
@@ -490,7 +538,7 @@ function EnvironmentalPageContent() {
           </h1>
           <p className="text-body-lg text-[var(--text-secondary)]">
             Calculate your mission&apos;s environmental impact and generate your
-            EFD (Art. 96-100)
+            EFD (Art. 44-46)
           </p>
         </div>
 
@@ -694,6 +742,7 @@ function EnvironmentalPageContent() {
                 suppliers={suppliers}
                 onGenerateDefaults={generateDefaultSuppliers}
                 onUpdateStatus={updateSupplierStatus}
+                onSendRequest={sendSupplierRequest}
                 onNext={() => setCurrentStep("report")}
                 onBack={() => setCurrentStep("calculator")}
                 loading={loading}
@@ -706,6 +755,7 @@ function EnvironmentalPageContent() {
                 report={report}
                 generating={generatingReport}
                 onGenerate={generateReport}
+                onDownloadPdf={downloadPdf}
                 onBack={() => setCurrentStep("suppliers")}
               />
             )}
@@ -1528,6 +1578,7 @@ function SuppliersStep({
   suppliers,
   onGenerateDefaults,
   onUpdateStatus,
+  onSendRequest,
   onNext,
   onBack,
   loading,
@@ -1535,6 +1586,7 @@ function SuppliersStep({
   suppliers: SupplierRequest[];
   onGenerateDefaults: () => void;
   onUpdateStatus: (id: string, status: string) => void;
+  onSendRequest: (id: string) => void;
   onNext: () => void;
   onBack: () => void;
   loading: boolean;
@@ -1556,7 +1608,7 @@ function SuppliersStep({
         />
         <div>
           <p className="text-body text-[var(--accent-primary)] font-medium mb-1">
-            Article 99: Supply Chain Data Collection
+            Article 46: Supply Chain Data Collection
           </p>
           <p className="text-small text-[var(--accent-primary)]/70">
             You may request environmental data from suppliers to improve LCA
@@ -1670,7 +1722,10 @@ function SuppliersStep({
                   </div>
 
                   {supplier.status === "pending" && (
-                    <button className="mt-3 flex items-center gap-1.5 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]">
+                    <button
+                      onClick={() => onSendRequest(supplier.id)}
+                      className="mt-3 flex items-center gap-1.5 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
+                    >
                       <Mail className="w-3.5 h-3.5" aria-hidden="true" />
                       Send Request Email
                     </button>
@@ -1733,12 +1788,14 @@ function ReportStep({
   report,
   generating,
   onGenerate,
+  onDownloadPdf,
   onBack,
 }: {
   assessment: Assessment;
   report: any;
   generating: boolean;
   onGenerate: () => void;
+  onDownloadPdf: () => void;
   onBack: () => void;
 }) {
   if (!report) {
@@ -1815,7 +1872,10 @@ function ReportStep({
               </p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-secondary)]">
+          <button
+            onClick={onDownloadPdf}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken-hover,var(--surface-sunken))] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-secondary)] transition-colors"
+          >
             <Download className="w-4 h-4" aria-hidden="true" />
             Download PDF
           </button>
