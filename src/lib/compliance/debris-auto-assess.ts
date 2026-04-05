@@ -73,6 +73,20 @@ export function suggestComplianceStatus(
     }
   }
 
+  // B-3: Enforce 5-year rule when operator selected "5_year" standard
+  if (
+    allPass &&
+    responses?.complianceStandard === "5_year" &&
+    responses?.predictedLifetimeYears !== undefined &&
+    responses?.predictedLifetimeYears !== null &&
+    responses?.predictedLifetimeYears !== ""
+  ) {
+    const lifetime = Number(responses.predictedLifetimeYears);
+    if (!isNaN(lifetime) && lifetime > 5) {
+      return "non_compliant";
+    }
+  }
+
   if (allPass) return "compliant";
   if (anyExplicitFail) return "non_compliant";
   return null;

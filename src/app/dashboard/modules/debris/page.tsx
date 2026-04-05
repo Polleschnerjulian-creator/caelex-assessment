@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FeatureGate from "@/components/dashboard/FeatureGate";
@@ -82,6 +82,22 @@ interface RequirementWithStatus extends DebrisRequirement {
   statusId: string | null;
 }
 
+// Static cross-reference mapping: requirement ID -> IADC guideline section
+const IADC_CROSS_REF: Record<string, string> = {
+  trackability: "IADC-02-01 Rev. 7.1, \u00a75.1",
+  collision_avoidance_service: "IADC-02-01 Rev. 7.1, \u00a75.2",
+  maneuverability: "IADC-02-01 Rev. 7.1, \u00a75.2.2",
+  debris_mitigation_plan: "IADC-02-01 Rev. 7.1, \u00a74",
+  fragmentation_avoidance: "IADC-02-01 Rev. 7.1, \u00a75.3",
+  light_pollution: "IADC-02-01 Rev. 7.1, \u00a75.4",
+  large_constellation_management: "IADC-02-01 Rev. 7.1, \u00a75.3.3",
+  large_constellation_disposal: "IADC-02-01 Rev. 7.1, \u00a76.3",
+  end_of_life_leo: "IADC-02-01 Rev. 7.1, \u00a76.1",
+  end_of_life_geo: "IADC-02-01 Rev. 7.1, \u00a76.2",
+  end_of_life_meo: "IADC-02-01 Rev. 7.1, \u00a76.3",
+  passivation_eol: "IADC-02-01 Rev. 7.1, \u00a75.3.1",
+};
+
 // Wizard steps
 const STEPS = [
   {
@@ -100,6 +116,42 @@ const STEPS = [
     description: "Generate mitigation plan",
   },
 ];
+
+const PLAN_SECTION_LABELS: Record<string, string> = {
+  missionOverview: "Missionsübersicht",
+  collisionAvoidance: "Kollisionsvermeidung",
+  passivation: "Passivierung",
+  endOfLifeDisposal: "End-of-Life Entsorgung",
+  twentyFiveYearCompliance: "25-Jahres-Regel Compliance",
+  trackability: "Verfolgbarkeit",
+  fragmentationAvoidance: "Fragmentierungsvermeidung",
+  maneuverCapability: "Manövrierfähigkeit",
+  constellationManagement: "Konstellationsmanagement",
+  complianceVerification: "Compliance-Verifizierung",
+};
+
+const PLAN_FIELD_LABELS: Record<string, string> = {
+  missionName: "Missionsname",
+  operator: "Betreiber",
+  orbitParameters: "Orbitparameter",
+  missionDuration: "Missionsdauer",
+  satelliteCount: "Satellitenanzahl",
+  constellationTier: "Konstellationsklasse",
+  strategy: "Strategie",
+  serviceProvider: "Dienstleister",
+  maneuverCapability: "Manövrierfähigkeit",
+  procedures: "Verfahren",
+  method: "Methode",
+  timeline: "Zeitplan",
+  propellantBudget: "Treibstoffbudget",
+  backupStrategy: "Backup-Strategie",
+  designMeasures: "Designmaßnahmen",
+  operationalProcedures: "Betriebsverfahren",
+  energySources: "Energiequellen",
+  twentyFiveYearCompliance: "25-Jahres-Compliance",
+  calculationMethod: "Berechnungsmethode",
+  uncertaintyMargin: "Unsicherheitsmarge",
+};
 
 function DebrisPageContent() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -134,9 +186,7 @@ function DebrisPageContent() {
   const [requirementResponses, setRequirementResponses] = useState<
     Record<string, Record<string, unknown>>
   >({});
-  const [saveTimers, setSaveTimers] = useState<Record<string, NodeJS.Timeout>>(
-    {},
-  );
+  const saveTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Generated plan state
   const [generatedPlan, setGeneratedPlan] = useState<Record<
@@ -144,12 +194,28 @@ function DebrisPageContent() {
     unknown
   > | null>(null);
   const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
   // Removed PDF download in favor of AI Document Studio
 
   useEffect(() => {
     fetchAssessments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // C-3: Load cached plan from localStorage when assessment changes
+  useEffect(() => {
+    if (selectedAssessment?.id && !generatedPlan) {
+      try {
+        const cached = localStorage.getItem(
+          `debris-plan-${selectedAssessment.id}`,
+        );
+        if (cached) setGeneratedPlan(JSON.parse(cached));
+      } catch {
+        // Ignore parse errors from corrupted cache
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAssessment?.id]);
 
   const fetchAssessments = async () => {
     try {
@@ -298,18 +364,18 @@ function DebrisPageContent() {
         const next = { ...prev, [requirementId]: updated };
 
         // Debounced save
-        if (saveTimers[requirementId]) {
-          clearTimeout(saveTimers[requirementId]);
+        if (saveTimersRef.current[requirementId]) {
+          clearTimeout(saveTimersRef.current[requirementId]);
         }
         const timer = setTimeout(() => {
           saveResponses(requirementId, updated);
         }, 500);
-        setSaveTimers((t) => ({ ...t, [requirementId]: timer }));
+        saveTimersRef.current[requirementId] = timer;
 
         return next;
       });
     },
-    [saveTimers, saveResponses],
+    [saveResponses],
   );
 
   const getFieldCompletionCount = (
@@ -327,6 +393,7 @@ function DebrisPageContent() {
     if (!selectedAssessment) return;
 
     setGeneratingPlan(true);
+    setPlanError(null);
     try {
       const res = await fetch("/api/debris/plan/generate", {
         method: "POST",
@@ -337,12 +404,24 @@ function DebrisPageContent() {
       if (res.ok) {
         const data = await res.json();
         setGeneratedPlan(data.plan);
+        // C-3: Persist generated plan in localStorage
+        localStorage.setItem(
+          `debris-plan-${selectedAssessment.id}`,
+          JSON.stringify(data.plan),
+        );
         setSelectedAssessment((prev) =>
           prev ? { ...prev, planGenerated: true } : prev,
         );
+      } else {
+        const errData = await res.json().catch(() => null);
+        setPlanError(
+          errData?.error || `Plan-Generierung fehlgeschlagen (${res.status})`,
+        );
       }
-    } catch (error) {
-      console.error("Error generating plan:", error);
+    } catch (err) {
+      setPlanError(
+        err instanceof Error ? err.message : "Plan-Generierung fehlgeschlagen",
+      );
     } finally {
       setGeneratingPlan(false);
     }
@@ -462,7 +541,15 @@ function DebrisPageContent() {
             </p>
           </div>
           <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
-            <p className="text-display font-semibold text-[var(--accent-success)]">
+            <p
+              className={`text-display font-semibold ${(() => {
+                const years = selectedAssessment?.deorbitTimelineYears;
+                if (!years) return "text-[var(--text-tertiary)]";
+                if (years <= 5) return "text-[var(--accent-success)]";
+                if (years <= 25) return "text-[var(--accent-warning)]";
+                return "text-[var(--accent-error)]";
+              })()}`}
+            >
               {selectedAssessment.deorbitTimelineYears || "\u2014"}
             </p>
             <p className="text-caption text-[var(--text-secondary)] mt-1">
@@ -1134,6 +1221,22 @@ function DebrisPageContent() {
                                   {req.complianceQuestion}
                                 </p>
 
+                                {/* COPUOS / IADC Cross-Reference */}
+                                {(req.isoReference ||
+                                  IADC_CROSS_REF[req.id]) && (
+                                  <p className="text-small text-[var(--text-tertiary)] mt-1">
+                                    {req.isoReference
+                                      ? `ISO 24113: ${req.isoReference}`
+                                      : ""}
+                                    {req.isoReference && IADC_CROSS_REF[req.id]
+                                      ? " | "
+                                      : ""}
+                                    {IADC_CROSS_REF[req.id]
+                                      ? `IADC Guideline: ${IADC_CROSS_REF[req.id]}`
+                                      : ""}
+                                  </p>
+                                )}
+
                                 {/* Sub-question form */}
                                 {fields.length > 0 && (
                                   <div className="p-4 bg-[var(--surface-sunken)][0.02] rounded-lg border border-[var(--border-subtle)][0.05]">
@@ -1182,6 +1285,21 @@ function DebrisPageContent() {
                                     </button>
                                   </div>
                                 )}
+
+                                {/* Contradiction warning */}
+                                {suggested &&
+                                  suggested !== req.status &&
+                                  req.status !== "not_assessed" && (
+                                    <div className="text-small text-red-500 mt-1">
+                                      Gespeicherter Status (
+                                      {requirementStatusConfig[req.status]
+                                        ?.label || req.status}
+                                      ) widerspricht den Antworten (
+                                      {requirementStatusConfig[suggested]
+                                        ?.label || suggested}
+                                      )
+                                    </div>
+                                  )}
 
                                 {/* Manual override */}
                                 <div className="flex items-center gap-3">
@@ -1337,11 +1455,27 @@ function DebrisPageContent() {
                     Generate Plan
                   </button>
 
+                  {planError && (
+                    <p className="text-small text-red-500 mt-2">{planError}</p>
+                  )}
+
                   <p className="text-caption text-[var(--text-secondary)]">
                     Compliance Score: {selectedAssessment.complianceScore || 0}%
                     • {requirements.length} requirements assessed
                   </p>
                 </div>
+
+                {selectedAssessment?.deorbitStrategy === "passive_decay" && (
+                  <div className="p-3 rounded-lg bg-[var(--fill-light)] border border-[var(--separator)] mt-3">
+                    <p className="text-small text-[var(--text-secondary)]">
+                      ⚠ Passive Decay Hinweis: Die orbitale Lebensdauer bei
+                      passivem Abbau ist stark abhängig von der Sonnenaktivität.
+                      Bei Sonnenminimum (niedriger F10.7 Fluss) sind die
+                      Abbauzeiten deutlich länger. Stellen Sie sicher, dass Ihre
+                      Analyse konservative Sonnenaktivitätsannahmen verwendet.
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -1371,7 +1505,7 @@ function DebrisPageContent() {
                   {/* Mission Overview */}
                   <div className="mb-6 p-4 bg-[var(--surface-sunken)] rounded-lg">
                     <h3 className="text-body font-medium text-[var(--text-primary)] mb-3">
-                      Mission Overview
+                      Missionsübersicht
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-small">
                       {Object.entries(
@@ -1384,7 +1518,10 @@ function DebrisPageContent() {
                       ).map(([key, value]) => (
                         <div key={key}>
                           <p className="text-[var(--text-secondary)] capitalize">
-                            {key.replace(/([A-Z])/g, " $1")}
+                            {PLAN_FIELD_LABELS[key] ||
+                              key
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (s) => s.toUpperCase())}
                           </p>
                           <p className="text-[var(--text-secondary)]">
                             {String(value)}
@@ -1407,14 +1544,20 @@ function DebrisPageContent() {
                       key={sectionKey}
                       className="mb-6 p-4 bg-[var(--surface-sunken)] rounded-lg"
                     >
-                      <h3 className="text-body font-medium text-[var(--text-primary)] mb-3 capitalize">
-                        {sectionKey.replace(/([A-Z])/g, " $1")}
+                      <h3 className="text-body font-medium text-[var(--text-primary)] mb-3">
+                        {PLAN_SECTION_LABELS[sectionKey] ||
+                          sectionKey
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (s) => s.toUpperCase())}
                       </h3>
                       <div className="space-y-3">
                         {Object.entries(section).map(([key, value]) => (
                           <div key={key}>
                             <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                              {key.replace(/([A-Z])/g, " $1")}
+                              {PLAN_FIELD_LABELS[key] ||
+                                key
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^./, (s) => s.toUpperCase())}
                             </p>
                             {Array.isArray(value) ? (
                               <ul className="space-y-1">

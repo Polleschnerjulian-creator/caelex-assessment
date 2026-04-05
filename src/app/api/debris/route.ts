@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { roleHasPermission } from "@/lib/permissions";
 import {
   getApplicableRequirements,
   getConstellationTier,
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
       ]),
       deorbitTimelineYears: z.number().optional(),
       caServiceProvider: z.string().optional(),
+      spacecraftId: z.string().optional(),
     });
 
     const parsed = schema.safeParse(body);
@@ -103,6 +106,7 @@ export async function POST(request: Request) {
       deorbitStrategy,
       deorbitTimelineYears,
       caServiceProvider,
+      spacecraftId,
     } = parsed.data;
 
     // Determine constellation tier
@@ -149,6 +153,7 @@ export async function POST(request: Request) {
           deorbitStrategy,
           deorbitTimelineYears,
           caServiceProvider,
+          spacecraftId: spacecraftId || null,
           complianceScore: 0,
         },
       });
@@ -232,14 +237,47 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { assessmentId, ...updateData } = body;
+    const updateSchema = z
+      .object({
+        assessmentId: z.string().min(1),
+        missionName: z.string().optional(),
+        orbitType: z
+          .enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"])
+          .optional(),
+        altitudeKm: z.number().optional(),
+        satelliteCount: z.number().optional(),
+        hasManeuverability: z.enum(["full", "limited", "none"]).optional(),
+        hasPropulsion: z.boolean().optional(),
+        hasPassivationCapability: z.boolean().optional(),
+        plannedMissionDurationYears: z.number().optional(),
+        launchDate: z.string().nullable().optional(),
+        deorbitStrategy: z
+          .enum([
+            "active_deorbit",
+            "passive_decay",
+            "graveyard_orbit",
+            "adr_contracted",
+          ])
+          .optional(),
+        deorbitTimelineYears: z.number().optional(),
+        caServiceProvider: z.string().nullable().optional(),
+        spacecraftId: z.string().nullable().optional(),
+      })
+      .partial()
+      .required({ assessmentId: true });
 
-    if (!assessmentId) {
+    const parsed = updateSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "assessmentId is required" },
+        {
+          error: "Invalid input",
+          details: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 },
       );
     }
+
+    const { assessmentId, ...updateData } = parsed.data;
 
     // Resolve organization context for multi-tenant scoping
     const orgCtxPut = await getCurrentOrganization(userId);
@@ -294,6 +332,8 @@ export async function PUT(request: Request) {
       prismaUpdateData.deorbitTimelineYears = updateData.deorbitTimelineYears;
     if (updateData.caServiceProvider !== undefined)
       prismaUpdateData.caServiceProvider = updateData.caServiceProvider;
+    if (updateData.spacecraftId !== undefined)
+      prismaUpdateData.spacecraftId = updateData.spacecraftId;
     // complianceScore is server-calculated only — not accepted from client input
 
     const updated = await prisma.debrisAssessment.update({
@@ -319,6 +359,98 @@ export async function PUT(request: Request) {
     return NextResponse.json({ assessment: updated });
   } catch (error) {
     logger.error("Error updating debris assessment", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+// DELETE /api/debris - Delete a debris assessment
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — sensitive tier for deletes
+    const deleteRateLimitResult = await checkRateLimit(
+      "sensitive",
+      session.user.id,
+    );
+    if (!deleteRateLimitResult.success) {
+      return createRateLimitResponse(deleteRateLimitResult);
+    }
+
+    const userId = session.user.id;
+    const body = await request.json();
+
+    const deleteSchema = z.object({
+      assessmentId: z.string().min(1),
+    });
+
+    const parsed = deleteSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { assessmentId } = parsed.data;
+
+    // RBAC: require compliance:write (MANAGER+) for DELETE
+    const orgContext = await getCurrentOrganization(userId);
+    if (orgContext && !roleHasPermission(orgContext.role, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
+    }
+
+    // Org-scoped query: user's own OR their organization's assessments
+    const deleteWhere: Record<string, unknown> = { id: assessmentId, userId };
+    if (orgContext?.organizationId) {
+      deleteWhere.organizationId = orgContext.organizationId;
+    }
+
+    const existing = await prisma.debrisAssessment.findFirst({
+      where: deleteWhere,
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Assessment not found" },
+        { status: 404 },
+      );
+    }
+
+    // Delete (cascades to requirement statuses)
+    await prisma.debrisAssessment.delete({
+      where: { id: assessmentId },
+    });
+
+    // Log audit event
+    const { ipAddress, userAgent } = getRequestContext(request);
+    await logAuditEvent({
+      userId,
+      action: "debris_assessment_deleted",
+      entityType: "debris_assessment",
+      entityId: assessmentId,
+      previousValue: {
+        deleted: true,
+        missionName: existing.missionName,
+        orbitType: existing.orbitType,
+      },
+      description: "Deleted debris assessment",
+      ipAddress,
+      userAgent,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error("Error deleting debris assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

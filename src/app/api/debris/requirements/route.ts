@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   debrisRequirements,
   getApplicableRequirements,
@@ -25,6 +27,13 @@ export async function GET(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Rate limiting — api tier for reads
+    const rateLimitResult = await checkRateLimit("api", userId);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { searchParams } = new URL(request.url);
     const assessmentId = searchParams.get("assessmentId");
 
@@ -33,11 +42,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ requirements: debrisRequirements });
     }
 
-    // Verify assessment ownership
+    // Org-scoped query: user's own OR their organization's assessments
+    const orgContext = await getCurrentOrganization(userId);
     const assessment = await prisma.debrisAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
       include: {
         requirements: true,
@@ -112,6 +127,13 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Rate limiting — sensitive tier for writes
+    const rateLimitResult = await checkRateLimit("sensitive", userId);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const body = await request.json();
 
     const putSchema = z.object({
@@ -148,11 +170,17 @@ export async function PUT(request: Request) {
       responses,
     } = parsed.data;
 
-    // Verify assessment ownership
+    // Org-scoped query: user's own OR their organization's assessments
+    const orgContext = await getCurrentOrganization(userId);
     const assessment = await prisma.debrisAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 
@@ -197,21 +225,31 @@ export async function PUT(request: Request) {
       },
     });
 
-    // Recalculate compliance score
+    // Recalculate compliance score (weighted by severity)
     const allStatuses = await prisma.debrisRequirementStatus.findMany({
       where: { assessmentId },
     });
 
-    const compliantCount = allStatuses.filter(
-      (s) => s.status === "compliant",
-    ).length;
-    const totalApplicable = allStatuses.filter(
-      (s) => s.status !== "not_applicable",
-    ).length;
+    const SEVERITY_WEIGHTS: Record<string, number> = {
+      critical: 3,
+      major: 2,
+      minor: 1,
+    };
+
+    let weightedCompliant = 0;
+    let totalWeight = 0;
+
+    for (const req of allStatuses) {
+      if (req.status === "not_applicable") continue;
+      const reqDef = debrisRequirements.find((r) => r.id === req.requirementId);
+      const weight = SEVERITY_WEIGHTS[reqDef?.severity || "minor"] || 1;
+      totalWeight += weight;
+      if (req.status === "compliant") weightedCompliant += weight;
+      if (req.status === "partial") weightedCompliant += weight * 0.5;
+    }
+
     const complianceScore =
-      totalApplicable > 0
-        ? Math.round((compliantCount / totalApplicable) * 100)
-        : 0;
+      totalWeight > 0 ? Math.round((weightedCompliant / totalWeight) * 100) : 0;
 
     await prisma.debrisAssessment.update({
       where: { id: assessmentId },
