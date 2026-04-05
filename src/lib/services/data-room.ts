@@ -411,6 +411,7 @@ export async function getDataRoomsForStakeholder(engagementId: string) {
               fileSize: true,
               mimeType: true,
               category: true,
+              storagePath: true,
               createdAt: true,
             },
           },

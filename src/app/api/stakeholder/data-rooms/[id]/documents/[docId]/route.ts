@@ -14,6 +14,8 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { getFileBuffer, isR2Configured } from "@/lib/storage/upload-service";
+import { addWatermarkToPdf } from "@/lib/pdf/watermark";
 
 // GET /api/stakeholder/data-rooms/[id]/documents/[docId] — Access/download a document
 export async function GET(
@@ -103,10 +105,48 @@ export async function GET(
       metadata: { dataRoomId: id },
     });
 
-    // Return document metadata
-    // Actual file serving would be handled by the storage layer (R2/S3)
+    // ─── Server-side PDF watermarking for download requests ───
+    // If the data room has watermark enabled, the document is a PDF, and R2 is
+    // configured, fetch the file, stamp it, and return the watermarked bytes
+    // directly instead of a presigned URL.
+    const doc = dataRoomDoc.document;
+    const isPdf =
+      doc.mimeType === "application/pdf" ||
+      doc.fileName?.toLowerCase().endsWith(".pdf");
+
+    if (
+      isDownload &&
+      dataRoom.watermark &&
+      isPdf &&
+      doc.storagePath &&
+      isR2Configured()
+    ) {
+      try {
+        const file = await getFileBuffer(doc.storagePath);
+        if (file) {
+          const watermarked = await addWatermarkToPdf(file.buffer, {
+            text: `CONFIDENTIAL — ${engagement.contactName} — ${new Date().toISOString().split("T")[0]}`,
+          });
+
+          return new NextResponse(new Uint8Array(watermarked), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/pdf",
+              "Content-Disposition": `attachment; filename="${doc.fileName || "document.pdf"}"`,
+              "Content-Length": String(watermarked.byteLength),
+              "Cache-Control": "no-store",
+            },
+          });
+        }
+      } catch (wmErr) {
+        // If watermarking fails, fall through to the normal metadata response
+        logger.error("PDF watermarking failed, returning metadata", wmErr);
+      }
+    }
+
+    // Return document metadata (default — client fetches file via presigned URL)
     return NextResponse.json({
-      document: dataRoomDoc.document,
+      document: doc,
       dataRoom: {
         id: dataRoom.id,
         name: dataRoom.name,

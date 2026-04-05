@@ -305,6 +305,53 @@ export async function uploadFileServerSide(
   return { fileKey };
 }
 
+// ─── Get File Buffer (server-side download for processing) ───
+
+export async function getFileBuffer(
+  fileKey: string,
+): Promise<{ buffer: Buffer; contentType: string } | null> {
+  if (!isR2Configured()) {
+    throw new Error("R2 storage not configured");
+  }
+
+  const client = getR2Client();
+  if (!client) {
+    throw new Error("Failed to initialize R2 client");
+  }
+
+  const bucketName = getR2BucketName();
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: fileKey,
+    });
+
+    const response = await client.send(command);
+
+    if (!response.Body) {
+      return null;
+    }
+
+    // Convert ReadableStream/Blob to Buffer
+    const chunks: Uint8Array[] = [];
+    const readable = response.Body as AsyncIterable<Uint8Array>;
+    for await (const chunk of readable) {
+      chunks.push(chunk);
+    }
+
+    return {
+      buffer: Buffer.concat(chunks),
+      contentType: response.ContentType || "application/octet-stream",
+    };
+  } catch (error) {
+    if ((error as { name?: string }).name === "NoSuchKey") {
+      return null;
+    }
+    throw error;
+  }
+}
+
 // ─── Re-export config check ───
 
 export { isR2Configured };

@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
         retainerStart: engagement.retainerStart,
         retainerEnd: engagement.retainerEnd,
         tokenExpiresAt: engagement.tokenExpiresAt,
+        mfaRequired: engagement.mfaRequired,
       },
       organization: engagement.organization,
     });
