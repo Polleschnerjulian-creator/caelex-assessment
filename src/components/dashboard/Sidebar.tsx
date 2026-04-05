@@ -481,7 +481,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/us-regulatory": "us-regulatory",
   "/dashboard/modules/spectrum": "spectrum",
   "/dashboard/modules/cra": "cra",
-  "/dashboard/incidents": "incidents",
+  "/dashboard/incidents": "operations",
   "/dashboard/nexus": "nexus",
   "/dashboard/evidence": "evidence",
   "/dashboard/documents": "documents",
@@ -495,7 +495,6 @@ const CYBER_MODULES = [
   "/dashboard/modules/cybersecurity",
   "/dashboard/modules/nis2",
   "/dashboard/modules/cra",
-  "/dashboard/incidents",
 ];
 
 const OPERATIONS_MODULES = [
@@ -503,6 +502,7 @@ const OPERATIONS_MODULES = [
   "/dashboard/modules/registration",
   "/dashboard/modules/supervision",
   "/dashboard/modules/insurance",
+  "/dashboard/incidents",
 ];
 
 const SAFETY_MODULES = [
@@ -838,7 +838,7 @@ export default function Sidebar({
             {/* Cybersecurity Suite */}
             <ModuleGroup
               title="Cybersecurity"
-              count={5}
+              count={4}
               isExpanded={expandedGroups.cyber}
               onToggle={() => toggleGroup("cyber")}
               hasActiveItem={activeGroup === "cyber"}
@@ -891,15 +891,6 @@ export default function Sidebar({
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/cra")}
                 collapsed={collapsed}
               />
-              <CompactModuleItem
-                href="/dashboard/incidents"
-                icon={<AlertTriangle size={14} strokeWidth={1.5} />}
-                label={t("sidebar.incidents")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/incidents")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/incidents")}
-                collapsed={collapsed}
-              />
             </ModuleGroup>
 
             {/* Operations */}
@@ -937,7 +928,7 @@ export default function Sidebar({
               <CompactModuleItem
                 href="/dashboard/modules/supervision"
                 icon={<Eye size={14} strokeWidth={1.5} />}
-                label={t("modules.supervision")}
+                label="Supervision & Incidents"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/supervision")}
                 requiredPlan={getRequiredPlanLabel(
