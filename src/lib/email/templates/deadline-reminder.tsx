@@ -32,7 +32,7 @@ function DeadlineReminderEmail({
 
   return (
     <BaseLayout
-      previewText={`Deadline Reminder: ${deadlineTitle} - Due in ${daysRemaining} days`}
+      previewText={`Deadline Reminder: ${deadlineTitle} - Due in ${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}`}
     >
       {/* Greeting */}
       <Text style={styles.text}>Hello {recipientName},</Text>
@@ -216,12 +216,13 @@ export async function renderDeadlineReminder(
   html: string;
   subject: string;
 }> {
+  const dayText = data.daysRemaining === 1 ? "day" : "days";
   const subject =
     data.daysRemaining <= 0
       ? `[OVERDUE] ${data.deadlineTitle}`
       : data.daysRemaining <= 3
-        ? `[URGENT] ${data.deadlineTitle} - Due in ${data.daysRemaining} days`
-        : `Reminder: ${data.deadlineTitle} - Due in ${data.daysRemaining} days`;
+        ? `[URGENT] ${data.deadlineTitle} - Due in ${data.daysRemaining} ${dayText}`
+        : `Reminder: ${data.deadlineTitle} - Due in ${data.daysRemaining} ${dayText}`;
 
   const html = await render(<DeadlineReminderEmail {...data} />);
 

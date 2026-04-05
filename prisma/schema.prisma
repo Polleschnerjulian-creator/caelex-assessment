@@ -1761,12 +1761,16 @@ model Deadline {
   extensionReason     String?   @db.Text
   extensionApprovedBy String?
 
+  // Organization scoping
+  organizationId String?
+
   @@index([userId, dueDate])
   @@index([status, dueDate])
   @@index([category])
   @@index([moduleSource])
   @@index([parentId])
   @@index([userId, status, dueDate])
+  @@index([organizationId])
 }
 
 model MissionPhase {

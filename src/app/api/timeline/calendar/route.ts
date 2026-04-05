@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/timeline/calendar - Get calendar events for a month
 export async function GET(req: Request) {
@@ -10,6 +16,20 @@ export async function GET(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "api",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
 
     const { searchParams } = new URL(req.url);
     const monthParam = searchParams.get("month"); // Format: 2024-06
@@ -42,7 +62,12 @@ export async function GET(req: Request) {
     }
 
     const where: Record<string, unknown> = {
-      userId: session.user.id,
+      OR: [
+        { userId },
+        ...(orgContext?.organizationId
+          ? [{ organizationId: orgContext.organizationId }]
+          : []),
+      ],
       dueDate: {
         gte: startDate,
         lte: endDate,
@@ -66,7 +91,7 @@ export async function GET(req: Request) {
     const milestones = await prisma.milestone.findMany({
       where: {
         phase: {
-          userId: session.user.id,
+          userId,
         },
         targetDate: {
           gte: startDate,

@@ -3,6 +3,12 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // POST /api/timeline/milestones - Create milestone
 export async function POST(req: Request) {
@@ -10,6 +16,17 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
     }
 
     const milestoneSchema = z.object({
@@ -45,7 +62,7 @@ export async function POST(req: Request) {
 
     // Verify phase ownership
     const phase = await prisma.missionPhase.findFirst({
-      where: { id: phaseId, userId: session.user.id },
+      where: { id: phaseId, userId },
     });
 
     if (!phase) {
@@ -83,6 +100,17 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const patchRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!patchRateLimitResult.success) {
+      return createRateLimitResponse(patchRateLimitResult);
+    }
+
     const updateMilestoneSchema = z.object({
       id: z.string().min(1),
       name: z.string().optional(),
@@ -111,7 +139,7 @@ export async function PATCH(req: Request) {
       where: {
         id,
         phase: {
-          userId: session.user.id,
+          userId,
         },
       },
     });
@@ -167,6 +195,17 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const deleteRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!deleteRateLimitResult.success) {
+      return createRateLimitResponse(deleteRateLimitResult);
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -182,7 +221,7 @@ export async function DELETE(req: Request) {
       where: {
         id,
         phase: {
-          userId: session.user.id,
+          userId,
         },
       },
     });

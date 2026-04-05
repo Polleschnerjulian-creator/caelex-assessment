@@ -5,6 +5,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/timeline/deadlines - List deadlines with filters
 export async function GET(req: Request) {
@@ -13,6 +19,20 @@ export async function GET(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "api",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -24,7 +44,14 @@ export async function GET(req: Request) {
     const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const where: Record<string, unknown> = { userId: session.user.id };
+    const where: Record<string, unknown> = {
+      OR: [
+        { userId },
+        ...(orgContext?.organizationId
+          ? [{ organizationId: orgContext.organizationId }]
+          : []),
+      ],
+    };
 
     if (status) {
       if (status === "active") {
@@ -103,6 +130,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const postRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!postRateLimitResult.success) {
+      return createRateLimitResponse(postRateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
+
     const deadlineSchema = z.object({
       title: z.string().min(1),
       description: z.string().optional(),
@@ -160,7 +201,8 @@ export async function POST(req: Request) {
 
     const deadline = await prisma.deadline.create({
       data: {
-        userId: session.user.id,
+        userId,
+        organizationId: orgContext?.organizationId,
         title,
         description,
         dueDate: dueDateObj,
@@ -182,7 +224,7 @@ export async function POST(req: Request) {
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         action: "deadline_created",
         entityType: "deadline",
         entityId: deadline.id,

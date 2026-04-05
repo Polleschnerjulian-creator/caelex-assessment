@@ -2,14 +2,42 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/timeline - Get dashboard overview
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "api",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
+    const ownershipFilter = {
+      OR: [
+        { userId },
+        ...(orgContext?.organizationId
+          ? [{ organizationId: orgContext.organizationId }]
+          : []),
+      ],
+    };
 
     const now = new Date();
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -28,14 +56,14 @@ export async function GET() {
     ] = await Promise.all([
       prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           dueDate: { lt: now },
           status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
       }),
       prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           dueDate: {
             gte: now,
             lt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
@@ -45,24 +73,24 @@ export async function GET() {
       }),
       prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           dueDate: { gte: now, lt: sevenDaysFromNow },
           status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
       }),
       prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           dueDate: { gte: now, lt: thirtyDaysFromNow },
           status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
       }),
       prisma.deadline.count({
-        where: { userId: session.user.id },
+        where: { ...ownershipFilter },
       }),
       prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           status: "COMPLETED",
         },
       }),
@@ -72,7 +100,7 @@ export async function GET() {
     const byCategory = await prisma.deadline.groupBy({
       by: ["category"],
       where: {
-        userId: session.user.id,
+        ...ownershipFilter,
         status: { notIn: ["COMPLETED", "CANCELLED"] },
       },
       _count: { id: true },
@@ -81,7 +109,7 @@ export async function GET() {
     // Get next 30 days deadlines
     const upcomingDeadlines = await prisma.deadline.findMany({
       where: {
-        userId: session.user.id,
+        ...ownershipFilter,
         dueDate: { gte: now, lte: thirtyDaysFromNow },
         status: { notIn: ["COMPLETED", "CANCELLED"] },
       },
@@ -92,7 +120,7 @@ export async function GET() {
     // Get overdue deadlines
     const overdueDeadlines = await prisma.deadline.findMany({
       where: {
-        userId: session.user.id,
+        ...ownershipFilter,
         dueDate: { lt: now },
         status: { notIn: ["COMPLETED", "CANCELLED"] },
       },
@@ -105,7 +133,7 @@ export async function GET() {
     if (overdue > 0) {
       const criticalOverdue = await prisma.deadline.count({
         where: {
-          userId: session.user.id,
+          ...ownershipFilter,
           dueDate: { lt: now },
           priority: "CRITICAL",
           status: { notIn: ["COMPLETED", "CANCELLED"] },
@@ -120,7 +148,7 @@ export async function GET() {
 
     // Get mission phases summary
     const missionPhases = await prisma.missionPhase.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       include: {
         milestones: {
           where: {

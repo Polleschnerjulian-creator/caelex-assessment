@@ -4,6 +4,12 @@ import type { PhaseStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/timeline/mission-phases - List mission phases
 export async function GET(req: Request) {
@@ -13,10 +19,21 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "api",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { searchParams } = new URL(req.url);
     const missionId = searchParams.get("missionId");
 
-    const where: Record<string, unknown> = { userId: session.user.id };
+    const where: Record<string, unknown> = { userId };
     if (missionId) {
       where.missionId = missionId;
     }
@@ -73,6 +90,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const postRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!postRateLimitResult.success) {
+      return createRateLimitResponse(postRateLimitResult);
+    }
+
     const missionPhaseSchema = z.object({
       missionId: z.string().min(1),
       missionName: z.string().optional(),
@@ -122,7 +150,7 @@ export async function POST(req: Request) {
 
     const phase = await prisma.missionPhase.create({
       data: {
-        userId: session.user.id,
+        userId,
         missionId,
         missionName,
         name,
@@ -179,6 +207,17 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const patchRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!patchRateLimitResult.success) {
+      return createRateLimitResponse(patchRateLimitResult);
+    }
+
     const body = await req.json();
     const { id, ...updates } = body;
 
@@ -188,7 +227,7 @@ export async function PATCH(req: Request) {
 
     // Verify ownership
     const existing = await prisma.missionPhase.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existing) {
@@ -236,6 +275,17 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const deleteRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!deleteRateLimitResult.success) {
+      return createRateLimitResponse(deleteRateLimitResult);
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -245,7 +295,7 @@ export async function DELETE(req: Request) {
 
     // Verify ownership
     const existing = await prisma.missionPhase.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existing) {

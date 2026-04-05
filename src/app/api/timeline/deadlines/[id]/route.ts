@@ -3,6 +3,13 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { roleHasPermission } from "@/lib/permissions";
 
 // GET /api/timeline/deadlines/[id] - Get deadline details
 export async function GET(
@@ -15,12 +22,31 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      "api",
+      getIdentifier(req, userId),
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
+
     const { id } = await params;
 
     const deadline = await prisma.deadline.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
       include: {
         parent: true,
@@ -56,11 +82,33 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const patchRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!patchRateLimitResult.success) {
+      return createRateLimitResponse(patchRateLimitResult);
+    }
+
+    // Org-scoping
+    const orgContext = await getCurrentOrganization(userId);
+
     const { id } = await params;
 
-    // Verify ownership
+    // Verify ownership (org-scoped)
     const existing = await prisma.deadline.findFirst({
-      where: { id, userId: session.user.id },
+      where: {
+        id,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
+      },
     });
 
     if (!existing) {
@@ -124,22 +172,22 @@ export async function PATCH(
     // Handle completion
     if (parsed.data.status === "COMPLETED" && existing.status !== "COMPLETED") {
       updateData.completedAt = new Date();
-      updateData.completedBy = session.user.id;
+      updateData.completedBy = userId;
       if (parsed.data.completionNotes) {
         updateData.completionNotes = parsed.data.completionNotes;
       }
     }
 
-    // Use findFirst + update pattern with userId to prevent IDOR
+    // Update using the already-verified existing record
     const deadline = await prisma.deadline.update({
-      where: { id, userId: session.user.id },
+      where: { id },
       data: updateData,
     });
 
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         action: "deadline_updated",
         entityType: "deadline",
         entityId: deadline.id,
@@ -170,11 +218,39 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    // Rate limiting
+    const deleteRateLimitResult = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, userId),
+    );
+    if (!deleteRateLimitResult.success) {
+      return createRateLimitResponse(deleteRateLimitResult);
+    }
+
+    // Org-scoping + RBAC (MANAGER+ required for DELETE)
+    const orgContext = await getCurrentOrganization(userId);
+    if (orgContext && !roleHasPermission(orgContext.role, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
+    }
+
     const { id } = await params;
 
-    // Verify ownership
+    // Verify ownership (org-scoped)
     const existing = await prisma.deadline.findFirst({
-      where: { id, userId: session.user.id },
+      where: {
+        id,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
+      },
     });
 
     if (!existing) {
@@ -184,12 +260,12 @@ export async function DELETE(
       );
     }
 
-    await prisma.deadline.delete({ where: { id, userId: session.user.id } });
+    await prisma.deadline.delete({ where: { id } });
 
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         action: "deadline_deleted",
         entityType: "deadline",
         entityId: id,
