@@ -422,42 +422,16 @@ export default function EphemerisDashboard() {
                 marginBottom: 32,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                {/* "e" logo */}
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    background: "white",
-                    borderRadius: 6,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "black",
-                      fontSize: 18,
-                      fontWeight: 700,
-                      fontFamily: EPH.sans,
-                      lineHeight: 1,
-                    }}
-                  >
-                    e
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 500,
-                    color: EPH.textPrimary,
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  Ephemeris
-                </span>
-              </div>
+              <span
+                style={{
+                  fontSize: 24,
+                  fontWeight: 500,
+                  color: EPH.textPrimary,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Fleet Overview
+              </span>
 
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 {lastCalc && (

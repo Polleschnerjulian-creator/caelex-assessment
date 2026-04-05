@@ -13,7 +13,10 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="sticky top-0 z-30 px-3 lg:px-0 pt-3 lg:pt-0">
+    <div
+      data-topbar="caelex"
+      className="sticky top-0 z-30 px-3 lg:px-0 pt-3 lg:pt-0"
+    >
       <header
         className="h-14 px-6 lg:px-8 flex items-center justify-between lg:mt-3 lg:mr-3"
         style={{

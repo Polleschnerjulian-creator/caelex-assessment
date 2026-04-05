@@ -704,6 +704,7 @@ export default function Sidebar({
 
       {/* ═══ Glass Panel ═══ */}
       <aside
+        data-sidebar="caelex"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`

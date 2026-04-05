@@ -153,7 +153,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="caelex-v2 dashboard-wallpaper">
+    <div data-shell="caelex" className="caelex-v2 dashboard-wallpaper">
       <GlassSpecular />
       {/* Sidebar */}
       <Sidebar
@@ -182,7 +182,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           }
         }
       `}</style>
-      <div className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle">
+      <div
+        data-content="caelex"
+        className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle"
+      >
         {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
         )}
