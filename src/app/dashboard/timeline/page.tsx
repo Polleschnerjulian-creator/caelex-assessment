@@ -252,20 +252,41 @@ function MissionTimelineGantt() {
   const [phases] = useState<MissionPhase[]>(DEFAULT_MISSION_PHASES);
   const [hoveredPhase, setHoveredPhase] = useState<string | null>(null);
   const [hoveredMilestone, setHoveredMilestone] = useState<string | null>(null);
+  const [zoomRange, setZoomRange] = useState<{
+    start: number;
+    end: number;
+  } | null>(() => {
+    const now = Date.now();
+    return {
+      start: now - 1 * 365.25 * 86400000,
+      end: now + 10 * 365.25 * 86400000,
+    };
+  });
 
   const timeRange = useMemo(() => {
+    if (zoomRange) {
+      return {
+        min: zoomRange.start,
+        max: zoomRange.end,
+        span: zoomRange.end - zoomRange.start,
+      };
+    }
     const starts = phases.map((p) => new Date(p.startDate).getTime());
     const ends = phases.map((p) => new Date(p.endDate).getTime());
     const minTime = Math.min(...starts);
     const maxTime = Math.max(...ends);
     return { min: minTime, max: maxTime, span: maxTime - minTime };
-  }, [phases]);
+  }, [phases, zoomRange]);
 
   const yearLabels = useMemo(() => {
     const startYear = new Date(timeRange.min).getFullYear();
     const endYear = new Date(timeRange.max).getFullYear();
+    const totalYears = endYear - startYear;
+
+    const step = totalYears <= 10 ? 1 : totalYears <= 20 ? 2 : 5;
+
     const labels: { year: number; offset: number }[] = [];
-    for (let y = startYear; y <= endYear; y++) {
+    for (let y = startYear; y <= endYear; y += step) {
       const ts = new Date(y, 0, 1).getTime();
       const offset = ((ts - timeRange.min) / timeRange.span) * 100;
       labels.push({ year: y, offset: Math.max(0, Math.min(100, offset)) });
@@ -392,6 +413,50 @@ function MissionTimelineGantt() {
             Today
           </div>
         )}
+      </div>
+
+      {/* Zoom Controls */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[11px] text-slate-500 uppercase tracking-wider">
+          Zeitraum:
+        </span>
+        {[
+          { label: "5J", years: 5 },
+          { label: "10J", years: 10 },
+          { label: "15J", years: 15 },
+          { label: "Alle", years: 0 },
+        ].map((opt) => {
+          const isActive =
+            opt.years === 0
+              ? !zoomRange
+              : zoomRange &&
+                Math.round(
+                  (zoomRange.end - zoomRange.start) / (365.25 * 86400000),
+                ) === opt.years;
+          return (
+            <button
+              key={opt.label}
+              onClick={() => {
+                if (opt.years === 0) {
+                  setZoomRange(null);
+                } else {
+                  const now = Date.now();
+                  setZoomRange({
+                    start: now - 365.25 * 86400000,
+                    end: now + opt.years * 365.25 * 86400000,
+                  });
+                }
+              }}
+              className={`px-3 py-1 rounded-lg text-xs ${
+                isActive
+                  ? "bg-slate-200 dark:bg-white/15 text-slate-800 dark:text-white font-medium"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Desktop Gantt view */}
