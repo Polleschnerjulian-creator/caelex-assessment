@@ -2,60 +2,47 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
-// ─── Color Palettes ──────────────────────────────────────────────────────────
+// ─── Ephemeris Premium Dark Theme ───────────────────────────────────────────
 
-const DARK = {
-  bg: "#0d1117",
-  elevated: "#161b22",
-  sunken: "#0a0e16",
-  border: "#21262d",
-  borderActive: "#30363d",
-  textPrimary: "#e6edf3",
-  textSecondary: "#c9d1d9",
-  textTertiary: "#8b949e",
-  textMuted: "#484f58",
+export const EPH = {
+  // Backgrounds
+  pageBg: "#000000",
+  cardBg: "rgba(255, 255, 255, 0.03)",
+  cardBgHover: "rgba(255, 255, 255, 0.05)",
+  cardBorder: "rgba(255, 255, 255, 0.06)",
+  cardBorderHover: "rgba(255, 255, 255, 0.1)",
+  cardRadius: 16,
+
+  // Text hierarchy
+  textPrimary: "rgba(255, 255, 255, 0.9)",
+  textSecondary: "rgba(255, 255, 255, 0.5)",
+  textTertiary: "rgba(255, 255, 255, 0.3)",
+  textMicro: "rgba(255, 255, 255, 0.25)",
+
+  // Interactive
+  activeBg: "rgba(255, 255, 255, 0.06)",
+  hoverBg: "rgba(255, 255, 255, 0.04)",
+  rowAlt: "rgba(255, 255, 255, 0.02)",
+  rowHover: "rgba(255, 255, 255, 0.04)",
+  badgeBg: "rgba(255, 255, 255, 0.15)",
+
+  // Status (only color exceptions)
   nominal: "#3fb950",
   watch: "#d29922",
   warning: "#f0883e",
   critical: "#f85149",
-  accent: "#58a6ff",
-  brand: "#a78bfa",
-};
 
-const LIGHT = {
-  bg: "#ffffff",
-  elevated: "#f8fafc",
-  sunken: "#f1f5f9",
-  border: "#e2e8f0",
-  borderActive: "#cbd5e1",
-  textPrimary: "#0f172a",
-  textSecondary: "#334155",
-  textTertiary: "#64748b",
-  textMuted: "#94a3b8",
-  nominal: "#16a34a",
-  watch: "#ca8a04",
-  warning: "#ea580c",
-  critical: "#dc2626",
-  accent: "#2563eb",
-  brand: "#7c3aed",
-};
+  // Typography
+  mono: "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+  sans: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+} as const;
 
-export type EphemerisColors = typeof DARK;
+export type EphemerisColors = typeof EPH;
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useEphemerisTheme(): EphemerisColors {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    setIsDark(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  return isDark ? DARK : LIGHT;
+  return EPH;
 }
 
 // ─── Forge Theme ─────────────────────────────────────────────────────────────

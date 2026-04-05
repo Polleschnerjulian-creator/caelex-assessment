@@ -2,26 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
-  ChevronDown,
-  ChevronUp,
-  GitBranch,
-  Loader2,
-  RefreshCw,
-  Satellite,
-  Shield,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-} from "lucide-react";
-import Card, { CardContent } from "@/components/ui/Card";
+import { AnimatePresence } from "framer-motion";
+import { ChevronDown, ChevronUp, Loader2, RefreshCw } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "./components/alerts-sidebar";
 import DependencyGraphView from "./components/dependency-graph-view";
+import { EPH } from "./theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -101,58 +87,34 @@ interface BenchmarkData {
   } | null;
 }
 
-// ─── Color Helpers ────────────────────────────────────────────────────────────
+// ─── Status dot color ────────────────────────────────────────────────────────
 
-function riskColorClass(category: string): string {
+function statusDotColor(category: string): string {
   switch (category) {
     case "NOMINAL":
-      return "text-emerald-400";
+      return EPH.nominal;
     case "WATCH":
-      return "text-amber-400";
+      return EPH.watch;
     case "WARNING":
-      return "text-orange-400";
+      return EPH.warning;
     case "CRITICAL":
-      return "text-red-400";
+      return EPH.critical;
     default:
-      return "text-slate-500";
+      return "rgba(255,255,255,0.2)";
   }
 }
 
-function riskBadgeClass(category: string): string {
-  switch (category) {
-    case "NOMINAL":
-      return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25";
-    case "WATCH":
-      return "bg-amber-500/15 text-amber-400 border border-amber-500/25";
-    case "WARNING":
-      return "bg-orange-500/15 text-orange-400 border border-orange-500/25";
+function severityDotColor(severity: string): string {
+  switch (severity) {
     case "CRITICAL":
-      return "bg-red-500/15 text-red-400 border border-red-500/25";
+      return EPH.critical;
+    case "HIGH":
+      return EPH.warning;
+    case "MEDIUM":
+      return EPH.watch;
     default:
-      return "bg-slate-500/15 text-slate-400 border border-slate-500/25";
+      return "rgba(255,255,255,0.2)";
   }
-}
-
-function riskBgClass(category: string): string {
-  switch (category) {
-    case "NOMINAL":
-      return "bg-emerald-500";
-    case "WATCH":
-      return "bg-amber-500";
-    case "WARNING":
-      return "bg-orange-500";
-    case "CRITICAL":
-      return "bg-red-500";
-    default:
-      return "bg-slate-500";
-  }
-}
-
-function scoreColorClass(score: number): string {
-  if (score >= 85) return "text-emerald-400";
-  if (score >= 70) return "text-amber-400";
-  if (score >= 50) return "text-orange-400";
-  return "text-red-400";
 }
 
 function scoreRisk(score: number): string {
@@ -162,49 +124,24 @@ function scoreRisk(score: number): string {
   return "CRITICAL";
 }
 
-function trendArrow(delta: number): string {
-  if (delta > 0.5) return "↑";
-  if (delta < -0.5) return "↓";
-  return "→";
+function horizonColor(days: number | null): string {
+  if (days === null) return EPH.textTertiary;
+  if (days < 90) return EPH.critical;
+  if (days < 365) return EPH.watch;
+  return EPH.textPrimary;
 }
 
-function trendColorClass(delta: number): string {
-  if (delta > 0.5) return "text-emerald-400";
-  if (delta < -0.5) return "text-red-400";
-  return "text-[var(--text-tertiary)]";
-}
-
-function severityBadgeClass(severity: string): string {
-  switch (severity) {
-    case "CRITICAL":
-      return "bg-red-500/15 text-red-400 border border-red-500/25";
-    case "HIGH":
-      return "bg-orange-500/15 text-orange-400 border border-orange-500/25";
-    case "MEDIUM":
-      return "bg-amber-500/15 text-amber-400 border border-amber-500/25";
-    default:
-      return "bg-slate-500/15 text-slate-400 border border-slate-500/25";
-  }
-}
-
-function freshnessColorClass(freshness: string): string {
+function freshnessColor(freshness: string): string {
   switch (freshness) {
     case "LIVE":
-      return "text-emerald-400";
+      return EPH.nominal;
     case "RECENT":
-      return "text-[var(--text-tertiary)]";
+      return EPH.textTertiary;
     case "STALE":
-      return "text-amber-400";
+      return EPH.watch;
     default:
-      return "text-red-400";
+      return EPH.critical;
   }
-}
-
-function horizonColorClass(days: number | null): string {
-  if (days === null) return "text-[var(--text-tertiary)]";
-  if (days < 90) return "text-red-400";
-  if (days < 365) return "text-amber-400";
-  return "text-[var(--text-primary)]";
 }
 
 // ─── Sort ─────────────────────────────────────────────────────────────────────
@@ -213,13 +150,82 @@ type SortKey = "name" | "score" | "horizon" | "risk" | "alerts";
 type SortDir = "asc" | "desc";
 
 const TAB_ITEMS = [
-  { key: "fleet" as const, label: "Fleet", icon: Satellite },
-  { key: "alerts" as const, label: "Alerts", icon: AlertTriangle },
-  { key: "intelligence" as const, label: "Intelligence", icon: BarChart3 },
-  { key: "dependencies" as const, label: "Dependencies", icon: GitBranch },
+  { key: "fleet" as const, label: "Fleet" },
+  { key: "alerts" as const, label: "Alerts" },
+  { key: "intelligence" as const, label: "Intelligence" },
+  { key: "dependencies" as const, label: "Dependencies" },
 ] as const;
 
 type TabKey = (typeof TAB_ITEMS)[number]["key"];
+
+// ─── Shared Styles ───────────────────────────────────────────────────────────
+
+const glassCard: React.CSSProperties = {
+  background: EPH.cardBg,
+  border: `1px solid ${EPH.cardBorder}`,
+  borderRadius: EPH.cardRadius,
+  transition: "background 200ms ease, border-color 200ms ease",
+};
+
+const glassCardHover: React.CSSProperties = {
+  background: EPH.cardBgHover,
+  borderColor: EPH.cardBorderHover,
+};
+
+// ─── Fade wrapper ────────────────────────────────────────────────────────────
+
+function FadeIn({
+  children,
+  delay = 0,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <div
+      style={{
+        opacity: visible ? 1 : 0,
+        transition: "opacity 200ms ease",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Glass Card with hover ───────────────────────────────────────────────────
+
+function GlassPanel({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...glassCard,
+        ...(hovered ? glassCardHover : {}),
+        padding: 16,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -367,670 +373,1175 @@ export default function EphemerisDashboard() {
 
   const SortIcon = ({ field }: { field: SortKey }) => {
     if (sortKey !== field)
-      return <span className="inline-block w-3 ml-0.5 opacity-0">↑</span>;
+      return (
+        <span
+          style={{
+            display: "inline-block",
+            width: 12,
+            marginLeft: 2,
+            opacity: 0,
+          }}
+        >
+          ^
+        </span>
+      );
     return sortDir === "asc" ? (
-      <ChevronUp size={12} className="inline ml-0.5 opacity-70" />
+      <ChevronUp
+        size={12}
+        style={{ display: "inline", marginLeft: 2, opacity: 0.7 }}
+      />
     ) : (
-      <ChevronDown size={12} className="inline ml-0.5 opacity-70" />
+      <ChevronDown
+        size={12}
+        style={{ display: "inline", marginLeft: 2, opacity: 0.7 }}
+      />
     );
   };
 
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 min-h-screen">
-        <div className="p-6 space-y-6 max-w-[1600px]">
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: EPH.pageBg,
+        color: EPH.textPrimary,
+        fontFamily: EPH.sans,
+      }}
+    >
+      <div style={{ flex: 1, minHeight: "100vh" }}>
+        <div style={{ padding: 32, maxWidth: 1600, margin: "0 auto" }}>
           {/* ── Header ──────────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            className="flex items-start justify-between"
-          >
-            <div>
-              <h1 className="text-display-sm font-semibold text-[var(--text-primary)]">
-                Ephemeris
-              </h1>
-              <p className="text-body text-[var(--text-secondary)] mt-0.5">
-                Fleet compliance forecasting &amp; intelligence
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {lastCalc && (
-                <span className="text-caption text-[var(--text-tertiary)]">
-                  Updated{" "}
-                  {new Date(lastCalc).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZoneName: "short",
-                  })}
-                </span>
-              )}
-              <button
-                onClick={loadAll}
-                disabled={loading}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--fill-light)] transition-colors disabled:opacity-40"
-              >
-                <RefreshCw
-                  size={14}
-                  className={loading ? "animate-spin" : ""}
-                />
-                {loading ? "Calculating..." : "Recalculate"}
-              </button>
-            </div>
-          </motion.div>
-
-          {/* ── Stats Grid ──────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
-          >
-            {/* Fleet Score */}
-            <Card variant="elevated">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-500 shrink-0">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                      Fleet Score
-                    </p>
-                    <div className="flex items-baseline gap-1.5">
-                      <p
-                        className={`text-title font-semibold tabular-nums ${scoreColorClass(intel?.fleetScore ?? 0)}`}
-                      >
-                        {intel?.fleetScore ?? "—"}
-                      </p>
-                      {fleetDelta !== 0 && (
-                        <span
-                          className={`text-caption font-mono ${trendColorClass(fleetDelta)}`}
-                        >
-                          {fleetDelta > 0.5 ? (
-                            <TrendingUp className="inline w-3 h-3 mr-0.5" />
-                          ) : fleetDelta < -0.5 ? (
-                            <TrendingDown className="inline w-3 h-3 mr-0.5" />
-                          ) : (
-                            <Minus className="inline w-3 h-3 mr-0.5" />
-                          )}
-                          {fleetDelta > 0 ? "+" : ""}
-                          {fleetDelta.toFixed(1)}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-micro text-[var(--text-tertiary)] mt-0.5 uppercase tracking-wider">
-                      7d trend
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Compliance Horizon */}
-            <Card variant="elevated">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-500 shrink-0">
-                    <Activity className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                      Compliance Horizon
-                    </p>
-                    <div className="flex items-baseline gap-1">
-                      <p
-                        className={`text-title font-semibold tabular-nums ${horizonColorClass(intel?.horizon.earliestBreachDays ?? null)}`}
-                      >
-                        {intel?.horizon.earliestBreachDays ?? "—"}
-                      </p>
-                      {intel?.horizon.earliestBreachDays !== null &&
-                        intel?.horizon.earliestBreachDays !== undefined && (
-                          <span className="text-caption text-[var(--text-tertiary)]">
-                            days
-                          </span>
-                        )}
-                    </div>
-                    <p className="text-micro text-[var(--text-tertiary)] mt-0.5 truncate">
-                      {intel?.horizon.earliestBreachName ?? "first breach"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Fleet Size */}
-            <Card variant="elevated">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-500 shrink-0">
-                    <Satellite className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                      Fleet Size
-                    </p>
-                    <p className="text-title font-semibold text-[var(--text-primary)] tabular-nums">
-                      {fleet.length}
-                      {nominalCount > 0 && (
-                        <span className="text-caption font-normal text-[var(--text-tertiary)] ml-1">
-                          / {nominalCount} nominal
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-micro text-[var(--text-tertiary)] mt-0.5 uppercase tracking-wider">
-                      {criticalCount > 0 ? (
-                        <span className="text-red-400">
-                          {criticalCount} critical
-                        </span>
-                      ) : watchCount > 0 ? (
-                        <span className="text-amber-400">
-                          {watchCount} watch
-                        </span>
-                      ) : (
-                        "all nominal"
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Active Alerts */}
-            <Card variant="elevated">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      criticalAlerts > 0
-                        ? "bg-red-500/10 text-red-500"
-                        : totalAlerts > 0
-                          ? "bg-amber-500/10 text-amber-500"
-                          : "bg-slate-500/10 text-slate-400"
-                    }`}
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                      Active Alerts
-                    </p>
-                    <p
-                      className={`text-title font-semibold tabular-nums ${
-                        criticalAlerts > 0
-                          ? "text-red-400"
-                          : totalAlerts > 0
-                            ? "text-amber-400"
-                            : "text-[var(--text-primary)]"
-                      }`}
-                    >
-                      {totalAlerts}
-                    </p>
-                    <p className="text-micro text-[var(--text-tertiary)] mt-0.5 uppercase tracking-wider">
-                      {criticalAlerts > 0 ? (
-                        <span className="text-red-400">
-                          {criticalAlerts} critical
-                        </span>
-                      ) : highAlerts > 0 ? (
-                        <span className="text-orange-400">
-                          {highAlerts} high
-                        </span>
-                      ) : totalAlerts > 0 ? (
-                        "no critical"
-                      ) : (
-                        "none"
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* ── Tab Bar ─────────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="flex gap-1 p-1 rounded-lg glass-surface"
-          >
-            {TAB_ITEMS.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-body font-medium transition-all duration-200 ${
-                  activeTab === key
-                    ? "glass-elevated text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--fill-light)]"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-                {key === "alerts" && totalAlerts > 0 && (
+          <FadeIn>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 32,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                {/* "e" logo */}
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    background: "white",
+                    borderRadius: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <span
-                    className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
-                      criticalAlerts > 0
-                        ? "bg-red-500/20 text-red-400"
-                        : "bg-amber-500/20 text-amber-400"
-                    }`}
+                    style={{
+                      color: "black",
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: EPH.sans,
+                      lineHeight: 1,
+                    }}
+                  >
+                    e
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 500,
+                    color: EPH.textPrimary,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Ephemeris
+                </span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                {lastCalc && (
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: EPH.textTertiary,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Last updated{" "}
+                    {new Date(lastCalc).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZoneName: "short",
+                    })}
+                  </span>
+                )}
+                <button
+                  onClick={loadAll}
+                  disabled={loading}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    border: `1px solid ${EPH.cardBorder}`,
+                    background: "transparent",
+                    color: EPH.textSecondary,
+                    fontSize: 13,
+                    fontFamily: EPH.sans,
+                    cursor: loading ? "default" : "pointer",
+                    opacity: loading ? 0.4 : 1,
+                    transition: "all 200ms ease",
+                  }}
+                >
+                  <RefreshCw
+                    size={14}
+                    style={
+                      loading ? { animation: "spin 1s linear infinite" } : {}
+                    }
+                  />
+                  {loading ? "Calculating..." : "Refresh"}
+                </button>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* ── KPI Cards ──────────────────────────────────────────── */}
+          <FadeIn delay={50}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 24,
+                marginBottom: 32,
+              }}
+            >
+              {/* Fleet Score */}
+              <GlassPanel>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: EPH.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 12,
+                  }}
+                >
+                  Fleet Score
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "baseline", gap: 8 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 300,
+                      color: EPH.textPrimary,
+                      fontFamily: EPH.mono,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {intel?.fleetScore ?? "\u2014"}
+                  </span>
+                  {fleetDelta !== 0 && (
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontFamily: EPH.mono,
+                        color:
+                          fleetDelta > 0.5
+                            ? EPH.nominal
+                            : fleetDelta < -0.5
+                              ? EPH.critical
+                              : EPH.textTertiary,
+                      }}
+                    >
+                      {fleetDelta > 0 ? "+" : ""}
+                      {fleetDelta.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: EPH.textTertiary,
+                    marginTop: 8,
+                  }}
+                >
+                  7d trend
+                </div>
+              </GlassPanel>
+
+              {/* Horizon */}
+              <GlassPanel>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: EPH.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 12,
+                  }}
+                >
+                  Horizon
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "baseline", gap: 6 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 300,
+                      color: EPH.textPrimary,
+                      fontFamily: EPH.mono,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {intel?.horizon.earliestBreachDays ?? "\u2014"}
+                  </span>
+                  {intel?.horizon.earliestBreachDays != null && (
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: EPH.textTertiary,
+                      }}
+                    >
+                      days
+                    </span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: EPH.textTertiary,
+                    marginTop: 8,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {intel?.horizon.earliestBreachName ?? "until breach"}
+                </div>
+              </GlassPanel>
+
+              {/* Active Alerts */}
+              <GlassPanel>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: EPH.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 12,
+                  }}
+                >
+                  Active Alerts
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "baseline", gap: 8 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 300,
+                      color: EPH.textPrimary,
+                      fontFamily: EPH.mono,
+                      lineHeight: 1,
+                    }}
                   >
                     {totalAlerts}
                   </span>
-                )}
-              </button>
-            ))}
-          </motion.div>
+                  {criticalAlerts > 0 && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 13,
+                        color: EPH.critical,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: EPH.critical,
+                          display: "inline-block",
+                        }}
+                      />
+                      {criticalAlerts} crit
+                    </span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: EPH.textTertiary,
+                    marginTop: 8,
+                  }}
+                >
+                  {criticalAlerts > 0
+                    ? `${criticalAlerts} critical`
+                    : highAlerts > 0
+                      ? `${highAlerts} high`
+                      : totalAlerts > 0
+                        ? "no critical"
+                        : "none"}
+                </div>
+              </GlassPanel>
+
+              {/* Fleet Size */}
+              <GlassPanel>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: EPH.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 12,
+                  }}
+                >
+                  Fleet Size
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "baseline", gap: 6 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 300,
+                      color: EPH.textPrimary,
+                      fontFamily: EPH.mono,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {fleet.length}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: EPH.textTertiary,
+                    }}
+                  >
+                    sats
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: EPH.textTertiary,
+                    marginTop: 8,
+                  }}
+                >
+                  {criticalCount > 0 ? (
+                    <span style={{ color: EPH.critical }}>
+                      {criticalCount} critical
+                    </span>
+                  ) : watchCount > 0 ? (
+                    <span style={{ color: EPH.watch }}>{watchCount} watch</span>
+                  ) : (
+                    `${nominalCount} nominal`
+                  )}
+                </div>
+              </GlassPanel>
+            </div>
+          </FadeIn>
+
+          {/* ── Tab Bar ──────────────────────────────────────────────── */}
+          <FadeIn delay={100}>
+            <div
+              style={{
+                display: "flex",
+                gap: 0,
+                borderBottom: `1px solid ${EPH.cardBorder}`,
+                marginBottom: 24,
+              }}
+            >
+              {TAB_ITEMS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  style={{
+                    padding: "12px 20px",
+                    fontSize: 13,
+                    fontWeight: 400,
+                    fontFamily: EPH.sans,
+                    color:
+                      activeTab === key ? EPH.textPrimary : EPH.textTertiary,
+                    background: "transparent",
+                    border: "none",
+                    borderBottom:
+                      activeTab === key
+                        ? `2px solid ${EPH.textPrimary}`
+                        : "2px solid transparent",
+                    cursor: "pointer",
+                    transition: "all 200ms ease",
+                    position: "relative",
+                    marginBottom: -1,
+                  }}
+                >
+                  {label}
+                  {key === "alerts" && totalAlerts > 0 && (
+                    <span
+                      style={{
+                        marginLeft: 8,
+                        padding: "2px 7px",
+                        borderRadius: 10,
+                        fontSize: 11,
+                        fontWeight: 500,
+                        fontFamily: EPH.mono,
+                        background: EPH.badgeBg,
+                        color:
+                          criticalAlerts > 0 ? EPH.critical : EPH.textSecondary,
+                      }}
+                    >
+                      {totalAlerts}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </FadeIn>
 
           {/* ── Error Banner ─────────────────────────────────────────── */}
           <AnimatePresence>
             {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <AlertTriangle size={16} className="text-red-400 shrink-0" />
-                  <p className="text-body text-red-400">{error}</p>
-                </div>
-                <button
-                  onClick={loadAll}
-                  className="text-body text-red-400 hover:text-red-300 transition-colors ml-4 shrink-0"
+              <FadeIn>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 16px",
+                    marginBottom: 24,
+                    borderRadius: 12,
+                    border: `1px solid rgba(248, 81, 73, 0.2)`,
+                    background: "rgba(248, 81, 73, 0.06)",
+                  }}
                 >
-                  Retry
-                </button>
-              </motion.div>
+                  <span style={{ fontSize: 13, color: EPH.textSecondary }}>
+                    {error}
+                  </span>
+                  <button
+                    onClick={loadAll}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: 6,
+                      border: `1px solid ${EPH.cardBorder}`,
+                      background: "transparent",
+                      color: EPH.textSecondary,
+                      fontSize: 13,
+                      fontFamily: EPH.sans,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Retry
+                  </button>
+                </div>
+              </FadeIn>
             )}
           </AnimatePresence>
 
           {/* ── Tab Content ──────────────────────────────────────────── */}
-          <AnimatePresence mode="wait">
-            {/* ── FLEET TAB ────────────────────────────────────────── */}
-            {activeTab === "fleet" && (
-              <motion.div
-                key="fleet"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                {loading && fleet.length === 0 ? (
-                  <div className="flex items-center justify-center py-24">
-                    <Loader2
-                      size={22}
-                      className="animate-spin text-[var(--text-tertiary)]"
-                    />
-                  </div>
-                ) : fleet.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-24">
-                    <div className="w-14 h-14 rounded-2xl bg-[var(--fill-light)] flex items-center justify-center mb-4">
-                      <Satellite
-                        size={24}
-                        className="text-[var(--text-tertiary)]"
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-1">
-                      No entities registered
-                    </h3>
-                    <p className="text-body text-[var(--text-secondary)]">
-                      Add spacecraft or launch vehicles to your organization.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Type filter */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                        Type
-                      </span>
-                      <select
-                        value={typeFilter}
-                        onChange={(e) =>
-                          setTypeFilter(e.target.value as TypeFilter)
+
+          {/* ── FLEET TAB ────────────────────────────────────────── */}
+          {activeTab === "fleet" && (
+            <FadeIn>
+              {loading && fleet.length === 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "96px 0",
+                  }}
+                >
+                  <Loader2
+                    size={22}
+                    style={{
+                      color: EPH.textTertiary,
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                </div>
+              ) : fleet.length === 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "96px 0",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: EPH.textTertiary,
+                    }}
+                  >
+                    No satellites tracked
+                  </span>
+                </div>
+              ) : (
+                <>
+                  {/* Type filter */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: EPH.textMicro,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Type
+                    </span>
+                    <select
+                      value={typeFilter}
+                      onChange={(e) =>
+                        setTypeFilter(e.target.value as TypeFilter)
+                      }
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: `1px solid ${EPH.cardBorder}`,
+                        background: EPH.cardBg,
+                        color: EPH.textPrimary,
+                        fontSize: 13,
+                        fontFamily: EPH.sans,
+                        outline: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="ALL">All ({fleet.length})</option>
+                      <option value="SCO">
+                        SCO (
+                        {
+                          fleet.filter(
+                            (f) => (f.operatorType ?? "SCO") === "SCO",
+                          ).length
                         }
-                        className="glass-surface border border-[var(--glass-border-subtle)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 transition-colors"
+                        )
+                      </option>
+                      <option value="LO">
+                        LO (
+                        {fleet.filter((f) => f.operatorType === "LO").length})
+                      </option>
+                    </select>
+                    {typeFilter !== "ALL" && (
+                      <button
+                        onClick={() => setTypeFilter("ALL")}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: 6,
+                          border: `1px solid ${EPH.cardBorder}`,
+                          background: "transparent",
+                          color: EPH.textTertiary,
+                          fontSize: 12,
+                          fontFamily: EPH.sans,
+                          cursor: "pointer",
+                        }}
                       >
-                        <option value="ALL">All ({fleet.length})</option>
-                        <option value="SCO">
-                          SCO — Spacecraft (
-                          {
-                            fleet.filter(
-                              (f) => (f.operatorType ?? "SCO") === "SCO",
-                            ).length
-                          }
-                          )
-                        </option>
-                        <option value="LO">
-                          LO — Launch Vehicle (
-                          {fleet.filter((f) => f.operatorType === "LO").length})
-                        </option>
-                      </select>
-                      {typeFilter !== "ALL" && (
-                        <button
-                          onClick={() => setTypeFilter("ALL")}
-                          className="text-caption px-2.5 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--fill-light)] transition-colors"
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
+                        Clear
+                      </button>
+                    )}
+                  </div>
 
-                    {/* Fleet Table */}
-                    <Card variant="elevated" padding="none">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-body">
-                          <thead>
-                            <tr className="border-b border-[var(--border-subtle)]">
-                              <th className="px-4 py-3 text-center text-caption text-[var(--text-tertiary)] uppercase tracking-wider w-14">
-                                Type
-                              </th>
+                  {/* Fleet Table */}
+                  <div
+                    style={{
+                      ...glassCard,
+                      overflow: "hidden",
+                      padding: 0,
+                    }}
+                  >
+                    <div style={{ overflowX: "auto" }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          fontSize: 13,
+                          borderCollapse: "collapse",
+                          fontFamily: EPH.sans,
+                        }}
+                      >
+                        <thead>
+                          <tr
+                            style={{
+                              borderBottom: `1px solid ${EPH.cardBorder}`,
+                            }}
+                          >
+                            {[
+                              {
+                                key: null,
+                                label: "",
+                                w: 14,
+                                align: "center" as const,
+                              },
+                              {
+                                key: "name" as SortKey,
+                                label: "NORAD",
+                                w: 80,
+                                align: "left" as const,
+                              },
+                              {
+                                key: "name" as SortKey,
+                                label: "NAME",
+                                w: undefined,
+                                align: "left" as const,
+                              },
+                              {
+                                key: "score" as SortKey,
+                                label: "SCORE",
+                                w: 72,
+                                align: "right" as const,
+                              },
+                              {
+                                key: "horizon" as SortKey,
+                                label: "HORIZON",
+                                w: 100,
+                                align: "right" as const,
+                              },
+                              {
+                                key: "risk" as SortKey,
+                                label: "STATUS",
+                                w: 56,
+                                align: "center" as const,
+                              },
+                              {
+                                key: null,
+                                label: "WEAKEST",
+                                w: undefined,
+                                align: "left" as const,
+                              },
+                              {
+                                key: null,
+                                label: "FRESH",
+                                w: 72,
+                                align: "center" as const,
+                              },
+                              {
+                                key: "alerts" as SortKey,
+                                label: "ALERTS",
+                                w: 64,
+                                align: "center" as const,
+                              },
+                            ].map((col, i) => (
                               <th
-                                className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none w-24"
-                                onClick={() => toggleSort("name")}
-                              >
-                                NORAD
-                                <SortIcon field="name" />
-                              </th>
-                              <th
-                                className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none"
-                                onClick={() => toggleSort("name")}
-                              >
-                                Name
-                                <SortIcon field="name" />
-                              </th>
-                              <th
-                                className="px-4 py-3 text-right text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none w-20"
-                                onClick={() => toggleSort("score")}
-                              >
-                                Score
-                                <SortIcon field="score" />
-                              </th>
-                              <th
-                                className="px-4 py-3 text-right text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none w-28"
-                                onClick={() => toggleSort("horizon")}
-                              >
-                                Horizon
-                                <SortIcon field="horizon" />
-                              </th>
-                              <th
-                                className="px-4 py-3 text-center text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none w-28"
-                                onClick={() => toggleSort("risk")}
-                              >
-                                Risk
-                                <SortIcon field="risk" />
-                              </th>
-                              <th className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                                Weakest Module
-                              </th>
-                              <th className="px-4 py-3 text-center text-caption text-[var(--text-tertiary)] uppercase tracking-wider w-24">
-                                Freshness
-                              </th>
-                              <th
-                                className="px-4 py-3 text-center text-caption text-[var(--text-tertiary)] uppercase tracking-wider cursor-pointer hover:text-[var(--text-primary)] transition-colors select-none w-20"
-                                onClick={() => toggleSort("alerts")}
-                              >
-                                Alerts
-                                <SortIcon field="alerts" />
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-[var(--border-subtle)]">
-                            {sortedFleet.map((sat) => {
-                              const risk = scoreRisk(sat.overallScore);
-                              const wm = weakestModule(sat);
-                              return (
-                                <tr
-                                  key={sat.noradId}
-                                  className="cursor-pointer hover:bg-[var(--fill-light)] transition-colors"
-                                  onClick={() => {
-                                    window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
-                                  }}
-                                >
-                                  <td className="px-4 py-3 text-center">
-                                    <span
-                                      className={`inline-flex items-center px-2 py-0.5 rounded text-micro font-bold tracking-wider text-white ${
-                                        sat.operatorType === "LO"
-                                          ? "bg-amber-500"
-                                          : "bg-blue-500"
-                                      }`}
-                                    >
-                                      {sat.operatorType ?? "SCO"}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-caption text-[var(--text-tertiary)] font-mono">
-                                    {sat.noradId}
-                                  </td>
-                                  <td className="px-4 py-3 text-body font-medium text-[var(--text-primary)]">
-                                    {sat.satelliteName}
-                                  </td>
-                                  <td
-                                    className={`px-4 py-3 text-right font-semibold tabular-nums font-mono ${scoreColorClass(sat.overallScore)}`}
-                                  >
-                                    {sat.overallScore}
-                                  </td>
-                                  <td className="px-4 py-3 text-right font-mono">
-                                    {sat.complianceHorizon
-                                      .daysUntilFirstBreach !== null ? (
-                                      <span
-                                        className={horizonColorClass(
-                                          sat.complianceHorizon
-                                            .daysUntilFirstBreach,
-                                        )}
-                                      >
-                                        {
-                                          sat.complianceHorizon
-                                            .daysUntilFirstBreach
-                                        }
-                                        d
-                                      </span>
-                                    ) : (
-                                      <span className="text-[var(--text-tertiary)]">
-                                        —
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span
-                                      className={`inline-flex items-center px-2 py-0.5 rounded text-micro font-medium ${riskBadgeClass(risk)}`}
-                                    >
-                                      {risk}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-caption">
-                                    {wm ? (
-                                      <span>
-                                        <span className="text-[var(--text-secondary)]">
-                                          {wm.name}
-                                        </span>
-                                        <span
-                                          className={`ml-1.5 font-mono ${scoreColorClass(wm.score)}`}
-                                        >
-                                          {wm.score}
-                                        </span>
-                                      </span>
-                                    ) : (
-                                      <span className="text-[var(--text-tertiary)]">
-                                        —
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span
-                                      className={`text-caption flex items-center justify-center gap-1 ${freshnessColorClass(sat.dataFreshness)}`}
-                                    >
-                                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-current" />
-                                      {sat.dataFreshness}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    {(sat.activeAlerts?.length ?? 0) > 0 ? (
-                                      <span
-                                        className={`font-semibold tabular-nums ${
-                                          sat.activeAlerts?.some(
-                                            (a) => a.severity === "CRITICAL",
-                                          )
-                                            ? "text-red-400"
-                                            : "text-amber-400"
-                                        }`}
-                                      >
-                                        {sat.activeAlerts.length}
-                                      </span>
-                                    ) : (
-                                      <span className="text-[var(--text-tertiary)]">
-                                        —
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="px-4 py-3 border-t border-[var(--border-subtle)]">
-                        <span className="text-caption text-[var(--text-tertiary)]">
-                          Showing {sortedFleet.length} of {fleet.length}{" "}
-                          entities
-                        </span>
-                      </div>
-                    </Card>
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {/* ── ALERTS TAB ───────────────────────────────────────── */}
-            {activeTab === "alerts" && (
-              <motion.div
-                key="alerts"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                {(() => {
-                  const sortedAlerts = fleet
-                    .flatMap((s) =>
-                      (s.activeAlerts ?? []).map((a) => ({
-                        ...a,
-                        noradId: s.noradId,
-                        satelliteName: s.satelliteName,
-                      })),
-                    )
-                    .sort((a, b) => {
-                      const order: Record<string, number> = {
-                        CRITICAL: 0,
-                        HIGH: 1,
-                        MEDIUM: 2,
-                        LOW: 3,
-                        ANOMALY: 1,
-                      };
-                      return (
-                        (order[a.severity] ?? 4) - (order[b.severity] ?? 4)
-                      );
-                    });
-
-                  if (sortedAlerts.length === 0) {
-                    return (
-                      <div className="flex flex-col items-center justify-center py-24">
-                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                          <Shield
-                            size={24}
-                            className="text-emerald-400"
-                            strokeWidth={1.5}
-                          />
-                        </div>
-                        <h3 className="text-title font-medium text-[var(--text-primary)] mb-1">
-                          No active alerts
-                        </h3>
-                        <p className="text-body text-[var(--text-secondary)]">
-                          All systems nominal.
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Card variant="elevated" padding="none">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-body">
-                          <thead>
-                            <tr className="border-b border-[var(--border-subtle)]">
-                              <th className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider w-28">
-                                Severity
-                              </th>
-                              <th className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider w-36">
-                                Entity
-                              </th>
-                              <th className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                                Title
-                              </th>
-                              <th className="px-4 py-3 text-left text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
-                                Description
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-[var(--border-subtle)]">
-                            {sortedAlerts.map((alert, i) => (
-                              <tr
-                                key={`${alert.noradId}-${alert.id ?? i}`}
-                                className="cursor-pointer hover:bg-[var(--fill-light)] transition-colors"
-                                onClick={() => {
-                                  window.location.href = `/dashboard/ephemeris/${alert.noradId}`;
+                                key={i}
+                                onClick={
+                                  col.key
+                                    ? () => toggleSort(col.key!)
+                                    : undefined
+                                }
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: col.align,
+                                  fontSize: 10,
+                                  fontWeight: 500,
+                                  color: EPH.textMicro,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  width: col.w,
+                                  cursor: col.key ? "pointer" : "default",
+                                  userSelect: "none",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                <td className="px-4 py-3">
+                                {col.label}
+                                {col.key && <SortIcon field={col.key} />}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedFleet.map((sat, idx) => {
+                            const risk = scoreRisk(sat.overallScore);
+                            const wm = weakestModule(sat);
+                            return (
+                              <tr
+                                key={sat.noradId}
+                                onClick={() => {
+                                  window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
+                                }}
+                                style={{
+                                  cursor: "pointer",
+                                  background:
+                                    idx % 2 === 1 ? EPH.rowAlt : "transparent",
+                                  borderBottom: `1px solid rgba(255,255,255,0.03)`,
+                                  transition: "background 150ms ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  (
+                                    e.currentTarget as HTMLElement
+                                  ).style.background = EPH.rowHover;
+                                }}
+                                onMouseLeave={(e) => {
+                                  (
+                                    e.currentTarget as HTMLElement
+                                  ).style.background =
+                                    idx % 2 === 1 ? EPH.rowAlt : "transparent";
+                                }}
+                              >
+                                {/* Status dot */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "center",
+                                  }}
+                                >
                                   <span
-                                    className={`inline-flex items-center px-2 py-0.5 rounded text-micro font-medium ${severityBadgeClass(alert.severity)}`}
+                                    style={{
+                                      display: "inline-block",
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: "50%",
+                                      background: statusDotColor(risk),
+                                    }}
+                                  />
+                                </td>
+                                {/* NORAD */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    fontSize: 12,
+                                    fontFamily: EPH.mono,
+                                    color: EPH.textTertiary,
+                                  }}
+                                >
+                                  {sat.noradId}
+                                </td>
+                                {/* Name */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    fontSize: 13,
+                                    fontWeight: 400,
+                                    color: "rgba(255,255,255,0.8)",
+                                  }}
+                                >
+                                  {sat.satelliteName}
+                                </td>
+                                {/* Score */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "right",
+                                    fontSize: 16,
+                                    fontWeight: 400,
+                                    fontFamily: EPH.mono,
+                                    color: EPH.textPrimary,
+                                    fontVariantNumeric: "tabular-nums",
+                                  }}
+                                >
+                                  {sat.overallScore}
+                                </td>
+                                {/* Horizon */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "right",
+                                    fontFamily: EPH.mono,
+                                    fontSize: 13,
+                                    color: horizonColor(
+                                      sat.complianceHorizon
+                                        .daysUntilFirstBreach,
+                                    ),
+                                  }}
+                                >
+                                  {sat.complianceHorizon
+                                    .daysUntilFirstBreach !== null
+                                    ? `${sat.complianceHorizon.daysUntilFirstBreach}d`
+                                    : "\u2014"}
+                                </td>
+                                {/* Status dot column */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      display: "inline-block",
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: "50%",
+                                      background: statusDotColor(risk),
+                                    }}
+                                  />
+                                </td>
+                                {/* Weakest Module */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    fontSize: 12,
+                                    color: EPH.textSecondary,
+                                  }}
+                                >
+                                  {wm ? (
+                                    <span>
+                                      <span
+                                        style={{ color: EPH.textSecondary }}
+                                      >
+                                        {wm.name}
+                                      </span>
+                                      <span
+                                        style={{
+                                          marginLeft: 6,
+                                          fontFamily: EPH.mono,
+                                          color: EPH.textTertiary,
+                                        }}
+                                      >
+                                        {wm.score}
+                                      </span>
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: EPH.textTertiary }}>
+                                      \u2014
+                                    </span>
+                                  )}
+                                </td>
+                                {/* Freshness */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 5,
+                                      fontSize: 11,
+                                      color: freshnessColor(sat.dataFreshness),
+                                    }}
                                   >
-                                    {alert.severity}
+                                    <span
+                                      style={{
+                                        width: 5,
+                                        height: 5,
+                                        borderRadius: "50%",
+                                        background: freshnessColor(
+                                          sat.dataFreshness,
+                                        ),
+                                        display: "inline-block",
+                                      }}
+                                    />
+                                    {sat.dataFreshness}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-body text-[var(--text-secondary)]">
-                                  {alert.satelliteName}
-                                </td>
-                                <td className="px-4 py-3 text-body text-[var(--text-primary)]">
-                                  {alert.title}
-                                </td>
-                                <td className="px-4 py-3 text-caption text-[var(--text-secondary)] max-w-[400px] truncate">
-                                  {alert.description}
+                                {/* Alerts */}
+                                <td
+                                  style={{
+                                    padding: "10px 16px",
+                                    textAlign: "center",
+                                    fontFamily: EPH.mono,
+                                    fontSize: 13,
+                                    color:
+                                      (sat.activeAlerts?.length ?? 0) > 0
+                                        ? sat.activeAlerts?.some(
+                                            (a) => a.severity === "CRITICAL",
+                                          )
+                                          ? EPH.critical
+                                          : EPH.watch
+                                        : EPH.textTertiary,
+                                  }}
+                                >
+                                  {(sat.activeAlerts?.length ?? 0) > 0
+                                    ? sat.activeAlerts.length
+                                    : "\u2014"}
                                 </td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </Card>
-                  );
-                })()}
-              </motion.div>
-            )}
-
-            {/* ── INTELLIGENCE TAB ─────────────────────────────────── */}
-            {activeTab === "intelligence" && (
-              <motion.div
-                key="intelligence"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 gap-4 lg:grid-cols-2"
-              >
-                {/* Panel 1: Risk Distribution */}
-                <Card variant="elevated">
-                  <div className="mb-4">
-                    <h3 className="text-title font-semibold text-[var(--text-primary)]">
-                      Risk Distribution
-                    </h3>
-                    <p className="text-caption text-[var(--text-secondary)] mt-0.5">
-                      Fleet entities by risk category
-                    </p>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div
+                      style={{
+                        padding: "10px 16px",
+                        borderTop: `1px solid ${EPH.cardBorder}`,
+                        fontSize: 12,
+                        color: EPH.textTertiary,
+                      }}
+                    >
+                      Showing {sortedFleet.length} of {fleet.length} entities
+                    </div>
                   </div>
-                  <div className="space-y-3">
+                </>
+              )}
+            </FadeIn>
+          )}
+
+          {/* ── ALERTS TAB ───────────────────────────────────────── */}
+          {activeTab === "alerts" && (
+            <FadeIn>
+              {(() => {
+                const sortedAlerts = fleet
+                  .flatMap((s) =>
+                    (s.activeAlerts ?? []).map((a) => ({
+                      ...a,
+                      noradId: s.noradId,
+                      satelliteName: s.satelliteName,
+                    })),
+                  )
+                  .sort((a, b) => {
+                    const order: Record<string, number> = {
+                      CRITICAL: 0,
+                      HIGH: 1,
+                      MEDIUM: 2,
+                      LOW: 3,
+                      ANOMALY: 1,
+                    };
+                    return (order[a.severity] ?? 4) - (order[b.severity] ?? 4);
+                  });
+
+                if (sortedAlerts.length === 0) {
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "96px 0",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: EPH.nominal,
+                            display: "inline-block",
+                          }}
+                        />
+                        <span
+                          style={{ fontSize: 13, color: EPH.textSecondary }}
+                        >
+                          No active alerts
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 13, color: EPH.textTertiary }}>
+                        All systems nominal.
+                      </span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    style={{
+                      ...glassCard,
+                      overflow: "hidden",
+                      padding: 0,
+                    }}
+                  >
+                    <div style={{ overflowX: "auto" }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          fontSize: 13,
+                          borderCollapse: "collapse",
+                          fontFamily: EPH.sans,
+                        }}
+                      >
+                        <thead>
+                          <tr
+                            style={{
+                              borderBottom: `1px solid ${EPH.cardBorder}`,
+                            }}
+                          >
+                            {[
+                              "",
+                              "SEVERITY",
+                              "ENTITY",
+                              "TITLE",
+                              "DESCRIPTION",
+                            ].map((h, i) => (
+                              <th
+                                key={i}
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "left",
+                                  fontSize: 10,
+                                  fontWeight: 500,
+                                  color: EPH.textMicro,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  width:
+                                    i === 0
+                                      ? 14
+                                      : i === 1
+                                        ? 80
+                                        : i === 2
+                                          ? 140
+                                          : undefined,
+                                }}
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedAlerts.map((alert, i) => (
+                            <tr
+                              key={`${alert.noradId}-${alert.id ?? i}`}
+                              onClick={() => {
+                                window.location.href = `/dashboard/ephemeris/${alert.noradId}`;
+                              }}
+                              style={{
+                                cursor: "pointer",
+                                background:
+                                  i % 2 === 1 ? EPH.rowAlt : "transparent",
+                                borderBottom: `1px solid rgba(255,255,255,0.03)`,
+                                transition: "background 150ms ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                (
+                                  e.currentTarget as HTMLElement
+                                ).style.background = EPH.rowHover;
+                              }}
+                              onMouseLeave={(e) => {
+                                (
+                                  e.currentTarget as HTMLElement
+                                ).style.background =
+                                  i % 2 === 1 ? EPH.rowAlt : "transparent";
+                              }}
+                            >
+                              <td style={{ padding: "10px 16px" }}>
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    background: severityDotColor(
+                                      alert.severity,
+                                    ),
+                                  }}
+                                />
+                              </td>
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 11,
+                                  fontWeight: 500,
+                                  color: EPH.textTertiary,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.04em",
+                                }}
+                              >
+                                {alert.severity}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 13,
+                                  color: EPH.textSecondary,
+                                }}
+                              >
+                                {alert.satelliteName}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 13,
+                                  color: EPH.textPrimary,
+                                }}
+                              >
+                                {alert.title}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 12,
+                                  color: EPH.textTertiary,
+                                  maxWidth: 400,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {alert.description}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
+            </FadeIn>
+          )}
+
+          {/* ── INTELLIGENCE TAB ─────────────────────────────────── */}
+          {activeTab === "intelligence" && (
+            <FadeIn>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 24,
+                }}
+              >
+                {/* Risk Distribution */}
+                <GlassPanel>
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: EPH.textSecondary,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Risk Distribution
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: EPH.textTertiary,
+                        marginTop: 4,
+                      }}
+                    >
+                      Fleet entities by risk category
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
                     {(["NOMINAL", "WATCH", "WARNING", "CRITICAL"] as const).map(
                       (cat) => {
                         const count =
@@ -1044,21 +1555,71 @@ export default function EphemerisDashboard() {
                         const pct =
                           fleet.length > 0 ? (count / fleet.length) * 100 : 0;
                         return (
-                          <div key={cat} className="flex items-center gap-3">
+                          <div
+                            key={cat}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
                             <span
-                              className={`text-micro uppercase tracking-wider w-16 font-medium ${riskColorClass(cat)}`}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                width: 72,
+                                fontSize: 11,
+                                fontWeight: 500,
+                                color: EPH.textTertiary,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.04em",
+                              }}
                             >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  background: statusDotColor(cat),
+                                  display: "inline-block",
+                                  flexShrink: 0,
+                                }}
+                              />
                               {cat}
                             </span>
-                            <div className="flex-1 h-1.5 bg-[var(--fill-light)] rounded-full overflow-hidden">
+                            <div
+                              style={{
+                                flex: 1,
+                                height: 4,
+                                background: "rgba(255,255,255,0.06)",
+                                borderRadius: 2,
+                                overflow: "hidden",
+                              }}
+                            >
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${riskBgClass(cat)}`}
-                                style={{ width: `${pct}%` }}
+                                style={{
+                                  height: "100%",
+                                  borderRadius: 2,
+                                  background: statusDotColor(cat),
+                                  width: `${pct}%`,
+                                  opacity: 0.6,
+                                  transition: "width 500ms ease",
+                                }}
                               />
                             </div>
-                            <span className="text-caption text-[var(--text-secondary)] w-20 text-right tabular-nums font-mono">
+                            <span
+                              style={{
+                                width: 64,
+                                textAlign: "right",
+                                fontSize: 12,
+                                fontFamily: EPH.mono,
+                                color: EPH.textSecondary,
+                                fontVariantNumeric: "tabular-nums",
+                              }}
+                            >
                               {count}{" "}
-                              <span className="text-[var(--text-tertiary)]">
+                              <span style={{ color: EPH.textTertiary }}>
                                 ({pct.toFixed(0)}%)
                               </span>
                             </span>
@@ -1067,42 +1628,109 @@ export default function EphemerisDashboard() {
                       },
                     )}
                   </div>
-                </Card>
+                </GlassPanel>
 
-                {/* Panel 2: Weakest Links */}
-                <Card variant="elevated">
-                  <div className="mb-4">
-                    <h3 className="text-title font-semibold text-[var(--text-primary)]">
+                {/* Weakest Links */}
+                <GlassPanel>
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: EPH.textSecondary,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
                       Weakest Links
-                    </h3>
-                    <p className="text-caption text-[var(--text-secondary)] mt-0.5">
-                      Entities with highest fleet impact potential
-                    </p>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: EPH.textTertiary,
+                        marginTop: 4,
+                      }}
+                    >
+                      Entities with highest fleet impact
+                    </div>
                   </div>
                   {(intel?.weakestLinks ?? []).length > 0 ? (
-                    <div className="divide-y divide-[var(--border-subtle)]">
+                    <div>
                       {(intel?.weakestLinks ?? []).map((link, i) => (
                         <Link
                           key={link.noradId}
                           href={`/dashboard/ephemeris/${link.noradId}`}
-                          className="flex items-center gap-3 py-2.5 hover:bg-[var(--fill-light)] transition-colors -mx-2 px-2 rounded-lg"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "10px 8px",
+                            borderRadius: 8,
+                            textDecoration: "none",
+                            borderBottom:
+                              i < (intel?.weakestLinks ?? []).length - 1
+                                ? `1px solid rgba(255,255,255,0.04)`
+                                : "none",
+                            transition: "background 150ms ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.background =
+                              EPH.rowHover;
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.background =
+                              "transparent";
+                          }}
                         >
-                          <span className="text-caption text-[var(--text-tertiary)] w-5 tabular-nums">
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: EPH.textTertiary,
+                              width: 20,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
+                          >
                             {i + 1}.
                           </span>
-                          <span className="text-body text-[var(--text-primary)] flex-1 truncate">
+                          <span
+                            style={{
+                              flex: 1,
+                              fontSize: 13,
+                              color: EPH.textPrimary,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {link.name}
                           </span>
                           <span
-                            className={`text-body font-semibold tabular-nums font-mono ${scoreColorClass(link.score)}`}
+                            style={{
+                              fontSize: 14,
+                              fontFamily: EPH.mono,
+                              fontWeight: 400,
+                              color: EPH.textPrimary,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
                           >
                             {link.score}
                           </span>
-                          <span className="text-caption text-emerald-400 font-mono">
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontFamily: EPH.mono,
+                              color: EPH.textTertiary,
+                            }}
+                          >
                             +{link.fleetImpact.toFixed(1)}pts
                           </span>
                           {link.weakestModule && (
-                            <span className="text-caption text-[var(--text-tertiary)]">
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: EPH.textTertiary,
+                              }}
+                            >
                               {link.weakestModule} ({link.weakestModuleScore})
                             </span>
                           )}
@@ -1110,149 +1738,298 @@ export default function EphemerisDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-body text-[var(--text-tertiary)]">
+                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
                       No data yet
-                    </p>
+                    </span>
                   )}
-                </Card>
+                </GlassPanel>
 
-                {/* Panel 3: Fleet Trend */}
-                <Card variant="elevated">
-                  <div className="mb-4">
-                    <h3 className="text-title font-semibold text-[var(--text-primary)]">
+                {/* Fleet Trend */}
+                <GlassPanel>
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: EPH.textSecondary,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
                       Fleet Trend
-                    </h3>
-                    <p className="text-caption text-[var(--text-secondary)] mt-0.5">
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: EPH.textTertiary,
+                        marginTop: 4,
+                      }}
+                    >
                       Score trajectory over time
-                    </p>
+                    </div>
                   </div>
                   {intel?.trend ? (
                     <div>
-                      <div className="flex items-baseline gap-3 mb-5">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 12,
+                          marginBottom: 20,
+                        }}
+                      >
                         <span
-                          className={`text-display-sm font-bold ${trendColorClass(intel.trend.longTermDelta)}`}
+                          style={{
+                            fontSize: 32,
+                            fontWeight: 300,
+                            color:
+                              intel.trend.longTermDelta > 0.5
+                                ? EPH.nominal
+                                : intel.trend.longTermDelta < -0.5
+                                  ? EPH.critical
+                                  : EPH.textPrimary,
+                            fontFamily: EPH.mono,
+                          }}
                         >
-                          {trendArrow(intel.trend.longTermDelta)}{" "}
+                          {intel.trend.longTermDelta > 0.5
+                            ? "\u2191"
+                            : intel.trend.longTermDelta < -0.5
+                              ? "\u2193"
+                              : "\u2192"}{" "}
                           {intel.trend.direction}
                         </span>
-                        <span className="text-caption text-[var(--text-tertiary)] uppercase tracking-wider">
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 500,
+                            color: EPH.textMicro,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
                           {intel.trend.trendStrength}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg glass-surface">
-                          <p className="text-caption text-[var(--text-tertiary)] mb-1 uppercase tracking-wider">
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 16,
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: 12,
+                            borderRadius: 12,
+                            background: EPH.cardBg,
+                            border: `1px solid ${EPH.cardBorder}`,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 500,
+                              color: EPH.textMicro,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.05em",
+                              marginBottom: 6,
+                            }}
+                          >
                             7d Delta
-                          </p>
-                          <p
-                            className={`text-title font-semibold tabular-nums font-mono ${trendColorClass(intel.trend.shortTermDelta)}`}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 20,
+                              fontWeight: 300,
+                              fontFamily: EPH.mono,
+                              color:
+                                intel.trend.shortTermDelta > 0.5
+                                  ? EPH.nominal
+                                  : intel.trend.shortTermDelta < -0.5
+                                    ? EPH.critical
+                                    : EPH.textPrimary,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
                           >
                             {intel.trend.shortTermDelta > 0 ? "+" : ""}
                             {intel.trend.shortTermDelta}
-                          </p>
+                          </div>
                         </div>
-                        <div className="p-3 rounded-lg glass-surface">
-                          <p className="text-caption text-[var(--text-tertiary)] mb-1 uppercase tracking-wider">
+                        <div
+                          style={{
+                            padding: 12,
+                            borderRadius: 12,
+                            background: EPH.cardBg,
+                            border: `1px solid ${EPH.cardBorder}`,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 500,
+                              color: EPH.textMicro,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.05em",
+                              marginBottom: 6,
+                            }}
+                          >
                             30d Delta
-                          </p>
-                          <p
-                            className={`text-title font-semibold tabular-nums font-mono ${trendColorClass(intel.trend.longTermDelta)}`}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 20,
+                              fontWeight: 300,
+                              fontFamily: EPH.mono,
+                              color:
+                                intel.trend.longTermDelta > 0.5
+                                  ? EPH.nominal
+                                  : intel.trend.longTermDelta < -0.5
+                                    ? EPH.critical
+                                    : EPH.textPrimary,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
                           >
                             {intel.trend.longTermDelta > 0 ? "+" : ""}
                             {intel.trend.longTermDelta}
-                          </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-body text-[var(--text-tertiary)]">
+                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
                       Insufficient history data
-                    </p>
+                    </span>
                   )}
-                </Card>
+                </GlassPanel>
 
-                {/* Panel 4: Industry Benchmark */}
-                <Card variant="elevated">
-                  <div className="mb-4">
-                    <h3 className="text-title font-semibold text-[var(--text-primary)]">
+                {/* Industry Benchmark */}
+                <GlassPanel>
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: EPH.textSecondary,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
                       Industry Benchmark
-                    </h3>
-                    <p className="text-caption text-[var(--text-secondary)] mt-0.5">
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: EPH.textTertiary,
+                        marginTop: 4,
+                      }}
+                    >
                       Your fleet vs. industry peers
-                    </p>
+                    </div>
                   </div>
                   {benchmark?.operatorRanking ? (
-                    <div className="space-y-3">
+                    <div>
                       {[
                         {
                           label: "Your Fleet Score",
                           value: String(benchmark.operatorRanking.score),
-                          cls: "text-[var(--text-primary)] font-semibold",
+                          color: EPH.textPrimary,
                         },
                         {
                           label: "Industry Average",
-                          value: String(benchmark.overall.averageScore ?? "—"),
-                          cls: "text-[var(--text-secondary)]",
+                          value: String(
+                            benchmark.overall.averageScore ?? "\u2014",
+                          ),
+                          color: EPH.textSecondary,
                         },
                         {
                           label: "Percentile Rank",
                           value: benchmark.operatorRanking.rank,
-                          cls: "text-blue-400 font-semibold",
+                          color: EPH.textPrimary,
                         },
                         {
                           label: "vs Average",
                           value: `${benchmark.operatorRanking.vsAverage > 0 ? "+" : ""}${benchmark.operatorRanking.vsAverage}`,
-                          cls:
-                            trendColorClass(
-                              benchmark.operatorRanking.vsAverage,
-                            ) + " font-semibold",
+                          color:
+                            benchmark.operatorRanking.vsAverage > 0.5
+                              ? EPH.nominal
+                              : benchmark.operatorRanking.vsAverage < -0.5
+                                ? EPH.critical
+                                : EPH.textPrimary,
                         },
-                      ].map(({ label, value, cls }) => (
+                      ].map(({ label, value, color }, i) => (
                         <div
                           key={label}
-                          className="flex items-center justify-between py-1.5 border-b border-[var(--border-subtle)] last:border-0"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "8px 0",
+                            borderBottom:
+                              i < 3
+                                ? `1px solid rgba(255,255,255,0.04)`
+                                : "none",
+                          }}
                         >
-                          <span className="text-body text-[var(--text-secondary)]">
+                          <span
+                            style={{
+                              fontSize: 13,
+                              color: EPH.textSecondary,
+                            }}
+                          >
                             {label}
                           </span>
                           <span
-                            className={`text-body tabular-nums font-mono ${cls}`}
+                            style={{
+                              fontSize: 14,
+                              fontFamily: EPH.mono,
+                              fontWeight: 400,
+                              color,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
                           >
                             {value}
                           </span>
                         </div>
                       ))}
-                      <p className="text-caption text-[var(--text-tertiary)] pt-1">
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: EPH.textTertiary,
+                          marginTop: 8,
+                        }}
+                      >
                         Compared to {benchmark.overall.operatorCount} operators
-                      </p>
+                      </div>
                     </div>
                   ) : (
-                    <p className="text-body text-[var(--text-tertiary)]">
+                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
                       Benchmark available when 5+ operators are in the system.
-                    </p>
+                    </span>
                   )}
-                </Card>
-              </motion.div>
-            )}
+                </GlassPanel>
+              </div>
+            </FadeIn>
+          )}
 
-            {/* ── DEPENDENCIES TAB ─────────────────────────────────── */}
-            {activeTab === "dependencies" && (
-              <motion.div
-                key="dependencies"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <DependencyGraphView />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* ── DEPENDENCIES TAB ─────────────────────────────────── */}
+          {activeTab === "dependencies" && (
+            <FadeIn>
+              <DependencyGraphView />
+            </FadeIn>
+          )}
         </div>
       </div>
 
       {/* ── Alerts Sidebar ─────────────────────────────────────────── */}
       <AlertsSidebar alerts={allAlerts} />
+
+      {/* Keyframes for spinner */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
