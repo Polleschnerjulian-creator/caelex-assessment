@@ -118,6 +118,10 @@ export async function POST(request: Request) {
     // Calculate compliance score
     const complianceScore = calculateComplianceScore(result);
 
+    // TODO: LCA calculation version history (F-3)
+    // Currently deleteMany + createMany replaces all results on recalculation.
+    // Need a calculationVersion field to preserve history.
+
     // Delete existing impact results and create new ones
     await prisma.environmentalImpactResult.deleteMany({
       where: { assessmentId },

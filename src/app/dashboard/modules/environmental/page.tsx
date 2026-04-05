@@ -265,6 +265,10 @@ function EnvironmentalPageContent() {
     });
   }
 
+  // TODO: Multi-launch constellation aggregation (F-2)
+  // Currently assumes all spacecraft launch on the same vehicle.
+  // Need a LaunchBatch model for realistic constellation EFDs.
+
   async function createOrUpdateAssessment() {
     try {
       setLoading(true);
@@ -1429,6 +1433,22 @@ function CalculatorStep({
               </div>
             </div>
 
+            {/* ODP Metric */}
+            <div className="mt-6 p-4 rounded-xl bg-[var(--fill-light,var(--surface-sunken))] border border-[var(--separator,var(--border-default))]">
+              <p className="text-small text-[var(--text-tertiary,var(--text-secondary))] uppercase tracking-wider">
+                Ozone Depletion (ODP)
+              </p>
+              <p className="text-display-sm font-semibold text-[var(--text-primary)]">
+                {assessment.totalODP?.toExponential(2) || "—"}{" "}
+                <span className="text-body text-[var(--text-tertiary,var(--text-secondary))]">
+                  kg CFC-11 eq
+                </span>
+              </p>
+              <p className="text-small text-[var(--text-tertiary,var(--text-secondary))] mt-1">
+                Stratosphärischer Ozonabbau durch Triebwerksemissionen
+              </p>
+            </div>
+
             {assessment.isSimplifiedAssessment && (
               <div className="mt-4 p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-lg flex items-center gap-2">
                 <Info
@@ -1488,9 +1508,16 @@ function CalculatorStep({
                             </span>
                           )}
                         </div>
-                        <p className="text-body text-[var(--text-secondary)]">
-                          {formatEmissions(phase.gwpKgCO2eq)}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-body text-[var(--text-secondary)]">
+                            {formatEmissions(phase.gwpKgCO2eq)}
+                          </p>
+                          {phase.odpKgCFC11eq > 0 && (
+                            <p className="text-small text-[var(--text-tertiary,var(--text-secondary))]">
+                              ODP: {phase.odpKgCFC11eq.toExponential(2)}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div
                         className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden"
@@ -1520,6 +1547,9 @@ function CalculatorStep({
           </div>
 
           {/* What-If Optimizer */}
+          {/* TODO: Scenario persistence (E-4) — SensitivityOptimizer results are ephemeral.
+              Need a ScenarioSnapshot model to persist what-if scenarios to DB
+              and allow comparison across calculation versions. */}
           <SensitivityOptimizer assessment={assessment} />
 
           {/* Recommendations */}

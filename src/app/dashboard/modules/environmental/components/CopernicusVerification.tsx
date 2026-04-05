@@ -74,10 +74,22 @@ function getStatus(
   return "high";
 }
 
+// Design system migration: Status colors use CSS variables with hardcoded fallbacks.
+// TODO: Remaining inline styles in this component (loading/error states, map overlays,
+// stat grid cells) should be migrated to Tailwind + CSS variable classes incrementally.
 const STATUS_COLORS = {
-  nominal: { text: "#00D4AA", bg: "rgba(0,212,170,0.08)" },
-  elevated: { text: "#FF8C42", bg: "rgba(255,140,66,0.08)" },
-  high: { text: "#FF4757", bg: "rgba(255,71,87,0.08)" },
+  nominal: {
+    text: "var(--accent-primary, #00D4AA)",
+    bg: "var(--accent-success-soft, rgba(0,212,170,0.08))",
+  },
+  elevated: {
+    text: "var(--accent-warning, #FF8C42)",
+    bg: "var(--accent-warning-soft, rgba(255,140,66,0.08))",
+  },
+  high: {
+    text: "var(--accent-danger, #FF4757)",
+    bg: "var(--accent-danger-soft, rgba(255,71,87,0.08))",
+  },
 };
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -205,12 +217,30 @@ export default function CopernicusVerification({
     (m) => getStatus(m.variable, m.mean) === "elevated",
   );
 
-  const borderColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
-  const cardBg = isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.7)";
-  const innerBg = isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.5)";
-  const textPrimary = isDark ? "rgba(255,255,255,0.85)" : "#0F172A";
-  const textSecondary = isDark ? "rgba(255,255,255,0.5)" : "#64748B";
-  const textMuted = isDark ? "rgba(255,255,255,0.25)" : "#94A3B8";
+  const borderColor =
+    "var(--border-default, " +
+    (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)") +
+    ")";
+  const cardBg =
+    "var(--surface-raised, " +
+    (isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.7)") +
+    ")";
+  const innerBg =
+    "var(--surface-sunken, " +
+    (isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.5)") +
+    ")";
+  const textPrimary =
+    "var(--text-primary, " +
+    (isDark ? "rgba(255,255,255,0.85)" : "#0F172A") +
+    ")";
+  const textSecondary =
+    "var(--text-secondary, " +
+    (isDark ? "rgba(255,255,255,0.5)" : "#64748B") +
+    ")";
+  const textMuted =
+    "var(--text-tertiary, " +
+    (isDark ? "rgba(255,255,255,0.25)" : "#94A3B8") +
+    ")";
 
   return (
     <div
@@ -243,9 +273,10 @@ export default function CopernicusVerification({
               width: 32,
               height: 32,
               borderRadius: 8,
-              background: isDark
-                ? "rgba(0,212,170,0.1)"
-                : "rgba(16,185,129,0.08)",
+              background:
+                "var(--accent-success-soft, " +
+                (isDark ? "rgba(0,212,170,0.1)" : "rgba(16,185,129,0.08)") +
+                ")",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -253,7 +284,12 @@ export default function CopernicusVerification({
           >
             <Satellite
               size={16}
-              style={{ color: isDark ? "#00D4AA" : "#10B981" }}
+              style={{
+                color:
+                  "var(--accent-primary, " +
+                  (isDark ? "#00D4AA" : "#10B981") +
+                  ")",
+              }}
             />
           </div>
           <div>
@@ -273,10 +309,16 @@ export default function CopernicusVerification({
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: 1,
-                  color: isDark ? "#7B8CFF" : "#2563EB",
-                  background: isDark
-                    ? "rgba(123,140,255,0.1)"
-                    : "rgba(37,99,235,0.06)",
+                  color:
+                    "var(--accent-info, " +
+                    (isDark ? "#7B8CFF" : "#2563EB") +
+                    ")",
+                  background:
+                    "var(--accent-info-soft, " +
+                    (isDark
+                      ? "rgba(123,140,255,0.1)"
+                      : "rgba(37,99,235,0.06)") +
+                    ")",
                   padding: "2px 6px",
                   borderRadius: 4,
                   textTransform: "uppercase",
@@ -407,8 +449,7 @@ export default function CopernicusVerification({
                   fontSize: 24,
                   fontWeight: 700,
                   color: colors.text,
-                  fontFamily:
-                    "var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono, ui-monospace, monospace)",
                   lineHeight: 1,
                 }}
               >

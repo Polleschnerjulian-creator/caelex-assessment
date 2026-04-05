@@ -72,7 +72,14 @@ export type LaunchVehicleId =
   | "falcon_heavy"
   | "electron"
   | "soyuz"
-  | "generic_small";
+  | "generic_small"
+  | "new_glenn"
+  | "starship"
+  | "pslv"
+  | "long_march_2d"
+  | "miura_5"
+  | "prime"
+  | "spectrum";
 
 export type EFDGrade = "A" | "B" | "C" | "D" | "E";
 
@@ -566,6 +573,153 @@ export const launchVehicles: Record<LaunchVehicleId, LaunchVehicle> = {
     },
     notes: "Default values for unspecified small launchers.",
   },
+  new_glenn: {
+    id: "new_glenn",
+    name: "New Glenn",
+    provider: "Blue Origin",
+    payloadCapacityLeoKg: 45000,
+    payloadCapacityGtoKg: 13000,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 7,
+      gto: 25,
+    },
+    propellantTypes: ["liquid_methane", "liquid_oxygen"],
+    reusability: "partial",
+    sustainabilityGrade: "B",
+    emissionsProfile: {
+      gwp: 320000,
+      odp: 0.001,
+      particulates: 8000,
+    },
+    notes:
+      "Methane-based, reusable first stage. Low ODP due to clean-burning propellants.",
+  },
+  starship: {
+    id: "starship",
+    name: "Starship",
+    provider: "SpaceX",
+    payloadCapacityLeoKg: 150000,
+    payloadCapacityGtoKg: 21000,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 4,
+      gto: 26,
+    },
+    propellantTypes: ["liquid_methane", "liquid_oxygen"],
+    reusability: "full",
+    sustainabilityGrade: "A",
+    emissionsProfile: {
+      gwp: 550000,
+      odp: 0.001,
+      particulates: 15000,
+    },
+    notes:
+      "Fully reusable. Very high absolute emissions but best-in-class carbon intensity per kg to orbit.",
+  },
+  pslv: {
+    id: "pslv",
+    name: "PSLV",
+    provider: "ISRO",
+    payloadCapacityLeoKg: 3800,
+    payloadCapacityGtoKg: 1425,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 47,
+      gto: 126,
+    },
+    propellantTypes: ["solid_propellant", "liquid_oxygen"],
+    reusability: "none",
+    sustainabilityGrade: "C",
+    emissionsProfile: {
+      gwp: 180000,
+      odp: 0.15,
+      particulates: 22000,
+    },
+    notes:
+      "Solid + hypergolic stages. Higher ODP from solid propellant and UDMH upper stage.",
+  },
+  long_march_2d: {
+    id: "long_march_2d",
+    name: "Long March 2D",
+    provider: "CASC",
+    payloadCapacityLeoKg: 3500,
+    payloadCapacityGtoKg: 1300,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 60,
+      gto: 162,
+    },
+    propellantTypes: ["nitrogen_tetroxide"],
+    reusability: "none",
+    sustainabilityGrade: "D",
+    emissionsProfile: {
+      gwp: 210000,
+      odp: 0.2,
+      particulates: 16000,
+    },
+    notes:
+      "Hypergolic propellants (UDMH/N2O4). Higher environmental impact per kg due to toxic propellants.",
+  },
+  miura_5: {
+    id: "miura_5",
+    name: "Miura 5",
+    provider: "PLD Space",
+    payloadCapacityLeoKg: 540,
+    payloadCapacityGtoKg: 0,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 83,
+      gto: 0,
+    },
+    propellantTypes: ["rp1_kerosene", "liquid_oxygen"],
+    reusability: "partial",
+    sustainabilityGrade: "C",
+    emissionsProfile: {
+      gwp: 45000,
+      odp: 0.01,
+      particulates: 1500,
+    },
+    notes:
+      "European small launcher. LOX/RP-1 propulsion with partial reusability planned.",
+  },
+  prime: {
+    id: "prime",
+    name: "Prime",
+    provider: "Orbex",
+    payloadCapacityLeoKg: 180,
+    payloadCapacityGtoKg: 0,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 139,
+      gto: 0,
+    },
+    propellantTypes: ["liquid_oxygen"],
+    reusability: "none",
+    sustainabilityGrade: "A",
+    emissionsProfile: {
+      gwp: 25000,
+      odp: 0.005,
+      particulates: 400,
+    },
+    notes:
+      "Bio-propane/LOX propulsion. Low-carbon fuel reduces GWP significantly. European micro-launcher.",
+  },
+  spectrum: {
+    id: "spectrum",
+    name: "Spectrum",
+    provider: "Isar Aerospace",
+    payloadCapacityLeoKg: 1000,
+    payloadCapacityGtoKg: 700,
+    carbonIntensityKgCO2PerKgPayload: {
+      leo: 50,
+      gto: 71,
+    },
+    propellantTypes: ["rp1_kerosene", "liquid_oxygen"],
+    reusability: "none",
+    sustainabilityGrade: "B",
+    emissionsProfile: {
+      gwp: 50000,
+      odp: 0.01,
+      particulates: 1600,
+    },
+    notes:
+      "German small launcher. LOX/RP-1. European sovereign access for small satellites.",
+  },
 };
 
 // ─── Simplified Emission Factors for Screening LCA ───
@@ -911,6 +1065,10 @@ export interface EFDResult {
     requiredActions: string[];
   };
 }
+
+// TODO: Implement remaining PEF impact categories (AP, EP, POCP, ADP, WU, PM, etc.)
+// Currently only GWP and ODP are computed. The EnvironmentalImpactResult schema
+// has fields for all 16 PEF categories but they are never populated.
 
 export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
   const launchVehicle = launchVehicles[profile.launchVehicle];
