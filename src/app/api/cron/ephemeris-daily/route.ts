@@ -250,6 +250,22 @@ async function processAllSatellites(): Promise<CronResult> {
     }
   }
 
+  // ─── F-1: Sync ephemeris deadline events to Deadline table ──────────
+  // The calculateDeadlineEvents function requires per-satellite assessment
+  // data (last pentest date, vuln scan date, insurance expiry, authorization
+  // expiry, etc.) that is not readily available in this cron context without
+  // significant additional DB queries per satellite. For now, add a TODO to
+  // wire this up once a lightweight data-fetcher is available.
+  //
+  // TODO(F-1): For each processed satellite, call calculateDeadlineEvents()
+  // from "@/lib/ephemeris/models/deadline-events" with the appropriate
+  // DeadlineInput (assessmentData, lastPentestDate, lastVulnScanDate, etc.),
+  // then upsert resulting events into the Deadline table with:
+  //   moduleSource: "TIMELINE"
+  //   relatedEntityId: noradId
+  // Use findFirst + create/update pattern since Deadline has no composite
+  // unique constraint on (moduleSource, relatedEntityId, title).
+
   return {
     processed,
     alertsCreated,

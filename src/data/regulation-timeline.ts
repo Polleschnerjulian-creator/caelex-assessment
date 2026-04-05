@@ -123,13 +123,27 @@ export function getCurrentRegime(
   const now = date || new Date();
   const nowStr = now.toISOString().split("T")[0];
   return REGULATION_TIMELINE.filter((phase) => {
+    // Date filter: exclude phases not yet effective
     if (phase.effectiveDate > nowStr) return false;
+    // Exclude fully transitioned phases
     if (
       phase.transitionEndDate &&
       phase.transitionEndDate < nowStr &&
       phase.status === "transition"
     )
       return false;
+
+    // F-4: Filter by operator type using the applicableTo field.
+    // Phases that apply to "all_*" patterns are always included.
+    // Otherwise the operatorType must appear in applicableTo.
+    if (operatorType && phase.applicableTo.length > 0) {
+      const matchesOperator = phase.applicableTo.some(
+        (a) =>
+          a.startsWith("all_") || a === "all_operators" || a === operatorType,
+      );
+      if (!matchesOperator) return false;
+    }
+
     return true;
   });
 }

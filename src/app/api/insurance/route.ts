@@ -240,6 +240,23 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // Timeline Integration: auto-generate Insurance deadlines (B-6)
+    try {
+      const { generateDeadlinesFromTemplate } =
+        await import("@/data/timeline-deadlines");
+      const deadlines = generateDeadlinesFromTemplate(
+        "INSURANCE",
+        new Date(),
+        userId,
+        orgCtx?.organizationId ?? undefined,
+      );
+      if (deadlines.length > 0) {
+        await prisma.deadline.createMany({ data: deadlines });
+      }
+    } catch (err) {
+      logger.warn("Failed to auto-generate Insurance deadlines", err);
+    }
+
     // Sync to authorization document status (best-effort)
     try {
       const { syncAssessmentToAuthorizationDocs } =

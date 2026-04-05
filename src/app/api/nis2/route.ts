@@ -315,6 +315,23 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // Timeline Integration: auto-generate NIS2 deadlines (B-6)
+    try {
+      const { generateDeadlinesFromTemplate } =
+        await import("@/data/timeline-deadlines");
+      const deadlines = generateDeadlinesFromTemplate(
+        "NIS2",
+        new Date(),
+        userId,
+        orgCtx?.organizationId ?? undefined,
+      );
+      if (deadlines.length > 0) {
+        await prisma.deadline.createMany({ data: deadlines });
+      }
+    } catch (err) {
+      logger.warn("Failed to auto-generate NIS2 deadlines", err);
+    }
+
     // Decrypt sensitive fields in requirements for response
     const decryptedAssessment = assessmentWithRequirements
       ? {

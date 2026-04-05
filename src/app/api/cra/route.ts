@@ -355,6 +355,23 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // Timeline Integration: auto-generate CRA deadlines (B-6)
+    try {
+      const { generateDeadlinesFromTemplate } =
+        await import("@/data/timeline-deadlines");
+      const deadlines = generateDeadlinesFromTemplate(
+        "CYBERSECURITY",
+        new Date(),
+        userId,
+        orgCtx?.organizationId ?? undefined,
+      );
+      if (deadlines.length > 0) {
+        await prisma.deadline.createMany({ data: deadlines });
+      }
+    } catch (err) {
+      logger.warn("Failed to auto-generate CRA deadlines", err);
+    }
+
     // NEXUS Integration: link CRA assessment to matching NEXUS asset
     try {
       const { linkCRAAssessmentToNexus } =
