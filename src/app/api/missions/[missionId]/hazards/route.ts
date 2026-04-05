@@ -50,11 +50,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Parse optional query filters
+    // Parse optional query filters and pagination
     const { searchParams } = new URL(request.url);
     const hazardType = searchParams.get("hazardType") ?? undefined;
     const severity = searchParams.get("severity") ?? undefined;
     const acceptanceStatus = searchParams.get("acceptanceStatus") ?? undefined;
+    const page = Math.max(
+      1,
+      parseInt(searchParams.get("page") || "1", 10) || 1,
+    );
+    const limit = Math.min(
+      Math.max(1, parseInt(searchParams.get("limit") || "50", 10) || 50),
+      100,
+    );
+    const skip = (page - 1) * limit;
 
     // Build where clause with optional filters
     const where: Record<string, unknown> = {
@@ -109,17 +118,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       where.acceptanceStatus = acceptanceStatus;
     }
 
-    const entries = await prisma.hazardEntry.findMany({
-      where,
-      include: {
-        mitigations: {
-          orderBy: { createdAt: "asc" },
+    const [entries, totalCount] = await Promise.all([
+      prisma.hazardEntry.findMany({
+        where,
+        include: {
+          mitigations: {
+            orderBy: { createdAt: "asc" },
+          },
         },
-      },
-      orderBy: [{ hazardId: "asc" }, { createdAt: "asc" }],
-    });
+        orderBy: [{ hazardId: "asc" }, { createdAt: "asc" }],
+        skip,
+        take: limit,
+      }),
+      prisma.hazardEntry.count({ where }),
+    ]);
 
-    return NextResponse.json({ entries });
+    return NextResponse.json({
+      entries,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (err) {
     logger.error("[missions/[missionId]/hazards] GET error:", err);
     return NextResponse.json(

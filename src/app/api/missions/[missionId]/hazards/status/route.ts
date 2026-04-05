@@ -84,20 +84,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       (e) => e.mitigationStatus === "CLOSED",
     ).length;
 
-    // reportReady = true when ALL hazards are either ACCEPTED or mitigationStatus=CLOSED
+    // reportReady = true when ALL hazards are ACCEPTED
     const reportReady =
-      total > 0 &&
-      entries.every(
-        (e) =>
-          e.acceptanceStatus === "ACCEPTED" || e.mitigationStatus === "CLOSED",
-      );
+      total > 0 && entries.every((e) => e.acceptanceStatus === "ACCEPTED");
 
-    // openItems: hazards that are NOT yet ready (not ACCEPTED and not CLOSED)
+    // openItems: hazards that are NOT yet accepted
     const openItems = entries
-      .filter(
-        (e) =>
-          e.acceptanceStatus !== "ACCEPTED" && e.mitigationStatus !== "CLOSED",
-      )
+      .filter((e) => e.acceptanceStatus !== "ACCEPTED")
       .map((e) => ({
         hazardId: e.hazardId,
         title: e.title,
