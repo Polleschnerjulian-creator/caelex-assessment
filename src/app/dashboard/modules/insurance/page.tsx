@@ -25,6 +25,8 @@ import {
   Package,
   Link2,
   TrendingDown,
+  TrendingUp,
+  BarChart3,
   Infinity,
   Send,
   Eye,
@@ -45,6 +47,7 @@ import {
   operatorTypeConfig,
   commonLaunchProviders,
   calculateTPLRequirement,
+  calculateMultiJurisdictionTPL,
   getRequiredInsuranceTypes,
   calculateMissionRiskLevel,
   estimatePremiumRange,
@@ -83,10 +86,32 @@ const _policyStatusIcons: Record<PolicyStatus, React.ReactNode> = {
   not_required: <Minus className="w-4 h-4" />,
 };
 
+const JURISDICTIONS = [
+  { code: "DE", flag: "\u{1F1E9}\u{1F1EA}" },
+  { code: "FR", flag: "\u{1F1EB}\u{1F1F7}" },
+  { code: "IT", flag: "\u{1F1EE}\u{1F1F9}" },
+  { code: "ES", flag: "\u{1F1EA}\u{1F1F8}" },
+  { code: "NL", flag: "\u{1F1F3}\u{1F1F1}" },
+  { code: "BE", flag: "\u{1F1E7}\u{1F1EA}" },
+  { code: "LU", flag: "\u{1F1F1}\u{1F1FA}" },
+  { code: "AT", flag: "\u{1F1E6}\u{1F1F9}" },
+  { code: "SE", flag: "\u{1F1F8}\u{1F1EA}" },
+  { code: "UK", flag: "\u{1F1EC}\u{1F1E7}" },
+  { code: "PL", flag: "\u{1F1F5}\u{1F1F1}" },
+  { code: "NO", flag: "\u{1F1F3}\u{1F1F4}" },
+  { code: "DK", flag: "\u{1F1E9}\u{1F1F0}" },
+  { code: "FI", flag: "\u{1F1EB}\u{1F1EE}" },
+  { code: "PT", flag: "\u{1F1F5}\u{1F1F9}" },
+  { code: "IE", flag: "\u{1F1EE}\u{1F1EA}" },
+  { code: "CZ", flag: "\u{1F1E8}\u{1F1FF}" },
+  { code: "CH", flag: "\u{1F1E8}\u{1F1ED}" },
+];
+
 interface Assessment {
   id: string;
   assessmentName: string | null;
   primaryJurisdiction: string;
+  secondaryJurisdictions: string[];
   operatorType: string;
   companySize: string;
   orbitRegime: string;
@@ -166,6 +191,45 @@ interface Report {
   generatedAt: string;
 }
 
+// ─── IRPE Types ─────────────────────────────────────────────────────────────
+
+interface IRPEComponentScore {
+  score: number;
+  grade: string;
+  factors: string[];
+}
+
+interface IRPEScoreData {
+  overallRiskScore: number;
+  riskGrade: string;
+  premiumImpact: string;
+  components: {
+    missionRisk: IRPEComponentScore;
+    compliancePosture: IRPEComponentScore;
+    operationalMaturity: IRPEComponentScore;
+    cybersecurityReadiness: IRPEComponentScore;
+    incidentHistory: IRPEComponentScore;
+  };
+  premiumAdjustment: {
+    baselinePercent: number;
+    adjustedPercent: number;
+    savingsPercent: number;
+    annualSavingsEstimate: {
+      min: number;
+      max: number;
+      currency: string;
+    };
+  };
+  improvements: Array<{
+    action: string;
+    currentImpact: string;
+    projectedImpact: string;
+    estimatedPremiumReduction: string;
+  }>;
+  calculatedAt: string;
+  dataCompleteness: number;
+}
+
 const STEPS = [
   { id: 1, name: "Risk Profile", icon: Building2 },
   { id: 2, name: "Coverage Calculator", icon: Calculator },
@@ -185,6 +249,8 @@ function InsurancePageContent() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [policySaving, setPolicySaving] = useState<string | null>(null); // policyId being saved
   // Removed PDF download in favor of AI Document Studio
+  const [irpeScore, setIrpeScore] = useState<IRPEScoreData | null>(null);
+  const [irpeLoading, setIrpeLoading] = useState(false);
 
   // Ref for initial auto-select to avoid re-fetch loop
   const hasAutoSelected = useRef(false);
@@ -378,6 +444,14 @@ function InsurancePageContent() {
 
   // PDF download removed — use AI Document Studio instead
 
+  const toggleSecondaryJurisdiction = (code: string) => {
+    const current = selectedAssessment?.secondaryJurisdictions || [];
+    const updated = current.includes(code)
+      ? current.filter((c) => c !== code)
+      : [...current, code];
+    updateAssessment({ secondaryJurisdictions: updated });
+  };
+
   // Build profile for calculations
   const buildProfile = (): InsuranceRiskProfile | null => {
     if (!selectedAssessment) return null;
@@ -413,12 +487,43 @@ function InsurancePageContent() {
       ? estimatePremiumRange(profile, requiredTypes)
       : null;
 
+  // Multi-jurisdiction TPL analysis
+  const multiJurisdictionTPL =
+    profile && (selectedAssessment?.secondaryJurisdictions?.length ?? 0) > 0
+      ? calculateMultiJurisdictionTPL(
+          profile,
+          selectedAssessment!.secondaryJurisdictions,
+        )
+      : null;
+
   // Get national requirements for selected jurisdiction
   const nationalReqs = selectedAssessment
     ? nationalRequirementsLookup[
         selectedAssessment.primaryJurisdiction as JurisdictionCode
       ]
     : null;
+
+  // ─── IRPE Score Fetch ───────────────────────────────────────────────────────
+
+  const fetchIRPEScore = useCallback(async () => {
+    if (!selectedAssessment) return;
+    setIrpeLoading(true);
+    try {
+      const res = await fetch(`/api/insurance/${selectedAssessment.id}/irpe`, {
+        headers: csrfHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIrpeScore(data);
+      } else {
+        setIrpeScore(null);
+      }
+    } catch {
+      setIrpeScore(null);
+    } finally {
+      setIrpeLoading(false);
+    }
+  }, [selectedAssessment]);
 
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return "-";
@@ -633,6 +738,41 @@ function InsurancePageContent() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                        Weitere Jurisdiktionen (optional)
+                      </label>
+                      <p className="text-small text-[var(--text-tertiary)] mb-2">
+                        F&uuml;r Cross-Border-Operationen: z.B. Launch von
+                        Kourou (Frankreich) mit deutscher Registrierung
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {JURISDICTIONS.filter(
+                          (j) =>
+                            j.code !== selectedAssessment?.primaryJurisdiction,
+                        ).map((j) => {
+                          const isSelected = (
+                            selectedAssessment?.secondaryJurisdictions || []
+                          ).includes(j.code);
+                          return (
+                            <button
+                              key={j.code}
+                              onClick={() =>
+                                toggleSecondaryJurisdiction(j.code)
+                              }
+                              className={`px-3 py-1.5 rounded-lg text-small border transition-colors ${
+                                isSelected
+                                  ? "bg-[var(--surface-sunken)] border-[var(--border-default)] text-[var(--text-primary)] font-medium"
+                                  : "bg-transparent border-[var(--border-default)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                              }`}
+                            >
+                              {j.flag} {j.code}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div>
@@ -1052,6 +1192,55 @@ function InsurancePageContent() {
                         </ul>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {multiJurisdictionTPL && (
+                  <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <MapPin
+                        className="w-5 h-5 text-[var(--accent-warning)]"
+                        aria-hidden="true"
+                      />
+                      Multi-Jurisdiktion TPL-Vergleich
+                    </h2>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-body">
+                        <span className="text-[var(--text-secondary)]">
+                          {multiJurisdictionTPL.primary.jurisdiction}{" "}
+                          (Prim&auml;r)
+                        </span>
+                        <span className="text-[var(--text-primary)] font-medium">
+                          {formatCurrency(multiJurisdictionTPL.primary.amount)}
+                        </span>
+                      </div>
+                      {multiJurisdictionTPL.secondary.map((s) => (
+                        <div
+                          key={s.jurisdiction}
+                          className="flex justify-between text-body"
+                        >
+                          <span className="text-[var(--text-tertiary)]">
+                            {s.jurisdiction}
+                          </span>
+                          <span className="text-[var(--text-secondary)]">
+                            {formatCurrency(s.amount)}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="pt-2 mt-2 border-t border-[var(--border-default)] flex justify-between text-body font-medium">
+                        <span className="text-[var(--text-primary)]">
+                          Effektive TPL (
+                          {multiJurisdictionTPL.effectiveJurisdiction})
+                        </span>
+                        <span className="text-[var(--text-primary)]">
+                          {formatCurrency(multiJurisdictionTPL.effectiveTPL)}
+                        </span>
+                      </div>
+                      <p className="text-small text-[var(--text-tertiary)] mt-1">
+                        Die h&ouml;chste Anforderung aller anwendbaren
+                        Jurisdiktionen gilt.
+                      </p>
+                    </div>
                   </div>
                 )}
 

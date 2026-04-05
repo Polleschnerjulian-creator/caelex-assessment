@@ -114,6 +114,7 @@ export async function POST(request: Request) {
       crossBorderOps: z.boolean().optional(),
       annualRevenueEur: z.number().optional(),
       turnoversShareSpace: z.number().optional(),
+      secondaryJurisdictions: z.array(z.string()).optional(),
     });
 
     const parsed = schema.safeParse(body);
@@ -166,6 +167,7 @@ export async function POST(request: Request) {
         organizationId: orgCtx?.organizationId || null,
         assessmentName: parsed.data.assessmentName || null,
         primaryJurisdiction: parsed.data.primaryJurisdiction,
+        secondaryJurisdictions: parsed.data.secondaryJurisdictions || [],
         operatorType: parsed.data.operatorType,
         companySize: parsed.data.companySize,
         orbitRegime: parsed.data.orbitRegime,

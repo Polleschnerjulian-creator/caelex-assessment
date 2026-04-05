@@ -1019,6 +1019,59 @@ export function calculateTPLRequirement(profile: InsuranceRiskProfile): {
 }
 
 /**
+ * Calculate TPL requirements across multiple jurisdictions for cross-border operators.
+ * Returns per-jurisdiction amounts and the effective (highest) requirement.
+ */
+export function calculateMultiJurisdictionTPL(
+  profile: InsuranceRiskProfile,
+  secondaryJurisdictions: string[],
+): {
+  primary: { jurisdiction: string; amount: number; basis: string };
+  secondary: Array<{ jurisdiction: string; amount: number; basis: string }>;
+  effectiveTPL: number;
+  effectiveJurisdiction: string;
+} {
+  // Calculate primary
+  const primaryResult = calculateTPLRequirement({
+    ...profile,
+    primaryJurisdiction: profile.primaryJurisdiction,
+  });
+
+  // Calculate each secondary
+  const secondaryResults = secondaryJurisdictions.map((jurisdiction) => {
+    const result = calculateTPLRequirement({
+      ...profile,
+      primaryJurisdiction: jurisdiction as JurisdictionCode,
+    });
+    return {
+      jurisdiction,
+      amount: result.amount,
+      basis: result.basis,
+    };
+  });
+
+  // Effective = highest requirement
+  const allAmounts = [
+    { jurisdiction: profile.primaryJurisdiction, amount: primaryResult.amount },
+    ...secondaryResults,
+  ];
+  const highest = allAmounts.reduce((max, curr) =>
+    curr.amount > max.amount ? curr : max,
+  );
+
+  return {
+    primary: {
+      jurisdiction: profile.primaryJurisdiction,
+      amount: primaryResult.amount,
+      basis: primaryResult.basis,
+    },
+    secondary: secondaryResults,
+    effectiveTPL: highest.amount,
+    effectiveJurisdiction: highest.jurisdiction,
+  };
+}
+
+/**
  * Determine which insurance types are required for a mission
  * Returns a simple array of required insurance types
  */

@@ -6,6 +6,7 @@ import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import {
   calculateTPLRequirement,
+  calculateMultiJurisdictionTPL,
   getRequiredInsuranceTypes,
   calculateMissionRiskLevel,
   calculateInsuranceComplianceScore,
@@ -89,6 +90,13 @@ interface InsuranceReport {
     launchSiteInsurance: boolean;
     notes: string[];
     relevantArticles: string[];
+  };
+
+  multiJurisdictionAnalysis?: {
+    primary: { jurisdiction: string; amount: number; basis: string };
+    secondary: Array<{ jurisdiction: string; amount: number; basis: string }>;
+    effectiveTPL: number;
+    effectiveJurisdiction: string;
   };
 
   recommendations: string[];
@@ -182,6 +190,16 @@ export async function POST(request: Request) {
     const requiredTypes = getRequiredInsuranceTypes(profile);
     const riskLevel = calculateMissionRiskLevel(profile);
     const premiumEstimate = estimatePremiumRange(profile, requiredTypes);
+
+    // Multi-jurisdiction analysis (if secondary jurisdictions exist)
+    const multiJurisdictionAnalysis =
+      assessment.secondaryJurisdictions &&
+      assessment.secondaryJurisdictions.length > 0
+        ? calculateMultiJurisdictionTPL(
+            profile,
+            assessment.secondaryJurisdictions,
+          )
+        : undefined;
 
     // Build status map
     const statusMap: Record<string, PolicyStatus> = {};
@@ -329,6 +347,12 @@ export async function POST(request: Request) {
       );
     }
 
+    if (multiJurisdictionAnalysis) {
+      recommendations.push(
+        `Multi-jurisdiction analysis: The effective TPL of ${formatCurrency(multiJurisdictionAnalysis.effectiveTPL)} is set by ${multiJurisdictionAnalysis.effectiveJurisdiction} (highest requirement across all applicable jurisdictions).`,
+      );
+    }
+
     // Map operator type label
     const operatorTypeLabels: Record<string, string> = {
       spacecraft: "Spacecraft Operator",
@@ -397,6 +421,7 @@ export async function POST(request: Request) {
         notes: nationalReqs?.notes || [],
         relevantArticles: nationalReqs?.relevantLegislation || [],
       },
+      multiJurisdictionAnalysis,
       recommendations,
       generatedAt: new Date().toISOString(),
     };

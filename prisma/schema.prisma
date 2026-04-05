@@ -632,9 +632,10 @@ model InsuranceAssessment {
   assessmentName String?
 
   // Risk Profile
-  primaryJurisdiction String // FR, DE, IT, etc.
-  operatorType        String // spacecraft, launch, launch_site
-  companySize         String // micro, small, medium, large
+  primaryJurisdiction    String   // FR, DE, IT, etc.
+  secondaryJurisdictions String[] // Additional jurisdictions for cross-border ops
+  operatorType           String   // spacecraft, launch, launch_site
+  companySize            String   // micro, small, medium, large
 
   // Operations Profile
   orbitRegime             String // LEO, MEO, GEO, HEO, cislunar, deep_space

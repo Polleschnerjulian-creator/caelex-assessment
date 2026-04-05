@@ -166,6 +166,7 @@ export async function PATCH(
       crossBorderOps: z.boolean().optional(),
       annualRevenueEur: z.number().optional(),
       turnoversShareSpace: z.number().optional(),
+      secondaryJurisdictions: z.array(z.string()).optional(),
     });
 
     const parsed = patchSchema.safeParse(body);
@@ -239,6 +240,8 @@ export async function PATCH(
       updateData.annualRevenueEur = parsed.data.annualRevenueEur;
     if (parsed.data.turnoversShareSpace !== undefined)
       updateData.turnoversShareSpace = parsed.data.turnoversShareSpace;
+    if (parsed.data.secondaryJurisdictions !== undefined)
+      updateData.secondaryJurisdictions = parsed.data.secondaryJurisdictions;
 
     // Recalculate TPL and risk if profile changed
     const profileFields = [
