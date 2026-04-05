@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,16 +34,20 @@ import StakeholderTypeBadge, {
 
 type StakeholderType =
   | "all"
-  | "legal"
-  | "insurers"
-  | "auditors"
-  | "suppliers"
-  | "ncas";
+  | "LEGAL_COUNSEL"
+  | "INSURER"
+  | "AUDITOR"
+  | "SUPPLIER"
+  | "NCA"
+  | "CONSULTANT"
+  | "LAUNCH_PROVIDER";
 
 interface Engagement {
   id: string;
   stakeholderName: string;
+  companyName: string;
   stakeholderType: string;
+  contactName: string | null;
   contactEmail: string;
   status: string;
   scope: string;
@@ -71,11 +75,13 @@ interface Activity {
 
 const TABS: { id: StakeholderType; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "legal", label: "Legal" },
-  { id: "insurers", label: "Insurers" },
-  { id: "auditors", label: "Auditors" },
-  { id: "suppliers", label: "Suppliers" },
-  { id: "ncas", label: "NCAs" },
+  { id: "LEGAL_COUNSEL", label: "Legal" },
+  { id: "INSURER", label: "Insurers" },
+  { id: "AUDITOR", label: "Auditors" },
+  { id: "SUPPLIER", label: "Suppliers" },
+  { id: "NCA", label: "NCAs" },
+  { id: "CONSULTANT", label: "Consultants" },
+  { id: "LAUNCH_PROVIDER", label: "Launch Providers" },
 ];
 
 // ─── Glass Styles ───
@@ -176,9 +182,22 @@ export default function NetworkHubPage() {
 
   const [activeTab, setActiveTab] = useState<StakeholderType>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const orgId = organization?.id;
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchQuery]);
 
   const fetchData = useCallback(
     async (isRefresh = false) => {
@@ -188,12 +207,15 @@ export default function NetworkHubPage() {
       setError(null);
 
       try {
-        const typeFilter = activeTab !== "all" ? activeTab : "";
-        const [engRes, actRes] = await Promise.all([
-          fetch(
-            `/api/network/engagements?organizationId=${orgId}&type=${typeFilter}`,
-          ),
+        const params = new URLSearchParams();
+        params.set("organizationId", orgId);
+        if (activeTab !== "all") params.set("type", activeTab);
+        if (debouncedSearch) params.set("search", debouncedSearch);
+
+        const [engRes, actRes, statsRes] = await Promise.all([
+          fetch(`/api/network/engagements?${params}`),
           fetch(`/api/network/activity?organizationId=${orgId}&limit=20`),
+          fetch(`/api/network/stats?organizationId=${orgId}`),
         ]);
 
         if (!engRes.ok) {
@@ -203,12 +225,20 @@ export default function NetworkHubPage() {
 
         const engData = await engRes.json();
         setEngagements(engData.engagements || []);
-        setStats({
-          activeEngagements: engData.activeEngagements ?? 0,
-          openDataRooms: engData.openDataRooms ?? 0,
-          totalAttestations: engData.totalAttestations ?? 0,
-          pendingInvitations: engData.pendingInvitations ?? 0,
-        });
+
+        if (statsRes.ok) {
+          const statsJson = await statsRes.json();
+          const statsData = statsJson.data ?? statsJson;
+          setStats({
+            activeEngagements: statsData.activeEngagements ?? 0,
+            openDataRooms: statsData.openDataRooms ?? 0,
+            totalAttestations: statsData.totalAttestations ?? 0,
+            pendingInvitations:
+              statsData.pendingAttestations ??
+              statsData.pendingInvitations ??
+              0,
+          });
+        }
 
         if (actRes.ok) {
           const actData = await actRes.json();
@@ -221,7 +251,7 @@ export default function NetworkHubPage() {
         setRefreshing(false);
       }
     },
-    [orgId, activeTab],
+    [orgId, activeTab, debouncedSearch],
   );
 
   useEffect(() => {
@@ -438,7 +468,8 @@ export default function NetworkHubPage() {
                     engagement={{
                       id: eng.id,
                       companyName: eng.stakeholderName,
-                      contactName: eng.contactEmail,
+                      contactName:
+                        eng.contactName || eng.companyName || eng.contactEmail,
                       contactEmail: eng.contactEmail,
                       type: eng.stakeholderType as StakeholderTypeEnum,
                       status:
@@ -488,10 +519,13 @@ export default function NetworkHubPage() {
       <InviteStakeholderModal
         isOpen={showInviteModal}
         organizationId={orgId || ""}
-        onClose={() => setShowInviteModal(false)}
-        onSubmit={() => {
+        onClose={() => {
           setShowInviteModal(false);
           fetchData(true);
+        }}
+        onSubmit={() => {
+          // Modal now calls the API directly and shows the token.
+          // This callback is kept for compatibility but the modal handles everything.
         }}
       />
     </div>

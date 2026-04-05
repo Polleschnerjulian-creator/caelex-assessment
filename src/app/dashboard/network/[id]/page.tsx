@@ -26,6 +26,8 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Copy,
+  Pause,
 } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -182,6 +184,9 @@ export default function EngagementDetailPage() {
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
   const [showRotateConfirm, setShowRotateConfirm] = useState(false);
   const [revoking, setRevoking] = useState(false);
+  const [newToken, setNewToken] = useState<string | null>(null);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
 
   // ─── Data Fetching ───
 
@@ -269,22 +274,19 @@ export default function EngagementDetailPage() {
     setSavingSettings(true);
 
     try {
-      const res = await fetch(
-        `/api/network/engagements/${engagementId}/settings`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            organizationId: orgId,
-            status: settingsForm.status,
-            ipAllowlist: settingsForm.ipAllowlist
-              .split(",")
-              .map((ip) => ip.trim())
-              .filter(Boolean),
-            mfaRequired: settingsForm.mfaRequired,
-          }),
-        },
-      );
+      const res = await fetch(`/api/network/engagements/${engagementId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({
+          organizationId: orgId,
+          status: settingsForm.status,
+          ipAllowlist: settingsForm.ipAllowlist
+            .split(",")
+            .map((ip) => ip.trim())
+            .filter(Boolean),
+          mfaRequired: settingsForm.mfaRequired,
+        }),
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -318,7 +320,11 @@ export default function EngagementDetailPage() {
         throw new Error(data.error || "Failed to rotate token");
       }
 
+      const json = await res.json();
+      const data = json.data ?? json;
+      setNewToken(data.accessToken);
       setShowRotateConfirm(false);
+      setShowTokenModal(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to rotate token");
     } finally {
@@ -332,11 +338,10 @@ export default function EngagementDetailPage() {
 
     try {
       const res = await fetch(
-        `/api/network/engagements/${engagementId}/revoke`,
+        `/api/network/engagements/${engagementId}?organizationId=${orgId}`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({ organizationId: orgId }),
+          method: "DELETE",
+          headers: csrfHeaders(),
         },
       );
 
@@ -350,6 +355,32 @@ export default function EngagementDetailPage() {
       setError(err instanceof Error ? err.message : "Failed to revoke access");
       setRevoking(false);
       setShowRevokeConfirm(false);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!orgId || !engagementId) return;
+    try {
+      const res = await fetch(
+        `/api/network/engagements/${engagementId}/settings`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            organizationId: orgId,
+            status: newStatus,
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update status");
+      }
+
+      await loadEngagement();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update status");
     }
   };
 
@@ -836,6 +867,34 @@ export default function EngagementDetailPage() {
                     </button>
                   </div>
 
+                  {/* Suspend Access */}
+                  <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)][0.06]">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
+                        <Pause
+                          size={16}
+                          className="text-[var(--accent-warning)]"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
+                          Suspend Access
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)]">
+                          Temporarily pause this stakeholder&apos;s access. Can
+                          be reactivated later.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleUpdateStatus("SUSPENDED")}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
+                    >
+                      <Pause size={14} />
+                      Zugang pausieren
+                    </button>
+                  </div>
+
                   {/* Revoke Access */}
                   <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)][0.06]">
                     <div className="flex items-center gap-3">
@@ -850,8 +909,8 @@ export default function EngagementDetailPage() {
                           Revoke Access
                         </p>
                         <p className="text-xs text-[var(--text-tertiary)]">
-                          Permanently revoke this stakeholder's access. This
-                          cannot be undone.
+                          Permanently revoke this stakeholder&apos;s access.
+                          This cannot be undone.
                         </p>
                       </div>
                     </div>
@@ -995,6 +1054,65 @@ export default function EngagementDetailPage() {
                   <Trash2 size={14} />
                 )}
                 Revoke Access
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Token Modal */}
+      {showTokenModal && newToken && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div
+            role="dialog"
+            aria-label="New access token"
+            aria-modal="true"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-lg w-full"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-[var(--accent-success)]/10">
+                <Key size={20} className="text-[var(--accent-success)]" />
+              </div>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                New Access Token
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
+              Save this token now. It will not be shown again.
+            </p>
+            <div className="flex items-center gap-2 p-3 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]">
+              <code className="flex-1 text-sm text-[var(--text-primary)] break-all font-mono">
+                {newToken}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(newToken);
+                  setTokenCopied(true);
+                  setTimeout(() => setTokenCopied(false), 2000);
+                }}
+                className="flex-shrink-0 p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[var(--surface-raised)] transition-colors"
+                aria-label="Copy token"
+              >
+                {tokenCopied ? (
+                  <CheckCircle2
+                    size={16}
+                    className="text-[var(--accent-success)]"
+                  />
+                ) : (
+                  <Copy size={16} />
+                )}
+              </button>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  setShowTokenModal(false);
+                  setNewToken(null);
+                  setTokenCopied(false);
+                }}
+                className="px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
+              >
+                Done
               </button>
             </div>
           </div>

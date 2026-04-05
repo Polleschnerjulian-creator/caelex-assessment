@@ -8,7 +8,16 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
-import { getEngagement } from "@/lib/services/stakeholder-engagement";
+import {
+  getEngagement,
+  rotateToken,
+} from "@/lib/services/stakeholder-engagement";
+import { sendEmail } from "@/lib/email";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 interface RouteParams {
@@ -21,6 +30,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: sensitive tier for resend (rotates token + sends email)
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { id } = await params;
 
@@ -76,8 +92,35 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // In a real implementation, this would trigger an email to the stakeholder.
-    // For now, return the current access token info.
+    // Rotate token so the stakeholder gets a fresh one
+    const { accessToken } = await rotateToken(
+      id,
+      organizationId,
+      session.user.id,
+    );
+
+    // Send the invitation email
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || "";
+    try {
+      await sendEmail({
+        to: engagement.contactEmail,
+        subject: `Caelex — Einladung zum Compliance Network`,
+        html: `
+          <p>Hallo ${engagement.contactName},</p>
+          <p>${engagement.companyName} hat Sie zum Caelex Compliance Network eingeladen.</p>
+          <p>Ihr Zugangscode: <strong>${accessToken}</strong></p>
+          <p>Portal öffnen: <a href="${baseUrl}/stakeholder?token=${accessToken}">${baseUrl}/stakeholder</a></p>
+        `,
+      });
+    } catch (err) {
+      logger.warn(
+        "Failed to send invitation email",
+        err as Record<string, unknown>,
+      );
+      // Don't fail the request — email is best-effort
+    }
+
     return NextResponse.json({
       success: true,
       message: "Invitation resent successfully",

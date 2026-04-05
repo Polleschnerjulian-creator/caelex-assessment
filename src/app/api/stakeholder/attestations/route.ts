@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
 import {
   validateToken,
   logStakeholderAccess,
@@ -140,6 +141,37 @@ export async function POST(request: NextRequest) {
         signatureHash: attestation.signatureHash,
       },
     });
+
+    // Notify org admins/owners about the signed attestation
+    try {
+      const { createNotification } =
+        await import("@/lib/services/notification-service");
+      const admins = await prisma.organizationMember.findMany({
+        where: {
+          organizationId: engagement.organizationId,
+          role: { in: ["OWNER", "ADMIN"] },
+        },
+        select: { userId: true },
+      });
+      for (const admin of admins) {
+        await createNotification({
+          userId: admin.userId,
+          type: "COMPLIANCE_UPDATED",
+          title: `Attestation unterzeichnet: ${type}`,
+          message: `${signerName} (${engagement.companyName}) hat eine ${type} Attestation unterzeichnet.`,
+          actionUrl: "/dashboard/network",
+          entityType: "attestation",
+          entityId: attestation.id,
+          severity: "INFO",
+          organizationId: engagement.organizationId,
+        });
+      }
+    } catch (err) {
+      logger.warn(
+        "Failed to notify on attestation",
+        err as Record<string, unknown>,
+      );
+    }
 
     return NextResponse.json({ attestation }, { status: 201 });
   } catch (error) {

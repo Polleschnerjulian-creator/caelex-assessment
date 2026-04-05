@@ -10,6 +10,10 @@ import {
   getDataRoomsForStakeholder,
   logDataRoomAccess,
 } from "@/lib/services/data-room";
+import {
+  generatePresignedUploadUrl,
+  isR2Configured,
+} from "@/lib/storage/upload-service";
 
 // POST /api/stakeholder/data-rooms/[id]/upload — Upload a file to a data room
 export async function POST(
@@ -102,12 +106,45 @@ export async function POST(
       metadata: { fileName, fileSize, mimeType },
     });
 
-    // Return success with upload info
-    // Actual file upload would go to R2/S3 storage layer
-    // The client would typically receive a presigned URL for direct upload
+    // Generate presigned upload URL if R2 is configured
+    if (isR2Configured()) {
+      try {
+        const { uploadUrl, fileKey } = await generatePresignedUploadUrl(
+          engagement.organizationId,
+          "general",
+          fileName,
+          mimeType,
+          fileSize,
+        );
+
+        return NextResponse.json({
+          success: true,
+          uploadUrl,
+          fileKey,
+          upload: {
+            dataRoomId: id,
+            fileName,
+            fileSize,
+            mimeType,
+            category: category || "general",
+            description: description || null,
+            uploadedBy: engagement.companyName,
+            uploadedAt: new Date().toISOString(),
+          },
+        });
+      } catch (storageErr) {
+        logger.warn(
+          "R2 presigned URL generation failed, returning metadata only",
+          storageErr as Record<string, unknown>,
+        );
+      }
+    }
+
+    // Fallback: return upload metadata when R2 is not configured
     return NextResponse.json({
       success: true,
-      message: "Upload metadata accepted",
+      message:
+        "Upload metadata accepted (storage not configured for presigned URLs)",
       upload: {
         dataRoomId: id,
         fileName,

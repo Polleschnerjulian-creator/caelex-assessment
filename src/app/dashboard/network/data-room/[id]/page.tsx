@@ -241,7 +241,7 @@ export default function DataRoomDetailPage() {
         }
       } else if (activeTab === "access-log") {
         const res = await fetch(
-          `/api/network/data-rooms/${dataRoomId}/access-logs?organizationId=${orgId}`,
+          `/api/network/data-rooms/${dataRoomId}/access-log?organizationId=${orgId}`,
         );
         if (res.ok) {
           const data = await res.json();
@@ -307,21 +307,24 @@ export default function DataRoomDetailPage() {
     setAddingDocs(true);
 
     try {
-      const res = await fetch(
-        `/api/network/data-rooms/${dataRoomId}/documents`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            organizationId: orgId,
-            documentIds: Array.from(selectedDocIds),
-          }),
-        },
-      );
+      // The POST endpoint expects a single documentId per request
+      for (const docId of selectedDocIds) {
+        const res = await fetch(
+          `/api/network/data-rooms/${dataRoomId}/documents`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({
+              organizationId: orgId,
+              documentId: docId,
+            }),
+          },
+        );
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to add documents");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to add documents");
+        }
       }
 
       setShowAddDocument(false);
@@ -339,12 +342,13 @@ export default function DataRoomDetailPage() {
     if (!orgId) return;
 
     try {
+      // The DELETE endpoint expects documentId in the body, not in the URL
       const res = await fetch(
-        `/api/network/data-rooms/${dataRoomId}/documents/${documentId}`,
+        `/api/network/data-rooms/${dataRoomId}/documents`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({ organizationId: orgId }),
+          body: JSON.stringify({ organizationId: orgId, documentId }),
         },
       );
 

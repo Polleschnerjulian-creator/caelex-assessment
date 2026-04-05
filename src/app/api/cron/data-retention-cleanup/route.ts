@@ -65,6 +65,7 @@ export async function GET(req: Request) {
     oldSentinelPackets: 0,
     oldCrossVerifications: 0,
     expiredEvidence: 0,
+    closedDataRooms: 0,
   };
 
   try {
@@ -149,7 +150,23 @@ export async function GET(req: Request) {
       sentinelPackets: oldSentinelPackets.count,
     });
 
-    // Batch 5: Expire evidence past validUntil date
+    // Batch 5: Close expired data rooms
+    try {
+      const { closeExpiredDataRooms } =
+        await import("@/lib/services/data-room");
+      const closed = await closeExpiredDataRooms();
+      results.closedDataRooms = closed;
+      if (closed > 0) {
+        logger.info(`[Cron] Closed ${closed} expired data rooms`);
+      }
+    } catch (err) {
+      logger.warn(
+        "Data room expiry check failed",
+        err as Record<string, unknown>,
+      );
+    }
+
+    // Batch 6: Expire evidence past validUntil date
     const expiredEvidence = await prisma.complianceEvidence.updateMany({
       where: {
         status: "ACCEPTED",
@@ -172,7 +189,8 @@ export async function GET(req: Request) {
       results.oldAstraConversations +
       results.oldAstraMessages +
       results.oldSentinelPackets +
-      results.oldCrossVerifications;
+      results.oldCrossVerifications +
+      results.closedDataRooms;
 
     logger.info("Data retention cleanup complete", {
       totalDeleted,
