@@ -22,6 +22,10 @@ import {
   Zap,
   Target,
   Sparkles,
+  Calculator,
+  Download,
+  Trash2,
+  X,
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
@@ -80,6 +84,29 @@ interface RequirementWithStatus extends DebrisRequirement {
   evidenceNotes: string | null;
   responses: Record<string, unknown> | null;
   statusId: string | null;
+}
+
+interface ManeuverEntry {
+  id: string;
+  tcaDate: string;
+  conjunctionId: string;
+  pcBefore: number;
+  pcAfter: number;
+  deltaVUsed: number;
+  burnDurationSeconds: number;
+  outcome: "successful" | "not_required" | "failed";
+  notes: string;
+  createdAt: string;
+}
+
+interface OrbitalLifetimeEstimate {
+  estimatedLifetimeYears: number;
+  estimatedDecayDate: string;
+  confidenceLevel: "high" | "medium" | "low";
+  assumptions: string[];
+  isWithin25Years: boolean;
+  isWithin5Years: boolean;
+  solarActivityAssumption: string;
 }
 
 // Static cross-reference mapping: requirement ID -> IADC guideline section
@@ -197,6 +224,58 @@ function DebrisPageContent() {
   const [planError, setPlanError] = useState<string | null>(null);
   // Removed PDF download in favor of AI Document Studio
 
+  // Casualty Risk Calculator state
+  const [craOpen, setCraOpen] = useState(false);
+  const [craCalculating, setCraCalculating] = useState(false);
+  const [craError, setCraError] = useState<string | null>(null);
+  const [craResult, setCraResult] = useState<{
+    expectedCasualties: number;
+    isCompliant: boolean;
+    casualtyAreaM2: number;
+    impactProbability: number;
+    populationDensity: number;
+    complianceThreshold: number;
+    margin: number;
+    breakdown: { label: string; value: string }[];
+    recommendation: string;
+  } | null>(null);
+  const [craForm, setCraForm] = useState({
+    spacecraftDryMassKg: 200,
+    numberOfSurvivingComponents: 5,
+    averageSurvivingAreaM2: 0.05,
+    reentryInclinationDeg: 51.6,
+    isControlledReentry: false,
+    targetLatitudeDeg: undefined as number | undefined,
+    targetLongitudeDeg: undefined as number | undefined,
+  });
+
+  // ─── Maneuver Log state ──────────────────────────────────────────────
+  const [maneuvers, setManeuvers] = useState<ManeuverEntry[]>([]);
+  const [maneuversLoading, setManeuversLoading] = useState(false);
+  const [showManeuverForm, setShowManeuverForm] = useState(false);
+  const [maneuverSaving, setManeuverSaving] = useState(false);
+  const [maneuverForm, setManeuverForm] = useState({
+    tcaDate: "",
+    conjunctionId: "",
+    pcBefore: 0,
+    pcAfter: 0,
+    deltaVUsed: 0,
+    burnDurationSeconds: 0,
+    outcome: "successful" as "successful" | "not_required" | "failed",
+    notes: "",
+  });
+
+  // ─── Orbital Lifetime Estimator state ────────────────────────────────
+  const [lifetimeEstimate, setLifetimeEstimate] =
+    useState<OrbitalLifetimeEstimate | null>(null);
+  const [lifetimeLoading, setLifetimeLoading] = useState(false);
+  const [lifetimeForm, setLifetimeForm] = useState({
+    altitudeKm: 0,
+    inclinationDeg: 51.6,
+    ballisticCoefficientKgPerM2: 50,
+    solarFluxF107: 120,
+  });
+
   useEffect(() => {
     fetchAssessments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,6 +295,141 @@ function DebrisPageContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAssessment?.id]);
+
+  // Load maneuver log + pre-fill orbital lifetime form when assessment changes
+  useEffect(() => {
+    if (selectedAssessment?.id) {
+      fetchManeuvers(selectedAssessment.id);
+      // Pre-fill altitude from assessment
+      if (selectedAssessment.altitudeKm) {
+        setLifetimeForm((prev) => ({
+          ...prev,
+          altitudeKm: selectedAssessment.altitudeKm!,
+        }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAssessment?.id]);
+
+  const fetchManeuvers = async (assessmentId: string) => {
+    setManeuversLoading(true);
+    try {
+      const res = await fetch(`/api/debris/${assessmentId}/maneuvers`);
+      if (res.ok) {
+        const data = await res.json();
+        setManeuvers(data.maneuvers);
+      }
+    } catch (error) {
+      console.error("Error fetching maneuvers:", error);
+    } finally {
+      setManeuversLoading(false);
+    }
+  };
+
+  const addManeuver = async () => {
+    if (!selectedAssessment) return;
+    setManeuverSaving(true);
+    try {
+      const res = await fetch(
+        `/api/debris/${selectedAssessment.id}/maneuvers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify(maneuverForm),
+        },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setManeuvers((prev) => [data.maneuver, ...prev]);
+        setShowManeuverForm(false);
+        setManeuverForm({
+          tcaDate: "",
+          conjunctionId: "",
+          pcBefore: 0,
+          pcAfter: 0,
+          deltaVUsed: 0,
+          burnDurationSeconds: 0,
+          outcome: "successful",
+          notes: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding maneuver:", error);
+    } finally {
+      setManeuverSaving(false);
+    }
+  };
+
+  const deleteManeuver = async (maneuverIds: string[]) => {
+    if (!selectedAssessment) return;
+    try {
+      const res = await fetch(
+        `/api/debris/${selectedAssessment.id}/maneuvers`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ maneuverIds }),
+        },
+      );
+      if (res.ok) {
+        setManeuvers((prev) => prev.filter((m) => !maneuverIds.includes(m.id)));
+      }
+    } catch (error) {
+      console.error("Error deleting maneuver:", error);
+    }
+  };
+
+  const exportManeuversCSV = () => {
+    if (maneuvers.length === 0) return;
+    const headers = [
+      "Date",
+      "Conjunction ID",
+      "Pc Before",
+      "Pc After",
+      "Delta-V (m/s)",
+      "Burn Duration (s)",
+      "Outcome",
+      "Notes",
+    ];
+    const rows = maneuvers.map((m) => [
+      m.tcaDate,
+      m.conjunctionId,
+      String(m.pcBefore),
+      String(m.pcAfter),
+      String(m.deltaVUsed),
+      String(m.burnDurationSeconds),
+      m.outcome,
+      `"${(m.notes || "").replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `maneuver-log-${selectedAssessment?.id || "export"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const estimateOrbitalLifetime = async () => {
+    setLifetimeLoading(true);
+    setLifetimeEstimate(null);
+    try {
+      const res = await fetch("/api/debris/orbital-lifetime", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify(lifetimeForm),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLifetimeEstimate(data.estimate);
+      }
+    } catch (error) {
+      console.error("Error estimating orbital lifetime:", error);
+    } finally {
+      setLifetimeLoading(false);
+    }
+  };
 
   const fetchAssessments = async () => {
     try {
@@ -424,6 +638,31 @@ function DebrisPageContent() {
       );
     } finally {
       setGeneratingPlan(false);
+    }
+  };
+
+  const calculateCasualtyRisk = async () => {
+    setCraCalculating(true);
+    setCraError(null);
+    setCraResult(null);
+    try {
+      const res = await fetch("/api/debris/casualty-risk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify(craForm),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCraResult(data.result);
+      } else {
+        const errData = await res.json().catch(() => null);
+        setCraError(errData?.error || `Calculation failed (${res.status})`);
+      }
+    } catch (err) {
+      setCraError(err instanceof Error ? err.message : "Calculation failed");
+    } finally {
+      setCraCalculating(false);
     }
   };
 
@@ -1428,55 +1667,392 @@ function DebrisPageContent() {
                 </button>
               </div>
             ) : !generatedPlan ? (
-              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
-                <FileText
-                  size={48}
-                  className="mx-auto text-[var(--text-tertiary)] mb-4"
-                />
-                <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
-                  Generate Debris Mitigation Plan
-                </h2>
-                <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
-                  Based on your mission profile and compliance checklist,
-                  generate a structured Debris Mitigation Plan document.
-                </p>
-
-                <div className="flex flex-col items-center gap-4">
+              <>
+                {/* Casualty Risk Calculator */}
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl overflow-hidden">
                   <button
-                    onClick={generatePlan}
-                    disabled={generatingPlan}
-                    className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-6 py-3 rounded-lg font-medium text-body-lg hover:bg-[var(--text-primary)] transition-all disabled:opacity-50"
+                    type="button"
+                    onClick={() => setCraOpen(!craOpen)}
+                    className="w-full flex items-center justify-between p-5 text-left"
                   >
-                    {generatingPlan ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Rocket size={16} />
-                    )}
-                    Generate Plan
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
+                        <Calculator
+                          size={18}
+                          className="text-[var(--accent-warning)]"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-body-lg font-medium text-[var(--text-primary)]">
+                          Casualty Risk Calculator
+                        </h3>
+                        <p className="text-caption text-[var(--text-secondary)]">
+                          Verify E[c] {"<"} 1{"\u00D7"}10{"\u207B\u2074"}{" "}
+                          compliance (NASA DAS simplified method)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {craResult && (
+                        <span
+                          className={`text-micro uppercase tracking-wider px-2.5 py-1 rounded-lg ${
+                            craResult.isCompliant
+                              ? "bg-[var(--accent-success)]/10 text-[var(--accent-success)]"
+                              : "bg-[var(--accent-error)]/10 text-[var(--accent-error)]"
+                          }`}
+                        >
+                          {craResult.isCompliant
+                            ? "Compliant"
+                            : "Non-Compliant"}
+                        </span>
+                      )}
+                      <motion.div
+                        animate={{ rotate: craOpen ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown
+                          size={16}
+                          className="text-[var(--text-tertiary)]"
+                        />
+                      </motion.div>
+                    </div>
                   </button>
 
-                  {planError && (
-                    <p className="text-small text-red-500 mt-2">{planError}</p>
-                  )}
+                  <AnimatePresence>
+                    {craOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 space-y-4">
+                          <div className="border-t border-[var(--border-subtle)]" />
 
-                  <p className="text-caption text-[var(--text-secondary)]">
-                    Compliance Score: {selectedAssessment.complianceScore || 0}%
-                    • {requirements.length} requirements assessed
-                  </p>
+                          {/* Input Form */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                Spacecraft Dry Mass (kg)
+                              </label>
+                              <input
+                                type="number"
+                                min={1}
+                                value={craForm.spacecraftDryMassKg}
+                                onChange={(e) =>
+                                  setCraForm((prev) => ({
+                                    ...prev,
+                                    spacecraftDryMassKg:
+                                      parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                Surviving Components
+                              </label>
+                              <input
+                                type="number"
+                                min={1}
+                                value={craForm.numberOfSurvivingComponents}
+                                onChange={(e) =>
+                                  setCraForm((prev) => ({
+                                    ...prev,
+                                    numberOfSurvivingComponents:
+                                      parseInt(e.target.value) || 1,
+                                  }))
+                                }
+                                className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                Avg. Surviving Area (m{"\u00B2"})
+                              </label>
+                              <input
+                                type="number"
+                                min={0.001}
+                                step={0.01}
+                                value={craForm.averageSurvivingAreaM2}
+                                onChange={(e) =>
+                                  setCraForm((prev) => ({
+                                    ...prev,
+                                    averageSurvivingAreaM2:
+                                      parseFloat(e.target.value) || 0.01,
+                                  }))
+                                }
+                                className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                Reentry Inclination ({"\u00B0"})
+                              </label>
+                              <input
+                                type="number"
+                                min={0}
+                                max={180}
+                                step={0.1}
+                                value={craForm.reentryInclinationDeg}
+                                onChange={(e) =>
+                                  setCraForm((prev) => ({
+                                    ...prev,
+                                    reentryInclinationDeg:
+                                      parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                              />
+                            </div>
+
+                            {/* Controlled Reentry Toggle */}
+                            <div className="md:col-span-2">
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  id="cra-controlled"
+                                  checked={craForm.isControlledReentry}
+                                  onChange={(e) =>
+                                    setCraForm((prev) => ({
+                                      ...prev,
+                                      isControlledReentry: e.target.checked,
+                                      targetLatitudeDeg: e.target.checked
+                                        ? (prev.targetLatitudeDeg ?? -40)
+                                        : undefined,
+                                      targetLongitudeDeg: e.target.checked
+                                        ? (prev.targetLongitudeDeg ?? -160)
+                                        : undefined,
+                                    }))
+                                  }
+                                  className="w-4 h-4 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded"
+                                />
+                                <label
+                                  htmlFor="cra-controlled"
+                                  className="text-body text-[var(--text-secondary)]"
+                                >
+                                  Controlled reentry (targeted)
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Target coordinates for controlled reentry */}
+                            {craForm.isControlledReentry && (
+                              <>
+                                <div>
+                                  <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                    Target Latitude ({"\u00B0"})
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={-90}
+                                    max={90}
+                                    step={0.1}
+                                    value={craForm.targetLatitudeDeg ?? -40}
+                                    onChange={(e) =>
+                                      setCraForm((prev) => ({
+                                        ...prev,
+                                        targetLatitudeDeg:
+                                          parseFloat(e.target.value) || 0,
+                                      }))
+                                    }
+                                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-small text-[var(--text-secondary)] mb-1.5">
+                                    Target Longitude ({"\u00B0"})
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={-180}
+                                    max={180}
+                                    step={0.1}
+                                    value={craForm.targetLongitudeDeg ?? -160}
+                                    onChange={(e) =>
+                                      setCraForm((prev) => ({
+                                        ...prev,
+                                        targetLongitudeDeg:
+                                          parseFloat(e.target.value) || 0,
+                                      }))
+                                    }
+                                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-body focus:outline-none focus:border-[var(--border-default)]"
+                                  />
+                                  <p className="text-caption text-[var(--text-tertiary)] mt-1">
+                                    SPOUA: ~(-40{"\u00B0"}, -160{"\u00B0"})
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Calculate Button */}
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={calculateCasualtyRisk}
+                              disabled={craCalculating}
+                              className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-5 py-2.5 rounded-lg font-medium text-body hover:bg-[var(--text-primary)] transition-all disabled:opacity-50"
+                            >
+                              {craCalculating ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Calculator size={14} />
+                              )}
+                              Calculate E[c]
+                            </button>
+                            {craError && (
+                              <p className="text-small text-[var(--accent-error)]">
+                                {craError}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Results */}
+                          {craResult && (
+                            <div className="space-y-4">
+                              {/* Headline result */}
+                              <div
+                                className={`p-4 rounded-lg border ${
+                                  craResult.isCompliant
+                                    ? "bg-[var(--accent-success)]/5 border-[var(--accent-success)]/20"
+                                    : "bg-[var(--accent-error)]/5 border-[var(--accent-error)]/20"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    {craResult.isCompliant ? (
+                                      <CheckCircle2
+                                        size={16}
+                                        className="text-[var(--accent-success)]"
+                                      />
+                                    ) : (
+                                      <AlertTriangle
+                                        size={16}
+                                        className="text-[var(--accent-error)]"
+                                      />
+                                    )}
+                                    <span
+                                      className={`text-subtitle font-medium ${
+                                        craResult.isCompliant
+                                          ? "text-[var(--accent-success)]"
+                                          : "text-[var(--accent-error)]"
+                                      }`}
+                                    >
+                                      E[c] ={" "}
+                                      {craResult.expectedCasualties.toExponential(
+                                        3,
+                                      )}
+                                    </span>
+                                  </div>
+                                  <span
+                                    className={`text-micro uppercase tracking-wider px-2.5 py-1 rounded-lg font-medium ${
+                                      craResult.isCompliant
+                                        ? "bg-[var(--accent-success)]/10 text-[var(--accent-success)]"
+                                        : "bg-[var(--accent-error)]/10 text-[var(--accent-error)]"
+                                    }`}
+                                  >
+                                    {craResult.isCompliant
+                                      ? "COMPLIANT"
+                                      : "NON-COMPLIANT"}
+                                  </span>
+                                </div>
+                                <p
+                                  className={`text-small ${
+                                    craResult.isCompliant
+                                      ? "text-[var(--accent-success)]/70"
+                                      : "text-[var(--accent-error)]/70"
+                                  }`}
+                                >
+                                  {craResult.recommendation}
+                                </p>
+                              </div>
+
+                              {/* Breakdown table */}
+                              <div className="p-4 bg-[var(--surface-sunken)] rounded-lg">
+                                <p className="text-micro uppercase tracking-wider text-[var(--text-secondary)] mb-3">
+                                  Calculation Breakdown
+                                </p>
+                                <div className="space-y-2">
+                                  {craResult.breakdown.map((row, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/5 last:border-0"
+                                    >
+                                      <span className="text-small text-[var(--text-secondary)]">
+                                        {row.label}
+                                      </span>
+                                      <span className="text-small font-mono text-[var(--text-primary)]">
+                                        {row.value}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {selectedAssessment?.deorbitStrategy === "passive_decay" && (
-                  <div className="p-3 rounded-lg bg-[var(--fill-light)] border border-[var(--separator)] mt-3">
-                    <p className="text-small text-[var(--text-secondary)]">
-                      ⚠ Passive Decay Hinweis: Die orbitale Lebensdauer bei
-                      passivem Abbau ist stark abhängig von der Sonnenaktivität.
-                      Bei Sonnenminimum (niedriger F10.7 Fluss) sind die
-                      Abbauzeiten deutlich länger. Stellen Sie sicher, dass Ihre
-                      Analyse konservative Sonnenaktivitätsannahmen verwendet.
+                {/* Plan Generation Card */}
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
+                  <FileText
+                    size={48}
+                    className="mx-auto text-[var(--text-tertiary)] mb-4"
+                  />
+                  <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
+                    Generate Debris Mitigation Plan
+                  </h2>
+                  <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+                    Based on your mission profile and compliance checklist,
+                    generate a structured Debris Mitigation Plan document.
+                  </p>
+
+                  <div className="flex flex-col items-center gap-4">
+                    <button
+                      onClick={generatePlan}
+                      disabled={generatingPlan}
+                      className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-6 py-3 rounded-lg font-medium text-body-lg hover:bg-[var(--text-primary)] transition-all disabled:opacity-50"
+                    >
+                      {generatingPlan ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Rocket size={16} />
+                      )}
+                      Generate Plan
+                    </button>
+
+                    {planError && (
+                      <p className="text-small text-red-500 mt-2">
+                        {planError}
+                      </p>
+                    )}
+
+                    <p className="text-caption text-[var(--text-secondary)]">
+                      Compliance Score:{" "}
+                      {selectedAssessment.complianceScore || 0}% •{" "}
+                      {requirements.length} requirements assessed
                     </p>
                   </div>
-                )}
-              </div>
+
+                  {selectedAssessment?.deorbitStrategy === "passive_decay" && (
+                    <div className="p-3 rounded-lg bg-[var(--fill-light)] border border-[var(--separator)] mt-3">
+                      <p className="text-small text-[var(--text-secondary)]">
+                        ⚠ Passive Decay Hinweis: Die orbitale Lebensdauer bei
+                        passivem Abbau ist stark abhängig von der
+                        Sonnenaktivität. Bei Sonnenminimum (niedriger F10.7
+                        Fluss) sind die Abbauzeiten deutlich länger. Stellen Sie
+                        sicher, dass Ihre Analyse konservative
+                        Sonnenaktivitätsannahmen verwendet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
                 {/* Generated Plan Display */}
