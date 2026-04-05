@@ -5,11 +5,20 @@ import {
   validateToken,
   logStakeholderAccess,
 } from "@/lib/services/stakeholder-engagement";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // POST /api/stakeholder/auth — Validate token and return engagement + org info
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: auth tier for token validation (strict: 5/min)
+    const rl = await checkRateLimit("auth", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const schema = z.object({
       token: z.string().min(1),
     });

@@ -361,17 +361,14 @@ export default function EngagementDetailPage() {
   const handleUpdateStatus = async (newStatus: string) => {
     if (!orgId || !engagementId) return;
     try {
-      const res = await fetch(
-        `/api/network/engagements/${engagementId}/settings`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            organizationId: orgId,
-            status: newStatus,
-          }),
-        },
-      );
+      const res = await fetch(`/api/network/engagements/${engagementId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({
+          organizationId: orgId,
+          status: newStatus,
+        }),
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

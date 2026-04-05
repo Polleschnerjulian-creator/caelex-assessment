@@ -14,6 +14,11 @@ import {
   getEngagements,
 } from "@/lib/services/stakeholder-engagement";
 import { parsePaginationLimit } from "@/lib/validations";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import type { StakeholderType, EngagementStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
@@ -25,6 +30,13 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: api tier for GET
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get("organizationId");
@@ -90,6 +102,13 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: sensitive tier for POST (creates engagement + token)
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const schema = z.object({
       organizationId: z.string().min(1),

@@ -14,6 +14,11 @@ import {
   generatePresignedUploadUrl,
   isR2Configured,
 } from "@/lib/storage/upload-service";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 // POST /api/stakeholder/data-rooms/[id]/upload — Upload a file to a data room
 export async function POST(
@@ -21,6 +26,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { id } = await params;
 
     const token =

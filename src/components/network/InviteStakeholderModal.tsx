@@ -120,9 +120,13 @@ export default function InviteStakeholderModal({
   isOpen,
   onClose,
   onSubmit,
+  organizationId,
 }: InviteStakeholderModalProps) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [formData, setFormData] = useState<InviteFormData>({
     type: "LEGAL_COUNSEL",
     companyName: "",
@@ -156,9 +160,60 @@ export default function InviteStakeholderModal({
     }
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const ipList = formData.ipAllowlist
+        .split(/[,\n]/)
+        .map((ip) => ip.trim())
+        .filter(Boolean);
+
+      const res = await fetch("/api/network/engagements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId,
+          type: formData.type,
+          companyName: formData.companyName,
+          contactName: formData.contactName,
+          contactEmail: formData.contactEmail,
+          contactPhone: formData.contactPhone || undefined,
+          scope: formData.scope,
+          contractRef: formData.contractReference || undefined,
+          ipAllowlist: ipList.length > 0 ? ipList : undefined,
+          mfaRequired: formData.mfaRequired,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setError(err.error || "Failed to create engagement");
+        setSubmitting(false);
+        return;
+      }
+
+      const json = await res.json();
+      const token = json.accessToken;
+
+      setCreatedToken(token);
+      setDirection(1);
+      setStep(4); // success step
+      onSubmit(formData);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create engagement",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
     setStep(0);
+    setCreatedToken(null);
+    setError(null);
     setFormData({
       type: "LEGAL_COUNSEL",
       companyName: "",
@@ -204,7 +259,7 @@ export default function InviteStakeholderModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/50 dark:bg-black/70"
-        onClick={onClose}
+        onClick={step === 4 ? handleClose : onClose}
       />
 
       {/* Modal */}
@@ -228,38 +283,40 @@ export default function InviteStakeholderModal({
         </div>
 
         {/* Step indicator */}
-        <div className="px-6 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle]">
-          <div className="flex items-center gap-2">
-            {STEP_LABELS.map((label, i) => {
-              const StepIcon = stepIcons[i];
-              return (
-                <div key={label} className="flex items-center gap-2">
-                  {i > 0 && (
+        {step < 4 && (
+          <div className="px-6 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="flex items-center gap-2">
+              {STEP_LABELS.map((label, i) => {
+                const StepIcon = stepIcons[i];
+                return (
+                  <div key={label} className="flex items-center gap-2">
+                    {i > 0 && (
+                      <div
+                        className={`w-6 h-px ${
+                          i <= step
+                            ? "bg-emerald-500"
+                            : "bg-slate-200 dark:bg-white/10"
+                        }`}
+                      />
+                    )}
                     <div
-                      className={`w-6 h-px ${
-                        i <= step
-                          ? "bg-emerald-500"
-                          : "bg-slate-200 dark:bg-white/10"
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-micro font-medium transition-colors ${
+                        i === step
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : i < step
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-slate-400 dark:text-white/30"
                       }`}
-                    />
-                  )}
-                  <div
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-micro font-medium transition-colors ${
-                      i === step
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                        : i < step
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-slate-400 dark:text-white/30"
-                    }`}
-                  >
-                    <StepIcon size={12} />
-                    <span className="hidden sm:inline">{label}</span>
+                    >
+                      <StepIcon size={12} />
+                      <span className="hidden sm:inline">{label}</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content */}
         <div className="px-6 py-5 min-h-[320px] overflow-hidden relative">
@@ -466,36 +523,92 @@ export default function InviteStakeholderModal({
                   </div>
                 </div>
               )}
+
+              {step === 4 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-emerald-500/10 mb-2">
+                    <Check size={24} className="text-emerald-500" />
+                  </div>
+                  <h3 className="text-heading font-semibold text-slate-900 dark:text-white text-center">
+                    Einladung erstellt
+                  </h3>
+                  <p className="text-body text-slate-600 dark:text-white/60 text-center">
+                    Teilen Sie diesen Zugangscode mit dem Stakeholder:
+                  </p>
+                  <div className="font-mono text-small bg-slate-100 dark:bg-[--glass-bg-surface] p-3 rounded-lg break-all select-all border border-slate-200 dark:border-[--glass-border-subtle]">
+                    {createdToken}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (createdToken)
+                        navigator.clipboard.writeText(createdToken);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-body font-medium bg-slate-100 dark:bg-[--glass-bg-surface] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-700 dark:text-white/70 transition-colors"
+                  >
+                    Kopieren
+                  </button>
+                  <p className="text-small text-slate-400 dark:text-white/30 text-center">
+                    Dieser Code wird nur einmal angezeigt. Speichern Sie ihn
+                    sicher.
+                  </p>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
 
+        {/* Error Banner */}
+        {error && (
+          <div className="mx-6 mb-0 mt-0 flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
+            <X size={14} className="text-red-500 flex-shrink-0" />
+            <p className="text-small text-red-600 dark:text-red-400 flex-1">
+              {error}
+            </p>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
-          <button
-            onClick={step === 0 ? onClose : goBack}
-            className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-          >
-            {step > 0 && <ChevronLeft size={14} />}
-            {step === 0 ? "Cancel" : "Back"}
-          </button>
-          {step < 3 ? (
-            <button
-              onClick={goNext}
-              disabled={!canProceed()}
-              className="flex items-center gap-1.5 px-5 py-2 text-body font-medium bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-            >
-              Continue
-              <ChevronRight size={14} />
-            </button>
+          {step === 4 ? (
+            <>
+              <div />
+              <button
+                onClick={handleClose}
+                className="flex items-center gap-1.5 px-5 py-2 text-body font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+              >
+                Fertig
+                <Check size={14} />
+              </button>
+            </>
           ) : (
-            <button
-              onClick={handleSubmit}
-              className="flex items-center gap-1.5 px-5 py-2 text-body font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
-            >
-              Send Invitation
-              <Check size={14} />
-            </button>
+            <>
+              <button
+                onClick={step === 0 ? onClose : goBack}
+                className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                {step > 0 && <ChevronLeft size={14} />}
+                {step === 0 ? "Cancel" : "Back"}
+              </button>
+              {step < 3 ? (
+                <button
+                  onClick={goNext}
+                  disabled={!canProceed()}
+                  className="flex items-center gap-1.5 px-5 py-2 text-body font-medium bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                >
+                  Continue
+                  <ChevronRight size={14} />
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="flex items-center gap-1.5 px-5 py-2 text-body font-medium bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                >
+                  {submitting ? "Sending..." : "Send Invitation"}
+                  <Check size={14} />
+                </button>
+              )}
+            </>
           )}
         </div>
       </motion.div>

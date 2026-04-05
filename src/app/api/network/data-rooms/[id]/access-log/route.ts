@@ -9,6 +9,11 @@ import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getDataRoom, getDataRoomAccessLogs } from "@/lib/services/data-room";
 import { parsePaginationLimit } from "@/lib/validations";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 interface RouteParams {
@@ -21,6 +26,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: api tier for GET
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { id } = await params;
     const { searchParams } = new URL(request.url);

@@ -11,6 +11,11 @@ import {
 } from "@/lib/services/data-room";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms/[id]/comments — List comments for a data room
@@ -19,6 +24,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { id } = await params;
 
     const token =
@@ -127,6 +136,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rlPost = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rlPost.success) return createRateLimitResponse(rlPost);
+
     const { id } = await params;
 
     const token =

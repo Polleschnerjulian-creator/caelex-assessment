@@ -8,6 +8,11 @@ import {
   getDataRoomsForStakeholder,
   logDataRoomAccess,
 } from "@/lib/services/data-room";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms/[id] — Get a specific data room for this stakeholder
@@ -16,6 +21,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { id } = await params;
 
     const token =

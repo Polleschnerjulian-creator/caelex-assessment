@@ -5,11 +5,20 @@ import {
   logStakeholderAccess,
 } from "@/lib/services/stakeholder-engagement";
 import { getDataRoomsForStakeholder } from "@/lib/services/data-room";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms — List data rooms for this stakeholder
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
       (process.env.NODE_ENV === "development"

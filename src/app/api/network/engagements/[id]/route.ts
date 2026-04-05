@@ -15,6 +15,11 @@ import {
   updateEngagement,
   revokeEngagement,
 } from "@/lib/services/stakeholder-engagement";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 interface RouteParams {
@@ -29,6 +34,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: api tier for GET
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { id } = await params;
     const { searchParams } = new URL(request.url);
@@ -89,6 +101,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: sensitive tier for PATCH
+    const rlPatch = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rlPatch.success) return createRateLimitResponse(rlPatch);
 
     const { id } = await params;
 
@@ -188,6 +207,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: sensitive tier for DELETE
+    const rlDel = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rlDel.success) return createRateLimitResponse(rlDel);
 
     const { id } = await params;
     const { searchParams } = new URL(request.url);

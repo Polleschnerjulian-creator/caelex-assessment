@@ -11,11 +11,20 @@ import {
   getAttestationsForStakeholder,
 } from "@/lib/services/attestation";
 import type { AttestationType } from "@prisma/client";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/attestations — List attestations for this engagement
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
       (process.env.NODE_ENV === "development"
@@ -53,6 +62,10 @@ export async function GET(request: NextRequest) {
 // POST /api/stakeholder/attestations — Create a new attestation (stakeholder signs)
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rlPost = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rlPost.success) return createRateLimitResponse(rlPost);
+
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
       (process.env.NODE_ENV === "development"

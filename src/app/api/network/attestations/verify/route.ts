@@ -7,10 +7,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyByHash } from "@/lib/services/attestation";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: auth tier for public verification (strict: 5/min)
+    const rl = await checkRateLimit("auth", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const schema = z.object({
       signatureHash: z
         .string()

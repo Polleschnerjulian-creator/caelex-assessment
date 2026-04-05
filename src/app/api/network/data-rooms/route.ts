@@ -12,6 +12,11 @@ import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { createDataRoom, getDataRooms } from "@/lib/services/data-room";
 import { logger } from "@/lib/logger";
 import { parsePaginationLimit } from "@/lib/validations";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 // ─── GET: List Data Rooms ───
 
@@ -21,6 +26,13 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: api tier for GET
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get("organizationId");
@@ -84,6 +96,13 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: sensitive tier for POST (creates data room)
+    const rlPost = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rlPost.success) return createRateLimitResponse(rlPost);
 
     const schema = z.object({
       organizationId: z.string().min(1),

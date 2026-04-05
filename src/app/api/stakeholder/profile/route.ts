@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateToken } from "@/lib/services/stakeholder-engagement";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/profile — Return stakeholder engagement details
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: supplier tier for stakeholder portal (30/hr)
+    const rl = await checkRateLimit("supplier", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const url = new URL(request.url);
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
