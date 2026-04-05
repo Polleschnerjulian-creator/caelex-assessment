@@ -62,6 +62,7 @@ interface HazardEntry {
   hazardId: string;
   hazardType: string;
   title: string;
+  description: string;
   severity: string;
   likelihood: number;
   riskIndex: number;
@@ -530,6 +531,160 @@ export default function HazardsPage() {
     }
   };
 
+  // ── E-1: Reject hazard ────────────────────────────────────────────────────
+  const handleReject = async () => {
+    if (!rejectReason.trim()) return;
+    setRejecting(true);
+    const scId = rejectModal.spacecraftId;
+    clearSpacecraftError(scId);
+    try {
+      const res = await fetch(`/api/hazards/${rejectModal.hazardId}/reject`, {
+        method: "POST",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: rejectReason }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Reject failed");
+      }
+      setRejectModal({
+        open: false,
+        hazardId: "",
+        spacecraftId: "",
+        hazardTitle: "",
+      });
+      setRejectReason("");
+      await fetchHazardStatus(scId);
+    } catch (e) {
+      setSpacecraftError(
+        scId,
+        e instanceof Error ? e.message : "Reject failed",
+      );
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  // ── E-1: Create hazard ────────────────────────────────────────────────────
+  const handleCreate = async () => {
+    setCreating(true);
+    const scId = createModal.spacecraftId;
+    clearSpacecraftError(scId);
+    try {
+      const res = await fetch("/api/hazards", {
+        method: "POST",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          spacecraftId: scId,
+          hazardId: createForm.hazardId,
+          hazardType: createForm.hazardType,
+          sourceModule: "MANUAL",
+          title: createForm.title,
+          description: createForm.description,
+          severity: createForm.severity,
+          likelihood: createForm.likelihood,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Create failed");
+      }
+      setCreateModal({ open: false, spacecraftId: "" });
+      setCreateForm({
+        title: "",
+        description: "",
+        hazardType: "COLLISION",
+        severity: "MARGINAL",
+        likelihood: 3,
+        hazardId: "",
+      });
+      await fetchHazardStatus(scId);
+    } catch (e) {
+      setSpacecraftError(
+        scId,
+        e instanceof Error ? e.message : "Create failed",
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ── E-1: Edit hazard ──────────────────────────────────────────────────────
+  const handleEdit = async () => {
+    if (!editPanel.hazard) return;
+    setSaving(true);
+    const scId = editPanel.spacecraftId;
+    clearSpacecraftError(scId);
+    try {
+      const res = await fetch(`/api/hazards/${editPanel.hazard.id}`, {
+        method: "PUT",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: editForm.description,
+          severity: editForm.severity,
+          likelihood: editForm.likelihood,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Update failed");
+      }
+      setEditPanel({ open: false, hazard: null, spacecraftId: "" });
+      await fetchHazardStatus(scId);
+    } catch (e) {
+      setSpacecraftError(
+        scId,
+        e instanceof Error ? e.message : "Update failed",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── E-1: Add mitigation ───────────────────────────────────────────────────
+  const handleAddMitigation = async () => {
+    setAddingMitigation(true);
+    const scId = mitigationModal.spacecraftId;
+    clearSpacecraftError(scId);
+    try {
+      const body: Record<string, unknown> = {
+        type: mitigationForm.type,
+        description: mitigationForm.description,
+      };
+      if (mitigationForm.implementedAt) {
+        body.implementedAt = new Date(
+          mitigationForm.implementedAt,
+        ).toISOString();
+      }
+      const res = await fetch(
+        `/api/hazards/${mitigationModal.hazardId}/mitigations`,
+        {
+          method: "POST",
+          headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Add mitigation failed");
+      }
+      setMitigationModal({ open: false, hazardId: "", spacecraftId: "" });
+      setMitigationForm({
+        type: "TECHNICAL",
+        description: "",
+        implementedAt: "",
+      });
+      await fetchHazardStatus(scId);
+    } catch (e) {
+      setSpacecraftError(
+        scId,
+        e instanceof Error ? e.message : "Add mitigation failed",
+      );
+    } finally {
+      setAddingMitigation(false);
+    }
+  };
+
   // ── Generate report ────────────────────────────────────────────────────────
 
   const handleGenerateReport = async (spacecraftId: string) => {
@@ -627,7 +782,10 @@ export default function HazardsPage() {
       setEditingFmeca(null);
       await fetchHazardStatus(spacecraftId);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to save FMECA");
+      setSpacecraftError(
+        spacecraftId,
+        e instanceof Error ? e.message : "Failed to save FMECA",
+      );
     } finally {
       setSavingFmeca(false);
     }
@@ -677,27 +835,14 @@ export default function HazardsPage() {
               generation
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={selectedNCA}
-              onChange={(e) => setSelectedNCA(e.target.value)}
-              className="bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-300 focus:outline-none focus:border-emerald-500/50"
-            >
-              {NCA_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
-        {/* Error banner */}
-        {error && (
+        {/* Global error banner */}
+        {errors._global && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 flex items-center justify-between">
-            <span className="text-small text-red-400">{error}</span>
+            <span className="text-small text-red-400">{errors._global}</span>
             <button
-              onClick={() => setError(null)}
+              onClick={() => clearSpacecraftError("_global")}
               className="text-red-400 hover:text-red-300"
             >
               <XCircle size={16} />
@@ -891,8 +1036,25 @@ export default function HazardsPage() {
                       {/* Expanded content */}
                       {isExpanded && (
                         <div className="border-t border-white/5">
+                          {/* E-2: Per-spacecraft error */}
+                          {errors[spacecraft.id] && (
+                            <div className="mx-4 mt-3 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 flex items-center justify-between">
+                              <span className="text-small text-red-400">
+                                {errors[spacecraft.id]}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  clearSpacecraftError(spacecraft.id)
+                                }
+                                className="text-red-400 hover:text-red-300 ml-2"
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            </div>
+                          )}
+
                           {/* Action bar */}
-                          <div className="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.01]">
+                          <div className="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.01] flex-wrap">
                             <Button
                               variant="secondary"
                               size="sm"
@@ -912,6 +1074,21 @@ export default function HazardsPage() {
                               )}
                               Sync Hazards
                             </Button>
+                            {/* E-1: New Hazard button */}
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCreateModal({
+                                  open: true,
+                                  spacecraftId: spacecraft.id,
+                                });
+                              }}
+                            >
+                              <Plus size={14} className="mr-2" />
+                              New Hazard
+                            </Button>
                             {status?.reportReady && (
                               <Button
                                 size="sm"
@@ -930,9 +1107,12 @@ export default function HazardsPage() {
                                   <Download size={14} className="mr-2" />
                                 )}
                                 Generate Report (
-                                {selectedNCA.includes(":")
-                                  ? selectedNCA.split(":")[1]
-                                  : selectedNCA}
+                                {(() => {
+                                  const nca = getNCA(spacecraft.id);
+                                  return nca.includes(":")
+                                    ? nca.split(":")[1]
+                                    : nca;
+                                })()}
                                 )
                               </Button>
                             )}
@@ -965,7 +1145,35 @@ export default function HazardsPage() {
                                   report
                                 </span>
                               )}
+                            {/* E-4: Per-spacecraft NCA selector */}
+                            <div className="ml-auto">
+                              <select
+                                value={getNCA(spacecraft.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setNcaSelections((prev) => ({
+                                    ...prev,
+                                    [spacecraft.id]: e.target.value,
+                                  }));
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-navy-800 border border-white/10 rounded-lg px-2 py-1 text-micro text-slate-300 focus:outline-none focus:border-emerald-500/50"
+                              >
+                                {NCA_OPTIONS.map((o) => (
+                                  <option key={o.value} value={o.value}>
+                                    {o.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
+
+                          {/* E-5: Risk Matrix */}
+                          {hazards.length > 0 && (
+                            <div className="px-4 pt-3">
+                              <RiskMatrix hazards={hazards} />
+                            </div>
+                          )}
 
                           {/* Hazard table */}
                           {hazards.length > 0 ? (
@@ -1037,7 +1245,11 @@ export default function HazardsPage() {
                                               {h.hazardId}
                                             </div>
                                           </td>
-                                          <td className="px-4 py-2.5 text-small text-slate-200 max-w-[240px] truncate">
+                                          {/* E-6: tooltip on truncated title */}
+                                          <td
+                                            className="px-4 py-2.5 text-small text-slate-200 max-w-[240px] truncate"
+                                            title={h.title}
+                                          >
                                             {h.title}
                                           </td>
                                           <td className="px-4 py-2.5">
@@ -1089,9 +1301,51 @@ export default function HazardsPage() {
                                             )}
                                           </td>
                                           <td className="px-4 py-2.5 text-right">
-                                            {h.acceptanceStatus === "PENDING" &&
-                                              h.mitigationStatus ===
-                                                "CLOSED" && (
+                                            <div className="flex items-center justify-end gap-1">
+                                              {/* E-1: Edit button */}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setEditForm({
+                                                    description:
+                                                      h.description || "",
+                                                    severity: h.severity,
+                                                    likelihood: h.likelihood,
+                                                  });
+                                                  setEditPanel({
+                                                    open: true,
+                                                    hazard: h,
+                                                    spacecraftId: spacecraft.id,
+                                                  });
+                                                }}
+                                                className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+                                                title="Edit hazard"
+                                              >
+                                                <Pencil size={13} />
+                                              </button>
+                                              {/* E-1: Add Mitigation button */}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setMitigationModal({
+                                                    open: true,
+                                                    hazardId: h.id,
+                                                    spacecraftId: spacecraft.id,
+                                                  });
+                                                  setMitigationForm({
+                                                    type: "TECHNICAL",
+                                                    description: "",
+                                                    implementedAt: "",
+                                                  });
+                                                }}
+                                                className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+                                                title="Add mitigation"
+                                              >
+                                                <ShieldAlert size={13} />
+                                              </button>
+                                              {/* Accept button */}
+                                              {h.acceptanceStatus ===
+                                                "PENDING" && (
                                                 <button
                                                   onClick={(e) => {
                                                     e.stopPropagation();
@@ -1103,7 +1357,7 @@ export default function HazardsPage() {
                                                   disabled={
                                                     acceptingId === h.id
                                                   }
-                                                  className="px-2.5 py-1 rounded text-micro bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                                                  className="px-2 py-0.5 rounded text-micro bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
                                                 >
                                                   {acceptingId === h.id ? (
                                                     <Loader2
@@ -1115,6 +1369,27 @@ export default function HazardsPage() {
                                                   )}
                                                 </button>
                                               )}
+                                              {/* E-1: Reject button */}
+                                              {h.acceptanceStatus !==
+                                                "REJECTED" && (
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setRejectModal({
+                                                      open: true,
+                                                      hazardId: h.id,
+                                                      spacecraftId:
+                                                        spacecraft.id,
+                                                      hazardTitle: h.title,
+                                                    });
+                                                    setRejectReason("");
+                                                  }}
+                                                  className="px-2 py-0.5 rounded text-micro bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                                                >
+                                                  Reject
+                                                </button>
+                                              )}
+                                            </div>
                                           </td>
                                         </tr>
 
@@ -1428,6 +1703,375 @@ export default function HazardsPage() {
             )}
           </div>
         )}
+        {/* ── Create Hazard Modal (E-1) ── */}
+        <ModalOverlay
+          open={createModal.open}
+          onClose={() => setCreateModal({ open: false, spacecraftId: "" })}
+          title="New Hazard"
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Hazard ID
+              </label>
+              <input
+                type="text"
+                value={createForm.hazardId}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, hazardId: e.target.value }))
+                }
+                placeholder="e.g. G08"
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Title
+              </label>
+              <input
+                type="text"
+                value={createForm.title}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, title: e.target.value }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Description
+              </label>
+              <textarea
+                value={createForm.description}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, description: e.target.value }))
+                }
+                rows={3}
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-caption text-slate-400 block mb-1">
+                  Hazard Type
+                </label>
+                <select
+                  value={createForm.hazardType}
+                  onChange={(e) =>
+                    setCreateForm((f) => ({ ...f, hazardType: e.target.value }))
+                  }
+                  className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                >
+                  {HAZARD_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {formatLabel(t)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-caption text-slate-400 block mb-1">
+                  Severity
+                </label>
+                <select
+                  value={createForm.severity}
+                  onChange={(e) =>
+                    setCreateForm((f) => ({ ...f, severity: e.target.value }))
+                  }
+                  className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                >
+                  {SEVERITY_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {formatLabel(s)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Likelihood (1-5)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={createForm.likelihood}
+                onChange={(e) =>
+                  setCreateForm((f) => ({
+                    ...f,
+                    likelihood: Math.min(
+                      5,
+                      Math.max(1, parseInt(e.target.value) || 1),
+                    ),
+                  }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setCreateModal({ open: false, spacecraftId: "" })
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCreate}
+                disabled={
+                  creating ||
+                  !createForm.title.trim() ||
+                  !createForm.description.trim() ||
+                  !createForm.hazardId.trim()
+                }
+              >
+                {creating ? (
+                  <Loader2 size={14} className="animate-spin mr-2" />
+                ) : (
+                  <Plus size={14} className="mr-2" />
+                )}
+                Create Hazard
+              </Button>
+            </div>
+          </div>
+        </ModalOverlay>
+
+        {/* ── Edit Hazard Slide-out (E-1) ── */}
+        <SlidePanel
+          open={editPanel.open}
+          onClose={() =>
+            setEditPanel({ open: false, hazard: null, spacecraftId: "" })
+          }
+          title={`Edit ${editPanel.hazard?.hazardId || "Hazard"}`}
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Description
+              </label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, description: e.target.value }))
+                }
+                rows={4}
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-none"
+              />
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Severity
+              </label>
+              <select
+                value={editForm.severity}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, severity: e.target.value }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              >
+                {SEVERITY_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {formatLabel(s)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Likelihood (1-5)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={editForm.likelihood}
+                onChange={(e) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    likelihood: Math.min(
+                      5,
+                      Math.max(1, parseInt(e.target.value) || 1),
+                    ),
+                  }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setEditPanel({ open: false, hazard: null, spacecraftId: "" })
+                }
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleEdit} disabled={saving}>
+                {saving ? (
+                  <Loader2 size={14} className="animate-spin mr-2" />
+                ) : (
+                  <Pencil size={14} className="mr-2" />
+                )}
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </SlidePanel>
+
+        {/* ── Add Mitigation Modal (E-1) ── */}
+        <ModalOverlay
+          open={mitigationModal.open}
+          onClose={() =>
+            setMitigationModal({ open: false, hazardId: "", spacecraftId: "" })
+          }
+          title="Add Mitigation"
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Type
+              </label>
+              <select
+                value={mitigationForm.type}
+                onChange={(e) =>
+                  setMitigationForm((f) => ({ ...f, type: e.target.value }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              >
+                <option value="TECHNICAL">Technical</option>
+                <option value="OPERATIONAL">Operational</option>
+                <option value="PROCEDURAL">Procedural</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Description
+              </label>
+              <textarea
+                value={mitigationForm.description}
+                onChange={(e) =>
+                  setMitigationForm((f) => ({
+                    ...f,
+                    description: e.target.value,
+                  }))
+                }
+                rows={3}
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-none"
+              />
+            </div>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Implementation Date (optional)
+              </label>
+              <input
+                type="date"
+                value={mitigationForm.implementedAt}
+                onChange={(e) =>
+                  setMitigationForm((f) => ({
+                    ...f,
+                    implementedAt: e.target.value,
+                  }))
+                }
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setMitigationModal({
+                    open: false,
+                    hazardId: "",
+                    spacecraftId: "",
+                  })
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleAddMitigation}
+                disabled={
+                  addingMitigation || !mitigationForm.description.trim()
+                }
+              >
+                {addingMitigation ? (
+                  <Loader2 size={14} className="animate-spin mr-2" />
+                ) : (
+                  <ShieldAlert size={14} className="mr-2" />
+                )}
+                Add Mitigation
+              </Button>
+            </div>
+          </div>
+        </ModalOverlay>
+
+        {/* ── Reject Hazard Modal (E-1) ── */}
+        <ModalOverlay
+          open={rejectModal.open}
+          onClose={() =>
+            setRejectModal({
+              open: false,
+              hazardId: "",
+              spacecraftId: "",
+              hazardTitle: "",
+            })
+          }
+          title="Reject Hazard"
+        >
+          <div className="space-y-3">
+            <p className="text-small text-slate-400">
+              Rejecting:{" "}
+              <span className="text-slate-200">{rejectModal.hazardTitle}</span>
+            </p>
+            <div>
+              <label className="text-caption text-slate-400 block mb-1">
+                Rejection Reason (required)
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+                placeholder="Explain why this hazard is being rejected..."
+                className="w-full bg-navy-800 border border-white/10 rounded-lg px-3 py-2 text-small text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-none"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setRejectModal({
+                    open: false,
+                    hazardId: "",
+                    spacecraftId: "",
+                    hazardTitle: "",
+                  })
+                }
+              >
+                Cancel
+              </Button>
+              <button
+                onClick={handleReject}
+                disabled={rejecting || !rejectReason.trim()}
+                className="flex items-center px-3 py-1.5 rounded-lg text-small bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors disabled:opacity-50"
+              >
+                {rejecting ? (
+                  <Loader2 size={14} className="animate-spin mr-2" />
+                ) : (
+                  <XCircle size={14} className="mr-2" />
+                )}
+                Reject Hazard
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
       </div>
     </GlassMotion>
   );
