@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Loader2, Calendar, Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
@@ -92,7 +93,10 @@ interface SlotKey {
 
 // ─── Component ───
 
-export default function GetStartedPage() {
+function GetStartedContent() {
+  const searchParams = useSearchParams();
+  const reason = searchParams.get("reason");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -244,6 +248,19 @@ export default function GetStartedPage() {
       <div className="relative z-10">
         <section className="pt-44 pb-20 md:pb-28 px-6 md:px-12">
           <div className="max-w-[1400px] mx-auto">
+            {/* Subscription required banner */}
+            {reason === "no-subscription" && (
+              <div className="p-4 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] mb-8">
+                <p className="text-body font-medium text-[#111827]">
+                  Sie benötigen ein aktives Abonnement um auf das Dashboard
+                  zuzugreifen.
+                </p>
+                <p className="text-small text-[#6b7280] mt-1">
+                  Kontaktieren Sie uns für ein individuelles Angebot.
+                </p>
+              </div>
+            )}
+
             <div className="grid lg:grid-cols-[1fr_0.7fr] gap-12 lg:gap-16 items-start">
               {/* ── Left Column (60%) — Headline + Calendar ── */}
               <motion.div
@@ -545,5 +562,13 @@ export default function GetStartedPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+export default function GetStartedPage() {
+  return (
+    <Suspense>
+      <GetStartedContent />
+    </Suspense>
   );
 }

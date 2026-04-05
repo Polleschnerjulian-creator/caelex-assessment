@@ -49,7 +49,7 @@ export function initComplianceBadge(
   const cta = document.createElement("a");
   cta.className = "caelex-btn caelex-btn-primary";
   cta.textContent = "Get Your Score";
-  cta.setAttribute("href", "https://app.caelex.eu/pricing");
+  cta.setAttribute("href", "https://app.caelex.eu/get-started");
   cta.setAttribute("target", "_blank");
   cta.setAttribute("rel", "noopener");
   cta.style.display = "block";

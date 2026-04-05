@@ -142,11 +142,12 @@ export const pageMetadata = {
   }),
 
   pricing: generateMetadata({
-    title: "Pricing",
+    title: "Get Started",
     description:
-      "Flexible pricing plans for space operators of all sizes. From startups to enterprise, find the right compliance solution for your mission.",
-    path: "/pricing",
+      "Contact our team for a tailored compliance solution. We work with space operators of all sizes — from startups to enterprise.",
+    path: "/get-started",
     keywords: ["space compliance pricing", "satellite compliance cost"],
+    noIndex: true,
   }),
 
   about: generateMetadata({
