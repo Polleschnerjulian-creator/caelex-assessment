@@ -1720,6 +1720,213 @@ function InsurancePageContent() {
                         </ul>
                       </div>
                     )}
+
+                    {/* ─── IRPE: Insurance Risk Pricing Engine ─── */}
+                    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <BarChart3
+                            className="w-5 h-5 text-[var(--text-primary)]"
+                            aria-hidden="true"
+                          />
+                          <h3 className="text-lg font-semibold">
+                            Risk Pricing Score (IRPE)
+                          </h3>
+                        </div>
+                        <button
+                          onClick={fetchIRPEScore}
+                          disabled={irpeLoading}
+                          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] hover:bg-[var(--border-default)] border border-[var(--border-default)] rounded-lg text-body font-medium transition-all disabled:opacity-50"
+                        >
+                          {irpeLoading ? (
+                            <Loader2
+                              className="w-4 h-4 animate-spin"
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <TrendingUp
+                              className="w-4 h-4"
+                              aria-hidden="true"
+                            />
+                          )}
+                          {irpeLoading
+                            ? "Berechnung..."
+                            : irpeScore
+                              ? "Aktualisieren"
+                              : "IRPE Report generieren"}
+                        </button>
+                      </div>
+
+                      {irpeScore ? (
+                        <div className="space-y-5">
+                          {/* Overall Grade */}
+                          <div className="flex items-center gap-6">
+                            <div className="flex-shrink-0 w-20 h-20 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-default)] flex items-center justify-center">
+                              <span className="text-3xl font-bold text-[var(--text-primary)]">
+                                {irpeScore.riskGrade}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-body-lg font-medium text-[var(--text-primary)]">
+                                Risiko-Score: {irpeScore.overallRiskScore}/100
+                              </p>
+                              <p className="text-body text-[var(--text-secondary)] mt-1">
+                                {irpeScore.premiumImpact}
+                              </p>
+                              <p className="text-caption text-[var(--text-tertiary)] mt-1">
+                                Datenvollständigkeit:{" "}
+                                {irpeScore.dataCompleteness}% — Berechnet am{" "}
+                                {new Date(
+                                  irpeScore.calculatedAt,
+                                ).toLocaleDateString("de-DE")}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Component Breakdown */}
+                          <div className="space-y-2.5">
+                            <p className="text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                              Komponenten
+                            </p>
+                            {(
+                              [
+                                {
+                                  label: "Missionsrisiko",
+                                  data: irpeScore.components.missionRisk,
+                                  weight: "30%",
+                                },
+                                {
+                                  label: "Compliance-Status",
+                                  data: irpeScore.components.compliancePosture,
+                                  weight: "25%",
+                                },
+                                {
+                                  label: "Betriebliche Reife",
+                                  data: irpeScore.components
+                                    .operationalMaturity,
+                                  weight: "20%",
+                                },
+                                {
+                                  label: "Cybersicherheit",
+                                  data: irpeScore.components
+                                    .cybersecurityReadiness,
+                                  weight: "15%",
+                                },
+                                {
+                                  label: "Vorfallhistorie",
+                                  data: irpeScore.components.incidentHistory,
+                                  weight: "10%",
+                                },
+                              ] as const
+                            ).map((comp) => (
+                              <div
+                                key={comp.label}
+                                className="flex items-center gap-3"
+                              >
+                                <span className="text-body text-[var(--text-secondary)] w-40 flex-shrink-0">
+                                  {comp.label}{" "}
+                                  <span className="text-caption text-[var(--text-tertiary)]">
+                                    ({comp.weight})
+                                  </span>
+                                </span>
+                                <div className="flex-1 h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all bg-[var(--text-tertiary)]"
+                                    style={{
+                                      width: `${100 - comp.data.score}%`,
+                                      opacity: comp.data.score <= 30 ? 1 : 0.5,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-body font-medium text-[var(--text-primary)] w-8 text-right">
+                                  {comp.data.grade}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Premium Impact */}
+                          {irpeScore.premiumAdjustment.savingsPercent !== 0 && (
+                            <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-4">
+                              <p className="text-body font-medium text-[var(--text-primary)]">
+                                Geschätzte Prämienauswirkung
+                              </p>
+                              <p className="text-body-lg font-semibold text-[var(--text-primary)] mt-1">
+                                {irpeScore.premiumAdjustment.savingsPercent > 0
+                                  ? `+${irpeScore.premiumAdjustment.savingsPercent}%`
+                                  : `${irpeScore.premiumAdjustment.savingsPercent}%`}{" "}
+                                gegenüber Marktdurchschnitt
+                              </p>
+                              {irpeScore.premiumAdjustment.annualSavingsEstimate
+                                .max > 0 && (
+                                <p className="text-small text-[var(--text-secondary)] mt-1">
+                                  Geschätzte jährliche Einsparung:{" "}
+                                  {formatCurrency(
+                                    irpeScore.premiumAdjustment
+                                      .annualSavingsEstimate.min,
+                                  )}{" "}
+                                  bis{" "}
+                                  {formatCurrency(
+                                    irpeScore.premiumAdjustment
+                                      .annualSavingsEstimate.max,
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Improvement Recommendations */}
+                          {irpeScore.improvements.length > 0 && (
+                            <div>
+                              <p className="text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2.5">
+                                Verbesserungsempfehlungen
+                              </p>
+                              <div className="space-y-2">
+                                {irpeScore.improvements
+                                  .slice(0, 3)
+                                  .map((imp, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-start gap-3 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-3"
+                                    >
+                                      <TrendingUp
+                                        className="w-4 h-4 text-[var(--text-tertiary)] mt-0.5 flex-shrink-0"
+                                        aria-hidden="true"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-body font-medium text-[var(--text-primary)]">
+                                          {imp.action}
+                                        </p>
+                                        <p className="text-small text-[var(--text-secondary)] mt-0.5">
+                                          {imp.projectedImpact}
+                                        </p>
+                                      </div>
+                                      <span className="text-caption font-medium text-[var(--text-tertiary)] flex-shrink-0 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded px-2 py-0.5">
+                                        -{imp.estimatedPremiumReduction}
+                                      </span>
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <BarChart3
+                            className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-3"
+                            aria-hidden="true"
+                          />
+                          <p className="text-body text-[var(--text-secondary)]">
+                            Der IRPE-Report aggregiert Compliance-Daten aus
+                            allen Modulen und berechnet einen Risiko-Score für
+                            Versicherer.
+                          </p>
+                          <p className="text-small text-[var(--text-tertiary)] mt-1">
+                            Je besser der Score, desto günstiger die Prämien.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12 text-center">
