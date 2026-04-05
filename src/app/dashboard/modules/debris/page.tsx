@@ -760,6 +760,12 @@ function DebrisPageContent() {
         </p>
       </div>
 
+      {/* Regulatory Status */}
+      <p className="text-small text-[var(--text-tertiary)] mb-4">
+        ℹ IADC Space Debris Mitigation Guidelines bereits in Kraft (Soft Law).
+        EU Space Act Artikel (COM(2025) 335) noch im Gesetzgebungsverfahren.
+      </p>
+
       {/* Compliance Metrics (when assessment selected) */}
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

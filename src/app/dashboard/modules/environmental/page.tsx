@@ -460,6 +460,24 @@ function EnvironmentalPageContent() {
           </p>
         </div>
 
+        {/* Regulatory Status Banner */}
+        <div className="mb-6 p-4 rounded-xl border border-[var(--separator-strong)] bg-[var(--fill-light)]">
+          <div className="flex items-start gap-3">
+            <span className="text-body font-medium text-[var(--text-primary)]">
+              ⏳ Vorbereitend
+            </span>
+            <div>
+              <p className="text-small text-[var(--text-secondary)]">
+                Das Environmental Footprint Declaration (EFD) basiert auf dem EU
+                Space Act Vorschlag (COM(2025) 335), der sich noch im
+                Gesetzgebungsverfahren befindet. Die Anforderungen können sich
+                bis zur finalen Verabschiedung ändern. Dieses Modul ermöglicht
+                eine frühzeitige Vorbereitung.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Progress Steps */}
         <div className="mb-8">
           <div

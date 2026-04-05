@@ -274,6 +274,19 @@ function RegistrationPageContent() {
         </div>
       </div>
 
+      {/* Regulatory Status */}
+      <p className="text-small text-[var(--text-tertiary)] mb-4 flex items-center gap-1.5">
+        <span>ℹ</span>
+        Basierend auf dem EU Space Act Vorschlag (COM(2025) 335) — noch nicht in
+        Kraft.{" "}
+        <a
+          href="/resources/eu-space-act"
+          className="underline hover:text-[var(--text-secondary)]"
+        >
+          Mehr erfahren
+        </a>
+      </p>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
