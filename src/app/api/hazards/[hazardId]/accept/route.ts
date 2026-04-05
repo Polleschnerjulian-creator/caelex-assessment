@@ -3,6 +3,7 @@
  * POST /api/hazards/[hazardId]/accept — Accept a hazard + create Verity attestation
  */
 
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,8 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserRole } from "@/lib/services/organization-service";
+import { roleHasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
 
@@ -38,6 +41,15 @@ export async function POST(
       );
     }
 
+    // ─── RBAC: require MANAGER+ (compliance:write) ───
+    const userRole = await getUserRole(orgId, session.user.id);
+    if (!userRole || !roleHasPermission(userRole, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions for hazard acceptance" },
+        { status: 403 },
+      );
+    }
+
     const { hazardId } = await params;
 
     // ─── Find Hazard Entry ───
@@ -56,6 +68,18 @@ export async function POST(
       return NextResponse.json(
         { error: "Hazard entry not found" },
         { status: 404 },
+      );
+    }
+
+    // ─── Check mitigations are closed ───
+    if (hazardEntry.mitigationStatus !== "CLOSED") {
+      return NextResponse.json(
+        {
+          error: "Hazard must have closed mitigations before acceptance",
+          hazardId: hazardEntry.hazardId,
+          mitigationStatus: hazardEntry.mitigationStatus,
+        },
+        { status: 422 },
       );
     }
 
@@ -90,6 +114,45 @@ export async function POST(
           throw new Error("ALREADY_ACCEPTED");
         }
 
+        const fullAttestation = {
+          hazardId: hazardEntry.hazardId,
+          hazardEntryId: hazardEntry.id,
+          title: hazardEntry.title,
+          description: hazardEntry.description,
+          hazardType: hazardEntry.hazardType,
+          severity: hazardEntry.severity,
+          likelihood: hazardEntry.likelihood,
+          riskIndex: hazardEntry.riskIndex,
+          mitigationStatus: hazardEntry.mitigationStatus,
+          residualRisk: hazardEntry.residualRisk,
+          regulatoryRefs: hazardEntry.regulatoryRefs,
+          spacecraftId: spacecraft.id,
+          spacecraftName: spacecraft.name,
+          spacecraftNoradId: spacecraft.noradId,
+          mitigations: hazardEntry.mitigations.map((m) => ({
+            id: m.id,
+            type: m.type,
+            description: m.description,
+            implementedAt: m.implementedAt,
+            verifiedBy: m.verifiedBy,
+          })),
+          acceptedBy: session.user.id,
+          acceptedAt: now.toISOString(),
+          organizationId: orgId,
+        };
+
+        // Compute real HMAC signature
+        const attestationData = JSON.stringify(fullAttestation);
+        const hmacKey =
+          process.env.ENCRYPTION_KEY ||
+          process.env.AUTH_SECRET ||
+          "fallback-key";
+        const signature = crypto
+          .createHmac("sha256", hmacKey)
+          .update(attestationData)
+          .digest("hex");
+        const issuerPublicKey = `caelex-hazard-${orgId.slice(0, 8)}`;
+
         const att = await tx.verityAttestation.create({
           data: {
             attestationId: `hazard_${hazardEntry.id}_${Date.now()}`,
@@ -108,34 +171,9 @@ export async function POST(
             trustLevel: "VERIFIED",
             collectedAt: now,
             issuerKeyId: "hazard_system",
-            issuerPublicKey: "hazard_system_key",
-            signature: "pending_verity_signing",
-            fullAttestation: {
-              hazardId: hazardEntry.hazardId,
-              hazardEntryId: hazardEntry.id,
-              title: hazardEntry.title,
-              description: hazardEntry.description,
-              hazardType: hazardEntry.hazardType,
-              severity: hazardEntry.severity,
-              likelihood: hazardEntry.likelihood,
-              riskIndex: hazardEntry.riskIndex,
-              mitigationStatus: hazardEntry.mitigationStatus,
-              residualRisk: hazardEntry.residualRisk,
-              regulatoryRefs: hazardEntry.regulatoryRefs,
-              spacecraftId: spacecraft.id,
-              spacecraftName: spacecraft.name,
-              spacecraftNoradId: spacecraft.noradId,
-              mitigations: hazardEntry.mitigations.map((m) => ({
-                id: m.id,
-                type: m.type,
-                description: m.description,
-                implementedAt: m.implementedAt,
-                verifiedBy: m.verifiedBy,
-              })),
-              acceptedBy: session.user.id,
-              acceptedAt: now.toISOString(),
-              organizationId: orgId,
-            },
+            issuerPublicKey,
+            signature,
+            fullAttestation,
             description: `Hazard acceptance attestation for ${hazardEntry.hazardId}`,
             entityId: hazardEntry.id,
             expiresAt: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),

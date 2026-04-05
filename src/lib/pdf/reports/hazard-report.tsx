@@ -614,16 +614,35 @@ export function buildHazardReportConfig(data: HazardReportData): ReportConfig {
       ],
     });
 
-    const deorbitCompliant =
-      data.debris.orbitType === "LEO"
-        ? (data.debris.deorbitTimelineYears || 25) <= 25
-        : true;
+    const deorbitCompliant = (() => {
+      if (data.debris.orbitType === "LEO") {
+        return (data.debris.deorbitTimelineYears || 25) <= 25;
+      }
+      if (data.debris.orbitType === "GEO") {
+        return data.debris.deorbitStrategy === "graveyard_orbit";
+      }
+      // For MEO, HEO, cislunar: require an explicit deorbit strategy
+      return (
+        data.debris.deorbitStrategy !== null &&
+        data.debris.deorbitStrategy !== "none"
+      );
+    })();
+    const deorbitMessage = (() => {
+      if (deorbitCompliant) {
+        if (data.debris.orbitType === "GEO") {
+          return "Disposal strategy meets the GEO graveyard orbit guideline.";
+        }
+        return "Disposal strategy meets the 25-year deorbit guideline.";
+      }
+      if (data.debris.orbitType === "GEO") {
+        return "WARNING: GEO spacecraft must use a graveyard orbit disposal strategy. Current strategy does not comply.";
+      }
+      return "WARNING: Current disposal timeline exceeds the 25-year guideline. Remediation required.";
+    })();
     ch6Content.push({
       type: "alert",
       severity: deorbitCompliant ? "info" : "error",
-      message: deorbitCompliant
-        ? "Disposal strategy meets the 25-year deorbit guideline."
-        : "WARNING: Current disposal timeline exceeds the 25-year guideline. Remediation required.",
+      message: deorbitMessage,
     });
   } else {
     ch6Content.push({

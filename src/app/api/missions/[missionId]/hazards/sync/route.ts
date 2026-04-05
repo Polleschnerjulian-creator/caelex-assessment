@@ -8,6 +8,8 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserRole } from "@/lib/services/organization-service";
+import { roleHasPermission } from "@/lib/permissions";
 import { z } from "zod";
 import type { HazardType, HazardSeverity, SourceModule } from "@prisma/client";
 
@@ -48,9 +50,7 @@ type RouteParams = { params: Promise<{ missionId: string }> };
 const syncBodySchema = z
   .object({
     modules: z
-      .array(
-        z.enum(["SHIELD", "DEBRIS", "INCIDENTS", "EPHEMERIS", "PREDICTIVE"]),
-      )
+      .array(z.enum(["SHIELD", "DEBRIS", "INCIDENTS", "EPHEMERIS"]))
       .optional(),
   })
   .optional();
@@ -72,7 +72,7 @@ function mapIncidentCategoryToHazardType(
     case "cyber_incident":
       return { hazardType: "CYBER", hazardId: "G07" };
     case "regulatory_breach":
-      return { hazardType: "TOXICITY", hazardId: "G03" };
+      return { hazardType: "CONTROL_LOSS", hazardId: "G08" };
     default:
       return null;
   }
@@ -117,6 +117,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // RBAC: require MEMBER+ (compliance:write)
+    const userRole = await getUserRole(orgId, session.user.id);
+    if (!userRole || !roleHasPermission(userRole, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions for hazard sync" },
+        { status: 403 },
+      );
+    }
+
     const { missionId } = await params;
     const spacecraftId = missionId;
 
@@ -138,7 +147,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       "DEBRIS",
       "INCIDENTS",
       "EPHEMERIS",
-      "PREDICTIVE",
     ];
     try {
       const body = await request.json();
@@ -202,11 +210,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           `SHIELD: ${conjunctions.length} conjunction(s) → G01 COLLISION`,
         );
 
-        // Check for cyber implications (threat object types that suggest interference)
+        // Check for cyber implications (only UNKNOWN threat objects warrant cyber inference;
+        // PAYLOAD objects are legitimate and should not trigger false positives)
         const cyberThreats = conjunctions.filter(
-          (c) =>
-            c.threatObjectType === "PAYLOAD" ||
-            c.threatObjectType === "UNKNOWN",
+          (c) => c.threatObjectType === "UNKNOWN",
         );
         if (cyberThreats.length > 0) {
           hazardsToSync.push({
@@ -216,7 +223,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             sourceModule: "SHIELD",
             sourceRecordId: cyberThreats[0].id,
             title: `Cyber/Interference Risk — ${cyberThreats.length} suspicious conjunction(s)`,
-            description: `Shield module detected ${cyberThreats.length} conjunction event(s) involving PAYLOAD or UNKNOWN threat objects, which may indicate intentional interference or spoofing.`,
+            description: `Shield module detected ${cyberThreats.length} conjunction event(s) involving UNKNOWN threat objects, which may indicate intentional interference or spoofing.`,
             severity: "CRITICAL",
             likelihood: 2,
             regulatoryRefs: ["NIS2 Art. 21", "FSOA Art. 38"],
@@ -233,7 +240,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (modulesToSync.includes("DEBRIS")) {
       const debrisAssessments = await prisma.debrisAssessment.findMany({
-        where: { organizationId: orgId },
+        where: { organizationId: orgId, spacecraftId: spacecraftId },
         include: {
           requirements: {
             where: { status: "non_compliant" },
@@ -323,7 +330,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
       const memberUserIds = orgMembers.map((m) => m.userId);
 
-      const incidents = await prisma.incident.findMany({
+      const allIncidents = await prisma.incident.findMany({
         where: {
           supervision: {
             userId: { in: memberUserIds },
@@ -334,8 +341,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           supervision: {
             select: { userId: true },
           },
+          affectedAssets: true,
         },
         orderBy: { detectedAt: "desc" },
+      });
+
+      // Filter incidents to those affecting this spacecraft
+      const incidents = allIncidents.filter((inc) => {
+        if (inc.affectedAssets.length === 0) return true; // No asset info = include by default
+        return inc.affectedAssets.some(
+          (a) =>
+            a.nexusAssetId === spacecraftId ||
+            (spacecraft.noradId && a.noradId === spacecraft.noradId),
+        );
       });
 
       // Group incidents by category to avoid duplicate hazard IDs
@@ -534,8 +552,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // ─── 5. Predictive Hazards from EphemerisForecast → G02-P, G03-P, G05-P ───
+    // Predictive hazards are derived from EPHEMERIS data and always written as sourceModule: "EPHEMERIS"
 
-    if (modulesToSync.includes("PREDICTIVE") && spacecraft.noradId) {
+    if (modulesToSync.includes("EPHEMERIS") && spacecraft.noradId) {
       const latestForecast = await prisma.ephemerisForecast.findFirst({
         where: {
           noradId: spacecraft.noradId,
@@ -620,6 +639,53 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // ─── 6. Cybersecurity Assessment → CYBER hazards ───
+
+    if (
+      modulesToSync.includes("INCIDENTS") ||
+      modulesToSync.includes("MANUAL")
+    ) {
+      try {
+        const cyberAssessments = await prisma.cybersecurityAssessment.findMany({
+          where: { organizationId: orgId },
+          include: { requirements: { where: { status: "non_compliant" } } },
+          take: 1,
+          orderBy: { updatedAt: "desc" },
+        });
+
+        for (const assessment of cyberAssessments) {
+          const criticalGaps = assessment.requirements.filter(
+            (r) => r.status === "non_compliant",
+          );
+          if (criticalGaps.length > 0) {
+            // Create a single aggregated CYBER hazard for unresolved cybersecurity gaps
+            const gapSeverity: HazardSeverity =
+              criticalGaps.length > 5 ? "CRITICAL" : "MARGINAL";
+            const gapLikelihood = 3; // OCCASIONAL
+
+            hazardsToSync.push({
+              spacecraftId,
+              hazardId: `CYBER-GAPS-${assessment.id.slice(-6)}`,
+              hazardType: "CYBER",
+              sourceModule: "MANUAL", // No CYBERSECURITY enum in SourceModule, use MANUAL
+              sourceRecordId: assessment.id,
+              title: `Cybersecurity Compliance Gaps — ${criticalGaps.length} non-compliant requirements`,
+              description: `${criticalGaps.length} cybersecurity requirements are non-compliant. Address these to reduce cyber risk exposure.`,
+              severity: gapSeverity,
+              likelihood: gapLikelihood,
+              regulatoryRefs: ["NIS2 Art. 21", "ENISA Guidelines"],
+            });
+
+            syncLog.push(
+              `CYBERSECURITY: ${criticalGaps.length} non-compliant requirements → CYBER-GAPS`,
+            );
+          }
+        }
+      } catch (err) {
+        logger.warn("Cybersecurity assessment sync failed", err);
+      }
+    }
+
     // ─── Upsert all synced hazards (idempotent) ───
 
     // Deduplicate by hazardId: if multiple sources produce the same hazardId,
@@ -646,22 +712,33 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       for (const hazard of deduped.values()) {
         const riskIndex = SEVERITY_SCORES[hazard.severity] * hazard.likelihood;
 
-        // Check if a MANUAL or ACCEPTED entry already exists — never overwrite
+        // Check if a MANUAL, ACCEPTED, or in-progress/closed entry already exists — never overwrite
         const existingProtected = await tx.hazardEntry.findFirst({
           where: {
             spacecraftId: hazard.spacecraftId,
             hazardId: hazard.hazardId,
             organizationId: orgId,
-            OR: [{ sourceModule: "MANUAL" }, { acceptanceStatus: "ACCEPTED" }],
+            OR: [
+              { sourceModule: "MANUAL" },
+              { acceptanceStatus: "ACCEPTED" },
+              { mitigationStatus: { in: ["IN_PROGRESS", "CLOSED"] } },
+            ],
           },
-          select: { id: true, sourceModule: true, acceptanceStatus: true },
+          select: {
+            id: true,
+            sourceModule: true,
+            acceptanceStatus: true,
+            mitigationStatus: true,
+          },
         });
 
         if (existingProtected) {
           const reason =
             existingProtected.sourceModule === "MANUAL"
               ? "MANUAL entry"
-              : "ACCEPTED entry";
+              : existingProtected.acceptanceStatus === "ACCEPTED"
+                ? "ACCEPTED entry"
+                : `mitigation ${existingProtected.mitigationStatus} entry`;
           syncLog.push(
             `SKIP: ${hazard.hazardId} — ${reason} exists, not overwriting`,
           );

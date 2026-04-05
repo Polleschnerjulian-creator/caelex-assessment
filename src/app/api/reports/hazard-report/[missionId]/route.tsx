@@ -29,8 +29,85 @@ import { logger } from "@/lib/logger";
 
 // ─── Valid values ────────────────────────────────────────────────────────────
 
-const VALID_NCA = ["CNES", "RDI", "MINISTRY_LU", "BELSPO"] as const;
+const VALID_NCA = ["CNES", "RDI", "MINISTRY_LU", "BELSPO", "OTHER"] as const;
 const VALID_LANGUAGES = ["en", "de", "fr"] as const;
+
+// ─── Route params type ───
+
+type RouteParams = { params: Promise<{ missionId: string }> };
+
+// ─── GET: List report versions for a spacecraft ─────────────────────────────
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const rl = await checkRateLimit(
+      "hub",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
+    const orgId = await getUserOrgId(session.user.id);
+    if (!orgId) {
+      return NextResponse.json(
+        { error: "No organization found" },
+        { status: 404 },
+      );
+    }
+
+    const { missionId } = await params;
+
+    // Verify spacecraft belongs to the user's organization
+    const spacecraft = await prisma.spacecraft.findFirst({
+      where: { id: missionId, organizationId: orgId },
+      select: { id: true, name: true },
+    });
+    if (!spacecraft) {
+      return NextResponse.json(
+        { error: "Spacecraft not found in your organization" },
+        { status: 404 },
+      );
+    }
+
+    const versions = await prisma.hazardReportVersion.findMany({
+      where: {
+        spacecraftId: missionId,
+        organizationId: orgId,
+      },
+      select: {
+        id: true,
+        version: true,
+        targetNCA: true,
+        language: true,
+        milestone: true,
+        fileHash: true,
+        fileSize: true,
+        verityAttestationId: true,
+        reportSignature: true,
+        hazardSnapshotIds: true,
+        generatedBy: true,
+        generatedAt: true,
+      },
+      orderBy: { version: "desc" },
+    });
+
+    return NextResponse.json({
+      spacecraftId: missionId,
+      spacecraftName: spacecraft.name,
+      versions,
+      total: versions.length,
+    });
+  } catch (err) {
+    logger.error("[reports/hazard-report/[missionId]] GET error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
 
 // ─── POST: Generate Hazard Report PDF ────────────────────────────────────────
 
@@ -64,12 +141,13 @@ export async function POST(
     const targetNCA = body.targetNCA;
     const language = body.language || "en";
     const milestone: string | null = body.milestone ?? null;
+    const isDraft: boolean = body.draft === true;
 
     if (!targetNCA || !VALID_NCA.includes(targetNCA)) {
       return NextResponse.json(
         {
           error:
-            "Invalid targetNCA. Must be one of: CNES, RDI, MINISTRY_LU, BELSPO",
+            "Invalid targetNCA. Must be one of: CNES, RDI, MINISTRY_LU, BELSPO, OTHER",
         },
         { status: 400 },
       );
@@ -127,7 +205,8 @@ export async function POST(
         h.acceptanceStatus !== "ACCEPTED" && h.mitigationStatus !== "CLOSED",
     );
 
-    if (openItems.length > 0) {
+    // Skip readiness check for draft reports
+    if (!isDraft && openItems.length > 0) {
       return NextResponse.json(
         {
           error: "Cannot generate hazard report: unresolved hazards remain",
@@ -224,6 +303,7 @@ export async function POST(
     const debrisAssessment = await prisma.debrisAssessment.findFirst({
       where: {
         organizationId: orgId,
+        spacecraftId: missionId,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -240,12 +320,14 @@ export async function POST(
     }
 
     // ─── Build Report Data ───
-    const reportNumber = `HAZ-${spacecraft.name.replace(/\s+/g, "-").toUpperCase().slice(0, 12)}-${Date.now().toString(36).toUpperCase()}`;
+    const reportNumber = isDraft
+      ? `DRAFT-HAZ-${spacecraft.name.replace(/\s+/g, "-").toUpperCase().slice(0, 12)}-${Date.now().toString(36).toUpperCase()}`
+      : `HAZ-${spacecraft.name.replace(/\s+/g, "-").toUpperCase().slice(0, 12)}-${Date.now().toString(36).toUpperCase()}`;
 
     const reportData: HazardReportData = {
       reportNumber,
       reportDate: new Date(),
-      version: "1.0",
+      version: isDraft ? "DRAFT" : "1.0",
       generatedBy: session.user.name || session.user.email || "System",
       targetNCA,
       language,
@@ -310,70 +392,107 @@ export async function POST(
       .update(Buffer.from(pdfBuffer))
       .digest("hex");
 
-    const lastVersion = await prisma.hazardReportVersion.findFirst({
-      where: { spacecraftId: missionId },
-      orderBy: { version: "desc" },
-      select: { version: true },
-    });
-    const version = (lastVersion?.version ?? 0) + 1;
+    // ─── For drafts: skip attestation, version creation, and audit logging ───
+    if (isDraft) {
+      const headers = new Headers({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="DRAFT-Hazard-Report-${reportNumber}.pdf"`,
+        "Cache-Control": "no-store",
+        "X-Draft": "true",
+        "X-Report-Hash": pdfHash,
+      });
+      return new NextResponse(new Uint8Array(pdfBuffer), { headers });
+    }
 
-    // ─── Report-Level Verity Attestation ───
-    const reportAttestation = await prisma.verityAttestation.create({
-      data: {
-        attestationId: `hazard_report_${missionId}_v${version}_${Date.now()}`,
-        operatorId: orgId,
-        organizationId: orgId,
-        satelliteNorad: spacecraft.noradId,
-        regulationRef: "fsoa_hazard_report",
-        dataPoint: "hazard_report_integrity",
-        thresholdType: "report_hash_verified",
-        thresholdValue: 1,
-        result: true,
-        claimStatement: `CNES/FSOA Hazard Report v${version} for ${spacecraft.name} generated and signed. SHA-256: ${pdfHash}. Contains ${hazardEntries.length} hazards, all accepted/closed. Target NCA: ${targetNCA}.`,
-        valueCommitment: pdfHash,
-        evidenceSource: "hazard_report_generation",
-        trustScore: 1.0,
-        trustLevel: "VERIFIED",
-        collectedAt: new Date(),
-        issuerKeyId: "hazard_report_system",
-        issuerPublicKey: "hazard_report_system_key",
-        signature: "pending_verity_signing",
-        fullAttestation: {
-          reportVersion: version,
-          spacecraftId: missionId,
-          spacecraftName: spacecraft.name,
-          targetNCA,
-          language,
-          pdfHash,
-          hazardCount: hazardEntries.length,
-          hazardIds: hazardEntries.map((h) => h.hazardId),
-          generatedBy: session.user.id,
-          generatedAt: new Date().toISOString(),
+    // ─── Atomic: Version query + attestation + report creation in a serializable transaction ───
+    const { reportVersion, reportAttestation, version } =
+      await prisma.$transaction(
+        async (tx) => {
+          const lastVersion = await tx.hazardReportVersion.findFirst({
+            where: { spacecraftId: missionId, organizationId: orgId },
+            orderBy: { version: "desc" },
+            select: { version: true },
+          });
+          const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+          const reportFullAttestation = {
+            reportVersion: nextVersion,
+            spacecraftId: missionId,
+            spacecraftName: spacecraft.name,
+            targetNCA,
+            language,
+            pdfHash,
+            hazardCount: hazardEntries.length,
+            hazardIds: hazardEntries.map((h) => h.hazardId),
+            generatedBy: session.user.id,
+            generatedAt: new Date().toISOString(),
+          };
+
+          // Compute real HMAC signature
+          const reportAttestationData = JSON.stringify(reportFullAttestation);
+          const hmacKey =
+            process.env.ENCRYPTION_KEY ||
+            process.env.AUTH_SECRET ||
+            "fallback-key";
+          const reportSignatureHmac = crypto
+            .createHmac("sha256", hmacKey)
+            .update(reportAttestationData)
+            .digest("hex");
+          const reportIssuerPublicKey = `caelex-hazard-${orgId.slice(0, 8)}`;
+
+          const att = await tx.verityAttestation.create({
+            data: {
+              attestationId: `hazard_report_${missionId}_v${nextVersion}_${Date.now()}`,
+              operatorId: orgId,
+              organizationId: orgId,
+              satelliteNorad: spacecraft.noradId,
+              regulationRef: "fsoa_hazard_report",
+              dataPoint: "hazard_report_integrity",
+              thresholdType: "report_hash_verified",
+              thresholdValue: 1,
+              result: true,
+              claimStatement: `CNES/FSOA Hazard Report v${nextVersion} for ${spacecraft.name} generated and signed. SHA-256: ${pdfHash}. Contains ${hazardEntries.length} hazards, all accepted/closed. Target NCA: ${targetNCA}.`,
+              valueCommitment: pdfHash,
+              evidenceSource: "hazard_report_generation",
+              trustScore: 1.0,
+              trustLevel: "VERIFIED",
+              collectedAt: new Date(),
+              issuerKeyId: "hazard_report_system",
+              issuerPublicKey: reportIssuerPublicKey,
+              signature: reportSignatureHmac,
+              fullAttestation: reportFullAttestation,
+              description: `Hazard Report v${nextVersion} attestation for ${spacecraft.name}`,
+              entityId: missionId,
+              expiresAt: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000), // 5 years for regulatory reports
+            },
+          });
+
+          const rv = await tx.hazardReportVersion.create({
+            data: {
+              organizationId: orgId,
+              spacecraftId: missionId,
+              version: nextVersion,
+              targetNCA,
+              language,
+              milestone,
+              fileHash: pdfHash,
+              fileSize: pdfBuffer.byteLength,
+              pdfData: Buffer.from(pdfBuffer),
+              verityAttestationId: att.id,
+              reportSignature: pdfHash,
+              hazardSnapshotIds: hazardEntries.map((h) => h.id),
+              generatedBy: session.user.id,
+            },
+          });
+
+          return {
+            reportVersion: rv,
+            reportAttestation: att,
+            version: nextVersion,
+          };
         },
-        description: `Hazard Report v${version} attestation for ${spacecraft.name}`,
-        entityId: missionId,
-        expiresAt: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000), // 5 years for regulatory reports
-      },
-    });
-
-    // ─── Store HazardReportVersion ───
-    const reportVersion = await prisma.hazardReportVersion.create({
-      data: {
-        organizationId: orgId,
-        spacecraftId: missionId,
-        version,
-        targetNCA,
-        language,
-        milestone,
-        fileHash: pdfHash,
-        fileSize: pdfBuffer.byteLength,
-        pdfData: Buffer.from(pdfBuffer),
-        verityAttestationId: reportAttestation.id,
-        reportSignature: pdfHash,
-        hazardSnapshotIds: hazardEntries.map((h) => h.id),
-        generatedBy: session.user.id,
-      },
-    });
+        { isolationLevel: "Serializable" },
+      );
 
     // ─── Audit Log ───
     const { ipAddress, userAgent } = getRequestContext(request);

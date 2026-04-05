@@ -8,6 +8,8 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { getUserOrgId } from "@/lib/hub/queries";
+import { getUserRole } from "@/lib/services/organization-service";
+import { roleHasPermission } from "@/lib/permissions";
 import { z } from "zod";
 
 // ─── Severity score mapping ───
@@ -68,6 +70,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "No organization found" },
         { status: 404 },
+      );
+    }
+
+    // RBAC: require MEMBER+ (compliance:write)
+    const userRole = await getUserRole(orgId, session.user.id);
+    if (!userRole || !roleHasPermission(userRole, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to create hazards" },
+        { status: 403 },
       );
     }
 
