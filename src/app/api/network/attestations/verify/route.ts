@@ -34,48 +34,26 @@ export async function POST(request: NextRequest) {
     const result = await verifyByHash(signatureHash);
 
     if (!result.valid) {
-      const att = "attestation" in result ? result.attestation : undefined;
+      // SEC-8: Minimal info for failed verification — no signer details or relationships
       return NextResponse.json({
         valid: false,
         error: "error" in result ? result.error : "Verification failed",
-        attestation: att
-          ? {
-              id: att.id,
-              type: att.type,
-              title: att.title,
-              signerName: att.signerName,
-              signerOrg: att.signerOrg,
-              issuedAt: att.issuedAt,
-              isRevoked: att.isRevoked,
-              revokedAt: att.revokedAt,
-              organization: att.organization,
-              engagement: att.engagement,
-            }
-          : undefined,
       });
     }
 
     const att = "attestation" in result ? result.attestation : undefined;
+    // SEC-8: Return only minimal verification info — do NOT leak statement, scope,
+    // signerName, signerTitle, signerEmail, signatureHash, or relationship details
     return NextResponse.json({
       valid: true,
       hashValid: "hashValid" in result ? result.hashValid : undefined,
       chainValid: "chainValid" in result ? result.chainValid : undefined,
       attestation: att
         ? {
-            id: att.id,
             type: att.type,
-            title: att.title,
-            statement: att.statement,
-            scope: att.scope,
-            signerName: att.signerName,
-            signerTitle: att.signerTitle,
             signerOrg: att.signerOrg,
-            signatureHash: att.signatureHash,
             issuedAt: att.issuedAt,
-            validUntil: att.validUntil,
-            isRevoked: att.isRevoked,
-            organization: att.organization,
-            engagement: att.engagement,
+            expiresAt: att.validUntil,
           }
         : undefined,
     });

@@ -101,7 +101,17 @@ export async function POST(request: NextRequest) {
       ]),
       title: z.string().min(1),
       statement: z.string().min(1),
-      scope: z.string().min(1),
+      scope: z
+        .string()
+        .min(1)
+        .refine((val) => {
+          try {
+            JSON.parse(val);
+            return true;
+          } catch {
+            return false;
+          }
+        }, "Must be valid JSON"),
       signerName: z.string().min(1),
       signerTitle: z.string().min(1),
       signerEmail: z.string().email(),

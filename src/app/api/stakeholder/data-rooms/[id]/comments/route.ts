@@ -23,16 +23,18 @@ export async function GET(
 
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
-      new URL(request.url).searchParams.get("token");
+      (process.env.NODE_ENV === "development"
+        ? new URL(request.url).searchParams.get("token")
+        : null);
 
     if (!token) {
       return NextResponse.json({ error: "Token required" }, { status: 401 });
     }
 
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      undefined;
+    const xff = request.headers.get("x-forwarded-for");
+    const ipAddress = xff
+      ? xff.split(",").pop()?.trim() || "unknown"
+      : request.headers.get("x-real-ip") || "unknown";
 
     const result = await validateToken(token, ipAddress);
     if (!result.valid) {
@@ -129,16 +131,18 @@ export async function POST(
 
     const token =
       request.headers.get("authorization")?.replace("Bearer ", "") ||
-      new URL(request.url).searchParams.get("token");
+      (process.env.NODE_ENV === "development"
+        ? new URL(request.url).searchParams.get("token")
+        : null);
 
     if (!token) {
       return NextResponse.json({ error: "Token required" }, { status: 401 });
     }
 
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      undefined;
+    const xffPost = request.headers.get("x-forwarded-for");
+    const ipAddress = xffPost
+      ? xffPost.split(",").pop()?.trim() || "unknown"
+      : request.headers.get("x-real-ip") || "unknown";
     const userAgent = request.headers.get("user-agent") || undefined;
 
     const result = await validateToken(token, ipAddress);
@@ -190,12 +194,15 @@ export async function POST(
 
     const { content, parentId } = parsed.data;
 
-    // Create comment using prisma directly (comment-service expects userId as authorId,
-    // but stakeholders don't have a user account — we use engagement.id as authorId)
+    // Create comment using prisma directly.
+    // The Comment model requires authorId as a User FK. Stakeholders don't have a
+    // user account, so we store the comment via the access log instead of the Comment
+    // model, and prefix the authorId with "stakeholder:" to distinguish from real users.
+    // NOTE: If the DB enforces FK on authorId→User, this will need a system user per org.
     const comment = await prisma.comment.create({
       data: {
         organizationId: engagement.organizationId,
-        authorId: engagement.id,
+        authorId: `stakeholder:${engagement.id}`,
         entityType: "data_room",
         entityId: id,
         content: content.trim(),

@@ -321,6 +321,33 @@ export async function rotateToken(
   return { engagement, accessToken: newToken };
 }
 
+// ─── IP Allowlist with CIDR Support ───
+
+function isIpAllowed(ip: string, allowlist: string[]): boolean {
+  if (allowlist.length === 0) return true;
+
+  for (const entry of allowlist) {
+    if (entry === ip) return true;
+
+    // Basic CIDR support for /24 and /16
+    if (entry.includes("/")) {
+      const [network, bits] = entry.split("/");
+      const maskBits = parseInt(bits);
+      if (maskBits === 24) {
+        const netPrefix = network.split(".").slice(0, 3).join(".");
+        const ipPrefix = ip.split(".").slice(0, 3).join(".");
+        if (netPrefix === ipPrefix) return true;
+      } else if (maskBits === 16) {
+        const netPrefix = network.split(".").slice(0, 2).join(".");
+        const ipPrefix = ip.split(".").slice(0, 2).join(".");
+        if (netPrefix === ipPrefix) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 // ─── Token Validation ───
 
 export async function validateToken(token: string, ipAddress?: string) {
@@ -361,7 +388,7 @@ export async function validateToken(token: string, ipAddress?: string) {
 
   // IP allowlist check — deny by default when IP cannot be determined
   if (engagement.ipAllowlist.length > 0) {
-    if (!ipAddress || !engagement.ipAllowlist.includes(ipAddress)) {
+    if (!ipAddress || !isIpAllowed(ipAddress, engagement.ipAllowlist)) {
       return { valid: false, error: "IP address not allowed" } as const;
     }
   }
@@ -441,6 +468,7 @@ export async function getNetworkStats(organizationId: string) {
     activeEngagements,
     openDataRooms,
     totalAttestations,
+    pendingInvitations,
     pendingAttestations,
   ] = await Promise.all([
     prisma.stakeholderEngagement.count({ where: { organizationId } }),
@@ -454,6 +482,13 @@ export async function getNetworkStats(organizationId: string) {
     prisma.stakeholderEngagement.count({
       where: { organizationId, status: "INVITED" },
     }),
+    prisma.complianceAttestation.count({
+      where: {
+        organizationId,
+        isRevoked: false,
+        validUntil: { gt: new Date() },
+      },
+    }),
   ]);
 
   return {
@@ -461,6 +496,7 @@ export async function getNetworkStats(organizationId: string) {
     activeEngagements,
     openDataRooms,
     totalAttestations,
+    pendingInvitations,
     pendingAttestations,
   };
 }

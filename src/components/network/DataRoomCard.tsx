@@ -17,7 +17,7 @@ export interface DataRoom {
   purpose: string;
   stakeholderName: string;
   documentCount: number;
-  accessLevel: "VIEW_ONLY" | "DOWNLOAD" | "FULL_ACCESS";
+  accessLevel: "VIEW_ONLY" | "COMMENT" | "CONTRIBUTE" | "FULL_ACCESS";
   expiresAt: string | null;
   status: "ACTIVE" | "CLOSED";
   createdAt: string;
@@ -39,8 +39,13 @@ const ACCESS_LEVEL_CONFIG: Record<
       "text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20",
     icon: ShieldCheck,
   },
-  DOWNLOAD: {
-    label: "Download",
+  COMMENT: {
+    label: "Comment",
+    color: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
+    icon: ShieldCheck,
+  },
+  CONTRIBUTE: {
+    label: "Contribute",
     color:
       "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
     icon: ShieldAlert,

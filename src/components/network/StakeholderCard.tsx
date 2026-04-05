@@ -12,7 +12,7 @@ export interface StakeholderEngagement {
   contactName: string;
   contactEmail: string;
   type: StakeholderType;
-  status: "ACTIVE" | "INVITED" | "REVOKED";
+  status: "ACTIVE" | "INVITED" | "SUSPENDED" | "COMPLETED" | "REVOKED";
   lastAccessAt: string | null;
   dataRoomCount: number;
   attestationCount: number;
@@ -37,6 +37,16 @@ const STATUS_CONFIG: Record<
     label: "Invited",
     dotColor: "bg-amber-500",
     textColor: "text-amber-600 dark:text-amber-400",
+  },
+  SUSPENDED: {
+    label: "Suspended",
+    dotColor: "bg-amber-500",
+    textColor: "text-amber-600 dark:text-amber-400",
+  },
+  COMPLETED: {
+    label: "Completed",
+    dotColor: "bg-gray-400",
+    textColor: "text-gray-500 dark:text-gray-400",
   },
   REVOKED: {
     label: "Revoked",

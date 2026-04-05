@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
 
     const { token } = parsed.data;
 
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      undefined;
+    const xff = request.headers.get("x-forwarded-for");
+    const ipAddress = xff
+      ? xff.split(",").pop()?.trim() || "unknown"
+      : request.headers.get("x-real-ip") || "unknown";
     const userAgent = request.headers.get("user-agent") || undefined;
 
     const result = await validateToken(token, ipAddress);

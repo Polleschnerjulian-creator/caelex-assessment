@@ -90,10 +90,7 @@ export default function AttestationSigningPage() {
   const [copied, setCopied] = useState(false);
 
   const getToken = () => {
-    return (
-      localStorage.getItem("stakeholder_token") ||
-      sessionStorage.getItem("stakeholder_token")
-    );
+    return sessionStorage.getItem("stakeholder_token");
   };
 
   const fetchAttestation = useCallback(async () => {
