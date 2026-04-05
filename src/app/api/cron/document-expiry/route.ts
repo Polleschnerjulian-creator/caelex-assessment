@@ -3,6 +3,7 @@ import { timingSafeEqual } from "crypto";
 import { processDocumentExpiry } from "@/lib/notifications";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60 seconds for Vercel Hobby, 300 for Pro
@@ -46,6 +47,39 @@ export async function GET(req: Request) {
     logger.info("Starting document expiry processing...");
 
     const result = await processDocumentExpiry();
+
+    // Insurance policy expiry check (BUG-06)
+    try {
+      const ninetyDaysFromNow = new Date(Date.now() + 90 * 86400000);
+      const expiringPolicies = await prisma.insurancePolicy.updateMany({
+        where: {
+          status: "active",
+          expirationDate: { lte: ninetyDaysFromNow, gte: new Date() },
+        },
+        data: { status: "expiring_soon" },
+      });
+      if (expiringPolicies.count > 0) {
+        logger.info(
+          `[Cron] Marked ${expiringPolicies.count} insurance policies as expiring_soon`,
+        );
+      }
+
+      // Also expire already-past policies
+      const expiredPolicies = await prisma.insurancePolicy.updateMany({
+        where: {
+          status: { in: ["active", "expiring_soon"] },
+          expirationDate: { lt: new Date() },
+        },
+        data: { status: "expired" },
+      });
+      if (expiredPolicies.count > 0) {
+        logger.info(
+          `[Cron] Expired ${expiredPolicies.count} insurance policies`,
+        );
+      }
+    } catch (err) {
+      logger.warn("Insurance expiry check failed", err);
+    }
 
     const duration = Date.now() - startTime;
 

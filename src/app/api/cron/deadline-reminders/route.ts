@@ -4,6 +4,8 @@ import { processDeadlineReminders } from "@/lib/notifications";
 import { processAttestationExpiryReminders } from "@/lib/notifications/attestation-expiry";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/services/notification-service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60 seconds for Vercel Hobby, 300 for Pro
@@ -54,6 +56,60 @@ export async function GET(req: Request) {
       }),
     ]);
 
+    // Insurance policy renewal reminders
+    let insuranceRenewals = 0;
+    try {
+      const reminderThresholds = [90, 60, 30, 7]; // days before expiry
+
+      for (const days of reminderThresholds) {
+        const targetDate = new Date(Date.now() + days * 86400000);
+        const windowStart = new Date(targetDate.getTime() - 12 * 3600000); // 12h window
+        const windowEnd = new Date(targetDate.getTime() + 12 * 3600000);
+
+        const expiringPolicies = await prisma.insurancePolicy.findMany({
+          where: {
+            status: { in: ["active", "expiring_soon"] },
+            expirationDate: { gte: windowStart, lte: windowEnd },
+          },
+          include: {
+            assessment: {
+              select: { userId: true, organizationId: true },
+            },
+          },
+        });
+
+        for (const policy of expiringPolicies) {
+          if (!policy.assessment?.userId) continue;
+
+          try {
+            await createNotification({
+              userId: policy.assessment.userId,
+              type: "DEADLINE_REMINDER",
+              title: `Versicherung läuft in ${days} Tagen ab`,
+              message: `Ihre ${policy.insuranceType}-Police ${policy.policyNumber || ""} läuft am ${policy.expirationDate?.toLocaleDateString("de-DE")} ab. Bitte erneuern Sie rechtzeitig.`,
+              actionUrl: "/dashboard/modules/insurance",
+              entityType: "insurance_policy",
+              entityId: policy.id,
+              severity:
+                days <= 7 ? "CRITICAL" : days <= 30 ? "URGENT" : "WARNING",
+              organizationId: policy.assessment.organizationId ?? undefined,
+            });
+            insuranceRenewals++;
+          } catch (err: unknown) {
+            logger.warn(
+              `Failed to send insurance renewal reminder for policy ${policy.id}`,
+              err as Record<string, unknown>,
+            );
+          }
+        }
+      }
+    } catch (err: unknown) {
+      logger.warn(
+        "Insurance renewal reminders failed",
+        err as Record<string, unknown>,
+      );
+    }
+
     const duration = Date.now() - startTime;
 
     logger.info("Deadline reminder processing complete:", {
@@ -63,6 +119,7 @@ export async function GET(req: Request) {
       errors: result.errors.length,
       attestationsProcessed: attestationResult.processed,
       attestationsNotified: attestationResult.notified,
+      insuranceRenewals,
       duration: `${duration}ms`,
     });
 
@@ -78,6 +135,7 @@ export async function GET(req: Request) {
         processed: attestationResult.processed,
         notified: attestationResult.notified,
       },
+      insuranceRenewals,
       duration: `${duration}ms`,
       processedAt: new Date().toISOString(),
     });

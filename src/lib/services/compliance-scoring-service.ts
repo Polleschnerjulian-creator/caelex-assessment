@@ -217,8 +217,17 @@ async function getCybersecurityData(userId: string) {
 }
 
 async function getInsuranceData(userId: string) {
-  const assessment = await prisma.insuranceAssessment.findFirst({
+  // Resolve org context for multi-tenant scoping
+  const orgMember = await prisma.organizationMember.findFirst({
     where: { userId },
+    select: { organizationId: true },
+  });
+  const organizationId = orgMember?.organizationId;
+
+  const assessment = await prisma.insuranceAssessment.findFirst({
+    where: {
+      OR: [{ userId }, ...(organizationId ? [{ organizationId }] : [])],
+    },
     orderBy: { updatedAt: "desc" },
     include: {
       policies: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { csrfHeaders } from "@/lib/csrf-client";
 import Link from "next/link";
@@ -31,6 +31,7 @@ import {
   Minus,
   XCircle,
   Zap,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -103,6 +104,7 @@ interface Assessment {
   hasHazardousMaterials: boolean;
   crossBorderOps: boolean;
   annualRevenueEur: number | null;
+  turnoversShareSpace: number | null;
   calculatedTPL: number | null;
   riskLevel: string | null;
   complianceScore: number | null;
@@ -181,7 +183,11 @@ function InsurancePageContent() {
   const [showNewAssessment, setShowNewAssessment] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [policySaving, setPolicySaving] = useState<string | null>(null); // policyId being saved
   // Removed PDF download in favor of AI Document Studio
+
+  // Ref for initial auto-select to avoid re-fetch loop
+  const hasAutoSelected = useRef(false);
 
   // Form state for new assessment
   const [formData, setFormData] = useState({
@@ -203,7 +209,27 @@ function InsurancePageContent() {
     hasHazardousMaterials: false,
     crossBorderOps: false,
     annualRevenueEur: 0,
+    turnoversShareSpace: 0,
   });
+
+  // UX-01: Debounce ref for text/number input API calls
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // UX-04: Delete confirmation modal state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const debouncedUpdate = (field: string, value: unknown) => {
+    // Update local state immediately
+    setSelectedAssessment((prev) =>
+      prev ? { ...prev, [field]: value } : prev,
+    );
+
+    // Debounce the API call
+    if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      updateAssessment({ [field]: value });
+    }, 500);
+  };
 
   const fetchAssessments = useCallback(async () => {
     try {
@@ -211,7 +237,8 @@ function InsurancePageContent() {
       if (res.ok) {
         const data = await res.json();
         setAssessments(data.assessments || []);
-        if (data.assessments?.length > 0 && !selectedAssessment) {
+        if (data.assessments?.length > 0 && !hasAutoSelected.current) {
+          hasAutoSelected.current = true;
           setSelectedAssessment(data.assessments[0]);
         }
       }
@@ -220,7 +247,7 @@ function InsurancePageContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedAssessment]);
+  }, []);
 
   useEffect(() => {
     fetchAssessments();
@@ -273,7 +300,6 @@ function InsurancePageContent() {
   };
 
   const deleteAssessment = async (id: string) => {
-    if (!confirm("Delete this insurance assessment?")) return;
     try {
       const res = await fetch(`/api/insurance/${id}`, {
         method: "DELETE",
@@ -295,6 +321,10 @@ function InsurancePageContent() {
     updates: Partial<Policy>,
   ) => {
     if (!selectedAssessment) return;
+    const policyId = selectedAssessment.policies.find(
+      (p) => p.insuranceType === insuranceType,
+    )?.id;
+    if (policyId) setPolicySaving(policyId);
     try {
       const res = await fetch("/api/insurance/policies", {
         method: "PATCH",
@@ -305,21 +335,22 @@ function InsurancePageContent() {
           ...updates,
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSelectedAssessment((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            complianceScore: data.complianceScore,
-            policies: prev.policies.map((p) =>
-              p.insuranceType === insuranceType ? data.policy : p,
-            ),
-          };
-        });
-      }
+      if (!res.ok) throw new Error("Failed to update policy");
+      const data = await res.json();
+      setSelectedAssessment((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          complianceScore: data.complianceScore,
+          policies: prev.policies.map((p) =>
+            p.insuranceType === insuranceType ? data.policy : p,
+          ),
+        };
+      });
     } catch (error) {
       console.error("Error updating policy:", error);
+    } finally {
+      setPolicySaving(null);
     }
   };
 
@@ -369,6 +400,7 @@ function InsurancePageContent() {
       hasHazardousMaterials: selectedAssessment.hasHazardousMaterials,
       crossBorderOps: selectedAssessment.crossBorderOps,
       annualRevenueEur: selectedAssessment.annualRevenueEur || undefined,
+      turnoversShareSpace: selectedAssessment.turnoversShareSpace || undefined,
     };
   };
 
@@ -390,7 +422,7 @@ function InsurancePageContent() {
 
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return "-";
-    return new Intl.NumberFormat("en-EU", {
+    return new Intl.NumberFormat("de-DE", {
       style: "currency",
       currency: "EUR",
       maximumFractionDigits: 0,
@@ -446,7 +478,7 @@ function InsurancePageContent() {
                 setReport(null);
               }}
               aria-label="Select insurance assessment"
-              className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+              className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--border-default)]"
             >
               {assessments.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -489,8 +521,8 @@ function InsurancePageContent() {
                     id={`tab-step-${step.id}`}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
-                        ? "bg-[var(--surface-sunken)] border border-[var(--border-default)][0.1]"
-                        : "hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
+                        ? "bg-[var(--surface-sunken)] border border-[var(--border-default)]"
+                        : "hover:bg-[var(--surface-sunken)]"
                     }`}
                   >
                     <div
@@ -590,7 +622,7 @@ function InsurancePageContent() {
                             primaryJurisdiction: e.target.value,
                           })
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         {nationalInsuranceRequirements.map((req) => (
                           <option
@@ -612,7 +644,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ operatorType: e.target.value })
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         {Object.entries(operatorTypeConfig).map(
                           ([key, config]) => (
@@ -633,7 +665,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ companySize: e.target.value })
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         {Object.entries(companySizeConfig).map(
                           ([key, config]) => (
@@ -654,7 +686,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ orbitRegime: e.target.value })
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         {Object.entries(orbitRegimeConfig).map(
                           ([key, config]) => (
@@ -675,11 +707,12 @@ function InsurancePageContent() {
                         min="1"
                         value={selectedAssessment.satelliteCount}
                         onChange={(e) =>
-                          updateAssessment({
-                            satelliteCount: parseInt(e.target.value) || 1,
-                          })
+                          debouncedUpdate(
+                            "satelliteCount",
+                            parseInt(e.target.value) || 1,
+                          )
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       />
                     </div>
 
@@ -692,11 +725,12 @@ function InsurancePageContent() {
                         min="1"
                         value={selectedAssessment.missionDurationYears}
                         onChange={(e) =>
-                          updateAssessment({
-                            missionDurationYears: parseInt(e.target.value) || 5,
-                          })
+                          debouncedUpdate(
+                            "missionDurationYears",
+                            parseInt(e.target.value) || 5,
+                          )
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       />
                     </div>
 
@@ -709,11 +743,12 @@ function InsurancePageContent() {
                         min="0"
                         value={selectedAssessment.satelliteValueEur || 0}
                         onChange={(e) =>
-                          updateAssessment({
-                            satelliteValueEur: parseFloat(e.target.value) || 0,
-                          })
+                          debouncedUpdate(
+                            "satelliteValueEur",
+                            parseFloat(e.target.value) || 0,
+                          )
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       />
                     </div>
 
@@ -726,12 +761,12 @@ function InsurancePageContent() {
                         min="0"
                         value={selectedAssessment.totalMissionValueEur || 0}
                         onChange={(e) =>
-                          updateAssessment({
-                            totalMissionValueEur:
-                              parseFloat(e.target.value) || 0,
-                          })
+                          debouncedUpdate(
+                            "totalMissionValueEur",
+                            parseFloat(e.target.value) || 0,
+                          )
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       />
                     </div>
 
@@ -746,7 +781,7 @@ function InsurancePageContent() {
                             launchProvider: e.target.value || null,
                           })
                         }
-                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                       >
                         <option value="">Select provider</option>
                         {commonLaunchProviders.map((p) => (
@@ -755,6 +790,43 @@ function InsurancePageContent() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                        Annual Revenue (EUR)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={selectedAssessment.annualRevenueEur || 0}
+                        onChange={(e) =>
+                          debouncedUpdate(
+                            "annualRevenueEur",
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                        Space Turnover Share (%)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={selectedAssessment.turnoversShareSpace || 0}
+                        onChange={(e) =>
+                          debouncedUpdate(
+                            "turnoversShareSpace",
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
+                      />
                     </div>
                   </div>
 
@@ -1067,13 +1139,18 @@ function InsurancePageContent() {
                         ),
                       )}
                     </div>
+                    <p className="text-small text-[var(--text-tertiary)] mt-2 italic">
+                      Indikative Marktschätzung für Planungszwecke. Tatsächliche
+                      Prämien werden von Versicherern basierend auf
+                      vollständigen Missionsdaten festgelegt.
+                    </p>
                   </div>
                 )}
 
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(1)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1172,6 +1249,12 @@ function InsurancePageContent() {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
+                            {policySaving === policy.id && (
+                              <Loader2
+                                className="animate-spin text-[var(--text-secondary)]"
+                                size={14}
+                              />
+                            )}
                             {isRequired && (
                               <span className="text-xs px-2 py-1 bg-[var(--accent-success-soft)] text-[var(--accent-primary)] rounded">
                                 Required
@@ -1214,7 +1297,7 @@ function InsurancePageContent() {
                         <div className="mb-4">
                           <AstraButton
                             articleId={policy.id}
-                            articleRef={`Art. 44-51`}
+                            articleRef={`Insurance — ${selectedAssessment?.primaryJurisdiction || "EU"} national law`}
                             title={typeDef?.name || policy.insuranceType}
                             severity={isRequired ? "critical" : "major"}
                             regulationType="INSURANCE"
@@ -1236,7 +1319,7 @@ function InsurancePageContent() {
                                     parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
@@ -1252,7 +1335,7 @@ function InsurancePageContent() {
                                   premium: parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
@@ -1268,7 +1351,7 @@ function InsurancePageContent() {
                                   insurer: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
@@ -1283,7 +1366,7 @@ function InsurancePageContent() {
                                   expirationDate: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]"
                             />
                           </div>
                         </div>
@@ -1295,7 +1378,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1475,7 +1558,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1492,7 +1575,7 @@ function InsurancePageContent() {
                     )}
                     {selectedAssessment && (
                       <button
-                        onClick={() => deleteAssessment(selectedAssessment.id)}
+                        onClick={() => setShowDeleteConfirm(true)}
                         className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-danger)]/10 hover:bg-[var(--accent-danger-soft)] border border-[var(--accent-danger)/30] rounded-lg text-[var(--accent-danger)] font-medium transition-colors"
                       >
                         <Trash2 className="w-5 h-5" aria-hidden="true" />
@@ -1515,7 +1598,10 @@ function InsurancePageContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowNewAssessment(false)}
+            onClick={() => {
+              setShowNewAssessment(false);
+              setCreateError(null);
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -1532,9 +1618,12 @@ function InsurancePageContent() {
                   New Insurance Assessment
                 </h2>
                 <button
-                  onClick={() => setShowNewAssessment(false)}
+                  onClick={() => {
+                    setShowNewAssessment(false);
+                    setCreateError(null);
+                  }}
                   aria-label="Close dialog"
-                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
@@ -1555,7 +1644,7 @@ function InsurancePageContent() {
                         assessmentName: e.target.value,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                   />
                 </div>
 
@@ -1571,7 +1660,7 @@ function InsurancePageContent() {
                         primaryJurisdiction: e.target.value as JurisdictionCode,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                   >
                     {nationalInsuranceRequirements.map((req) => (
                       <option
@@ -1596,7 +1685,7 @@ function InsurancePageContent() {
                         operatorType: e.target.value as OperatorType,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                   >
                     {Object.entries(operatorTypeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1618,7 +1707,7 @@ function InsurancePageContent() {
                         companySize: e.target.value as CompanySize,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                   >
                     {Object.entries(companySizeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1640,7 +1729,7 @@ function InsurancePageContent() {
                         orbitRegime: e.target.value as OrbitRegime,
                       })
                     }
-                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]"
                   >
                     {Object.entries(orbitRegimeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1660,8 +1749,11 @@ function InsurancePageContent() {
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
-                  onClick={() => setShowNewAssessment(false)}
-                  className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
+                  onClick={() => {
+                    setShowNewAssessment(false);
+                    setCreateError(null);
+                  }}
+                  className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   Cancel
                 </button>
@@ -1677,6 +1769,38 @@ function InsurancePageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete Confirmation Modal (UX-04) */}
+      {showDeleteConfirm && selectedAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-md">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
+              Assessment löschen?
+            </h3>
+            <p className="text-body text-[var(--text-secondary)]">
+              Alle zugehörigen Policen und Berichte werden unwiderruflich
+              gelöscht.
+            </p>
+            <div className="flex gap-3 mt-4 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  deleteAssessment(selectedAssessment.id);
+                  setShowDeleteConfirm(false);
+                }}
+                className="px-4 py-2 bg-[var(--accent-danger)] text-white rounded-lg font-medium transition-colors hover:opacity-90"
+              >
+                Endgültig löschen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

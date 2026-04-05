@@ -974,7 +974,11 @@ export function calculateTPLRequirement(profile: InsuranceRiskProfile): {
   }
 
   // Check for turnover-based formula (e.g., Germany)
-  if (req.tplFormula?.includes("turnover") && profile.annualRevenueEur) {
+  if (
+    req.tplFormula?.includes("turnover") &&
+    profile.annualRevenueEur !== undefined &&
+    profile.annualRevenueEur !== null
+  ) {
     const calculatedAmount = Math.min(
       profile.annualRevenueEur * 0.1,
       50_000_000,
@@ -1048,6 +1052,16 @@ export function getRequiredInsuranceTypes(
     profile.operatorType === "launch"
   ) {
     required.push("pre_launch");
+  }
+
+  // Launch site operators have highest ground-level TPL exposure
+  if (profile.operatorType === "launch_site") {
+    if (!required.includes("third_party_liability")) {
+      required.push("third_party_liability");
+    }
+    if (!required.includes("pre_launch")) {
+      required.push("pre_launch");
+    }
   }
 
   return required;
@@ -1164,7 +1178,9 @@ export function calculateMissionRiskLevel(
 
   // Orbit regime risk
   if (profile.orbitRegime === "LEO") riskScore += 2;
+  if (profile.orbitRegime === "MEO") riskScore += 2;
   if (profile.orbitRegime === "GEO") riskScore += 1;
+  if (profile.orbitRegime === "HEO") riskScore += 2;
   if (
     profile.orbitRegime === "cislunar" ||
     profile.orbitRegime === "deep_space"
@@ -1359,7 +1375,7 @@ export function calculateInsuranceComplianceScore(
   requiredTypes: InsuranceType[],
   statusMap: Record<string, PolicyStatus>,
 ): number {
-  if (requiredTypes.length === 0) return 100;
+  if (requiredTypes.length === 0) return 0; // No assessment = not compliant
 
   let score = 0;
   let maxScore = requiredTypes.length * 100;
