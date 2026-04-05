@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import {
   generateSupplierDataRequests,
   type MissionProfile,
   type LaunchVehicleId,
@@ -20,6 +25,10 @@ export async function GET(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit("api", getIdentifier(request, userId));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { searchParams } = new URL(request.url);
     const assessmentId = searchParams.get("assessmentId");
 
@@ -69,6 +78,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
 
     const postSchema = z.object({
@@ -230,7 +246,33 @@ export async function PATCH(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
+
+    const patchSchema = z.object({
+      supplierId: z.string().min(1),
+      status: z
+        .enum(["pending", "sent", "received", "overdue", "not_applicable"])
+        .optional(),
+      supplierName: z.string().optional(),
+      supplierEmail: z.string().email().nullable().optional(),
+      responseData: z.unknown().optional(),
+      notes: z.string().nullable().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
 
     const {
       supplierId,
@@ -239,14 +281,7 @@ export async function PATCH(request: Request) {
       supplierEmail,
       responseData,
       notes,
-    } = body;
-
-    if (!supplierId) {
-      return NextResponse.json(
-        { error: "supplierId is required" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Get supplier request and verify ownership through assessment
     const existing = await prisma.supplierDataRequest.findUnique({
@@ -331,6 +366,13 @@ export async function DELETE(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(request, userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { searchParams } = new URL(request.url);
     const supplierId = searchParams.get("supplierId");
 

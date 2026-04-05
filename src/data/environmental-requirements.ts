@@ -1,5 +1,7 @@
 /**
- * @deprecated Environmental requirements distributed to relevant standards and jurisdiction files in `src/data/regulatory/`.
+ * Environmental Footprint Declaration (EFD) Requirements
+ * Based on EU Space Act (COM(2025) 335) — proposed regulation, not yet in force.
+ * Primary data source for the Environmental module.
  */
 
 /**
@@ -17,7 +19,7 @@
  */
 
 // Environmental Footprint Module Data
-// Based on EU Space Act Articles 96-100 and anticipated PEFCR for Space sector
+// Based on EU Space Act Articles 44-46 and anticipated PEFCR for Space sector
 // Reference: Product Environmental Footprint Category Rules methodology
 
 // ─── Types ───
@@ -782,46 +784,28 @@ export interface RegulatoryRequirement {
 
 export const efdRegulatoryRequirements: RegulatoryRequirement[] = [
   {
-    articleNumber: "Art. 96",
+    articleNumber: "Art. 44",
     title: "Environmental Footprint Declaration Requirement",
     summary:
-      "Space operators shall provide an Environmental Footprint Declaration (EFD) covering the full lifecycle of space assets.",
+      "Space operators shall provide an Environmental Footprint Declaration (EFD) covering the full lifecycle of space assets, including methodology and lifecycle assessment requirements.",
     deadline: "2030-01-01",
     applicableTo: ["SCO", "LO", "LSO"],
     simplifiedRegime: false,
   },
   {
-    articleNumber: "Art. 97",
-    title: "EFD Methodology and Standards",
+    articleNumber: "Art. 45",
+    title: "EFD Grading, Methodology and Standards",
     summary:
-      "The Commission shall adopt delegated acts specifying the methodology for calculating environmental footprint, aligned with the PEF methodology.",
+      "The Commission shall adopt delegated acts specifying the methodology for calculating environmental footprint, aligned with the PEF methodology. Includes EFD grading criteria and lifecycle phase coverage.",
     deadline: "2028-06-01",
     applicableTo: ["ALL"],
     simplifiedRegime: false,
   },
   {
-    articleNumber: "Art. 98",
-    title: "Lifecycle Assessment Requirements",
+    articleNumber: "Art. 46",
+    title: "Supply Chain Data Collection and Reporting",
     summary:
-      "EFD shall cover: raw material extraction, manufacturing, transport, launch, operations, and end-of-life phases.",
-    deadline: "2030-01-01",
-    applicableTo: ["SCO", "LO"],
-    simplifiedRegime: true,
-  },
-  {
-    articleNumber: "Art. 99",
-    title: "Supply Chain Data Collection",
-    summary:
-      "Operators may request environmental data from suppliers. Suppliers shall provide data within reasonable timeframes.",
-    deadline: "2030-01-01",
-    applicableTo: ["SCO", "LO"],
-    simplifiedRegime: true,
-  },
-  {
-    articleNumber: "Art. 100",
-    title: "EFD Reporting and Publication",
-    summary:
-      "EFD shall be submitted to the relevant authority and key metrics made publicly available.",
+      "Operators may request environmental data from suppliers. Suppliers shall provide data within reasonable timeframes. EFD shall be submitted to the relevant authority and key metrics made publicly available.",
     deadline: "2030-01-01",
     applicableTo: ["SCO", "LO", "LSO"],
     simplifiedRegime: true,
@@ -932,6 +916,12 @@ export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
   const launchVehicle = launchVehicles[profile.launchVehicle];
   const totalMass = profile.spacecraftMassKg * profile.spacecraftCount;
 
+  if (totalMass <= 0) {
+    throw new Error(
+      "Spacecraft mass must be greater than zero for LCA calculation",
+    );
+  }
+
   // Determine if simplified regime applies
   const isSimplified =
     profile.isSmallEnterprise || profile.isResearchEducation || totalMass < 100;
@@ -956,9 +946,9 @@ export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
   const launchODP = launchVehicle.emissionsProfile.odp * launchShareFactor;
 
   // Phase 4: Operations
+  // Ground station ops: count * daily hours * days/year * 15 kg CO2eq/contact-hour + mission control baseline
   const operationsYearlyGWP =
-    (profile.groundStationCount * profile.dailyContactHours * 365 * 15) / 24 +
-    850;
+    profile.groundStationCount * profile.dailyContactHours * 365 * 15 + 850;
   const operationsGWP = operationsYearlyGWP * profile.missionDurationYears;
   const operationsODP = 0;
 
@@ -980,8 +970,9 @@ export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
       eolODP = 0;
       break;
     case "retrieval":
-      // ADR has significant environmental cost
-      eolGWP = totalMass * 15;
+      // ADR environmental cost — literature-based: 0.5-3 kg CO2eq/kg
+      // (Ref: ESA Clean Space LCA studies, ADR mission environmental impact assessment)
+      eolGWP = totalMass * 1.5;
       eolODP = totalMass * 0.001;
       break;
   }
@@ -1019,18 +1010,25 @@ export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
   const gradeInfo = efdGradeThresholds.find((g) => g.grade === grade)!;
 
   // Build lifecycle breakdown
+  // Literature-based approximation: raw material extraction typically 30-50% of manufacturing+material
+  // Source: ESA Clean Space Initiative, 2023 screening studies
+  const RAW_MATERIAL_FRACTION = 0.45; // Conservative mid-range
+  const MANUFACTURING_FRACTION = 1 - RAW_MATERIAL_FRACTION;
+
   const phases: LifecycleImpact[] = [
     {
       phase: "raw_material_extraction",
-      gwpKgCO2eq: manufacturingGWP * 0.6,
-      odpKgCFC11eq: manufacturingODP * 0.7,
-      percentOfTotal: ((manufacturingGWP * 0.6) / totalGWP) * 100,
+      gwpKgCO2eq: manufacturingGWP * RAW_MATERIAL_FRACTION,
+      odpKgCFC11eq: manufacturingODP * 0.55,
+      percentOfTotal:
+        ((manufacturingGWP * RAW_MATERIAL_FRACTION) / totalGWP) * 100,
     },
     {
       phase: "manufacturing",
-      gwpKgCO2eq: manufacturingGWP * 0.4,
-      odpKgCFC11eq: manufacturingODP * 0.3,
-      percentOfTotal: ((manufacturingGWP * 0.4) / totalGWP) * 100,
+      gwpKgCO2eq: manufacturingGWP * MANUFACTURING_FRACTION,
+      odpKgCFC11eq: manufacturingODP * 0.45,
+      percentOfTotal:
+        ((manufacturingGWP * MANUFACTURING_FRACTION) / totalGWP) * 100,
     },
     {
       phase: "transport_to_launch",
@@ -1075,9 +1073,8 @@ export function calculateScreeningLCA(profile: MissionProfile): EFDResult {
   );
 
   // Regulatory compliance check
-  const deadline = new Date("2030-01-01");
-  const now = new Date();
-  const meetsDeadline = now < deadline;
+  // Note: 2028 is when delegated acts with specific deadlines are expected
+  const meetsDeadline = new Date() < new Date("2028-01-01");
 
   const requiredActions: string[] = [];
   if (!isSimplified) {
@@ -1167,7 +1164,7 @@ function generateRecommendations(
   const manufacturingPhase = phases.find((p) => p.phase === "manufacturing");
   if (manufacturingPhase && manufacturingPhase.percentOfTotal > 30) {
     recommendations.push(
-      "Request environmental data from key suppliers per Art. 99.",
+      "Request environmental data from key suppliers per Art. 46.",
     );
     recommendations.push(
       "Consider suppliers with recycled material content certifications.",
@@ -1307,7 +1304,14 @@ export function getGradeColor(grade: EFDGrade): string {
   return threshold?.color || "#6B7280";
 }
 
-export function calculateComplianceScore(result: EFDResult): number {
+export function calculateComplianceScore(
+  result: EFDResult,
+  assessment?: {
+    reportGenerated?: boolean;
+    status?: string;
+    supplierRequests?: Array<{ status: string }>;
+  },
+): number {
   let score = 100;
 
   // Deduct for poor grade
@@ -1330,8 +1334,20 @@ export function calculateComplianceScore(result: EFDResult): number {
     score -= 15;
   }
 
-  // Bonus for having recommendations addressed
-  // (This would need to be tracked separately in the assessment)
+  // Bonus for completed actions
+  if (assessment?.reportGenerated) score += 10;
+  if (assessment?.status === "submitted") score += 15;
+  if (assessment?.status === "approved") score += 20;
+
+  // Bonus for supplier data collection progress
+  if (assessment?.supplierRequests && assessment.supplierRequests.length > 0) {
+    const totalSuppliers = assessment.supplierRequests.length;
+    const supplierDataReceived = assessment.supplierRequests.filter(
+      (s) => s.status === "received",
+    ).length;
+    const supplierCompletion = supplierDataReceived / totalSuppliers;
+    score += Math.round(supplierCompletion * 10);
+  }
 
   return Math.max(0, Math.min(100, score));
 }

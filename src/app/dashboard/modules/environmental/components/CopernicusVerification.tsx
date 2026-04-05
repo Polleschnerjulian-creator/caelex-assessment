@@ -91,9 +91,11 @@ export default function CopernicusVerification({
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
+      setFetchError(null);
       const res = await fetch(
         `/api/environmental/copernicus?assessmentId=${assessmentId}`,
       );
@@ -101,8 +103,8 @@ export default function CopernicusVerification({
         const json = await res.json();
         setData(json);
       }
-    } catch {
-      // silent
+    } catch (err) {
+      setFetchError("Copernicus-Daten konnten nicht geladen werden.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -155,7 +157,7 @@ export default function CopernicusVerification({
     );
   }
 
-  if (!data?.data || data.error) {
+  if (!data?.data || data.error || fetchError) {
     return (
       <div
         style={{
@@ -186,6 +188,11 @@ export default function CopernicusVerification({
           Copernicus data not available
           {data?.error ? ` — ${data.error}` : ""}
         </p>
+        {fetchError && (
+          <p style={{ fontSize: 12, color: "#EF4444", marginTop: 6 }}>
+            {fetchError}
+          </p>
+        )}
       </div>
     );
   }

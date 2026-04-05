@@ -168,6 +168,21 @@ function EnvironmentalPageContent() {
   const [calculating, setCalculating] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showNewAssessmentForm, setShowNewAssessmentForm] = useState(false);
+
+  // SSR-safe dark mode detection
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   // Form state for new assessment
   const [formData, setFormData] = useState({
@@ -205,8 +220,18 @@ function EnvironmentalPageContent() {
         const data = await response.json();
         setAssessments(data.assessments);
         if (data.assessments.length > 0) {
-          setSelectedAssessment(data.assessments[0]);
-          populateFormFromAssessment(data.assessments[0]);
+          const firstAssessment = data.assessments[0];
+          setSelectedAssessment(firstAssessment);
+          populateFormFromAssessment(firstAssessment);
+          // Restore cached calculation result if available
+          if (firstAssessment.impactResults?.length > 0) {
+            try {
+              const cachedResult = localStorage.getItem(
+                `env-result-${firstAssessment.id}`,
+              );
+              if (cachedResult) setCalculationResult(JSON.parse(cachedResult));
+            } catch {}
+          }
         }
       }
     } catch (err) {
@@ -313,6 +338,15 @@ function EnvironmentalPageContent() {
         const data = await response.json();
         setSelectedAssessment(data.assessment);
         setCalculationResult(data.result);
+        // Cache result for persistence across refreshes
+        if (data.result) {
+          try {
+            localStorage.setItem(
+              `env-result-${data.assessment.id}`,
+              JSON.stringify(data.result),
+            );
+          } catch {}
+        }
         await fetchAssessments();
       } else {
         const err = await response.json();
@@ -478,6 +512,67 @@ function EnvironmentalPageContent() {
           </div>
         </div>
 
+        {/* Assessment Selector */}
+        {assessments.length > 1 && (
+          <div className="flex gap-2 mb-4 overflow-x-auto">
+            {assessments.map((a) => (
+              <button
+                key={a.id}
+                onClick={() => {
+                  setSelectedAssessment(a);
+                  populateFormFromAssessment(a);
+                  setShowNewAssessmentForm(false);
+                  setCalculationResult(null);
+                  setReport(null);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-small whitespace-nowrap ${
+                  selectedAssessment?.id === a.id && !showNewAssessmentForm
+                    ? "bg-[var(--fill-medium)] text-[var(--text-primary)] border border-[var(--separator-strong)]"
+                    : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                {a.missionName ||
+                  a.assessmentName ||
+                  `Assessment ${a.id.slice(-6)}`}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                setShowNewAssessmentForm(true);
+                setSelectedAssessment(null);
+                setCalculationResult(null);
+                setReport(null);
+                setCurrentStep("mission_profile");
+                setFormData({
+                  assessmentName: "",
+                  missionName: "",
+                  operatorType: "spacecraft",
+                  missionType: "commercial",
+                  spacecraftMassKg: 500,
+                  spacecraftCount: 1,
+                  orbitType: "LEO",
+                  altitudeKm: 550,
+                  missionDurationYears: 5,
+                  launchVehicle: "falcon_9",
+                  launchSharePercent: 100,
+                  launchSiteCountry: "",
+                  spacecraftPropellant: "",
+                  propellantMassKg: 0,
+                  groundStationCount: 2,
+                  dailyContactHours: 4,
+                  deorbitStrategy: "controlled_deorbit",
+                  isSmallEnterprise: false,
+                  isResearchEducation: false,
+                });
+              }}
+              className="px-3 py-1.5 rounded-lg text-small whitespace-nowrap flex items-center gap-1 text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              New Assessment
+            </button>
+          </div>
+        )}
+
         {/* Progress Steps */}
         <div className="mb-8">
           <div
@@ -505,7 +600,7 @@ function EnvironmentalPageContent() {
                         ? "bg-[var(--accent-success-soft)] border border-[var(--accent-success)/30]"
                         : isCompleted
                           ? "bg-[var(--surface-sunken)] border border-[var(--border-default)] hover:bg-[var(--surface-sunken)]"
-                          : "bg-[var(--surface-raised)] border border-[var(--border-default)][0.03] opacity-50"
+                          : "bg-[var(--surface-raised)] border border-[var(--border-default)]/[0.03] opacity-50"
                     } ${isClickable ? "cursor-pointer" : "cursor-not-allowed"}`}
                   >
                     <div
@@ -623,10 +718,7 @@ function EnvironmentalPageContent() {
             <CopernicusVerification
               assessmentId={selectedAssessment.id}
               launchVehicle={selectedAssessment.launchVehicle}
-              isDark={
-                typeof document !== "undefined" &&
-                document.documentElement.classList.contains("dark")
-              }
+              isDark={isDark}
             />
           </div>
         )}
@@ -669,7 +761,7 @@ function MissionProfileStep({
                 setFormData({ ...formData, assessmentName: e.target.value })
               }
               placeholder="e.g., LEO Constellation EFD"
-              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
@@ -683,7 +775,7 @@ function MissionProfileStep({
                 setFormData({ ...formData, missionName: e.target.value })
               }
               placeholder="e.g., Starlink Gen 2"
-              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
@@ -829,6 +921,13 @@ function MissionProfileStep({
               <option value="graveyard_orbit">Graveyard Orbit</option>
               <option value="retrieval">Active Retrieval/ADR</option>
             </select>
+            <a
+              href="/dashboard/modules/debris"
+              className="text-small text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] underline mt-1 inline-block"
+            >
+              Debris Mitigation Plan f&uuml;r detaillierte End-of-Life Analyse
+              &rarr;
+            </a>
           </div>
         </div>
       </div>
@@ -1239,10 +1338,10 @@ function CalculatorStep({
                     border: "1px solid rgba(0,82,147,0.2)",
                     color: "#005293",
                   }}
-                  title="Environmental data cross-referenced with Copernicus Sentinel-5P TROPOMI satellite measurements"
+                  title="Copernicus Sentinel-5P TROPOMI satellite data available for this launch site"
                 >
                   <Satellite className="w-2.5 h-2.5" />
-                  Copernicus Verified
+                  Copernicus Data Available
                 </div>
               </div>
 
@@ -1355,7 +1454,7 @@ function CalculatorStep({
                           className={`h-full rounded-full transition-all ${
                             isHotspot
                               ? "bg-orange-500"
-                              : "bg-[var(--accent-success-soft)]0"
+                              : "bg-[var(--accent-success-soft)]"
                           }`}
                           style={{ width: `${phase.percentOfTotal}%` }}
                         />
@@ -1539,12 +1638,13 @@ function SuppliersStep({
                         onUpdateStatus(supplier.id, e.target.value)
                       }
                       aria-label={`Status for ${supplier.supplierName}`}
-                      className={`px-2 py-1 rounded text-caption font-medium border-0 cursor-pointer ${statusColors[supplier.status]}`}
+                      className={`px-2 py-1 rounded text-caption font-medium border-0 cursor-pointer ${statusColors[supplier.status] || "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"}`}
                     >
                       <option value="pending">Pending</option>
                       <option value="sent">Sent</option>
                       <option value="received">Received</option>
                       <option value="overdue">Overdue</option>
+                      <option value="not_applicable">Not Applicable</option>
                     </select>
                   </div>
 
@@ -1590,13 +1690,13 @@ function SuppliersStep({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]0" />
+                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]" />
                 <span className="text-[var(--text-secondary)]">
                   Sent: {suppliers.filter((s) => s.status === "sent").length}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]0" />
+                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]" />
                 <span className="text-[var(--text-secondary)]">
                   Received:{" "}
                   {suppliers.filter((s) => s.status === "received").length}
@@ -1915,7 +2015,7 @@ function ReportStep({
                   aria-label={`${phase.phaseName} contribution`}
                 >
                   <div
-                    className={`h-full rounded-full ${phase.isHotspot ? "bg-orange-500" : "bg-[var(--accent-success-soft)]0"}`}
+                    className={`h-full rounded-full ${phase.isHotspot ? "bg-orange-500" : "bg-[var(--accent-success-soft)]"}`}
                     style={{ width: `${phase.percentOfTotal}%` }}
                   />
                 </div>
