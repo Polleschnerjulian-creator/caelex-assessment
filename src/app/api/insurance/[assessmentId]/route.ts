@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { roleHasPermission } from "@/lib/permissions";
 import {
   calculateTPLRequirement,
   getRequiredInsuranceTypes,
@@ -28,13 +31,26 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limiting — api tier for reads
+    const rateLimitResult = await checkRateLimit("api", session.user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { assessmentId } = await params;
     const userId = session.user.id;
 
+    // Org-scoped query: user's own OR their organization's assessments
+    const orgContext = await getCurrentOrganization(userId);
     const assessment = await prisma.insuranceAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
       include: {
         policies: true,
@@ -113,6 +129,15 @@ export async function PATCH(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — sensitive tier for writes
+    const patchRateLimitResult = await checkRateLimit(
+      "sensitive",
+      session.user.id,
+    );
+    if (!patchRateLimitResult.success) {
+      return createRateLimitResponse(patchRateLimitResult);
     }
 
     const { assessmentId } = await params;
@@ -356,14 +381,37 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limiting — sensitive tier for deletes
+    const deleteRateLimitResult = await checkRateLimit(
+      "sensitive",
+      session.user.id,
+    );
+    if (!deleteRateLimitResult.success) {
+      return createRateLimitResponse(deleteRateLimitResult);
+    }
+
     const { assessmentId } = await params;
     const userId = session.user.id;
 
-    // Verify ownership
+    // RBAC: require compliance:write (MANAGER+) for DELETE
+    const orgContext = await getCurrentOrganization(userId);
+    if (orgContext && !roleHasPermission(orgContext.role, "compliance:write")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
+    }
+
+    // Org-scoped query: user's own OR their organization's assessments
     const existing = await prisma.insuranceAssessment.findFirst({
       where: {
         id: assessmentId,
-        userId,
+        OR: [
+          { userId },
+          ...(orgContext?.organizationId
+            ? [{ organizationId: orgContext.organizationId }]
+            : []),
+        ],
       },
     });
 

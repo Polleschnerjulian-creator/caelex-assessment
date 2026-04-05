@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import {
   calculateTPLRequirement,
   getRequiredInsuranceTypes,
@@ -101,6 +102,15 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — document generation tier
+    const rateLimitResult = await checkRateLimit(
+      "document_generation",
+      session.user.id,
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
     }
 
     const userId = session.user.id;
@@ -430,7 +440,7 @@ export async function POST(request: Request) {
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-EU", {
+  return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,

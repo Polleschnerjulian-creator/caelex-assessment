@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   calculateTPLRequirement,
@@ -19,14 +20,24 @@ import {
 import { logger } from "@/lib/logger";
 
 // GET /api/insurance - List all insurance assessments for user
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limiting — api tier for reads
+    const rateLimitResult = await checkRateLimit("api", session.user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const userId = session.user.id;
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
+    const skip = (page - 1) * limit;
 
     // Resolve organization context for multi-tenant scoping
     const orgContext = await getCurrentOrganization(userId);
@@ -35,15 +46,23 @@ export async function GET() {
       where.organizationId = orgContext.organizationId;
     }
 
-    const assessments = await prisma.insuranceAssessment.findMany({
-      where,
-      include: {
-        policies: true,
-      },
-      orderBy: { updatedAt: "desc" },
-    });
+    const [assessments, total] = await Promise.all([
+      prisma.insuranceAssessment.findMany({
+        where,
+        include: {
+          policies: true,
+        },
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.insuranceAssessment.count({ where }),
+    ]);
 
-    return NextResponse.json({ assessments });
+    return NextResponse.json({
+      assessments,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     logger.error("Error fetching insurance assessments", error);
     return NextResponse.json(
@@ -59,6 +78,15 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — sensitive tier for writes
+    const postRateLimitResult = await checkRateLimit(
+      "sensitive",
+      session.user.id,
+    );
+    if (!postRateLimitResult.success) {
+      return createRateLimitResponse(postRateLimitResult);
     }
 
     const userId = session.user.id;

@@ -363,7 +363,7 @@ export async function smartDecrypt(encryptedText: string): Promise<string> {
 export const ENCRYPTED_FIELDS: Record<string, string[]> = {
   User: ["taxId", "phoneNumber"],
   Organization: ["vatNumber", "bankAccount", "taxId"],
-  InsuranceAssessment: ["policyNumber"],
+  InsurancePolicy: ["policyNumber"],
   EnvironmentalAssessment: ["internalNotes"],
   Incident: ["description", "rootCause", "impactAssessment", "lessonsLearned"],
   CybersecurityRequirementStatus: ["notes", "evidenceNotes"],

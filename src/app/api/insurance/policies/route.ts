@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import {
   calculateInsuranceComplianceScore,
   getRequiredInsuranceTypes,
@@ -21,6 +23,12 @@ export async function GET(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — api tier for reads
+    const rateLimitResult = await checkRateLimit("api", session.user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
     }
 
     const userId = session.user.id;
@@ -54,6 +62,13 @@ export async function GET(request: Request) {
       );
     }
 
+    // Decrypt policy numbers on read
+    for (const policy of assessment.policies) {
+      if (policy.policyNumber && isEncrypted(policy.policyNumber)) {
+        policy.policyNumber = await decrypt(policy.policyNumber);
+      }
+    }
+
     return NextResponse.json({
       policies: assessment.policies,
       assessment: {
@@ -79,6 +94,12 @@ export async function PATCH(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting — sensitive tier for writes
+    const rateLimitResult = await checkRateLimit("sensitive", session.user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
     }
 
     const userId = session.user.id;
@@ -176,6 +197,14 @@ export async function PATCH(request: Request) {
       updateData.renewalDate = renewalDate ? new Date(renewalDate) : null;
     if (notes !== undefined) updateData.notes = notes;
     if (quoteNotes !== undefined) updateData.quoteNotes = quoteNotes;
+
+    // Encrypt policyNumber before writing to database
+    if (
+      updateData.policyNumber &&
+      typeof updateData.policyNumber === "string"
+    ) {
+      updateData.policyNumber = await encrypt(updateData.policyNumber);
+    }
 
     // Update policy
     const updated = await prisma.insurancePolicy.update({

@@ -4,6 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import {
+  calculateTPLRequirement,
+  getRequiredInsuranceTypes,
+  estimatePremiumRange,
+  insuranceTypeDefinitions,
+  type InsuranceRiskProfile,
+  type JurisdictionCode,
+  type OperatorType,
+  type CompanySize,
+  type OrbitRegime,
+  type InsuranceType,
+} from "@/data/insurance-requirements";
 import {
   InsuranceComplianceReportPDF,
   type InsuranceComplianceReportData,
@@ -18,6 +31,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limiting — document generation tier
+    const rateLimitResult = await checkRateLimit(
+      "document_generation",
+      session.user.id,
+    );
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const userId = session.user.id;
     const body = await request.json();
     const { assessmentId } = body;
@@ -29,11 +51,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get assessment
+    // Get assessment WITH policies
     const assessment = await prisma.insuranceAssessment.findFirst({
       where: {
         id: assessmentId,
         userId,
+      },
+      include: {
+        policies: true,
       },
     });
 
@@ -53,37 +78,166 @@ export async function POST(request: Request) {
     const orgName = user?.organization || user?.name || "Unknown Organization";
     const generatedBy = user?.name || user?.email || "System";
 
-    // Calculate TPL requirements
-    const baseTplEUR = 60000000;
-    const satelliteMultiplier = Math.min(assessment.satelliteCount, 10);
-    const calculatedTpl = baseTplEUR * (1 + satelliteMultiplier * 0.1);
+    // Build the risk profile (same as generate/route.ts)
+    const profile: InsuranceRiskProfile = {
+      primaryJurisdiction: assessment.primaryJurisdiction as JurisdictionCode,
+      operatorType: assessment.operatorType as OperatorType,
+      companySize: assessment.companySize as CompanySize,
+      orbitRegime: assessment.orbitRegime as OrbitRegime,
+      satelliteCount: assessment.satelliteCount,
+      satelliteValueEur: assessment.satelliteValueEur || 0,
+      totalMissionValueEur: assessment.totalMissionValueEur || 0,
+      isConstellationOperator: assessment.isConstellationOperator,
+      hasManeuverability: assessment.hasManeuverability,
+      missionDurationYears: assessment.missionDurationYears,
+      hasFlightHeritage: assessment.hasFlightHeritage,
+      launchVehicle: assessment.launchVehicle || undefined,
+      launchProvider: assessment.launchProvider || undefined,
+      hasADR: assessment.hasADR,
+      hasPropulsion: assessment.hasPropulsion,
+      hasHazardousMaterials: assessment.hasHazardousMaterials,
+      crossBorderOps: assessment.crossBorderOps,
+      annualRevenueEur: assessment.annualRevenueEur || undefined,
+      turnoversShareSpace: assessment.turnoversShareSpace || undefined,
+    };
 
-    // Determine compliance status based on available data
-    const requiredPolicies = [
-      {
+    // Calculate TPL using the real engine (jurisdiction-aware)
+    const tplResult = calculateTPLRequirement(profile);
+    const calculatedTpl = tplResult.amount;
+
+    // Get required insurance types
+    const requiredTypes = getRequiredInsuranceTypes(profile);
+
+    // Calculate premium estimates from engine
+    const premiumEst = estimatePremiumRange(profile, requiredTypes);
+
+    // Build requiredPolicies from actual policy data
+    const requiredPolicies = assessment.policies
+      .filter((p) => requiredTypes.includes(p.insuranceType as InsuranceType))
+      .map((p) => {
+        const typeDef =
+          insuranceTypeDefinitions[p.insuranceType as InsuranceType];
+        const policyStatus = p.status as
+          | "not_started"
+          | "quote_requested"
+          | "quote_received"
+          | "under_review"
+          | "bound"
+          | "active"
+          | "expiring_soon"
+          | "expired"
+          | "not_required";
+
+        // Map policy status to PDF status
+        let pdfStatus: "covered" | "pending" | "missing";
+        if (policyStatus === "active" || policyStatus === "bound") {
+          pdfStatus = "covered";
+        } else if (
+          policyStatus === "not_started" ||
+          policyStatus === "expired"
+        ) {
+          pdfStatus = "missing";
+        } else {
+          pdfStatus = "pending";
+        }
+
+        return {
+          type: typeDef?.name || p.insuranceType,
+          description: typeDef?.description || "",
+          minimumCoverage:
+            p.insuranceType === "third_party_liability"
+              ? `\u20AC${(calculatedTpl / 1000000).toFixed(0)}M`
+              : p.coverageAmount
+                ? `\u20AC${(p.coverageAmount / 1000000).toFixed(1)}M`
+                : "TBD",
+          status: pdfStatus,
+          notes: p.insurer
+            ? `Insurer: ${p.insurer}`
+            : "Required under applicable space law",
+        };
+      });
+
+    // If no policies matched required types, add a fallback entry for TPL
+    if (requiredPolicies.length === 0) {
+      requiredPolicies.push({
         type: "Third Party Liability (TPL)",
         description:
           "Coverage for damage to third parties caused by space activities",
-        minimumCoverage: `€${(calculatedTpl / 1000000).toFixed(0)}M`,
-        status: "pending" as const,
-        notes: "Required under EU Space Act Art. 15",
-      },
-      {
-        type: "Launch Insurance",
-        description:
-          "Coverage for launch vehicle failure and early orbit operations",
-        minimumCoverage: "Full replacement value",
-        status: "pending" as const,
-        notes: "Typically required by launch provider",
-      },
-      {
-        type: "In-Orbit Insurance",
-        description: "Coverage for spacecraft loss or damage during operations",
-        minimumCoverage: "Asset value",
-        status: "pending" as const,
-        notes: "Recommended for commercial missions",
-      },
-    ];
+        minimumCoverage: `\u20AC${(calculatedTpl / 1000000).toFixed(0)}M`,
+        status: "missing" as const,
+        notes: tplResult.basis,
+      });
+    }
+
+    // Count actual compliance from real policy data
+    const compliantCount = requiredPolicies.filter(
+      (p) => p.status === "covered",
+    ).length;
+    const pendingCount = requiredPolicies.filter(
+      (p) => p.status === "pending",
+    ).length;
+    const missingCount = requiredPolicies.filter(
+      (p) => p.status === "missing",
+    ).length;
+
+    // Determine overall status
+    let overallStatus: "compliant" | "partial" | "non_compliant";
+    if (missingCount === 0 && pendingCount === 0) {
+      overallStatus = "compliant";
+    } else if (compliantCount > 0) {
+      overallStatus = "partial";
+    } else {
+      overallStatus = "non_compliant";
+    }
+
+    // Build optional policies from real data
+    const optionalPolicies = assessment.policies
+      .filter((p) => !requiredTypes.includes(p.insuranceType as InsuranceType))
+      .map((p) => {
+        const typeDef =
+          insuranceTypeDefinitions[p.insuranceType as InsuranceType];
+        return {
+          type: typeDef?.name || p.insuranceType,
+          description: typeDef?.description || "",
+          recommendedCoverage: p.coverageAmount
+            ? `\u20AC${(p.coverageAmount / 1000000).toFixed(1)}M`
+            : "TBD",
+          priority: "medium" as const,
+          rationale: `Status: ${p.status}`,
+        };
+      });
+
+    // Build gaps and recommendations from real data
+    const gaps: string[] = [];
+    if (missingCount > 0) {
+      gaps.push(
+        `${missingCount} required insurance policy(ies) not yet obtained`,
+      );
+    }
+    if (pendingCount > 0) {
+      gaps.push(
+        `${pendingCount} insurance policy(ies) pending — not yet active`,
+      );
+    }
+
+    const recommendations: string[] = [];
+    if (missingCount > 0) {
+      recommendations.push(
+        "Contact specialized space insurance brokers for quotes",
+      );
+      recommendations.push(
+        "Prepare detailed mission information for underwriters",
+      );
+    }
+    if (pendingCount > 0) {
+      recommendations.push(
+        "Follow up on pending policies to ensure timely binding",
+      );
+    }
+    recommendations.push(
+      "Submit insurance certificate to NCA with authorization application",
+    );
+    recommendations.push("Establish annual insurance review process");
 
     // Build PDF data
     const pdfData: InsuranceComplianceReportData = {
@@ -106,54 +260,37 @@ export async function POST(request: Request) {
         satelliteCount: assessment.satelliteCount,
         totalMassKg: 0,
         launchValue: assessment.totalMissionValueEur
-          ? `€${(assessment.totalMissionValueEur / 1000000).toFixed(1)}M`
+          ? `\u20AC${(assessment.totalMissionValueEur / 1000000).toFixed(1)}M`
           : "TBD",
         inOrbitValue: assessment.satelliteValueEur
-          ? `€${(assessment.satelliteValueEur / 1000000).toFixed(1)}M`
+          ? `\u20AC${(assessment.satelliteValueEur / 1000000).toFixed(1)}M`
           : "TBD",
         launchProvider: assessment.launchProvider || undefined,
         plannedLaunchDate: assessment.launchDate?.toISOString().split("T")[0],
       },
 
       tplAnalysis: {
-        requiredCoverage: `€${(calculatedTpl / 1000000).toFixed(0)} Million`,
+        requiredCoverage: `\u20AC${(calculatedTpl / 1000000).toFixed(0)} Million`,
         requiredCoverageEUR: calculatedTpl,
-        calculationBasis:
-          "Based on mission parameters and EU Space Act guidelines",
+        calculationBasis: tplResult.basis,
         riskFactors: [
           `Satellite count: ${assessment.satelliteCount}`,
           `Orbit regime: ${assessment.orbitRegime || "LEO"}`,
           `Has propulsion: ${assessment.hasPropulsion ? "Yes" : "No"}`,
           `Has maneuverability: ${assessment.hasManeuverability ? "Yes" : "No"}`,
-          "Third-party collision risk assessment",
+          ...tplResult.notes,
         ],
-        jurisdictionRequirements: `${assessment.primaryJurisdiction || "EU"} national space law requirements`,
+        jurisdictionRequirements: tplResult.explanation,
         euSpaceActReference: "Article 15 - Insurance and Financial Security",
       },
 
       requiredPolicies,
 
-      optionalPolicies: [
-        {
-          type: "Business Interruption",
-          description: "Coverage for revenue loss due to spacecraft anomaly",
-          recommendedCoverage: "12-24 months revenue",
-          priority: "medium" as const,
-          rationale: "Protects against operational downtime",
-        },
-        {
-          type: "Cyber Liability",
-          description:
-            "Coverage for cyber incidents affecting space operations",
-          recommendedCoverage: "€5-10M",
-          priority: "high" as const,
-          rationale: "NIS2 compliance and increasing cyber threats",
-        },
-      ],
+      optionalPolicies,
 
       premiumEstimates: {
-        annualPremiumMin: `€${Math.round((calculatedTpl * 0.005) / 1000)}K`,
-        annualPremiumMax: `€${Math.round((calculatedTpl * 0.015) / 1000)}K`,
+        annualPremiumMin: `\u20AC${Math.round(premiumEst.total.min / 1000)}K`,
+        annualPremiumMax: `\u20AC${Math.round(premiumEst.total.max / 1000)}K`,
         factors: [
           "Mission risk profile",
           "Operator track record",
@@ -166,17 +303,12 @@ export async function POST(request: Request) {
       },
 
       complianceStatus: {
-        overallStatus: "partial",
-        compliantPolicies: 0,
-        pendingPolicies: 3,
-        missingPolicies: 0,
-        gaps: ["Insurance policies pending - to be obtained before launch"],
-        recommendations: [
-          "Contact specialized space insurance brokers for quotes",
-          "Prepare detailed mission information for underwriters",
-          "Submit insurance certificate to NCA with authorization application",
-          "Establish annual insurance review process",
-        ],
+        overallStatus,
+        compliantPolicies: compliantCount,
+        pendingPolicies: pendingCount,
+        missingPolicies: missingCount,
+        gaps,
+        recommendations,
       },
 
       regulatoryRequirements: [
@@ -189,7 +321,7 @@ export async function POST(request: Request) {
         {
           jurisdiction: assessment.primaryJurisdiction || "EU",
           requirement: "TPL Insurance Certificate",
-          minimumCoverage: `€${(calculatedTpl / 1000000).toFixed(0)}M`,
+          minimumCoverage: `\u20AC${(calculatedTpl / 1000000).toFixed(0)}M`,
           applicability: "Licensed operators",
         },
       ],
