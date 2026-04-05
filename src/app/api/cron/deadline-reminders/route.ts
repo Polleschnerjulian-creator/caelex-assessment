@@ -110,6 +110,19 @@ export async function GET(req: Request) {
       );
     }
 
+    // Process recurring deadlines (RRULE)
+    let rruleResult = { processed: 0, created: 0, errors: 0 };
+    try {
+      const { processRecurringDeadlines } =
+        await import("@/lib/timeline/rrule-processor.server");
+      rruleResult = await processRecurringDeadlines();
+      logger.info(
+        `[Cron] RRULE: processed ${rruleResult.processed}, created ${rruleResult.created}, errors ${rruleResult.errors}`,
+      );
+    } catch (err) {
+      logger.warn("[Cron] RRULE processing failed", err);
+    }
+
     const duration = Date.now() - startTime;
 
     logger.info("Deadline reminder processing complete:", {
@@ -120,6 +133,7 @@ export async function GET(req: Request) {
       attestationsProcessed: attestationResult.processed,
       attestationsNotified: attestationResult.notified,
       insuranceRenewals,
+      rrule: rruleResult,
       duration: `${duration}ms`,
     });
 
@@ -136,6 +150,7 @@ export async function GET(req: Request) {
         notified: attestationResult.notified,
       },
       insuranceRenewals,
+      rrule: rruleResult,
       duration: `${duration}ms`,
       processedAt: new Date().toISOString(),
     });
