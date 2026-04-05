@@ -1636,6 +1636,331 @@ function DebrisPageContent() {
                     );
                   })}
                 </div>
+
+                {/* ── Maneuver Log (Art. 64) ───────────────────────── */}
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Target
+                          size={16}
+                          className="text-[var(--accent-primary)]"
+                        />
+                        <h2 className="text-title font-medium text-[var(--text-primary)]">
+                          Maneuver Log
+                        </h2>
+                      </div>
+                      <p className="text-caption text-[var(--text-secondary)] mt-1">
+                        Art. 64 EU Space Act — Record of collision avoidance
+                        maneuvers
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {maneuvers.length > 0 && (
+                        <button
+                          onClick={exportManeuversCSV}
+                          className="flex items-center gap-1.5 text-caption text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 rounded-lg border border-[var(--border-default)] transition-colors"
+                        >
+                          <Download size={12} />
+                          CSV
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowManeuverForm((v) => !v)}
+                        className="flex items-center gap-1.5 bg-[var(--accent-primary)] text-white text-caption px-3 py-1.5 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
+                      >
+                        <Plus size={12} />
+                        Add Entry
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Add maneuver form */}
+                  <AnimatePresence>
+                    {showManeuverForm && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 bg-[var(--surface-sunken)] rounded-lg mb-4 border border-[var(--border-default)]">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-small font-medium text-[var(--text-primary)]">
+                              New Maneuver Entry
+                            </p>
+                            <button
+                              onClick={() => setShowManeuverForm(false)}
+                              className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                TCA Date
+                              </label>
+                              <input
+                                type="datetime-local"
+                                value={maneuverForm.tcaDate}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    tcaDate: e.target.value,
+                                  }))
+                                }
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Conjunction ID
+                              </label>
+                              <input
+                                type="text"
+                                value={maneuverForm.conjunctionId}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    conjunctionId: e.target.value,
+                                  }))
+                                }
+                                placeholder="e.g., CDM-2026-001"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Pc Before
+                              </label>
+                              <input
+                                type="number"
+                                step="0.000001"
+                                min="0"
+                                max="1"
+                                value={maneuverForm.pcBefore || ""}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    pcBefore: parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                placeholder="e.g., 0.00045"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Pc After
+                              </label>
+                              <input
+                                type="number"
+                                step="0.000001"
+                                min="0"
+                                max="1"
+                                value={maneuverForm.pcAfter || ""}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    pcAfter: parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                placeholder="e.g., 0.000001"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Delta-V (m/s)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={maneuverForm.deltaVUsed || ""}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    deltaVUsed: parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                placeholder="e.g., 0.15"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Burn Duration (s)
+                              </label>
+                              <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                value={maneuverForm.burnDurationSeconds || ""}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    burnDurationSeconds:
+                                      parseInt(e.target.value) || 0,
+                                  }))
+                                }
+                                placeholder="e.g., 12"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Outcome
+                              </label>
+                              <select
+                                value={maneuverForm.outcome}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    outcome: e.target
+                                      .value as ManeuverEntry["outcome"],
+                                  }))
+                                }
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                              >
+                                <option value="successful">Successful</option>
+                                <option value="not_required">
+                                  Not Required
+                                </option>
+                                <option value="failed">Failed</option>
+                              </select>
+                            </div>
+                            <div className="col-span-2 md:col-span-1">
+                              <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                                Notes
+                              </label>
+                              <input
+                                type="text"
+                                value={maneuverForm.notes}
+                                onChange={(e) =>
+                                  setManeuverForm((f) => ({
+                                    ...f,
+                                    notes: e.target.value,
+                                  }))
+                                }
+                                placeholder="Optional notes"
+                                className="w-full text-small bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end mt-3">
+                            <button
+                              onClick={addManeuver}
+                              disabled={
+                                maneuverSaving ||
+                                !maneuverForm.tcaDate ||
+                                !maneuverForm.conjunctionId
+                              }
+                              className="flex items-center gap-1.5 bg-[var(--accent-primary)] text-white text-caption px-4 py-2 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors disabled:opacity-50"
+                            >
+                              {maneuverSaving ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Plus size={12} />
+                              )}
+                              Save Entry
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Maneuver table */}
+                  {maneuversLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2
+                        size={20}
+                        className="animate-spin text-[var(--text-tertiary)]"
+                      />
+                    </div>
+                  ) : maneuvers.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Target
+                        size={24}
+                        className="mx-auto text-[var(--text-tertiary)] mb-2"
+                      />
+                      <p className="text-small text-[var(--text-secondary)]">
+                        No maneuvers recorded yet
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-small">
+                        <thead>
+                          <tr className="text-left text-[var(--text-secondary)] border-b border-[var(--border-default)]">
+                            <th className="pb-2 pr-3">Date</th>
+                            <th className="pb-2 pr-3">Conjunction ID</th>
+                            <th className="pb-2 pr-3">Pc Before</th>
+                            <th className="pb-2 pr-3">Pc After</th>
+                            <th className="pb-2 pr-3">Delta-V</th>
+                            <th className="pb-2 pr-3">Outcome</th>
+                            <th className="pb-2 w-8" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {maneuvers.slice(0, 15).map((m) => (
+                            <tr
+                              key={m.id}
+                              className="border-b border-[var(--border-subtle)] group"
+                            >
+                              <td className="py-2 pr-3 text-[var(--text-secondary)] font-mono">
+                                {m.tcaDate
+                                  ? new Date(m.tcaDate).toLocaleDateString()
+                                  : "\u2014"}
+                              </td>
+                              <td className="py-2 pr-3 text-[var(--text-primary)] font-mono">
+                                {m.conjunctionId}
+                              </td>
+                              <td className="py-2 pr-3 text-[var(--text-secondary)] font-mono">
+                                {m.pcBefore?.toExponential(2)}
+                              </td>
+                              <td className="py-2 pr-3 text-[var(--text-secondary)] font-mono">
+                                {m.pcAfter?.toExponential(2)}
+                              </td>
+                              <td className="py-2 pr-3 text-[var(--text-secondary)] font-mono">
+                                {m.deltaVUsed} m/s
+                              </td>
+                              <td className="py-2 pr-3">
+                                <span
+                                  className={`text-micro uppercase px-2 py-0.5 rounded ${
+                                    m.outcome === "successful"
+                                      ? "bg-[var(--accent-success)]/10 text-[var(--accent-success)]"
+                                      : m.outcome === "not_required"
+                                        ? "bg-[var(--accent-warning)]/10 text-[var(--accent-warning)]"
+                                        : "bg-[var(--accent-error)]/10 text-[var(--accent-error)]"
+                                  }`}
+                                >
+                                  {m.outcome.replace("_", " ")}
+                                </span>
+                              </td>
+                              <td className="py-2 w-8">
+                                <button
+                                  onClick={() => deleteManeuver([m.id])}
+                                  className="opacity-0 group-hover:opacity-100 text-[var(--text-tertiary)] hover:text-[var(--accent-error)] transition-all"
+                                  title="Delete entry"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {maneuvers.length > 15 && (
+                        <p className="text-caption text-[var(--text-tertiary)] mt-2 text-center">
+                          Showing 15 of {maneuvers.length} entries
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </motion.div>
@@ -2228,6 +2553,241 @@ function DebrisPageContent() {
                   </button>
                 </div>
               </>
+            )}
+
+            {/* ── Orbital Lifetime Estimator (Ephemeris Integration) ── */}
+            {selectedAssessment && (
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe size={16} className="text-[var(--accent-primary)]" />
+                  <h2 className="text-title font-medium text-[var(--text-primary)]">
+                    Orbital Lifetime Estimator
+                  </h2>
+                </div>
+                <p className="text-caption text-[var(--text-secondary)] mb-5">
+                  Ephemeris-based estimate using CIRA atmospheric density model
+                  — Art. 68 compliance check
+                </p>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <div>
+                    <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                      Altitude (km)
+                    </label>
+                    <input
+                      type="number"
+                      min="150"
+                      max="50000"
+                      value={lifetimeForm.altitudeKm || ""}
+                      onChange={(e) =>
+                        setLifetimeForm((f) => ({
+                          ...f,
+                          altitudeKm: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      placeholder={String(selectedAssessment.altitudeKm || 550)}
+                      className="w-full text-small bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                      Inclination (deg)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="180"
+                      step="0.1"
+                      value={lifetimeForm.inclinationDeg}
+                      onChange={(e) =>
+                        setLifetimeForm((f) => ({
+                          ...f,
+                          inclinationDeg: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full text-small bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                      Ballistic Coeff (kg/m2)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="1000"
+                      value={lifetimeForm.ballisticCoefficientKgPerM2}
+                      onChange={(e) =>
+                        setLifetimeForm((f) => ({
+                          ...f,
+                          ballisticCoefficientKgPerM2:
+                            parseFloat(e.target.value) || 50,
+                        }))
+                      }
+                      className="w-full text-small bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-micro uppercase tracking-wider text-[var(--text-secondary)] block mb-1">
+                      Solar Flux F10.7 (sfu)
+                    </label>
+                    <input
+                      type="number"
+                      min="50"
+                      max="400"
+                      value={lifetimeForm.solarFluxF107}
+                      onChange={(e) =>
+                        setLifetimeForm((f) => ({
+                          ...f,
+                          solarFluxF107: parseInt(e.target.value) || 120,
+                        }))
+                      }
+                      className="w-full text-small bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={estimateOrbitalLifetime}
+                  disabled={lifetimeLoading || !lifetimeForm.altitudeKm}
+                  className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-5 py-2.5 rounded-lg text-body font-medium hover:opacity-90 transition-all disabled:opacity-50 mb-4"
+                >
+                  {lifetimeLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Calculator size={14} />
+                  )}
+                  Estimate Lifetime
+                </button>
+
+                {/* Results */}
+                {lifetimeEstimate && (
+                  <div className="space-y-4">
+                    {/* Compliance timeline bar */}
+                    <div className="p-4 bg-[var(--surface-sunken)] rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-small font-medium text-[var(--text-primary)]">
+                          Estimated Orbital Lifetime
+                        </p>
+                        <span
+                          className={`text-micro uppercase tracking-wider px-2.5 py-1 rounded-lg font-medium ${
+                            lifetimeEstimate.isWithin5Years
+                              ? "bg-[var(--accent-success)]/10 text-[var(--accent-success)]"
+                              : lifetimeEstimate.isWithin25Years
+                                ? "bg-[var(--accent-warning)]/10 text-[var(--accent-warning)]"
+                                : "bg-[var(--accent-error)]/10 text-[var(--accent-error)]"
+                          }`}
+                        >
+                          {lifetimeEstimate.isWithin5Years
+                            ? "5yr compliant"
+                            : lifetimeEstimate.isWithin25Years
+                              ? "25yr compliant"
+                              : "Non-compliant"}
+                        </span>
+                      </div>
+
+                      {/* Visual timeline */}
+                      <div className="relative h-6 bg-[var(--surface-raised)] rounded-full overflow-hidden mb-3">
+                        {/* 5yr marker */}
+                        <div
+                          className="absolute top-0 bottom-0 w-px bg-[var(--accent-success)]/40"
+                          style={{ left: `${Math.min((5 / 30) * 100, 100)}%` }}
+                        />
+                        {/* 25yr marker */}
+                        <div
+                          className="absolute top-0 bottom-0 w-px bg-[var(--accent-error)]/40"
+                          style={{ left: `${Math.min((25 / 30) * 100, 100)}%` }}
+                        />
+                        {/* Estimate bar */}
+                        <div
+                          className={`absolute top-0 bottom-0 rounded-full transition-all ${
+                            lifetimeEstimate.isWithin5Years
+                              ? "bg-[var(--accent-success)]"
+                              : lifetimeEstimate.isWithin25Years
+                                ? "bg-[var(--accent-warning)]"
+                                : "bg-[var(--accent-error)]"
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              (lifetimeEstimate.estimatedLifetimeYears / 30) *
+                                100,
+                              100,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-micro text-[var(--text-tertiary)]">
+                        <span>0 yr</span>
+                        <span className="text-[var(--accent-success)]">
+                          5 yr
+                        </span>
+                        <span className="text-[var(--accent-error)]">
+                          25 yr
+                        </span>
+                        <span>30+ yr</span>
+                      </div>
+                    </div>
+
+                    {/* Key metrics */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 bg-[var(--surface-sunken)] rounded-lg">
+                        <p className="text-display-sm font-semibold text-[var(--text-primary)]">
+                          {lifetimeEstimate.estimatedLifetimeYears < 100
+                            ? `${lifetimeEstimate.estimatedLifetimeYears} yr`
+                            : ">100 yr"}
+                        </p>
+                        <p className="text-micro text-[var(--text-secondary)] uppercase tracking-wider mt-0.5">
+                          Estimated Lifetime
+                        </p>
+                      </div>
+                      <div className="p-3 bg-[var(--surface-sunken)] rounded-lg">
+                        <p className="text-body-lg font-semibold text-[var(--text-primary)]">
+                          {lifetimeEstimate.estimatedDecayDate}
+                        </p>
+                        <p className="text-micro text-[var(--text-secondary)] uppercase tracking-wider mt-0.5">
+                          Estimated Decay Date
+                        </p>
+                      </div>
+                      <div className="p-3 bg-[var(--surface-sunken)] rounded-lg">
+                        <p
+                          className={`text-body-lg font-semibold capitalize ${
+                            lifetimeEstimate.confidenceLevel === "high"
+                              ? "text-[var(--accent-success)]"
+                              : lifetimeEstimate.confidenceLevel === "medium"
+                                ? "text-[var(--accent-warning)]"
+                                : "text-[var(--accent-error)]"
+                          }`}
+                        >
+                          {lifetimeEstimate.confidenceLevel}
+                        </p>
+                        <p className="text-micro text-[var(--text-secondary)] uppercase tracking-wider mt-0.5">
+                          Confidence
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Assumptions */}
+                    <div className="p-3 bg-[var(--surface-sunken)] rounded-lg">
+                      <p className="text-micro uppercase tracking-wider text-[var(--text-secondary)] mb-2">
+                        Model Assumptions
+                      </p>
+                      <ul className="space-y-1">
+                        {lifetimeEstimate.assumptions.map((a, i) => (
+                          <li
+                            key={i}
+                            className="text-caption text-[var(--text-secondary)] flex items-start gap-2"
+                          >
+                            <span className="text-[var(--text-tertiary)]">
+                              {"\u2022"}
+                            </span>
+                            {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </motion.div>
         )}
