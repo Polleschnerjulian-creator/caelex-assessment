@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import EphemerisSidebar from "@/components/ephemeris/EphemerisSidebar";
+import "./ephemeris.css";
 
 export default function EphemerisLayout({
   children,
@@ -102,19 +102,5 @@ export default function EphemerisLayout({
     };
   }, []);
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#000000",
-        color: "rgba(255,255,255,0.9)",
-        fontFamily:
-          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      <EphemerisSidebar />
-      <main style={{ flex: 1, overflow: "auto" }}>{children}</main>
-    </div>
-  );
+  return <div className="ephemeris-app">{children}</div>;
 }
