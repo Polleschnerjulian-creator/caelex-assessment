@@ -1213,14 +1213,7 @@ export default function EphemerisDashboard() {
               >
                 Orbital Twin
               </div>
-              {use3DGlobe ? (
-                <OrbitalTwinCanvas
-                  fleet={fleet}
-                  onError={() => setUse3DGlobe(false)}
-                />
-              ) : (
-                <OrbitalTwinSVG fleet={fleet} />
-              )}
+              <OrbitalTwinSVG fleet={fleet} />
             </div>
 
             {/* Right: Compliance Heatmap */}
