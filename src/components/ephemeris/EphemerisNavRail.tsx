@@ -29,28 +29,28 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "OVERVIEW",
     items: [
-      { id: "fleet", label: "Fleet Command", icon: "\u2B21" },
-      { id: "intel", label: "Intelligence", icon: "\uD83D\uDCCA" },
+      { id: "fleet", label: "Fleet Command", icon: "/" },
+      { id: "intel", label: "Intelligence", icon: "/" },
     ],
   },
   {
     title: "MONITORING",
     items: [
-      { id: "tracking", label: "Orbital Tracking", icon: "\uD83D\uDEF0" },
-      { id: "alerts", label: "Alerts & Anomalies", icon: "\u26A0" },
-      { id: "weather", label: "Space Weather", icon: "\uD83C\uDF24" },
+      { id: "tracking", label: "Orbital Tracking", icon: "/" },
+      { id: "alerts", label: "Alerts & Anomalies", icon: "/" },
+      { id: "weather", label: "Space Weather", icon: "/" },
     ],
   },
   {
     title: "PREDICTION",
     items: [
-      { id: "forecast", label: "Compliance Forecast", icon: "\uD83D\uDCC8" },
-      { id: "dependencies", label: "Dependencies", icon: "\uD83D\uDD17" },
+      { id: "forecast", label: "Compliance Forecast", icon: "/" },
+      { id: "dependencies", label: "Dependencies", icon: "/" },
     ],
   },
   {
     title: "TOOLS",
-    items: [{ id: "forge", label: "Scenario Builder", icon: "\u26A1" }],
+    items: [{ id: "forge", label: "Scenario Builder", icon: "/" }],
   },
 ];
 
@@ -73,31 +73,11 @@ export default function EphemerisNavRail({
     <nav className="eph-sidebar">
       {/* Logo */}
       <div className="eph-sidebar-logo">
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            background: "white",
-            borderRadius: 6,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              color: "black",
-              fontSize: 18,
-              fontWeight: 800,
-              fontFamily: "'Inter', sans-serif",
-              lineHeight: 1,
-              marginTop: -1,
-            }}
-          >
-            e
-          </span>
-        </div>
+        <img
+          src="/images/ephemeris-logo.png"
+          alt="Ephemeris"
+          style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0 }}
+        />
         <span className="eph-sidebar-brand">EPHEMERIS</span>
       </div>
 
@@ -115,7 +95,17 @@ export default function EphemerisNavRail({
                   onClick={() => onModuleChange(item.id)}
                   type="button"
                 >
-                  <span className="eph-sidebar-item-icon">{item.icon}</span>
+                  <span
+                    className="eph-sidebar-item-icon"
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      background: "currentColor",
+                      opacity: 0.5,
+                      flexShrink: 0,
+                    }}
+                  />
                   <span className="eph-sidebar-item-label">{item.label}</span>
                   {item.id === "alerts" &&
                     alertCount != null &&

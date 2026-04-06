@@ -24,31 +24,16 @@ export default function EphemerisTopBar() {
           href="/dashboard"
           style={{ textDecoration: "none", display: "flex" }}
         >
-          <div
+          <img
+            src="/images/ephemeris-logo.png"
+            alt="Ephemeris"
             style={{
               width: 28,
               height: 28,
-              background: "white",
               borderRadius: 6,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               flexShrink: 0,
             }}
-          >
-            <span
-              style={{
-                color: "black",
-                fontSize: 18,
-                fontWeight: 800,
-                fontFamily: "'Inter', sans-serif",
-                lineHeight: 1,
-                marginTop: -1,
-              }}
-            >
-              e
-            </span>
-          </div>
+          />
         </Link>
         <div className="eph-top-brand">EPHEMERIS</div>
       </div>
