@@ -76,9 +76,8 @@ export default function EphemerisNavRail({
         <img
           src="/images/ephemeris-logo.png"
           alt="Ephemeris"
-          style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0 }}
+          style={{ height: 26, width: "auto", flexShrink: 0 }}
         />
-        <span className="eph-sidebar-brand">EPHEMERIS</span>
       </div>
 
       {/* Sections */}

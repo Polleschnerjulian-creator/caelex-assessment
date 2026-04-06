@@ -28,14 +28,12 @@ export default function EphemerisTopBar() {
             src="/images/ephemeris-logo.png"
             alt="Ephemeris"
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
+              height: 34,
+              width: "auto",
               flexShrink: 0,
             }}
           />
         </Link>
-        <div className="eph-top-brand">EPHEMERIS</div>
       </div>
       <div className="eph-topbar-right">
         <div className="eph-top-status">
