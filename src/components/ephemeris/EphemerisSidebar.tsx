@@ -5,9 +5,10 @@ import Link from "next/link";
 import {
   Satellite,
   AlertTriangle,
-  BarChart3,
   TrendingUp,
   Workflow,
+  Network,
+  Cloud,
   ArrowLeft,
 } from "lucide-react";
 
@@ -25,11 +26,6 @@ const NAV_ITEMS = [
     badge: null as string | null,
   },
   {
-    href: "/dashboard/ephemeris/intelligence",
-    label: "Intelligence",
-    icon: BarChart3,
-  },
-  {
     href: "/dashboard/ephemeris/forecast",
     label: "Forecast",
     icon: TrendingUp,
@@ -38,6 +34,16 @@ const NAV_ITEMS = [
     href: "/dashboard/ephemeris/forge",
     label: "Scenario Builder",
     icon: Workflow,
+  },
+  {
+    href: "/dashboard/ephemeris/dependencies",
+    label: "Dependencies",
+    icon: Network,
+  },
+  {
+    href: "/dashboard/ephemeris/weather",
+    label: "Space Weather",
+    icon: Cloud,
   },
 ];
 

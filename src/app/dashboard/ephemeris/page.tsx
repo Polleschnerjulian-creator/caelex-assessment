@@ -2,12 +2,26 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Loader2, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
-import AlertsSidebar from "./components/alerts-sidebar";
-import DependencyGraphView from "./components/dependency-graph-view";
 import { EPH } from "./theme";
+
+// Lazy-load 3D Globe — falls back to SVG if import fails
+const OrbitalTwinCanvas = dynamic(
+  () => import("./components/orbital-twin-3d"),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +31,7 @@ interface FleetState {
   operatorType?: string;
   overallScore: number;
   dataFreshness: string;
+  altitudeKm?: number;
   complianceHorizon: {
     daysUntilFirstBreach: number | null;
     firstBreachRegulation: string | null;
@@ -32,7 +47,8 @@ interface FleetState {
   modules?: Record<string, { score: number; status: string }>;
 }
 
-type TypeFilter = "ALL" | "SCO" | "LO";
+type TypeFilter = "ALL" | "SCO" | "LO" | "LSO" | "ISOS" | "CAP" | "PDP" | "TCO";
+type StatusFilter = "ALL" | "NOMINAL" | "WATCH" | "WARNING" | "CRITICAL";
 
 interface FleetIntelligence {
   fleetScore: number;
@@ -87,31 +103,25 @@ interface BenchmarkData {
   } | null;
 }
 
-// ─── Status dot color ────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getStatusColor(score: number): string {
+  if (score >= 80) return "#3fb950";
+  if (score >= 60) return "#d29922";
+  if (score >= 40) return "#f0883e";
+  return "#f85149";
+}
 
 function statusDotColor(category: string): string {
   switch (category) {
     case "NOMINAL":
-      return EPH.nominal;
+      return "#3fb950";
     case "WATCH":
-      return EPH.watch;
+      return "#d29922";
     case "WARNING":
-      return EPH.warning;
+      return "#f0883e";
     case "CRITICAL":
-      return EPH.critical;
-    default:
-      return "rgba(255,255,255,0.2)";
-  }
-}
-
-function severityDotColor(severity: string): string {
-  switch (severity) {
-    case "CRITICAL":
-      return EPH.critical;
-    case "HIGH":
-      return EPH.warning;
-    case "MEDIUM":
-      return EPH.watch;
+      return "#f85149";
     default:
       return "rgba(255,255,255,0.2)";
   }
@@ -125,54 +135,81 @@ function scoreRisk(score: number): string {
 }
 
 function horizonColor(days: number | null): string {
-  if (days === null) return EPH.textTertiary;
-  if (days < 90) return EPH.critical;
-  if (days < 365) return EPH.watch;
-  return EPH.textPrimary;
+  if (days === null) return "rgba(255,255,255,0.3)";
+  if (days < 90) return "#f85149";
+  if (days < 365) return "#d29922";
+  return "rgba(255,255,255,0.9)";
 }
 
 function freshnessColor(freshness: string): string {
   switch (freshness) {
     case "LIVE":
-      return EPH.nominal;
+      return "#3fb950";
     case "RECENT":
-      return EPH.textTertiary;
+      return "rgba(255,255,255,0.3)";
     case "STALE":
-      return EPH.watch;
+      return "#d29922";
     default:
-      return EPH.critical;
+      return "#f85149";
+  }
+}
+
+function typeBadgeColor(type: string): string {
+  switch (type) {
+    case "SCO":
+      return "rgba(63,185,80,0.15)";
+    case "LO":
+      return "rgba(210,153,34,0.15)";
+    case "LSO":
+      return "rgba(240,136,62,0.15)";
+    case "ISOS":
+      return "rgba(139,148,158,0.15)";
+    case "CAP":
+      return "rgba(100,149,237,0.15)";
+    case "PDP":
+      return "rgba(175,122,197,0.15)";
+    case "TCO":
+      return "rgba(248,81,73,0.15)";
+    default:
+      return "rgba(255,255,255,0.06)";
+  }
+}
+
+function typeBadgeTextColor(type: string): string {
+  switch (type) {
+    case "SCO":
+      return "rgba(63,185,80,0.8)";
+    case "LO":
+      return "rgba(210,153,34,0.8)";
+    case "LSO":
+      return "rgba(240,136,62,0.8)";
+    case "ISOS":
+      return "rgba(139,148,158,0.8)";
+    case "CAP":
+      return "rgba(100,149,237,0.8)";
+    case "PDP":
+      return "rgba(175,122,197,0.8)";
+    case "TCO":
+      return "rgba(248,81,73,0.8)";
+    default:
+      return "rgba(255,255,255,0.5)";
   }
 }
 
 // ─── Sort ─────────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "score" | "horizon" | "risk" | "alerts";
+type SortKey = "name" | "score" | "horizon" | "risk" | "alerts" | "type";
 type SortDir = "asc" | "desc";
 
-const TAB_ITEMS = [
-  { key: "fleet" as const, label: "Fleet" },
-  { key: "alerts" as const, label: "Alerts" },
-  { key: "intelligence" as const, label: "Intelligence" },
-  { key: "dependencies" as const, label: "Dependencies" },
-] as const;
+// ─── Shared Styles ────────────────────────────────────────────────────────────
 
-type TabKey = (typeof TAB_ITEMS)[number]["key"];
-
-// ─── Shared Styles ───────────────────────────────────────────────────────────
-
-const glassCard: React.CSSProperties = {
-  background: EPH.cardBg,
-  border: `1px solid ${EPH.cardBorder}`,
-  borderRadius: EPH.cardRadius,
-  transition: "background 200ms ease, border-color 200ms ease",
+const cardStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: 16,
 };
 
-const glassCardHover: React.CSSProperties = {
-  background: EPH.cardBgHover,
-  borderColor: EPH.cardBorderHover,
-};
-
-// ─── Fade wrapper ────────────────────────────────────────────────────────────
+// ─── Fade wrapper ─────────────────────────────────────────────────────────────
 
 function FadeIn({
   children,
@@ -201,28 +238,402 @@ function FadeIn({
   );
 }
 
-// ─── Glass Card with hover ───────────────────────────────────────────────────
+// ─── Orbital Twin SVG Fallback ───────────────────────────────────────────────
 
-function GlassPanel({
-  children,
-  style,
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-}) {
-  const [hovered, setHovered] = useState(false);
+function OrbitalTwinSVG({ fleet }: { fleet: FleetState[] }) {
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
-        ...glassCard,
-        ...(hovered ? glassCardHover : {}),
-        padding: 16,
-        ...style,
+        ...cardStyle,
+        height: 400,
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      {children}
+      <svg
+        viewBox="-2.2 -2.2 4.4 4.4"
+        style={{ width: "100%", height: "100%" }}
+      >
+        {/* Earth */}
+        <circle
+          cx="0"
+          cy="0"
+          r="1"
+          fill="rgba(255,255,255,0.02)"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="0.01"
+        />
+        {/* Orbit rings */}
+        <circle
+          cx="0"
+          cy="0"
+          r="1.08"
+          fill="none"
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="0.005"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r="1.15"
+          fill="none"
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="0.005"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r="1.25"
+          fill="none"
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="0.005"
+        />
+        {/* Entity dots */}
+        {fleet.map((entity) => {
+          const isSurface = ["LO", "LSO", "TCO"].includes(
+            entity.operatorType ?? "SCO",
+          );
+          const radius = isSurface
+            ? 1.02
+            : 1 + (entity.altitudeKm ?? 550) / 6371;
+          const angle =
+            ((parseInt(entity.noradId || "0") * 137.5) % 360) * (Math.PI / 180);
+          const x = radius * Math.cos(angle);
+          const y = radius * Math.sin(angle);
+          return (
+            <circle
+              key={entity.noradId}
+              cx={x}
+              cy={y}
+              r="0.035"
+              fill={getStatusColor(entity.overallScore)}
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                window.location.href = `/dashboard/ephemeris/${entity.noradId}`;
+              }}
+            >
+              <title>
+                {entity.satelliteName} - Score: {entity.overallScore}
+              </title>
+            </circle>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─── Compliance Deadline Heatmap ─────────────────────────────────────────────
+
+function ComplianceHeatmap({ fleet }: { fleet: FleetState[] }) {
+  const weeks = useMemo(() => {
+    // Build deadline density from fleet horizons
+    return Array.from({ length: 52 }, (_, i) => {
+      const weekStart = i * 7;
+      const weekEnd = weekStart + 7;
+      // Count entities that have a breach within this week window
+      let deadlines = 0;
+      for (const entity of fleet) {
+        const days = entity.complianceHorizon.daysUntilFirstBreach;
+        if (days !== null && days >= weekStart && days < weekEnd) {
+          deadlines++;
+        }
+        // Also count alerts that might correlate to upcoming deadlines
+        if (entity.activeAlerts) {
+          for (const alert of entity.activeAlerts) {
+            if (alert.severity === "CRITICAL" && i < 4) deadlines++;
+            if (alert.severity === "HIGH" && i >= 4 && i < 12) deadlines++;
+          }
+        }
+      }
+      return { week: i, deadlines };
+    });
+  }, [fleet]);
+
+  return (
+    <div
+      style={{
+        ...cardStyle,
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: "rgba(255,255,255,0.5)",
+          marginBottom: 16,
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          fontWeight: 500,
+        }}
+      >
+        Compliance Deadlines
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          color: "rgba(255,255,255,0.3)",
+          marginBottom: 16,
+        }}
+      >
+        Next 12 months, by week
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(13, 1fr)",
+          gap: 3,
+        }}
+      >
+        {weeks.map((w) => (
+          <div
+            key={w.week}
+            style={{
+              width: "100%",
+              aspectRatio: "1",
+              borderRadius: 3,
+              background:
+                w.deadlines === 0
+                  ? "rgba(255,255,255,0.03)"
+                  : w.deadlines <= 1
+                    ? "rgba(63,185,80,0.3)"
+                    : w.deadlines <= 3
+                      ? "rgba(210,153,34,0.4)"
+                      : "rgba(248,81,73,0.5)",
+              transition: "opacity 150ms ease",
+              cursor: w.deadlines > 0 ? "pointer" : "default",
+            }}
+            title={`Week ${w.week + 1}: ${w.deadlines} deadline${w.deadlines !== 1 ? "s" : ""}`}
+          />
+        ))}
+      </div>
+      {/* Legend */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginTop: 16,
+          fontSize: 10,
+          color: "rgba(255,255,255,0.25)",
+        }}
+      >
+        <span>Less</span>
+        <div style={{ display: "flex", gap: 3 }}>
+          {[
+            "rgba(255,255,255,0.03)",
+            "rgba(63,185,80,0.3)",
+            "rgba(210,153,34,0.4)",
+            "rgba(248,81,73,0.5)",
+          ].map((c, i) => (
+            <div
+              key={i}
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 2,
+                background: c,
+              }}
+            />
+          ))}
+        </div>
+        <span>More</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── AI Advisor (Template-Based) ─────────────────────────────────────────────
+
+function AIAdvisor({
+  fleet,
+  intel,
+}: {
+  fleet: FleetState[];
+  intel: FleetIntelligence | null;
+}) {
+  const recommendations = useMemo(() => {
+    const recs: Array<{
+      text: string;
+      severity: "critical" | "warning" | "info";
+    }> = [];
+
+    // 1. Entity with lowest horizon
+    if (
+      intel?.horizon.earliestBreachName &&
+      intel.horizon.earliestBreachDays !== null
+    ) {
+      const regulation =
+        intel.horizon.earliestBreachRegulation ?? "compliance requirement";
+      recs.push({
+        text: `${intel.horizon.earliestBreachName} wird in ${intel.horizon.earliestBreachDays}d ${regulation} non-compliant. Aktion: Renewal jetzt starten.`,
+        severity:
+          intel.horizon.earliestBreachDays < 90 ? "critical" : "warning",
+      });
+    }
+
+    // 2. Entity with most critical alerts
+    const entityWithMostCritical = fleet
+      .map((e) => ({
+        name: e.satelliteName,
+        critCount: (e.activeAlerts ?? []).filter(
+          (a) => a.severity === "CRITICAL",
+        ).length,
+      }))
+      .filter((e) => e.critCount > 0)
+      .sort((a, b) => b.critCount - a.critCount)[0];
+
+    if (entityWithMostCritical) {
+      recs.push({
+        text: `${entityWithMostCritical.name} hat ${entityWithMostCritical.critCount} Critical Alert${entityWithMostCritical.critCount > 1 ? "s" : ""}. Sofort handeln.`,
+        severity: "critical",
+      });
+    }
+
+    // 3. Fleet trend
+    if (intel?.trend && Math.abs(intel.trend.shortTermDelta) > 0.5) {
+      const direction = intel.trend.shortTermDelta < 0 ? "\u2193" : "\u2191";
+      const weakest = intel.weakestLinks?.[0];
+      const cause = weakest
+        ? ` Hauptursache: ${weakest.name}${weakest.weakestModule ? ` (${weakest.weakestModule})` : ""}.`
+        : "";
+      recs.push({
+        text: `Fleet Score Trend: ${direction}${Math.abs(intel.trend.shortTermDelta).toFixed(1)} pts in 7 Tagen.${cause}`,
+        severity: intel.trend.shortTermDelta < -1 ? "warning" : "info",
+      });
+    }
+
+    // 4. If fleet has entities with low scores
+    const lowScoreEntities = fleet.filter((e) => e.overallScore < 60);
+    if (lowScoreEntities.length > 0 && recs.length < 3) {
+      recs.push({
+        text: `${lowScoreEntities.length} Entities unter Score 60. Priorisierung empfohlen.`,
+        severity: "warning",
+      });
+    }
+
+    return recs.slice(0, 3);
+  }, [fleet, intel]);
+
+  if (recommendations.length === 0) {
+    return (
+      <div
+        style={{
+          ...cardStyle,
+          padding: 20,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            color: "rgba(255,255,255,0.5)",
+            marginBottom: 16,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 500,
+          }}
+        >
+          AI Advisor
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
+          No recommendations at this time. Fleet is in good shape.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        ...cardStyle,
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: "rgba(255,255,255,0.5)",
+          marginBottom: 16,
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          fontWeight: 500,
+        }}
+      >
+        AI Advisor
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {recommendations.map((rec, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 10,
+              padding: 12,
+              borderRadius: 10,
+              background:
+                rec.severity === "critical"
+                  ? "rgba(248,81,73,0.06)"
+                  : rec.severity === "warning"
+                    ? "rgba(210,153,34,0.06)"
+                    : "rgba(255,255,255,0.02)",
+              border:
+                rec.severity === "critical"
+                  ? "1px solid rgba(248,81,73,0.12)"
+                  : rec.severity === "warning"
+                    ? "1px solid rgba(210,153,34,0.12)"
+                    : "1px solid rgba(255,255,255,0.04)",
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                marginTop: 5,
+                flexShrink: 0,
+                background:
+                  rec.severity === "critical"
+                    ? "#f85149"
+                    : rec.severity === "warning"
+                      ? "#d29922"
+                      : "#3fb950",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.7)",
+                lineHeight: 1.5,
+              }}
+            >
+              {rec.text}
+            </span>
+          </div>
+        ))}
+      </div>
+      <Link
+        href="/dashboard/astra"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 16,
+          fontSize: 12,
+          color: "rgba(255,255,255,0.3)",
+          textDecoration: "none",
+          transition: "color 150ms ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "rgba(255,255,255,0.3)";
+        }}
+      >
+        Ask Ephemeris AI &rarr;
+      </Link>
     </div>
   );
 }
@@ -235,11 +646,13 @@ export default function EphemerisDashboard() {
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("fleet");
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [lastCalc, setLastCalc] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [use3DGlobe, setUse3DGlobe] = useState(true);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -313,13 +726,40 @@ export default function EphemerisDashboard() {
 
   // Filter + sort fleet
   const sortedFleet = useMemo(() => {
-    const filtered =
-      typeFilter === "ALL"
-        ? [...fleet]
-        : fleet.filter((f) => (f.operatorType ?? "SCO") === typeFilter);
+    let filtered = [...fleet];
+
+    // Type filter
+    if (typeFilter !== "ALL") {
+      filtered = filtered.filter(
+        (f) => (f.operatorType ?? "SCO") === typeFilter,
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "ALL") {
+      filtered = filtered.filter(
+        (f) => scoreRisk(f.overallScore) === statusFilter,
+      );
+    }
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (f) =>
+          f.satelliteName.toLowerCase().includes(q) ||
+          f.noradId.toLowerCase().includes(q),
+      );
+    }
+
     filtered.sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
+        case "type":
+          cmp = (a.operatorType ?? "SCO").localeCompare(
+            b.operatorType ?? "SCO",
+          );
+          break;
         case "name":
           cmp = a.satelliteName.localeCompare(b.satelliteName);
           break;
@@ -341,7 +781,7 @@ export default function EphemerisDashboard() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return filtered;
-  }, [fleet, sortKey, sortDir, typeFilter]);
+  }, [fleet, sortKey, sortDir, typeFilter, statusFilter, searchQuery]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
@@ -352,24 +792,15 @@ export default function EphemerisDashboard() {
   };
 
   const weakestModule = (
-    sat: FleetState,
+    entity: FleetState,
   ): { name: string; score: number } | null => {
-    if (!sat.modules) return null;
+    if (!entity.modules) return null;
     let worst: { name: string; score: number } | null = null;
-    for (const [name, mod] of Object.entries(sat.modules)) {
+    for (const [name, mod] of Object.entries(entity.modules)) {
       if (!worst || mod.score < worst.score) worst = { name, score: mod.score };
     }
     return worst;
   };
-
-  // Collect all alerts for sidebar
-  const allAlerts = fleet.flatMap((f) =>
-    (f.activeAlerts ?? []).map((a) => ({
-      ...a,
-      noradId: f.noradId,
-      satelliteName: f.satelliteName,
-    })),
-  );
 
   const SortIcon = ({ field }: { field: SortKey }) => {
     if (sortKey !== field)
@@ -403,1599 +834,1146 @@ export default function EphemerisDashboard() {
   return (
     <div
       style={{
-        display: "flex",
+        flex: 1,
         minHeight: "100vh",
-        background: EPH.pageBg,
-        color: EPH.textPrimary,
-        fontFamily: EPH.sans,
+        background: "#000000",
+        color: "rgba(255,255,255,0.9)",
+        fontFamily:
+          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
-      <div style={{ flex: 1, minHeight: "100vh" }}>
-        <div style={{ padding: 32, maxWidth: 1600, margin: "0 auto" }}>
-          {/* ── Header ──────────────────────────────────────────────── */}
-          <FadeIn>
-            <div
+      <div style={{ padding: 32, maxWidth: 1600, margin: "0 auto" }}>
+        {/* ── 1. Header ──────────────────────────────────────────── */}
+        <FadeIn>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 32,
+            }}
+          >
+            <span
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 32,
+                fontSize: 24,
+                fontWeight: 500,
+                color: "rgba(255,255,255,0.9)",
+                letterSpacing: "-0.01em",
               }}
             >
-              <span
+              Fleet Overview
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              {lastCalc && (
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.3)",
+                    fontWeight: 400,
+                  }}
+                >
+                  Updated{" "}
+                  {new Date(lastCalc).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+              <button
+                onClick={loadAll}
+                disabled={loading}
                 style={{
-                  fontSize: 24,
-                  fontWeight: 500,
-                  color: EPH.textPrimary,
-                  letterSpacing: "-0.01em",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "transparent",
+                  color: "rgba(255,255,255,0.5)",
+                  fontSize: 13,
+                  fontFamily:
+                    "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  cursor: loading ? "default" : "pointer",
+                  opacity: loading ? 0.4 : 1,
+                  transition: "all 200ms ease",
                 }}
               >
-                Fleet Overview
-              </span>
+                <RefreshCw
+                  size={14}
+                  style={
+                    loading ? { animation: "spin 1s linear infinite" } : {}
+                  }
+                />
+                {loading ? "Calculating..." : "\u21BB"}
+              </button>
+            </div>
+          </div>
+        </FadeIn>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                {lastCalc && (
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: EPH.textTertiary,
-                      fontWeight: 400,
-                    }}
-                  >
-                    Last updated{" "}
-                    {new Date(lastCalc).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      timeZoneName: "short",
-                    })}
-                  </span>
-                )}
-                <button
-                  onClick={loadAll}
-                  disabled={loading}
+        {/* ── 2. KPI Cards (5-grid) ──────────────────────────────── */}
+        <FadeIn delay={50}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, 1fr)",
+              gap: 16,
+              marginBottom: 32,
+            }}
+          >
+            {/* Fleet Score */}
+            <div style={{ ...cardStyle, padding: 20 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Fleet Score
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    border: `1px solid ${EPH.cardBorder}`,
-                    background: "transparent",
-                    color: EPH.textSecondary,
-                    fontSize: 13,
-                    fontFamily: EPH.sans,
-                    cursor: loading ? "default" : "pointer",
-                    opacity: loading ? 0.4 : 1,
-                    transition: "all 200ms ease",
+                    fontSize: 42,
+                    fontWeight: 300,
+                    color: "rgba(255,255,255,0.9)",
+                    fontFamily:
+                      "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                    lineHeight: 1,
                   }}
                 >
-                  <RefreshCw
-                    size={14}
-                    style={
-                      loading ? { animation: "spin 1s linear infinite" } : {}
-                    }
-                  />
-                  {loading ? "Calculating..." : "Refresh"}
-                </button>
+                  {intel?.fleetScore ?? "\u2014"}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: 8,
+                }}
+              >
+                {fleet.length > 0 ? `across ${fleet.length} entities` : ""}
               </div>
             </div>
-          </FadeIn>
 
-          {/* ── KPI Cards ──────────────────────────────────────────── */}
-          <FadeIn delay={50}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 24,
-                marginBottom: 32,
-              }}
-            >
-              {/* Fleet Score */}
-              <GlassPanel>
-                <div
+            {/* Horizon */}
+            <div style={{ ...cardStyle, padding: 20 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Horizon
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span
                   style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: EPH.textSecondary,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
+                    fontSize: 42,
+                    fontWeight: 300,
+                    color: "rgba(255,255,255,0.9)",
+                    fontFamily:
+                      "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                    lineHeight: 1,
                   }}
                 >
-                  Fleet Score
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 8 }}
-                >
+                  {intel?.horizon.earliestBreachDays ?? "\u221E"}
+                </span>
+                {intel?.horizon.earliestBreachDays != null && (
                   <span
-                    style={{
-                      fontSize: 48,
-                      fontWeight: 300,
-                      color: EPH.textPrimary,
-                      fontFamily: EPH.mono,
-                      lineHeight: 1,
-                    }}
+                    style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}
                   >
-                    {intel?.fleetScore ?? "\u2014"}
+                    d
                   </span>
-                  {fleetDelta !== 0 && (
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontFamily: EPH.mono,
-                        color:
-                          fleetDelta > 0.5
-                            ? EPH.nominal
-                            : fleetDelta < -0.5
-                              ? EPH.critical
-                              : EPH.textTertiary,
-                      }}
-                    >
-                      {fleetDelta > 0 ? "+" : ""}
-                      {fleetDelta.toFixed(1)}
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: EPH.textTertiary,
-                    marginTop: 8,
-                  }}
-                >
-                  7d trend
-                </div>
-              </GlassPanel>
-
-              {/* Horizon */}
-              <GlassPanel>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: EPH.textSecondary,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                  }}
-                >
-                  Horizon
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 6 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 48,
-                      fontWeight: 300,
-                      color: EPH.textPrimary,
-                      fontFamily: EPH.mono,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {intel?.horizon.earliestBreachDays ?? "\u2014"}
-                  </span>
-                  {intel?.horizon.earliestBreachDays != null && (
-                    <span
-                      style={{
-                        fontSize: 13,
-                        color: EPH.textTertiary,
-                      }}
-                    >
-                      days
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: EPH.textTertiary,
-                    marginTop: 8,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {intel?.horizon.earliestBreachName ?? "until breach"}
-                </div>
-              </GlassPanel>
-
-              {/* Active Alerts */}
-              <GlassPanel>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: EPH.textSecondary,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                  }}
-                >
-                  Active Alerts
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 8 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 48,
-                      fontWeight: 300,
-                      color: EPH.textPrimary,
-                      fontFamily: EPH.mono,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {totalAlerts}
-                  </span>
-                  {criticalAlerts > 0 && (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        fontSize: 13,
-                        color: EPH.critical,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: EPH.critical,
-                          display: "inline-block",
-                        }}
-                      />
-                      {criticalAlerts} crit
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: EPH.textTertiary,
-                    marginTop: 8,
-                  }}
-                >
-                  {criticalAlerts > 0
-                    ? `${criticalAlerts} critical`
-                    : highAlerts > 0
-                      ? `${highAlerts} high`
-                      : totalAlerts > 0
-                        ? "no critical"
-                        : "none"}
-                </div>
-              </GlassPanel>
-
-              {/* Fleet Size */}
-              <GlassPanel>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: EPH.textSecondary,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: 12,
-                  }}
-                >
-                  Fleet Size
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 6 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 48,
-                      fontWeight: 300,
-                      color: EPH.textPrimary,
-                      fontFamily: EPH.mono,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {fleet.length}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: EPH.textTertiary,
-                    }}
-                  >
-                    sats
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: EPH.textTertiary,
-                    marginTop: 8,
-                  }}
-                >
-                  {criticalCount > 0 ? (
-                    <span style={{ color: EPH.critical }}>
-                      {criticalCount} critical
-                    </span>
-                  ) : watchCount > 0 ? (
-                    <span style={{ color: EPH.watch }}>{watchCount} watch</span>
-                  ) : (
-                    `${nominalCount} nominal`
-                  )}
-                </div>
-              </GlassPanel>
+                )}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: 8,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {intel?.horizon.earliestBreachRegulation ?? "until breach"}
+              </div>
             </div>
-          </FadeIn>
 
-          {/* ── Tab Bar ──────────────────────────────────────────────── */}
-          <FadeIn delay={100}>
-            <div
-              style={{
-                display: "flex",
-                gap: 0,
-                borderBottom: `1px solid ${EPH.cardBorder}`,
-                marginBottom: 24,
-              }}
-            >
-              {TAB_ITEMS.map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
+            {/* Alerts */}
+            <div style={{ ...cardStyle, padding: 20 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Alerts
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span
                   style={{
-                    padding: "12px 20px",
-                    fontSize: 13,
-                    fontWeight: 400,
-                    fontFamily: EPH.sans,
+                    fontSize: 42,
+                    fontWeight: 300,
+                    color: "rgba(255,255,255,0.9)",
+                    fontFamily:
+                      "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                    lineHeight: 1,
+                  }}
+                >
+                  {totalAlerts}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: 8,
+                }}
+              >
+                {criticalAlerts > 0 ? (
+                  <span style={{ color: "#f85149" }}>
+                    {criticalAlerts} critical
+                  </span>
+                ) : highAlerts > 0 ? (
+                  <span style={{ color: "#d29922" }}>{highAlerts} high</span>
+                ) : totalAlerts > 0 ? (
+                  "no critical"
+                ) : (
+                  "none"
+                )}
+              </div>
+            </div>
+
+            {/* Fleet Size */}
+            <div style={{ ...cardStyle, padding: 20 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Fleet Size
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span
+                  style={{
+                    fontSize: 42,
+                    fontWeight: 300,
+                    color: "rgba(255,255,255,0.9)",
+                    fontFamily:
+                      "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                    lineHeight: 1,
+                  }}
+                >
+                  {fleet.length}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: 8,
+                }}
+              >
+                entities
+              </div>
+            </div>
+
+            {/* Trend */}
+            <div style={{ ...cardStyle, padding: 20 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Trend
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span
+                  style={{
+                    fontSize: 42,
+                    fontWeight: 300,
                     color:
-                      activeTab === key ? EPH.textPrimary : EPH.textTertiary,
-                    background: "transparent",
-                    border: "none",
-                    borderBottom:
-                      activeTab === key
-                        ? `2px solid ${EPH.textPrimary}`
-                        : "2px solid transparent",
-                    cursor: "pointer",
-                    transition: "all 200ms ease",
-                    position: "relative",
-                    marginBottom: -1,
+                      fleetDelta > 0.5
+                        ? "#3fb950"
+                        : fleetDelta < -0.5
+                          ? "#f85149"
+                          : "rgba(255,255,255,0.9)",
+                    fontFamily:
+                      "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                    lineHeight: 1,
                   }}
                 >
-                  {label}
-                  {key === "alerts" && totalAlerts > 0 && (
-                    <span
-                      style={{
-                        marginLeft: 8,
-                        padding: "2px 7px",
-                        borderRadius: 10,
-                        fontSize: 11,
-                        fontWeight: 500,
-                        fontFamily: EPH.mono,
-                        background: EPH.badgeBg,
-                        color:
-                          criticalAlerts > 0 ? EPH.critical : EPH.textSecondary,
-                      }}
-                    >
-                      {totalAlerts}
-                    </span>
-                  )}
-                </button>
-              ))}
+                  {fleetDelta > 0
+                    ? "\u2191"
+                    : fleetDelta < 0
+                      ? "\u2193"
+                      : "\u2192"}
+                  {Math.abs(fleetDelta).toFixed(1)}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: 8,
+                }}
+              >
+                7d delta
+              </div>
             </div>
-          </FadeIn>
+          </div>
+        </FadeIn>
 
-          {/* ── Error Banner ─────────────────────────────────────────── */}
-          <AnimatePresence>
-            {error && (
-              <FadeIn>
+        {/* ── Error Banner ─────────────────────────────────────────── */}
+        <AnimatePresence>
+          {error && (
+            <FadeIn>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 16px",
+                  marginBottom: 24,
+                  borderRadius: 12,
+                  border: "1px solid rgba(248, 81, 73, 0.2)",
+                  background: "rgba(248, 81, 73, 0.06)",
+                }}
+              >
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+                  {error}
+                </span>
+                <button
+                  onClick={loadAll}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "transparent",
+                    color: "rgba(255,255,255,0.5)",
+                    fontSize: 13,
+                    fontFamily:
+                      "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    cursor: "pointer",
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            </FadeIn>
+          )}
+        </AnimatePresence>
+
+        {/* ── 3. Main Content (60/40 split) ──────────────────────── */}
+        <FadeIn delay={100}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "3fr 2fr",
+              gap: 16,
+              marginBottom: 32,
+            }}
+          >
+            {/* Left: Orbital Twin */}
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                Orbital Twin
+              </div>
+              {use3DGlobe ? (
+                <OrbitalTwinCanvas
+                  fleet={fleet}
+                  onError={() => setUse3DGlobe(false)}
+                />
+              ) : (
+                <OrbitalTwinSVG fleet={fleet} />
+              )}
+            </div>
+
+            {/* Right: Compliance Heatmap */}
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 12,
+                }}
+              >
+                &nbsp;
+              </div>
+              <ComplianceHeatmap fleet={fleet} />
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* ── 4. Fleet Table ──────────────────────────────────────── */}
+        <FadeIn delay={150}>
+          <div style={{ marginBottom: 32 }}>
+            {loading && fleet.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "96px 0",
+                }}
+              >
+                <Loader2
+                  size={22}
+                  style={{
+                    color: "rgba(255,255,255,0.3)",
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
+              </div>
+            ) : fleet.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "96px 0",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.3)",
+                  }}
+                >
+                  No entities tracked
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Filter bar */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "12px 16px",
-                    marginBottom: 24,
-                    borderRadius: 12,
-                    border: `1px solid rgba(248, 81, 73, 0.2)`,
-                    background: "rgba(248, 81, 73, 0.06)",
+                    gap: 12,
+                    marginBottom: 16,
                   }}
                 >
-                  <span style={{ fontSize: 13, color: EPH.textSecondary }}>
-                    {error}
-                  </span>
-                  <button
-                    onClick={loadAll}
+                  {/* Type filter */}
+                  <select
+                    value={typeFilter}
+                    onChange={(e) =>
+                      setTypeFilter(e.target.value as TypeFilter)
+                    }
                     style={{
-                      padding: "4px 12px",
-                      borderRadius: 6,
-                      border: `1px solid ${EPH.cardBorder}`,
-                      background: "transparent",
-                      color: EPH.textSecondary,
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "rgba(255,255,255,0.9)",
                       fontSize: 13,
-                      fontFamily: EPH.sans,
+                      fontFamily:
+                        "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      outline: "none",
                       cursor: "pointer",
                     }}
                   >
-                    Retry
-                  </button>
-                </div>
-              </FadeIn>
-            )}
-          </AnimatePresence>
+                    <option value="ALL">All Types</option>
+                    {(
+                      ["SCO", "LO", "LSO", "ISOS", "CAP", "PDP", "TCO"] as const
+                    ).map((t) => {
+                      const count = fleet.filter(
+                        (f) => (f.operatorType ?? "SCO") === t,
+                      ).length;
+                      return (
+                        <option key={t} value={t}>
+                          {t} ({count})
+                        </option>
+                      );
+                    })}
+                  </select>
 
-          {/* ── Tab Content ──────────────────────────────────────────── */}
-
-          {/* ── FLEET TAB ────────────────────────────────────────── */}
-          {activeTab === "fleet" && (
-            <FadeIn>
-              {loading && fleet.length === 0 ? (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "96px 0",
-                  }}
-                >
-                  <Loader2
-                    size={22}
+                  {/* Status filter */}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value as StatusFilter)
+                    }
                     style={{
-                      color: EPH.textTertiary,
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                </div>
-              ) : fleet.length === 0 ? (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "96px 0",
-                  }}
-                >
-                  <span
-                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "rgba(255,255,255,0.9)",
                       fontSize: 13,
-                      color: EPH.textTertiary,
+                      fontFamily:
+                        "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      outline: "none",
+                      cursor: "pointer",
                     }}
                   >
-                    No satellites tracked
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {/* Type filter */}
+                    <option value="ALL">All Status</option>
+                    <option value="NOMINAL">Nominal</option>
+                    <option value="WATCH">Watch</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="CRITICAL">Critical</option>
+                  </select>
+
+                  {/* Search */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 12,
-                      marginBottom: 16,
+                      gap: 8,
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "rgba(255,255,255,0.03)",
+                      flex: 1,
+                      maxWidth: 300,
                     }}
                   >
-                    <span
+                    <Search
+                      size={14}
+                      style={{ color: "rgba(255,255,255,0.25)", flexShrink: 0 }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search entities..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       style={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        color: EPH.textMicro,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        color: "rgba(255,255,255,0.9)",
+                        fontSize: 13,
+                        fontFamily:
+                          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                        width: "100%",
                       }}
-                    >
-                      Type
-                    </span>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) =>
-                        setTypeFilter(e.target.value as TypeFilter)
-                      }
+                    />
+                  </div>
+
+                  {(typeFilter !== "ALL" ||
+                    statusFilter !== "ALL" ||
+                    searchQuery) && (
+                    <button
+                      onClick={() => {
+                        setTypeFilter("ALL");
+                        setStatusFilter("ALL");
+                        setSearchQuery("");
+                      }}
                       style={{
                         padding: "6px 12px",
-                        borderRadius: 8,
-                        border: `1px solid ${EPH.cardBorder}`,
-                        background: EPH.cardBg,
-                        color: EPH.textPrimary,
-                        fontSize: 13,
-                        fontFamily: EPH.sans,
-                        outline: "none",
+                        borderRadius: 6,
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        background: "transparent",
+                        color: "rgba(255,255,255,0.3)",
+                        fontSize: 12,
+                        fontFamily:
+                          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                         cursor: "pointer",
                       }}
                     >
-                      <option value="ALL">All ({fleet.length})</option>
-                      <option value="SCO">
-                        SCO (
-                        {
-                          fleet.filter(
-                            (f) => (f.operatorType ?? "SCO") === "SCO",
-                          ).length
-                        }
-                        )
-                      </option>
-                      <option value="LO">
-                        LO (
-                        {fleet.filter((f) => f.operatorType === "LO").length})
-                      </option>
-                    </select>
-                    {typeFilter !== "ALL" && (
-                      <button
-                        onClick={() => setTypeFilter("ALL")}
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: 6,
-                          border: `1px solid ${EPH.cardBorder}`,
-                          background: "transparent",
-                          color: EPH.textTertiary,
-                          fontSize: 12,
-                          fontFamily: EPH.sans,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
+                      Clear
+                    </button>
+                  )}
+                </div>
 
-                  {/* Fleet Table */}
-                  <div
-                    style={{
-                      ...glassCard,
-                      overflow: "hidden",
-                      padding: 0,
-                    }}
-                  >
-                    <div style={{ overflowX: "auto" }}>
-                      <table
-                        style={{
-                          width: "100%",
-                          fontSize: 13,
-                          borderCollapse: "collapse",
-                          fontFamily: EPH.sans,
-                        }}
-                      >
-                        <thead>
-                          <tr
-                            style={{
-                              borderBottom: `1px solid ${EPH.cardBorder}`,
-                            }}
-                          >
-                            {[
-                              {
-                                key: null,
-                                label: "",
-                                w: 14,
-                                align: "center" as const,
-                              },
-                              {
-                                key: "name" as SortKey,
-                                label: "NORAD",
-                                w: 80,
-                                align: "left" as const,
-                              },
-                              {
-                                key: "name" as SortKey,
-                                label: "NAME",
-                                w: undefined,
-                                align: "left" as const,
-                              },
-                              {
-                                key: "score" as SortKey,
-                                label: "SCORE",
-                                w: 72,
-                                align: "right" as const,
-                              },
-                              {
-                                key: "horizon" as SortKey,
-                                label: "HORIZON",
-                                w: 100,
-                                align: "right" as const,
-                              },
-                              {
-                                key: "risk" as SortKey,
-                                label: "STATUS",
-                                w: 56,
-                                align: "center" as const,
-                              },
-                              {
-                                key: null,
-                                label: "WEAKEST",
-                                w: undefined,
-                                align: "left" as const,
-                              },
-                              {
-                                key: null,
-                                label: "FRESH",
-                                w: 72,
-                                align: "center" as const,
-                              },
-                              {
-                                key: "alerts" as SortKey,
-                                label: "ALERTS",
-                                w: 64,
-                                align: "center" as const,
-                              },
-                            ].map((col, i) => (
-                              <th
-                                key={i}
-                                onClick={
-                                  col.key
-                                    ? () => toggleSort(col.key!)
-                                    : undefined
-                                }
-                                style={{
-                                  padding: "10px 16px",
-                                  textAlign: col.align,
-                                  fontSize: 10,
-                                  fontWeight: 500,
-                                  color: EPH.textMicro,
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.08em",
-                                  width: col.w,
-                                  cursor: col.key ? "pointer" : "default",
-                                  userSelect: "none",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {col.label}
-                                {col.key && <SortIcon field={col.key} />}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sortedFleet.map((sat, idx) => {
-                            const risk = scoreRisk(sat.overallScore);
-                            const wm = weakestModule(sat);
-                            return (
-                              <tr
-                                key={sat.noradId}
-                                onClick={() => {
-                                  window.location.href = `/dashboard/ephemeris/${sat.noradId}`;
-                                }}
-                                style={{
-                                  cursor: "pointer",
-                                  background:
-                                    idx % 2 === 1 ? EPH.rowAlt : "transparent",
-                                  borderBottom: `1px solid rgba(255,255,255,0.03)`,
-                                  transition: "background 150ms ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  (
-                                    e.currentTarget as HTMLElement
-                                  ).style.background = EPH.rowHover;
-                                }}
-                                onMouseLeave={(e) => {
-                                  (
-                                    e.currentTarget as HTMLElement
-                                  ).style.background =
-                                    idx % 2 === 1 ? EPH.rowAlt : "transparent";
-                                }}
-                              >
-                                {/* Status dot */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      display: "inline-block",
-                                      width: 6,
-                                      height: 6,
-                                      borderRadius: "50%",
-                                      background: statusDotColor(risk),
-                                    }}
-                                  />
-                                </td>
-                                {/* NORAD */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    fontSize: 12,
-                                    fontFamily: EPH.mono,
-                                    color: EPH.textTertiary,
-                                  }}
-                                >
-                                  {sat.noradId}
-                                </td>
-                                {/* Name */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    fontSize: 13,
-                                    fontWeight: 400,
-                                    color: "rgba(255,255,255,0.8)",
-                                  }}
-                                >
-                                  {sat.satelliteName}
-                                </td>
-                                {/* Score */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "right",
-                                    fontSize: 16,
-                                    fontWeight: 400,
-                                    fontFamily: EPH.mono,
-                                    color: EPH.textPrimary,
-                                    fontVariantNumeric: "tabular-nums",
-                                  }}
-                                >
-                                  {sat.overallScore}
-                                </td>
-                                {/* Horizon */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "right",
-                                    fontFamily: EPH.mono,
-                                    fontSize: 13,
-                                    color: horizonColor(
-                                      sat.complianceHorizon
-                                        .daysUntilFirstBreach,
-                                    ),
-                                  }}
-                                >
-                                  {sat.complianceHorizon
-                                    .daysUntilFirstBreach !== null
-                                    ? `${sat.complianceHorizon.daysUntilFirstBreach}d`
-                                    : "\u2014"}
-                                </td>
-                                {/* Status dot column */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      display: "inline-block",
-                                      width: 6,
-                                      height: 6,
-                                      borderRadius: "50%",
-                                      background: statusDotColor(risk),
-                                    }}
-                                  />
-                                </td>
-                                {/* Weakest Module */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    fontSize: 12,
-                                    color: EPH.textSecondary,
-                                  }}
-                                >
-                                  {wm ? (
-                                    <span>
-                                      <span
-                                        style={{ color: EPH.textSecondary }}
-                                      >
-                                        {wm.name}
-                                      </span>
-                                      <span
-                                        style={{
-                                          marginLeft: 6,
-                                          fontFamily: EPH.mono,
-                                          color: EPH.textTertiary,
-                                        }}
-                                      >
-                                        {wm.score}
-                                      </span>
-                                    </span>
-                                  ) : (
-                                    <span style={{ color: EPH.textTertiary }}>
-                                      \u2014
-                                    </span>
-                                  )}
-                                </td>
-                                {/* Freshness */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 5,
-                                      fontSize: 11,
-                                      color: freshnessColor(sat.dataFreshness),
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        width: 5,
-                                        height: 5,
-                                        borderRadius: "50%",
-                                        background: freshnessColor(
-                                          sat.dataFreshness,
-                                        ),
-                                        display: "inline-block",
-                                      }}
-                                    />
-                                    {sat.dataFreshness}
-                                  </span>
-                                </td>
-                                {/* Alerts */}
-                                <td
-                                  style={{
-                                    padding: "10px 16px",
-                                    textAlign: "center",
-                                    fontFamily: EPH.mono,
-                                    fontSize: 13,
-                                    color:
-                                      (sat.activeAlerts?.length ?? 0) > 0
-                                        ? sat.activeAlerts?.some(
-                                            (a) => a.severity === "CRITICAL",
-                                          )
-                                          ? EPH.critical
-                                          : EPH.watch
-                                        : EPH.textTertiary,
-                                  }}
-                                >
-                                  {(sat.activeAlerts?.length ?? 0) > 0
-                                    ? sat.activeAlerts.length
-                                    : "\u2014"}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div
+                {/* Table */}
+                <div
+                  style={{
+                    ...cardStyle,
+                    overflow: "hidden",
+                    padding: 0,
+                  }}
+                >
+                  <div style={{ overflowX: "auto" }}>
+                    <table
                       style={{
-                        padding: "10px 16px",
-                        borderTop: `1px solid ${EPH.cardBorder}`,
-                        fontSize: 12,
-                        color: EPH.textTertiary,
+                        width: "100%",
+                        fontSize: 13,
+                        borderCollapse: "collapse",
+                        fontFamily:
+                          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                       }}
                     >
-                      Showing {sortedFleet.length} of {fleet.length} entities
-                    </div>
-                  </div>
-                </>
-              )}
-            </FadeIn>
-          )}
-
-          {/* ── ALERTS TAB ───────────────────────────────────────── */}
-          {activeTab === "alerts" && (
-            <FadeIn>
-              {(() => {
-                const sortedAlerts = fleet
-                  .flatMap((s) =>
-                    (s.activeAlerts ?? []).map((a) => ({
-                      ...a,
-                      noradId: s.noradId,
-                      satelliteName: s.satelliteName,
-                    })),
-                  )
-                  .sort((a, b) => {
-                    const order: Record<string, number> = {
-                      CRITICAL: 0,
-                      HIGH: 1,
-                      MEDIUM: 2,
-                      LOW: 3,
-                      ANOMALY: 1,
-                    };
-                    return (order[a.severity] ?? 4) - (order[b.severity] ?? 4);
-                  });
-
-                if (sortedAlerts.length === 0) {
-                  return (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "96px 0",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          marginBottom: 8,
-                        }}
-                      >
-                        <span
+                      <thead>
+                        <tr
                           style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            background: EPH.nominal,
-                            display: "inline-block",
+                            borderBottom: "1px solid rgba(255,255,255,0.06)",
                           }}
-                        />
-                        <span
-                          style={{ fontSize: 13, color: EPH.textSecondary }}
                         >
-                          No active alerts
-                        </span>
-                      </div>
-                      <span style={{ fontSize: 13, color: EPH.textTertiary }}>
-                        All systems nominal.
-                      </span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    style={{
-                      ...glassCard,
-                      overflow: "hidden",
-                      padding: 0,
-                    }}
-                  >
-                    <div style={{ overflowX: "auto" }}>
-                      <table
-                        style={{
-                          width: "100%",
-                          fontSize: 13,
-                          borderCollapse: "collapse",
-                          fontFamily: EPH.sans,
-                        }}
-                      >
-                        <thead>
-                          <tr
-                            style={{
-                              borderBottom: `1px solid ${EPH.cardBorder}`,
-                            }}
-                          >
-                            {[
-                              "",
-                              "SEVERITY",
-                              "ENTITY",
-                              "TITLE",
-                              "DESCRIPTION",
-                            ].map((h, i) => (
-                              <th
-                                key={i}
-                                style={{
-                                  padding: "10px 16px",
-                                  textAlign: "left",
-                                  fontSize: 10,
-                                  fontWeight: 500,
-                                  color: EPH.textMicro,
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.08em",
-                                  width:
-                                    i === 0
-                                      ? 14
-                                      : i === 1
-                                        ? 80
-                                        : i === 2
-                                          ? 140
-                                          : undefined,
-                                }}
-                              >
-                                {h}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sortedAlerts.map((alert, i) => (
+                          {[
+                            {
+                              key: "type" as SortKey,
+                              label: "TYPE",
+                              w: 72,
+                              align: "center" as const,
+                            },
+                            {
+                              key: "name" as SortKey,
+                              label: "ENTITY NAME",
+                              w: undefined,
+                              align: "left" as const,
+                            },
+                            {
+                              key: null,
+                              label: "ENTITY ID",
+                              w: 100,
+                              align: "left" as const,
+                            },
+                            {
+                              key: "score" as SortKey,
+                              label: "SCORE",
+                              w: 72,
+                              align: "right" as const,
+                            },
+                            {
+                              key: "horizon" as SortKey,
+                              label: "HORIZON",
+                              w: 100,
+                              align: "right" as const,
+                            },
+                            {
+                              key: "risk" as SortKey,
+                              label: "STATUS",
+                              w: 56,
+                              align: "center" as const,
+                            },
+                            {
+                              key: null,
+                              label: "WEAKEST MODULE",
+                              w: undefined,
+                              align: "left" as const,
+                            },
+                            {
+                              key: null,
+                              label: "FRESHNESS",
+                              w: 90,
+                              align: "center" as const,
+                            },
+                            {
+                              key: "alerts" as SortKey,
+                              label: "ALERTS",
+                              w: 64,
+                              align: "center" as const,
+                            },
+                          ].map((col, i) => (
+                            <th
+                              key={i}
+                              onClick={
+                                col.key ? () => toggleSort(col.key!) : undefined
+                              }
+                              style={{
+                                padding: "10px 16px",
+                                textAlign: col.align,
+                                fontSize: 10,
+                                fontWeight: 500,
+                                color: "rgba(255,255,255,0.25)",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                width: col.w,
+                                cursor: col.key ? "pointer" : "default",
+                                userSelect: "none",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {col.label}
+                              {col.key && <SortIcon field={col.key} />}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedFleet.map((entity, idx) => {
+                          const risk = scoreRisk(entity.overallScore);
+                          const wm = weakestModule(entity);
+                          const entityType = entity.operatorType ?? "SCO";
+                          return (
                             <tr
-                              key={`${alert.noradId}-${alert.id ?? i}`}
+                              key={entity.noradId}
                               onClick={() => {
-                                window.location.href = `/dashboard/ephemeris/${alert.noradId}`;
+                                window.location.href = `/dashboard/ephemeris/${entity.noradId}`;
                               }}
                               style={{
                                 cursor: "pointer",
                                 background:
-                                  i % 2 === 1 ? EPH.rowAlt : "transparent",
-                                borderBottom: `1px solid rgba(255,255,255,0.03)`,
+                                  idx % 2 === 1
+                                    ? "rgba(255,255,255,0.02)"
+                                    : "transparent",
+                                borderBottom:
+                                  "1px solid rgba(255,255,255,0.03)",
                                 transition: "background 150ms ease",
                               }}
                               onMouseEnter={(e) => {
                                 (
                                   e.currentTarget as HTMLElement
-                                ).style.background = EPH.rowHover;
+                                ).style.background = "rgba(255,255,255,0.04)";
                               }}
                               onMouseLeave={(e) => {
                                 (
                                   e.currentTarget as HTMLElement
                                 ).style.background =
-                                  i % 2 === 1 ? EPH.rowAlt : "transparent";
+                                  idx % 2 === 1
+                                    ? "rgba(255,255,255,0.02)"
+                                    : "transparent";
                               }}
                             >
-                              <td style={{ padding: "10px 16px" }}>
+                              {/* TYPE badge */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "3px 8px",
+                                    borderRadius: 6,
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    letterSpacing: "0.04em",
+                                    background: typeBadgeColor(entityType),
+                                    color: typeBadgeTextColor(entityType),
+                                  }}
+                                >
+                                  {entityType}
+                                </span>
+                              </td>
+                              {/* Entity Name */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 13,
+                                  fontWeight: 400,
+                                  color: "rgba(255,255,255,0.8)",
+                                }}
+                              >
+                                {entity.satelliteName}
+                              </td>
+                              {/* Entity ID (NORAD for SCO, or internal) */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  fontSize: 12,
+                                  fontFamily:
+                                    "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                                  color: "rgba(255,255,255,0.3)",
+                                }}
+                              >
+                                {entity.noradId}
+                              </td>
+                              {/* Score */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "right",
+                                  fontSize: 16,
+                                  fontWeight: 300,
+                                  fontFamily:
+                                    "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                                  color: "rgba(255,255,255,0.9)",
+                                  fontVariantNumeric: "tabular-nums",
+                                }}
+                              >
+                                {entity.overallScore}
+                              </td>
+                              {/* Horizon */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "right",
+                                  fontFamily:
+                                    "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                                  fontSize: 13,
+                                  fontWeight: 300,
+                                  color: horizonColor(
+                                    entity.complianceHorizon
+                                      .daysUntilFirstBreach,
+                                  ),
+                                }}
+                              >
+                                {entity.complianceHorizon
+                                  .daysUntilFirstBreach !== null
+                                  ? `${entity.complianceHorizon.daysUntilFirstBreach}d`
+                                  : "\u221E"}
+                              </td>
+                              {/* Status dot */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "center",
+                                }}
+                              >
                                 <span
                                   style={{
                                     display: "inline-block",
                                     width: 6,
                                     height: 6,
                                     borderRadius: "50%",
-                                    background: severityDotColor(
-                                      alert.severity,
-                                    ),
+                                    background: statusDotColor(risk),
                                   }}
                                 />
                               </td>
-                              <td
-                                style={{
-                                  padding: "10px 16px",
-                                  fontSize: 11,
-                                  fontWeight: 500,
-                                  color: EPH.textTertiary,
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.04em",
-                                }}
-                              >
-                                {alert.severity}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "10px 16px",
-                                  fontSize: 13,
-                                  color: EPH.textSecondary,
-                                }}
-                              >
-                                {alert.satelliteName}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "10px 16px",
-                                  fontSize: 13,
-                                  color: EPH.textPrimary,
-                                }}
-                              >
-                                {alert.title}
-                              </td>
+                              {/* Weakest Module */}
                               <td
                                 style={{
                                   padding: "10px 16px",
                                   fontSize: 12,
-                                  color: EPH.textTertiary,
-                                  maxWidth: 400,
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
+                                  color: "rgba(255,255,255,0.5)",
                                 }}
                               >
-                                {alert.description}
+                                {wm ? (
+                                  <span>
+                                    <span
+                                      style={{ color: "rgba(255,255,255,0.5)" }}
+                                    >
+                                      {wm.name}
+                                    </span>
+                                    <span
+                                      style={{
+                                        marginLeft: 6,
+                                        fontFamily:
+                                          "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                                        color: "rgba(255,255,255,0.3)",
+                                      }}
+                                    >
+                                      {wm.score}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span
+                                    style={{ color: "rgba(255,255,255,0.3)" }}
+                                  >
+                                    \u2014
+                                  </span>
+                                )}
+                              </td>
+                              {/* Freshness */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 5,
+                                    fontSize: 11,
+                                    color: freshnessColor(entity.dataFreshness),
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: "50%",
+                                      background: freshnessColor(
+                                        entity.dataFreshness,
+                                      ),
+                                      display: "inline-block",
+                                    }}
+                                  />
+                                  {entity.dataFreshness}
+                                </span>
+                              </td>
+                              {/* Alerts */}
+                              <td
+                                style={{
+                                  padding: "10px 16px",
+                                  textAlign: "center",
+                                  fontFamily:
+                                    "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                                  fontSize: 13,
+                                  fontWeight: 300,
+                                  color:
+                                    (entity.activeAlerts?.length ?? 0) > 0
+                                      ? entity.activeAlerts?.some(
+                                          (a) => a.severity === "CRITICAL",
+                                        )
+                                        ? "#f85149"
+                                        : "#d29922"
+                                      : "rgba(255,255,255,0.3)",
+                                }}
+                              >
+                                {(entity.activeAlerts?.length ?? 0) > 0
+                                  ? entity.activeAlerts.length
+                                  : "\u2014"}
                               </td>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })()}
-            </FadeIn>
-          )}
-
-          {/* ── INTELLIGENCE TAB ─────────────────────────────────── */}
-          {activeTab === "intelligence" && (
-            <FadeIn>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 24,
-                }}
-              >
-                {/* Risk Distribution */}
-                <GlassPanel>
-                  <div style={{ marginBottom: 16 }}>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: EPH.textSecondary,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Risk Distribution
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: EPH.textTertiary,
-                        marginTop: 4,
-                      }}
-                    >
-                      Fleet entities by risk category
-                    </div>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 12,
+                      padding: "10px 16px",
+                      borderTop: "1px solid rgba(255,255,255,0.06)",
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.3)",
                     }}
                   >
-                    {(["NOMINAL", "WATCH", "WARNING", "CRITICAL"] as const).map(
-                      (cat) => {
-                        const count =
-                          cat === "NOMINAL"
-                            ? nominalCount
-                            : cat === "WATCH"
-                              ? watchCount
-                              : cat === "WARNING"
-                                ? warningCount
-                                : criticalCount;
-                        const pct =
-                          fleet.length > 0 ? (count / fleet.length) * 100 : 0;
-                        return (
-                          <div
-                            key={cat}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 6,
-                                width: 72,
-                                fontSize: 11,
-                                fontWeight: 500,
-                                color: EPH.textTertiary,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.04em",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  width: 6,
-                                  height: 6,
-                                  borderRadius: "50%",
-                                  background: statusDotColor(cat),
-                                  display: "inline-block",
-                                  flexShrink: 0,
-                                }}
-                              />
-                              {cat}
-                            </span>
-                            <div
-                              style={{
-                                flex: 1,
-                                height: 4,
-                                background: "rgba(255,255,255,0.06)",
-                                borderRadius: 2,
-                                overflow: "hidden",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  height: "100%",
-                                  borderRadius: 2,
-                                  background: statusDotColor(cat),
-                                  width: `${pct}%`,
-                                  opacity: 0.6,
-                                  transition: "width 500ms ease",
-                                }}
-                              />
-                            </div>
-                            <span
-                              style={{
-                                width: 64,
-                                textAlign: "right",
-                                fontSize: 12,
-                                fontFamily: EPH.mono,
-                                color: EPH.textSecondary,
-                                fontVariantNumeric: "tabular-nums",
-                              }}
-                            >
-                              {count}{" "}
-                              <span style={{ color: EPH.textTertiary }}>
-                                ({pct.toFixed(0)}%)
-                              </span>
-                            </span>
-                          </div>
-                        );
-                      },
-                    )}
+                    Showing {sortedFleet.length} of {fleet.length} entities
                   </div>
-                </GlassPanel>
+                </div>
+              </>
+            )}
+          </div>
+        </FadeIn>
 
-                {/* Weakest Links */}
-                <GlassPanel>
-                  <div style={{ marginBottom: 16 }}>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: EPH.textSecondary,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Weakest Links
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: EPH.textTertiary,
-                        marginTop: 4,
-                      }}
-                    >
-                      Entities with highest fleet impact
-                    </div>
-                  </div>
-                  {(intel?.weakestLinks ?? []).length > 0 ? (
-                    <div>
-                      {(intel?.weakestLinks ?? []).map((link, i) => (
-                        <Link
-                          key={link.noradId}
-                          href={`/dashboard/ephemeris/${link.noradId}`}
+        {/* ── 5. Bottom Section (50/50) ──────────────────────────── */}
+        <FadeIn delay={200}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              marginBottom: 32,
+            }}
+          >
+            {/* Left: Intelligence */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Risk Distribution */}
+              <div style={{ ...cardStyle, padding: 20 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "rgba(255,255,255,0.5)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 16,
+                  }}
+                >
+                  Risk Distribution
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  {(["NOMINAL", "WATCH", "WARNING", "CRITICAL"] as const).map(
+                    (cat) => {
+                      const count =
+                        cat === "NOMINAL"
+                          ? nominalCount
+                          : cat === "WATCH"
+                            ? watchCount
+                            : cat === "WARNING"
+                              ? warningCount
+                              : criticalCount;
+                      const pct =
+                        fleet.length > 0 ? (count / fleet.length) * 100 : 0;
+                      return (
+                        <div
+                          key={cat}
                           style={{
                             display: "flex",
                             alignItems: "center",
                             gap: 12,
-                            padding: "10px 8px",
-                            borderRadius: 8,
-                            textDecoration: "none",
-                            borderBottom:
-                              i < (intel?.weakestLinks ?? []).length - 1
-                                ? `1px solid rgba(255,255,255,0.04)`
-                                : "none",
-                            transition: "background 150ms ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.background =
-                              EPH.rowHover;
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.background =
-                              "transparent";
                           }}
                         >
                           <span
                             style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              width: 80,
                               fontSize: 11,
-                              color: EPH.textTertiary,
-                              width: 20,
-                              fontVariantNumeric: "tabular-nums",
+                              fontWeight: 500,
+                              color: "rgba(255,255,255,0.3)",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.04em",
                             }}
                           >
-                            {i + 1}.
-                          </span>
-                          <span
-                            style={{
-                              flex: 1,
-                              fontSize: 13,
-                              color: EPH.textPrimary,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {link.name}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 14,
-                              fontFamily: EPH.mono,
-                              fontWeight: 400,
-                              color: EPH.textPrimary,
-                              fontVariantNumeric: "tabular-nums",
-                            }}
-                          >
-                            {link.score}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontFamily: EPH.mono,
-                              color: EPH.textTertiary,
-                            }}
-                          >
-                            +{link.fleetImpact.toFixed(1)}pts
-                          </span>
-                          {link.weakestModule && (
                             <span
                               style={{
-                                fontSize: 11,
-                                color: EPH.textTertiary,
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                background: statusDotColor(cat),
+                                display: "inline-block",
+                                flexShrink: 0,
                               }}
-                            >
-                              {link.weakestModule} ({link.weakestModuleScore})
+                            />
+                            {cat}
+                          </span>
+                          <div
+                            style={{
+                              flex: 1,
+                              height: 4,
+                              background: "rgba(255,255,255,0.06)",
+                              borderRadius: 2,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: "100%",
+                                borderRadius: 2,
+                                background: statusDotColor(cat),
+                                width: `${pct}%`,
+                                opacity: 0.6,
+                                transition: "width 500ms ease",
+                              }}
+                            />
+                          </div>
+                          <span
+                            style={{
+                              width: 64,
+                              textAlign: "right",
+                              fontSize: 12,
+                              fontFamily:
+                                "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
+                              fontWeight: 300,
+                              color: "rgba(255,255,255,0.5)",
+                              fontVariantNumeric: "tabular-nums",
+                            }}
+                          >
+                            {count}{" "}
+                            <span style={{ color: "rgba(255,255,255,0.3)" }}>
+                              ({pct.toFixed(0)}%)
                             </span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
-                      No data yet
-                    </span>
+                          </span>
+                        </div>
+                      );
+                    },
                   )}
-                </GlassPanel>
+                </div>
+              </div>
 
-                {/* Fleet Trend */}
-                <GlassPanel>
-                  <div style={{ marginBottom: 16 }}>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: EPH.textSecondary,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Fleet Trend
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: EPH.textTertiary,
-                        marginTop: 4,
-                      }}
-                    >
-                      Score trajectory over time
-                    </div>
-                  </div>
-                  {intel?.trend ? (
-                    <div>
-                      <div
+              {/* Weakest Links */}
+              <div style={{ ...cardStyle, padding: 20 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "rgba(255,255,255,0.5)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: 16,
+                  }}
+                >
+                  Weakest Links
+                </div>
+                {(intel?.weakestLinks ?? []).length > 0 ? (
+                  <div>
+                    {(intel?.weakestLinks ?? []).slice(0, 3).map((link, i) => (
+                      <Link
+                        key={link.noradId}
+                        href={`/dashboard/ephemeris/${link.noradId}`}
                         style={{
                           display: "flex",
-                          alignItems: "baseline",
+                          alignItems: "center",
                           gap: 12,
-                          marginBottom: 20,
+                          padding: "10px 8px",
+                          borderRadius: 8,
+                          textDecoration: "none",
+                          borderBottom:
+                            i <
+                            Math.min((intel?.weakestLinks ?? []).length, 3) - 1
+                              ? "1px solid rgba(255,255,255,0.04)"
+                              : "none",
+                          transition: "background 150ms ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "rgba(255,255,255,0.04)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "transparent";
                         }}
                       >
                         <span
                           style={{
-                            fontSize: 32,
+                            fontSize: 11,
+                            color: "rgba(255,255,255,0.3)",
+                            width: 20,
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          {i + 1}.
+                        </span>
+                        <span
+                          style={{
+                            flex: 1,
+                            fontSize: 13,
+                            color: "rgba(255,255,255,0.9)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {link.name}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 16,
+                            fontFamily:
+                              "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
                             fontWeight: 300,
-                            color:
-                              intel.trend.longTermDelta > 0.5
-                                ? EPH.nominal
-                                : intel.trend.longTermDelta < -0.5
-                                  ? EPH.critical
-                                  : EPH.textPrimary,
-                            fontFamily: EPH.mono,
+                            color: "rgba(255,255,255,0.9)",
+                            fontVariantNumeric: "tabular-nums",
                           }}
                         >
-                          {intel.trend.longTermDelta > 0.5
-                            ? "\u2191"
-                            : intel.trend.longTermDelta < -0.5
-                              ? "\u2193"
-                              : "\u2192"}{" "}
-                          {intel.trend.direction}
+                          {link.score}
                         </span>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 500,
-                            color: EPH.textMicro,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
-                          }}
-                        >
-                          {intel.trend.trendStrength}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 16,
-                        }}
-                      >
-                        <div
-                          style={{
-                            padding: 12,
-                            borderRadius: 12,
-                            background: EPH.cardBg,
-                            border: `1px solid ${EPH.cardBorder}`,
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 10,
-                              fontWeight: 500,
-                              color: EPH.textMicro,
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                              marginBottom: 6,
-                            }}
-                          >
-                            7d Delta
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 20,
-                              fontWeight: 300,
-                              fontFamily: EPH.mono,
-                              color:
-                                intel.trend.shortTermDelta > 0.5
-                                  ? EPH.nominal
-                                  : intel.trend.shortTermDelta < -0.5
-                                    ? EPH.critical
-                                    : EPH.textPrimary,
-                              fontVariantNumeric: "tabular-nums",
-                            }}
-                          >
-                            {intel.trend.shortTermDelta > 0 ? "+" : ""}
-                            {intel.trend.shortTermDelta}
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            padding: 12,
-                            borderRadius: 12,
-                            background: EPH.cardBg,
-                            border: `1px solid ${EPH.cardBorder}`,
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 10,
-                              fontWeight: 500,
-                              color: EPH.textMicro,
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                              marginBottom: 6,
-                            }}
-                          >
-                            30d Delta
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 20,
-                              fontWeight: 300,
-                              fontFamily: EPH.mono,
-                              color:
-                                intel.trend.longTermDelta > 0.5
-                                  ? EPH.nominal
-                                  : intel.trend.longTermDelta < -0.5
-                                    ? EPH.critical
-                                    : EPH.textPrimary,
-                              fontVariantNumeric: "tabular-nums",
-                            }}
-                          >
-                            {intel.trend.longTermDelta > 0 ? "+" : ""}
-                            {intel.trend.longTermDelta}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
-                      Insufficient history data
-                    </span>
-                  )}
-                </GlassPanel>
-
-                {/* Industry Benchmark */}
-                <GlassPanel>
-                  <div style={{ marginBottom: 16 }}>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: EPH.textSecondary,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Industry Benchmark
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: EPH.textTertiary,
-                        marginTop: 4,
-                      }}
-                    >
-                      Your fleet vs. industry peers
-                    </div>
+                      </Link>
+                    ))}
                   </div>
-                  {benchmark?.operatorRanking ? (
-                    <div>
-                      {[
-                        {
-                          label: "Your Fleet Score",
-                          value: String(benchmark.operatorRanking.score),
-                          color: EPH.textPrimary,
-                        },
-                        {
-                          label: "Industry Average",
-                          value: String(
-                            benchmark.overall.averageScore ?? "\u2014",
-                          ),
-                          color: EPH.textSecondary,
-                        },
-                        {
-                          label: "Percentile Rank",
-                          value: benchmark.operatorRanking.rank,
-                          color: EPH.textPrimary,
-                        },
-                        {
-                          label: "vs Average",
-                          value: `${benchmark.operatorRanking.vsAverage > 0 ? "+" : ""}${benchmark.operatorRanking.vsAverage}`,
-                          color:
-                            benchmark.operatorRanking.vsAverage > 0.5
-                              ? EPH.nominal
-                              : benchmark.operatorRanking.vsAverage < -0.5
-                                ? EPH.critical
-                                : EPH.textPrimary,
-                        },
-                      ].map(({ label, value, color }, i) => (
-                        <div
-                          key={label}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "8px 0",
-                            borderBottom:
-                              i < 3
-                                ? `1px solid rgba(255,255,255,0.04)`
-                                : "none",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 13,
-                              color: EPH.textSecondary,
-                            }}
-                          >
-                            {label}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 14,
-                              fontFamily: EPH.mono,
-                              fontWeight: 400,
-                              color,
-                              fontVariantNumeric: "tabular-nums",
-                            }}
-                          >
-                            {value}
-                          </span>
-                        </div>
-                      ))}
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: EPH.textTertiary,
-                          marginTop: 8,
-                        }}
-                      >
-                        Compared to {benchmark.overall.operatorCount} operators
-                      </div>
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 13, color: EPH.textTertiary }}>
-                      Benchmark available when 5+ operators are in the system.
-                    </span>
-                  )}
-                </GlassPanel>
+                ) : (
+                  <span
+                    style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}
+                  >
+                    No data yet
+                  </span>
+                )}
               </div>
-            </FadeIn>
-          )}
+            </div>
 
-          {/* ── DEPENDENCIES TAB ─────────────────────────────────── */}
-          {activeTab === "dependencies" && (
-            <FadeIn>
-              <DependencyGraphView />
-            </FadeIn>
-          )}
-        </div>
+            {/* Right: AI Advisor */}
+            <AIAdvisor fleet={fleet} intel={intel} />
+          </div>
+        </FadeIn>
       </div>
-
-      {/* ── Alerts Sidebar ─────────────────────────────────────────── */}
-      <AlertsSidebar alerts={allAlerts} />
 
       {/* Keyframes for spinner */}
       <style>{`
