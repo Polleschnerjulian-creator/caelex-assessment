@@ -24,13 +24,33 @@ export default function EphemerisTopBar() {
           href="/dashboard"
           style={{ textDecoration: "none", display: "flex" }}
         >
-          <div className="eph-top-logo">
-            <span>C</span>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              background: "white",
+              borderRadius: 6,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                color: "black",
+                fontSize: 18,
+                fontWeight: 800,
+                fontFamily: "'Inter', sans-serif",
+                lineHeight: 1,
+                marginTop: -1,
+              }}
+            >
+              e
+            </span>
           </div>
         </Link>
-        <div className="eph-top-brand">CAELEX</div>
-        <div className="eph-top-divider" />
-        <div className="eph-top-module">EPHEMERIS</div>
+        <div className="eph-top-brand">EPHEMERIS</div>
       </div>
       <div className="eph-topbar-right">
         <div className="eph-top-status">

@@ -73,8 +73,30 @@ export default function EphemerisNavRail({
     <nav className="eph-sidebar">
       {/* Logo */}
       <div className="eph-sidebar-logo">
-        <div className="eph-sidebar-logo-mark">
-          <span>e</span>
+        <div
+          style={{
+            width: 28,
+            height: 28,
+            background: "white",
+            borderRadius: 6,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              color: "black",
+              fontSize: 18,
+              fontWeight: 800,
+              fontFamily: "'Inter', sans-serif",
+              lineHeight: 1,
+              marginTop: -1,
+            }}
+          >
+            e
+          </span>
         </div>
         <span className="eph-sidebar-brand">EPHEMERIS</span>
       </div>

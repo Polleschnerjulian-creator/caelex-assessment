@@ -132,7 +132,7 @@
   left: 0;
   right: 0;
   height: 52px;
-  z-index: 20;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -229,7 +229,7 @@
   left: 0;
   bottom: 0;
   width: 220px;
-  z-index: 20;
+  z-index: 50;
   border-right: 1px solid var(--border);
   background: rgba(8, 14, 24, 0.5);
   backdrop-filter: blur(24px);
@@ -389,7 +389,7 @@
   right: 0;
   bottom: 0;
   width: 260px;
-  z-index: 20;
+  z-index: 50;
   border-left: 1px solid var(--border);
   background: rgba(8, 14, 24, 0.5);
   backdrop-filter: blur(24px);
