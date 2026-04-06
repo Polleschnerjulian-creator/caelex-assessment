@@ -14,12 +14,30 @@ import {
 import { csrfHeaders } from "@/lib/csrf-client";
 import { EPH } from "./theme";
 
-// Lazy-load 3D Globe — falls back to SVG if import fails
-const OrbitalTwinCanvas = dynamic(
-  () => import("./components/orbital-twin-3d"),
+// Lazy-load 3D Globe (Three.js) — falls back to SVG if import fails
+const OrbitalTwinGlobe = dynamic(
+  () => import("./components/orbital-twin-globe"),
   {
     ssr: false,
-    loading: () => null,
+    loading: () => (
+      <div
+        style={{
+          height: 420,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "rgba(255,255,255,0.3)",
+          fontSize: 12,
+          letterSpacing: "2px",
+          fontFamily: "monospace",
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: 16,
+        }}
+      >
+        LOADING GLOBE...
+      </div>
+    ),
   },
 );
 
@@ -1213,7 +1231,12 @@ export default function EphemerisDashboard() {
               >
                 Orbital Twin
               </div>
-              <OrbitalTwinSVG fleet={fleet} />
+              <OrbitalTwinGlobe
+                fleet={fleet}
+                onEntityClick={(noradId: string) =>
+                  (window.location.href = `/dashboard/ephemeris/${noradId}`)
+                }
+              />
             </div>
 
             {/* Right: Compliance Heatmap */}
