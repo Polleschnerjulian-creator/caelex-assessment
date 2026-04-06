@@ -2,137 +2,118 @@
 
 import Link from "next/link";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 export type NavModule =
-  | "orbital"
-  | "conjunctions"
-  | "debris"
-  | "operators"
-  | "ground"
-  | "analytics"
-  | "forge"
-  | "settings";
+  | "fleet"
+  | "intel"
+  | "tracking"
+  | "alerts"
+  | "weather"
+  | "forecast"
+  | "dependencies"
+  | "forge";
 
 interface NavItem {
   id: NavModule;
-  icon: string;
   label: string;
-  tooltipTitle: string;
-  tooltipDesc: string;
-  href?: string;
+  icon: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
   {
-    id: "orbital",
-    icon: "\u2295",
-    label: "ORBITAL",
-    tooltipTitle: "Orbital View",
-    tooltipDesc: "Live satellite tracking & visualization",
-    href: "/dashboard/ephemeris",
+    title: "OVERVIEW",
+    items: [
+      { id: "fleet", label: "Fleet Command", icon: "\u2B21" },
+      { id: "intel", label: "Intelligence", icon: "\uD83D\uDCCA" },
+    ],
   },
   {
-    id: "conjunctions",
-    icon: "\u26A0",
-    label: "CONJ",
-    tooltipTitle: "Conjunctions",
-    tooltipDesc: "Collision risk assessment & alerts",
+    title: "MONITORING",
+    items: [
+      { id: "tracking", label: "Orbital Tracking", icon: "\uD83D\uDEF0" },
+      { id: "alerts", label: "Alerts & Anomalies", icon: "\u26A0" },
+      { id: "weather", label: "Space Weather", icon: "\uD83C\uDF24" },
+    ],
   },
   {
-    id: "debris",
-    icon: "\u25CC",
-    label: "DEBRIS",
-    tooltipTitle: "Debris Field",
-    tooltipDesc: "Space debris tracking & analysis",
+    title: "PREDICTION",
+    items: [
+      { id: "forecast", label: "Compliance Forecast", icon: "\uD83D\uDCC8" },
+      { id: "dependencies", label: "Dependencies", icon: "\uD83D\uDD17" },
+    ],
   },
   {
-    id: "operators",
-    icon: "\u25C8",
-    label: "OPS",
-    tooltipTitle: "Operators",
-    tooltipDesc: "Operator fleet management",
-  },
-  {
-    id: "ground",
-    icon: "\u25BD",
-    label: "GROUND",
-    tooltipTitle: "Ground Stations",
-    tooltipDesc: "Ground segment coverage map",
-  },
-  {
-    id: "analytics",
-    icon: "\u25EB",
-    label: "ANALYTX",
-    tooltipTitle: "Analytics",
-    tooltipDesc: "Orbital density & compliance metrics",
-  },
-  {
-    id: "forge",
-    icon: "\u2B22",
-    label: "FORGE",
-    tooltipTitle: "Scenario Builder",
-    tooltipDesc: "Simulate orbital what-if scenarios",
+    title: "TOOLS",
+    items: [{ id: "forge", label: "Scenario Builder", icon: "\u26A1" }],
   },
 ];
 
-interface EphemerisNavRailProps {
-  activeModule: NavModule;
-  onModuleChange: (module: NavModule) => void;
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+export interface EphemerisNavProps {
+  activeModule: string;
+  onModuleChange: (moduleId: NavModule) => void;
+  alertCount?: number;
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EphemerisNavRail({
   activeModule,
   onModuleChange,
-}: EphemerisNavRailProps) {
+  alertCount,
+}: EphemerisNavProps) {
   return (
-    <div className="eph-nav-rail">
-      {NAV_ITEMS.map((item) => {
-        const isActive = activeModule === item.id;
+    <nav className="eph-sidebar">
+      {/* Logo */}
+      <div className="eph-sidebar-logo">
+        <div className="eph-sidebar-logo-mark">
+          <span>e</span>
+        </div>
+        <span className="eph-sidebar-brand">EPHEMERIS</span>
+      </div>
 
-        if (item.href && item.id !== "forge") {
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`eph-nav-item ${isActive ? "active" : ""}`}
-              onClick={() => onModuleChange(item.id)}
-              style={{ textDecoration: "none" }}
-            >
-              <div className="eph-nav-icon">{item.icon}</div>
-              <div className="eph-nav-label">{item.label}</div>
-              <div className="eph-tooltip">
-                {item.tooltipTitle}
-                <div className="eph-tt-desc">{item.tooltipDesc}</div>
-              </div>
-            </Link>
-          );
-        }
+      {/* Sections */}
+      <div className="eph-sidebar-sections">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.title} className="eph-sidebar-section">
+            <div className="eph-sidebar-section-title">{section.title}</div>
+            {section.items.map((item) => {
+              const isActive = activeModule === item.id;
+              return (
+                <button
+                  key={item.id}
+                  className={`eph-sidebar-item${isActive ? " active" : ""}`}
+                  onClick={() => onModuleChange(item.id)}
+                  type="button"
+                >
+                  <span className="eph-sidebar-item-icon">{item.icon}</span>
+                  <span className="eph-sidebar-item-label">{item.label}</span>
+                  {item.id === "alerts" &&
+                    alertCount != null &&
+                    alertCount > 0 && (
+                      <span className="eph-sidebar-badge">{alertCount}</span>
+                    )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
 
-        return (
-          <button
-            key={item.id}
-            className={`eph-nav-item ${isActive ? "active" : ""}`}
-            onClick={() => onModuleChange(item.id)}
-          >
-            <div className="eph-nav-icon">{item.icon}</div>
-            <div className="eph-nav-label">{item.label}</div>
-            <div className="eph-tooltip">
-              {item.tooltipTitle}
-              <div className="eph-tt-desc">{item.tooltipDesc}</div>
-            </div>
-          </button>
-        );
-      })}
-
-      <div style={{ flex: 1 }} />
-
-      <button
-        className="eph-nav-item"
-        style={{ opacity: 0.4 }}
-        onClick={() => onModuleChange("settings")}
-      >
-        <div className="eph-nav-icon">{"\u2699"}</div>
-        <div className="eph-nav-label">CONFIG</div>
-      </button>
-    </div>
+      {/* Back link */}
+      <div className="eph-sidebar-footer">
+        <Link href="/dashboard" className="eph-sidebar-back">
+          <span style={{ marginRight: 6 }}>&larr;</span>
+          Back to Caelex
+        </Link>
+      </div>
+    </nav>
   );
 }

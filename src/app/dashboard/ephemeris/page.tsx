@@ -114,7 +114,7 @@ export default function EphemerisOrbitalCommand() {
   const [loading, setLoading] = useState(true);
 
   // UI state
-  const [activeModule, setActiveModule] = useState<NavModule>("orbital");
+  const [activeModule, setActiveModule] = useState<NavModule>("fleet");
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [forgeOpen, setForgeOpen] = useState(false);
 
@@ -216,10 +216,14 @@ export default function EphemerisOrbitalCommand() {
       {/* Top Bar */}
       <EphemerisTopBar />
 
-      {/* Left Nav Rail */}
+      {/* Left Sidebar */}
       <EphemerisNavRail
         activeModule={forgeOpen ? "forge" : activeModule}
         onModuleChange={handleModuleChange}
+        alertCount={
+          fleet.reduce((sum, e) => sum + (e.activeAlerts?.length ?? 0), 0) ||
+          undefined
+        }
       />
 
       {/* Right Panel */}

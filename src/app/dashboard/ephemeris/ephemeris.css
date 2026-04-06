@@ -222,13 +222,13 @@
   color: var(--text-dim);
 }
 
-/* ═══ LEFT NAV RAIL ═══ */
-.eph-nav-rail {
+/* ═══ LEFT SIDEBAR ═══ */
+.eph-sidebar {
   position: fixed;
   top: 52px;
   left: 0;
   bottom: 0;
-  width: 72px;
+  width: 220px;
   z-index: 20;
   border-right: 1px solid var(--border);
   background: rgba(8, 14, 24, 0.5);
@@ -239,110 +239,147 @@
     4px 0 20px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 16px 0;
-  gap: 4px;
+  padding: 20px 12px;
   animation: eph-slideRight 0.5s ease 1s both;
-}
-.eph-nav-item {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  position: relative;
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 0;
-}
-.eph-nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
-  transform: scale(1.05);
-}
-.eph-nav-item.active {
-  background: rgba(48, 232, 160, 0.06);
-  border-color: rgba(48, 232, 160, 0.15);
-  box-shadow:
-    0 0 20px rgba(48, 232, 160, 0.06),
-    0 0 0 1px rgba(48, 232, 160, 0.08) inset;
-}
-.eph-nav-item.active::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: 12px;
-  bottom: 12px;
-  width: 2px;
-  background: var(--accent);
-  border-radius: 1px;
-  box-shadow: 0 0 8px var(--accent-dim);
-}
-.eph-nav-icon {
-  font-size: 18px;
-  margin-bottom: 3px;
-  opacity: 0.5;
-  transition: opacity 0.25s;
-}
-.eph-nav-item:hover .eph-nav-icon {
-  opacity: 0.8;
-}
-.eph-nav-item.active .eph-nav-icon {
-  opacity: 1;
-  color: var(--accent);
-}
-.eph-nav-label {
-  font-size: 7px;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-weight: 500;
-  transition: color 0.25s;
-}
-.eph-nav-item:hover .eph-nav-label {
-  color: rgba(255, 255, 255, 0.5);
-}
-.eph-nav-item.active .eph-nav-label {
-  color: var(--accent);
-  font-weight: 600;
+  overflow-y: auto;
 }
 
-/* Tooltip */
-.eph-nav-item .eph-tooltip {
-  position: absolute;
-  left: 56px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(12, 20, 32, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 10px 16px;
-  border-radius: 10px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+/* Logo area */
+.eph-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  margin-bottom: 32px;
+}
+.eph-sidebar-logo-mark {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--accent, #30e8a0);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.eph-sidebar-logo-mark span {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent, #30e8a0);
+}
+.eph-sidebar-brand {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--accent, #30e8a0);
+  opacity: 0.8;
+}
+
+/* Sections */
+.eph-sidebar-sections {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.eph-sidebar-section {
+  margin-bottom: 4px;
+}
+.eph-sidebar-section-title {
+  font-family: "Inter", sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.18);
+  text-transform: uppercase;
+  margin: 20px 8px 8px;
+  font-weight: 500;
+}
+.eph-sidebar-section:first-child .eph-sidebar-section-title {
+  margin-top: 0;
+}
+
+/* Nav items */
+.eph-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+}
+.eph-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+.eph-sidebar-item.active {
+  background: rgba(48, 232, 160, 0.06);
+  border-color: rgba(48, 232, 160, 0.15);
+  color: #30e8a0;
+  box-shadow: 0 0 12px rgba(48, 232, 160, 0.04);
+}
+.eph-sidebar-item-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.eph-sidebar-item:hover .eph-sidebar-item-icon {
+  opacity: 0.9;
+}
+.eph-sidebar-item.active .eph-sidebar-item-icon {
+  opacity: 1;
+}
+.eph-sidebar-item-label {
   white-space: nowrap;
-  font-size: 10px;
-  letter-spacing: 1px;
-  color: var(--text);
-  opacity: 0;
-  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Alert badge */
+.eph-sidebar-badge {
+  margin-left: auto;
+  background: rgba(232, 72, 72, 0.2);
+  color: #e84848;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+/* Footer / Back link */
+.eph-sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.eph-sidebar-back {
+  display: flex;
+  align-items: center;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 6px;
   transition: all 0.2s;
 }
-.eph-nav-item .eph-tooltip .eph-tt-desc {
-  font-size: 8px;
-  color: var(--text-dim);
-  margin-top: 4px;
-  letter-spacing: 0.5px;
-}
-.eph-nav-item:hover .eph-tooltip {
-  opacity: 1;
-  left: 62px;
+.eph-sidebar-back:hover {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ═══ RIGHT PANEL ═══ */
@@ -539,7 +576,7 @@
 .eph-sd-panel {
   position: fixed;
   top: 52px;
-  left: 72px;
+  left: 220px;
   bottom: 0;
   width: 340px;
   z-index: 25;
@@ -666,7 +703,7 @@
 .eph-forge-overlay {
   position: fixed;
   top: 52px;
-  left: 72px;
+  left: 220px;
   right: 0;
   bottom: 0;
   z-index: 30;
@@ -1005,7 +1042,7 @@
 .eph-main-content {
   position: fixed;
   top: 52px;
-  left: 72px;
+  left: 220px;
   right: 260px;
   bottom: 0;
   z-index: 10;
