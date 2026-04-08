@@ -1,9 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { RedactedUnifiedResult } from "@/lib/unified-assessment-types";
 import { logger } from "@/lib/logger";
+
+// ─── Input validation ────────────────────────────────────────────────────
+// Previously this endpoint accepted arbitrary JSON cast to
+// RedactedUnifiedResult with zero validation. An authenticated attacker
+// could POST malicious structured JSON that ended up in the user/organization
+// tables. This Zod schema is defensive rather than exhaustive — it validates
+// the shape used by this handler (company name + primary activity) and
+// caps string lengths to prevent DB bloat. The full RedactedUnifiedResult
+// object is passed through as opaque JSON to the user record.
+const SaveToDashboardSchema = z.object({
+  result: z
+    .object({
+      assessmentId: z.string().max(100).optional(),
+      companySummary: z
+        .object({
+          name: z.string().max(200).optional(),
+          activities: z.array(z.string().max(100)).max(20).optional(),
+        })
+        .passthrough(),
+      euSpaceAct: z
+        .object({
+          applies: z.boolean().optional(),
+        })
+        .passthrough()
+        .optional(),
+      nis2: z
+        .object({
+          entityClassification: z
+            .enum(["essential", "important", "out_of_scope"])
+            .optional(),
+        })
+        .passthrough()
+        .optional(),
+    })
+    .passthrough(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,16 +50,22 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const { result } = (await request.json()) as {
-      result: RedactedUnifiedResult;
-    };
 
-    if (!result) {
+    // Validate the incoming result envelope before touching the database.
+    // Previously this was a raw `as { result: RedactedUnifiedResult }` cast
+    // with zero runtime validation — a clear injection vector.
+    const body = await request.json();
+    const parsed = SaveToDashboardSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing assessment result" },
+        {
+          error: "Invalid assessment result payload",
+          details: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 },
       );
     }
+    const result = parsed.data.result as unknown as RedactedUnifiedResult;
 
     // Get or create user's organization
     let organization = await prisma.organization.findFirst({

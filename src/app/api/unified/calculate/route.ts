@@ -25,19 +25,44 @@ import {
   ErrorCode,
 } from "@/lib/api-response";
 import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
+import { EU_MEMBER_STATES } from "@/lib/unified-assessment-types";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate limit ────────────────────────────────────────────────────────
+    // Every /calculate endpoint triggers three heavy engine calls
+    // (EU Space Act disk read + classification, NIS2, Space Law). Without
+    // rate limiting this is a DoS vector: an authenticated user could
+    // trigger hundreds of parallel runs and exhaust Neon connections.
+    // Uses the "assessment" tier (10/hour per IP) consistent with the
+    // legacy single-framework /api/assessment/calculate endpoint.
+    const identifier = getIdentifier(request);
+    const rateLimitResult = await checkRateLimit("assessment", identifier);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const body = await request.json();
     const parsed = UnifiedCalculateSchema.safeParse(body);
     if (!parsed.success) {
       return createValidationError(parsed.error);
     }
-    const { answers, startedAt } = parsed.data;
+    // The stricter Zod schema uses narrow enum types in several places; the
+    // engine mappers accept the looser Partial<UnifiedAssessmentAnswers>, so
+    // we widen back here after validation.
+    const answers = parsed.data.answers as unknown as Partial<
+      import("@/lib/unified-assessment-types").UnifiedAssessmentAnswers
+    >;
+    const startedAt = parsed.data.startedAt;
 
     // Anti-bot: Check minimum time (skip for authenticated users)
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user && startedAt !== undefined) {
       const elapsed = Date.now() - startedAt;
       if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
         return createErrorResponse(
@@ -61,9 +86,12 @@ export async function POST(request: NextRequest) {
       const activityTypes = answers.activityTypes || [];
       const isDefenseOnly =
         answers.defenseInvolvement === "full" || answers.isDefenseOnly === true;
-      const isEU = (
-        await import("@/lib/unified-assessment-types")
-      ).EU_MEMBER_STATES.includes(answers.establishmentCountry as never);
+      // Previously used dynamic import() inside the request handler, which
+      // adds first-request latency and defeats static tree-shaking. Now
+      // imported statically at the top of the file.
+      const isEU = EU_MEMBER_STATES.includes(
+        answers.establishmentCountry as (typeof EU_MEMBER_STATES)[number],
+      );
       const providesEUServices =
         answers.providesServicesToEU === true ||
         answers.servesEUCustomers === true;
@@ -130,28 +158,23 @@ export async function POST(request: NextRequest) {
       }
 
       // ──────────────────────────────────────────────────────────────────────
-      // 2. NIS2 — real engine call
+      // 2. NIS2 + National Space Law — run in parallel
       // ──────────────────────────────────────────────────────────────────────
+      //
+      // Previously these two async engine calls ran sequentially, doubling
+      // response time for the common case of EU operators selecting one or
+      // two jurisdictions. They are fully independent and can safely run
+      // in parallel via Promise.all.
 
       const nis2Answers = mapToNIS2Answers(answers);
-
-      // Apply additional NIS2 screening accuracy enhancements
-      // If designated by member state, boost classification
-      // If provides digital infrastructure, mark for Annex I Sector 8
-      // These are handled inside the NIS2 engine via entity classification logic
-
-      const nis2Result = await calculateNIS2Compliance(nis2Answers);
-
-      // ──────────────────────────────────────────────────────────────────────
-      // 3. National Space Law — real engine call
-      // ──────────────────────────────────────────────────────────────────────
-
       const spaceLawAnswers = mapToSpaceLawAnswers(answers);
-      let spaceLawResult = null;
 
-      if (spaceLawAnswers.selectedJurisdictions.length > 0) {
-        spaceLawResult = await calculateSpaceLawCompliance(spaceLawAnswers);
-      }
+      const [nis2Result, spaceLawResult] = await Promise.all([
+        calculateNIS2Compliance(nis2Answers),
+        spaceLawAnswers.selectedJurisdictions.length > 0
+          ? calculateSpaceLawCompliance(spaceLawAnswers)
+          : Promise.resolve(null),
+      ]);
 
       // ──────────────────────────────────────────────────────────────────────
       // 4. Build unified result

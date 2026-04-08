@@ -398,23 +398,82 @@ export const SpaceLawCalculateSchema = z.object({
   startedAt: z.number().optional(),
 });
 
+/**
+ * Strictly-validated schema for the unified assessment `/api/unified/calculate`
+ * endpoint.
+ *
+ * Previously this schema used `.passthrough()`, which let arbitrary unknown
+ * fields flow straight to the engine mappers — effectively making every
+ * UnifiedAssessmentAnswers field that wasn't listed here unvalidated. That
+ * meant ~35 fields used downstream (designatedByMemberState, annualRevenueAbove10M,
+ * hasDebrisMitigationPlan, etc.) could be posted as any type without
+ * rejection.
+ *
+ * Now every field that the mappers or merger actually read is declared,
+ * and `.strip()` removes unknown keys instead of forwarding them.
+ */
 export const UnifiedCalculateAnswersSchema = z
   .object({
+    // Identity / establishment
+    companyName: z.string().max(500).nullable().optional(),
+    companyWebsite: z.string().max(500).nullable().optional(),
     establishmentCountry: z.string().min(2).max(3),
     entitySize: z.enum(["micro", "small", "medium", "large"]),
-    activityTypes: z.array(z.string()).optional().default([]),
-    serviceTypes: z.array(z.string()).optional().default([]),
-    primaryOrbitalRegime: z.string().nullable().optional(),
-    operatesConstellation: z.boolean().nullable().optional(),
-    constellationSize: z.string().nullable().optional(),
-    servesEUCustomers: z.boolean().nullable().optional(),
-    providesServicesToEU: z.boolean().nullable().optional(),
+    turnoverRange: z
+      .enum(["under_2m", "2m_10m", "10m_50m", "50m_250m", "over_250m"])
+      .nullable()
+      .optional(),
+    employeeRange: z.string().max(50).nullable().optional(),
+    annualRevenueAbove10M: z.boolean().nullable().optional(),
+    isResearchInstitution: z.boolean().nullable().optional(),
+    isStartup: z.boolean().nullable().optional(),
+    euControlledEntity: z.boolean().nullable().optional(),
+    isInternationalOrg: z.boolean().nullable().optional(),
+    internationalOrgType: z.string().max(200).nullable().optional(),
+
+    // Activities and services
+    activityTypes: z.array(z.string().max(50)).optional().default([]),
+    serviceTypes: z.array(z.string().max(50)).optional().default([]),
+    dataProviderTypes: z.array(z.string().max(50)).optional().default([]),
+    isDataResellerOnly: z.boolean().nullable().optional(),
+
+    // Defense
     isDefenseOnly: z.boolean().nullable().optional(),
     defenseInvolvement: z
       .enum(["none", "partial", "full"])
       .nullable()
       .optional(),
+    hasPostLaunchResponsibility: z.boolean().nullable().optional(),
+
+    // Operations
+    spacecraftCount: z.number().int().nonnegative().nullable().optional(),
+    operatesConstellation: z.boolean().nullable().optional(),
+    constellationSize: z
+      .enum(["none", "small", "medium", "large", "mega"])
+      .nullable()
+      .optional(),
+    primaryOrbitalRegime: z
+      .enum(["LEO", "MEO", "GEO", "HEO", "SSO", "CISLUNAR", "MULTIPLE"])
+      .nullable()
+      .optional(),
+    additionalOrbits: z.array(z.string().max(20)).optional().default([]),
+    hasDebrisMitigationPlan: z.boolean().nullable().optional(),
+    hasActiveDebrisRemoval: z.boolean().nullable().optional(),
+    missionDuration: z.string().max(30).nullable().optional(),
+    launchTimeline: z
+      .enum(["pre_launch", "active", "post_eol"])
+      .nullable()
+      .optional(),
+
+    // Market
+    servesEUCustomers: z.boolean().nullable().optional(),
+    providesServicesToEU: z.boolean().nullable().optional(),
     servesCriticalInfrastructure: z.boolean().nullable().optional(),
+    isEssentialServiceProvider: z.boolean().nullable().optional(),
+    partOfSupplyChain: z.boolean().nullable().optional(),
+    governmentContracts: z.boolean().nullable().optional(),
+
+    // Cybersecurity / NIS2
     hasCybersecurityPolicy: z.boolean().nullable().optional(),
     hasRiskManagement: z.boolean().nullable().optional(),
     hasIncidentResponsePlan: z.boolean().nullable().optional(),
@@ -425,10 +484,37 @@ export const UnifiedCalculateAnswersSchema = z
     hasAccessControl: z.boolean().nullable().optional(),
     hasVulnerabilityManagement: z.boolean().nullable().optional(),
     conductsPenetrationTesting: z.boolean().nullable().optional(),
-    interestedJurisdictions: z.array(z.string()).optional().default([]),
+    providesDigitalInfrastructure: z.boolean().nullable().optional(),
+    designatedByMemberState: z.boolean().nullable().optional(),
+    memberStateCount: z.number().int().min(1).max(27).nullable().optional(),
+
+    // Licensing / jurisdiction
+    currentLicenses: z.array(z.string().max(10)).optional().default([]),
+    interestedJurisdictions: z.array(z.string().max(3)).optional().default([]),
+    licensingTimeline: z.string().max(30).nullable().optional(),
+    requiresEnglishProcess: z.boolean().nullable().optional(),
+    prefersFastProcessing: z.boolean().nullable().optional(),
+
+    // Spectrum
+    usesRadioFrequencies: z.boolean().nullable().optional(),
+    frequencyBands: z.array(z.string().max(10)).optional().default([]),
+
+    // Insurance
     hasInsurance: z.boolean().nullable().optional(),
+    insuranceCoverage: z.string().max(30).nullable().optional(),
+    hasThirdPartyLiability: z.boolean().nullable().optional(),
+    hasLaunchInsurance: z.boolean().nullable().optional(),
+    hasInOrbitInsurance: z.boolean().nullable().optional(),
+    insuranceAmount: z.string().max(30).nullable().optional(),
+
+    // Compliance posture
+    hasExistingCompliance: z.boolean().nullable().optional(),
+    existingCertifications: z.array(z.string().max(50)).optional().default([]),
   })
-  .passthrough();
+  // Strip unknown fields defensively rather than passing them through.
+  // This closes the prior `.passthrough()` hole that let unvalidated data
+  // reach engine mappers.
+  .strip();
 
 export const UnifiedCalculateSchema = z.object({
   answers: UnifiedCalculateAnswersSchema,
