@@ -113,6 +113,15 @@ model User {
   // Legal Portal
   legalAttorney LegalAttorney?
 
+  // CRM relations
+  crmContact        CrmContact?   @relation("CrmContactUser")
+  ownedCrmContacts  CrmContact[]  @relation("CrmContactOwner")
+  ownedCrmCompanies CrmCompany[]  @relation("CrmCompanyOwner")
+  ownedCrmDeals     CrmDeal[]     @relation("CrmDealOwner")
+  crmActivities     CrmActivity[] @relation("CrmActivityUser")
+  crmNotes          CrmNote[]     @relation("CrmNoteAuthor")
+  crmTasks          CrmTask[]     @relation("CrmTaskOwner")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2649,6 +2658,9 @@ model Organization {
   // Sentinel: autonomous compliance evidence agents
   sentinelAgents SentinelAgent[]
 
+  // CRM: linked company record (when this organization becomes a paying customer)
+  crmCompany CrmCompany?
+
   // Verity: compliance attestations (multi-tenant FK)
   verityAttestations VerityAttestation[]
   verityPassports   VerityPassport[]
@@ -4579,6 +4591,380 @@ model Booking {
   @@index([scheduledAt])
   @@index([status])
   @@index([email])
+}
+
+// ============================================
+// CRM (CUSTOMER MANAGEMENT SYSTEM)
+// ============================================
+// A unified layer over DemoRequest / ContactRequest / Booking / Organization.
+// Auto-populated via src/lib/crm/auto-link.server.ts — never directly by users
+// on the public side. Admins can create + edit records manually.
+
+enum CrmLifecycleStage {
+  SUBSCRIBER // email only, newsletter signup
+  LEAD // form submission, first touch
+  MQL // marketing qualified (scored threshold reached)
+  SQL // sales qualified (discovery call happened)
+  OPPORTUNITY // in active deal pipeline
+  CUSTOMER // closed won, paying
+  EVANGELIST // expansion, referrals
+  CHURNED // terminal
+  DISQUALIFIED // not a fit
+}
+
+enum CrmDealStage {
+  IDENTIFIED
+  ENGAGED
+  ASSESSED
+  PROPOSAL
+  PROCUREMENT
+  CLOSED_WON
+  CLOSED_LOST
+  ONBOARDING
+  ACTIVE
+}
+
+enum CrmDealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum CrmActivityType {
+  // Form submissions / inbound
+  FORM_SUBMITTED
+  DEMO_REQUESTED
+  CONTACT_FORM
+  NEWSLETTER_SIGNUP
+  ASSESSMENT_COMPLETED
+  // Meetings
+  MEETING_SCHEDULED
+  MEETING_HELD
+  MEETING_NO_SHOW
+  MEETING_CANCELLED
+  // Communication
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  CALL_LOGGED
+  // Manual
+  NOTE_ADDED
+  TASK_CREATED
+  TASK_COMPLETED
+  // System / audit
+  STAGE_CHANGED
+  OWNER_CHANGED
+  FIELD_CHANGED
+  SCORE_CHANGED
+  LIFECYCLE_CHANGED
+  // Product events
+  SIGNUP
+  LOGIN
+  SUBSCRIPTION_STARTED
+  SUBSCRIPTION_CANCELLED
+  HEALTH_ALERT
+  // Caelex-specific regulatory
+  FILING_DEADLINE
+  REGULATION_RELEVANT
+  COMPLIANCE_GAP_DETECTED
+  // AI-generated
+  AI_RESEARCH
+  AI_SUGGESTION
+  // Fallback
+  OTHER
+}
+
+enum CrmActivitySource {
+  SYSTEM // auto-created by the platform
+  MANUAL // a human added it
+  CLAUDE // AI-generated
+  IMPORT // from the one-time migration
+}
+
+enum CrmTaskStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+enum CrmOperatorType {
+  SPACECRAFT_OPERATOR
+  LAUNCH_PROVIDER
+  LAUNCH_SITE
+  IN_SPACE_SERVICE
+  COLLISION_AVOIDANCE
+  POSITIONAL_DATA
+  THIRD_COUNTRY
+  GOVERNMENT
+  HARDWARE_MANUFACTURER
+  DEFENSE
+  INSURANCE
+  LEGAL_CONSULTING
+  STARTUP
+  OTHER
+}
+
+model CrmCompany {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String?  @unique // primary identifier (canonical key)
+  website     String?
+  description String?  @db.Text
+  industry    String?
+  sizeBand    String? // "1-10" | "11-50" | "51-200" | "201-1000" | "1000+"
+  country     String? // ISO-2
+  city        String?
+  logoUrl     String?
+
+  // Caelex-specific regulatory profile
+  operatorType       CrmOperatorType? @default(OTHER)
+  jurisdictions      String[] // e.g. ["EU", "US", "UK", "DE"]
+  primaryOrbit       String? // LEO / MEO / GEO / HEO
+  spacecraftCount    Int? // total in orbit
+  plannedSpacecraft  Int? // planned / manifested
+  frequencyBands     String[] // ["Ku", "Ka", "X"]
+  fundingStage       String? // seed / series_a / series_b / ipo / gov / other
+  isRaising          Boolean?
+  nextLaunchDate     DateTime?
+  licenseExpiryDate  DateTime?
+
+  // CRM state
+  lifecycleStage CrmLifecycleStage @default(LEAD)
+  leadScore      Int               @default(0) // 0-100
+  scoreBreakdown Json? // { signals: [{key, label, points, reason}], total }
+  ownerId        String? // Caelex internal user who owns this record
+  owner          User?             @relation("CrmCompanyOwner", fields: [ownerId], references: [id])
+
+  // Links to existing records
+  organizationId String?       @unique // filled when they become a paying customer
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  customFields Json? // escape hatch for future fields
+
+  contacts    CrmContact[]
+  deals       CrmDeal[]
+  activities  CrmActivity[]
+  notes       CrmNote[]
+  tasks       CrmTask[]
+  scoreEvents CrmScoreEvent[] @relation("CrmCompanyScoreEvent")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft delete
+
+  @@index([domain])
+  @@index([lifecycleStage])
+  @@index([ownerId])
+  @@index([leadScore])
+  @@index([createdAt])
+}
+
+model CrmContact {
+  id        String  @id @default(cuid())
+  firstName String?
+  lastName  String?
+  email     String? @unique // primary identifier
+  phone     String?
+  title     String?
+  linkedinUrl String?
+  avatarUrl String?
+
+  // Company link
+  companyId String?
+  company   CrmCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  // CRM state
+  lifecycleStage CrmLifecycleStage @default(LEAD)
+  leadScore      Int               @default(0) // 0-100
+  scoreBreakdown Json?
+  ownerId        String? // Caelex internal user
+  owner          User?             @relation("CrmContactOwner", fields: [ownerId], references: [id])
+
+  // Origin tracking
+  sourceTags String[] // ["website", "demo", "contact_form", "booking"]
+  firstTouchAt DateTime?
+  lastTouchAt  DateTime?
+
+  // Links to existing records
+  userId String? @unique // if they've signed up
+  user   User?   @relation("CrmContactUser", fields: [userId], references: [id])
+
+  // Latest linked form records (not unique; a person can submit many)
+  demoRequestIds    String[] // cuids
+  contactRequestIds String[] // cuids
+  bookingIds        String[] // cuids
+
+  customFields Json?
+
+  activities  CrmActivity[]
+  notes       CrmNote[]
+  tasks       CrmTask[]
+  primaryFor  CrmDeal[]       @relation("CrmDealPrimaryContact")
+  scoreEvents CrmScoreEvent[] @relation("CrmContactScoreEvent")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@index([companyId])
+  @@index([lifecycleStage])
+  @@index([ownerId])
+  @@index([leadScore])
+  @@index([createdAt])
+}
+
+model CrmDeal {
+  id    String @id @default(cuid())
+  title String
+
+  companyId        String
+  company          CrmCompany  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  primaryContactId String?
+  primaryContact   CrmContact? @relation("CrmDealPrimaryContact", fields: [primaryContactId], references: [id], onDelete: SetNull)
+
+  stage       CrmDealStage  @default(IDENTIFIED)
+  status      CrmDealStatus @default(OPEN)
+  valueCents  BigInt? // stored in cents; supports up to ~92 quadrillion
+  currency    String        @default("EUR") // ISO-4217
+  probability Int           @default(10) // 0-100
+
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  lossReason        String?
+
+  ownerId String? // Caelex internal user
+  owner   User?   @relation("CrmDealOwner", fields: [ownerId], references: [id])
+
+  stageChangedAt DateTime @default(now())
+
+  customFields Json?
+
+  activities CrmActivity[]
+  notes      CrmNote[]
+  tasks      CrmTask[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([companyId])
+  @@index([primaryContactId])
+  @@index([stage])
+  @@index([status])
+  @@index([ownerId])
+  @@index([expectedCloseDate])
+  @@index([createdAt])
+}
+
+// CrmContact relation back to deals (via primaryContact)
+// Named relation defined on CrmDeal side above.
+
+model CrmActivity {
+  id   String          @id @default(cuid())
+  type CrmActivityType
+  source CrmActivitySource @default(SYSTEM)
+
+  // Polymorphic — any combination can be set. All indexed for fast filtering.
+  contactId String?
+  contact   CrmContact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   CrmCompany? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dealId    String?
+  deal      CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Who caused this (if a human)
+  userId String?
+  user   User?   @relation("CrmActivityUser", fields: [userId], references: [id])
+
+  // Core content
+  summary   String // one-line human description, indexed for search
+  body      String? @db.Text // full content (email body, meeting notes, transcription)
+  occurredAt DateTime @default(now())
+
+  // Typed metadata — varies by activity type
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([contactId, occurredAt(sort: Desc)])
+  @@index([companyId, occurredAt(sort: Desc)])
+  @@index([dealId, occurredAt(sort: Desc)])
+  @@index([type])
+  @@index([occurredAt])
+}
+
+model CrmNote {
+  id     String @id @default(cuid())
+  body   String @db.Text
+
+  authorId String
+  author   User   @relation("CrmNoteAuthor", fields: [authorId], references: [id])
+
+  // Polymorphic — at least one must be set (enforced in service layer)
+  contactId String?
+  contact   CrmContact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   CrmCompany? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dealId    String?
+  deal      CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([contactId, createdAt(sort: Desc)])
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([dealId, createdAt(sort: Desc)])
+}
+
+model CrmTask {
+  id          String        @id @default(cuid())
+  title       String
+  description String?       @db.Text
+  status      CrmTaskStatus @default(OPEN)
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  ownerId String
+  owner   User   @relation("CrmTaskOwner", fields: [ownerId], references: [id])
+
+  // Polymorphic
+  contactId String?
+  contact   CrmContact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   CrmCompany? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dealId    String?
+  deal      CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, status])
+  @@index([dueDate])
+  @@index([contactId])
+  @@index([companyId])
+  @@index([dealId])
+}
+
+model CrmScoreEvent {
+  id String @id @default(cuid())
+
+  contactId String?
+  contact   CrmContact? @relation("CrmContactScoreEvent", fields: [contactId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   CrmCompany? @relation("CrmCompanyScoreEvent", fields: [companyId], references: [id], onDelete: Cascade)
+
+  signal     String // key identifier: "demo_booked", "assessment_completed", etc.
+  label      String // human label for UI
+  delta      Int // positive or negative
+  reason     String? // optional explanation
+  newTotal   Int // the score after this event
+  occurredAt DateTime @default(now())
+
+  @@index([contactId, occurredAt(sort: Desc)])
+  @@index([companyId, occurredAt(sort: Desc)])
 }
 
 // ============================================
