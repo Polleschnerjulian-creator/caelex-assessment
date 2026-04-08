@@ -4513,16 +4513,22 @@ enum BookingStatus {
 }
 
 model Booking {
-  id          String        @id @default(cuid())
-  name        String
-  email       String
-  company     String
-  scheduledAt DateTime
-  timezone    String        @default("Europe/Berlin")
-  status      BookingStatus @default(CONFIRMED)
-  notes       String?       @db.Text
-  cancelledAt DateTime?
-  completedAt DateTime?
+  id              String        @id @default(cuid())
+  name            String
+  email           String
+  company         String
+  scheduledAt     DateTime
+  durationMinutes Int           @default(15)
+  timezone        String        @default("Europe/Berlin")
+  status          BookingStatus @default(CONFIRMED)
+  notes           String?       @db.Text
+  cancelledAt     DateTime?
+  completedAt     DateTime?
+
+  // Google Calendar integration
+  googleEventId       String? @unique
+  googleEventHtmlLink String?
+  meetLink            String?
 
   demoRequestId String?      @unique
   demoRequest   DemoRequest? @relation(fields: [demoRequestId], references: [id])
