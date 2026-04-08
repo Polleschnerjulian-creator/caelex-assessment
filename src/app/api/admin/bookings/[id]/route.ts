@@ -11,6 +11,7 @@ import { requireRole } from "@/lib/dal";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { cancelDemoEvent } from "@/lib/google-calendar.server";
 
 const updateBookingSchema = z.object({
   status: z.enum(["CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"]),
@@ -105,6 +106,18 @@ export async function PATCH(
           "Failed to delete calendar event for cancelled booking",
           e,
         );
+      }
+
+      // Cancel the linked Google Calendar event and notify attendees
+      if (existing.googleEventId) {
+        try {
+          await cancelDemoEvent(existing.googleEventId);
+        } catch (e) {
+          logger.error(
+            "Failed to cancel Google Calendar event for cancelled booking",
+            e,
+          );
+        }
       }
     }
 

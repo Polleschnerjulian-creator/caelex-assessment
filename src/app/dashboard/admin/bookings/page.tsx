@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Loader2,
   Clock,
+  Video,
+  ExternalLink,
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
 
@@ -24,11 +26,15 @@ interface Booking {
   email: string;
   company: string;
   scheduledAt: string;
+  durationMinutes: number;
   timezone: string;
   status: BookingStatus;
   notes: string | null;
   cancelledAt: string | null;
   completedAt: string | null;
+  googleEventId: string | null;
+  googleEventHtmlLink: string | null;
+  meetLink: string | null;
   demoRequestId: string | null;
   demoRequest: {
     operatorType: string | null;
@@ -57,13 +63,13 @@ const STATUS_TABS: { label: string; value: BookingStatus | "" }[] = [
 
 const STATUS_BADGE_CLASSES: Record<BookingStatus, string> = {
   CONFIRMED:
-    "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-primary)] border-[var(--accent-primary)/20]",
+    "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)]/20",
   COMPLETED:
-    "bg-[var(--accent-info-soft)]0/15 text-[var(--accent-primary)] border-[var(--accent-primary)]/20",
+    "bg-[var(--accent-info-soft)] text-[var(--accent-info)] border-[var(--accent-info)]/20",
   CANCELLED:
     "bg-[var(--accent-danger)]/15 text-[var(--accent-danger)] border-[var(--accent-danger)]/20",
   NO_SHOW:
-    "bg-[var(--accent-warning)]/15 text-[var(--accent-warning)] border-[var(--accent-warning)/20]",
+    "bg-[var(--accent-warning)]/15 text-[var(--accent-warning)] border-[var(--accent-warning)]/20",
 };
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
@@ -114,6 +120,15 @@ export default function AdminBookingsPage() {
   }, [fetchBookings]);
 
   async function handleAction(bookingId: string, status: BookingStatus) {
+    if (
+      status === "CANCELLED" &&
+      !confirm(
+        "Cancel this booking? The attendee will be notified via Google Calendar.",
+      )
+    ) {
+      return;
+    }
+
     setActionLoading(bookingId);
     try {
       const res = await fetch(`/api/admin/bookings/${bookingId}`, {
@@ -152,7 +167,7 @@ export default function AdminBookingsPage() {
       <div>
         <div className="flex items-center gap-3 mb-1">
           <div className="w-9 h-9 bg-[var(--accent-primary-soft)] rounded-lg flex items-center justify-center">
-            <Calendar size={18} className="text-[var(--accent-success)]" />
+            <Calendar size={18} className="text-[var(--accent-primary)]" />
           </div>
           <div>
             <h1 className="text-title font-semibold text-[var(--text-primary)]">
@@ -177,7 +192,7 @@ export default function AdminBookingsPage() {
             className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors ${
               statusFilter === tab.value
                 ? "bg-[var(--accent-primary)] text-white"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
             }`}
           >
             {tab.label}
@@ -210,11 +225,11 @@ export default function AdminBookingsPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden border border-[var(--border-default)]">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--border-default)]">
+                <tr className="border-b border-[var(--border-default)] bg-[var(--surface-raised)]">
                   <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Name
                   </th>
@@ -223,6 +238,9 @@ export default function AdminBookingsPage() {
                   </th>
                   <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Date/Time
+                  </th>
+                  <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
+                    Links
                   </th>
                   <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Status
@@ -236,7 +254,7 @@ export default function AdminBookingsPage() {
                 {bookings.map((booking) => (
                   <tr
                     key={booking.id}
-                    className="hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
+                    className="hover:bg-[var(--surface-sunken)] transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div>
@@ -253,7 +271,7 @@ export default function AdminBookingsPage() {
                         {booking.company}
                       </p>
                       {booking.demoRequest?.operatorType && (
-                        <p className="text-small text-[var(--text-secondary)]">
+                        <p className="text-small text-[var(--text-tertiary)]">
                           {booking.demoRequest.operatorType}
                         </p>
                       )}
@@ -267,6 +285,46 @@ export default function AdminBookingsPage() {
                         <span className="text-body text-[var(--text-secondary)]">
                           {formatScheduledAt(booking.scheduledAt)}
                         </span>
+                      </div>
+                      <p className="text-small text-[var(--text-tertiary)] mt-0.5">
+                        {booking.durationMinutes} min &middot;{" "}
+                        {booking.timezone}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {booking.meetLink ? (
+                          <a
+                            href={booking.meetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-small text-[var(--accent-primary)] hover:underline"
+                            title="Join Google Meet"
+                          >
+                            <Video size={12} />
+                            <span>Join Meet</span>
+                          </a>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-small text-[var(--text-tertiary)]"
+                            title="No Meet link — calendar sync was unavailable"
+                          >
+                            <Video size={12} />
+                            <span>—</span>
+                          </span>
+                        )}
+                        {booking.googleEventHtmlLink && (
+                          <a
+                            href={booking.googleEventHtmlLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            title="Open in Google Calendar"
+                          >
+                            <ExternalLink size={12} />
+                            <span>GCal</span>
+                          </a>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -297,7 +355,7 @@ export default function AdminBookingsPage() {
                               }
                               disabled={actionLoading === booking.id}
                               className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-[var(--accent-danger)] hover:bg-[var(--accent-danger)]/10 rounded-md transition-colors disabled:opacity-50"
-                              title="Cancel booking"
+                              title="Cancel booking (notifies attendee)"
                             >
                               <XCircle size={14} />
                               <span>Cancel</span>

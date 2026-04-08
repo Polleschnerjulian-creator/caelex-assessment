@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Check, Loader2, Calendar, Clock } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  Calendar,
+  Clock,
+  Video,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 // ─── Constants ───
@@ -18,77 +27,36 @@ const INTERESTS = [
   "Platform Demo",
 ] as const;
 
-// ─── Calendar Helpers ───
-
-function getNextBusinessDays(count: number): Date[] {
-  const days: Date[] = [];
-  const now = new Date();
-  const current = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  // Start from tomorrow if today is already past 16:00 CET, otherwise start today
-  current.setDate(current.getDate() + 1);
-
-  while (days.length < count) {
-    const dow = current.getDay();
-    if (dow !== 0 && dow !== 6) {
-      days.push(new Date(current));
-    }
-    current.setDate(current.getDate() + 1);
-  }
-  return days;
-}
-
-const SLOT_HOURS = [10, 14, 16] as const;
-
-function formatDayHeader(date: Date): string {
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${dayNames[date.getDay()]} ${date.getDate()} ${monthNames[date.getMonth()]}`;
-}
-
-function formatSlotForDisplay(date: Date, hour: number): string {
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${dayNames[date.getDay()]} ${date.getDate()} ${monthNames[date.getMonth()]}, ${String(hour).padStart(2, "0")}:00 CET`;
-}
-
-function isSlotPast(date: Date, hour: number): boolean {
-  const now = new Date();
-  const slotTime = new Date(date);
-  slotTime.setHours(hour, 0, 0, 0);
-  return slotTime <= now;
-}
+const DAYS_PER_PAGE = 5;
 
 // ─── Types ───
 
-interface SlotKey {
-  dateIdx: number;
+interface AvailabilitySlot {
+  startIso: string;
+  endIso: string;
   hour: number;
+  available: boolean;
+}
+
+interface AvailabilityDay {
+  date: string;
+  dayName: string;
+  dayOfMonth: number;
+  monthShort: string;
+  slots: AvailabilitySlot[];
+}
+
+interface AvailabilityResponse {
+  timezone: string;
+  durationMinutes: number;
+  days: AvailabilityDay[];
+}
+
+interface ConfirmedBooking {
+  id: string;
+  scheduledAt: string;
+  slotLabel: string;
+  meetLink: string | null;
 }
 
 // ─── Component ───
@@ -97,17 +65,67 @@ function GetStartedContent() {
   const searchParams = useSearchParams();
   const reason = searchParams.get("reason");
 
+  // Form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [message, setMessage] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<SlotKey | null>(null);
+  const [selectedSlotIso, setSelectedSlotIso] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const businessDays = useMemo(() => getNextBusinessDays(5), []);
+  // Availability state
+  const [availability, setAvailability] = useState<AvailabilityResponse | null>(
+    null,
+  );
+  const [loadingAvailability, setLoadingAvailability] = useState(true);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(
+    null,
+  );
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  // Confirmed booking (populated on success)
+  const [confirmed, setConfirmed] = useState<ConfirmedBooking | null>(null);
+
+  // ─── Load availability on mount ───
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAvailability() {
+      try {
+        const res = await fetch("/api/demo/availability", {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = (await res.json()) as AvailabilityResponse;
+        if (!cancelled) {
+          setAvailability(data);
+          setAvailabilityError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setAvailabilityError(
+            "Could not load available times. You can still submit — we'll get back to you with a slot.",
+          );
+          // eslint-disable-next-line no-console
+          console.error("Failed to load availability", err);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingAvailability(false);
+        }
+      }
+    }
+
+    fetchAvailability();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) =>
@@ -116,6 +134,32 @@ function GetStartedContent() {
         : [...prev, interest],
     );
   };
+
+  // ─── Paginated day view (5 at a time) ───
+  const allDays = availability?.days ?? [];
+  const totalPages = Math.max(1, Math.ceil(allDays.length / DAYS_PER_PAGE));
+  const visibleDays = allDays.slice(
+    weekOffset * DAYS_PER_PAGE,
+    weekOffset * DAYS_PER_PAGE + DAYS_PER_PAGE,
+  );
+  const canGoBack = weekOffset > 0;
+  const canGoForward = weekOffset < totalPages - 1;
+
+  // ─── Selected slot label ───
+  const selectedSlot = allDays
+    .flatMap((day) => day.slots)
+    .find((slot) => slot.startIso === selectedSlotIso);
+
+  const selectedSlotLabel = selectedSlot
+    ? (() => {
+        const day = allDays.find((d) =>
+          d.slots.some((s) => s.startIso === selectedSlotIso),
+        );
+        if (!day) return null;
+        const hour = String(selectedSlot.hour).padStart(2, "0");
+        return `${day.dayName} ${day.dayOfMonth} ${day.monthShort}, ${hour}:00 CET`;
+      })()
+    : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,11 +171,6 @@ function GetStartedContent() {
     const messageParts: string[] = [];
     if (selectedInterests.length > 0) {
       messageParts.push(`Interested in: ${selectedInterests.join(", ")}`);
-    }
-    if (selectedSlot !== null) {
-      const slotDate = businessDays[selectedSlot.dateIdx];
-      const slotLabel = formatSlotForDisplay(slotDate, selectedSlot.hour);
-      messageParts.push(`Preferred slot: ${slotLabel}`);
     }
     if (message.trim()) {
       messageParts.push(message.trim());
@@ -148,16 +187,39 @@ function GetStartedContent() {
           email,
           company: company || undefined,
           message: fullMessage,
+          scheduledAtIso: selectedSlotIso || undefined,
         }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "Something went wrong. Please try again.");
+        if (data.code === "SLOT_UNAVAILABLE") {
+          setError(
+            "Sorry, this slot was just booked by someone else. Please pick another time.",
+          );
+          // Refresh availability
+          setSelectedSlotIso(null);
+          try {
+            const refresh = await fetch("/api/demo/availability", {
+              cache: "no-store",
+            });
+            if (refresh.ok) {
+              setAvailability(await refresh.json());
+            }
+          } catch {
+            // ignore
+          }
+        } else {
+          setError(data.error || "Something went wrong. Please try again.");
+        }
         setSubmitting(false);
         return;
       }
 
+      if (data.booking) {
+        setConfirmed(data.booking as ConfirmedBooking);
+      }
       setSubmitted(true);
     } catch {
       setError("Network error. Please try again.");
@@ -169,14 +231,6 @@ function GetStartedContent() {
   // ─── Success State ───
 
   if (submitted) {
-    const slotLabel =
-      selectedSlot !== null
-        ? formatSlotForDisplay(
-            businessDays[selectedSlot.dateIdx],
-            selectedSlot.hour,
-          )
-        : null;
-
     return (
       <div className="min-h-screen bg-[#F7F8FA] relative overflow-hidden">
         <BreadcrumbJsonLd
@@ -205,19 +259,41 @@ function GetStartedContent() {
               </motion.div>
 
               <h2 className="text-display-sm font-semibold text-[#111827] mb-3">
-                Termin angefragt
+                {confirmed ? "Termin bestätigt" : "Termin angefragt"}
               </h2>
-              <p className="text-body-lg text-[#6b7280] mb-2">
-                Wir melden uns innerhalb von 24 Stunden bei Ihnen.
+              <p className="text-body-lg text-[#6b7280] mb-6">
+                {confirmed
+                  ? "Sie erhalten in Kürze eine Kalender-Einladung."
+                  : "Wir melden uns innerhalb von 24 Stunden bei Ihnen."}
               </p>
 
-              {slotLabel && (
-                <p className="text-body text-[#9ca3af] mb-10">
-                  Gewählter Termin: {slotLabel}
-                </p>
-              )}
+              {confirmed && (
+                <div className="bg-[#f9fafb] border border-[#e5e7eb] rounded-xl p-5 mb-8 text-left">
+                  <p className="text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-1.5">
+                    When
+                  </p>
+                  <p className="text-body-lg font-medium text-[#111827] mb-4">
+                    {confirmed.slotLabel}
+                  </p>
 
-              {!slotLabel && <div className="mb-10" />}
+                  {confirmed.meetLink && (
+                    <>
+                      <p className="text-caption font-semibold uppercase tracking-[0.15em] text-[#9ca3af] mb-1.5">
+                        Join the call
+                      </p>
+                      <a
+                        href={confirmed.meetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-body text-[#111827] hover:text-black transition-colors font-medium break-all"
+                      >
+                        <Video size={14} className="flex-shrink-0" />
+                        {confirmed.meetLink}
+                      </a>
+                    </>
+                  )}
+                </div>
+              )}
 
               <Link
                 href="/cra/classify"
@@ -262,7 +338,7 @@ function GetStartedContent() {
             )}
 
             <div className="grid lg:grid-cols-[1fr_0.7fr] gap-12 lg:gap-16 items-start">
-              {/* ── Left Column (60%) — Headline + Calendar ── */}
+              {/* ── Left Column — Headline + Calendar ── */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -285,77 +361,134 @@ function GetStartedContent() {
 
                 {/* Calendar Card */}
                 <div className="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm p-6 md:p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Calendar size={18} className="text-[#111827]" />
-                    <h2 className="text-title font-semibold text-[#111827]">
-                      Choose a time slot
-                    </h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Calendar size={18} className="text-[#111827]" />
+                      <h2 className="text-title font-semibold text-[#111827]">
+                        Choose a time slot
+                      </h2>
+                    </div>
+                    {totalPages > 1 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWeekOffset((p) => Math.max(0, p - 1))
+                          }
+                          disabled={!canGoBack}
+                          aria-label="Previous week"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] hover:text-[#111827] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWeekOffset((p) =>
+                              Math.min(totalPages - 1, p + 1),
+                            )
+                          }
+                          disabled={!canGoForward}
+                          aria-label="Next week"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] hover:text-[#111827] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Loading state */}
+                  {loadingAvailability && (
+                    <div className="flex items-center justify-center gap-2 py-16 text-body text-[#9ca3af]">
+                      <Loader2 size={16} className="animate-spin" />
+                      Loading available times…
+                    </div>
+                  )}
+
+                  {/* Error state */}
+                  {!loadingAvailability && availabilityError && (
+                    <div className="py-10 text-center text-body text-[#6b7280] bg-[#f9fafb] rounded-xl border border-[#e5e7eb]">
+                      {availabilityError}
+                    </div>
+                  )}
 
                   {/* Calendar Grid */}
-                  <div className="overflow-x-auto -mx-2 px-2 pb-2">
-                    <div className="grid grid-cols-5 gap-3 min-w-[480px]">
-                      {/* Day headers */}
-                      {businessDays.map((day, dayIdx) => (
-                        <div
-                          key={dayIdx}
-                          className="text-center pb-3 border-b border-[#e5e7eb]"
-                        >
-                          <p className="text-caption font-semibold text-[#9ca3af] uppercase tracking-wider">
-                            {formatDayHeader(day).split(" ")[0]}
-                          </p>
-                          <p className="text-body-lg font-medium text-[#111827] mt-0.5">
-                            {formatDayHeader(day).split(" ").slice(1).join(" ")}
-                          </p>
-                        </div>
-                      ))}
+                  {!loadingAvailability && !availabilityError && (
+                    <div className="overflow-x-auto -mx-2 px-2 pb-2">
+                      <div className="grid grid-cols-5 gap-3 min-w-[480px]">
+                        {/* Day headers */}
+                        {visibleDays.map((day) => (
+                          <div
+                            key={day.date}
+                            className="text-center pb-3 border-b border-[#e5e7eb]"
+                          >
+                            <p className="text-caption font-semibold text-[#9ca3af] uppercase tracking-wider">
+                              {day.dayName}
+                            </p>
+                            <p className="text-body-lg font-medium text-[#111827] mt-0.5">
+                              {day.dayOfMonth} {day.monthShort}
+                            </p>
+                          </div>
+                        ))}
 
-                      {/* Time slots */}
-                      {SLOT_HOURS.map((hour) =>
-                        businessDays.map((day, dayIdx) => {
-                          const past = isSlotPast(day, hour);
-                          const isSelected =
-                            selectedSlot?.dateIdx === dayIdx &&
-                            selectedSlot?.hour === hour;
+                        {/* Time slots — rendered row by row so all 10:00 align */}
+                        {[10, 14, 16].map((hour) =>
+                          visibleDays.map((day) => {
+                            const slot = day.slots.find((s) => s.hour === hour);
+                            if (!slot) {
+                              return (
+                                <div key={`${day.date}-${hour}`} aria-hidden />
+                              );
+                            }
+                            const isSelected =
+                              selectedSlotIso === slot.startIso;
+                            const disabled = !slot.available;
 
-                          return (
-                            <button
-                              key={`${dayIdx}-${hour}`}
-                              type="button"
-                              disabled={past}
-                              onClick={() =>
-                                setSelectedSlot(
-                                  isSelected ? null : { dateIdx: dayIdx, hour },
-                                )
-                              }
-                              className={`
-                                flex items-center justify-center gap-1.5 py-3 rounded-xl text-body font-medium transition-all duration-200
-                                ${
-                                  past
-                                    ? "opacity-30 cursor-not-allowed bg-[#f9fafb] border border-[#e5e7eb] text-[#9ca3af]"
-                                    : isSelected
-                                      ? "bg-[#111827] border border-[#111827] text-white"
-                                      : "bg-[#f9fafb] border border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] cursor-pointer"
+                            return (
+                              <button
+                                key={`${day.date}-${hour}`}
+                                type="button"
+                                disabled={disabled}
+                                onClick={() =>
+                                  setSelectedSlotIso(
+                                    isSelected ? null : slot.startIso,
+                                  )
                                 }
-                              `}
-                            >
-                              <Clock
-                                size={12}
-                                className={
-                                  isSelected ? "text-white" : "text-[#9ca3af]"
+                                aria-label={
+                                  disabled
+                                    ? `${hour}:00 on ${day.dayName} ${day.dayOfMonth} ${day.monthShort} — unavailable`
+                                    : `${hour}:00 on ${day.dayName} ${day.dayOfMonth} ${day.monthShort} — available`
                                 }
-                              />
-                              {String(hour).padStart(2, "0")}:00
-                            </button>
-                          );
-                        }),
-                      )}
+                                className={`
+                                  flex items-center justify-center gap-1.5 py-3 rounded-xl text-body font-medium transition-all duration-200
+                                  ${
+                                    disabled
+                                      ? "opacity-30 cursor-not-allowed bg-[#f9fafb] border border-[#e5e7eb] text-[#9ca3af] line-through"
+                                      : isSelected
+                                        ? "bg-[#111827] border border-[#111827] text-white"
+                                        : "bg-[#f9fafb] border border-[#e5e7eb] text-[#6b7280] hover:border-[#111827] cursor-pointer"
+                                  }
+                                `}
+                              >
+                                <Clock
+                                  size={12}
+                                  className={
+                                    isSelected ? "text-white" : "text-[#9ca3af]"
+                                  }
+                                />
+                                {String(hour).padStart(2, "0")}:00
+                              </button>
+                            );
+                          }),
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Selected slot indicator */}
                   <AnimatePresence>
-                    {selectedSlot !== null && (
+                    {selectedSlotLabel && (
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -363,10 +496,7 @@ function GetStartedContent() {
                         className="text-body text-[#111827] mt-4 flex items-center gap-2"
                       >
                         <Check size={14} />
-                        {formatSlotForDisplay(
-                          businessDays[selectedSlot.dateIdx],
-                          selectedSlot.hour,
-                        )}
+                        {selectedSlotLabel}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -380,11 +510,11 @@ function GetStartedContent() {
                   <span aria-hidden="true">&middot;</span>
                   <span>No commitment</span>
                   <span aria-hidden="true">&middot;</span>
-                  <span>Response within 24h</span>
+                  <span>Google Meet</span>
                 </div>
               </motion.div>
 
-              {/* ── Right Column (40%) — Form ── */}
+              {/* ── Right Column — Form ── */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -539,7 +669,7 @@ function GetStartedContent() {
                         </>
                       ) : (
                         <>
-                          Send Request
+                          {selectedSlotIso ? "Confirm Booking" : "Send Request"}
                           <ArrowRight size={16} />
                         </>
                       )}
