@@ -43,39 +43,55 @@ export default function ContactPage() {
   const [formState, setFormState] = useState<
     "idle" | "sending" | "sent" | "error"
   >("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
     subject: "",
     message: "",
+    _hp: "", // honeypot
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState("sending");
+    setErrorMessage(null);
 
     try {
-      const subject = encodeURIComponent(
-        formData.subject ||
-          `Caelex Contact: ${formData.company || formData.name}`,
-      );
-      const body = encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\nCompany: ${formData.company || "N/A"}\n\nMessage:\n${formData.message}`,
-      );
-      window.location.href = `mailto:cs@caelex.eu?subject=${subject}&body=${body}`;
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company || undefined,
+          subject: formData.subject || undefined,
+          message: formData.message,
+          _hp: formData._hp || undefined,
+        }),
+      });
 
-      setTimeout(() => {
-        setFormState("sent");
-        setFormData({
-          name: "",
-          email: "",
-          company: "",
-          subject: "",
-          message: "",
-        });
-      }, 500);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMessage(
+          data.error || "Something went wrong. Please try again.",
+        );
+        setFormState("error");
+        return;
+      }
+
+      setFormState("sent");
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        subject: "",
+        message: "",
+        _hp: "",
+      });
     } catch {
+      setErrorMessage("Network error. Please try again.");
       setFormState("error");
     }
   };
@@ -336,14 +352,39 @@ export default function ContactPage() {
                       />
                     </div>
 
+                    {/* Honeypot — hidden from humans, filled by bots */}
+                    <input
+                      type="text"
+                      name="_hp"
+                      value={formData._hp}
+                      onChange={(e) =>
+                        setFormData({ ...formData, _hp: e.target.value })
+                      }
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: "-9999px",
+                        width: "1px",
+                        height: "1px",
+                        opacity: 0,
+                      }}
+                    />
+
                     {formState === "error" && (
-                      <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                        <p className="text-body text-red-400">
-                          Something went wrong. Please try again or email us
-                          directly at{" "}
-                          <a href="mailto:cs@caelex.eu" className="underline">
-                            cs@caelex.eu
-                          </a>
+                      <div
+                        className="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+                        role="alert"
+                      >
+                        <p className="text-body text-red-600">
+                          {errorMessage ||
+                            "Something went wrong. Please try again or email us directly at "}
+                          {!errorMessage && (
+                            <a href="mailto:cs@caelex.eu" className="underline">
+                              cs@caelex.eu
+                            </a>
+                          )}
                         </p>
                       </div>
                     )}

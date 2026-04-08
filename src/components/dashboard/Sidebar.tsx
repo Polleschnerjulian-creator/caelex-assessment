@@ -41,6 +41,7 @@ import {
   CheckSquare,
   GitBranch,
   Layers,
+  MessageSquare,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -590,6 +591,43 @@ export default function Sidebar({
     window.addEventListener("forge-mode-change", handler);
     return () => window.removeEventListener("forge-mode-change", handler);
   }, [onCollapsedChange, isCollapsed]);
+
+  // ─── Admin stats (badges) — polled every 60s for admin users only ───
+  const [adminStats, setAdminStats] = useState<{
+    newBookings: number;
+    newContactRequests: number;
+    newDemoRequests: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (user?.role !== "admin") return;
+
+    let cancelled = false;
+
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/admin/stats", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setAdminStats({
+            newBookings: data.newBookings ?? 0,
+            newContactRequests: data.newContactRequests ?? 0,
+            newDemoRequests: data.newDemoRequests ?? 0,
+          });
+        }
+      } catch {
+        // Silently fail — badges are a nice-to-have, not critical
+      }
+    }
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [user?.role]);
 
   const toggleCollapse = () => {
     if (forgeMode) return; // Don't allow manual toggle in forge mode
@@ -1286,8 +1324,26 @@ export default function Sidebar({
                   icon={<Calendar size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                   collapsed={collapsed}
+                  badge={
+                    adminStats && adminStats.newBookings > 0
+                      ? String(adminStats.newBookings)
+                      : undefined
+                  }
                 >
                   {t("sidebar.bookings") || "Bookings"}
+                </NavItem>
+                <NavItem
+                  href="/dashboard/admin/contact-requests"
+                  icon={<MessageSquare size={18} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                  collapsed={collapsed}
+                  badge={
+                    adminStats && adminStats.newContactRequests > 0
+                      ? String(adminStats.newContactRequests)
+                      : undefined
+                  }
+                >
+                  Contact Requests
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/analytics"
