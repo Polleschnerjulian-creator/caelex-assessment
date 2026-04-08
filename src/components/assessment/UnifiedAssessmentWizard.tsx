@@ -307,15 +307,23 @@ export default function UnifiedAssessmentWizard() {
           );
         }
 
-        const data = await response.json();
-        setComplianceResult(data.result);
+        const json = await response.json();
+        // The API wraps with createSuccessResponse which produces { data: { result } }.
+        // Accept both shapes defensively in case the helper is ever changed.
+        const result = json?.data?.result ?? json?.result;
+        if (!result) {
+          throw new Error(
+            "Received an empty compliance result from the server.",
+          );
+        }
+        setComplianceResult(result);
 
         // Store result in localStorage + clear auto-save
         try {
           localStorage.setItem(
             "caelex-unified-assessment",
             JSON.stringify({
-              ...data.result,
+              ...result,
               completedAt: new Date().toISOString(),
             }),
           );

@@ -3600,138 +3600,263 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
       requiredTrue: ["coordinationProcedures", "peerOperatorsIdentified"],
     },
   },
+
+  // ─── Art. 21(2)(k) — Physical Security of Network and IS ────────────────
+  // Previously completely missing. Critical for space operators since ground
+  // stations are a primary attack vector. Added as nis2-052 through nis2-055.
+
+  {
+    id: "nis2-052",
+    articleRef: "NIS2 Art. 21(2)(k)",
+    category: "hr_access_asset",
+    title: "Physical Access Control for Ground Infrastructure",
+    description:
+      "Physical access control measures for facilities containing network and information systems, including ground stations, mission control centers, data centers, and spacecraft integration facilities. Required under Art. 21(2)(k).",
+    complianceQuestion:
+      "Do you implement physical access controls (badges, biometrics, visitor logs, escorted access) at all facilities containing network and information systems critical to your space operations?",
+    spaceSpecificGuidance:
+      "Ground stations represent the primary attack surface for space assets — an attacker with physical access to a TT&C facility can directly command spacecraft, inject malicious uplink data, or disrupt ground-segment availability. Required controls: multi-factor physical access (badge + PIN/biometric), video surveillance of all entry points, visitor escort policy, time-limited access credentials, separation of visitor and staff zones, documented access revocation on personnel changes. For unmanned remote ground stations, implement perimeter intrusion detection and tamper-evident enclosures.",
+    applicableTo: {
+      entityClassifications: ["essential", "important"],
+      sectors: ["space"],
+      subSectors: ["ground_infrastructure", "satellite_communications"],
+    },
+    euSpaceActRef: "Art. 74, 77",
+    euSpaceActArticleNumbers: [74, 77],
+    iso27001Ref: "A.7.1, A.7.2, A.7.3, A.7.4",
+    tips: [
+      "Inventory every facility with network equipment or cryptographic material",
+      "Deploy multi-factor physical access (badge + biometric or PIN) on server rooms and TT&C rooms",
+      "Install video surveillance on all entry/exit points with 90+ day retention",
+      "Implement visitor management with escort requirements and sign-in logs",
+      "Revoke physical credentials immediately on termination or role change",
+      "For remote unmanned sites: perimeter intrusion detection, tamper-evident enclosures, 24/7 monitoring",
+    ],
+    evidenceRequired: [
+      "Physical access policy document",
+      "Facility access control system configuration",
+      "Visitor logs (last 12 months)",
+      "Video surveillance retention policy and sample recordings",
+      "Termination checklist showing access revocation step",
+      "Perimeter security assessment for remote sites",
+    ],
+    severity: "critical",
+    implementationTimeWeeks: 4,
+    canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "physicalAccessControlsDeployed",
+        label:
+          "Multi-factor physical access controls at all critical facilities",
+        type: "boolean" as const,
+      },
+      {
+        id: "videoSurveillanceDeployed",
+        label: "Video surveillance of entry points with 90+ day retention",
+        type: "boolean" as const,
+      },
+      {
+        id: "visitorManagementProcess",
+        label: "Documented visitor management and escort policy",
+        type: "boolean" as const,
+      },
+      {
+        id: "accessRevocationProcess",
+        label: "Access revocation triggered on personnel changes",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "physicalAccessControlsDeployed",
+        "accessRevocationProcess",
+      ],
+    },
+  },
+
+  {
+    id: "nis2-053",
+    articleRef: "NIS2 Art. 21(2)(k)",
+    category: "hr_access_asset",
+    title: "Environmental and Tamper Protection for Critical Equipment",
+    description:
+      "Environmental controls (HVAC, fire suppression, flood sensors, UPS) and tamper-evidence measures for equipment processing critical space mission data.",
+    complianceQuestion:
+      "Do you protect critical equipment (servers, cryptographic modules, network gear) with environmental controls and tamper-detection measures?",
+    spaceSpecificGuidance:
+      "Ground station equipment runs 24/7 and a single HVAC or power failure can disrupt TT&C to live spacecraft. Implement: redundant climate control, early-warning smoke/heat detection, water/flood sensors under raised floors, uninterruptible power supply with automatic failover to generator, tamper-evident seals on cryptographic modules (HSMs), environmental monitoring with remote alerting. Spacecraft command authentication keys must be stored in FIPS 140-2 Level 3+ HSMs with tamper response (automatic key zeroization on physical attack).",
+    applicableTo: {
+      entityClassifications: ["essential", "important"],
+      sectors: ["space"],
+    },
+    euSpaceActRef: "Art. 81-82",
+    euSpaceActArticleNumbers: [81, 82],
+    iso27001Ref: "A.7.5, A.7.8, A.7.11, A.7.12",
+    tips: [
+      "Deploy environmental monitoring (temperature, humidity, flood) with alerting",
+      "Install UPS with runtime sufficient for clean generator handoff",
+      "Store HSMs and key material in tamper-evident enclosures",
+      "Test failover quarterly",
+      "Document single points of failure and mitigations",
+    ],
+    evidenceRequired: [
+      "Environmental monitoring system configuration",
+      "UPS/generator test records",
+      "HSM tamper log",
+      "Facility resilience assessment",
+    ],
+    severity: "major",
+    implementationTimeWeeks: 6,
+    canBeSimplified: true,
+  },
+
+  {
+    id: "nis2-054",
+    articleRef: "NIS2 Art. 21(2)(k)",
+    category: "hr_access_asset",
+    title: "Physical Security for Remote and Unmanned Ground Sites",
+    description:
+      "Enhanced physical protection for remote ground stations, relay sites, or unmanned facilities that form part of the space communication chain.",
+    complianceQuestion:
+      "For any remote or unmanned ground sites, do you implement perimeter intrusion detection, tamper-evident enclosures, and 24/7 remote monitoring?",
+    spaceSpecificGuidance:
+      "Space operators increasingly rely on distributed and unmanned ground stations (polar relays, equatorial downlink sites, mobile tracking trailers). These sites lack human guards and are prime targets for physical tampering or jamming equipment installation. Required: hardened enclosures resistant to forced entry, motion and perimeter sensors, 24/7 video with remote monitoring, tamper-evident seals on RF front-ends, battery-backed operation, GPS-jamming detection, protocol-level detection of unauthorized commands (can indicate physical compromise), documented incident response for physical breach alarms.",
+    applicableTo: {
+      entityClassifications: ["essential", "important"],
+      sectors: ["space"],
+      subSectors: ["ground_infrastructure", "satellite_communications"],
+    },
+    euSpaceActRef: "Art. 77, 82",
+    euSpaceActArticleNumbers: [77, 82],
+    iso27001Ref: "A.7.1, A.7.2, A.7.4",
+    tips: [
+      "Conduct site-specific threat assessment for every remote location",
+      "Deploy remote monitoring with cellular/satellite backhaul independent of main uplink",
+      "Use tamper-evident enclosures with alarm integration",
+      "Document sensor coverage of each remote site",
+      "Establish response time SLA for physical alarms",
+    ],
+    evidenceRequired: [
+      "Remote site inventory and risk rating",
+      "Site-specific physical security plan",
+      "Alarm response procedure and SLA",
+      "Incident history and response logs",
+    ],
+    severity: "major",
+    implementationTimeWeeks: 8,
+    canBeSimplified: true,
+  },
+
+  {
+    id: "nis2-055",
+    articleRef: "NIS2 Art. 21(2)(k)",
+    category: "hr_access_asset",
+    title: "Media Handling and Secure Disposal",
+    description:
+      "Secure handling, transport, and end-of-life destruction of storage media containing space mission data, cryptographic material, or ground station configuration.",
+    complianceQuestion:
+      "Do you have documented procedures for secure media handling, transport, and destruction when decommissioning equipment?",
+    spaceSpecificGuidance:
+      "Ground station HSMs, flight software revision media, and command authentication key backups must never leave physical control unless encrypted and logged. When ground equipment is decommissioned or repaired off-site, media must be sanitized (cryptographic erasure + physical destruction for classified material) following NIST SP 800-88 Rev. 1. Cryptographic material for retired missions must be formally destroyed with certificate of destruction.",
+    applicableTo: {
+      entityClassifications: ["essential", "important"],
+      sectors: ["space"],
+    },
+    euSpaceActRef: "Art. 82",
+    euSpaceActArticleNumbers: [82],
+    iso27001Ref: "A.7.10, A.7.14, A.8.10",
+    tips: [
+      "Follow NIST SP 800-88 Rev. 1 for media sanitization",
+      "Require certificate of destruction for all retired media",
+      "Encrypt all removable media in transit",
+      "Maintain chain of custody logs for classified or sensitive media",
+    ],
+    evidenceRequired: [
+      "Media handling policy",
+      "Destruction certificates",
+      "Chain of custody records",
+      "Decommissioning checklist",
+    ],
+    severity: "major",
+    implementationTimeWeeks: 2,
+    canBeSimplified: true,
+  },
+
+  // ─── Art. 23(4)(c) — Intermediate Status Report ─────────────────────────
+  // Previously missing. This is a distinct obligation from the 24h/72h/1mo
+  // reports and can be triggered at any point during an ongoing incident.
+
+  {
+    id: "nis2-056",
+    articleRef: "NIS2 Art. 23(4)(c)",
+    category: "reporting",
+    title: "Intermediate Status Report on CSIRT Request",
+    description:
+      "Ability to produce and submit an ad-hoc intermediate status report on request from the CSIRT or competent authority during an ongoing significant incident, separate from the 24-hour early warning, 72-hour notification, and 1-month final report.",
+    complianceQuestion:
+      "Do you have the organizational capability to produce an ad-hoc intermediate incident status report within a short timeframe (e.g., 12–24 hours) when requested by the CSIRT or competent authority during an active incident?",
+    spaceSpecificGuidance:
+      "Space incidents often take weeks to fully resolve — for example, a spacecraft command injection incident may require coordinated investigation with the spacecraft bus manufacturer, ground station provider, and upstream comsat partners. During such multi-week incidents, the CSIRT may demand on-demand status updates under Art. 23(4)(c) with no fixed deadline between the 72-hour notification and the 1-month final report. You must be able to: (1) pull current investigation status from the incident response team on short notice, (2) structure it into a formal intermediate report including evidence collected, mitigations deployed, and residual risk, (3) deliver it to the competent authority via secure channel. Pre-define an intermediate report template and a production SLA.",
+    applicableTo: {
+      entityClassifications: ["essential", "important"],
+      sectors: ["space"],
+    },
+    euSpaceActRef: "Art. 89-90",
+    euSpaceActArticleNumbers: [89, 90],
+    iso27001Ref: "A.5.24, A.5.25, A.5.26",
+    tips: [
+      "Define an intermediate report template (structured sections: current status, evidence collected, mitigation deployed, residual risk, next steps)",
+      "Assign clear ownership of on-demand reporting during active incidents",
+      "Pre-establish secure transmission channels with your CSIRT",
+      "Set internal SLA for intermediate report production (e.g., 12 hours from request)",
+      "Include intermediate report drill in tabletop exercises",
+    ],
+    evidenceRequired: [
+      "Intermediate report template",
+      "Incident response procedures referencing Art. 23(4)(c)",
+      "Secure transmission channel documentation",
+      "Tabletop exercise records including intermediate report production",
+    ],
+    severity: "major",
+    implementationTimeWeeks: 2,
+    canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "intermediateReportTemplate",
+        label: "Intermediate status report template exists",
+        type: "boolean" as const,
+      },
+      {
+        id: "intermediateReportSLA",
+        label: "Internal SLA defined for producing intermediate reports",
+        type: "boolean" as const,
+      },
+      {
+        id: "csirtChannelsEstablished",
+        label: "Secure transmission channels to CSIRT pre-established",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["intermediateReportTemplate", "csirtChannelsEstablished"],
+    },
+  },
 ];
 
 // ─── Helper Functions ───
 
 /**
- * Classify an entity under NIS2 based on assessment answers.
+ * NIS2 entity classification lives in the canonical engine file.
+ * This re-export keeps backwards compatibility for any legacy imports that
+ * used to pull the classifier from the data file. Do not reimplement here.
  *
- * Space is listed as a sector of high criticality in NIS2 Annex I, Sector 11.
- * - Essential entities: large entities (>250 employees or >EUR 50M turnover)
- *   in Annex I sectors, or medium entities providing critical infrastructure.
- * - Important entities: medium entities (50-250 employees) in Annex I sectors,
- *   or small entities providing critical services.
- * - Out of scope: micro entities (<10 employees, <EUR 2M), non-EU entities
- *   without EU operations, or entities not in a covered sector.
+ * @see src/lib/nis2-engine.server.ts for the authoritative version
  */
-export function classifyNIS2Entity(answers: NIS2AssessmentAnswers): {
-  classification: NIS2EntityClassification;
-  reason: string;
-} {
-  // Not in a covered sector
-  if (answers.sector !== "space" && answers.sector !== null) {
-    // Non-space sectors are out of scope for this tool (we only handle space)
-    return {
-      classification: "out_of_scope",
-      reason:
-        "This tool is designed for space sector entities. For other NIS2 sectors, consult sector-specific guidance.",
-    };
-  }
-
-  if (answers.sector === null) {
-    return {
-      classification: "out_of_scope",
-      reason:
-        "Sector information is required to determine NIS2 classification.",
-    };
-  }
-
-  // Non-EU established entities without EU operations
-  if (answers.isEUEstablished === false) {
-    return {
-      classification: "out_of_scope",
-      reason:
-        "NIS2 applies to entities established in the EU, or entities providing services within the EU. " +
-        "If you provide services to EU customers, you may still be in scope and should designate an EU representative.",
-    };
-  }
-
-  // Micro entities are generally out of scope (Art. 2(1) — size cap)
-  if (answers.entitySize === "micro") {
-    // Exception: micro entities can still be in scope if they are sole providers of critical services
-    // or if failure would have significant impact. However, the general rule excludes them.
-    return {
-      classification: "out_of_scope",
-      reason:
-        "Micro entities (fewer than 10 employees and annual turnover or balance sheet below EUR 2 million) " +
-        "are generally excluded from NIS2 scope under Art. 2(1). However, exceptions may apply if your entity " +
-        "is a sole provider of a critical service in a Member State, or if a disruption could have significant " +
-        "impact on public safety or public health. Consult your national competent authority for a definitive determination.",
-    };
-  }
-
-  // Large entity in space sector (Annex I) → essential
-  if (answers.entitySize === "large") {
-    return {
-      classification: "essential",
-      reason:
-        "As a large entity (250+ employees or EUR 50M+ annual turnover) operating in the space sector " +
-        "(NIS2 Annex I, Sector 11), your organisation is classified as an essential entity under NIS2 Art. 3(1). " +
-        "Essential entities are subject to the full set of NIS2 obligations and ex-ante supervisory measures.",
-    };
-  }
-
-  // Medium entity in space sector
-  if (answers.entitySize === "medium") {
-    // Check if they operate critical infrastructure (ground stations, satcom) that could elevate to essential
-    const isCriticalInfra =
-      answers.operatesGroundInfra === true || answers.operatesSatComms === true;
-
-    if (isCriticalInfra) {
-      return {
-        classification: "essential",
-        reason:
-          "As a medium-sized entity operating critical space infrastructure (ground stations or satellite " +
-          "communications), your organisation may be classified as essential under NIS2 Art. 3(1)(f) if designated " +
-          "by your Member State as a critical entity. Consult your national competent authority for confirmation. " +
-          "Defaulting to essential classification for conservative compliance planning.",
-      };
-    }
-
-    return {
-      classification: "important",
-      reason:
-        "As a medium-sized entity (50-250 employees, EUR 10M-50M turnover) in the space sector " +
-        "(NIS2 Annex I, Sector 11), your organisation is classified as an important entity under NIS2 Art. 3(2). " +
-        "Important entities have the same cybersecurity obligations but are subject to ex-post supervision only.",
-    };
-  }
-
-  // Small entity in space sector
-  if (answers.entitySize === "small") {
-    // Small entities in Annex I sectors are generally classified as important if they meet the size threshold
-    // (>10 employees or >EUR 2M turnover)
-    const providesCriticalServices =
-      answers.operatesSatComms === true ||
-      answers.operatesGroundInfra === true ||
-      answers.providesEOData === true;
-
-    if (providesCriticalServices) {
-      return {
-        classification: "important",
-        reason:
-          "As a small entity providing critical space services (satellite communications, ground infrastructure, " +
-          "or Earth observation data), your organisation is classified as an important entity under NIS2 Art. 3(2). " +
-          "Member States may also identify your entity under Art. 2(2)(b)-(e) exceptions for small entities providing critical services.",
-      };
-    }
-
-    return {
-      classification: "important",
-      reason:
-        "As a small entity (10-49 employees, EUR 2M-10M turnover) in the space sector " +
-        "(NIS2 Annex I, Sector 11), your organisation meets the threshold for classification as an important entity " +
-        "under NIS2 Art. 3(2). You are subject to NIS2 obligations proportionate to your size and risk profile.",
-    };
-  }
-
-  return {
-    classification: "out_of_scope",
-    reason:
-      "Unable to determine NIS2 classification with the information provided. Please complete all assessment fields.",
-  };
-}
+// Classification is NOT re-exported here on purpose — importing from a server-
+// only engine file would pull `server-only` into any consumer of this data
+// file, breaking client bundles. Callers must import `classifyNIS2Entity`
+// from `@/lib/nis2-engine.server` directly. This is enforced by deleting the
+// previous duplicate implementation below.
 
 /**
  * Filter NIS2 requirements based on entity classification, sector, and size.

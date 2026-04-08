@@ -59,17 +59,33 @@ export const EU_MEMBER_STATES = [
   "SE",
 ] as const;
 
+// Expanded 2026-04 to cover every European country with an enacted national
+// space activities law or interim framework (19 total). Must stay in sync with
+// SPACE_LAW_COUNTRY_CODES in space-law-types.ts and JURISDICTION_DATA in
+// national-space-laws.ts.
 export const SPACE_LAW_JURISDICTIONS = [
+  // Core EU with dedicated space law
   "FR",
-  "UK",
   "DE",
+  "IT",
+  "UK",
   "LU",
   "NL",
   "BE",
+  "ES",
   "AT",
+  "PL",
+  // Nordics
   "DK",
-  "IT",
   "NO",
+  "SE",
+  "FI",
+  // Other enacted
+  "PT",
+  "GR",
+  "CZ",
+  "IE",
+  "CH",
 ] as const;
 
 export type SpaceLawJurisdiction = (typeof SPACE_LAW_JURISDICTIONS)[number];
@@ -301,6 +317,18 @@ export interface UnifiedAssessmentAnswers {
   providesDigitalInfrastructure: boolean | null;
   annualRevenueAbove10M: boolean | null;
   designatedByMemberState: boolean | null;
+  /**
+   * Number of EU member states where the entity has physical presence or
+   * operations. Used by NIS2 Art. 26(1) to determine primary vs. coordinating
+   * authorities. Null = unknown; 1 = single member state; >1 = multi-country.
+   */
+  memberStateCount: number | null;
+  /**
+   * True if the entity only resells / analyzes data without operating any
+   * ground infrastructure. Data reseller-only entities are not NIS2 Annex I
+   * Sector 11 "ground-based infrastructure" operators.
+   */
+  isDataResellerOnly: boolean | null;
 
   // Phase 6 additions (Spectrum)
   usesRadioFrequencies: boolean | null;
@@ -702,6 +730,8 @@ export const getDefaultUnifiedAnswers =
     providesDigitalInfrastructure: null,
     annualRevenueAbove10M: null,
     designatedByMemberState: null,
+    memberStateCount: null,
+    isDataResellerOnly: null,
     currentLicenses: [],
     interestedJurisdictions: [],
     licensingTimeline: null,

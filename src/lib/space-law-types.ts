@@ -8,31 +8,64 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-// ─── Country Codes for 10 Priority Jurisdictions ───
+// ─── Country Codes for Priority Jurisdictions ───
+//
+// This list covers every European country that has enacted a dedicated national
+// space activities law, plus a few emerging jurisdictions with interim
+// frameworks. The 10-jurisdiction product scope was expanded to 18 in the
+// 2026-04 regulatory refresh to reflect enacted laws that Caelex must cover:
+//
+//   Core EU with dedicated space law: FR, DE, IT, UK, LU, NL, BE, ES, AT, PL
+//   Nordic/Baltic:                    DK, NO, SE, FI
+//   Other enacted:                    PT, GR, CZ, IE, CH (EEA / observer)
+//
+// Any change to this list must be mirrored in `SPACE_LAW_COUNTRY_CODES` below
+// and in the corresponding `JURISDICTION_DATA` Map in national-space-laws.ts.
 
 export type SpaceLawCountryCode =
-  | "FR"
-  | "UK"
-  | "BE"
-  | "NL"
-  | "LU"
-  | "AT"
-  | "DK"
-  | "DE"
-  | "IT"
-  | "NO";
+  // Core EU space law jurisdictions
+  | "FR" // France — Loi sur les Opérations Spatiales (LOS) 2008
+  | "DE" // Germany — no comprehensive space law (SatDSiG for remote sensing only)
+  | "IT" // Italy — Law 89/2025 "Legge sull'Economia dello Spazio"
+  | "UK" // United Kingdom — Space Industry Act 2018
+  | "LU" // Luxembourg — Law of 20 July 2017 on exploration and use of space resources
+  | "NL" // Netherlands — Space Activities Act (SaRa) 2007
+  | "BE" // Belgium — Law on Activities of Launching, Flight Operation or Guidance 2005
+  | "ES" // Spain — Royal Decree 278/2024 (March 2024)
+  | "AT" // Austria — Outer Space Act (Weltraumgesetz) 2011
+  | "PL" // Poland — Act on Space Activities 2021 (Ustawa o działalności kosmicznej)
+  // Nordics
+  | "DK" // Denmark — Space Activities Act 2016
+  | "NO" // Norway — Act on Launching Objects 1969 (amended 2019)
+  | "SE" // Sweden — Act on Space Activities 1982 / Space Operations Act revision
+  | "FI" // Finland — Act on Space Activities 63/2018
+  // Other enacted
+  | "PT" // Portugal — Decree-Law 16/2019 establishing the Portuguese Space Agency
+  | "GR" // Greece — Law 4903/2022 on the National Space Policy and Space Activities
+  | "CZ" // Czech Republic — Act 77/2024 on Space Activities
+  | "IE" // Ireland — no dedicated law yet, interim framework via ESA / EIA
+  | "CH"; // Switzerland — Federal Ordinance on Space Objects (2019), non-EU/EEA
 
 export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "FR",
-  "UK",
-  "BE",
-  "NL",
-  "LU",
-  "AT",
-  "DK",
   "DE",
   "IT",
+  "UK",
+  "LU",
+  "NL",
+  "BE",
+  "ES",
+  "AT",
+  "PL",
+  "DK",
   "NO",
+  "SE",
+  "FI",
+  "PT",
+  "GR",
+  "CZ",
+  "IE",
+  "CH",
 ];
 
 // ─── Activity Types ───

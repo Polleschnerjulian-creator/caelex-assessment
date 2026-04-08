@@ -193,10 +193,25 @@ export interface NIS2AssessmentAnswers {
   entitySize: "micro" | "small" | "medium" | "large" | null;
   employeeCount: number | null;
   annualRevenue: number | null;
+  /** Number of EU member states where the entity has physical presence / operations. */
   memberStateCount: number | null;
 
-  // EU establishment
+  // EU establishment & scope
   isEUEstablished: boolean | null;
+  /** Non-EU entity that offers services to customers in the EU (Art. 2(1), Art. 26). */
+  offersServicesInEU: boolean | null;
+  /**
+   * Has this entity been formally designated by a member state as an essential
+   * or important entity (Art. 2(2)(a)–(e))? This overrides size thresholds.
+   */
+  designatedByMemberState: boolean | null;
+  /**
+   * Does this entity also provide services falling under Annex I Sector 8
+   * (Digital Infrastructure), e.g. DNS, cloud, data centers, CDN?
+   */
+  providesDigitalInfrastructure: boolean | null;
+  /** Is the entity controlled by or part of an EU-based parent group? */
+  euControlledEntity: boolean | null;
 
   // Existing compliance
   hasISO27001: boolean | null;

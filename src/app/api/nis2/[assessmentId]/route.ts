@@ -319,6 +319,10 @@ export async function PATCH(
         annualRevenue: data.annualRevenue ?? existing.annualRevenue ?? null,
         memberStateCount: data.memberStateCount ?? existing.memberStateCount,
         isEUEstablished: true, // Must be EU-established to be in scope
+        offersServicesInEU: true, // EU-established entities serve EU by definition
+        designatedByMemberState: null,
+        providesDigitalInfrastructure: null,
+        euControlledEntity: null,
         hasISO27001: data.hasISO27001 ?? existing.hasISO27001,
         hasExistingCSIRT: data.hasExistingCSIRT ?? existing.hasExistingCSIRT,
         hasRiskManagement: data.hasRiskManagement ?? existing.hasRiskManagement,

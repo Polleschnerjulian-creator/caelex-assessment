@@ -18,7 +18,7 @@ export function mapScoreToLetterGrade(
 }
 
 export interface FavorabilityInput {
-  legislationStatus: "enacted" | "draft" | "none";
+  legislationStatus: "enacted" | "draft" | "pending" | "none";
   processingWeeks: { min: number; max: number };
   hasGovernmentIndemnification: boolean;
   liabilityRegime: "capped" | "negotiable" | "unlimited" | "tiered";

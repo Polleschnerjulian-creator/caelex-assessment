@@ -233,26 +233,55 @@ export function mapToNIS2Answers(
     effectiveEntitySize = "medium";
   }
 
+  const isEUEstablished = unified.establishmentCountry
+    ? EU_MEMBER_STATES.includes(
+        unified.establishmentCountry as (typeof EU_MEMBER_STATES)[number],
+      )
+    : null;
+
+  // An entity offers services in the EU when it explicitly says so OR when it
+  // is EU-established (an EU operator by definition provides services in the
+  // Union). Prefer explicit answers when present.
+  const offersServicesInEU =
+    unified.providesServicesToEU ??
+    unified.servesEUCustomers ??
+    (isEUEstablished === true ? true : null);
+
   return {
     sector: "space",
     spaceSubSector: deriveSpaceSubSector(serviceTypes),
+    // Ground infrastructure = TT&C stations, mission control, relay networks.
+    // SATCOM operators typically run ground infra too. NAV/SSA providers may
+    // OR may not operate ground stations (many resell data), so we no longer
+    // infer ground infra from NAV/SSA alone — use dedicated ground field.
     operatesGroundInfra:
-      serviceTypes.includes("NAV") || serviceTypes.includes("SSA"),
+      (serviceTypes.includes("SATCOM") ||
+        activityTypes.includes("SCO") ||
+        activityTypes.includes("LSO")) &&
+      !unified.isDataResellerOnly
+        ? true
+        : serviceTypes.includes("SATCOM")
+          ? true
+          : null,
     operatesSatComms: serviceTypes.includes("SATCOM"),
-    manufacturesSpacecraft:
-      activityTypes.includes("SCO") && serviceTypes.includes("MANUFACTURING"),
+    // A manufacturer is anyone producing spacecraft hardware — NOT requiring
+    // them to also operate satellites. Previously this missed pure manufacturers.
+    manufacturesSpacecraft: serviceTypes.includes("MANUFACTURING"),
     providesLaunchServices:
       activityTypes.includes("LO") || activityTypes.includes("LSO"),
     providesEOData: serviceTypes.includes("EO"),
     entitySize: effectiveEntitySize as NIS2AssessmentAnswers["entitySize"],
     employeeCount: deriveEmployeeCount(unified.employeeRange),
     annualRevenue: deriveAnnualRevenue(unified.turnoverRange),
-    memberStateCount: 1,
-    isEUEstablished: unified.establishmentCountry
-      ? EU_MEMBER_STATES.includes(
-          unified.establishmentCountry as (typeof EU_MEMBER_STATES)[number],
-        )
-      : null,
+    memberStateCount: unified.memberStateCount ?? 1,
+    isEUEstablished,
+    offersServicesInEU,
+    // Wire the three NIS2-specific scope answers collected by the wizard that
+    // were previously silently discarded. These directly affect classification.
+    designatedByMemberState: unified.designatedByMemberState ?? null,
+    providesDigitalInfrastructure:
+      unified.providesDigitalInfrastructure ?? null,
+    euControlledEntity: unified.euControlledEntity ?? null,
     hasISO27001: unified.existingCertifications?.includes("ISO27001") ?? null,
     hasExistingCSIRT: unified.hasIncidentResponsePlan ?? null,
     hasRiskManagement: unified.hasRiskManagement ?? null,
@@ -398,7 +427,7 @@ export function mapToCRAAnswers(
         )
       : null,
     spaceProductTypeId: null, // Must be selected separately in CRA wizard
-    productName: unified.organizationName ?? "Unnamed Product",
+    productName: unified.companyName ?? "Unnamed Product",
     segments,
     hasNetworkFunction: null,
     processesAuthData: null,
