@@ -3,6 +3,18 @@
  * This file contains EU Space Act article references with internal inconsistencies
  * (Art. 6/7 mapping, debris article numbers). The new regulatory layer provides
  * a single canonical source with enacted-law-first references.
+ *
+ * ─── IMPORTANT: EU SPACE ACT IS STILL A LEGISLATIVE PROPOSAL ─────────────
+ *
+ * All article references in this file cite COM(2025) 335 (the Commission
+ * Proposal for a Regulation on the European Space Economy, published June
+ * 2025). As of 2026-04, this regulation has NOT completed the ordinary
+ * legislative procedure. Article numbers, content, and effective dates may
+ * change during trilogue negotiations. Any UI surface consuming this data
+ * MUST display a clear disclaimer that article references are provisional.
+ *
+ * Consumer components should read `EU_SPACE_ACT_PROPOSAL_STATUS` below and
+ * surface the warning text to users alongside article displays.
  */
 
 /**
@@ -18,6 +30,19 @@
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
+
+/**
+ * Proposal status metadata for UI surfaces consuming this file.
+ * Display the warning text alongside any article references.
+ */
+export const EU_SPACE_ACT_PROPOSAL_STATUS = {
+  status: "proposal" as const,
+  reference: "COM(2025) 335",
+  publishedAt: "2025-06",
+  lastProgressReview: "2025-12-05",
+  warning:
+    "All article references are provisional. COM(2025) 335 is currently in the EU legislative process (trilogue) and article numbers, content, and effective dates may change before final adoption. Expected application: 1 January 2030 (subject to adoption).",
+};
 
 export type ComplianceModule =
   | "assessment"
@@ -282,8 +307,12 @@ export const articles: Article[] = [
     number: "17-19",
     title: "Derogations (Launch, Gov, Emergency)",
     summary:
-      "Derogation possibilities for launch services, government missions, and emergencies",
-    appliesTo: ["TCO"],
+      "Derogation possibilities for launch services (Art. 17), government missions (Art. 18), and emergency situations (Art. 19). Available to EU operators as well as third-country operators — NOT limited to TCO. Art. 18 specifically covers government space programmes, and Art. 19 covers time-critical launches in emergency response scenarios (e.g. disaster relief satellites).",
+    // Corrected from previous TCO-only scope. Derogations are available to
+    // every operator type under the right conditions, not just third-country
+    // operators. The previous restriction would have hidden the derogation
+    // option from EU government mission operators entirely.
+    appliesTo: ["SCO", "LO", "LSO", "ISOS", "CAP", "PDP", "TCO"],
     complianceType: "conditional",
     operatorAction: "Check if derogation applies to your specific situation",
     module: "authorization",
@@ -371,7 +400,7 @@ export const articles: Article[] = [
     module: "supervision",
     moduleLabel: "Supervision",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-32-39",
@@ -385,7 +414,7 @@ export const articles: Article[] = [
     module: "authorization",
     moduleLabel: "Auth Workflow",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-40-43",
@@ -399,7 +428,7 @@ export const articles: Article[] = [
     module: "supervision",
     moduleLabel: "Supervision",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-44",
@@ -414,7 +443,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-45",
@@ -429,7 +458,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-46",
@@ -444,7 +473,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-47",
@@ -459,7 +488,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-48",
@@ -474,7 +503,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-49",
@@ -489,7 +518,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-50",
@@ -504,7 +533,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-51",
@@ -519,7 +548,7 @@ export const articles: Article[] = [
     module: "insurance",
     moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-52-54",
@@ -534,7 +563,7 @@ export const articles: Article[] = [
     module: "supervision",
     moduleLabel: "Supervision",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-55",
@@ -548,7 +577,7 @@ export const articles: Article[] = [
     module: "supervision",
     moduleLabel: "Supervision",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-56-57",
@@ -562,7 +591,7 @@ export const articles: Article[] = [
     module: "supervision",
     moduleLabel: "Supervision",
     titleGroup: "Title III",
-    titleName: "Governance Aspects",
+    titleName: "Registration, Insurance, and Governance",
   },
   {
     id: "art-58",
@@ -734,10 +763,11 @@ export const articles: Article[] = [
     number: "72",
     title: "End-of-Life Disposal",
     summary:
-      "Mandatory disposal procedures at end of spacecraft operational life",
+      "Mandatory disposal procedures at end of spacecraft operational life. LEO: 25-year orbital lifetime limit with a 5-year target for new missions authorized under the EU Space Act (stricter than the historical IADC 25-year guideline). GEO: graveyard orbit disposal at least 300 km above GEO. Uncontrolled re-entry casualty risk must not exceed 1:10,000 per event. All energy sources (propellant, batteries, pressurized vessels, reaction wheels) must be passivated prior to disposal.",
     appliesTo: ["SCO"],
     complianceType: "mandatory_ongoing",
-    operatorAction: "Execute end-of-life disposal per debris mitigation plan",
+    operatorAction:
+      "Execute end-of-life disposal per debris mitigation plan; plan for 5-year LEO deorbit target on new missions",
     module: "debris",
     moduleLabel: "Debris & Safety",
     titleGroup: "Title IV",

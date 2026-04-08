@@ -105,10 +105,33 @@ function getOperatorMapping(answers: AssessmentAnswers): {
       operatorAbbreviation: "PDP",
       operatorTypeLabel: "Primary Data Provider",
     },
+    // "cap" (collision avoidance provider) is intentionally omitted — CAP
+    // operators are filtered out by the unified mapper (mapToAssessmentAnswers
+    // returns activityType: null for CAP) before reaching this function, so
+    // CAP never gets silently coerced to spacecraft_operator.
   };
 
-  const activity = answers.activityType || "spacecraft";
-  return activityMap[activity] || activityMap.spacecraft;
+  // When activityType is null, return the spacecraft default explicitly — this
+  // is the "general articles only" path triggered by CAP-only operators. We
+  // mark the label so the UI can surface that general articles are being
+  // shown rather than spacecraft-specific ones.
+  if (answers.activityType === null || answers.activityType === undefined) {
+    return {
+      operatorType: "spacecraft_operator",
+      operatorAbbreviation: "SCO",
+      operatorTypeLabel: "General (activity-agnostic)",
+    };
+  }
+
+  // Known activity type — return the mapped entry. Unknown values are still
+  // coerced to spacecraft, but we log a warning rather than silently failing.
+  const mapped = activityMap[answers.activityType];
+  if (mapped) return mapped;
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[engine] Unknown activityType "${answers.activityType}" — falling back to spacecraft_operator. This is a data bug; update activityMap to handle the new type.`,
+  );
+  return activityMap.spacecraft;
 }
 
 function flattenArticles(titles: Title[]): Article[] {

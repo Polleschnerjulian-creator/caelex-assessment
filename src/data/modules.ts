@@ -163,9 +163,15 @@ export const COMPLIANCE_TYPE_MAP: Record<string, string> = {
   optional_simplification: "conditional_simplified",
   conditional_mandatory: "conditional_simplified",
 
+  // Enforcement / Penalties — NOT "informational".
+  // Previously penalty articles (fines up to 2% turnover) were normalized to
+  // "informational" and displayed alongside scope/definition articles. This
+  // visually de-emphasized enforcement risk and could lead operators to
+  // overlook the financial consequences of non-compliance.
+  enforcement: "enforcement",
+
   // Informational / Framework
   informational: "informational",
-  enforcement: "informational",
   support_available: "informational",
   reference: "informational",
   framework: "informational",
@@ -210,5 +216,13 @@ export const COMPLIANCE_CATEGORY_DISPLAY: Record<
     color: "text-slate-400",
     bgColor: "bg-slate-500/10",
     borderColor: "border-slate-500/30",
+  },
+  // Enforcement / sanctions — visually distinct from informational so that
+  // penalty provisions are properly surfaced to users as risk factors.
+  enforcement: {
+    label: "Enforcement / Penalties",
+    color: "text-red-500",
+    bgColor: "bg-red-600/15",
+    borderColor: "border-red-600/40",
   },
 };
