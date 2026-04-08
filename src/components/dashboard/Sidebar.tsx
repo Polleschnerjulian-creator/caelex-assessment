@@ -1320,6 +1320,14 @@ export default function Sidebar({
                   {t("sidebar.adminPanel")}
                 </NavItem>
                 <NavItem
+                  href="/dashboard/admin/crm"
+                  icon={<Users size={18} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                  collapsed={collapsed}
+                >
+                  CRM
+                </NavItem>
+                <NavItem
                   href="/dashboard/admin/bookings"
                   icon={<Calendar size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}

@@ -35,6 +35,7 @@ import {
   getBusyIntervals,
   isCalendarConfigured,
 } from "@/lib/google-calendar.server";
+import { linkInboundLead } from "@/lib/crm/auto-link.server";
 
 const TIMEZONE = "Europe/Berlin";
 const DEFAULT_DURATION_MINUTES = 15;
@@ -331,6 +332,26 @@ export async function POST(request: NextRequest) {
           </p>
         </div>
       `,
+    });
+
+    // ─── CRM auto-link (fire and forget — never block response) ───
+    // Writes contact/company/activity to the CRM layer. Failures are swallowed.
+    void linkInboundLead({
+      email,
+      name,
+      companyName: company,
+      role,
+      source: booking ? "booking" : "demo",
+      activityType: booking ? "MEETING_SCHEDULED" : "DEMO_REQUESTED",
+      activitySummary: booking
+        ? `Demo booked${slotLabel ? ` — ${slotLabel}` : ""}`
+        : "Demo request submitted",
+      activityBody: message || undefined,
+      demoRequestId: demoRequest.id,
+      bookingId: booking?.id,
+      activityMetadata: { meetLink: meetLink || undefined },
+    }).catch((err) => {
+      logger.error("CRM auto-link failed (non-blocking)", { error: err });
     });
 
     return NextResponse.json({

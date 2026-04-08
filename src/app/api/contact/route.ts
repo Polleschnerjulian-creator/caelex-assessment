@@ -24,6 +24,7 @@ import {
 } from "@/lib/ratelimit";
 import { logger, maskEmail } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { linkInboundLead } from "@/lib/crm/auto-link.server";
 
 function escapeHtml(str: string): string {
   return str
@@ -158,6 +159,22 @@ export async function POST(request: NextRequest) {
         "RESEND_API_KEY not configured — contact request saved without email",
       );
     }
+
+    // ─── CRM auto-link (fire and forget) ───
+    void linkInboundLead({
+      email,
+      name,
+      companyName: company,
+      source: "contact",
+      activityType: "CONTACT_FORM",
+      activitySummary: `Contact form: ${subject || "General"}`,
+      activityBody: message,
+      contactRequestId: contactRequest.id,
+      activityMetadata: { subject: subject || null },
+      createDeal: false,
+    }).catch((err) => {
+      logger.error("CRM auto-link failed (non-blocking)", { error: err });
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
