@@ -291,6 +291,9 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                   <button
                     type="submit"
                     disabled={subscribing || !consent}
+                    aria-label={
+                      subscribing ? "Subscribing…" : "Subscribe to newsletter"
+                    }
                     className={`text-body font-medium px-5 py-2.5 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 ${
                       isLight
                         ? "bg-[#1d1d1f] text-white hover:bg-[#424245]"
@@ -298,7 +301,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                     }`}
                   >
                     {subscribing ? (
-                      <span>...</span>
+                      <span aria-hidden="true">...</span>
                     ) : (
                       <>
                         Subscribe
@@ -381,9 +384,11 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             <div className={`${separatorStyle} my-6 max-w-[240px]`} />
 
             <button
-              onClick={() =>
-                window.dispatchEvent(new Event("show-cookie-consent"))
-              }
+              type="button"
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                window.dispatchEvent(new Event("show-cookie-consent"));
+              }}
               className={`text-body-lg transition-colors ${
                 isLight
                   ? "text-[#1d1d1f] hover:text-[#86868b]"

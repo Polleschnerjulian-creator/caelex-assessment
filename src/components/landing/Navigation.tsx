@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
@@ -628,13 +629,13 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                           onClick={closeMenu}
                           className="group block"
                         >
-                          <div className="aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#F3F4F6] border border-[#E5E7EB]">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                          <div className="relative aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#F3F4F6] border border-[#E5E7EB]">
+                            <Image
                               src={news.image}
                               alt={news.title}
-                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                              loading="lazy"
+                              fill
+                              sizes="(min-width: 768px) 360px, 90vw"
+                              className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                             />
                           </div>
                           <p
