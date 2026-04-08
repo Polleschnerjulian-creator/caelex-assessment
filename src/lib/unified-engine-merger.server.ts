@@ -364,6 +364,15 @@ function buildIncidentTimeline(nis2: NIS2ComplianceResult | null): {
       deadline: timeline.notification.deadline,
       description: timeline.notification.description,
     },
+    // NIS2 Art. 23(4)(c) — intermediate report on CSIRT request. Previously
+    // omitted from the unified timeline, giving operators an incomplete
+    // picture of their reporting obligations. Relevant to space incidents
+    // that take weeks to resolve and require ad-hoc status updates.
+    {
+      phase: "Intermediate Report",
+      deadline: timeline.intermediateReport.deadline,
+      description: timeline.intermediateReport.description,
+    },
     {
       phase: "Final Report",
       deadline: timeline.finalReport.deadline,
@@ -423,7 +432,12 @@ export function buildUnifiedResult(
       : {
           applies: false,
           operatorTypes: [] as string[],
-          regime: spaceActResult?.isDefenseOnly ? "exempt" : "exempt",
+          // Distinguish defense-only exemption from simple no-EU-presence
+          // so downstream UI can surface the correct legal basis. Previous
+          // code had a tautological ternary `? "exempt" : "exempt"`.
+          regime: spaceActResult?.isDefenseOnly
+            ? "defense_exempt"
+            : "out_of_scope",
           regimeReason: spaceActResult?.isDefenseOnly
             ? "Defense-only operations are exempt under Art. 2(3)"
             : "No EU establishment or EU market presence",
@@ -478,31 +492,29 @@ export function buildUnifiedResult(
     incidentTimeline: buildIncidentTimeline(nis2Result ?? null),
   };
 
-  // National Space Law section
+  // National Space Law section.
+  // Sort defensively with a fresh copy to avoid mutating the input
+  // SpaceLawComplianceResult object (previously used in-place .sort() which
+  // had observable side effects on callers sharing the same result).
+  const sortedJurisdictions = spaceLawResult
+    ? [...spaceLawResult.jurisdictions].sort(
+        (a, b) => b.favorabilityScore - a.favorabilityScore,
+      )
+    : [];
+
   const nationalSpaceLaw = spaceLawResult
     ? {
         analyzedCount: spaceLawResult.jurisdictions.length,
-        recommendedJurisdiction:
-          spaceLawResult.jurisdictions.length > 0
-            ? spaceLawResult.jurisdictions.sort(
-                (a, b) => b.favorabilityScore - a.favorabilityScore,
-              )[0]?.countryCode || null
-            : null,
+        recommendedJurisdiction: sortedJurisdictions[0]?.countryCode ?? null,
         recommendedJurisdictionName:
-          spaceLawResult.jurisdictions.length > 0
-            ? spaceLawResult.jurisdictions.sort(
-                (a, b) => b.favorabilityScore - a.favorabilityScore,
-              )[0]?.countryName || null
-            : null,
+          sortedJurisdictions[0]?.countryName ?? null,
         recommendationReason:
           spaceLawResult.recommendations[0] || "No recommendation available",
-        topScores: spaceLawResult.jurisdictions
-          .sort((a, b) => b.favorabilityScore - a.favorabilityScore)
-          .map((j) => ({
-            country: j.countryCode,
-            name: j.countryName,
-            score: j.favorabilityScore,
-          })),
+        topScores: sortedJurisdictions.map((j) => ({
+          country: j.countryCode,
+          name: j.countryName,
+          score: j.favorabilityScore,
+        })),
       }
     : {
         analyzedCount: 0,
@@ -588,12 +600,19 @@ function buildSpaceActPriorityActions(
   ) {
     actions.push("Develop debris mitigation plan (Art. 55-60)");
   }
-  if (activityTypes.includes("SCO") && !answers.operatesConstellation) {
+  // Registration applies to ALL spacecraft operators, constellation or not.
+  // Previous condition had `&& !answers.operatesConstellation` which meant
+  // constellation operators never got this action — backwards logic.
+  if (activityTypes.includes("SCO")) {
     actions.push("Register spacecraft with competent authority");
   }
+  // Only flag constellation management plans for actual large/mega constellations.
+  // Previous condition accidentally fired for mega regardless of whether the
+  // operator said they operate a constellation at all.
   if (
-    (answers.operatesConstellation && answers.constellationSize === "large") ||
-    answers.constellationSize === "mega"
+    answers.operatesConstellation === true &&
+    (answers.constellationSize === "large" ||
+      answers.constellationSize === "mega")
   ) {
     actions.push("Submit constellation management plan");
   }
@@ -672,6 +691,16 @@ export interface RiskResult {
 
 /**
  * Build the list of identified gaps and their weights from assessment answers.
+ *
+ * Semantics:
+ *   - `false` → explicit gap (user said "no, we don't have this")
+ *   - `null`  → unknown / skipped → treated as gap for safety (cannot assume
+ *               a missing control is implemented)
+ *   - `true`  → compliant, no gap
+ *
+ * Previously a null answer was silently treated as compliant, so a non-EU
+ * startup that skipped all cybersecurity questions scored "low risk" despite
+ * having no controls in place. That was a dangerous under-estimate.
  */
 function buildGapsFromAnswers(
   answers: Partial<UnifiedAssessmentAnswers>,
@@ -679,58 +708,85 @@ function buildGapsFromAnswers(
   const gaps: Array<{ type: string; weight: number }> = [];
   const w = RISK_SCORING_CONFIG.gapWeights;
 
-  if (answers.hasCybersecurityPolicy === false) {
+  // `null` is treated as a gap only when the user has actually started the
+  // cybersecurity phase — otherwise a brand-new assessment with all nulls
+  // would score as all-gaps. We use any *confirmed answer* in the cyber
+  // block as a signal that the phase was attempted.
+  const cyberAnswered = [
+    answers.hasCybersecurityPolicy,
+    answers.hasRiskManagement,
+    answers.hasIncidentResponsePlan,
+    answers.hasBusinessContinuityPlan,
+    answers.hasSupplyChainSecurity,
+    answers.hasSecurityTraining,
+    answers.hasEncryption,
+    answers.hasAccessControl,
+    answers.hasVulnerabilityManagement,
+    answers.conductsPenetrationTesting,
+  ].some((v) => v === true || v === false);
+
+  const isMissing = (v: boolean | null | undefined): boolean => {
+    // `false` always counts as a gap. `null`/`undefined` counts as a gap
+    // only once the user has answered at least one cyber question.
+    if (v === false) return true;
+    if (cyberAnswered && (v === null || v === undefined)) return true;
+    return false;
+  };
+
+  if (isMissing(answers.hasCybersecurityPolicy)) {
     gaps.push({
       type: "cybersecurity_policy",
       weight: w.cybersecurity_policy.weight,
     });
   }
-  if (answers.hasIncidentResponsePlan === false) {
+  if (isMissing(answers.hasIncidentResponsePlan)) {
     gaps.push({
       type: "incident_response",
       weight: w.incident_response.weight,
     });
   }
-  if (answers.hasRiskManagement === false) {
+  if (isMissing(answers.hasRiskManagement)) {
     gaps.push({ type: "risk_management", weight: w.risk_management.weight });
   }
-  if (answers.hasSupplyChainSecurity === false) {
+  if (isMissing(answers.hasSupplyChainSecurity)) {
     gaps.push({
       type: "supply_chain_security",
       weight: w.supply_chain_security.weight,
     });
   }
-  if (answers.hasBusinessContinuityPlan === false) {
+  if (isMissing(answers.hasBusinessContinuityPlan)) {
     gaps.push({
       type: "business_continuity",
       weight: w.business_continuity.weight,
     });
   }
-  if (answers.hasEncryption === false) {
+  if (isMissing(answers.hasEncryption)) {
     gaps.push({ type: "encryption", weight: w.encryption.weight });
   }
-  if (answers.hasAccessControl === false) {
+  if (isMissing(answers.hasAccessControl)) {
     gaps.push({ type: "access_control", weight: w.access_control.weight });
   }
-  if (answers.hasVulnerabilityManagement === false) {
+  if (isMissing(answers.hasVulnerabilityManagement)) {
     gaps.push({
       type: "vulnerability_management",
       weight: w.vulnerability_management.weight,
     });
   }
   if (answers.hasInsurance === false) {
+    // Insurance "unknown" can't be automatically treated as gap — many
+    // operators genuinely don't know insurance status until they check.
     gaps.push({
       type: "insurance_coverage",
       weight: w.insurance_coverage.weight,
     });
   }
-  if (answers.hasSecurityTraining === false) {
+  if (isMissing(answers.hasSecurityTraining)) {
     gaps.push({
       type: "security_training",
       weight: w.security_training.weight,
     });
   }
-  if (answers.conductsPenetrationTesting === false) {
+  if (isMissing(answers.conductsPenetrationTesting)) {
     gaps.push({
       type: "penetration_testing",
       weight: w.penetration_testing.weight,
@@ -777,8 +833,10 @@ export function calculateOverallRisk(
   const { thresholds } = RISK_SCORING_CONFIG;
   let level: RiskResult["level"];
 
-  if (gaps.length > 0 || answers) {
-    // Use weighted scoring when we have answer-level detail
+  if (answers) {
+    // Primary path: weighted scoring when we have answer-level detail.
+    // Previously the branch condition was `gaps.length > 0 || answers` which
+    // was always true when answers were provided (dead else branch).
     if (adjustedScore >= thresholds.critical) {
       level = "critical";
     } else if (adjustedScore >= thresholds.high) {
@@ -789,7 +847,8 @@ export function calculateOverallRisk(
       level = "low";
     }
   } else {
-    // Legacy fallback for callers without answers
+    // Legacy fallback for callers without answers (retained for
+    // backwards compatibility with older integration tests)
     if (complianceGapCount >= 7) {
       level = "critical";
     } else if (complianceGapCount >= 4) {

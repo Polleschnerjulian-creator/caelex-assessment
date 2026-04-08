@@ -54,6 +54,13 @@ function mapActivityType(
   return mapping[activityType] ?? null;
 }
 
+// EEA states (non-EU but bound by most EU single-market legislation).
+// Under the EU Space Act, EEA operators typically follow EU-like obligations
+// via EEA incorporation rather than full third-country treatment. Treat as
+// "third_country_eu_services" by default since they de-facto participate in
+// the EU single market.
+const EEA_NON_EU_COUNTRIES = ["NO", "IS", "LI"] as const;
+
 /**
  * Derive the engine's EstablishmentType from unified answers.
  */
@@ -67,6 +74,14 @@ function deriveEstablishment(
     country as (typeof EU_MEMBER_STATES)[number],
   );
   if (isEU) return "eu";
+
+  // EEA states behave like third-country-with-EU-services by default because
+  // they participate in the single market. Previously fell through to
+  // `third_country_no_eu` which stripped them of EU-related rules.
+  const isEEA = (EEA_NON_EU_COUNTRIES as readonly string[]).includes(country);
+  if (isEEA) {
+    return "third_country_eu_services";
+  }
 
   if (
     answers.providesServicesToEU === true ||
@@ -98,6 +113,13 @@ function mapEntitySize(
 
 /**
  * Map unified OrbitalRegime to engine OrbitType.
+ *
+ * Multi-orbit operators (`MULTIPLE`) default to LEO rather than `beyond`
+ * because most real multi-orbit operators have LEO as their primary regime
+ * (Starlink, OneWeb, Planet, Iceye — all LEO-heavy constellations with
+ * secondary MEO/GEO links). The previous mapping to `beyond` caused
+ * cislunar/deep-space debris rules to be applied to LEO operators, giving
+ * them the wrong deorbit timelines. LEO is the safer conservative default.
  */
 function mapOrbit(orbit: OrbitalRegime | null | undefined): OrbitType {
   if (!orbit) return null;
@@ -108,7 +130,7 @@ function mapOrbit(orbit: OrbitalRegime | null | undefined): OrbitType {
     HEO: "beyond",
     SSO: "LEO", // SSO is a LEO variant
     CISLUNAR: "beyond",
-    MULTIPLE: "beyond",
+    MULTIPLE: "LEO", // most multi-orbit operators are LEO-primary; LEO is the stricter regime
   };
   return mapping[orbit] ?? null;
 }
@@ -373,7 +395,48 @@ function deriveLicensingStatus(
 }
 
 /**
+ * For multi-activity operators, pick the most regulatory-relevant single
+ * activity type for the space law engine. The space law engine is
+ * single-activity by design, so we choose the activity that triggers the
+ * strictest national licensing requirements. Order of restrictiveness
+ * (most → least):
+ *
+ *   launch_site > launch_vehicle > spacecraft_operation > in_orbit_services
+ *   > earth_observation
+ *
+ * This way, an SCO+LO operator still gets launch licensing rules applied
+ * instead of having the LO activity silently dropped (previous behaviour
+ * used `activityTypes[0]` which was insertion-order dependent).
+ */
+function pickMostRestrictiveSpaceLawActivity(
+  activityTypes: ActivityType[],
+): SpaceLawActivityType | null {
+  if (activityTypes.length === 0) return null;
+  const priority: SpaceLawActivityType[] = [
+    "launch_site",
+    "launch_vehicle",
+    "in_orbit_services",
+    "spacecraft_operation",
+    "earth_observation",
+    "satellite_communications",
+    "space_resources",
+  ];
+  const mapped = activityTypes
+    .map((a) => mapToSpaceLawActivityType(a))
+    .filter((a): a is SpaceLawActivityType => a !== null);
+  for (const candidate of priority) {
+    if (mapped.includes(candidate)) return candidate;
+  }
+  return mapped[0] ?? null;
+}
+
+/**
  * Map unified answers to the Space Law engine's SpaceLawAssessmentAnswers.
+ *
+ * Multi-activity handling: the space law engine is single-activity, so we
+ * pick the MOST RESTRICTIVE activity from the operator's list rather than
+ * `activityTypes[0]` (which was insertion-order dependent and frequently
+ * dropped the more relevant regulatory activity).
  */
 export function mapToSpaceLawAnswers(
   unified: Partial<UnifiedAssessmentAnswers>,
@@ -384,7 +447,7 @@ export function mapToSpaceLawAnswers(
 
   return {
     selectedJurisdictions,
-    activityType: mapToSpaceLawActivityType(activityTypes[0]),
+    activityType: pickMostRestrictiveSpaceLawActivity(activityTypes),
     entityNationality: deriveEntityNationality(
       unified.establishmentCountry,
       selectedJurisdictions,

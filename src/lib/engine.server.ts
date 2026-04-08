@@ -235,11 +235,20 @@ function calculateModuleStatuses(
       });
 
       if (hasMandatory) {
+        // A module containing mandatory articles stays "required" even
+        // under the light regime, because the mandatory provisions don't
+        // disappear just because some articles have a simplified track.
+        // The light regime only softens the *simplified* articles —
+        // mandatory ones remain fully binding.
+        //
+        // Previously this branch would downgrade the whole module to
+        // "simplified" whenever `isLightRegime && hasSimplified` was true,
+        // misleading light-regime operators into thinking the entire
+        // authorization/cybersecurity/etc. module was optional for them.
+        status = "required";
         if (isLightRegime && hasSimplified) {
-          status = "simplified";
-          summary = `Simplified requirements apply under the Light Regime.`;
+          summary = `${articleCount} mandatory article${articleCount > 1 ? "s" : ""}; simplified track available for eligible provisions under the Light Regime.`;
         } else {
-          status = "required";
           summary = `Full compliance required with ${articleCount} article${articleCount > 1 ? "s" : ""}.`;
         }
       } else if (hasSimplified && isLightRegime) {
@@ -308,18 +317,24 @@ function getKeyDates(isLightRegime: boolean): KeyDate[] {
   const dates: KeyDate[] = [
     {
       date: "1 January 2030",
-      description: "EU Space Act enters into application",
+      description:
+        "EU Space Act enters into application (subject to legislative adoption of COM(2025) 335)",
     },
     {
-      date: "31 December 2031",
-      description: "End of transitional period for existing operators",
+      date: "1 January 2032",
+      description: "End of 2-year transitional period for existing operators",
     },
   ];
 
   if (isLightRegime) {
+    // Align with the canonical date in the JSON data file (1 January 2032),
+    // which represents a 2-year additional transition on top of the general
+    // transitional period. Previously showed 31 Dec 2031, creating
+    // inconsistency between the engine and the data file.
     dates.push({
-      date: "31 December 2031",
-      description: "EFD deadline for small enterprises & research institutions",
+      date: "1 January 2032",
+      description:
+        "EFD (Environmental Footprint Declaration) deadline for small enterprises & research institutions (2-year additional transition)",
     });
   }
 
@@ -405,6 +420,57 @@ function getAuthorizationPath(isThirdCountry: boolean, isEU: boolean): string {
 
 // ─── Main compliance calculation function ───
 
+/**
+ * Build a canonical "out of scope" result. Used for:
+ *   (a) defense-only operators (Art. 2(3) exemption)
+ *   (b) third-country operators with no EU services (Art. 2 scope test)
+ *
+ * All module statuses are set to "not_applicable", no articles apply,
+ * no checklist items, no key dates. The UI can surface the specific
+ * reason via the regimeReason field.
+ */
+function buildOutOfScopeResult(
+  answers: AssessmentAnswers,
+  regimeReason: string,
+  operatorTypeLabel: string,
+  operatorType: string,
+  operatorAbbreviation: string,
+  isEU: boolean,
+  isThirdCountry: boolean,
+  data: SpaceActData,
+): ComplianceResult {
+  const constellationInfo = getConstellationTier(
+    answers.operatesConstellation,
+    answers.constellationSize,
+  );
+  return {
+    operatorType,
+    operatorTypeLabel,
+    operatorAbbreviation,
+    isEU,
+    isThirdCountry,
+    regime: "out_of_scope",
+    regimeLabel: "Out of Scope",
+    regimeReason,
+    entitySize: answers.entitySize || "unknown",
+    entitySizeLabel: getEntitySizeLabel(answers.entitySize),
+    constellationTier: constellationInfo.tier,
+    constellationTierLabel: constellationInfo.label,
+    orbit: answers.primaryOrbit || "unknown",
+    orbitLabel: getOrbitLabel(answers.primaryOrbit),
+    offersEUServices: answers.offersEUServices || false,
+    applicableArticles: [],
+    totalArticles: data.metadata.total_articles,
+    applicableCount: 0,
+    applicablePercentage: 0,
+    moduleStatuses: [],
+    checklist: [],
+    keyDates: [],
+    estimatedAuthorizationCost: "N/A — out of scope",
+    authorizationPath: "N/A — out of scope",
+  };
+}
+
 export function calculateCompliance(
   answers: AssessmentAnswers,
   data: SpaceActData,
@@ -414,6 +480,42 @@ export function calculateCompliance(
 
   const isEU = answers.establishment === "eu";
   const isThirdCountry = answers.establishment === "third_country_eu_services";
+  const isThirdCountryNoEU = answers.establishment === "third_country_no_eu";
+
+  // ── Rule 1: Defense-only exemption (COM(2025) 335 Art. 2(3)) ─────────
+  // A pure-defense operator is entirely outside the EU Space Act's scope.
+  // This check MUST come before any other logic — previously the engine
+  // ignored isDefenseOnly entirely and returned a full compliance result
+  // for defense operators, which was a catastrophic false positive.
+  if (answers.isDefenseOnly === true) {
+    return buildOutOfScopeResult(
+      answers,
+      "Exempt under COM(2025) 335 Art. 2(3): space activities conducted exclusively for national security, defense, or public security purposes fall outside the scope of the EU Space Act.",
+      `${operatorTypeLabel} (Defense — Exempt)`,
+      operatorType,
+      operatorAbbreviation,
+      isEU,
+      isThirdCountry,
+      data,
+    );
+  }
+
+  // ── Rule 2: Third country with no EU services ──────────────────────────
+  // Previously fell through as an EU-like entity and was incorrectly given
+  // EU authorization articles. Per Art. 2, the EU Space Act does not claim
+  // jurisdiction over entities with no EU establishment AND no EU services.
+  if (isThirdCountryNoEU) {
+    return buildOutOfScopeResult(
+      answers,
+      "The EU Space Act does not apply: your entity is established outside the EU and does not provide services to customers in the EU. If you later begin serving EU customers, you will become a Third Country Operator subject to Art. 20 obligations (EU representative designation, registration).",
+      `${operatorTypeLabel} (Third Country — No EU Services)`,
+      operatorType,
+      operatorAbbreviation,
+      isEU,
+      isThirdCountry,
+      data,
+    );
+  }
 
   const isLightRegime =
     answers.entitySize === "small" || answers.entitySize === "research";
@@ -432,11 +534,14 @@ export function calculateCompliance(
     isThirdCountry,
   );
 
-  const totalArticles = data.metadata.total_articles;
+  // Use the actual flat article count for percentage calculation rather than
+  // the metadata total_articles number. The JSON data groups articles into
+  // 67 entries covering 119 article numbers — using metadata.total_articles
+  // as the denominator produces an understated percentage.
+  const totalArticles = allArticles.length;
   const applicableCount = applicableArticles.length;
-  const applicablePercentage = Math.round(
-    (applicableCount / totalArticles) * 100,
-  );
+  const applicablePercentage =
+    totalArticles > 0 ? Math.round((applicableCount / totalArticles) * 100) : 0;
 
   const moduleStatuses = calculateModuleStatuses(
     applicableArticles,
