@@ -334,7 +334,9 @@ describe("buildUnifiedResult", () => {
     expect(result.euSpaceAct.moduleStatuses).toHaveLength(1);
     expect(result.nis2.applies).toBe(true);
     expect(result.nis2.entityClassification).toBe("essential");
-    expect(result.nis2.incidentTimeline).toHaveLength(3);
+    // Updated 2026-04: timeline is now 4 entries (added Art. 23(4)(c)
+    // intermediate report phase that was previously omitted)
+    expect(result.nis2.incidentTimeline).toHaveLength(4);
     expect(result.confidenceScore).toBeGreaterThanOrEqual(0);
     expect(result.confidenceScore).toBeLessThanOrEqual(100);
   });
@@ -1692,7 +1694,7 @@ describe("buildUnifiedResult: module count filter", () => {
 });
 
 describe("buildUnifiedResult: incident timeline", () => {
-  it("returns 3-entry incident timeline for NIS2 essential entity", () => {
+  it("returns 4-entry incident timeline for NIS2 essential entity (incl. Art 23(4)(c) intermediate report)", () => {
     const nis2 = createNIS2Result({ entityClassification: "essential" });
     const result = buildUnifiedResult(
       null,
@@ -1700,10 +1702,13 @@ describe("buildUnifiedResult: incident timeline", () => {
       null,
       getDefaultUnifiedAnswers(),
     );
-    expect(result.nis2.incidentTimeline).toHaveLength(3);
+    // Updated 2026-04: includes the Art. 23(4)(c) intermediate report phase
+    // that was previously omitted from the unified timeline.
+    expect(result.nis2.incidentTimeline).toHaveLength(4);
     const phases = result.nis2.incidentTimeline.map((t) => t.phase);
     expect(phases).toContain("Early Warning");
     expect(phases).toContain("Incident Notification");
+    expect(phases).toContain("Intermediate Report");
     expect(phases).toContain("Final Report");
   });
 
@@ -2030,8 +2035,10 @@ describe("calculateOverallRisk (severity-weighted)", () => {
   });
 
   it("multiple high-severity gaps push to critical", () => {
-    // cybersecurity_policy (3) + incident_response (3) + risk_management (2.5) +
-    // supply_chain_security (2) + standard+essential bonus (4) = 14.5 >= 12
+    // 2026-04 update: with the null=gap fix, unanswered cyber fields ALSO
+    // count as gaps once at least one cyber question is answered. To test
+    // the "exactly N gaps" case we now explicitly set all other cyber
+    // fields to true so they don't pollute the gap count.
     const result = calculateOverallRisk(
       true,
       "standard",
@@ -2039,10 +2046,18 @@ describe("calculateOverallRisk (severity-weighted)", () => {
       "essential",
       4,
       {
+        // 4 explicit gaps
         hasCybersecurityPolicy: false,
         hasIncidentResponsePlan: false,
         hasRiskManagement: false,
         hasSupplyChainSecurity: false,
+        // All other cyber fields explicitly compliant
+        hasBusinessContinuityPlan: true,
+        hasSecurityTraining: true,
+        hasEncryption: true,
+        hasAccessControl: true,
+        hasVulnerabilityManagement: true,
+        conductsPenetrationTesting: true,
       },
     );
     expect(result.level).toBe("critical");
@@ -2053,6 +2068,8 @@ describe("calculateOverallRisk (severity-weighted)", () => {
   });
 
   it("returns structured RiskResult with gaps detail", () => {
+    // 2026-04 update: explicitly mark every cyber field except the one
+    // under test as compliant so the gap list contains exactly one entry.
     const result = calculateOverallRisk(
       true,
       "standard",
@@ -2061,11 +2078,21 @@ describe("calculateOverallRisk (severity-weighted)", () => {
       1,
       {
         hasIncidentResponsePlan: false,
+        hasCybersecurityPolicy: true,
+        hasRiskManagement: true,
+        hasSupplyChainSecurity: true,
+        hasBusinessContinuityPlan: true,
+        hasSecurityTraining: true,
+        hasEncryption: true,
+        hasAccessControl: true,
+        hasVulnerabilityManagement: true,
+        conductsPenetrationTesting: true,
       },
     );
     expect(result).toHaveProperty("level");
     expect(result).toHaveProperty("weightedScore");
     expect(result).toHaveProperty("gaps");
+    expect(result.gaps).toHaveLength(1);
     expect(result.gaps[0]).toEqual({
       type: "incident_response",
       weight: RISK_SCORING_CONFIG.gapWeights.incident_response.weight,
@@ -2073,6 +2100,10 @@ describe("calculateOverallRisk (severity-weighted)", () => {
   });
 
   it("standard+essential with no gaps returns medium (inherent risk)", () => {
+    // 2026-04 update: all 10 cyber fields must be explicitly true to avoid
+    // null=gap penalties. Previously this test only set 3 fields to true
+    // and relied on the (incorrect) old behaviour of treating null as
+    // compliant.
     const result = calculateOverallRisk(
       true,
       "standard",
@@ -2083,6 +2114,13 @@ describe("calculateOverallRisk (severity-weighted)", () => {
         hasCybersecurityPolicy: true,
         hasRiskManagement: true,
         hasIncidentResponsePlan: true,
+        hasSupplyChainSecurity: true,
+        hasBusinessContinuityPlan: true,
+        hasSecurityTraining: true,
+        hasEncryption: true,
+        hasAccessControl: true,
+        hasVulnerabilityManagement: true,
+        conductsPenetrationTesting: true,
       },
     );
     // 0 gap weight + 4 regime bonus = 4 >= medium threshold

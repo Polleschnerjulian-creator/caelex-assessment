@@ -67,6 +67,40 @@ const FLAG_EMOJIS: Record<string, string> = {
   CN: "🇨🇳",
 };
 
+/**
+ * Structural validator for RedactedUnifiedResult objects read from localStorage.
+ * This is defense against XSS-delivered localStorage poisoning — any attacker
+ * who can run script on this origin could otherwise inject arbitrary shapes
+ * into the result state and propagate them to the save-to-dashboard endpoint.
+ *
+ * This is a lightweight shape check, not a cryptographic integrity check.
+ * For true tamper-resistance we would need HMAC-signed localStorage blobs,
+ * but that's excessive for a client-side UX feature.
+ */
+function isValidStoredResult(value: unknown): value is RedactedUnifiedResult {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  // Must have an assessmentId string and companySummary object
+  if (typeof v.assessmentId !== "string") return false;
+  if (!v.companySummary || typeof v.companySummary !== "object") return false;
+  const summary = v.companySummary as Record<string, unknown>;
+  // companySummary.name if present must be a reasonably short string
+  if (
+    summary.name !== undefined &&
+    (typeof summary.name !== "string" || summary.name.length > 500)
+  ) {
+    return false;
+  }
+  // Must have at least one of euSpaceAct, nis2, nationalSpaceLaw sections
+  const hasAnySection =
+    (v.euSpaceAct !== undefined && typeof v.euSpaceAct === "object") ||
+    (v.nis2 !== undefined && typeof v.nis2 === "object") ||
+    (v.nationalSpaceLaw !== undefined &&
+      typeof v.nationalSpaceLaw === "object");
+  if (!hasAnySection) return false;
+  return true;
+}
+
 const variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 100 : -100,
@@ -120,7 +154,18 @@ export default function UnifiedAssessmentWizard() {
 
   // Resume detection on mount + Google OAuth return handling
   useEffect(() => {
-    // Handle Google OAuth return with completed assessment
+    // Handle Google OAuth return with completed assessment.
+    //
+    // Security: we MUST validate the localStorage payload before passing it
+    // to setComplianceResult, because (a) localStorage can be written by
+    // any XSS vector on this origin and (b) the result flows directly into
+    // the save-to-dashboard endpoint. Previously any JSON.parse-able object
+    // would be accepted, creating an injection chain for an attacker who
+    // could run arbitrary script on this origin.
+    //
+    // This is a structural sanity check only (not cryptographic). We verify
+    // the shape matches RedactedUnifiedResult and reject anything that
+    // doesn't look like a real result object.
     const params = new URLSearchParams(window.location.search);
     if (params.get("complete") === "true") {
       const resultStr =
@@ -128,9 +173,16 @@ export default function UnifiedAssessmentWizard() {
         localStorage.getItem("caelex-unified-assessment");
       if (resultStr) {
         try {
-          setComplianceResult(JSON.parse(resultStr));
-          setState((prev) => ({ ...prev, isComplete: true }));
-          return; // Skip resume modal
+          const parsed = JSON.parse(resultStr);
+          if (isValidStoredResult(parsed)) {
+            setComplianceResult(parsed);
+            setState((prev) => ({ ...prev, isComplete: true }));
+            return; // Skip resume modal
+          }
+          // Invalid shape — clear the poisoned entry so a reload gets a
+          // clean state.
+          localStorage.removeItem("caelex-pending-unified-assessment");
+          localStorage.removeItem("caelex-unified-assessment");
         } catch {
           // Fall through to normal flow
         }
@@ -183,19 +235,33 @@ export default function UnifiedAssessmentWizard() {
     })
       .then((res) => {
         if (res.ok) {
+          // Clear localStorage flags only on success so we don't lose the
+          // pending save if the server errors out.
           try {
             localStorage.removeItem("caelex-save-assessment-after-auth");
             localStorage.removeItem("caelex-pending-unified-assessment");
           } catch {
             // ignore
           }
+          // Only mark authenticated after a confirmed successful save.
+          // Previously this was in .finally() which fired on failure too,
+          // creating a ghost state where the results UI rendered as if the
+          // assessment was saved while the pending-save localStorage flag
+          // remained set, triggering another save attempt on next visit.
+          setIsAuthenticated(true);
+        } else {
+          // Keep the pending flag so the next page load can retry. The user
+          // still sees results (isAuthenticated remains true if they were
+          // already authenticated via session).
+          console.error("Failed to save assessment to dashboard:", res.status);
         }
       })
-      .catch(() => {
-        // Still show results even if save fails
+      .catch((err) => {
+        // Network error — also keep the pending flag for retry. Show results
+        // anyway so the user isn't stuck on a loading screen.
+        console.error("Network error saving assessment:", err);
       })
       .finally(() => {
-        setIsAuthenticated(true);
         setSavingToDashboard(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps

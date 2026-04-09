@@ -206,8 +206,10 @@ import {
   calculateNIS2Compliance,
   redactNIS2ResultForClient,
 } from "@/lib/nis2-engine.server";
+// classifyNIS2Entity is no longer exported from data/nis2-requirements.ts
+// (consolidated into the engine in 2026-04 — see audit fix). The data file
+// still owns the requirement catalog and the requirement filter function.
 import {
-  classifyNIS2Entity as classifyNIS2EntityFromData,
   getApplicableNIS2Requirements,
   NIS2_REQUIREMENTS,
 } from "@/data/nis2-requirements";
@@ -231,6 +233,15 @@ function makeAnswers(
     annualRevenue: null,
     memberStateCount: 1,
     isEUEstablished: true,
+    // New fields added by 2026-04 audit fix.
+    // Default offersServicesInEU=false so that any test using
+    // `isEUEstablished: false` produces an out_of_scope result (matching
+    // pre-2026-04 test expectations). Tests that want to exercise the
+    // Art 26 path must explicitly set offersServicesInEU: true.
+    offersServicesInEU: false,
+    designatedByMemberState: false,
+    providesDigitalInfrastructure: false,
+    euControlledEntity: false,
     hasISO27001: false,
     hasExistingCSIRT: false,
     hasRiskManagement: false,
@@ -244,47 +255,85 @@ function makeAnswers(
 
 describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => {
   // ── Non-EU ──────────────────────────────────────────────────
+  //
+  // Updated 2026-04: the audit fix introduced a distinction between
+  // (a) non-EU entities WITHOUT EU services → out_of_scope
+  // (b) non-EU entities WITH EU services    → important + Art 26 obligation
+  // Previously all non-EU entities were classified as out_of_scope which
+  // missed the Art 26 obligation for cross-border service providers.
 
-  describe("Non-EU → out_of_scope", () => {
-    it("classifies non-EU entities as out_of_scope", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({ isEUEstablished: false }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("includes Art. 2 reference for non-EU entities", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({ isEUEstablished: false }),
-      );
-      expect(result.articleRef).toContain("Art. 2");
-    });
-
-    it("mentions Art. 26 representative requirement for non-EU", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({ isEUEstablished: false }),
-      );
-      expect(result.articleRef).toContain("Art. 26");
-    });
-
-    it("non-EU trumps all size/service flags", () => {
-      // Even a large SATCOM operator is out_of_scope if not EU-established
+  describe("Non-EU without EU services → out_of_scope", () => {
+    it("classifies non-EU entities with no EU services as out_of_scope", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           isEUEstablished: false,
-          entitySize: "large",
-          operatesSatComms: true,
-          operatesGroundInfra: true,
+          offersServicesInEU: false,
         }),
       );
       expect(result.classification).toBe("out_of_scope");
     });
+
+    it("includes Art. 2(4) reference", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({ isEUEstablished: false, offersServicesInEU: false }),
+      );
+      expect(result.articleRef).toContain("Art. 2(4)");
+    });
+  });
+
+  describe("Non-EU offering EU services → important (Art 26)", () => {
+    it("classifies non-EU + EU services as important", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          isEUEstablished: false,
+          offersServicesInEU: true,
+        }),
+      );
+      expect(result.classification).toBe("important");
+    });
+
+    it("references Art. 26 representative obligation", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({ isEUEstablished: false, offersServicesInEU: true }),
+      );
+      expect(result.articleRef).toContain("Art. 26");
+    });
+  });
+
+  // ── Member state designation overrides everything ──────────
+
+  describe("Designated by member state (Art 2(2)) → essential", () => {
+    it("classifies designated entities as essential regardless of size", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          entitySize: "small",
+          designatedByMemberState: true,
+        }),
+      );
+      expect(result.classification).toBe("essential");
+      expect(result.articleRef).toContain("Art. 2(2)");
+    });
+
+    it("designation overrides micro size", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          entitySize: "micro",
+          designatedByMemberState: true,
+        }),
+      );
+      expect(result.classification).toBe("essential");
+    });
   });
 
   // ── Micro ────────────────────────────────────────────────────
+  //
+  // Updated 2026-04: micro is OUT OF SCOPE by default unless designated.
+  // The previous "SATCOM carve-out" was an over-aggressive auto-promotion
+  // that the audit identified as wrong — only member state designation
+  // (Art 2(2)) brings micro entities into scope.
 
-  describe("Micro → out_of_scope (with SATCOM carve-out)", () => {
-    it("classifies micro without SATCOM as out_of_scope", () => {
+  describe("Micro → out_of_scope (no auto carve-outs)", () => {
+    it("classifies micro without designation as out_of_scope", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "micro",
@@ -295,48 +344,16 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
       expect(result.articleRef).toContain("Art. 2(1)");
     });
 
-    it("micro with ground infra only is still out_of_scope", () => {
-      // Ground infra does NOT trigger the micro carve-out; only SATCOM does
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "micro",
-          operatesGroundInfra: true,
-          operatesSatComms: false,
-        }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("micro with launch services only is still out_of_scope", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "micro",
-          providesLaunchServices: true,
-          operatesSatComms: false,
-        }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("micro + SATCOM carve-out → important (Art. 2(2)(b))", () => {
+    it("micro + SATCOM is still out_of_scope without designation", () => {
+      // The audit fix removed the auto SATCOM carve-out — only member-state
+      // designation (Art 2(2)) brings micros into scope.
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "micro",
           operatesSatComms: true,
         }),
       );
-      expect(result.classification).toBe("important");
-      expect(result.articleRef).toContain("Art. 2(2)(b)");
-    });
-
-    it("micro + SATCOM reason mentions satellite communications", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "micro",
-          operatesSatComms: true,
-        }),
-      );
-      expect(result.reason).toMatch(/satellite communications/i);
+      expect(result.classification).toBe("out_of_scope");
     });
   });
 
@@ -371,42 +388,36 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
     });
   });
 
-  // ── Medium ───────────────────────────────────────────────────
+  // ── Medium → important by default (no auto-essential upgrade) ──
+  //
+  // Updated 2026-04: the previous auto-upgrade of medium ground-infra/SATCOM
+  // operators to "essential" was an over-classification (Art 3(1)(e) requires
+  // member state designation, not automatic). All medium Annex I entities
+  // now default to "important" — upgrade to essential requires explicit
+  // designatedByMemberState=true.
 
-  describe("Medium + ground infra → essential", () => {
-    it("classifies medium + ground infra as essential", () => {
+  describe("Medium → important (default, regardless of services)", () => {
+    it("classifies medium + ground infra as important (NOT essential)", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "medium",
           operatesGroundInfra: true,
         }),
       );
-      expect(result.classification).toBe("essential");
+      expect(result.classification).toBe("important");
     });
 
-    it("includes Art. 3(1)(e) reference", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "medium",
-          operatesGroundInfra: true,
-        }),
-      );
-      expect(result.articleRef).toContain("Art. 3(1)(e)");
-    });
-  });
-
-  describe("Medium + SATCOM → essential", () => {
-    it("classifies medium + SATCOM as essential", () => {
+    it("classifies medium + SATCOM as important (NOT essential)", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "medium",
           operatesSatComms: true,
         }),
       );
-      expect(result.classification).toBe("essential");
+      expect(result.classification).toBe("important");
     });
 
-    it("medium + both ground infra and SATCOM is essential", () => {
+    it("classifies medium + both ground+SATCOM as important", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "medium",
@@ -414,11 +425,9 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
           operatesSatComms: true,
         }),
       );
-      expect(result.classification).toBe("essential");
+      expect(result.classification).toBe("important");
     });
-  });
 
-  describe("Medium + other → important", () => {
     it("classifies medium without critical infra as important", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
@@ -440,111 +449,54 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
       );
       expect(result.articleRef).toContain("Art. 3(2)");
     });
+  });
 
-    it("medium spacecraft manufacturer is important", () => {
+  describe("Medium → essential ONLY with member-state designation", () => {
+    it("medium + designation → essential", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "medium",
-          spaceSubSector: "spacecraft_manufacturing",
-          operatesGroundInfra: false,
-          operatesSatComms: false,
+          operatesGroundInfra: true,
+          designatedByMemberState: true,
         }),
       );
-      expect(result.classification).toBe("important");
-    });
-
-    it("medium earth observation provider is important", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "medium",
-          providesEOData: true,
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-        }),
-      );
-      expect(result.classification).toBe("important");
+      expect(result.classification).toBe("essential");
     });
   });
 
-  // ── Small ────────────────────────────────────────────────────
+  // ── Small → out of scope by default ──────────────────────────
+  //
+  // Updated 2026-04: small entities in Annex I are out of scope by default
+  // per Art 2(1). Previously they were auto-promoted to "important" via
+  // Art 2(2)(b) heuristics; that was over-classification. Designation
+  // remains the only path into scope.
 
-  describe("Small + critical services → important", () => {
-    it("classifies small + ground infra as important", () => {
+  describe("Small → out_of_scope (default per Art 2(1))", () => {
+    it("classifies small without designation as out_of_scope", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "small",
           operatesGroundInfra: true,
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-
-    it("classifies small + SATCOM as important", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "small",
-          operatesSatComms: true,
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-
-    it("classifies small + launch services as important", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "small",
-          providesLaunchServices: true,
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-
-    it("includes Art. 2(2)(b) for small important entities", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "small",
-          operatesGroundInfra: true,
-        }),
-      );
-      expect(result.articleRef).toContain("Art. 2(2)(b)");
-    });
-
-    it("small entity with all critical services is important", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "small",
-          operatesGroundInfra: true,
-          operatesSatComms: true,
-          providesLaunchServices: true,
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-  });
-
-  describe("Small + non-critical → out_of_scope", () => {
-    it("classifies small without critical services as out_of_scope", () => {
-      const result = classifyNIS2Entity(
-        makeAnswers({
-          entitySize: "small",
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-          providesLaunchServices: false,
         }),
       );
       expect(result.classification).toBe("out_of_scope");
     });
 
-    it("small + EO data only is out_of_scope in engine", () => {
-      // NOTE: The engine does NOT include EO data as a carve-out trigger for small entities.
-      // The data file DOES include EO data. This is a divergence point.
+    it("small + SATCOM is still out_of_scope without designation", () => {
       const result = classifyNIS2Entity(
         makeAnswers({
           entitySize: "small",
-          providesEOData: true,
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-          providesLaunchServices: false,
+          operatesSatComms: true,
+        }),
+      );
+      expect(result.classification).toBe("out_of_scope");
+    });
+
+    it("small + launch services is still out_of_scope without designation", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          entitySize: "small",
+          providesLaunchServices: true,
         }),
       );
       expect(result.classification).toBe("out_of_scope");
@@ -555,11 +507,38 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
         makeAnswers({
           entitySize: "small",
           operatesGroundInfra: false,
+        }),
+      );
+      expect(result.articleRef).toContain("Art. 2(1)");
+    });
+
+    it("small + member state designation → essential", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          entitySize: "small",
+          operatesGroundInfra: true,
+          designatedByMemberState: true,
+        }),
+      );
+      expect(result.classification).toBe("essential");
+    });
+  });
+
+  // (Covered by the "Small → out_of_scope" describe block above —
+  // small entities are always out_of_scope per Art. 2(1) regardless of
+  // service mix, with the only exception being member state designation.)
+  describe("Small + EO data only → out_of_scope", () => {
+    it("small + EO data is out_of_scope without designation", () => {
+      const result = classifyNIS2Entity(
+        makeAnswers({
+          entitySize: "small",
+          providesEOData: true,
+          operatesGroundInfra: false,
           operatesSatComms: false,
           providesLaunchServices: false,
         }),
       );
-      expect(result.articleRef).toContain("Art. 2(1)");
+      expect(result.classification).toBe("out_of_scope");
     });
   });
 
@@ -626,329 +605,6 @@ describe("classifyNIS2Entity (engine — src/lib/nis2-engine.server.ts)", () => 
         expect(valid.has(result.classification)).toBe(true);
       }
     });
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════
-// DATA FILE classifyNIS2Entity — Documenting Divergences
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * DIVERGENCE DOCUMENTATION
- * ─────────────────────────
- * There are TWO separate `classifyNIS2Entity` implementations:
- *
- *   1. src/lib/nis2-engine.server.ts   (engine)
- *   2. src/data/nis2-requirements.ts   (data)
- *
- * Key behavioural differences:
- *
- * | Scenario                              | Engine result  | Data result    |
- * |---------------------------------------|---------------|----------------|
- * | Micro + SATCOM                        | important      | out_of_scope   |
- * | Small + non-critical                  | out_of_scope   | important      |
- * | Small + EO data only                  | out_of_scope   | important      |
- * | Non-space sector (e.g. "energy")      | ignores sector | out_of_scope   |
- * | Null sector                           | treats as space| out_of_scope   |
- * | Return shape                          | has articleRef | no articleRef  |
- * | Micro + ground infra (no SATCOM)      | out_of_scope   | out_of_scope   |
- *
- * This divergence may cause inconsistencies between the assessment wizard
- * (which uses the data-file function) and the compliance report (engine).
- */
-describe("classifyNIS2Entity (data — src/data/nis2-requirements.ts)", () => {
-  // ── Non-EU ──────────────────────────────────────────────────
-
-  describe("Non-EU → out_of_scope", () => {
-    it("classifies non-EU entities as out_of_scope", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({ isEUEstablished: false, sector: "space" }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("returns no articleRef (data fn only has reason field)", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({ isEUEstablished: false, sector: "space" }),
-      );
-      expect((result as Record<string, unknown>).articleRef).toBeUndefined();
-      expect(result.reason).toBeTruthy();
-    });
-  });
-
-  // ── Sector filtering ──────────────────────────────────────────
-
-  describe("Non-space sector → out_of_scope (data-file only feature)", () => {
-    it("classifies non-space sector as out_of_scope", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({ sector: "energy", entitySize: "large" }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("classifies null sector as out_of_scope", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({ sector: null, entitySize: "large" }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-  });
-
-  // ── Micro ─────────────────────────────────────────────────────
-
-  describe("Micro → out_of_scope (NO SATCOM carve-out in data file)", () => {
-    it("classifies micro as out_of_scope — even with SATCOM", () => {
-      // DIVERGENCE: Engine returns important for micro+SATCOM; data file returns out_of_scope
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "micro",
-          operatesSatComms: true,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-
-    it("classifies micro without SATCOM as out_of_scope", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "micro",
-          operatesSatComms: false,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("out_of_scope");
-    });
-  });
-
-  // ── Large ─────────────────────────────────────────────────────
-
-  describe("Large → essential", () => {
-    it("classifies large space entities as essential", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({ entitySize: "large", sector: "space" }),
-      );
-      expect(result.classification).toBe("essential");
-    });
-  });
-
-  // ── Medium ────────────────────────────────────────────────────
-
-  describe("Medium + ground infra → essential", () => {
-    it("classifies medium + ground infra as essential", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "medium",
-          operatesGroundInfra: true,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("essential");
-    });
-  });
-
-  describe("Medium + SATCOM → essential", () => {
-    it("classifies medium + SATCOM as essential", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "medium",
-          operatesSatComms: true,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("essential");
-    });
-  });
-
-  describe("Medium + other → important", () => {
-    it("classifies medium without critical infra as important", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "medium",
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-  });
-
-  // ── Small ─────────────────────────────────────────────────────
-
-  describe("Small → important (data file always returns important for small)", () => {
-    it("classifies small + critical services as important", () => {
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "small",
-          operatesSatComms: true,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-
-    it("classifies small + EO data as important (DIVERGENCE: engine returns out_of_scope)", () => {
-      // DIVERGENCE: Data file includes EO data as a trigger; engine does NOT.
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "small",
-          providesEOData: true,
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-          providesLaunchServices: false,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-
-    it("classifies small + NO critical services as important (DIVERGENCE: engine returns out_of_scope)", () => {
-      // DIVERGENCE: Data file classifies all small space entities as important.
-      // Engine returns out_of_scope for small entities without critical services.
-      const result = classifyNIS2EntityFromData(
-        makeAnswers({
-          entitySize: "small",
-          operatesGroundInfra: false,
-          operatesSatComms: false,
-          providesLaunchServices: false,
-          providesEOData: false,
-          sector: "space",
-        }),
-      );
-      expect(result.classification).toBe("important");
-    });
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════
-// DIVERGENCE MATRIX — Direct comparison of the two functions
-// ═══════════════════════════════════════════════════════════════
-
-describe("Classification divergence: engine vs data file", () => {
-  it("DIVERGENCE — micro + SATCOM: engine=important, data=out_of_scope", () => {
-    const answers = makeAnswers({
-      entitySize: "micro",
-      operatesSatComms: true,
-      sector: "space",
-    });
-    const engineResult = classifyNIS2Entity(answers);
-    const dataResult = classifyNIS2EntityFromData(answers);
-
-    expect(engineResult.classification).toBe("important");
-    expect(dataResult.classification).toBe("out_of_scope");
-    // Explicit assertion that they diverge
-    expect(engineResult.classification).not.toBe(dataResult.classification);
-  });
-
-  it("DIVERGENCE — small + non-critical: engine=out_of_scope, data=important", () => {
-    const answers = makeAnswers({
-      entitySize: "small",
-      operatesGroundInfra: false,
-      operatesSatComms: false,
-      providesLaunchServices: false,
-      providesEOData: false,
-      sector: "space",
-    });
-    const engineResult = classifyNIS2Entity(answers);
-    const dataResult = classifyNIS2EntityFromData(answers);
-
-    expect(engineResult.classification).toBe("out_of_scope");
-    expect(dataResult.classification).toBe("important");
-    expect(engineResult.classification).not.toBe(dataResult.classification);
-  });
-
-  it("DIVERGENCE — small + EO data only: engine=out_of_scope, data=important", () => {
-    const answers = makeAnswers({
-      entitySize: "small",
-      providesEOData: true,
-      operatesGroundInfra: false,
-      operatesSatComms: false,
-      providesLaunchServices: false,
-      sector: "space",
-    });
-    const engineResult = classifyNIS2Entity(answers);
-    const dataResult = classifyNIS2EntityFromData(answers);
-
-    expect(engineResult.classification).toBe("out_of_scope");
-    expect(dataResult.classification).toBe("important");
-    expect(engineResult.classification).not.toBe(dataResult.classification);
-  });
-
-  it("DIVERGENCE — data file lacks articleRef field", () => {
-    const answers = makeAnswers({ entitySize: "large", sector: "space" });
-    const engineResult = classifyNIS2Entity(answers);
-    const dataResult = classifyNIS2EntityFromData(answers);
-
-    // Engine always returns articleRef
-    expect(engineResult.articleRef).toBeTruthy();
-    // Data file result does not include articleRef
-    expect((dataResult as Record<string, unknown>).articleRef).toBeUndefined();
-  });
-
-  it("AGREEMENT — large space entity: both return essential", () => {
-    const answers = makeAnswers({ entitySize: "large", sector: "space" });
-    expect(classifyNIS2Entity(answers).classification).toBe("essential");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "essential",
-    );
-  });
-
-  it("AGREEMENT — medium + ground infra: both return essential", () => {
-    const answers = makeAnswers({
-      entitySize: "medium",
-      operatesGroundInfra: true,
-      sector: "space",
-    });
-    expect(classifyNIS2Entity(answers).classification).toBe("essential");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "essential",
-    );
-  });
-
-  it("AGREEMENT — medium + SATCOM: both return essential", () => {
-    const answers = makeAnswers({
-      entitySize: "medium",
-      operatesSatComms: true,
-      sector: "space",
-    });
-    expect(classifyNIS2Entity(answers).classification).toBe("essential");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "essential",
-    );
-  });
-
-  it("AGREEMENT — medium + other: both return important", () => {
-    const answers = makeAnswers({
-      entitySize: "medium",
-      operatesGroundInfra: false,
-      operatesSatComms: false,
-      sector: "space",
-    });
-    expect(classifyNIS2Entity(answers).classification).toBe("important");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "important",
-    );
-  });
-
-  it("AGREEMENT — non-EU: both return out_of_scope", () => {
-    const answers = makeAnswers({ isEUEstablished: false, sector: "space" });
-    expect(classifyNIS2Entity(answers).classification).toBe("out_of_scope");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "out_of_scope",
-    );
-  });
-
-  it("AGREEMENT — small + launch services: both return important", () => {
-    const answers = makeAnswers({
-      entitySize: "small",
-      providesLaunchServices: true,
-      sector: "space",
-    });
-    expect(classifyNIS2Entity(answers).classification).toBe("important");
-    expect(classifyNIS2EntityFromData(answers).classification).toBe(
-      "important",
-    );
   });
 });
 

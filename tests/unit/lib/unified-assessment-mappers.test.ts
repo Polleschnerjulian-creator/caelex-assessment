@@ -228,10 +228,24 @@ describe("mapToNIS2Answers", () => {
     expect(result.spaceSubSector).toBe("earth_observation");
   });
 
-  it("detects ground infrastructure from NAV/SSA", () => {
+  it("does NOT classify pure NAV/SSA data resellers as ground-infra operators", () => {
+    // 2026-04 audit fix: NAV/SSA service types alone do not imply the
+    // operator runs ground infrastructure. A NAV/SSA data reseller may
+    // simply purchase data from upstream and not own any ground stations.
+    // Use isDataResellerOnly=true to be explicit.
     const answers = {
       ...getDefaultUnifiedAnswers(),
       serviceTypes: ["NAV", "SSA"],
+      isDataResellerOnly: true,
+    };
+    const result = mapToNIS2Answers(answers);
+    expect(result.operatesGroundInfra).toBeFalsy();
+  });
+
+  it("classifies SATCOM operators as ground-infra operators", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      serviceTypes: ["SATCOM"],
     };
     const result = mapToNIS2Answers(answers);
     expect(result.operatesGroundInfra).toBe(true);
