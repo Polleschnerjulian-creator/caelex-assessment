@@ -62,12 +62,15 @@ export default function AtlasShell({
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0F1E]">
+    <div
+      className="landing-light flex h-screen w-screen overflow-hidden bg-[#F7F8FA]"
+      style={{ colorScheme: "light" }}
+    >
       {/* ─── Sidebar ─── */}
       <aside
         className={`
-          relative z-30 flex flex-col border-r border-white/[0.06]
-          bg-[#0B1120]/80 backdrop-blur-xl
+          relative z-30 flex flex-col border-r border-gray-200
+          bg-white/80 backdrop-blur-xl
           transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           ${collapsed ? "w-[56px]" : "w-[240px]"}
           ${!mounted ? "opacity-0" : "opacity-100"}
@@ -77,22 +80,22 @@ export default function AtlasShell({
         {/* ─ Logo ─ */}
         <div
           className={`
-            flex items-center border-b border-white/[0.06] px-3
+            flex items-center border-b border-gray-200 px-3
             ${collapsed ? "h-[56px] justify-center" : "h-[56px] gap-3"}
           `}
         >
           <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center">
             <Hexagon className="h-8 w-8 text-emerald-500" strokeWidth={1.5} />
-            <span className="absolute text-[9px] font-bold tracking-wider text-emerald-400">
+            <span className="absolute text-[9px] font-bold tracking-wider text-emerald-600">
               A
             </span>
           </div>
           {!collapsed && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[13px] font-semibold tracking-[0.2em] text-white/90">
+              <span className="text-[13px] font-semibold tracking-[0.2em] text-gray-900">
                 ATLAS
               </span>
-              <span className="text-[9px] font-medium tracking-widest text-emerald-500/70 uppercase">
+              <span className="text-[9px] font-medium tracking-widest text-emerald-600 uppercase">
                 Space Law Intel
               </span>
             </div>
@@ -120,16 +123,11 @@ export default function AtlasShell({
                       ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
                       ${
                         active
-                          ? "bg-emerald-500/[0.12] text-emerald-400 glass-accent"
-                          : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                          ? "bg-emerald-50 text-emerald-700 border-l-2 border-emerald-500"
+                          : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                       }
                     `}
                   >
-                    {/* Active indicator bar */}
-                    {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-r-full bg-emerald-400" />
-                    )}
-
                     <Icon
                       className={`flex-shrink-0 ${collapsed ? "h-[18px] w-[18px]" : "h-4 w-4"}`}
                       strokeWidth={active ? 2 : 1.5}
@@ -146,9 +144,9 @@ export default function AtlasShell({
                       <span
                         className="
                           pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
-                          whitespace-nowrap rounded-md bg-[#1E293B] px-2.5 py-1.5
-                          text-[11px] font-medium text-slate-200 opacity-0
-                          shadow-lg border border-white/[0.08]
+                          whitespace-nowrap rounded-md bg-white px-2.5 py-1.5
+                          text-[11px] font-medium text-gray-700 opacity-0
+                          shadow-lg border border-gray-200
                           transition-opacity duration-150
                           group-hover:opacity-100
                         "
@@ -164,14 +162,14 @@ export default function AtlasShell({
         </nav>
 
         {/* ─ Bottom section ─ */}
-        <div className="flex flex-col border-t border-white/[0.06] py-2 px-1.5 gap-0.5">
+        <div className="flex flex-col border-t border-gray-200 py-2 px-1.5 gap-0.5">
           {/* Back to Caelex */}
           <Link
             href="/dashboard"
             title={collapsed ? "Back to Caelex" : undefined}
             className={`
-              group relative flex items-center rounded-lg text-slate-500
-              hover:text-slate-300 hover:bg-white/[0.04]
+              group relative flex items-center rounded-lg text-gray-400
+              hover:text-gray-700 hover:bg-gray-50
               transition-all duration-200
               ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
             `}
@@ -189,9 +187,9 @@ export default function AtlasShell({
               <span
                 className="
                   pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
-                  whitespace-nowrap rounded-md bg-[#1E293B] px-2.5 py-1.5
-                  text-[11px] font-medium text-slate-200 opacity-0
-                  shadow-lg border border-white/[0.08]
+                  whitespace-nowrap rounded-md bg-white px-2.5 py-1.5
+                  text-[11px] font-medium text-gray-700 opacity-0
+                  shadow-lg border border-gray-200
                   transition-opacity duration-150
                   group-hover:opacity-100
                 "
@@ -205,8 +203,8 @@ export default function AtlasShell({
           <button
             onClick={toggleCollapsed}
             className={`
-              flex items-center rounded-lg text-slate-500 hover:text-slate-300
-              hover:bg-white/[0.04] transition-all duration-200
+              flex items-center rounded-lg text-gray-400 hover:text-gray-700
+              hover:bg-gray-50 transition-all duration-200
               ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
             `}
           >

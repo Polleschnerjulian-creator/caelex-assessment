@@ -26,22 +26,22 @@ export default function ComparatorPage() {
   const [dimension, setDimension] = useState<string>("all");
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#0A0F1E] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
       {/* ─── Header ─── */}
       <header className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <BarChart3 className="h-5 w-5 text-emerald-400" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-white/90">
+          <BarChart3 className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
+          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
             Regulatory Comparator
           </h1>
-          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-medium tracking-wider text-emerald-400 uppercase">
+          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-medium tracking-wider text-emerald-700 uppercase">
             19 Jurisdictions
           </span>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
           <Layers className="h-3 w-3" strokeWidth={1.5} />
           <span>{selected.length} selected</span>
-          <span className="text-slate-700">|</span>
+          <span className="text-gray-300">|</span>
           <span>
             {DIMENSIONS.find((d) => d.key === dimension)?.label || "All"}
           </span>
@@ -49,9 +49,9 @@ export default function ComparatorPage() {
       </header>
 
       {/* ─── Country Selector Bar ─── */}
-      <div className="rounded-lg border border-white/[0.06] bg-[#0F172A]/60 p-3 glass-surface">
+      <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">
+          <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
             Jurisdictions
           </span>
         </div>
@@ -69,8 +69,8 @@ export default function ComparatorPage() {
               border transition-all duration-150
               ${
                 dimension === dim.key
-                  ? "bg-emerald-500/[0.12] border-emerald-500/25 text-emerald-400"
-                  : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.10] hover:bg-white/[0.04]"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50"
               }
             `}
           >
@@ -80,7 +80,7 @@ export default function ComparatorPage() {
       </div>
 
       {/* ─── Comparison Table ─── */}
-      <div className="flex-1 rounded-lg border border-white/[0.06] bg-[#0F172A]/40 glass-elevated overflow-hidden">
+      <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <ComparisonTable countries={selected} dimension={dimension} />
       </div>
     </div>

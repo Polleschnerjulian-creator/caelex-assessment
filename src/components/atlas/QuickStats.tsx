@@ -32,7 +32,6 @@ export default function QuickStats() {
       }
     });
 
-    // Format the latest update date
     const [year, month] = latestUpdate.split("-").map(Number);
     const months = [
       "JAN",
@@ -55,45 +54,45 @@ export default function QuickStats() {
         label: "ENACTED",
         value: enacted,
         subLabel: "jurisdictions",
-        color: "text-emerald-400",
+        color: "text-emerald-600",
       },
       {
         label: "IN PROGRESS",
         value: inProgress,
         subLabel: "draft / pending",
-        color: "text-amber-400",
+        color: "text-amber-600",
       },
       {
         label: "NO LEGISLATION",
         value: noLaw,
         subLabel: "regulatory gap",
-        color: "text-red-400",
+        color: "text-red-600",
       },
       {
         label: "TOTAL TRACKED",
         value: JURISDICTION_DATA.size,
         subLabel: "jurisdictions",
-        color: "text-blue-400",
+        color: "text-blue-600",
       },
       {
         label: "LAST UPDATE",
         value: formattedDate,
         subLabel: "data refresh",
-        color: "text-slate-300",
+        color: "text-gray-700",
       },
     ];
   }, []);
 
   return (
-    <div className="glass-surface rounded-lg border border-white/[0.06]">
-      <div className="flex items-stretch divide-x divide-white/[0.06] overflow-x-auto">
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="flex items-stretch divide-x divide-gray-200 overflow-x-auto">
         {stats.map((stat) => (
           <div
             key={stat.label}
             className="flex-1 min-w-[120px] px-4 py-3 flex flex-col items-center justify-center text-center"
           >
             {/* Label */}
-            <span className="text-[9px] font-mono font-semibold text-slate-500 tracking-[0.1em] uppercase">
+            <span className="text-[9px] font-mono font-semibold text-gray-400 tracking-[0.1em] uppercase">
               {stat.label}
             </span>
 
@@ -106,7 +105,7 @@ export default function QuickStats() {
 
             {/* Sub-label */}
             {stat.subLabel && (
-              <span className="text-[9px] font-mono text-slate-600 mt-0.5">
+              <span className="text-[9px] font-mono text-gray-400 mt-0.5">
                 {stat.subLabel}
               </span>
             )}

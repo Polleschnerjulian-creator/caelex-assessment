@@ -59,7 +59,6 @@ export default function CountrySelector({
   };
 
   const selectAllEU = () => {
-    // Pick the first 5 EU countries as a sensible default set
     onChange(EU_COUNTRY_CODES.slice(0, MAX_SELECTIONS));
   };
 
@@ -78,15 +77,15 @@ export default function CountrySelector({
               onClick={() => toggle(code)}
               className="
                 flex items-center gap-1.5 rounded px-2 py-1
-                bg-emerald-500/[0.08] border border-emerald-500/20
-                text-[11px] font-medium text-emerald-400
-                hover:bg-emerald-500/[0.15] transition-colors duration-150
+                bg-emerald-50 border border-emerald-200
+                text-[11px] font-medium text-emerald-700
+                hover:bg-emerald-100 transition-colors duration-150
                 group
               "
             >
               <span className="text-[13px] leading-none">{data.flagEmoji}</span>
               <span className="font-mono tracking-wide">{code}</span>
-              <X className="h-3 w-3 text-emerald-500/50 group-hover:text-emerald-400 transition-colors" />
+              <X className="h-3 w-3 text-emerald-400 group-hover:text-emerald-600 transition-colors" />
             </button>
           );
         })}
@@ -100,8 +99,8 @@ export default function CountrySelector({
             border transition-colors duration-150
             ${
               selected.length >= MAX_SELECTIONS
-                ? "border-white/[0.04] text-slate-600 cursor-not-allowed bg-white/[0.02]"
-                : "border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/[0.12] bg-white/[0.03] cursor-pointer"
+                ? "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
+                : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 bg-white cursor-pointer"
             }
           `}
         >
@@ -121,8 +120,8 @@ export default function CountrySelector({
             onClick={selectAllEU}
             className="
               rounded px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-slate-500 hover:text-emerald-400 border border-white/[0.06]
-              hover:border-emerald-500/20 bg-white/[0.02] hover:bg-emerald-500/[0.06]
+              text-gray-500 hover:text-emerald-700 border border-gray-200
+              hover:border-emerald-200 bg-white hover:bg-emerald-50
               transition-colors duration-150
             "
           >
@@ -132,8 +131,8 @@ export default function CountrySelector({
             onClick={clearAll}
             className="
               rounded px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-slate-500 hover:text-red-400 border border-white/[0.06]
-              hover:border-red-500/20 bg-white/[0.02] hover:bg-red-500/[0.06]
+              text-gray-500 hover:text-red-600 border border-gray-200
+              hover:border-red-200 bg-white hover:bg-red-50
               transition-colors duration-150
             "
           >
@@ -142,7 +141,7 @@ export default function CountrySelector({
         </div>
 
         {/* Count indicator */}
-        <span className="text-[10px] text-slate-600 font-mono ml-auto">
+        <span className="text-[10px] text-gray-400 font-mono ml-auto">
           {selected.length}/{MAX_SELECTIONS}
         </span>
       </div>
@@ -152,9 +151,8 @@ export default function CountrySelector({
         <div
           className="
             absolute z-50 top-full left-0 mt-1.5 w-full max-w-[640px] max-h-[320px]
-            overflow-y-auto rounded-lg border border-white/[0.08]
-            bg-[#0F172A]/95 backdrop-blur-xl shadow-2xl
-            glass-floating
+            overflow-y-auto rounded-xl border border-gray-200
+            bg-white backdrop-blur-xl shadow-xl
           "
         >
           <div className="p-2 grid grid-cols-2 sm:grid-cols-3 gap-0.5">
@@ -173,10 +171,10 @@ export default function CountrySelector({
                     transition-colors duration-100
                     ${
                       isSelected
-                        ? "bg-emerald-500/[0.12] border border-emerald-500/25 text-emerald-300"
+                        ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
                         : isDisabled
-                          ? "opacity-30 cursor-not-allowed text-slate-500"
-                          : "hover:bg-white/[0.06] text-slate-300 border border-transparent"
+                          ? "opacity-30 cursor-not-allowed text-gray-400"
+                          : "hover:bg-gray-50 text-gray-700 border border-transparent"
                     }
                   `}
                 >
@@ -187,12 +185,12 @@ export default function CountrySelector({
                     <span className="text-[11px] font-medium truncate block">
                       {data.countryName}
                     </span>
-                    <span className="text-[9px] font-mono text-slate-500">
+                    <span className="text-[9px] font-mono text-gray-400">
                       {code}
                     </span>
                   </div>
                   {isSelected && (
-                    <Check className="h-3 w-3 text-emerald-400 flex-shrink-0" />
+                    <Check className="h-3 w-3 text-emerald-600 flex-shrink-0" />
                   )}
                 </button>
               );

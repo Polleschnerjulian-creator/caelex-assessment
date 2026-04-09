@@ -20,7 +20,7 @@ interface CountryPath {
 
 type StatusCategory = "enacted" | "draft_pending" | "none" | "non_eu_esa";
 
-// ─── Status Colors ───
+// ─── Status Colors (light mode) ───
 
 const STATUS_COLORS: Record<
   StatusCategory,
@@ -34,30 +34,30 @@ const STATUS_COLORS: Record<
 > = {
   enacted: {
     fill: "#10B981",
-    fillOpacity: "0.20",
-    stroke: "#10B981",
-    hoverFill: "rgba(16, 185, 129, 0.45)",
+    fillOpacity: "0.25",
+    stroke: "#059669",
+    hoverFill: "rgba(16, 185, 129, 0.50)",
     label: "Enacted",
   },
   draft_pending: {
     fill: "#F59E0B",
-    fillOpacity: "0.20",
-    stroke: "#F59E0B",
-    hoverFill: "rgba(245, 158, 11, 0.45)",
+    fillOpacity: "0.25",
+    stroke: "#D97706",
+    hoverFill: "rgba(245, 158, 11, 0.50)",
     label: "Draft / Pending",
   },
   none: {
     fill: "#EF4444",
-    fillOpacity: "0.20",
-    stroke: "#EF4444",
-    hoverFill: "rgba(239, 68, 68, 0.45)",
+    fillOpacity: "0.25",
+    stroke: "#DC2626",
+    hoverFill: "rgba(239, 68, 68, 0.50)",
     label: "No Legislation",
   },
   non_eu_esa: {
     fill: "#3B82F6",
-    fillOpacity: "0.20",
-    stroke: "#3B82F6",
-    hoverFill: "rgba(59, 130, 246, 0.45)",
+    fillOpacity: "0.25",
+    stroke: "#2563EB",
+    hoverFill: "rgba(59, 130, 246, 0.50)",
     label: "Non-EU ESA Member",
   },
 };
@@ -83,22 +83,17 @@ function getStatusCategory(
 // ─── Check if lastUpdated is within 30 days of today ───
 
 function isRecentlyUpdated(lastUpdated: string): boolean {
-  // lastUpdated format is "YYYY-MM" — treat as first day of that month
   const [year, month] = lastUpdated.split("-").map(Number);
   const updateDate = new Date(year, month - 1, 1);
   const now = new Date();
   const diffMs = now.getTime() - updateDate.getTime();
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
-  return diffDays <= 45; // slightly wider window since we only have month precision
+  return diffDays <= 45;
 }
 
 // ─── Simplified European Country Paths ───
-// Stylized SVG outlines — reasonable approximations positioned within a
-// viewBox of 0 0 800 700. These are hand-crafted simplified polygons,
-// not cartographically precise.
 
 const COUNTRY_PATHS: CountryPath[] = [
-  // France
   {
     code: "FR",
     name: "France",
@@ -106,7 +101,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 275,
     labelY: 360,
   },
-  // Germany
   {
     code: "DE",
     name: "Germany",
@@ -114,7 +108,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 380,
     labelY: 270,
   },
-  // Italy
   {
     code: "IT",
     name: "Italy",
@@ -122,7 +115,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 398,
     labelY: 410,
   },
-  // United Kingdom
   {
     code: "UK",
     name: "United Kingdom",
@@ -130,7 +122,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 225,
     labelY: 225,
   },
-  // Luxembourg
   {
     code: "LU",
     name: "Luxembourg",
@@ -138,7 +129,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 318,
     labelY: 280,
   },
-  // Netherlands
   {
     code: "NL",
     name: "Netherlands",
@@ -146,7 +136,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 327,
     labelY: 238,
   },
-  // Belgium
   {
     code: "BE",
     name: "Belgium",
@@ -154,7 +143,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 308,
     labelY: 266,
   },
-  // Spain
   {
     code: "ES",
     name: "Spain",
@@ -162,7 +150,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 210,
     labelY: 430,
   },
-  // Austria
   {
     code: "AT",
     name: "Austria",
@@ -170,7 +157,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 415,
     labelY: 315,
   },
-  // Poland
   {
     code: "PL",
     name: "Poland",
@@ -178,7 +164,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 470,
     labelY: 242,
   },
-  // Denmark
   {
     code: "DK",
     name: "Denmark",
@@ -186,7 +171,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 367,
     labelY: 192,
   },
-  // Norway
   {
     code: "NO",
     name: "Norway",
@@ -194,7 +178,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 370,
     labelY: 110,
   },
-  // Sweden
   {
     code: "SE",
     name: "Sweden",
@@ -202,7 +185,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 425,
     labelY: 130,
   },
-  // Finland
   {
     code: "FI",
     name: "Finland",
@@ -210,7 +192,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 487,
     labelY: 105,
   },
-  // Portugal
   {
     code: "PT",
     name: "Portugal",
@@ -218,7 +199,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 142,
     labelY: 438,
   },
-  // Greece
   {
     code: "GR",
     name: "Greece",
@@ -226,7 +206,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 493,
     labelY: 405,
   },
-  // Czech Republic
   {
     code: "CZ",
     name: "Czech Republic",
@@ -234,7 +213,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 413,
     labelY: 282,
   },
-  // Ireland
   {
     code: "IE",
     name: "Ireland",
@@ -242,7 +220,6 @@ const COUNTRY_PATHS: CountryPath[] = [
     labelX: 172,
     labelY: 230,
   },
-  // Switzerland
   {
     code: "CH",
     name: "Switzerland",
@@ -252,7 +229,7 @@ const COUNTRY_PATHS: CountryPath[] = [
   },
 ];
 
-// ─── Grid Pattern ───
+// ─── Grid Pattern (light mode) ───
 
 function GridPattern() {
   return (
@@ -261,12 +238,12 @@ function GridPattern() {
         <path
           d="M 20 0 L 0 0 0 20"
           fill="none"
-          stroke="rgba(148, 163, 184, 0.06)"
+          stroke="rgba(209, 213, 219, 0.4)"
           strokeWidth="0.5"
         />
       </pattern>
       <filter id="glow">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
         <feMerge>
           <feMergeNode in="coloredBlur" />
           <feMergeNode in="SourceGraphic" />
@@ -343,7 +320,7 @@ function PulseMarker({
   );
 }
 
-// ─── Tooltip ───
+// ─── Tooltip (light mode) ───
 
 interface TooltipData {
   name: string;
@@ -355,7 +332,6 @@ interface TooltipData {
 }
 
 function MapTooltip({ data }: { data: TooltipData }) {
-  // Clamp tooltip position to stay within viewBox
   const tx = Math.min(Math.max(data.x, 100), 700);
   const ty = Math.max(data.y - 60, 20);
 
@@ -366,16 +342,17 @@ function MapTooltip({ data }: { data: TooltipData }) {
         y="-50"
         width="220"
         height="68"
-        rx="6"
-        fill="rgba(15, 23, 42, 0.95)"
-        stroke="rgba(148, 163, 184, 0.2)"
+        rx="8"
+        fill="white"
+        stroke="#E5E7EB"
         strokeWidth="1"
+        filter="url(#tooltip-shadow)"
       />
       <text
         x="0"
         y="-30"
         textAnchor="middle"
-        fill="#F8FAFC"
+        fill="#111827"
         fontSize="11"
         fontWeight="600"
       >
@@ -385,7 +362,7 @@ function MapTooltip({ data }: { data: TooltipData }) {
         x="0"
         y="-14"
         textAnchor="middle"
-        fill="#94A3B8"
+        fill="#6B7280"
         fontSize="9"
         fontFamily="monospace"
       >
@@ -393,7 +370,7 @@ function MapTooltip({ data }: { data: TooltipData }) {
           ? data.lawName.slice(0, 34) + "..."
           : data.lawName}
       </text>
-      <text x="0" y="0" textAnchor="middle" fill="#94A3B8" fontSize="8.5">
+      <text x="0" y="0" textAnchor="middle" fill="#6B7280" fontSize="8.5">
         {data.authority.length > 38
           ? data.authority.slice(0, 38) + "..."
           : data.authority}
@@ -404,10 +381,10 @@ function MapTooltip({ data }: { data: TooltipData }) {
         textAnchor="middle"
         fill={
           data.status === "enacted"
-            ? "#10B981"
+            ? "#059669"
             : data.status === "draft" || data.status === "pending"
-              ? "#F59E0B"
-              : "#EF4444"
+              ? "#D97706"
+              : "#DC2626"
         }
         fontSize="9"
         fontWeight="600"
@@ -420,7 +397,7 @@ function MapTooltip({ data }: { data: TooltipData }) {
   );
 }
 
-// ─── Legend ───
+// ─── Legend (light mode) ───
 
 function Legend() {
   const items = [
@@ -437,15 +414,15 @@ function Legend() {
         y="0"
         width="160"
         height="105"
-        rx="6"
-        fill="rgba(15, 23, 42, 0.85)"
-        stroke="rgba(148, 163, 184, 0.15)"
+        rx="8"
+        fill="white"
+        stroke="#E5E7EB"
         strokeWidth="1"
       />
       <text
         x="12"
         y="20"
-        fill="#94A3B8"
+        fill="#6B7280"
         fontSize="9"
         fontWeight="600"
         fontFamily="monospace"
@@ -463,7 +440,7 @@ function Legend() {
             height="10"
             rx="2"
             fill={item.color}
-            opacity="0.6"
+            opacity="0.7"
           />
           <rect
             x="0"
@@ -475,7 +452,7 @@ function Legend() {
             stroke={item.color}
             strokeWidth="1"
           />
-          <text x="16" y="9" fill="#E2E8F0" fontSize="9">
+          <text x="16" y="9" fill="#374151" fontSize="9">
             {item.label}
           </text>
         </g>
@@ -490,7 +467,6 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
-  // Build lookup from JURISDICTION_DATA
   const jurisdictionMap = useMemo(() => {
     const map: Record<
       string,
@@ -533,10 +509,29 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
       <svg
         viewBox="0 0 800 700"
         className="w-full h-full"
-        style={{ background: "#0A0F1E" }}
+        style={{ background: "#FFFFFF" }}
         xmlns="http://www.w3.org/2000/svg"
       >
         <GridPattern />
+
+        {/* Tooltip shadow filter */}
+        <defs>
+          <filter
+            id="tooltip-shadow"
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="2"
+              stdDeviation="4"
+              floodColor="#000"
+              floodOpacity="0.1"
+            />
+          </filter>
+        </defs>
 
         {/* Background grid */}
         <rect width="800" height="700" fill="url(#grid)" />
@@ -544,8 +539,8 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
         {/* Subtle glow gradient at center */}
         <defs>
           <radialGradient id="center-glow" cx="50%" cy="45%" r="40%">
-            <stop offset="0%" stopColor="#10B981" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#0A0F1E" stopOpacity="0" />
+            <stop offset="0%" stopColor="#10B981" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
         </defs>
         <rect width="800" height="700" fill="url(#center-glow)" />
@@ -570,7 +565,7 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
                 fillOpacity={isHovered ? "1" : colors.fillOpacity}
                 stroke={colors.stroke}
                 strokeWidth={isHovered ? "2" : "1"}
-                strokeOpacity={isHovered ? "1" : "0.5"}
+                strokeOpacity={isHovered ? "1" : "0.6"}
                 style={{
                   cursor: "pointer",
                   transition: "all 0.2s ease",
@@ -587,12 +582,12 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
                 y={cp.labelY}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill={isHovered ? "#F8FAFC" : "#94A3B8"}
+                fill={isHovered ? "#111827" : "#374151"}
                 fontSize={cp.code === "LU" ? "7" : "9"}
                 fontFamily="monospace"
                 fontWeight={isHovered ? "700" : "500"}
                 style={{ pointerEvents: "none", transition: "all 0.2s ease" }}
-                opacity={isHovered ? 1 : 0.7}
+                opacity={isHovered ? 1 : 0.8}
               >
                 {cp.code}
               </text>
@@ -619,14 +614,14 @@ export default function RegulatoryMap({ onCountryClick }: RegulatoryMapProps) {
         <text
           x="20"
           y="28"
-          fill="#F8FAFC"
+          fill="#111827"
           fontSize="13"
           fontWeight="700"
           fontFamily="monospace"
         >
           REGULATORY MAP
         </text>
-        <text x="20" y="44" fill="#94A3B8" fontSize="9" fontFamily="monospace">
+        <text x="20" y="44" fill="#6B7280" fontSize="9" fontFamily="monospace">
           {COUNTRY_PATHS.length} JURISDICTIONS TRACKED
         </text>
       </svg>

@@ -47,49 +47,49 @@ const SAMPLE_ALERTS = [
 
 const SEVERITY_CONFIG = {
   critical: {
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    border: "border-red-500/20",
+    color: "text-red-600",
+    bg: "bg-red-50",
+    border: "border-red-200",
     icon: AlertTriangle,
   },
   high: {
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
     icon: AlertTriangle,
   },
   medium: {
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
     icon: Info,
   },
   low: {
-    color: "text-slate-400",
-    bg: "bg-slate-500/10",
-    border: "border-slate-500/20",
+    color: "text-gray-500",
+    bg: "bg-gray-50",
+    border: "border-gray-200",
     icon: CheckCircle2,
   },
 } as const;
 
 export default function AlertsPage() {
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#0A0F1E] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bell className="h-5 w-5 text-emerald-400" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-white/90">
+          <Bell className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
+          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
             Alerts
           </h1>
-          <span className="rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400 tabular-nums">
+          <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] font-medium text-red-600 tabular-nums">
             2 unread
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-[11px] text-slate-400 hover:text-slate-200 transition-colors">
+          <button className="rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
             Mark all read
           </button>
-          <button className="rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-[11px] text-slate-400 hover:text-slate-200 transition-colors">
+          <button className="rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
             Preferences
           </button>
         </div>
@@ -105,14 +105,14 @@ export default function AlertsPage() {
             <div
               key={alert.id}
               className={`
-                group relative overflow-hidden rounded-lg border px-4 py-3
-                transition-all duration-200 cursor-pointer
+                group relative overflow-hidden rounded-xl border px-4 py-3
+                transition-all duration-200 cursor-pointer shadow-sm
                 ${
                   alert.read
-                    ? "border-white/[0.04] bg-[#0F172A]/30"
-                    : "border-white/[0.08] bg-[#0F172A]/60"
+                    ? "border-gray-200 bg-white"
+                    : "border-gray-200 bg-white ring-1 ring-emerald-100"
                 }
-                hover:bg-white/[0.04]
+                hover:bg-gray-50
               `}
             >
               <div className="flex items-start gap-3">
@@ -132,19 +132,19 @@ export default function AlertsPage() {
                       {alert.severity}
                     </span>
                     {!alert.read && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     )}
                   </div>
                   <p
-                    className={`text-[12px] leading-relaxed ${alert.read ? "text-slate-400" : "text-slate-200"}`}
+                    className={`text-[12px] leading-relaxed ${alert.read ? "text-gray-500" : "text-gray-900"}`}
                   >
                     {alert.title}
                   </p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] text-slate-600">
+                    <span className="text-[10px] text-gray-400">
                       {alert.source}
                     </span>
-                    <span className="text-[10px] text-slate-600 font-mono">
+                    <span className="text-[10px] text-gray-400 font-mono">
                       {alert.time}
                     </span>
                   </div>

@@ -248,38 +248,38 @@ const DIMENSION_MAP: Record<string, RowDef[]> = {
   eu_readiness: EU_ROWS,
 };
 
-// ─── Highlight color logic ───
+// ─── Highlight color logic (light mode) ───
 
 function getRelationshipColor(val: string): string {
   const upper = val.toUpperCase();
-  if (upper === "SUPERSEDED") return "text-amber-400";
-  if (upper === "COMPLEMENTARY") return "text-emerald-400";
-  if (upper === "PARALLEL") return "text-sky-400";
-  if (upper === "GAP") return "text-red-400";
+  if (upper === "SUPERSEDED") return "text-amber-600";
+  if (upper === "COMPLEMENTARY") return "text-emerald-600";
+  if (upper === "PARALLEL") return "text-sky-600";
+  if (upper === "GAP") return "text-red-600";
   return "";
 }
 
 function getLiabilityColor(val: string): string {
   const upper = val.toUpperCase();
-  if (upper === "UNLIMITED") return "text-red-400";
-  if (upper === "CAPPED") return "text-emerald-400";
-  if (upper === "TIERED") return "text-amber-400";
-  if (upper === "NEGOTIABLE") return "text-sky-400";
+  if (upper === "UNLIMITED") return "text-red-600";
+  if (upper === "CAPPED") return "text-emerald-600";
+  if (upper === "TIERED") return "text-amber-600";
+  if (upper === "NEGOTIABLE") return "text-sky-600";
   return "";
 }
 
 function getStatusColor(val: string): string {
   const upper = val.toUpperCase();
-  if (upper === "ENACTED") return "text-emerald-400";
-  if (upper === "DRAFT") return "text-amber-400";
-  if (upper === "PENDING") return "text-amber-400";
-  if (upper === "NONE") return "text-red-400";
+  if (upper === "ENACTED") return "text-emerald-600";
+  if (upper === "DRAFT") return "text-amber-600";
+  if (upper === "PENDING") return "text-amber-600";
+  if (upper === "NONE") return "text-red-600";
   return "";
 }
 
 function getBoolColor(val: string): string {
-  if (val === "Yes") return "text-emerald-400";
-  if (val === "No") return "text-red-400/80";
+  if (val === "Yes") return "text-emerald-600";
+  if (val === "No") return "text-red-500";
   return "";
 }
 
@@ -288,22 +288,18 @@ function getCellHighlightClass(
   value: string,
   allValues: string[],
 ): string {
-  // Determine if this value is different from the majority
   const unique = new Set(allValues);
   const isMixed = unique.size > 1;
 
-  // Specific value-based coloring
   if (label === "Liability Regime") return getLiabilityColor(value);
   if (label === "Relationship") return getRelationshipColor(value);
   if (label === "Status") return getStatusColor(value);
 
-  // Boolean fields
   if (value === "Yes" || value === "No") {
     if (isMixed) return getBoolColor(value);
     return "";
   }
 
-  // If mixed values, highlight outliers with a subtle background
   if (isMixed && allValues.length > 2) {
     const counts = new Map<string, number>();
     for (const v of allValues) {
@@ -312,7 +308,7 @@ function getCellHighlightClass(
     const maxCount = Math.max(...counts.values());
     const thisCount = counts.get(value) || 0;
     if (thisCount < maxCount) {
-      return "text-amber-300/90";
+      return "text-amber-600";
     }
   }
 
@@ -357,10 +353,10 @@ export default function ComparisonTable({
     return (
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <p className="text-[13px] text-slate-400">
+          <p className="text-[13px] text-gray-500">
             Select at least one country to begin comparison.
           </p>
-          <p className="text-[11px] text-slate-600 mt-1">
+          <p className="text-[11px] text-gray-400 mt-1">
             Choose up to 5 jurisdictions from the selector above.
           </p>
         </div>
@@ -384,25 +380,25 @@ export default function ComparisonTable({
         {/* Sticky header */}
         <thead className="sticky top-0 z-20">
           <tr>
-            <th className="text-left py-2 px-3 bg-[#0A0F1E] border-b border-white/[0.08] w-[200px] min-w-[180px]">
-              <span className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">
+            <th className="text-left py-2 px-3 bg-gray-50 border-b border-gray-200 w-[200px] min-w-[180px]">
+              <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
                 Provision
               </span>
             </th>
             {jurisdictions.map(({ code, data }) => (
               <th
                 key={code}
-                className="text-left py-2 px-3 bg-[#0A0F1E] border-b border-white/[0.08] min-w-[160px]"
+                className="text-left py-2 px-3 bg-gray-50 border-b border-gray-200 min-w-[160px]"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-[16px] leading-none">
                     {data.flagEmoji}
                   </span>
                   <div>
-                    <span className="text-[11px] font-semibold text-white/90 block">
+                    <span className="text-[11px] font-semibold text-gray-900 block">
                       {data.countryName}
                     </span>
-                    <span className="text-[9px] font-mono text-slate-500">
+                    <span className="text-[9px] font-mono text-gray-400">
                       {code}
                     </span>
                   </div>
@@ -447,9 +443,9 @@ function SectionBlock({
         <tr>
           <td
             colSpan={jurisdictions.length + 1}
-            className="pt-4 pb-1.5 px-3 bg-[#0A0F1E]"
+            className="pt-4 pb-1.5 px-3 bg-white"
           >
-            <span className="text-[10px] font-bold tracking-[0.2em] text-emerald-500/70 uppercase">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase">
               {label}
             </span>
           </td>
@@ -461,10 +457,10 @@ function SectionBlock({
         return (
           <tr
             key={`${label}-${i}`}
-            className="group hover:bg-white/[0.02] transition-colors duration-100"
+            className="group hover:bg-gray-50 transition-colors duration-100"
           >
-            <td className="py-1.5 px-3 border-b border-white/[0.04] align-top">
-              <span className="text-[11px] font-medium text-slate-400 leading-tight">
+            <td className="py-1.5 px-3 border-b border-gray-100 align-top">
+              <span className="text-[11px] font-medium text-gray-500 leading-tight">
                 {row.label}
               </span>
             </td>
@@ -478,15 +474,15 @@ function SectionBlock({
                 <td
                   key={code}
                   className={`
-                    py-1.5 px-3 border-b border-white/[0.04] align-top
-                    ${colIdx > 0 ? "border-l border-white/[0.04]" : ""}
+                    py-1.5 px-3 border-b border-gray-100 align-top
+                    ${colIdx > 0 ? "border-l border-gray-100" : ""}
                   `}
                 >
                   <span
                     className={`
                       text-[11px] leading-relaxed
                       ${row.monospace ? "font-mono" : ""}
-                      ${highlightClass || "text-slate-300"}
+                      ${highlightClass || "text-gray-700"}
                     `}
                   >
                     {value}

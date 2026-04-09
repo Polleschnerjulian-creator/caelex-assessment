@@ -17,15 +17,29 @@ interface FeedEntry {
 
 const IMPACT_BADGES: Record<
   string,
-  { emoji: string; label: string; color: string }
+  { emoji: string; label: string; color: string; bg: string; border: string }
 > = {
-  breaking: { emoji: "\u{1F534}", label: "BREAKING", color: "text-red-400" },
+  breaking: {
+    emoji: "\u{1F534}",
+    label: "BREAKING",
+    color: "text-red-600",
+    bg: "bg-red-50",
+    border: "border-red-200",
+  },
   significant: {
     emoji: "\u{1F7E1}",
     label: "SIGNIFICANT",
-    color: "text-amber-400",
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
   },
-  minor: { emoji: "\u{1F535}", label: "MINOR", color: "text-blue-400" },
+  minor: {
+    emoji: "\u{1F535}",
+    label: "MINOR",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+  },
 };
 
 // ─── Generate feed entries from real jurisdiction data ───
@@ -51,7 +65,6 @@ function generateFeedEntries(): FeedEntry[] {
     else if (diffDays < 365) timeAgo = `${Math.floor(diffDays / 30)}mo ago`;
     else timeAgo = `${Math.floor(diffDays / 365)}y ago`;
 
-    // Primary entry: legislation status
     if (law.legislation.status === "enacted") {
       if (law.legislation.yearAmended) {
         entries.push({
@@ -86,7 +99,6 @@ function generateFeedEntries(): FeedEntry[] {
       });
     }
 
-    // EU Space Act cross-reference entries for recently updated jurisdictions
     if (
       diffDays < 120 &&
       law.euSpaceActCrossRef.relationship !== "complementary"
@@ -105,7 +117,6 @@ function generateFeedEntries(): FeedEntry[] {
       });
     }
 
-    // Insurance/liability changes for recently updated
     if (
       diffDays < 120 &&
       law.insuranceLiability.mandatoryInsurance &&
@@ -122,7 +133,6 @@ function generateFeedEntries(): FeedEntry[] {
       });
     }
 
-    // Debris mitigation updates
     if (
       diffDays < 120 &&
       law.debrisMitigation.deorbitRequirement &&
@@ -140,7 +150,6 @@ function generateFeedEntries(): FeedEntry[] {
     }
   });
 
-  // Sort by impact priority then recency
   const impactOrder: Record<string, number> = {
     breaking: 0,
     significant: 1,
@@ -150,19 +159,19 @@ function generateFeedEntries(): FeedEntry[] {
     const ia = impactOrder[a.impact] ?? 3;
     const ib = impactOrder[b.impact] ?? 3;
     if (ia !== ib) return ia - ib;
-    return 0; // preserve insertion order within same impact
+    return 0;
   });
 
   return entries;
 }
 
-// ─── Feed Entry Component ───
+// ─── Feed Entry Component (light mode) ───
 
 function FeedEntryCard({ entry }: { entry: FeedEntry }) {
   const badge = IMPACT_BADGES[entry.impact];
 
   return (
-    <div className="glass-elevated rounded-lg px-3 py-2.5 border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200">
+    <div className="rounded-lg px-3 py-2.5 bg-gray-50 border border-gray-100 hover:bg-gray-100 hover:border-gray-200 transition-all duration-200">
       <div className="flex items-start gap-2.5">
         {/* Flag */}
         <span className="text-base leading-none mt-0.5 shrink-0">
@@ -172,14 +181,14 @@ function FeedEntryCard({ entry }: { entry: FeedEntry }) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-slate-200 truncate">
+            <span className="text-xs font-semibold text-gray-900 truncate">
               {entry.country}
             </span>
-            <span className="text-[10px] font-mono text-slate-500 shrink-0">
+            <span className="text-[10px] font-mono text-gray-400 shrink-0">
               {entry.timeAgo}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">
+          <p className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-2">
             {entry.title}
           </p>
         </div>
@@ -205,14 +214,14 @@ export default function LiveFeed() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <h3 className="text-xs font-semibold font-mono text-slate-200 uppercase tracking-wider">
+          <h3 className="text-xs font-semibold font-mono text-gray-700 uppercase tracking-wider">
             Live Regulatory Feed
           </h3>
         </div>
-        <span className="text-[10px] font-mono text-slate-500">
+        <span className="text-[10px] font-mono text-gray-400">
           {entries.length} events
         </span>
       </div>
@@ -228,7 +237,7 @@ export default function LiveFeed() {
 
         {entries.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-xs text-slate-500 font-mono">
+            <p className="text-xs text-gray-400 font-mono">
               No regulatory events
             </p>
           </div>
@@ -236,8 +245,8 @@ export default function LiveFeed() {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-white/[0.06]">
-        <p className="text-[9px] font-mono text-slate-600 text-center">
+      <div className="px-4 py-2 border-t border-gray-200">
+        <p className="text-[9px] font-mono text-gray-400 text-center">
           SOURCED FROM {JURISDICTION_DATA.size} JURISDICTION DATABASES
         </p>
       </div>
