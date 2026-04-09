@@ -18,6 +18,17 @@ vi.mock("@/lib/hmac-signing.server", () => ({
   extractRequestDetails: vi.fn(),
 }));
 
+// 2026-04: encryption.decrypt() became strict — it throws on text that
+// doesn't look like an `iv:authTag:ciphertext` blob (the safer
+// behaviour). The api-auth tests use plaintext signingSecret fixtures
+// for readability, so we mock decrypt to pass them through unchanged.
+// In production, signingSecret values are stored encrypted at rest and
+// the real decrypt() runs against properly-formatted ciphertext.
+vi.mock("@/lib/encryption", () => ({
+  decrypt: vi.fn(async (text: string) => text),
+  encrypt: vi.fn(async (text: string) => text),
+}));
+
 import {
   authenticateApiRequest,
   requireScope,

@@ -365,8 +365,14 @@ describe("Dependency Service", () => {
 
     it("returns INDIRECT_1HOP dependents at level 1", async () => {
       // C depends on B which depends on A
-      // BFS: level 0 → B (DIRECT), level 1 → C (INDIRECT_1HOP)
-      const directDepsOfA = [
+      // BFS: level 0 → B (DIRECT), level 1 → C (INDIRECT_1HOP).
+      //
+      // The impact-analysis engine was refactored to fetch ALL org
+      // dependencies in a single findMany call and build an in-memory
+      // adjacency map (dependency-service.server.ts:191). The test
+      // accordingly returns the full edge list in one shot rather than
+      // mocking per-node calls.
+      const allDeps = [
         {
           sourceAssetId: "asset-b",
           targetAssetId: "asset-a",
@@ -374,8 +380,6 @@ describe("Dependency Service", () => {
           strength: "HARD",
           sourceAsset: mockAssetB,
         },
-      ];
-      const directDepsOfB = [
         {
           sourceAssetId: "asset-c",
           targetAssetId: "asset-b",
@@ -385,10 +389,9 @@ describe("Dependency Service", () => {
         },
       ];
 
-      vi.mocked(prisma.assetDependency.findMany)
-        .mockResolvedValueOnce(directDepsOfA as never) // deps on A → B
-        .mockResolvedValueOnce(directDepsOfB as never) // deps on B → C
-        .mockResolvedValueOnce([] as never); // deps on C → none
+      vi.mocked(prisma.assetDependency.findMany).mockResolvedValue(
+        allDeps as never,
+      );
 
       const results = await getImpactAnalysis("asset-a", "org-1");
 
@@ -402,7 +405,8 @@ describe("Dependency Service", () => {
     });
 
     it("returns INDIRECT_2HOP dependents at level 2", async () => {
-      // D depends on C which depends on B which depends on A
+      // D depends on C which depends on B which depends on A.
+      // Single findMany returns the full edge list (refactor 2026-04).
       const mockAssetD = {
         id: "asset-d",
         name: "Asset D",
@@ -410,36 +414,33 @@ describe("Dependency Service", () => {
         category: "SOFTWARE_DATA",
       };
 
-      const depsOnA = [
+      const allDeps = [
         {
           sourceAssetId: "asset-b",
+          targetAssetId: "asset-a",
           dependencyType: "REQUIRES",
           strength: "HARD",
           sourceAsset: mockAssetB,
         },
-      ];
-      const depsOnB = [
         {
           sourceAssetId: "asset-c",
+          targetAssetId: "asset-b",
           dependencyType: "COMMUNICATES_WITH",
           strength: "SOFT",
           sourceAsset: mockAssetC,
         },
-      ];
-      const depsOnC = [
         {
           sourceAssetId: "asset-d",
+          targetAssetId: "asset-c",
           dependencyType: "REQUIRES",
           strength: "HARD",
           sourceAsset: mockAssetD,
         },
       ];
 
-      vi.mocked(prisma.assetDependency.findMany)
-        .mockResolvedValueOnce(depsOnA as never)
-        .mockResolvedValueOnce(depsOnB as never)
-        .mockResolvedValueOnce(depsOnC as never)
-        .mockResolvedValueOnce([] as never); // deps on D → none (but we stop at level 2)
+      vi.mocked(prisma.assetDependency.findMany).mockResolvedValue(
+        allDeps as never,
+      );
 
       const results = await getImpactAnalysis("asset-a", "org-1");
 

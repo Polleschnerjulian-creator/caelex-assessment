@@ -8,6 +8,19 @@ import { NextRequest } from "next/server";
 const mockAuth = vi.fn();
 vi.mock("@/lib/auth", () => ({ auth: (...a: unknown[]) => mockAuth(...a) }));
 
+// Stub the rate limiter so the test isn't subject to the in-memory
+// sliding window in @/lib/ratelimit. Without this every test run
+// after the limit triggers a 429 from the route's checkRateLimit call.
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn(async () => ({
+    success: true,
+    limit: 100,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  })),
+  getIdentifier: vi.fn(() => "test-identifier"),
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     organizationMember: { findFirst: vi.fn(), findMany: vi.fn() },

@@ -36,6 +36,16 @@ vi.mock("@/lib/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn(async () => ({
+    success: true,
+    limit: 100,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  })),
+  getIdentifier: vi.fn(() => "test-identifier"),
+}));
+
 import { PUT, POST } from "./route";
 import { prisma } from "@/lib/prisma";
 

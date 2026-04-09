@@ -48,7 +48,9 @@ describe("GET /api/cron/churn-detection", () => {
       const res = await GET(makeRequest("Bearer test-secret"));
       expect(res.status).toBe(503);
       const body = await res.json();
-      expect(body.error).toContain("cron authentication not configured");
+      // Source now returns generic "Service unavailable" instead of
+      // a specific cron-auth message.
+      expect(body.error).toBe("Service unavailable");
     });
 
     it("returns 401 without authorization", async () => {

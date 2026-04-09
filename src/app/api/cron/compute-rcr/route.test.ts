@@ -61,7 +61,9 @@ describe("isValidCronSecret (tested via GET)", () => {
     const res = await GET(makeRequest(CRON_SECRET));
     expect(res.status).toBe(500);
     const body = await res.json();
-    expect(body.error).toBe("CRON_SECRET not configured");
+    // Source now returns generic "Service unavailable" — see comment
+    // in analytics-aggregate test for rationale.
+    expect(body.error).toBe("Service unavailable");
   });
 
   it("returns 401 when auth header is wrong", async () => {

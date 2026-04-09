@@ -3,7 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock server-only so the service can be imported
 vi.mock("server-only", () => ({}));
 
-// Mock Prisma
+// Mock Prisma. The user table is required since getPersonnelForAsset
+// now does a best-effort enrichment that matches personnel.personName
+// against User.name within the same org
+// (personnel-service.server.ts:144-161).
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     asset: { findFirst: vi.fn() },
@@ -13,6 +16,9 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
       count: vi.fn(),
+    },
+    user: {
+      findFirst: vi.fn(),
     },
   },
 }));
@@ -261,7 +267,11 @@ describe("Personnel Service", () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   describe("getPersonnelForAsset", () => {
-    it("returns all personnel for an asset", async () => {
+    it("returns personnel enriched with linkedUser (null when no User match)", async () => {
+      // The enrichment step does prisma.user.findFirst per personnel
+      // entry, looking for a User with the same name in the same org.
+      // Return null to exercise the "no match" path; the wrapper must
+      // still produce an array with linkedUser: null on each entry.
       const personnel = [
         mockPersonnel,
         { ...mockPersonnel, id: "personnel-2" },
@@ -269,15 +279,20 @@ describe("Personnel Service", () => {
       vi.mocked(prisma.assetPersonnel.findMany).mockResolvedValue(
         personnel as never,
       );
+      vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
 
       const result = await getPersonnelForAsset("asset-1", "org-1");
 
-      expect(prisma.assetPersonnel.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ assetId: "asset-1" }),
-        }),
-      );
-      expect(result).toEqual(personnel);
+      expect(prisma.assetPersonnel.findMany).toHaveBeenCalledWith({
+        where: {
+          assetId: "asset-1",
+          asset: { organizationId: "org-1" },
+        },
+      });
+      expect(result).toHaveLength(2);
+      // Each entry must carry the linkedUser field, even if null.
+      expect(result[0]).toMatchObject({ id: "personnel-1", linkedUser: null });
+      expect(result[1]).toMatchObject({ id: "personnel-2", linkedUser: null });
     });
   });
 

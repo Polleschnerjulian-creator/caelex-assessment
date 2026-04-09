@@ -367,7 +367,12 @@ describe("Asset Service", () => {
       });
     });
 
-    it("applies search filter (name contains)", async () => {
+    it("applies search filter across name, description, externalId, manufacturer, and location", async () => {
+      // The search filter was widened to cover 5 fields via an OR
+      // clause (asset-service.server.ts:262-270). The previous test
+      // only asserted on `where.name`, which silently broke when the
+      // implementation moved to `where.OR`. Test the full OR shape now
+      // so any future field addition or removal is caught.
       vi.mocked(prisma.asset.findMany).mockResolvedValue([]);
       vi.mocked(prisma.asset.count).mockResolvedValue(0);
 
@@ -379,7 +384,13 @@ describe("Asset Service", () => {
       expect(prisma.asset.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            name: { contains: "satellite", mode: "insensitive" },
+            OR: expect.arrayContaining([
+              { name: { contains: "satellite", mode: "insensitive" } },
+              { description: { contains: "satellite", mode: "insensitive" } },
+              { externalId: { contains: "satellite", mode: "insensitive" } },
+              { manufacturer: { contains: "satellite", mode: "insensitive" } },
+              { location: { contains: "satellite", mode: "insensitive" } },
+            ]),
           }),
         }),
       );
@@ -636,11 +647,31 @@ describe("Asset Service", () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   describe("calculateAssetRiskScore", () => {
+    // calculateAssetRiskScore now calls calculateAssetComplianceScore
+    // internally to avoid stale data (asset-service.server.ts:406).
+    // That helper does its own findMany on assetRequirement, so we
+    // ensure a default mock value here. Individual tests override
+    // this when they want specific compliance numbers.
+    beforeEach(() => {
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue(
+        [] as never,
+      );
+    });
+
     it("calculates risk score: base × vulnFactor × spofFactor, capped at 100", async () => {
+      // beforeEach mocks assetRequirement.findMany → [] so the fresh
+      // compliance recompute returns 0 (no requirements). Override
+      // with a mid-range fresh score of 50 by returning two
+      // requirements: one COMPLIANT and one NOT_ASSESSED.
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue([
+        { requirementId: "art_21_2_a", status: "COMPLIANT" },
+        { requirementId: "art_21_2_b", status: "NOT_ASSESSED" },
+      ] as never);
+
       const assetWithData = {
         ...mockAsset,
         criticality: "HIGH",
-        complianceScore: 50, // base = 0.75 * (100 - 50) = 37.5
+        complianceScore: 50, // ignored — recomputed live by the engine
         requirements: [],
         vulnerabilities: [
           { severity: "CRITICAL", status: "OPEN" }, // openCriticalVulns=1
@@ -656,6 +687,7 @@ describe("Asset Service", () => {
 
       const score = await calculateAssetRiskScore("asset-1");
 
+      // freshComplianceScore = ((1*1.0) + (0*1.0)) / 2 * 100 = 50
       // base = 0.75 * (100 - 50) = 37.5
       // vulnFactor = 1 + (1 * 0.2) + (1 * 0.1) = 1.3
       // spofFactor = 1.0
@@ -664,6 +696,15 @@ describe("Asset Service", () => {
     });
 
     it("applies SPOF factor 1.3 when there is a HARD dependency with no redundant", async () => {
+      // Note: calculateAssetRiskScore now calls
+      // calculateAssetComplianceScore() internally to avoid stale
+      // data (asset-service.server.ts:406). That helper calls
+      // prisma.assetRequirement.findMany — we mock it to return []
+      // so the fresh compliance score is 0 and base = 1.0 * 100 = 100.
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue(
+        [] as never,
+      );
+
       const assetWithSpof = {
         ...mockAsset,
         criticality: "CRITICAL",
@@ -694,10 +735,16 @@ describe("Asset Service", () => {
     });
 
     it("does NOT apply SPOF factor when HARD dep has a REDUNDANT counterpart", async () => {
+      // Force fresh recompute to land on 50.
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue([
+        { requirementId: "art_21_2_a", status: "COMPLIANT" },
+        { requirementId: "art_21_2_b", status: "NOT_ASSESSED" },
+      ] as never);
+
       const assetNoSpof = {
         ...mockAsset,
         criticality: "MEDIUM",
-        complianceScore: 50, // base = 0.5 * 50 = 25
+        complianceScore: 50, // ignored — recomputed live
         requirements: [],
         vulnerabilities: [],
         dependenciesTo: [
@@ -711,6 +758,7 @@ describe("Asset Service", () => {
 
       const score = await calculateAssetRiskScore("asset-1");
 
+      // freshComplianceScore = 50
       // base = 0.5 * 50 = 25
       // vulnFactor = 1.0
       // spofFactor = 1.0 (REDUNDANT present)
@@ -719,6 +767,12 @@ describe("Asset Service", () => {
     });
 
     it("caps vulnFactor at 2.0", async () => {
+      // Same as the SPOF test: mock findMany so fresh compliance
+      // recompute returns 0 and base = 0.75 * 100 = 75.
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue(
+        [] as never,
+      );
+
       const assetHighVulns = {
         ...mockAsset,
         criticality: "HIGH",
@@ -754,10 +808,16 @@ describe("Asset Service", () => {
     });
 
     it("does not count RESOLVED/MITIGATED vulnerabilities as open", async () => {
+      // Fresh recompute → 50 via 1 COMPLIANT + 1 NOT_ASSESSED.
+      vi.mocked(prisma.assetRequirement.findMany).mockResolvedValue([
+        { requirementId: "art_21_2_a", status: "COMPLIANT" },
+        { requirementId: "art_21_2_b", status: "NOT_ASSESSED" },
+      ] as never);
+
       const assetMitigated = {
         ...mockAsset,
         criticality: "HIGH",
-        complianceScore: 50, // base = 0.75 * 50 = 37.5
+        complianceScore: 50, // ignored — recomputed live
         requirements: [],
         vulnerabilities: [
           { severity: "CRITICAL", status: "RESOLVED" }, // NOT open
@@ -774,6 +834,7 @@ describe("Asset Service", () => {
 
       const score = await calculateAssetRiskScore("asset-1");
 
+      // freshComplianceScore = 50
       // base = 0.75 * 50 = 37.5
       // vulnFactor = 1.0 (no open vulns)
       // riskScore = 37.5

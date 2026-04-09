@@ -30,6 +30,13 @@ const { mockPrisma } = vi.hoisted(() => {
       nIS2Assessment: {
         findFirst: vi.fn(),
       },
+      // CRA assessment was added to context-builder.ts:299. Default
+      // to an empty array so the in-context-builder
+      // `Promise.all([…, prisma.cRAAssessment.findMany(…), …])` resolves
+      // for tests that don't explicitly seed CRA data.
+      cRAAssessment: {
+        findMany: vi.fn().mockResolvedValue([]),
+      },
       deadline: {
         findMany: vi.fn(),
       },

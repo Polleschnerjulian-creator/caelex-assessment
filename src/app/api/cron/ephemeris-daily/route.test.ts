@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Mocks (must be before import) ──────────────────────────────────────────
 
+// Stub `server-only` so server-side modules can be imported in the
+// vitest jsdom environment without exploding (the package throws on
+// client-side import by design).
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/lib/prisma", () => {
   const prisma: Record<string, any> = {
     organization: { findMany: vi.fn() },

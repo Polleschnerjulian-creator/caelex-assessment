@@ -154,9 +154,15 @@ describe("Encryption Module", () => {
       expect(result).toBe("");
     });
 
-    it("should return non-colon text unchanged for decrypt", async () => {
-      const result = await decrypt("plain text without colons");
-      expect(result).toBe("plain text without colons");
+    it("should throw on non-colon text passed to decrypt (safety fix)", async () => {
+      // Updated 2026-04 to reflect the safer current behaviour: the
+      // engine refuses to silently pass through text that does not
+      // look like an `iv:authTag:ciphertext` blob, because returning
+      // sensitive data unencrypted (when the caller expected it to be
+      // encrypted) is a worse failure mode than throwing.
+      await expect(decrypt("plain text without colons")).rejects.toThrow(
+        /missing separator/,
+      );
     });
 
     it("should produce different ciphertexts for same plaintext (random IV)", async () => {
@@ -431,8 +437,13 @@ describe("Encryption Module", () => {
       expect(ENCRYPTED_FIELDS.Organization).toContain("taxId");
     });
 
-    it("should define InsuranceAssessment encrypted fields", () => {
-      expect(ENCRYPTED_FIELDS.InsuranceAssessment).toContain("policyNumber");
+    it("should define InsurancePolicy encrypted fields", () => {
+      // policyNumber lives on InsurancePolicy (the per-policy detail
+      // model), not on InsuranceAssessment (the per-org wrapper).
+      // Schema check: prisma/schema.prisma → model InsurancePolicy
+      // contains policyNumber String?, while InsuranceAssessment is the
+      // parent collection.
+      expect(ENCRYPTED_FIELDS.InsurancePolicy).toContain("policyNumber");
     });
 
     it("should define EnvironmentalAssessment encrypted fields", () => {

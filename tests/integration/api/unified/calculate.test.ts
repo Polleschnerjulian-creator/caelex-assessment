@@ -4,6 +4,20 @@ import { NextRequest } from "next/server";
 // ─── Mock server-only ───
 vi.mock("server-only", () => ({}));
 
+// ─── Mock rate limiter ───
+// The route checks `assessment` tier rate limit. Without this mock,
+// the in-memory sliding window in @/lib/ratelimit accumulates across
+// the suite and the 6th-onwards request comes back as 429.
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn(async () => ({
+    success: true,
+    limit: 100,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  })),
+  getIdentifier: vi.fn(() => "test-identifier"),
+}));
+
 // ─── Mock auth ───
 const mockAuth = vi.fn();
 vi.mock("@/lib/auth", () => ({
@@ -322,7 +336,10 @@ describe("POST /api/unified/calculate", () => {
     const data = await response.json();
 
     expect(data.data.result.nis2.incidentTimeline).toBeDefined();
-    expect(data.data.result.nis2.incidentTimeline).toHaveLength(3);
+    // 4-phase NIS2 timeline (audit fix 2026-04): early warning (24h),
+    // notification (72h), intermediate report (on request), final
+    // report (1 month). Was 3-phase before.
+    expect(data.data.result.nis2.incidentTimeline).toHaveLength(4);
   });
 
   it("handles defense-only exemption", async () => {

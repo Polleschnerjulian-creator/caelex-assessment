@@ -18,12 +18,24 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Mock the dynamic import of audit-hash.server
+// Mock the dynamic import of audit-hash.server.
+//
+// As of 2026-04 the hash chain was refactored from a "compute hashes
+// then insert" pattern (`computeHashForNewEntry`) to a transactional
+// "insert with hashes in one go" pattern (`createAuditEntryWithHash`,
+// FIX A-1 in src/lib/audit.ts:275). The mock surface mirrors the new
+// API so audit.ts's dynamic import resolves cleanly in tests.
 vi.mock("@/lib/audit-hash.server", () => ({
+  createAuditEntryWithHash: vi.fn(),
+  backfillUnhashedEntries: vi.fn(),
+  // Kept for backward-compat: any test that still references the old
+  // helper continues to compile, but the function is unused by the
+  // current source.
   computeHashForNewEntry: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
+import { createAuditEntryWithHash } from "@/lib/audit-hash.server";
 import {
   logAuditEvent,
   logAuditEventsBatch,
@@ -38,23 +50,25 @@ import {
   getSecurityEventCounts,
 } from "@/lib/audit";
 
+const mockedCreateAuditEntryWithHash = vi.mocked(createAuditEntryWithHash);
+
 describe("Audit Module", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe("logAuditEvent", () => {
-    it("should create audit log entry", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-        userId: "user-1",
-        action: "document_uploaded",
-        entityType: "document",
-        entityId: "doc-1",
-        description: "Uploaded document",
-        timestamp: new Date(),
-      } as never);
+    // FIX A-1 (2026-04): logAuditEvent now delegates the actual write
+    // to createAuditEntryWithHash inside a Serializable transaction.
+    // The previous test suite asserted on prisma.auditLog.create
+    // because that was the old code path. We assert against the new
+    // entry-point here so we test the *real* production write, not the
+    // dynamic-import fallback.
+    beforeEach(() => {
+      mockedCreateAuditEntryWithHash.mockResolvedValue(undefined as never);
+    });
 
+    it("should create audit log entry", async () => {
       await logAuditEvent({
         userId: "user-1",
         action: "document_uploaded",
@@ -63,21 +77,17 @@ describe("Audit Module", () => {
         description: "Uploaded document",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           userId: "user-1",
           action: "document_uploaded",
           entityType: "document",
           entityId: "doc-1",
         }),
-      });
+      );
     });
 
     it("should stringify previous and new values", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "article_status_changed",
@@ -87,23 +97,29 @@ describe("Audit Module", () => {
         newValue: { status: "published" },
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           previousValue: JSON.stringify({ status: "draft" }),
           newValue: JSON.stringify({ status: "published" }),
         }),
-      });
+      );
     });
 
     it("should not throw on error", async () => {
       const consoleSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
+      // Make BOTH the hash-chained insert and the plain fallback
+      // fail. The wrapper must still resolve without throwing because
+      // audit logging is best-effort and must never break the main
+      // flow that called it.
+      mockedCreateAuditEntryWithHash.mockRejectedValueOnce(
+        new Error("Hash insert failed"),
+      );
       vi.mocked(prisma.auditLog.create).mockRejectedValue(
         new Error("DB Error"),
       );
 
-      // Should not throw
       await expect(
         logAuditEvent({
           userId: "user-1",
@@ -118,10 +134,6 @@ describe("Audit Module", () => {
     });
 
     it("should set previousValue and newValue to null when not provided", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "document_uploaded",
@@ -129,19 +141,15 @@ describe("Audit Module", () => {
         entityId: "doc-1",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           previousValue: null,
           newValue: null,
         }),
-      });
+      );
     });
 
     it("should set organizationId to null when not provided", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "document_uploaded",
@@ -149,18 +157,14 @@ describe("Audit Module", () => {
         entityId: "doc-1",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           organizationId: null,
         }),
-      });
+      );
     });
 
     it("should include organizationId when provided", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "document_uploaded",
@@ -169,18 +173,14 @@ describe("Audit Module", () => {
         organizationId: "org-1",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           organizationId: "org-1",
         }),
-      });
+      );
     });
 
     it("should include ipAddress and userAgent when provided", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "document_uploaded",
@@ -190,19 +190,15 @@ describe("Audit Module", () => {
         userAgent: "TestAgent/1.0",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           ipAddress: "192.168.1.1",
           userAgent: "TestAgent/1.0",
         }),
-      });
+      );
     });
 
     it("should redact PII fields (password) in previousValue", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "user_profile_updated",
@@ -212,8 +208,8 @@ describe("Audit Module", () => {
         newValue: { password: "newSecret456", name: "John Doe" },
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           previousValue: JSON.stringify({
             password: "[REDACTED]",
             name: "John",
@@ -223,14 +219,10 @@ describe("Audit Module", () => {
             name: "John Doe",
           }),
         }),
-      });
+      );
     });
 
     it("should redact token and accessToken PII fields", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "user_profile_updated",
@@ -243,22 +235,18 @@ describe("Audit Module", () => {
         },
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           newValue: JSON.stringify({
             token: "[REDACTED]",
             accessToken: "[REDACTED]",
             email: "test@test.com",
           }),
         }),
-      });
+      );
     });
 
     it("should redact PII in nested objects", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "user_profile_updated",
@@ -270,21 +258,17 @@ describe("Audit Module", () => {
         },
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           newValue: JSON.stringify({
             user: { password: "[REDACTED]", name: "John" },
             status: "active",
           }),
         }),
-      });
+      );
     });
 
     it("should redact PII in arrays", async () => {
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
-
       await logAuditEvent({
         userId: "user-1",
         action: "user_profile_updated",
@@ -296,26 +280,25 @@ describe("Audit Module", () => {
         ],
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      expect(mockedCreateAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
           newValue: JSON.stringify([
             { token: "[REDACTED]", name: "John" },
             { token: "[REDACTED]", name: "Jane" },
           ]),
         }),
-      });
+      );
     });
 
-    it("should handle hash chain fields from dynamic import", async () => {
-      const { computeHashForNewEntry } =
+    it("delegates the hash-chained insert to createAuditEntryWithHash", async () => {
+      // FIX A-1 (2026-04): the hash chain insert is now a single
+      // transactional call to createAuditEntryWithHash inside
+      // src/lib/audit-hash.server.ts. The wrapper logAuditEvent only
+      // falls back to a plain prisma.auditLog.create when the dynamic
+      // import throws (e.g. in a client bundle).
+      const { createAuditEntryWithHash } =
         await import("@/lib/audit-hash.server");
-      vi.mocked(computeHashForNewEntry).mockResolvedValue({
-        entryHash: "hash-abc",
-        previousHash: "hash-prev",
-      });
-      vi.mocked(prisma.auditLog.create).mockResolvedValue({
-        id: "log-1",
-      } as never);
+      vi.mocked(createAuditEntryWithHash).mockResolvedValue(undefined as never);
 
       await logAuditEvent({
         userId: "user-1",
@@ -324,18 +307,23 @@ describe("Audit Module", () => {
         entityId: "doc-1",
       });
 
-      expect(prisma.auditLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          entryHash: "hash-abc",
-          previousHash: "hash-prev",
+      expect(createAuditEntryWithHash).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "user-1",
+          action: "document_uploaded",
+          entityType: "document",
+          entityId: "doc-1",
         }),
-      });
+      );
+      // The plain create path must NOT have been used because the
+      // hash-chained insert succeeded.
+      expect(prisma.auditLog.create).not.toHaveBeenCalled();
     });
 
-    it("should fallback to null hashes when hash computation fails", async () => {
-      const { computeHashForNewEntry } =
+    it("falls back to a plain create with null hashes when the hash-chained insert fails", async () => {
+      const { createAuditEntryWithHash } =
         await import("@/lib/audit-hash.server");
-      vi.mocked(computeHashForNewEntry).mockRejectedValue(
+      vi.mocked(createAuditEntryWithHash).mockRejectedValue(
         new Error("Hash failure"),
       );
       vi.mocked(prisma.auditLog.create).mockResolvedValue({

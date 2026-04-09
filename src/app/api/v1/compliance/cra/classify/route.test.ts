@@ -11,6 +11,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+// Stub the rate limiter so the test isn't subject to the in-memory
+// sliding window in @/lib/ratelimit. Without this every test run
+// after the 5th request gets a 429 from the public_api tier.
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn(async () => ({
+    success: true,
+    limit: 100,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  })),
+  getIdentifier: vi.fn(() => "test-identifier"),
+}));
+
 const mockClassify = vi.fn();
 vi.mock("@/lib/cra-engine.server", () => ({
   classifyCRAProduct: (...args: unknown[]) => mockClassify(...args),

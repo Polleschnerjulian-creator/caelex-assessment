@@ -184,7 +184,9 @@ describe("Cron: nca-deadlines", () => {
       const data = await res.json();
 
       expect(res.status).toBe(503);
-      expect(data.error).toContain("cron authentication not configured");
+      // Source now returns generic "Service unavailable" — see comment
+      // in analytics-aggregate test for rationale.
+      expect(data.error).toBe("Service unavailable");
 
       process.env.CRON_SECRET = savedSecret;
     });

@@ -64,7 +64,11 @@ describe("GET /api/cron/analytics-aggregate", () => {
       const res = await GET(makeRequest("Bearer test-secret"));
       expect(res.status).toBe(500);
       const body = await res.json();
-      expect(body.error).toContain("CRON_SECRET");
+      // Source returns the generic "Service unavailable" message
+      // (route.ts:37) instead of leaking that CRON_SECRET is missing.
+      // This is the safer behaviour — attackers can't fingerprint a
+      // misconfigured deployment from the response body.
+      expect(body.error).toBe("Service unavailable");
     });
 
     it("returns 401 without authorization header", async () => {

@@ -36,21 +36,29 @@ vi.mock("@/data/ncas", () => ({
 }));
 
 vi.mock("@/data/authorization-documents", () => ({
-  getRequiredDocuments: vi
-    .fn()
-    .mockReturnValue([
-      {
-        type: "application",
-        name: "Application Form",
-        description: "Main form",
-        articleRef: "Art.5",
-        required: true,
-      },
-    ]),
+  getRequiredDocuments: vi.fn().mockReturnValue([
+    {
+      type: "application",
+      name: "Application Form",
+      description: "Main form",
+      articleRef: "Art.5",
+      required: true,
+    },
+  ]),
 }));
 
 vi.mock("@/lib/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn(async () => ({
+    success: true,
+    limit: 100,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  })),
+  getIdentifier: vi.fn(() => "test-identifier"),
 }));
 
 import { GET, POST } from "./route";
