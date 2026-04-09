@@ -38,7 +38,7 @@ describe("getIncidentResponseTemplate", () => {
     expect(result).toContain("## SECTION: Detection & Identification");
     expect(result).toContain("## SECTION: Containment & Eradication");
     expect(result).toContain(
-      "## SECTION: NCA Notification Procedures (Art. 90-92)",
+      "## SECTION: NCA Notification Procedures (NIS2 Art. 23 / proposal Art. 90-92)",
     );
   });
 

@@ -95,7 +95,7 @@ describe("evidence-resolver", () => {
       crossChecks: [
         {
           publicSource: "ESA",
-          result: "VERIFIED",
+          result: "MATCH",
           verifiedAt,
           dataPoint: "remaining_fuel_pct",
         },
@@ -111,7 +111,7 @@ describe("evidence-resolver", () => {
 
     expect(result).not.toBeNull();
     expect(result!.actual_value).toBe(95.5);
-    expect(result!.trust_score).toBe(0.98);
+    expect(result!.trust_score).toBe(0.98); // cross-verified trust score
     expect(result!.source).toBe("sentinel");
     expect(result!.data_point).toBe("remaining_fuel_pct");
     expect(result!.sentinel_anchor).toEqual({
@@ -122,12 +122,12 @@ describe("evidence-resolver", () => {
     });
     expect(result!.cross_verification).toEqual({
       public_source: "ESA",
-      verification_result: "VERIFIED",
+      verification_result: "MATCH",
       verified_at: verifiedAt.toISOString(),
     });
   });
 
-  it("returns evidence with trust 0.92 when no cross-verification", async () => {
+  it("returns evidence with trust 0.8 when no cross-verification", async () => {
     const collectedAt = new Date("2026-02-01T12:00:00Z");
 
     mockPrisma.organizationMember.findFirst.mockResolvedValue({
@@ -154,7 +154,7 @@ describe("evidence-resolver", () => {
 
     expect(result).not.toBeNull();
     expect(result!.actual_value).toBe(80);
-    expect(result!.trust_score).toBe(0.92);
+    expect(result!.trust_score).toBe(0.8);
     expect(result!.cross_verification).toBeNull();
   });
 

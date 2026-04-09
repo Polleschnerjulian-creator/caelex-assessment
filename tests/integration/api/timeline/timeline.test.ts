@@ -2,14 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock ratelimit
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60000,
-      limit: 100,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
   getIdentifier: vi.fn().mockReturnValue("test-ip"),
   createRateLimitResponse: vi.fn(),
   createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
@@ -32,6 +30,32 @@ vi.mock("@/lib/prisma", () => ({
     auditLog: {
       create: vi.fn(),
     },
+  },
+}));
+
+vi.mock("@/lib/validations", () => ({
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
+}));
+
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "test-user-id",
+    organizationId: "test-org-id",
+    role: "OWNER",
+  }),
+}));
+
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 

@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
     cybersecurityAssessment: { findMany: vi.fn() },
     insuranceAssessment: { findMany: vi.fn() },
     environmentalAssessment: { findMany: vi.fn() },
+    organizationMember: { findFirst: vi.fn(), findMany: vi.fn() },
   },
 }));
 
@@ -45,11 +46,18 @@ const mockPrisma = prisma as unknown as {
   cybersecurityAssessment: { findMany: ReturnType<typeof vi.fn> };
   insuranceAssessment: { findMany: ReturnType<typeof vi.fn> };
   environmentalAssessment: { findMany: ReturnType<typeof vi.fn> };
+  organizationMember: {
+    findFirst: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+  };
 };
 
 describe("Audit Export Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // resolveOrgMemberIds calls organizationMember.findFirst; returning null
+    // makes it fall back to [userId], which is sufficient for most tests.
+    mockPrisma.organizationMember.findFirst.mockResolvedValue(null);
   });
 
   // ─── getAuditSummary ──────────────────────────────────────────────────────
@@ -84,7 +92,6 @@ describe("Audit Export Service", () => {
         { severity: "HIGH", _count: 2 },
         { severity: "LOW", _count: 5 },
       ]);
-      mockPrisma.securityEvent.count.mockResolvedValue(1);
 
       const result = await getAuditSummary("user-1");
 
@@ -96,7 +103,8 @@ describe("Audit Export Service", () => {
       });
       expect(result.securityEvents.total).toBe(7);
       expect(result.securityEvents.bySeverity).toEqual({ HIGH: 2, LOW: 5 });
-      expect(result.securityEvents.unresolved).toBe(1);
+      // Unresolved count is always 0 to prevent cross-org data leakage
+      expect(result.securityEvents.unresolved).toBe(0);
     });
 
     it("applies date filters when provided", async () => {
@@ -107,7 +115,6 @@ describe("Audit Export Service", () => {
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
 
       await getAuditSummary("user-1", { startDate, endDate });
 
@@ -120,8 +127,6 @@ describe("Audit Export Service", () => {
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
-
       await getAuditSummary("user-1", { actions: ["CREATE", "DELETE"] });
 
       const call = mockPrisma.auditLog.findMany.mock.calls[0][0];
@@ -133,8 +138,6 @@ describe("Audit Export Service", () => {
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
-
       await getAuditSummary("user-1", { entityTypes: ["Document"] });
 
       const call = mockPrisma.auditLog.findMany.mock.calls[0][0];
@@ -167,8 +170,6 @@ describe("Audit Export Service", () => {
         .mockResolvedValueOnce(logs)
         .mockResolvedValueOnce([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
-
       const result = await getAuditSummary("user-1");
 
       expect(result.eventsByDay).toEqual([
@@ -209,8 +210,6 @@ describe("Audit Export Service", () => {
         .mockResolvedValueOnce(logs)
         .mockResolvedValueOnce([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
-
       const result = await getAuditSummary("user-1");
 
       expect(result.topEntities[0]).toEqual({
@@ -231,10 +230,9 @@ describe("Audit Export Service", () => {
   describe("generateAuditReportData", () => {
     const setupMocksForReport = () => {
       // For generateAuditReportData: prisma.auditLog.findMany (main logs)
-      // For getAuditSummary (called internally): prisma.auditLog.findMany (2 calls), securityEvent.groupBy, securityEvent.count
+      // For getAuditSummary (called internally): prisma.auditLog.findMany (2 calls), securityEvent.groupBy
       mockPrisma.auditLog.findMany.mockResolvedValue([]);
       mockPrisma.securityEvent.groupBy.mockResolvedValue([]);
-      mockPrisma.securityEvent.count.mockResolvedValue(0);
       mockPrisma.securityEvent.findMany.mockResolvedValue([]);
     };
 
@@ -527,8 +525,9 @@ describe("Audit Export Service", () => {
         expect(m.score).toBe(0);
       });
 
-      // No compliance attestations for non-compliant
-      expect(result.attestations).toHaveLength(0);
+      // Even when all non-compliant, authorization status attestation is always included
+      expect(result.attestations).toHaveLength(1);
+      expect(result.attestations[0]).toContain("PENDING");
     });
 
     it("generates attestations based on compliance status", async () => {

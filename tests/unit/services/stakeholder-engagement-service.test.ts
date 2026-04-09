@@ -682,9 +682,11 @@ describe("Stakeholder Engagement Service", () => {
       vi.mocked(prisma.stakeholderEngagement.count)
         .mockResolvedValueOnce(10) // totalEngagements
         .mockResolvedValueOnce(6) // activeEngagements
-        .mockResolvedValueOnce(3); // pendingAttestations (5th call)
+        .mockResolvedValueOnce(5); // pendingInvitations (5th Promise.all element)
       vi.mocked(prisma.dataRoom.count).mockResolvedValue(4);
-      vi.mocked(prisma.complianceAttestation.count).mockResolvedValue(8);
+      vi.mocked(prisma.complianceAttestation.count)
+        .mockResolvedValueOnce(8) // totalAttestations
+        .mockResolvedValueOnce(3); // pendingAttestations (non-revoked, valid)
 
       const result = await getNetworkStats("org-1");
 

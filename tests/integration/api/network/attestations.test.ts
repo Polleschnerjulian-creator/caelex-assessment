@@ -3,14 +3,12 @@ import { NextRequest } from "next/server";
 
 // ─── Mock ratelimit ───
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60000,
-      limit: 100,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
   getIdentifier: vi.fn().mockReturnValue("test-ip"),
   createRateLimitResponse: vi.fn(),
   createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
@@ -99,7 +97,10 @@ const validAttestationData = {
   title: "Annual Compliance Attestation",
   statement:
     "We hereby attest that our operations comply with EU Space Act requirements.",
-  scope: "EU Space Act - Full compliance",
+  scope: JSON.stringify({
+    regulation: "EU Space Act",
+    coverage: "Full compliance",
+  }),
   signerName: "Jane Doe",
   signerTitle: "Chief Compliance Officer",
   signerEmail: "jane@spacecorp.eu",
@@ -444,7 +445,8 @@ describe("POST /api/network/attestations/verify", () => {
     expect(response.status).toBe(200);
     expect(data.valid).toBe(true);
     expect(data.attestation).toBeDefined();
-    expect(data.attestation.signerName).toBe("Jane Doe");
+    // SEC-8: Route returns only minimal info (type, signerOrg, issuedAt, expiresAt)
+    expect(data.attestation.signerOrg).toBe("Space Corp");
   });
 
   it("should return valid: false for a revoked attestation", async () => {

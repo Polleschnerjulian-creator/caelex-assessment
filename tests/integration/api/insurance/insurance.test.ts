@@ -3,14 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ─── Mocks (must be before imports) ───
 
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60000,
-      limit: 100,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
   getIdentifier: vi.fn().mockReturnValue("test-ip"),
   createRateLimitResponse: vi.fn(),
   createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
@@ -316,7 +314,8 @@ describe("GET /api/insurance", () => {
   it("should return 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as any);
 
-    const response = await GET();
+    const request = makeRequest("http://localhost/api/insurance", "GET");
+    const response = await GET(request);
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -328,25 +327,31 @@ describe("GET /api/insurance", () => {
     vi.mocked(prisma.insuranceAssessment.findMany).mockResolvedValue([
       { ...mockAssessment, policies: mockPolicies },
     ] as any);
+    vi.mocked(prisma.insuranceAssessment.count).mockResolvedValue(1);
 
-    const response = await GET();
+    const request = makeRequest("http://localhost/api/insurance", "GET");
+    const response = await GET(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.assessments).toBeDefined();
     expect(data.assessments).toHaveLength(1);
-    expect(prisma.insuranceAssessment.findMany).toHaveBeenCalledWith({
-      where: { userId: "user-123", organizationId: "ctest123org" },
-      include: { policies: true },
-      orderBy: { updatedAt: "desc" },
-    });
+    expect(prisma.insuranceAssessment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-123", organizationId: "ctest123org" },
+        include: { policies: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+    );
   });
 
   it("should return empty array when user has no assessments", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
     vi.mocked(prisma.insuranceAssessment.findMany).mockResolvedValue([] as any);
+    vi.mocked(prisma.insuranceAssessment.count).mockResolvedValue(0);
 
-    const response = await GET();
+    const request = makeRequest("http://localhost/api/insurance", "GET");
+    const response = await GET(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -359,7 +364,8 @@ describe("GET /api/insurance", () => {
       new Error("DB down"),
     );
 
-    const response = await GET();
+    const request = makeRequest("http://localhost/api/insurance", "GET");
+    const response = await GET(request);
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -610,7 +616,10 @@ describe("GET /api/insurance/[assessmentId]", () => {
     await GET_BY_ID(request, makeParams("assess-1"));
 
     expect(prisma.insuranceAssessment.findFirst).toHaveBeenCalledWith({
-      where: { id: "assess-1", userId: "user-123" },
+      where: {
+        id: "assess-1",
+        OR: [{ userId: "user-123" }, { organizationId: "ctest123org" }],
+      },
       include: { policies: true },
     });
   });
@@ -824,7 +833,10 @@ describe("DELETE /api/insurance/[assessmentId]", () => {
     await DELETE_BY_ID(request, makeParams("assess-1"));
 
     expect(prisma.insuranceAssessment.findFirst).toHaveBeenCalledWith({
-      where: { id: "assess-1", userId: "user-123" },
+      where: {
+        id: "assess-1",
+        OR: [{ userId: "user-123" }, { organizationId: "ctest123org" }],
+      },
     });
   });
 
@@ -1101,7 +1113,7 @@ describe("PATCH /api/insurance/policies", () => {
         data: expect.objectContaining({
           status: "active",
           insurer: "Swiss Re",
-          policyNumber: "LNC-2026-001",
+          policyNumber: "encrypted_LNC-2026-001",
           coverageAmount: 10_000_000,
           premium: 75_000,
         }),

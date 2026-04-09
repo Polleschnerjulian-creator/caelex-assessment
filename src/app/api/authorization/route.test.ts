@@ -82,7 +82,10 @@ describe("Authorization Workflow", () => {
   describe("GET /api/authorization", () => {
     it("returns 401 without session", async () => {
       mockAuth.mockResolvedValue(null);
-      expect((await GET()).status).toBe(401);
+      expect(
+        (await GET(new Request("https://app.caelex.com/api/authorization")))
+          .status,
+      ).toBe(401);
     });
 
     it("returns workflows for authenticated user", async () => {
@@ -94,11 +97,13 @@ describe("Authorization Workflow", () => {
         operatorType: "SCO",
         establishmentCountry: "DE",
       });
-      const res = await GET();
+      const res = await GET(
+        new Request("https://app.caelex.com/api/authorization"),
+      );
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.workflows).toHaveLength(1);
-      expect(body.user).toBeDefined();
+      expect(body.data.workflows).toHaveLength(1);
+      expect(body.data.user).toBeDefined();
     });
 
     it("returns 500 on error without leaking details", async () => {
@@ -106,7 +111,9 @@ describe("Authorization Workflow", () => {
       mockPrisma.authorizationWorkflow.findMany.mockRejectedValue(
         new Error("DB fail"),
       );
-      const res = await GET();
+      const res = await GET(
+        new Request("https://app.caelex.com/api/authorization"),
+      );
       expect(res.status).toBe(500);
       expect(JSON.stringify(await res.json())).not.toContain("DB fail");
     });
@@ -162,7 +169,7 @@ describe("Authorization Workflow", () => {
       );
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.ncaDetermination.primaryNCA.name).toBe("BNetzA");
+      expect(body.data.ncaDetermination.primaryNCA.name).toBe("BNetzA");
     });
   });
 });

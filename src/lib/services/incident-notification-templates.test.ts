@@ -452,7 +452,9 @@ describe("final_report phase", () => {
 
   it("shows cross-border impact fallback", () => {
     const result = generateNCANotificationDraft("final_report", makeIncident());
-    expect(result.content).toContain("No cross-border impact identified.");
+    expect(result.content).toContain(
+      "Cross-border impact assessment has not been completed separately.",
+    );
   });
 
   it("renders fully populated incident", () => {

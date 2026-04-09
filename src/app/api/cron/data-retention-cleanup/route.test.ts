@@ -20,8 +20,15 @@ vi.mock("@/lib/prisma", () => ({
     },
     astraMessage: { count: vi.fn() },
     astraConversation: { deleteMany: vi.fn() },
+    crossVerification: { deleteMany: vi.fn() },
+    sentinelPacket: { deleteMany: vi.fn() },
+    complianceEvidence: { updateMany: vi.fn() },
     $transaction: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/services/data-room", () => ({
+  closeExpiredDataRooms: vi.fn().mockResolvedValue(0),
 }));
 
 vi.mock("@/lib/validations", () => ({
@@ -45,6 +52,9 @@ const mockPrisma = prisma as unknown as {
   };
   astraMessage: { count: ReturnType<typeof vi.fn> };
   astraConversation: { deleteMany: ReturnType<typeof vi.fn> };
+  crossVerification: { deleteMany: ReturnType<typeof vi.fn> };
+  sentinelPacket: { deleteMany: ReturnType<typeof vi.fn> };
+  complianceEvidence: { updateMany: ReturnType<typeof vi.fn> };
   $transaction: ReturnType<typeof vi.fn>;
 };
 
@@ -96,11 +106,19 @@ describe("GET /api/cron/data-retention-cleanup", () => {
         .mockResolvedValueOnce([
           { count: 10 }, // anonymized IPs
           { count: 50 }, // deleted old analytics
+        ])
+        // Transaction 3: sentinel data retention
+        .mockResolvedValueOnce([
+          { count: 2 }, // old cross verifications
+          { count: 1 }, // old sentinel packets
         ]);
 
       // ASTRA cleanup
       mockPrisma.astraMessage.count.mockResolvedValue(20);
       mockPrisma.astraConversation.deleteMany.mockResolvedValue({ count: 4 });
+
+      // Evidence expiry
+      mockPrisma.complianceEvidence.updateMany.mockResolvedValue({ count: 0 });
 
       const res = await GET(makeRequest("Bearer test-secret"));
       expect(res.status).toBe(200);
@@ -111,7 +129,8 @@ describe("GET /api/cron/data-retention-cleanup", () => {
       expect(body.deleted.oldAnalyticsEvents).toBe(50);
       expect(body.deleted.oldAstraConversations).toBe(4);
       expect(body.deleted.oldAstraMessages).toBe(20);
-      expect(body.totalDeleted).toBe(82); // 5+3+50+4+20
+      // totalDeleted now includes sentinel data + closed data rooms
+      expect(body.totalDeleted).toBe(85); // 5+3+50+4+20+1+2+0
     });
   });
 
@@ -119,9 +138,11 @@ describe("GET /api/cron/data-retention-cleanup", () => {
     it("POST returns same result as GET", async () => {
       mockPrisma.$transaction
         .mockResolvedValueOnce([{ count: 0 }, { count: 0 }])
+        .mockResolvedValueOnce([{ count: 0 }, { count: 0 }])
         .mockResolvedValueOnce([{ count: 0 }, { count: 0 }]);
       mockPrisma.astraMessage.count.mockResolvedValue(0);
       mockPrisma.astraConversation.deleteMany.mockResolvedValue({ count: 0 });
+      mockPrisma.complianceEvidence.updateMany.mockResolvedValue({ count: 0 });
 
       const res = await POST(makeRequest("Bearer test-secret"));
       expect(res.status).toBe(200);

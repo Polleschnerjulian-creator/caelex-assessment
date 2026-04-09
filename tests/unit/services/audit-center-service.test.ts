@@ -730,6 +730,13 @@ describe("Audit Center Service", () => {
         { articleId: "art-4", status: "compliant", updatedAt: now },
       ] as never);
 
+      // totalRequirements is now derived from total evidence records (groupBy sum),
+      // not from article count.
+      vi.mocked(prisma.complianceEvidence.groupBy).mockResolvedValue([
+        { status: "ACCEPTED", _count: 2 },
+        { status: "DRAFT", _count: 2 },
+      ] as never);
+
       vi.mocked(prisma.complianceEvidence.findMany).mockResolvedValue([
         { regulationType: "EU_SPACE_ACT", requirementId: "art-1" },
         { regulationType: "EU_SPACE_ACT", requirementId: "art-2" },
@@ -1080,10 +1087,11 @@ describe("Audit Center Service", () => {
       // non_compliant should be first
       expect(overview.actionItems[0].status).toBe("non_compliant");
 
-      // Evidence coverage
-      expect(overview.evidenceCoverage.totalRequirements).toBe(8); // 4 + 3 + 1
-      expect(overview.evidenceCoverage.withEvidence).toBe(2);
-      expect(overview.evidenceCoverage.percentage).toBe(25); // 2/8 * 100
+      // Evidence coverage — totalRequirements is now derived from evidence groupBy total,
+      // not from module requirement counts.  groupBy mock: ACCEPTED=4, DRAFT=2 → total=6.
+      expect(overview.evidenceCoverage.totalRequirements).toBe(6);
+      expect(overview.evidenceCoverage.withEvidence).toBe(4); // ACCEPTED count
+      expect(overview.evidenceCoverage.percentage).toBe(67); // Math.round(4/6*100)
       expect(overview.evidenceCoverage.byStatus.accepted).toBe(4);
       expect(overview.evidenceCoverage.byStatus.draft).toBe(2);
 

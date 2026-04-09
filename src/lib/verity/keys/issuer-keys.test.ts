@@ -75,7 +75,7 @@ describe("issuer-keys", () => {
       const generated = await generateIssuerKeyPair();
       delete process.env.VERITY_MASTER_KEY;
       expect(() => decryptPrivateKey(generated.encryptedPrivateKeyHex)).toThrow(
-        "VERITY_MASTER_KEY not set",
+        "VERITY_MASTER_KEY must be 64 hex chars (32 bytes)",
       );
     });
   });

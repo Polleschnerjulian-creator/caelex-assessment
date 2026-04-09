@@ -3,14 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ─── Mock Dependencies ───
 
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60000,
-      limit: 100,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
   getIdentifier: vi.fn().mockReturnValue("test-ip"),
   createRateLimitResponse: vi.fn(),
   createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
@@ -1262,7 +1260,7 @@ describe("PATCH /api/environmental/suppliers", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("supplierId is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when supplier request not found", async () => {

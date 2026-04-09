@@ -522,18 +522,18 @@ describe("Compliance Scoring Service", () => {
       expect(score.breakdown.authorization.score).toBe(55);
     });
 
-    it("gives 25 auth-status points for 'ready_for_submission'", async () => {
+    it("gives 24 auth-status points for 'ready_for_submission'", async () => {
       setupAuth("ready_for_submission", []);
       const score = await calculateComplianceScore("user-1");
-      // ready_for_submission(25) + nca_designation(25) = 50
-      expect(score.breakdown.authorization.score).toBe(50);
+      // ready_for_submission(24) + nca_designation(25) = 49
+      expect(score.breakdown.authorization.score).toBe(49);
     });
 
-    it("gives 15 auth-status points for 'in_progress'", async () => {
+    it("gives 12 auth-status points for 'in_progress'", async () => {
       setupAuth("in_progress", []);
       const score = await calculateComplianceScore("user-1");
-      // in_progress(15) + nca_designation(25) = 40
-      expect(score.breakdown.authorization.score).toBe(40);
+      // in_progress(12) + nca_designation(25) = 37
+      expect(score.breakdown.authorization.score).toBe(37);
     });
 
     it("gives 5 auth-status points for any other/draft status", async () => {

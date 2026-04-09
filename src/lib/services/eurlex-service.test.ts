@@ -52,7 +52,7 @@ describe("eurlex-service", () => {
   });
 
   describe("processNewDocuments", () => {
-    it("should fetch from 3 SPARQL queries, dedup, filter existing, classify and store new documents", async () => {
+    it("should fetch from 4 SPARQL queries, dedup, filter existing, classify and store new documents", async () => {
       // Query A: delegated acts
       const queryAResponse = sparqlResponse([
         {
@@ -93,6 +93,9 @@ describe("eurlex-service", () => {
         },
       ]);
 
+      // Query D: CRA citation — empty
+      const queryDResponse = sparqlResponse([]);
+
       fetchMock
         .mockResolvedValueOnce({
           ok: true,
@@ -105,6 +108,10 @@ describe("eurlex-service", () => {
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(queryCResponse),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(queryDResponse),
         });
 
       // No existing documents in DB
@@ -118,8 +125,8 @@ describe("eurlex-service", () => {
       expect(result.newDocuments).toBe(3);
       expect(result.errors).toHaveLength(0);
 
-      // Should have called fetch 3 times
-      expect(fetchMock).toHaveBeenCalledTimes(3);
+      // Should have called fetch 4 times (4 SPARQL queries)
+      expect(fetchMock).toHaveBeenCalledTimes(4);
 
       // Should have checked existing in DB
       expect(prisma.regulatoryUpdate.findMany).toHaveBeenCalledTimes(1);
@@ -166,7 +173,7 @@ describe("eurlex-service", () => {
     });
 
     it("should continue processing when a SPARQL query fails", async () => {
-      // Query A fails
+      // Query A (delegated_acts) fails, remaining 3 queries succeed
       fetchMock
         .mockRejectedValueOnce(new Error("Network error"))
         .mockResolvedValueOnce({
@@ -183,6 +190,10 @@ describe("eurlex-service", () => {
                 },
               ]),
             ),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(sparqlResponse([])),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -212,7 +223,8 @@ describe("eurlex-service", () => {
 
       const result = await processNewDocuments();
 
-      expect(result.errors).toHaveLength(3);
+      // 4 SPARQL queries (delegated_acts, nis2_citation, space_eurovoc, cra_citation)
+      expect(result.errors).toHaveLength(4);
       expect(result.fetched).toBe(0);
       expect(result.newDocuments).toBe(0);
     });
@@ -603,6 +615,7 @@ describe("eurlex-service", () => {
           title: true,
           severity: true,
           celexNumber: true,
+          affectedModules: true,
         },
         orderBy: { severity: "asc" },
       });

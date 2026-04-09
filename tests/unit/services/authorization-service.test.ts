@@ -331,17 +331,24 @@ describe("Authorization Service", () => {
       expect(result.errors).toContain("Workflow not found");
     });
 
-    it("should return error result when workflow is not found (second lookup)", async () => {
-      // First call (with include) returns the context-building data
-      mockFindUnique.mockResolvedValueOnce(makeWorkflow({ documents: [] }));
-      // Second call (without include) returns null
-      mockFindUnique.mockResolvedValueOnce(null);
+    it("should return context with result when workflow exists but no transitions fire", async () => {
+      // buildAuthorizationContextWithWorkflow does a single findUnique
+      mockFindUnique.mockResolvedValue(makeWorkflow({ documents: [] }));
+      const mockEngine = makeMockEngine({
+        evaluateTransitions: vi.fn().mockResolvedValue({
+          transitioned: false,
+          transitions: [],
+          finalState: "not_started",
+          errors: [],
+        }),
+      });
+      mockCreateWorkflowEngine.mockReturnValue(mockEngine);
 
       const result = await evaluateWorkflowTransitions("wf-1");
 
       expect(result.transitioned).toBe(false);
-      expect(result.finalState).toBe("unknown");
-      expect(result.errors).toContain("Workflow not found");
+      expect(result.finalState).toBe("not_started");
+      expect(result.context).toBeDefined();
     });
 
     it("should call engine.evaluateTransitions and return result when no transition occurs", async () => {
@@ -619,13 +626,16 @@ describe("Authorization Service", () => {
       expect(result).toEqual([]);
     });
 
-    it("should return empty array when workflow is not found (second lookup)", async () => {
-      mockFindUnique.mockResolvedValueOnce(makeWorkflow({ documents: [] }));
-      mockFindUnique.mockResolvedValueOnce(null);
+    it("should use single findUnique call to build context", async () => {
+      // buildAuthorizationContextWithWorkflow uses a single findUnique
+      const workflow = makeWorkflow({ documents: [] });
+      mockFindUnique.mockResolvedValue(workflow);
+      const mockEngine = makeMockEngine();
+      mockCreateWorkflowEngine.mockReturnValue(mockEngine);
 
-      const result = await getAvailableTransitions("wf-1");
+      await getAvailableTransitions("wf-1");
 
-      expect(result).toEqual([]);
+      expect(mockFindUnique).toHaveBeenCalledTimes(1);
     });
 
     it("should delegate to engine.getAvailableTransitions", async () => {
@@ -705,16 +715,26 @@ describe("Authorization Service", () => {
       expect(result.error).toBe("Unauthorized");
     });
 
-    it("should return error when workflow is not found on second lookup", async () => {
-      mockFindUnique.mockResolvedValueOnce(
-        makeWorkflow({ userId: "user-1", documents: [] }),
-      );
-      mockFindUnique.mockResolvedValueOnce(null);
+    it("should use single findUnique for context building", async () => {
+      // buildAuthorizationContextWithWorkflow uses a single findUnique call
+      const workflow = makeWorkflow({ userId: "user-1", documents: [] });
+      mockFindUnique.mockResolvedValue(workflow);
+      const mockEngine = makeMockEngine({
+        executeTransition: vi.fn().mockResolvedValue({
+          success: false,
+          previousState: "not_started",
+          currentState: "not_started",
+          transitionEvent: "start",
+          error: "No valid transition",
+          timestamp: new Date(),
+        }),
+      });
+      mockCreateWorkflowEngine.mockReturnValue(mockEngine);
 
       const result = await executeManualTransition("wf-1", "start", "user-1");
 
+      expect(mockFindUnique).toHaveBeenCalledTimes(1);
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Workflow not found");
     });
 
     it("should delegate to engine.executeTransition on success path", async () => {

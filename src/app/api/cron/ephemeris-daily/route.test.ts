@@ -10,12 +10,20 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => {
   const prisma: Record<string, any> = {
     organization: { findMany: vi.fn() },
-    satelliteComplianceState: { upsert: vi.fn() },
+    satelliteComplianceState: { upsert: vi.fn(), findUnique: vi.fn() },
     satelliteComplianceStateHistory: { create: vi.fn() },
     satelliteAlert: { findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
+    operatorEntity: { findFirst: vi.fn() },
   };
   return { prisma };
 });
+
+vi.mock("@/lib/ephemeris/cross-type/impact-propagation", () => ({
+  propagateImpact: vi.fn().mockResolvedValue({
+    totalEntitiesAffected: 0,
+    directImpacts: [],
+  }),
+}));
 
 vi.mock("@/lib/ephemeris/core/satellite-compliance-state", () => ({
   calculateSatelliteComplianceState: vi.fn(),
@@ -46,13 +54,17 @@ import { notifyOrganization } from "@/lib/services/notification-service";
 
 const mockPrisma = prisma as unknown as {
   organization: { findMany: ReturnType<typeof vi.fn> };
-  satelliteComplianceState: { upsert: ReturnType<typeof vi.fn> };
+  satelliteComplianceState: {
+    upsert: ReturnType<typeof vi.fn>;
+    findUnique: ReturnType<typeof vi.fn>;
+  };
   satelliteComplianceStateHistory: { create: ReturnType<typeof vi.fn> };
   satelliteAlert: {
     findMany: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
+  operatorEntity: { findFirst: ReturnType<typeof vi.fn> };
 };
 
 const mockCalc = calculateSatelliteComplianceState as ReturnType<typeof vi.fn>;
@@ -112,7 +124,9 @@ describe("ephemeris-daily cron route", () => {
     mockPrisma.satelliteAlert.create.mockResolvedValue({});
     mockPrisma.satelliteAlert.update.mockResolvedValue({});
     mockPrisma.satelliteComplianceState.upsert.mockResolvedValue({});
+    mockPrisma.satelliteComplianceState.findUnique.mockResolvedValue(null);
     mockPrisma.satelliteComplianceStateHistory.create.mockResolvedValue({});
+    mockPrisma.operatorEntity.findFirst.mockResolvedValue(null);
     mockNotify.mockResolvedValue(undefined);
   });
 
@@ -154,7 +168,7 @@ describe("ephemeris-daily cron route", () => {
       const res = await GET(makeRequest("Bearer anything"));
       expect(res.status).toBe(503);
       const body = await res.json();
-      expect(body.error).toContain("not configured");
+      expect(body.error).toBe("Service unavailable");
     });
 
     it("returns 401 when auth header is wrong", async () => {

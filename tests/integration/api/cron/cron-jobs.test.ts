@@ -2,14 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Mock ratelimit ───
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60000,
-      limit: 100,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
   getIdentifier: vi.fn().mockReturnValue("test-ip"),
   createRateLimitResponse: vi.fn(),
   createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
@@ -183,7 +181,7 @@ describe("Cron Jobs", () => {
         const data = await response.json();
 
         expect(response.status).toBe(503);
-        expect(data.error).toContain("cron authentication not configured");
+        expect(data.error).toBe("Service unavailable");
       });
     });
 
@@ -363,7 +361,7 @@ describe("Cron Jobs", () => {
         const data = await response.json();
 
         expect(response.status).toBe(503);
-        expect(data.error).toContain("cron authentication not configured");
+        expect(data.error).toBe("Service unavailable");
       });
     });
 
@@ -544,7 +542,7 @@ describe("Cron Jobs", () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.error).toBe("CRON_SECRET not configured");
+        expect(data.error).toBe("Service unavailable");
       });
     });
 

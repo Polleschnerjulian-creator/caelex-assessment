@@ -182,13 +182,13 @@ describe("Incident Autopilot Service", () => {
       expect(result.notification.getTime()).toBe(expected.getTime());
     });
 
-    it("should calculate 14-day intermediate report deadline", () => {
+    it("should not auto-create intermediate_report (NCA on-request only)", () => {
       const detectedAt = new Date("2025-06-01T12:00:00Z");
       const result = calculatePhaseDeadlines(detectedAt, true);
 
-      expect(result.intermediate_report).toBeDefined();
-      const expected = new Date("2025-06-15T12:00:00Z");
-      expect(result.intermediate_report.getTime()).toBe(expected.getTime());
+      // intermediate_report is NOT auto-created — only created when NCA requests it
+      // per NIS2 Art. 23(4)(c), this is "upon request" of CSIRT/competent authority
+      expect(result.intermediate_report).toBeUndefined();
     });
 
     it("should calculate 30-day final report deadline from notification", () => {
@@ -203,14 +203,13 @@ describe("Incident Autopilot Service", () => {
       expect(result.final_report.getTime()).toBe(expected.getTime());
     });
 
-    it("should include all 4 phases for NIS2 significant incidents", () => {
+    it("should include 3 auto-created phases for NIS2 significant incidents", () => {
       const detectedAt = new Date("2025-06-01T12:00:00Z");
       const result = calculatePhaseDeadlines(detectedAt, true);
 
-      expect(Object.keys(result)).toHaveLength(4);
+      expect(Object.keys(result)).toHaveLength(3);
       expect(result).toHaveProperty("early_warning");
       expect(result).toHaveProperty("notification");
-      expect(result).toHaveProperty("intermediate_report");
       expect(result).toHaveProperty("final_report");
     });
 
@@ -291,8 +290,8 @@ describe("Incident Autopilot Service", () => {
 
       const result = await createIncidentWithAutopilot(baseInput, "user-1");
 
-      expect(result.nis2Phases!.length).toBe(4);
-      expect(prisma.incidentNIS2Phase.create).toHaveBeenCalledTimes(4);
+      expect(result.nis2Phases!.length).toBe(3);
+      expect(prisma.incidentNIS2Phase.create).toHaveBeenCalledTimes(3);
     });
 
     it("should not create NIS2 phases for non-NCA incidents", async () => {

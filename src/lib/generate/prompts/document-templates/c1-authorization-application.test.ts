@@ -14,10 +14,10 @@ describe("getAuthorizationApplicationTemplate", () => {
     expect(result).toContain("C1");
   });
 
-  it("references Art. 4-12 for authorization", () => {
+  it("references Art. 6-7 for authorization requirement and procedure", () => {
     const result = getAuthorizationApplicationTemplate();
-    expect(result).toContain("Art. 4");
-    expect(result).toContain("Art. 4-12");
+    expect(result).toContain("Art. 6");
+    expect(result).toContain("Art. 7");
   });
 
   it("contains key SECTION markers", () => {

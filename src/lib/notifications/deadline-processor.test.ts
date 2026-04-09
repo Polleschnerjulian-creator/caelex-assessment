@@ -3,13 +3,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     deadline: { findMany: vi.fn(), update: vi.fn() },
+    organizationMember: { findFirst: vi.fn() },
   },
 }));
 vi.mock("@/lib/email", () => ({
   sendDeadlineReminder: vi.fn(),
 }));
 vi.mock("@/lib/logger", () => ({
-  logger: { info: vi.fn(), error: vi.fn() },
+  logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
+}));
+vi.mock("@/lib/services/notification-service", () => ({
+  createNotification: vi.fn(),
 }));
 vi.mock("./index", () => ({
   getDaysBetween: vi.fn(),
@@ -113,7 +117,7 @@ describe("deadline-processor", () => {
       expect(sendDeadlineReminder).not.toHaveBeenCalled();
     });
 
-    it("should skip deadlines when notification method is portal", async () => {
+    it("should create portal notification instead of email when method is portal", async () => {
       const dl = makeDeadline({
         id: "dl-portal",
         user: {
@@ -132,8 +136,9 @@ describe("deadline-processor", () => {
 
       const result = await processDeadlineReminders();
 
-      expect(result.skipped).toBe(1);
-      expect(result.sent).toBe(0);
+      // Portal notifications are now created, not skipped
+      expect(result.sent).toBe(1);
+      expect(result.skipped).toBe(0);
     });
 
     it("should skip deadlines when no recipient email available", async () => {
@@ -163,7 +168,8 @@ describe("deadline-processor", () => {
       const dl = makeDeadline({ id: "dl-nomatch" });
 
       vi.mocked(prisma.deadline.findMany).mockResolvedValue([dl] as never);
-      vi.mocked(getDaysBetween).mockReturnValue(20); // not in [30, 14, 7, 3, 1]
+      // 31 is above the highest threshold (30), so daysUntilDue <= day is false for all
+      vi.mocked(getDaysBetween).mockReturnValue(31);
       vi.mocked(wasReminderSent).mockReturnValue(false);
 
       const result = await processDeadlineReminders();
@@ -226,7 +232,8 @@ describe("deadline-processor", () => {
 
       vi.mocked(prisma.deadline.findMany).mockResolvedValue([dl] as never);
       vi.mocked(getDaysBetween).mockReturnValue(-2);
-      vi.mocked(wasReminderSent).mockReturnValue(false);
+      // All reminder thresholds already sent — wasReminderSent returns true
+      vi.mocked(wasReminderSent).mockReturnValue(true);
 
       const result = await processDeadlineReminders();
 
@@ -242,7 +249,8 @@ describe("deadline-processor", () => {
 
       vi.mocked(prisma.deadline.findMany).mockResolvedValue([dl] as never);
       vi.mocked(getDaysBetween).mockReturnValue(-10); // too far overdue
-      vi.mocked(wasReminderSent).mockReturnValue(false);
+      // All reminder thresholds already sent
+      vi.mocked(wasReminderSent).mockReturnValue(true);
 
       const result = await processDeadlineReminders();
 

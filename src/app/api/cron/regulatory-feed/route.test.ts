@@ -96,6 +96,7 @@ describe("GET /api/cron/regulatory-feed", () => {
         celexNumber: "32025R0001",
         title: "New regulation",
         severity: "CRITICAL",
+        affectedModules: [],
       },
     ]);
     mockPrisma.organization.findMany.mockResolvedValue([
@@ -123,6 +124,7 @@ describe("GET /api/cron/regulatory-feed", () => {
         celexNumber: "32025R0001",
         title: "Regulation",
         severity: "HIGH",
+        affectedModules: [],
       },
     ]);
     mockPrisma.organization.findMany.mockResolvedValue([{ id: "org-1" }]);

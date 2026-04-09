@@ -151,6 +151,7 @@ describe("index.ts orchestrator", () => {
 
     mockNCADocumentFindUniqueOrThrow.mockResolvedValue({
       rawContent: JSON.stringify({
+        _type: "prompt_context",
         systemPrompt: "System prompt",
         userMessage: "User message",
       }),
