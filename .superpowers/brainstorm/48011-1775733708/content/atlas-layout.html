@@ -1,0 +1,111 @@
+<h2>ATLAS — Dashboard Layout</h2>
+<p class="subtitle">"Bloomberg Terminal für Weltraumrecht" — welches Layout passt zur Kanzlei-Nutzung?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Command Center (Dense Multi-Panel)</h3>
+      <p>Alles auf einen Blick: Karte links, Feed rechts, Comparator unten. Panels sind resizable.</p>
+      <p style="color:#00D4FF;font-size:12px">Wie: Bloomberg Terminal, Palantir Gotham, Trading Desk</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Focused Navigation (Page-per-Feature)</h3>
+      <p>Klassisches Sidebar-Layout wie das bestehende Caelex Dashboard. Eine Seite pro Feature.</p>
+      <p style="color:#00D4FF;font-size:12px">Wie: Linear, Notion, bestehendes Caelex Dashboard</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid — Command Center Home + Focused Sub-Pages</h3>
+      <p>Startseite = dense Command Center mit Karte + Feed + Quick Stats. Sub-Pages (Country, Comparator, EU Act) = focused full-page layouts.</p>
+      <p style="color:#00D4FF;font-size:12px">Wie: Datadog (overview dashboard → drill-down pages)</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Layout Wireframes</h3>
+
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Option A — Command Center</div>
+      <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.4;background:#0a0f1e;color:#94a3b8;padding:12px;">
+<pre style="margin:0;color:#e2e8f0">
+┌─ ATLAS ──────────────────────────────────┐
+│ [Nav] Map│Compare│EU Act│Alerts│API│Settings│
+├──────────────────┬───────────────────────┤
+│                  │  REGULATORY FEED      │
+│   EUROPE MAP     │  ┌─────────────────┐  │
+│   (interactive)  │  │ 🔴 IT: Law 89   │  │
+│                  │  │ 🟡 ES: RD 278   │  │
+│   🟢 FR  🟡 DE  │  │ 🔵 UK: CAA Upd  │  │
+│   🟢 UK  🟢 NL  │  │ 🟢 FR: CNES     │  │
+│   🔴 ES  🟢 BE  │  └─────────────────┘  │
+│                  │                       │
+├──────────────────┴───────────────────────┤
+│  QUICK COMPARE   │  STATS    │  ALERTS   │
+│  FR vs DE vs UK  │  19 Laws  │  3 new    │
+│  [Liability ▼]   │  4 Drafts │  1 urgent │
+└──────────────────┴──────────┴───────────┘
+</pre>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-header">Option C — Hybrid (Recommended)</div>
+      <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.4;background:#0a0f1e;color:#94a3b8;padding:12px;">
+<pre style="margin:0;color:#e2e8f0">
+┌─ ATLAS ──────────────────────────────────┐
+│ ┌────┐                                   │
+│ │SIDE│  COMMAND CENTER (Home)             │
+│ │BAR │  ┌────────────┬──────────────┐    │
+│ │    │  │ EUROPE MAP │ LIVE FEED    │    │
+│ │ 🗺  │  │            │ (changes)    │    │
+│ │Map │  │  19 juris. │              │    │
+│ │    │  ├────────────┴──────────────┤    │
+│ │ ⚖  │  │ QUICK STATS               │    │
+│ │Comp│  │ 19 Laws │ 4 Pending │ 3 🔔│    │
+│ │    │  └───────────────────────────┘    │
+│ │ 📜 │                                   │
+│ │EU  │  --- click "Compare" ---           │
+│ │Act │                                   │
+│ │    │  COMPARATOR (Full Page)            │
+│ │ 🔔 │  ┌────┬────┬────┬────┐            │
+│ │Alrt│  │ FR │ DE │ UK │ NL │            │
+│ │    │  ├────┼────┼────┼────┤            │
+│ │ 🔑 │  │Auth│Auth│Auth│Auth│            │
+│ │API │  │Liab│Liab│Liab│Liab│            │
+│ └────┘  └────┴────┴────┴────┘            │
+└──────────────────────────────────────────┘
+</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>ATLAS Navigation Structure (Option C)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Sidebar Items</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;background:#0a0f1e;color:#e2e8f0;padding:16px;">
+<pre style="margin:0">
+🌍  Command Center     ← Dense overview (home)
+📊  Comparator         ← Side-by-side analysis
+🗺️  Jurisdictions      ← Country deep dives (19+)
+📜  EU Space Act       ← Legislation tracker
+🛡️  Cyber Standards    ← BSI/NIST/ENISA tracker
+🌱  Sustainability     ← LCA/ESA framework
+🔔  Alerts             ← Change notifications
+🔑  API Access         ← Keys + Swagger docs
+⚙️  Settings           ← Watchlists, preferences
+</pre>
+    </div>
+  </div>
+</div>

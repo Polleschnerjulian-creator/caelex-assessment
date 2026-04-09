@@ -101,7 +101,7 @@ describe("buildDebrisMitigationPlanConfig", () => {
     const config = buildDebrisMitigationPlanConfig(makeData());
     expect(config.header.title).toBe("Debris Mitigation Plan");
     expect(config.header.subtitle).toContain("Constellation Alpha");
-    expect(config.header.subtitle).toContain("Art. 12");
+    expect(config.header.subtitle).toContain("Art. 63-73");
     expect(config.footer.confidentialityNotice).toBe("CONFIDENTIAL");
   });
 

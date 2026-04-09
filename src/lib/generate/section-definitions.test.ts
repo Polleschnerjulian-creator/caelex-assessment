@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { SECTION_DEFINITIONS } from "./section-definitions";
 
 describe("section-definitions", () => {
-  it("exports definitions for all 19 NCA document types", () => {
+  it("exports definitions for all 20 NCA document types", () => {
     const keys = Object.keys(SECTION_DEFINITIONS);
-    expect(keys.length).toBe(19);
+    expect(keys.length).toBe(20);
   });
 
   it("each document type has at least 1 section", () => {

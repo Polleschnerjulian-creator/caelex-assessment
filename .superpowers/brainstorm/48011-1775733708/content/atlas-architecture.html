@@ -1,0 +1,95 @@
+<h2>ATLAS — System Architecture</h2>
+<p class="subtitle">How should ATLAS integrate into the Caelex ecosystem? Pick the architecture that fits.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Embedded App Section</h3>
+      <p><strong>Route:</strong> <code>/atlas/*</code> as new top-level section alongside <code>/dashboard/*</code></p>
+      <p><strong>Layout:</strong> Own sidebar + layout, shares root layout with Caelex</p>
+      <p><strong>Data:</strong> Direct Prisma access to same DB, shared models</p>
+      <p><strong>Auth:</strong> Same NextAuth session, new "atlas" permission scope</p>
+      <p style="margin-top:8px;color:#00D4FF;font-size:13px">
+        ✓ Fastest to build · ✓ Shared billing · ✓ Reuses all existing data<br>
+        ✗ Tighter coupling · ✗ Harder to sell separately later
+      </p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Separate Next.js App (same repo, Turborepo)</h3>
+      <p><strong>Route:</strong> <code>atlas.caelex.eu</code> as own subdomain</p>
+      <p><strong>Layout:</strong> Completely independent app with own design system</p>
+      <p><strong>Data:</strong> Shared Prisma package, same DB but own models</p>
+      <p><strong>Auth:</strong> Shared auth package, separate session handling</p>
+      <p style="margin-top:8px;color:#00D4FF;font-size:13px">
+        ✓ Clean separation · ✓ Independent deploys · ✓ Sellable standalone<br>
+        ✗ Monorepo overhead · ✗ More setup · ✗ Duplicate infra code
+      </p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid — Embedded with Feature Boundary</h3>
+      <p><strong>Route:</strong> <code>/atlas/*</code> with own route group <code>(atlas)</code></p>
+      <p><strong>Layout:</strong> Own layout.tsx + sidebar, Bloomberg-style dark theme</p>
+      <p><strong>Data:</strong> New Prisma models prefixed <code>Atlas*</code>, reads from existing models</p>
+      <p><strong>Auth:</strong> Same session, gated by <code>atlas:read</code> / <code>atlas:write</code> permissions + separate API key tier</p>
+      <p style="margin-top:8px;color:#00D4FF;font-size:13px">
+        ✓ Clean boundaries within one codebase · ✓ Shared auth & billing · ✓ Can extract to monorepo later<br>
+        ✗ Needs discipline to maintain boundaries · Recommended approach
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 32px;">
+  <h3>Architecture Diagram</h3>
+  <div class="mockup">
+    <div class="mockup-header">ATLAS within Caelex (Option C — Recommended)</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 12px; line-height: 1.6; padding: 20px; background: #0a0f1e; color: #94a3b8;">
+<pre style="margin:0;color:#e2e8f0">
+┌─────────────────────────────────────────────────────────┐
+│                    caelex.eu                             │
+│                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  /dashboard   │  │  /assessment  │  │   /atlas     │  │
+│  │  (Operators)  │  │  (Wizards)    │  │  (Law Firms) │  │
+│  │              │  │              │  │              │  │
+│  │  15 Modules  │  │  4 Engines   │  │  Reg Map     │  │
+│  │  Compliance  │  │  EU Space Act│  │  Comparator  │  │
+│  │  Tracker     │  │  NIS2        │  │  EU Act Track │  │
+│  │  Astra AI    │  │  Space Law   │  │  Alerts      │  │
+│  │  ...         │  │  Unified     │  │  API         │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  │
+│         │                 │                 │          │
+│  ┌──────┴─────────────────┴─────────────────┴───────┐  │
+│  │              Shared Infrastructure                │  │
+│  │  NextAuth v5 │ Prisma/Neon │ Stripe │ Resend     │  │
+│  │  Rate Limit  │ Encryption  │ Audit  │ RBAC       │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │           Regulatory Data Layer                   │  │
+│  │  national-space-laws.ts (19 jurisdictions)        │  │
+│  │  nis2-requirements.ts  (56 requirements)          │  │
+│  │  articles.ts           (119 EU Space Act)         │  │
+│  │  cross-references.ts   (NIS2↔EU Space Act)       │  │
+│  │  + NEW: Atlas* Prisma models for versioned data   │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │           Scraping / Intelligence Pipeline        │  │
+│  │  Cron Jobs → Change Detection → Review Queue      │  │
+│  │  EUR-Lex │ legislation.gov.uk │ BSI │ CNES        │  │
+│  └──────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+</pre>
+    </div>
+  </div>
+</div>

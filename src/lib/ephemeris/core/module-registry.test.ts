@@ -18,11 +18,11 @@ import type { OperatorEntityInput } from "./types";
 
 describe("Module Registry", () => {
   describe("SCO registry", () => {
-    it("SCO weights sum to 90 (matching hardcoded MODULE_WEIGHTS)", () => {
+    it("SCO weights sum to 105 (matching hardcoded MODULE_WEIGHTS)", () => {
       const modules = getModulesForType("SCO");
       const totalWeight = modules.reduce((sum, m) => sum + m.weight, 0);
-      // Current hardcoded weights: 15+20+15+10+10+8+7+5 = 90
-      expect(totalWeight).toBe(90);
+      // Current hardcoded weights: 20+15+15+15+10+10+8+7+5 = 105
+      expect(totalWeight).toBe(105);
     });
 
     it("SCO registry has no duplicate keys", () => {
@@ -32,15 +32,15 @@ describe("Module Registry", () => {
       expect(keys.length).toBe(uniqueKeys.size);
     });
 
-    it("SCO has exactly 8 modules", () => {
+    it("SCO has exactly 9 modules", () => {
       const modules = getModulesForType("SCO");
-      expect(modules.length).toBe(8);
+      expect(modules.length).toBe(9);
     });
 
-    it("SCO safety-critical modules are exactly fuel, orbital, subsystems", () => {
+    it("SCO safety-critical modules are exactly fuel, orbital, subsystems, collision_avoidance", () => {
       const safetyCritical = getSafetyCriticalModules("SCO");
       expect(safetyCritical.sort()).toEqual(
-        ["fuel", "orbital", "subsystems"].sort(),
+        ["fuel", "orbital", "subsystems", "collision_avoidance"].sort(),
       );
     });
 
@@ -51,6 +51,7 @@ describe("Module Registry", () => {
         fuel: 20,
         orbital: 15,
         subsystems: 15,
+        collision_avoidance: 15,
         cyber: 10,
         ground: 10,
         documentation: 8,
@@ -64,6 +65,10 @@ describe("Module Registry", () => {
       expect(config.orbital).toEqual({ weight: 15, safetyGate: true });
       expect(config.fuel).toEqual({ weight: 20, safetyGate: true });
       expect(config.subsystems).toEqual({ weight: 15, safetyGate: true });
+      expect(config.collision_avoidance).toEqual({
+        weight: 15,
+        safetyGate: true,
+      });
       expect(config.cyber).toEqual({ weight: 10, safetyGate: false });
       expect(config.ground).toEqual({ weight: 10, safetyGate: false });
       expect(config.documentation).toEqual({ weight: 8, safetyGate: false });
@@ -77,31 +82,43 @@ describe("Module Registry", () => {
     });
   });
 
-  describe("empty registries", () => {
-    it("validateRegistry returns valid for LSO (empty)", () => {
+  describe("LSO registry", () => {
+    it("validateRegistry returns valid for LSO", () => {
       expect(validateRegistry("LSO")).toEqual({ valid: true });
     });
 
-    it("validateRegistry returns valid for all empty types", () => {
+    it("validateRegistry returns valid for all operator types", () => {
       for (const type of ["LSO", "ISOS", "CAP", "PDP", "TCO"]) {
         expect(validateRegistry(type)).toEqual({ valid: true });
       }
     });
 
-    it("getModulesForType returns empty array for LSO", () => {
-      expect(getModulesForType("LSO")).toEqual([]);
+    it("getModulesForType returns 8 modules for LSO", () => {
+      expect(getModulesForType("LSO")).toHaveLength(8);
     });
 
     it("getModulesForType returns empty array for unknown type", () => {
       expect(getModulesForType("UNKNOWN_TYPE")).toEqual([]);
     });
 
-    it("getModuleWeights returns empty object for empty types", () => {
-      expect(getModuleWeights("LSO")).toEqual({});
+    it("getModuleWeights returns correct weights for LSO", () => {
+      const weights = getModuleWeights("LSO");
+      expect(weights).toEqual({
+        site_authorization: 20,
+        range_safety_systems: 20,
+        environmental_compliance: 15,
+        ground_infrastructure: 12,
+        cyber: 10,
+        insurance: 8,
+        emergency_response: 8,
+        documentation: 7,
+      });
     });
 
-    it("getSafetyCriticalModules returns empty array for empty types", () => {
-      expect(getSafetyCriticalModules("LSO")).toEqual([]);
+    it("getSafetyCriticalModules returns correct modules for LSO", () => {
+      expect(getSafetyCriticalModules("LSO").sort()).toEqual(
+        ["site_authorization", "range_safety_systems"].sort(),
+      );
     });
   });
 });

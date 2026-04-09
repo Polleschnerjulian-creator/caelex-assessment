@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { READINESS_SCHEMAS } from "./readiness-schemas";
 
 describe("readiness-schemas", () => {
-  it("exports schemas for all 19 NCA document types", () => {
+  it("exports schemas for all 20 NCA document types", () => {
     const keys = Object.keys(READINESS_SCHEMAS);
-    expect(keys.length).toBe(19);
+    expect(keys.length).toBe(20);
   });
 
   it("each schema has a documentType matching its key and a non-empty fields array", () => {

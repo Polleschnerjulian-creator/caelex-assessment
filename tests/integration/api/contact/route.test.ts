@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("server-only", () => ({}));
+
 // ─── Mock rate limiter ───
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 4,
-      reset: Date.now() + 60000,
-      limit: 5,
-    }),
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 4,
+    reset: Date.now() + 60000,
+    limit: 5,
+  }),
   getIdentifier: vi.fn().mockReturnValue("127.0.0.1"),
   createRateLimitResponse: vi.fn().mockReturnValue(
     new Response(JSON.stringify({ error: "Rate limit exceeded" }), {

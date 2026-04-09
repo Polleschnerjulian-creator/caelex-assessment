@@ -753,7 +753,7 @@ describe("EU Space Act Compliance Engine", () => {
   describe("Module Status Assignment", () => {
     it("returns exactly 9 module statuses", () => {
       const result = calculateCompliance(makeAnswers(), mockSpaceActData);
-      expect(result.moduleStatuses).toHaveLength(9);
+      expect(result.moduleStatuses).toHaveLength(10);
     });
 
     it("each module status has required shape fields", () => {
@@ -788,8 +788,9 @@ describe("EU Space Act Compliance Engine", () => {
       expect(authModule!.status).toBe("required");
     });
 
-    it("authorization module is 'simplified' for SCO in light regime (has mandatory + conditional_simplification)", () => {
+    it("authorization module is 'required' for SCO in light regime (mandatory articles remain binding even when simplified track available)", () => {
       // Art. 6: mandatory_pre_activity (SCO), Art. 10: conditional_simplification (SCO)
+      // Mandatory articles don't get downgraded to simplified — the whole module stays required
       const result = calculateCompliance(
         makeAnswers({ activityType: "spacecraft", entitySize: "small" }),
         mockSpaceActData,
@@ -798,7 +799,7 @@ describe("EU Space Act Compliance Engine", () => {
         (m) => m.id === "authorization",
       );
       expect(authModule).toBeDefined();
-      expect(authModule!.status).toBe("simplified");
+      expect(authModule!.status).toBe("required");
     });
 
     it("module with zero applicable articles → 'not_applicable'", () => {
@@ -1272,9 +1273,11 @@ describe("EU Space Act Compliance Engine", () => {
   // ─────────────────────────────────────────
 
   describe("Statistics", () => {
-    it("totalArticles matches metadata.total_articles", () => {
+    it("totalArticles matches actual flat article count (not metadata.total_articles)", () => {
       const result = calculateCompliance(makeAnswers(), mockSpaceActData);
-      expect(result.totalArticles).toBe(119);
+      // Source now uses allArticles.length instead of metadata.total_articles
+      // to produce accurate percentages when articles are grouped.
+      expect(result.totalArticles).toBe(21);
     });
 
     it("applicablePercentage = round(applicableCount / totalArticles * 100)", () => {
@@ -1545,7 +1548,7 @@ describe("EU Space Act Compliance Engine", () => {
     it("real data: all 9 module statuses are returned", () => {
       const data = loadSpaceActDataFromDisk();
       const result = calculateCompliance(makeAnswers(), data);
-      expect(result.moduleStatuses).toHaveLength(9);
+      expect(result.moduleStatuses).toHaveLength(10);
     });
 
     it("real data: checklist is non-empty for SCO", () => {

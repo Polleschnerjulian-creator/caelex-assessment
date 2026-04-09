@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { PrismaClient } from "@prisma/client";
 
+vi.mock("server-only", () => ({}));
 vi.mock("../utils/redaction", () => ({ safeLog: vi.fn() }));
 vi.mock("./regulation-thresholds", () => ({
   findThreshold: vi.fn(),

@@ -490,51 +490,10 @@ interface ScrapedDocument {
 
 ## 5. Monetization
 
-### 5.1 Subscription Tiers
-
-| Tier                  | Price/Month                                                                                | Features |
-| --------------------- | ------------------------------------------------------------------------------------------ | -------- |
-| Essentials (€590)     | 3 jurisdictions, comparator (2 countries), weekly digest, 2 users                          |
-| Professional (€1,190) | All jurisdictions, full comparator, real-time alerts, API 1K/day, 5 users, PDF/DOCX export |
-| Enterprise (€2,490)   | All + API 10K/day, custom reports, SSO, 15 users, dedicated support                        |
-| API Only (€790)       | API access 5K/day, no dashboard                                                            |
-
-Implementation: New Stripe products + prices. Feature gating via `subscription.plan` check in ATLAS middleware.
-
-### 5.2 Feature Gating
-
-```typescript
-// src/lib/atlas/feature-gate.ts
-const ATLAS_FEATURES = {
-  essentials: {
-    maxJurisdictions: 3,
-    maxCompareCountries: 2,
-    alertDigest: "weekly",
-    apiAccess: false,
-    exportEnabled: false,
-    maxUsers: 2,
-  },
-  professional: {
-    maxJurisdictions: Infinity,
-    maxCompareCountries: 5,
-    alertDigest: "realtime",
-    apiAccess: true,
-    apiDailyLimit: 1000,
-    exportEnabled: true,
-    maxUsers: 5,
-  },
-  enterprise: {
-    maxJurisdictions: Infinity,
-    maxCompareCountries: Infinity,
-    alertDigest: "realtime",
-    apiAccess: true,
-    apiDailyLimit: 10000,
-    exportEnabled: true,
-    maxUsers: 15,
-    ssoEnabled: true,
-  },
-};
-```
+> **DEFERRED** — Pilot phase. All features unlocked, no billing integration.
+> Monetization tiers (Essentials €590, Professional €1,190, Enterprise €2,490)
+> are defined in the original product spec and will be implemented post-pilot
+> once Baumann validates the product-market fit.
 
 ---
 

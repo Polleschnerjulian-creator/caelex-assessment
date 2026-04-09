@@ -95,6 +95,7 @@ describe("LO Module Registry", () => {
       fuel: 20,
       orbital: 15,
       subsystems: 15,
+      collision_avoidance: 15,
       cyber: 10,
       ground: 10,
       documentation: 8,
@@ -185,8 +186,8 @@ describe("LO Block Definitions", () => {
   it("existing SCO blocks do not have operatorTypes set", () => {
     const scoBlocks = BLOCK_DEFINITIONS.filter((b) => !b.operatorTypes);
     expect(scoBlocks.length).toBeGreaterThan(0);
-    // All original 55 blocks should remain
-    expect(scoBlocks.length).toBe(55);
+    // All original SCO blocks (without operatorTypes) should remain
+    expect(scoBlocks.length).toBe(56);
   });
 });
 
@@ -199,13 +200,11 @@ vi.mock("../data/sentinel-adapter", () => ({
   getSentinelTimeSeries: vi
     .fn()
     .mockResolvedValue({ dataPoint: "test", points: [] }),
-  getSentinelStatus: vi
-    .fn()
-    .mockResolvedValue({
-      connected: false,
-      lastPacket: null,
-      packetsLast24h: 0,
-    }),
+  getSentinelStatus: vi.fn().mockResolvedValue({
+    connected: false,
+    lastPacket: null,
+    packetsLast24h: 0,
+  }),
 }));
 vi.mock("../data/solar-flux-adapter", () => ({
   getCurrentF107: vi.fn().mockResolvedValue(150),
@@ -223,22 +222,18 @@ vi.mock("../data/verity-adapter", () => ({
     .mockResolvedValue({ attestations: 0, latestTrustLevel: null }),
 }));
 vi.mock("../data/assessment-adapter", () => ({
-  getAssessmentData: vi
-    .fn()
-    .mockResolvedValue({
-      debris: null,
-      cyber: null,
-      insurance: null,
-      environmental: null,
-      nis2: null,
-    }),
-  getAssessmentStatus: vi
-    .fn()
-    .mockResolvedValue({
-      completedModules: 0,
-      totalModules: 5,
-      lastUpdated: null,
-    }),
+  getAssessmentData: vi.fn().mockResolvedValue({
+    debris: null,
+    cyber: null,
+    insurance: null,
+    environmental: null,
+    nis2: null,
+  }),
+  getAssessmentStatus: vi.fn().mockResolvedValue({
+    completedModules: 0,
+    totalModules: 5,
+    lastUpdated: null,
+  }),
 }));
 vi.mock("../data/eurlex-adapter", () => ({
   getRegulatoryChanges: vi.fn().mockResolvedValue([]),
@@ -252,14 +247,12 @@ vi.mock("../models/fuel-depletion", () => ({
   getFuelDepletionFactors: vi.fn().mockReturnValue([]),
 }));
 vi.mock("../models/subsystem-degradation", () => ({
-  predictSubsystemHealth: vi
-    .fn()
-    .mockReturnValue({
-      thruster: { status: "UNKNOWN" },
-      battery: { status: "UNKNOWN" },
-      solarArray: { status: "UNKNOWN" },
-      overallSubsystemHealth: 0,
-    }),
+  predictSubsystemHealth: vi.fn().mockReturnValue({
+    thruster: { status: "UNKNOWN" },
+    battery: { status: "UNKNOWN" },
+    solarArray: { status: "UNKNOWN" },
+    overallSubsystemHealth: 0,
+  }),
   getSubsystemFactors: vi.fn().mockReturnValue([]),
 }));
 vi.mock("../models/deadline-events", () => ({
@@ -302,7 +295,7 @@ describe("calculateEntityComplianceState — LO dispatch", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("still throws for unsupported types like LSO", async () => {
+  it("delegates to calculateLSOComplianceState for LSO type", async () => {
     const { calculateEntityComplianceState } =
       await import("./satellite-compliance-state");
 
@@ -317,9 +310,17 @@ describe("calculateEntityComplianceState — LO dispatch", () => {
       status: "ACTIVE",
     };
 
-    await expect(
-      calculateEntityComplianceState(entity, {} as never),
-    ).rejects.toThrow("Operator type LSO not yet supported in Ephemeris");
+    const mockPrisma = {
+      satelliteAlert: null,
+    } as never;
+
+    const result = await calculateEntityComplianceState(entity, mockPrisma);
+    expect(result).toBeDefined();
+    expect(result.noradId).toBe("f123");
+    expect(result.satelliteName).toBe("Test");
+    expect(result.operatorId).toBe("org1");
+    expect(result.overallScore).toBeGreaterThanOrEqual(0);
+    expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 });
 

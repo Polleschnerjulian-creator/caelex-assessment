@@ -17,7 +17,7 @@ describe("getInsuranceComplianceTemplate", () => {
   it("references Art. 47-50 for insurance requirements", () => {
     const result = getInsuranceComplianceTemplate();
     expect(result).toContain("Art. 47-50");
-    expect(result).toContain("Art. 48");
+    expect(result).toContain("Liability Convention");
   });
 
   it("contains key SECTION markers", () => {

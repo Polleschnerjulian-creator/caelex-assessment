@@ -79,6 +79,7 @@ describe("sentinel-adapter", () => {
           sourceSystem: "orbit-tracker",
           crossVerified: true,
           trustScore: 0.9,
+          chainValid: true,
         },
         {
           values: { remaining_fuel_pct: 80 },
@@ -86,6 +87,7 @@ describe("sentinel-adapter", () => {
           sourceSystem: "ground-station-eu",
           crossVerified: false,
           trustScore: 0.7,
+          chainValid: true,
         },
       ]);
 
@@ -380,6 +382,7 @@ describe("sentinel-adapter", () => {
           sourceSystem: "orbit",
           crossVerified: true,
           trustScore: null,
+          chainValid: true,
         },
       ]);
 

@@ -1,0 +1,89 @@
+<h2>ATLAS — Farbpalette & Accent Color</h2>
+<p class="subtitle">Caelex Dashboard nutzt Emerald (#10B981). ATLAS braucht einen eigenen Accent um sich visuell abzusetzen, aber im gleichen Dark-Navy-Universum zu bleiben.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Electric Cyan <span style="color:#00D4FF">■■■■■</span></h3>
+      <p>Wie im Spec vorgeschlagen. Kalt, technisch, "Intelligence Dashboard". Guter Kontrast zu Navy.</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="width:40px;height:40px;background:#0A1628;border-radius:4px;border:1px solid #334155" title="Background"></div>
+        <div style="width:40px;height:40px;background:#0F172A;border-radius:4px;border:1px solid #334155" title="Surface"></div>
+        <div style="width:40px;height:40px;background:#00D4FF;border-radius:4px" title="Accent"></div>
+        <div style="width:40px;height:40px;background:#F0F0F0;border-radius:4px" title="Text"></div>
+        <div style="width:40px;height:40px;background:#EF4444;border-radius:4px" title="Alert"></div>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;margin-top:4px">Navy #0A1628 · Surface #0F172A · Accent #00D4FF · Text #F0F0F0 · Alert #EF4444</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Amber/Gold <span style="color:#F59E0B">■■■■■</span></h3>
+      <p>Warm, authoritative, "Legal Intelligence". Erinnert an Kanzlei-Branding. Kontrast zu Caelex-Emerald.</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="width:40px;height:40px;background:#0A0F1E;border-radius:4px;border:1px solid #334155" title="Background"></div>
+        <div style="width:40px;height:40px;background:#0F172A;border-radius:4px;border:1px solid #334155" title="Surface"></div>
+        <div style="width:40px;height:40px;background:#F59E0B;border-radius:4px" title="Accent"></div>
+        <div style="width:40px;height:40px;background:#F8FAFC;border-radius:4px" title="Text"></div>
+        <div style="width:40px;height:40px;background:#EF4444;border-radius:4px" title="Alert"></div>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;margin-top:4px">Navy #0A0F1E · Surface #0F172A · Accent #F59E0B · Text #F8FAFC · Alert #EF4444</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Same Caelex Palette (Emerald) <span style="color:#10B981">■■■■■</span></h3>
+      <p>Kein eigener Accent — gleiche Marke, gleiche Farben. ATLAS unterscheidet sich nur durch Layout/Density.</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="width:40px;height:40px;background:#0A0F1E;border-radius:4px;border:1px solid #334155" title="Background"></div>
+        <div style="width:40px;height:40px;background:#0F172A;border-radius:4px;border:1px solid #334155" title="Surface"></div>
+        <div style="width:40px;height:40px;background:#10B981;border-radius:4px" title="Accent"></div>
+        <div style="width:40px;height:40px;background:#F8FAFC;border-radius:4px" title="Text"></div>
+        <div style="width:40px;height:40px;background:#EF4444;border-radius:4px" title="Alert"></div>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;margin-top:4px">Identisch mit bestehendem Caelex Dashboard</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Side-by-Side: Wie sieht eine Card in jeder Palette aus?</h3>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+
+    <div style="flex:1;min-width:200px;background:#0F172A;border:1px solid #00D4FF33;border-radius:8px;padding:16px;">
+      <div style="font-size:11px;color:#00D4FF;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">A — Cyan</div>
+      <div style="font-size:16px;color:#F0F0F0;font-weight:600;margin-bottom:4px">France 🇫🇷</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">Loi relative aux opérations spatiales (2008)</div>
+      <div style="display:flex;gap:6px">
+        <span style="background:#00D4FF22;color:#00D4FF;padding:2px 8px;border-radius:4px;font-size:11px">Champions League</span>
+        <span style="background:#22C55E22;color:#22C55E;padding:2px 8px;border-radius:4px;font-size:11px">Enacted</span>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:200px;background:#0F172A;border:1px solid #F59E0B33;border-radius:8px;padding:16px;">
+      <div style="font-size:11px;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">B — Gold</div>
+      <div style="font-size:16px;color:#F8FAFC;font-weight:600;margin-bottom:4px">France 🇫🇷</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">Loi relative aux opérations spatiales (2008)</div>
+      <div style="display:flex;gap:6px">
+        <span style="background:#F59E0B22;color:#F59E0B;padding:2px 8px;border-radius:4px;font-size:11px">Champions League</span>
+        <span style="background:#22C55E22;color:#22C55E;padding:2px 8px;border-radius:4px;font-size:11px">Enacted</span>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:200px;background:#0F172A;border:1px solid #10B98133;border-radius:8px;padding:16px;">
+      <div style="font-size:11px;color:#10B981;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">C — Emerald</div>
+      <div style="font-size:16px;color:#F8FAFC;font-weight:600;margin-bottom:4px">France 🇫🇷</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">Loi relative aux opérations spatiales (2008)</div>
+      <div style="display:flex;gap:6px">
+        <span style="background:#10B98122;color:#10B981;padding:2px 8px;border-radius:4px;font-size:11px">Champions League</span>
+        <span style="background:#22C55E22;color:#22C55E;padding:2px 8px;border-radius:4px;font-size:11px">Enacted</span>
+      </div>
+    </div>
+
+  </div>
+</div>
