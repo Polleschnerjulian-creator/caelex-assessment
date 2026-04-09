@@ -2,6 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ─── Mocks (must be before imports) ───
 
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi
+    .fn()
+    .mockResolvedValue({
+      success: true,
+      remaining: 99,
+      reset: Date.now() + 60000,
+      limit: 100,
+    }),
+  getIdentifier: vi.fn().mockReturnValue("test-ip"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
@@ -15,6 +29,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     insurancePolicy: {
       createMany: vi.fn(),
@@ -22,10 +37,19 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
       update: vi.fn(),
     },
+    deadline: {
+      createMany: vi.fn(),
+    },
     auditLog: {
       create: vi.fn(),
     },
   },
+}));
+
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((value: string) => Promise.resolve(`encrypted_${value}`)),
+  decrypt: vi.fn((value: string) => Promise.resolve(value)),
+  isEncrypted: vi.fn(() => false),
 }));
 
 vi.mock("@/lib/audit", () => ({

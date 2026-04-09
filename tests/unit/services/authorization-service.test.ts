@@ -6,6 +6,10 @@ vi.mock("@/lib/prisma", () => ({
     authorizationWorkflow: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
+    },
+    nCASubmission: {
+      create: vi.fn(),
     },
   },
 }));
@@ -41,6 +45,8 @@ const mockFindUnique = prisma.authorizationWorkflow.findUnique as ReturnType<
 const mockUpdate = prisma.authorizationWorkflow.update as ReturnType<
   typeof vi.fn
 >;
+const mockUpdateMany = (prisma.authorizationWorkflow as any)
+  .updateMany as ReturnType<typeof vi.fn>;
 const mockCreateWorkflowEngine = createWorkflowEngine as ReturnType<
   typeof vi.fn
 >;
@@ -72,6 +78,7 @@ function makeWorkflow(overrides: Record<string, unknown> = {}) {
     submittedAt: null,
     approvedAt: null,
     rejectedAt: null,
+    version: 1,
     documents: [],
     ...overrides,
   };
@@ -728,7 +735,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       const result = await executeManualTransition("wf-1", "start", "user-1");
@@ -760,13 +767,13 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "start", "user-1");
 
-      expect(mockUpdate).toHaveBeenCalledWith({
-        where: { id: "wf-1" },
+      expect(mockUpdateMany).toHaveBeenCalledWith({
+        where: { id: "wf-1", version: 1 },
         data: expect.objectContaining({ status: "in_progress" }),
       });
     });
@@ -789,7 +796,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "start", "user-1");
@@ -829,7 +836,7 @@ describe("Authorization Service", () => {
       const result = await executeManualTransition("wf-1", "submit", "user-1");
 
       expect(result.success).toBe(false);
-      expect(mockUpdate).not.toHaveBeenCalled();
+      expect(mockUpdateMany).not.toHaveBeenCalled();
       expect(mockLogAuditEvent).not.toHaveBeenCalled();
     });
 
@@ -851,12 +858,12 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "submit", "user-1");
 
-      const updateCall = mockUpdate.mock.calls[0][0];
+      const updateCall = mockUpdateMany.mock.calls[0][0];
       expect(updateCall.data.submittedAt).toBeInstanceOf(Date);
     });
 
@@ -878,12 +885,12 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "approve", "user-1");
 
-      const updateCall = mockUpdate.mock.calls[0][0];
+      const updateCall = mockUpdateMany.mock.calls[0][0];
       expect(updateCall.data.approvedAt).toBeInstanceOf(Date);
     });
 
@@ -905,14 +912,14 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "reject", "user-1", {
         rejectionReason: "Incomplete documentation",
       });
 
-      const updateCall = mockUpdate.mock.calls[0][0];
+      const updateCall = mockUpdateMany.mock.calls[0][0];
       expect(updateCall.data.rejectedAt).toBeInstanceOf(Date);
       expect(updateCall.data.rejectionReason).toBe("Incomplete documentation");
     });
@@ -935,12 +942,12 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "reject", "user-1");
 
-      const updateCall = mockUpdate.mock.calls[0][0];
+      const updateCall = mockUpdateMany.mock.calls[0][0];
       expect(updateCall.data.rejectedAt).toBeInstanceOf(Date);
       expect(updateCall.data.rejectionReason).toBeUndefined();
     });
@@ -963,7 +970,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "start", "user-1", {
@@ -998,7 +1005,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       const result = await executeManualTransition("wf-1", "start", "user-1");
@@ -1026,12 +1033,12 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       await executeManualTransition("wf-1", "start", "user-1");
 
-      const updateCall = mockUpdate.mock.calls[0][0];
+      const updateCall = mockUpdateMany.mock.calls[0][0];
       expect(updateCall.data.startedAt).toBeInstanceOf(Date);
     });
   });
@@ -1069,6 +1076,7 @@ describe("Authorization Service", () => {
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
       mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       const result = await submitWorkflowToNCA("wf-1", "user-1");
@@ -1125,7 +1133,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       const result = await withdrawWorkflow(
@@ -1163,7 +1171,7 @@ describe("Authorization Service", () => {
         executeTransition: vi.fn().mockResolvedValue(transitionResult),
       });
       mockCreateWorkflowEngine.mockReturnValue(mockEngine);
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       mockLogAuditEvent.mockResolvedValue(undefined);
 
       const result = await withdrawWorkflow("wf-1", "user-1");
@@ -1201,9 +1209,8 @@ describe("Authorization Service", () => {
       expect(result).toBeNull();
     });
 
-    it("should return null when workflow is not found on second lookup", async () => {
-      mockFindUnique.mockResolvedValueOnce(makeWorkflow({ documents: [] }));
-      mockFindUnique.mockResolvedValueOnce(null);
+    it("should return null when workflow is not found on lookup", async () => {
+      mockFindUnique.mockResolvedValue(null);
 
       const result = await getWorkflowSummary("wf-1");
 

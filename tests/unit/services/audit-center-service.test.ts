@@ -8,6 +8,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     organizationMember: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
     articleStatus: {
       findMany: vi.fn(),
@@ -50,6 +51,9 @@ import {
 // ─── Helpers ───
 
 function mockEmptyState() {
+  vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([
+    { userId: "user-1" },
+  ] as never);
   vi.mocked(prisma.articleStatus.findMany).mockResolvedValue([]);
   vi.mocked(prisma.cybersecurityAssessment.findMany).mockResolvedValue([]);
   vi.mocked(prisma.nIS2Assessment.findMany).mockResolvedValue([]);
@@ -911,7 +915,7 @@ describe("Audit Center Service", () => {
 
       // The second call should have a timestamp filter
       const secondCall = vi.mocked(prisma.auditLog.count).mock.calls[1];
-      expect(secondCall[0]).toHaveProperty("where.userId", "user-1");
+      expect(secondCall[0]).toHaveProperty("where.organizationId", "org-1");
       expect(secondCall[0]).toHaveProperty("where.timestamp.gte");
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -946,13 +950,13 @@ describe("Audit Center Service", () => {
       expect(prisma.auditLog.count).toHaveBeenCalledTimes(2);
     });
 
-    it("should filter article statuses by userId", async () => {
+    it("should filter article statuses by org member user IDs", async () => {
       mockEmptyState();
 
       await getAuditCenterOverview("org-1", "user-42");
 
       expect(prisma.articleStatus.findMany).toHaveBeenCalledWith({
-        where: { userId: "user-42" },
+        where: { userId: { in: ["user-1"] } },
         select: { articleId: true, status: true, updatedAt: true },
       });
     });

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// Set ENCRYPTION_KEY before any imports so hashApiKey works
+process.env.ENCRYPTION_KEY = "test-encryption-key-for-unit-tests-32ch";
+
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
   prisma: {

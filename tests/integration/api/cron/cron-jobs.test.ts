@@ -1,5 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// ─── Mock ratelimit ───
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi
+    .fn()
+    .mockResolvedValue({
+      success: true,
+      remaining: 99,
+      reset: Date.now() + 60000,
+      limit: 100,
+    }),
+  getIdentifier: vi.fn().mockReturnValue("test-ip"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
 // ─── Mock notifications module ───
 const mockProcessDeadlineReminders = vi.fn();
 const mockProcessDocumentExpiry = vi.fn();

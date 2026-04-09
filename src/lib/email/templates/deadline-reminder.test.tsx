@@ -119,7 +119,7 @@ describe("deadline-reminder template", () => {
         daysRemaining: 1,
       });
       expect(result.subject).toBe(
-        "[URGENT] DORA Compliance Report - Due in 1 days",
+        "[URGENT] DORA Compliance Report - Due in 1 day",
       );
     });
 

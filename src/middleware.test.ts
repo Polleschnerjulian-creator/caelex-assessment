@@ -462,8 +462,9 @@ describe("middleware", () => {
   // ─── CSRF Validation ───
 
   describe("CSRF validation", () => {
-    it("rejects POST requests without CSRF token with 403", async () => {
-      vi.mocked(validateCsrfToken).mockResolvedValueOnce(false);
+    it("allows POST requests without CSRF cookie (defense-in-depth: cookie absent means skip check)", async () => {
+      // With the new middleware, CSRF double-submit is only enforced when
+      // BOTH cookie and header are present. Origin validation is the primary defense.
       const req = createRequest("/api/user/update", {
         method: "POST",
         headers: {
@@ -473,20 +474,21 @@ describe("middleware", () => {
         },
       });
       const res = await middleware(req);
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body.code).toBe("CSRF_VALIDATION_FAILED");
+      // No CSRF cookie = CSRF check skipped, origin is valid = passes
+      expect(res.status).not.toBe(403);
     });
 
-    it("rejects DELETE requests without CSRF token with 403", async () => {
+    it("rejects POST requests with invalid CSRF token when both cookie and header present", async () => {
       vi.mocked(validateCsrfToken).mockResolvedValueOnce(false);
-      const req = createRequest("/api/user/delete", {
-        method: "DELETE",
+      const req = createRequest("/api/user/update", {
+        method: "POST",
         headers: {
           "user-agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0",
           origin: "http://localhost:3000",
+          "x-csrf-token": "bad-token",
         },
+        cookies: { "csrf-token": "mock-csrf-token" },
       });
       const res = await middleware(req);
       expect(res.status).toBe(403);

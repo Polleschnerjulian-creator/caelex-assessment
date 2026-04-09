@@ -1,6 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// ─── Mock ratelimit ───
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi
+    .fn()
+    .mockResolvedValue({
+      success: true,
+      remaining: 99,
+      reset: Date.now() + 60000,
+      limit: 100,
+    }),
+  getIdentifier: vi.fn().mockReturnValue("test-ip"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
 // ─── Mock SSO service ───
 const mockGetSSOConnection = vi.fn();
 vi.mock("@/lib/services/sso-service", () => ({

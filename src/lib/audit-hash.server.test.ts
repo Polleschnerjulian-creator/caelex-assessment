@@ -147,20 +147,7 @@ describe("audit-hash.server", () => {
   // ─── getLatestHash ───
 
   describe("getLatestHash", () => {
-    it("returns GENESIS_ when no members exist", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([]);
-
-      const result = await getLatestHash("org-1");
-
-      expect(result).toBe("GENESIS_org-1");
-      expect(mockOrgMemberFindMany).toHaveBeenCalledWith({
-        where: { organizationId: "org-1" },
-        select: { userId: true },
-      });
-    });
-
     it("returns GENESIS_ when no hashed entries exist", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
       mockAuditLogFindFirst.mockResolvedValue(null);
 
       const result = await getLatestHash("org-1");
@@ -168,19 +155,15 @@ describe("audit-hash.server", () => {
       expect(result).toBe("GENESIS_org-1");
       expect(mockAuditLogFindFirst).toHaveBeenCalledWith({
         where: {
-          userId: { in: ["user-1"] },
+          organizationId: "org-1",
           entryHash: { not: null },
         },
-        orderBy: { timestamp: "desc" },
+        orderBy: [{ timestamp: "desc" }, { id: "desc" }],
         select: { entryHash: true },
       });
     });
 
     it("returns the latest entryHash when hashed entries exist", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([
-        { userId: "user-1" },
-        { userId: "user-2" },
-      ] as never);
       mockAuditLogFindFirst.mockResolvedValue({
         entryHash: "abc123def456",
       } as never);
@@ -190,16 +173,16 @@ describe("audit-hash.server", () => {
       expect(result).toBe("abc123def456");
       expect(mockAuditLogFindFirst).toHaveBeenCalledWith({
         where: {
-          userId: { in: ["user-1", "user-2"] },
+          organizationId: "org-1",
           entryHash: { not: null },
         },
-        orderBy: { timestamp: "desc" },
+        orderBy: [{ timestamp: "desc" }, { id: "desc" }],
         select: { entryHash: true },
       });
     });
 
     it("returns GENESIS_ on error", async () => {
-      mockOrgMemberFindMany.mockRejectedValue(new Error("DB down"));
+      mockAuditLogFindFirst.mockRejectedValue(new Error("DB down"));
 
       const result = await getLatestHash("org-1");
 
@@ -210,16 +193,7 @@ describe("audit-hash.server", () => {
   // ─── verifyChain ───
 
   describe("verifyChain", () => {
-    it("returns valid for empty chain (no members)", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([]);
-
-      const result = await verifyChain("org-1");
-
-      expect(result).toEqual({ valid: true, checkedEntries: 0 });
-    });
-
     it("returns valid for empty chain (no hashed entries)", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
       mockAuditLogFindMany.mockResolvedValue([]);
 
       const result = await verifyChain("org-1");
@@ -228,8 +202,6 @@ describe("audit-hash.server", () => {
     });
 
     it("returns valid for a correct chain of 2+ entries", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
-
       // Build a valid chain: genesis -> entry1 -> entry2
       const entry1Base = {
         userId: "user-1",
@@ -272,8 +244,6 @@ describe("audit-hash.server", () => {
     });
 
     it("detects a tampered entry", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
-
       const entry1Base = {
         userId: "user-1",
         action: "CREATE",
@@ -309,7 +279,6 @@ describe("audit-hash.server", () => {
     });
 
     it("supports date filters (startDate and endDate)", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
       mockAuditLogFindMany.mockResolvedValue([]);
 
       const startDate = new Date("2025-01-01T00:00:00Z");
@@ -327,7 +296,6 @@ describe("audit-hash.server", () => {
     });
 
     it("does not include timestamp filter when no dates provided", async () => {
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
       mockAuditLogFindMany.mockResolvedValue([]);
 
       await verifyChain("org-1");
@@ -339,7 +307,7 @@ describe("audit-hash.server", () => {
     });
 
     it("returns invalid on error", async () => {
-      mockOrgMemberFindMany.mockRejectedValue(new Error("DB down"));
+      mockAuditLogFindMany.mockRejectedValue(new Error("DB down"));
 
       const result = await verifyChain("org-1");
 
@@ -372,8 +340,7 @@ describe("audit-hash.server", () => {
       mockOrgMemberFindFirst.mockResolvedValue({
         organizationId: "org-1",
       } as never);
-      // getLatestHash: no members -> GENESIS (or we can mock the full chain)
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
+      // getLatestHash: no hashed entries -> GENESIS
       mockAuditLogFindFirst.mockResolvedValue(null); // No prior hashed entries
 
       const entryData = {
@@ -405,7 +372,6 @@ describe("audit-hash.server", () => {
       mockOrgMemberFindFirst.mockResolvedValue({
         organizationId: "org-1",
       } as never);
-      mockOrgMemberFindMany.mockResolvedValue([{ userId: "user-1" }] as never);
       mockAuditLogFindFirst.mockResolvedValue({
         entryHash: existingHash,
       } as never);
