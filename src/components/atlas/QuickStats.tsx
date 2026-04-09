@@ -66,7 +66,7 @@ export default function QuickStats() {
         label: "NO LEGISLATION",
         value: noLaw,
         subLabel: "regulatory gap",
-        color: "text-red-600",
+        color: "text-gray-500",
       },
       {
         label: "TOTAL TRACKED",

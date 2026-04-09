@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
-import RegulatoryMap from "@/components/atlas/RegulatoryMap";
+import JurisdictionTable from "@/components/atlas/JurisdictionTable";
 import LiveFeed from "@/components/atlas/LiveFeed";
 import QuickStats from "@/components/atlas/QuickStats";
 
@@ -33,31 +33,19 @@ export default function CommandCenterPage() {
       {/* ─── Quick Stats ─── */}
       <QuickStats />
 
-      {/* ─── Main grid: Map + Feed ─── */}
+      {/* ─── Main grid: Jurisdiction Table + Feed ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
-        {/* Map area */}
-        <div className="lg:col-span-2 relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="p-4 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
-                European Regulatory Map
-              </span>
-              <span className="text-[10px] text-gray-400 font-mono">
-                19 Jurisdictions Tracked
-              </span>
-            </div>
-            <div className="flex-1 min-h-[400px]">
-              <RegulatoryMap
-                onCountryClick={(code) =>
-                  router.push(`/atlas/jurisdictions/${code}`)
-                }
-              />
-            </div>
-          </div>
+        {/* Jurisdiction Table */}
+        <div className="lg:col-span-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col min-h-[500px]">
+          <JurisdictionTable
+            onCountryClick={(code) =>
+              router.push(`/atlas/jurisdictions/${code}`)
+            }
+          />
         </div>
 
         {/* Feed area */}
-        <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col min-h-[500px]">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col min-h-[500px]">
           <LiveFeed />
         </div>
       </div>
