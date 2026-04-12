@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
+import CompanyProfileBar from "@/components/dashboard/CompanyProfileBar";
+import ProfileSlideOver from "@/components/dashboard/ProfileSlideOver";
 import { ToastProvider } from "@/components/ui/Toast";
 import { OrganizationProvider } from "@/components/providers/OrganizationProvider";
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
@@ -18,6 +20,7 @@ import {
   LanguageProvider,
   useLanguage,
 } from "@/components/providers/LanguageProvider";
+import type { CompanyProfileData } from "@/lib/dashboard/profile-types";
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard": "sidebar.dashboard",
@@ -57,6 +60,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [layoutMounted, setLayoutMounted] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileData, setProfileData] = useState<CompanyProfileData | null>(
+    null,
+  );
   const pathname = usePathname();
 
   useEffect(() => {
@@ -85,6 +92,37 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, [status, router]);
+
+  // Fetch operator profile data
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    fetch("/api/dashboard/profile")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.success) {
+          setProfileData(data.profile);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
+  const handleProfileSave = useCallback(async (data: CompanyProfileData) => {
+    const res = await fetch("/api/dashboard/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (result.success) {
+      setProfileData(result.profile);
+    } else {
+      throw new Error(result.error ?? "Save failed");
+    }
+  }, []);
 
   // Derive page title from route
   let pageTitle: string | undefined;
@@ -186,6 +224,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         data-content="caelex"
         className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle"
       >
+        {/* Company Profile Bar — always visible */}
+        <CompanyProfileBar
+          data={profileData}
+          onEditClick={() => setProfileOpen(true)}
+        />
         {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
         )}
@@ -202,6 +245,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           )}
         </main>
       </div>
+
+      {/* Profile Slide-Over */}
+      <ProfileSlideOver
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        data={profileData}
+        onSave={handleProfileSave}
+      />
 
       {/* Floating Astra FAB — hidden when Forge is active or widget is open */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
