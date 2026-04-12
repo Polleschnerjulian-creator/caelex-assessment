@@ -64,6 +64,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [profileData, setProfileData] = useState<CompanyProfileData | null>(
     null,
   );
+  const [complianceScore, setComplianceScore] = useState<number | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -102,6 +103,26 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       .then((data) => {
         if (!cancelled && data.success) {
           setProfileData(data.profile);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
+  // Fetch compliance score for profile bar
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    fetch("/api/dashboard/compliance-score")
+      .then((r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then((data) => {
+        if (!cancelled && data && typeof data.overall === "number") {
+          setComplianceScore(data.overall);
         }
       })
       .catch(() => {});
@@ -281,6 +302,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <CompanyProfileBar
           data={profileData}
           onEditClick={() => setProfileOpen(true)}
+          complianceScore={complianceScore}
         />
         {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
