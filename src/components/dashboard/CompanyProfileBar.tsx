@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Satellite, Radio, ChevronRight } from "lucide-react";
+import {
+  Pencil,
+  Globe,
+  Building2,
+  Orbit,
+  Layers,
+  ChevronRight,
+  ArrowRight,
+} from "lucide-react";
 import type { CompanyProfileData } from "@/lib/dashboard/profile-types";
 import {
-  getCountryFlag,
   getCountryName,
   ENTITY_SIZE_LABELS,
   ACTIVITY_TYPE_OPTIONS,
@@ -15,15 +22,15 @@ import {
 interface CompanyProfileBarProps {
   data: CompanyProfileData | null;
   onEditClick: () => void;
-  complianceScore?: number | null; // 0-100 or null if not yet computed
+  complianceScore?: number | null;
 }
 
-/* ─── Score Ring (SVG arc) ─── */
+/* ─── Score Ring ─── */
 
 function ScoreRing({
   score,
-  size = 72,
-  strokeWidth = 5,
+  size = 128,
+  strokeWidth = 6,
 }: {
   score: number | null;
   size?: number;
@@ -35,41 +42,34 @@ function ScoreRing({
   const hasScore = score !== null && score !== undefined;
   const displayScore = hasScore ? Math.round(score) : null;
 
-  // Determine color based on score
   const getColor = (s: number) => {
-    if (s >= 80) return "#10B981"; // emerald-500
-    if (s >= 60) return "#22C55E"; // green-500
-    if (s >= 40) return "#F59E0B"; // amber-500
-    return "#EF4444"; // red-500
+    if (s >= 80) return "#10B981";
+    if (s >= 60) return "#22C55E";
+    if (s >= 40) return "#F59E0B";
+    return "#EF4444";
   };
 
-  const arcColor = hasScore ? getColor(displayScore!) : "#D1D5DB";
+  const arcColor = hasScore ? getColor(displayScore!) : "#E5E7EB";
 
-  // Animate the arc on mount
   useEffect(() => {
     if (!hasScore) {
       setOffset(circumference);
       return;
     }
-    // Start fully hidden, animate to target
     const target = circumference - (displayScore! / 100) * circumference;
-    // Small delay so the animation is visible after mount
-    const timer = setTimeout(() => setOffset(target), 80);
+    const timer = setTimeout(() => setOffset(target), 120);
     return () => clearTimeout(timer);
   }, [hasScore, displayScore, circumference]);
-
-  // Glow for high scores
-  const showGlow = hasScore && displayScore! >= 70;
 
   return (
     <div
       className="relative flex-shrink-0"
       style={{ width: size, height: size }}
     >
-      {/* Subtle glow behind high scores */}
-      {showGlow && (
+      {/* Glow for high scores */}
+      {hasScore && displayScore! >= 60 && (
         <div
-          className="absolute inset-0 rounded-full opacity-30 blur-md"
+          className="absolute inset-2 rounded-full opacity-15 blur-xl"
           style={{ background: arcColor }}
         />
       )}
@@ -79,17 +79,17 @@ function ScoreRing({
         viewBox={`0 0 ${size} ${size}`}
         className="relative z-[1] -rotate-90"
       >
-        {/* Background track */}
+        {/* Track */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E5E7EB"
+          stroke="#F3F4F6"
           strokeWidth={strokeWidth}
-          className="dark:stroke-white/10"
+          className="dark:stroke-white/[0.06]"
         />
-        {/* Filled arc */}
+        {/* Arc */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -101,259 +101,212 @@ function ScoreRing({
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           style={{
-            transition:
-              "stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            transition: "stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         />
       </svg>
-      {/* Center label */}
+      {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-[2]">
         {hasScore ? (
-          <span
-            className="text-[20px] font-bold tracking-tight tabular-nums text-gray-900 dark:text-white leading-none"
-            style={{ fontFeatureSettings: "'tnum'" }}
-          >
-            {displayScore}
-          </span>
+          <>
+            <span
+              className="text-[36px] font-bold tracking-tight text-gray-900 dark:text-white leading-none font-mono"
+              style={{ fontFeatureSettings: "'tnum'" }}
+            >
+              {displayScore}
+            </span>
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.15em] mt-1">
+              Score
+            </span>
+          </>
         ) : (
-          <span className="text-[18px] font-semibold text-gray-300 dark:text-white/30 leading-none">
-            --
-          </span>
+          <>
+            <span className="text-[28px] font-light text-gray-200 dark:text-white/10 leading-none">
+              —
+            </span>
+            <span className="text-[9px] font-medium text-gray-300 uppercase tracking-[0.15em] mt-1">
+              No data
+            </span>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-/* ─── Activity Badge ─── */
+/* ─── Data Field ─── */
 
-function ActivityBadge({ code }: { code: string }) {
+function DataField({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[9px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em]">
+        {label}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <Icon
+          size={13}
+          className="text-gray-400 dark:text-gray-500"
+          strokeWidth={1.5}
+        />
+        <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 tracking-tight">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Activity Pill ─── */
+
+function ActivityPill({ code }: { code: string }) {
   const opt = ACTIVITY_TYPE_OPTIONS.find((a) => a.code === code);
   return (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300 leading-tight">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide bg-gray-100 text-gray-700 dark:bg-white/[0.08] dark:text-gray-300 border border-gray-200/60 dark:border-white/[0.06]">
       {opt?.code ?? code}
     </span>
   );
 }
 
-/* ─── Size Badge ─── */
-
-function SizeBadge({ size }: { size: string }) {
-  const label = ENTITY_SIZE_LABELS[size] ?? size;
-  return (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300 leading-tight">
-      {label}
-    </span>
-  );
-}
-
-/* ─── Dot separator ─── */
-
-function Dot() {
-  return (
-    <span
-      className="text-gray-300 dark:text-white/20 text-[10px] mx-0.5 select-none"
-      aria-hidden
-    >
-      ·
-    </span>
-  );
-}
-
-/* ─── Main Component ─── */
+/* ─── Main ─── */
 
 export default function CompanyProfileBar({
   data,
   onEditClick,
   complianceScore,
 }: CompanyProfileBarProps) {
-  // ── No profile data: show CTA ──
-  if (!data) {
+  // ── Empty state ──
+  if (
+    !data ||
+    !(
+      data.companyName ||
+      data.establishmentCountry ||
+      data.entitySize ||
+      data.activityTypes.length > 0
+    )
+  ) {
     return (
-      <div className="cpb-glass relative border-b">
-        <div className="px-4 lg:px-6 py-3 flex items-center gap-4">
-          {/* Empty score ring */}
-          <ScoreRing score={null} size={64} />
-
-          {/* CTA content */}
+      <div className="cpb-glass border-b">
+        <div className="px-6 lg:px-8 py-6 flex items-center gap-8">
+          <ScoreRing score={null} size={100} strokeWidth={5} />
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-[18px] font-semibold text-gray-900 dark:text-white tracking-tight">
               Complete your Operator Assessment
-            </p>
-            <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
-              8 questions, takes 3 minutes — unlocks your compliance dashboard
+            </h2>
+            <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              Define your operator profile to unlock compliance scoring,
+              regulatory tracking, and module-level analysis across EU Space
+              Act, NIS2, and national space laws.
             </p>
           </div>
-
-          {/* CTA button */}
           <a
             href="/assessment/unified"
-            className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-semibold text-white bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-lg transition-colors duration-150 shadow-sm shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold text-white bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-xl transition-colors duration-200 shadow-sm shrink-0"
           >
             Start Assessment
-            <ChevronRight size={13} />
+            <ArrowRight size={14} strokeWidth={2} />
           </a>
         </div>
       </div>
     );
   }
 
-  const hasData =
-    data.companyName ||
-    data.establishmentCountry ||
-    data.entitySize ||
-    data.activityTypes.length > 0;
-
-  if (!hasData) {
-    return (
-      <div className="cpb-glass relative border-b">
-        <div className="px-4 lg:px-6 py-3 flex items-center gap-4">
-          <ScoreRing score={null} size={64} />
-          <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-gray-900 dark:text-white">
-              Complete your Operator Assessment
-            </p>
-            <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
-              8 questions, takes 3 minutes — unlocks your compliance dashboard
-            </p>
-          </div>
-          <a
-            href="/assessment/unified"
-            className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-semibold text-white bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-lg transition-colors duration-150 shadow-sm shrink-0"
-          >
-            Start Assessment
-            <ChevronRight size={13} />
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Build derived display values ──
-  const flag = getCountryFlag(data.establishmentCountry);
+  // ── Build values ──
   const countryName = getCountryName(data.establishmentCountry);
-
+  const sizeLabel = data.entitySize
+    ? (ENTITY_SIZE_LABELS[data.entitySize] ?? data.entitySize)
+    : null;
   const constellationLabel = data.operatesConstellation
     ? data.constellationSize
       ? `${data.constellationSize} satellites`
       : "Constellation"
     : data.spacecraftCount
-      ? `${data.spacecraftCount} s/c`
+      ? `${data.spacecraftCount} spacecraft`
       : null;
 
   return (
-    <div className="cpb-glass relative border-b">
-      <div className="px-4 lg:px-6 py-3 flex items-center gap-5">
-        {/* ── Left: Score Ring ── */}
-        <div className="flex flex-col items-center gap-1 shrink-0">
-          <ScoreRing
-            score={complianceScore ?? null}
-            size={68}
-            strokeWidth={5}
-          />
-          <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider leading-none">
-            {complianceScore !== null && complianceScore !== undefined
-              ? "Compliance"
-              : "Run Assessment"}
-          </span>
-        </div>
+    <div className="cpb-glass border-b">
+      <div className="px-6 lg:px-8 py-5 flex items-center gap-8">
+        {/* ── Score Ring ── */}
+        <ScoreRing score={complianceScore ?? null} size={120} strokeWidth={5} />
 
-        {/* ── Center: Company profile data ── */}
-        <button
-          type="button"
-          onClick={onEditClick}
-          className="flex-1 min-w-0 text-left group cursor-pointer rounded-lg px-2 py-1.5 -mx-2 -my-1.5 transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-white/[0.04]"
-        >
-          {/* Row 1: Company name */}
-          <div className="flex items-center gap-2">
-            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-white truncate leading-tight">
+        {/* ── Profile Content ── */}
+        <div className="flex-1 min-w-0">
+          {/* Company name + edit */}
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-[22px] font-bold text-gray-900 dark:text-white tracking-tight truncate">
               {data.companyName || "Unnamed Operator"}
             </h2>
-            <Pencil
-              size={12}
-              className="text-gray-300 dark:text-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0"
-            />
+            <button
+              type="button"
+              onClick={onEditClick}
+              className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-semibold text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white bg-gray-100/80 hover:bg-gray-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-gray-200/60 dark:border-white/[0.08] rounded-lg transition-all duration-200"
+            >
+              <Pencil size={11} strokeWidth={2} />
+              Edit
+            </button>
           </div>
 
-          {/* Row 2: Compact data pills */}
-          <div className="flex items-center flex-wrap gap-x-1 gap-y-0.5 mt-1">
+          {/* Data grid */}
+          <div className="flex items-start flex-wrap gap-x-8 gap-y-3">
             {/* Country */}
-            {data.establishmentCountry && (
-              <>
-                <span className="inline-flex items-center gap-1 text-[12px] text-gray-500 dark:text-gray-400">
-                  <span>{flag}</span>
-                  <span className="hidden sm:inline">{countryName}</span>
-                </span>
-                {(data.entitySize ||
-                  data.activityTypes.length > 0 ||
-                  data.primaryOrbitalRegime ||
-                  constellationLabel) && <Dot />}
-              </>
+            {countryName && (
+              <DataField
+                icon={Globe}
+                label="Jurisdiction"
+                value={countryName}
+              />
             )}
 
             {/* Entity size */}
-            {data.entitySize && (
-              <>
-                <SizeBadge size={data.entitySize} />
-                {(data.activityTypes.length > 0 ||
-                  data.primaryOrbitalRegime ||
-                  constellationLabel) && <Dot />}
-              </>
-            )}
-
-            {/* Activity types */}
-            {data.activityTypes.length > 0 && (
-              <>
-                <span className="inline-flex items-center gap-0.5">
-                  {data.activityTypes.slice(0, 3).map((code) => (
-                    <ActivityBadge key={code} code={code} />
-                  ))}
-                  {data.activityTypes.length > 3 && (
-                    <span className="text-[10px] text-gray-400 font-medium ml-0.5">
-                      +{data.activityTypes.length - 3}
-                    </span>
-                  )}
-                </span>
-                {(data.primaryOrbitalRegime || constellationLabel) && <Dot />}
-              </>
+            {sizeLabel && (
+              <DataField
+                icon={Building2}
+                label="Entity Size"
+                value={sizeLabel}
+              />
             )}
 
             {/* Primary orbit */}
             {data.primaryOrbitalRegime && (
-              <>
-                <span className="inline-flex items-center gap-1 text-[12px] text-gray-500 dark:text-gray-400">
-                  <Radio
-                    size={11}
-                    className="text-gray-400 dark:text-gray-500"
-                  />
-                  {data.primaryOrbitalRegime}
-                </span>
-                {constellationLabel && <Dot />}
-              </>
+              <DataField
+                icon={Orbit}
+                label="Primary Orbit"
+                value={data.primaryOrbitalRegime}
+              />
             )}
 
-            {/* Constellation / spacecraft info */}
+            {/* Constellation */}
             {constellationLabel && (
-              <span className="inline-flex items-center gap-1 text-[12px] text-gray-500 dark:text-gray-400">
-                <Satellite
-                  size={11}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                {constellationLabel}
-              </span>
+              <DataField
+                icon={Layers}
+                label="Fleet"
+                value={constellationLabel}
+              />
+            )}
+
+            {/* Activity types */}
+            {data.activityTypes.length > 0 && (
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em]">
+                  Activities
+                </span>
+                <div className="flex items-center gap-1">
+                  {data.activityTypes.map((code) => (
+                    <ActivityPill key={code} code={code} />
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-        </button>
-
-        {/* ── Right: Edit button ── */}
-        <button
-          type="button"
-          onClick={onEditClick}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-50 dark:bg-white/[0.06] hover:bg-gray-100 dark:hover:bg-white/[0.1] border border-gray-200 dark:border-white/10 rounded-lg transition-colors duration-150 shrink-0"
-        >
-          <Pencil size={12} />
-          Edit
-        </button>
+        </div>
       </div>
     </div>
   );
