@@ -90,7 +90,37 @@ export default function CompanyProfileBar({
   data,
   onEditClick,
 }: CompanyProfileBarProps) {
-  if (!data) return null;
+  // Treat null/undefined data the same as empty profile — show the
+  // assessment CTA banner so the user knows they need to complete the
+  // unified assessment before the dashboard becomes useful.
+  if (!data) {
+    return (
+      <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-b border-emerald-200/60">
+        <div className="h-12 px-4 lg:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-emerald-100">
+              <Rocket size={14} className="text-emerald-600" />
+            </div>
+            <div>
+              <span className="text-[13px] font-semibold text-gray-900">
+                Complete your Operator Assessment to unlock your dashboard
+              </span>
+              <span className="hidden sm:inline text-[12px] text-gray-500 ml-2">
+                — 8 questions, takes 3 minutes
+              </span>
+            </div>
+          </div>
+          <a
+            href="/assessment/unified"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors duration-150 shadow-sm"
+          >
+            Start Assessment
+            <ChevronRight size={13} />
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const hasData =
     data.companyName ||
@@ -100,22 +130,28 @@ export default function CompanyProfileBar({
 
   if (!hasData) {
     return (
-      <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
-        <div className="h-11 px-4 lg:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 size={15} className="text-gray-400" />
-            <span className="text-[13px] text-gray-500">
-              No operator profile configured yet
-            </span>
+      <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-b border-emerald-200/60">
+        <div className="h-12 px-4 lg:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-emerald-100">
+              <Rocket size={14} className="text-emerald-600" />
+            </div>
+            <div>
+              <span className="text-[13px] font-semibold text-gray-900">
+                Complete your Operator Assessment to unlock your dashboard
+              </span>
+              <span className="hidden sm:inline text-[12px] text-gray-500 ml-2">
+                — 8 questions, takes 3 minutes
+              </span>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onEditClick}
-            className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors duration-150"
+          <a
+            href="/assessment/unified"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors duration-150 shadow-sm"
           >
-            Set Up Profile
+            Start Assessment
             <ChevronRight size={13} />
-          </button>
+          </a>
         </div>
       </div>
     );
