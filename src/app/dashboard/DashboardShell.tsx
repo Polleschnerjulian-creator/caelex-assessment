@@ -191,8 +191,61 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div data-shell="caelex" className="caelex-v2 dashboard-wallpaper">
+    <div
+      data-shell="caelex"
+      className="caelex-v2 dashboard-wallpaper relative overflow-hidden"
+    >
       <GlassSpecular />
+
+      {/* Gradient Mesh Orbs — subtle refraction background for glass surfaces */}
+      <div
+        className="glass-mesh-orb"
+        style={{
+          width: 600,
+          height: 600,
+          top: -120,
+          right: -100,
+          background:
+            "radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="glass-mesh-orb"
+        style={{
+          width: 500,
+          height: 500,
+          top: "40%",
+          left: -150,
+          background:
+            "radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="glass-mesh-orb"
+        style={{
+          width: 450,
+          height: 450,
+          bottom: -100,
+          right: "25%",
+          background:
+            "radial-gradient(circle, rgba(139,92,246,0.04) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="glass-mesh-orb"
+        style={{
+          width: 350,
+          height: 350,
+          top: "20%",
+          left: "50%",
+          background:
+            "radial-gradient(circle, rgba(6,182,212,0.04) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
       {/* Sidebar */}
       <Sidebar
         user={
@@ -222,7 +275,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       `}</style>
       <div
         data-content="caelex"
-        className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle"
+        className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle relative z-[1]"
       >
         {/* Company Profile Bar — always visible */}
         <CompanyProfileBar

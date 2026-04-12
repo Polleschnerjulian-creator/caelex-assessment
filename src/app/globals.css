@@ -980,13 +980,203 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --glass-specular-opacity: 0.07;
 }
 
-/* ─── Dashboard Wallpaper (dark mode only) ─── */
+/* ─── Dashboard Wallpaper ─── */
 .dark .dashboard-wallpaper {
   background: var(--glass-bg-base);
   background-image:
     var(--glass-bg-gradient), var(--glass-bg-accent-glow),
     var(--glass-bg-secondary-glow);
   min-height: 100vh;
+}
+
+/* Light mode wallpaper — subtle warm gray */
+.light .dashboard-wallpaper,
+html:not(.dark) .dashboard-wallpaper {
+  background: #f7f8fa;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ─── Light Mode Liquid Glass Classes ─── */
+
+.light .caelex-v2 .glass-light,
+html:not(.dark) .caelex-v2 .glass-light {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  backdrop-filter: blur(12px) saturate(100%);
+  -webkit-backdrop-filter: blur(12px) saturate(100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+
+/* Noise texture for glass realism */
+.light .caelex-v2 .glass-light::before,
+html:not(.dark) .caelex-v2 .glass-light::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.light .caelex-v2 .glass-light-nav,
+html:not(.dark) .caelex-v2 .glass-light-nav {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  backdrop-filter: blur(16px) saturate(110%);
+  -webkit-backdrop-filter: blur(16px) saturate(110%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.light .caelex-v2 .glass-light-nav::before,
+html:not(.dark) .caelex-v2 .glass-light-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.light .caelex-v2 .glass-light-elevated,
+html:not(.dark) .caelex-v2 .glass-light-elevated {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+
+.light .caelex-v2 .glass-light-elevated::before,
+html:not(.dark) .caelex-v2 .glass-light-elevated::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Company Profile Bar glass — light mode */
+.light .cpb-glass,
+html:not(.dark) .cpb-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.35) 100%
+  );
+  backdrop-filter: blur(12px) saturate(100%);
+  -webkit-backdrop-filter: blur(12px) saturate(100%);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Company Profile Bar glass — dark mode */
+.dark .cpb-glass {
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient mesh orbs — subtle refraction background for light glass */
+.glass-mesh-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Hide mesh orbs in dark mode — dark mode uses its own glow system */
+.dark .glass-mesh-orb {
+  display: none;
+}
+
+/* Light mode glass-subtle override — the content area wrapper */
+.light .caelex-v2 .glass-subtle,
+html:not(.dark) .caelex-v2 .glass-subtle {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px) saturate(100%);
+  -webkit-backdrop-filter: blur(8px) saturate(100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Light mode glass override — mid-tier panels */
+.light .caelex-v2 .glass,
+html:not(.dark) .caelex-v2 .glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.35) 100%
+  );
+  backdrop-filter: blur(12px) saturate(100%);
+  -webkit-backdrop-filter: blur(12px) saturate(100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Light mode glass-elevated override */
+.light .caelex-v2 .glass-elevated,
+html:not(.dark) .caelex-v2 .glass-elevated {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-neu-raised);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Suppress dark-mode specular pseudo-elements in light mode */
+.light .caelex-v2 .glass::before,
+.light .caelex-v2 .glass-elevated::before,
+.light .caelex-v2 .glass::after,
+.light .caelex-v2 .glass-elevated::after,
+.light .caelex-v2 .glass-card::after,
+html:not(.dark) .caelex-v2 .glass::before,
+html:not(.dark) .caelex-v2 .glass-elevated::before,
+html:not(.dark) .caelex-v2 .glass::after,
+html:not(.dark) .caelex-v2 .glass-elevated::after,
+html:not(.dark) .caelex-v2 .glass-card::after {
+  display: none;
 }
 
 /* ─── Liquid Glass Utility Classes (dark mode only) ─── */
@@ -1276,13 +1466,21 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   box-shadow: 0 0 0 4px rgba(90, 114, 245, 0.12);
 }
 
-/* V2 form element overrides for dark theme */
-.caelex-v2 input,
-.caelex-v2 select,
-.caelex-v2 textarea {
+/* V2 form element overrides */
+.dark .caelex-v2 input,
+.dark .caelex-v2 select,
+.dark .caelex-v2 textarea {
   color: var(--text-primary);
   background-color: rgba(0, 0, 0, 0.2);
   border-color: rgba(255, 255, 255, 0.06);
+}
+
+.light .caelex-v2 input,
+.light .caelex-v2 select,
+.light .caelex-v2 textarea {
+  color: var(--text-primary);
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .caelex-v2 input::placeholder,
@@ -1467,13 +1665,16 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --surface-sunken: #f2f3f6;
   --surface-overlay: #ffffff;
 
-  /* ─── Sidebar Glass Panel (light mode) ─── */
-  --sidebar-glass-bg: rgba(255, 255, 255, 0.72);
-  --sidebar-glass-border: rgba(255, 255, 255, 0.75);
+  /* ─── Sidebar Glass Panel (light mode — Apple Liquid Glass) ─── */
+  --sidebar-glass-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  --sidebar-glass-border: rgba(0, 0, 0, 0.08);
   --sidebar-glass-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.015);
+    0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
   --sidebar-toggle-bg: rgba(255, 255, 255, 0.85);
   --sidebar-toggle-border: rgba(0, 0, 0, 0.06);
   --sidebar-tooltip-bg: #1a1a2e;
@@ -1496,13 +1697,43 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --astra-fab-bg: rgba(255, 255, 255, 0.7);
   --astra-fab-border: rgba(255, 255, 255, 0.6);
 
-  /* ─── Glass Surfaces (Frosted Glass) ─── */
+  /* ─── Glass Surfaces (Frosted Glass — Apple Liquid Glass Light) ─── */
   --glass-bg: rgba(255, 255, 255, 0.65);
   --glass-bg-hover: rgba(255, 255, 255, 0.8);
   --glass-bg-active: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-border-hover: rgba(0, 0, 0, 0.1);
   --glass-border-active: rgba(0, 0, 0, 0.14);
+
+  /* Liquid Glass blur tokens (light: slightly lower than dark) */
+  --glass-blur-1: 16px;
+  --glass-blur-2: 12px;
+  --glass-blur-3: 16px;
+  --glass-bg-1: rgba(255, 255, 255, 0.45);
+  --glass-bg-2: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  --glass-bg-3: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  --glass-border-1: rgba(0, 0, 0, 0.06);
+  --glass-border-2: rgba(0, 0, 0, 0.08);
+  --glass-border-3: rgba(0, 0, 0, 0.1);
+  --glass-shadow-1: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --glass-shadow-2:
+    0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --glass-shadow-3:
+    0 12px 48px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --glass-hover: rgba(255, 255, 255, 0.8);
+  --glass-active: rgba(255, 255, 255, 0.9);
+
+  --glass-text-primary: #111827;
+  --glass-text-secondary: #4b5563;
+  --glass-text-muted: #9ca3af;
 
   /* ─── Text ─── */
   --text-primary: #111118;
@@ -1576,7 +1807,11 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --fill-inset: var(--bg-base);
   --separator: rgba(0, 0, 0, 0.06);
   --separator-strong: rgba(0, 0, 0, 0.08);
-  --topbar-bg: rgba(255, 255, 255, 0.75);
+  --topbar-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
 
   /* ─── Shadow System — Neumorphic Light Mode ─── */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);

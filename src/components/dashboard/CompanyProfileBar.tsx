@@ -167,8 +167,8 @@ export default function CompanyProfileBar({
       : "Single";
 
   return (
-    <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
-      <div className="h-11 px-4 lg:px-6 flex items-center justify-between overflow-x-auto scrollbar-none">
+    <div className="cpb-glass relative border-b">
+      <div className="h-11 px-4 lg:px-6 flex items-center justify-between overflow-x-auto scrollbar-none relative z-[1]">
         {/* Left: Data fields */}
         <div className="flex items-center gap-1 min-w-0">
           {/* Company name */}

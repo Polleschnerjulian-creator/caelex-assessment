@@ -66,7 +66,7 @@ const ComplianceScoreCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="animate-pulse rounded-2xl h-32 bg-white/10" />
+      <div className="animate-pulse rounded-2xl h-32 bg-black/[0.04] dark:bg-white/10" />
     ),
   },
 );
@@ -232,14 +232,16 @@ const DEMO_RISK_HEATMAP = [
 // ─── Glass Panel Styles ───
 
 const glassPanel: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.55)",
-  backdropFilter: "blur(24px) saturate(1.4)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-  border: "1px solid rgba(255, 255, 255, 0.45)",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.30) 100%)",
+  backdropFilter: "blur(12px) saturate(100%)",
+  WebkitBackdropFilter: "blur(12px) saturate(100%)",
+  border: "1px solid rgba(0, 0, 0, 0.08)",
   borderRadius: 20,
   boxShadow:
-    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+    "0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.50)",
   overflow: "hidden",
+  position: "relative" as const,
 };
 
 const glassPanelDark: React.CSSProperties = {
@@ -258,7 +260,7 @@ const glassPanelDark: React.CSSProperties = {
 function ChartSkeleton() {
   return (
     <div className="h-[240px] w-full flex items-center justify-center">
-      <Loader2 className="w-5 h-5 text-slate-400 dark:text-slate-600 animate-spin" />
+      <Loader2 className="w-5 h-5 text-[#9CA3AF] animate-spin" />
     </div>
   );
 }
@@ -342,8 +344,8 @@ function KPIMetric({
     trend === "up"
       ? "text-emerald-500"
       : trend === "down"
-        ? "text-red-400"
-        : "text-slate-400 dark:text-slate-500";
+        ? "text-red-500 dark:text-red-400"
+        : "text-[#9CA3AF] dark:text-slate-500";
 
   return (
     <GlassPanel
@@ -351,7 +353,7 @@ function KPIMetric({
       className="p-5 group hover:-translate-y-0.5 transition-transform duration-300"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="w-8 h-8 rounded-xl bg-white/50 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.06] flex items-center justify-center">
           <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </div>
         {trend && trendValue && (
@@ -361,10 +363,10 @@ function KPIMetric({
           </div>
         )}
       </div>
-      <p className="text-[32px] font-semibold text-slate-900 dark:text-white leading-none tracking-tight mb-1">
+      <p className="text-[32px] font-semibold text-[#111827] dark:text-white leading-none tracking-tight mb-1">
         {value}
       </p>
-      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+      <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 uppercase tracking-wider">
         {label}
       </p>
       {sparkData && sparkData.length > 0 && (
@@ -382,7 +384,7 @@ function KPIMetric({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 tracking-[-0.01em] mb-3">
+    <h3 className="text-[13px] font-semibold text-[#111827] dark:text-slate-200 tracking-[-0.01em] mb-3">
       {children}
     </h3>
   );
@@ -402,7 +404,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] hover:bg-white/70 dark:hover:bg-white/[0.06] transition-all duration-200 group/qa"
+      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/50 dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06] hover:bg-white/80 dark:hover:bg-white/[0.06] transition-all duration-200 group/qa"
     >
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -413,10 +415,10 @@ function QuickAction({
       >
         <Icon className="w-4 h-4 text-current" />
       </div>
-      <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300 group-hover/qa:text-slate-900 dark:group-hover/qa:text-white transition-colors">
+      <span className="text-[12px] font-medium text-[#4B5563] dark:text-slate-300 group-hover/qa:text-[#111827] dark:group-hover/qa:text-white transition-colors">
         {label}
       </span>
-      <ArrowUpRight className="w-3 h-3 text-slate-400 dark:text-slate-500 ml-auto opacity-0 group-hover/qa:opacity-100 transition-opacity" />
+      <ArrowUpRight className="w-3 h-3 text-[#9CA3AF] dark:text-slate-500 ml-auto opacity-0 group-hover/qa:opacity-100 transition-opacity" />
     </Link>
   );
 }
@@ -438,15 +440,15 @@ function DeadlineRow({
   const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-black/[0.05] dark:border-white/[0.04] last:border-0">
       <div
         className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColors[deadline.priority]}`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] text-slate-700 dark:text-slate-300 truncate">
+        <p className="text-[12px] text-[#374151] dark:text-slate-300 truncate">
           {deadline.title}
         </p>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+        <p className="text-[10px] text-[#9CA3AF] dark:text-slate-500 mt-0.5">
           {daysUntil > 0 ? `${daysUntil} days` : "Overdue"}
         </p>
       </div>
@@ -484,7 +486,7 @@ function RiskCell({ module, risk }: { module: string; risk: string }) {
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-[9px] text-slate-400 dark:text-slate-500">
+      <span className="text-[9px] text-[#9CA3AF] dark:text-slate-500">
         {module}
       </span>
     </div>
@@ -516,14 +518,14 @@ function ActivityRow({
     mins < 60 ? `${mins}m` : hours < 24 ? `${hours}h` : `${days}d`;
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0">
-      <div className="w-7 h-7 rounded-lg bg-white/50 dark:bg-white/[0.06] flex items-center justify-center flex-shrink-0">
-        <Icon className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+    <div className="flex items-center gap-3 py-2 border-b border-black/[0.05] dark:border-white/[0.04] last:border-0">
+      <div className="w-7 h-7 rounded-lg bg-white/60 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center flex-shrink-0">
+        <Icon className="w-3.5 h-3.5 text-[#6B7280] dark:text-slate-500" />
       </div>
-      <p className="flex-1 text-[11px] text-slate-600 dark:text-slate-400 truncate">
+      <p className="flex-1 text-[11px] text-[#4B5563] dark:text-slate-400 truncate">
         {activity.description || activity.action.replace(/_/g, " ")}
       </p>
-      <span className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+      <span className="text-[10px] text-[#9CA3AF] dark:text-slate-500 flex-shrink-0">
         {timeAgo}
       </span>
     </div>
@@ -841,14 +843,14 @@ function DashboardContent() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-4 overflow-hidden">
+      <div className="h-screen bg-[#F7F8FA] dark:bg-transparent p-4 overflow-hidden">
         <div className="animate-pulse space-y-4 h-full">
-          <div className="h-10 bg-white/30 dark:bg-white/5 rounded-2xl w-1/3" />
+          <div className="h-10 bg-black/[0.04] dark:bg-white/5 rounded-2xl w-1/3" />
           <div className="grid grid-cols-4 gap-3">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-white/30 dark:bg-white/5 rounded-2xl"
+                className="h-32 bg-black/[0.04] dark:bg-white/5 rounded-2xl"
               />
             ))}
           </div>
@@ -856,7 +858,7 @@ function DashboardContent() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-64 bg-white/30 dark:bg-white/5 rounded-2xl"
+                className="h-64 bg-black/[0.04] dark:bg-white/5 rounded-2xl"
               />
             ))}
           </div>
@@ -866,7 +868,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent overflow-y-auto">
+    <div className="h-screen bg-[#F7F8FA] dark:bg-transparent overflow-y-auto">
       {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
@@ -878,7 +880,7 @@ function DashboardContent() {
           >
             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-xl">
               <CheckCircle className="w-5 h-5 text-emerald-500" />
-              <span className="text-[13px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="text-[13px] text-emerald-600 font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
@@ -900,10 +902,10 @@ function DashboardContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
           >
-            <p className="text-[13px] text-slate-500 dark:text-slate-400 mb-0.5">
+            <p className="text-[13px] text-[#6B7280] dark:text-slate-400 mb-0.5">
               {greeting}, {firstName}
             </p>
-            <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight leading-none">
+            <h1 className="text-[28px] font-semibold text-[#111827] dark:text-white tracking-tight leading-none">
               {t("dashboard.commandCenter")}
             </h1>
           </motion.div>
@@ -918,14 +920,14 @@ function DashboardContent() {
             {!hasData && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                <span className="text-[11px] font-medium text-amber-600">
                   Demo Mode
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.06]">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06]">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">
                 {daysUntilEnforcement}d to enforcement
               </span>
             </div>
@@ -940,10 +942,10 @@ function DashboardContent() {
                 <ClipboardList className="w-5 h-5 text-blue-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[13px] font-semibold text-slate-800 dark:text-white">
+                <h3 className="text-[13px] font-semibold text-[#111827] dark:text-white">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -1024,10 +1026,10 @@ function DashboardContent() {
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
               <Sparkles className="w-6 h-6 text-blue-500" />
             </div>
-            <h2 className="text-[15px] font-semibold text-slate-800 dark:text-white mb-1">
+            <h2 className="text-[15px] font-semibold text-[#111827] dark:text-white mb-1">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4 max-w-md mx-auto">
+            <p className="text-[12px] text-[#6B7280] dark:text-slate-400 mb-4 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
@@ -1040,7 +1042,7 @@ function DashboardContent() {
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="border border-black/[0.08] dark:border-white/[0.1] text-slate-600 dark:text-slate-300 font-medium text-[13px] px-5 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.06] transition-all"
+                className="border border-black/[0.08] dark:border-white/[0.1] text-[#4B5563] dark:text-slate-300 font-medium text-[13px] px-5 py-2.5 rounded-xl hover:bg-white/70 dark:hover:bg-white/[0.06] transition-all"
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
@@ -1092,7 +1094,7 @@ function DashboardContent() {
               <SectionLabel>{t("dashboard.recentActivity")}</SectionLabel>
               <Link
                 href="/dashboard/audit-center"
-                className="text-[11px] text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center gap-0.5"
+                className="text-[11px] text-blue-500 hover:text-blue-600 flex items-center gap-0.5"
               >
                 All <ChevronRight className="w-3 h-3" />
               </Link>
@@ -1105,8 +1107,8 @@ function DashboardContent() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Activity className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                <Activity className="w-8 h-8 text-[#D1D5DB] dark:text-slate-600 mb-2" />
+                <p className="text-[11px] text-[#9CA3AF] dark:text-slate-500">
                   {t("dashboard.noActivityYet")}
                 </p>
               </div>
@@ -1123,8 +1125,8 @@ function DashboardContent() {
             </div>
 
             {/* Mini Risk Heatmap */}
-            <div className="mt-4 pt-4 border-t border-black/[0.04] dark:border-white/[0.06]">
-              <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-2.5">
+            <div className="mt-4 pt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
+              <p className="text-[11px] font-semibold text-[#374151] dark:text-slate-300 mb-2.5">
                 Risk Heatmap
               </p>
               <div className="grid grid-cols-4 gap-2">

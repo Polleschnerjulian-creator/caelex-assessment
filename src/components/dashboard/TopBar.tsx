@@ -20,7 +20,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
       <header
         className="h-14 px-6 lg:px-8 flex items-center justify-between lg:mt-3 lg:mr-3"
         style={{
-          borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+          borderBottom: "1px solid var(--separator, rgba(0, 0, 0, 0.06))",
         }}
       >
         {/* Left */}
