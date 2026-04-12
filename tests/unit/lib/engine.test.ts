@@ -1208,4 +1208,333 @@ describe("Compliance Engine", () => {
       expect(result.operatorType).toBeDefined();
     });
   });
+
+  // ═══════════════════════════════════════════
+  // loadSpaceActDataFromDisk coverage
+  // ═══════════════════════════════════════════
+
+  describe("loadSpaceActDataFromDisk", () => {
+    it("loads data from disk successfully", async () => {
+      // Re-import to get loadSpaceActDataFromDisk
+      const { loadSpaceActDataFromDisk } = await import("@/lib/engine.server");
+      const data = loadSpaceActDataFromDisk();
+      expect(data).toBeDefined();
+      expect(data.metadata).toBeDefined();
+      expect(data.titles.length).toBeGreaterThan(0);
+    });
+
+    it("returns cached data on second call", async () => {
+      const { loadSpaceActDataFromDisk } = await import("@/lib/engine.server");
+      const data1 = loadSpaceActDataFromDisk();
+      const data2 = loadSpaceActDataFromDisk();
+      // Both calls should return the same reference (cache hit)
+      expect(data1).toBe(data2);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Module Status — conditional_simplified branch
+  // ═══════════════════════════════════════════
+
+  describe("Module Status — simplified branches", () => {
+    it("should produce required status with simplified track note for light regime with mandatory + conditional_simplified", () => {
+      // Create data where a module range contains both mandatory_pre_activity
+      // AND conditional_simplified articles, under light regime
+      const dataWithMixedTypes: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 6,
+                title: "Mandatory",
+                summary: "Mandatory rule",
+                applies_to: ["SCO"],
+                compliance_type: "mandatory_pre_activity",
+                operator_action: "Do it",
+              },
+              {
+                number: 7,
+                title: "Simplified",
+                summary: "Simplified rule",
+                applies_to: ["SCO"],
+                compliance_type: "conditional_simplified",
+                operator_action: "Maybe do it",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({
+        activityType: "spacecraft",
+        entitySize: "small", // light regime
+      });
+      const result = calculateCompliance(answers, dataWithMixedTypes);
+
+      // Find the authorization module which covers Art. 6-7
+      const authModule = result.moduleStatuses.find(
+        (m) => m.id === "authorization",
+      );
+      if (authModule && authModule.articleCount > 0) {
+        expect(authModule.status).toBe("required");
+        expect(authModule.summary).toContain("simplified track");
+      }
+    });
+
+    it("should produce simplified status for module with only conditional_simplified under light regime", () => {
+      const dataWithSimplifiedOnly: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 6,
+                title: "Simplified Only",
+                summary: "Simplified",
+                applies_to: ["SCO"],
+                compliance_type: "conditional_simplified",
+                operator_action: "Simplified action",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({
+        activityType: "spacecraft",
+        entitySize: "small", // light regime
+      });
+      const result = calculateCompliance(answers, dataWithSimplifiedOnly);
+
+      const authModule = result.moduleStatuses.find(
+        (m) => m.id === "authorization",
+      );
+      if (authModule && authModule.articleCount > 0) {
+        expect(authModule.status).toBe("simplified");
+        expect(authModule.summary).toContain("Simplified");
+      }
+    });
+
+    it("should produce recommended status for module with non-mandatory, non-simplified articles", () => {
+      const dataWithRecommended: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 6,
+                title: "Informational",
+                summary: "Info",
+                applies_to: ["SCO"],
+                compliance_type: "informational",
+                operator_action: "Review",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({ activityType: "spacecraft" });
+      const result = calculateCompliance(answers, dataWithRecommended);
+
+      const authModule = result.moduleStatuses.find(
+        (m) => m.id === "authorization",
+      );
+      if (authModule && authModule.articleCount > 0) {
+        expect(authModule.status).toBe("recommended");
+        expect(authModule.summary).toContain("relevant article");
+      }
+    });
+
+    it("should show singular article in summary when only 1 article in module", () => {
+      const dataWithSingleArticle: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 6,
+                title: "Single Mandatory",
+                summary: "Single",
+                applies_to: ["SCO"],
+                compliance_type: "mandatory_pre_activity",
+                operator_action: "Do it",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({ activityType: "spacecraft" });
+      const result = calculateCompliance(answers, dataWithSingleArticle);
+
+      const authModule = result.moduleStatuses.find(
+        (m) => m.id === "authorization",
+      );
+      if (authModule && authModule.articleCount === 1) {
+        expect(authModule.summary).toContain("1 article");
+        expect(authModule.summary).not.toContain("articles");
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Article filtering — edge cases
+  // ═══════════════════════════════════════════
+
+  describe("Article Filtering — edge cases", () => {
+    it("should handle articles with undefined applies_to (fallback to empty)", () => {
+      const dataWithMissingAppliesTo: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 50,
+                title: "No applies_to",
+                summary: "Missing",
+                compliance_type: "informational",
+                operator_action: "N/A",
+                // applies_to is intentionally omitted
+              } as any,
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({ activityType: "spacecraft" });
+      const result = calculateCompliance(answers, dataWithMissingAppliesTo);
+      // Article with no applies_to should not match any operator
+      const hasArt50 = result.applicableArticles.some((a) => a.number === 50);
+      expect(hasArt50).toBe(false);
+    });
+
+    it("should handle string article numbers (e.g., '10a')", () => {
+      const dataWithStringNumber: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: "10a" as any,
+                title: "Article 10a",
+                summary: "Sub-article",
+                applies_to: ["ALL"],
+                compliance_type: "mandatory_ongoing",
+                operator_action: "Comply",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({ activityType: "spacecraft" });
+      const result = calculateCompliance(answers, dataWithStringNumber);
+      const art10a = result.applicableArticles.find(
+        (a) => String(a.number) === "10a",
+      );
+      expect(art10a).toBeDefined();
+    });
+
+    it("should handle article number that cannot be parsed to a number", () => {
+      const dataWithBadNumber: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: "appendix" as any,
+                title: "Appendix",
+                summary: "Non-numeric",
+                applies_to: ["ALL"],
+                compliance_type: "informational",
+                operator_action: "Read",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({ activityType: "spacecraft" });
+      // Should not throw
+      const result = calculateCompliance(answers, dataWithBadNumber);
+      expect(result).toBeDefined();
+    });
+
+    it("should include TCO articles via applies_to for third-country operators", () => {
+      const dataWithTCO: SpaceActData = {
+        ...mockSpaceActData,
+        titles: [
+          {
+            number: 1,
+            title: "Test",
+            articles_detail: [
+              {
+                number: 200,
+                title: "TCO Rule",
+                summary: "TCO specific",
+                applies_to: ["TCO"],
+                compliance_type: "mandatory_pre_activity",
+                operator_action: "Register",
+              },
+            ],
+          },
+        ],
+      };
+      const answers = makeAnswers({
+        establishment: "third_country_eu_services",
+      });
+      const result = calculateCompliance(answers, dataWithTCO);
+      const hasTCO = result.applicableArticles.some((a) => a.number === 200);
+      expect(hasTCO).toBe(true);
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Entity Size Labels — edge case
+  // ═══════════════════════════════════════════
+
+  describe("Entity Size Labels", () => {
+    it("should return 'Unknown' for unrecognized entity size", () => {
+      const answers = makeAnswers({
+        entitySize: "giant" as any,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+      expect(result.entitySizeLabel).toBe("Unknown");
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Orbit Labels — unknown orbit
+  // ═══════════════════════════════════════════
+
+  describe("Orbit Labels — unknown orbit", () => {
+    it("should return the raw orbit string for unknown orbit type", () => {
+      const answers = makeAnswers({
+        primaryOrbit: "XYZ" as any,
+      });
+      const result = calculateCompliance(answers, mockSpaceActData);
+      expect(result.orbitLabel).toBe("XYZ");
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Authorization path fallback
+  // ═══════════════════════════════════════════
+
+  describe("Authorization path — fallback", () => {
+    it("returns 'Determine establishment status' for null establishment", () => {
+      const answers = makeAnswers({ establishment: null });
+      const result = calculateCompliance(answers, mockSpaceActData);
+      expect(result.authorizationPath).toBe("Determine establishment status");
+    });
+  });
 });

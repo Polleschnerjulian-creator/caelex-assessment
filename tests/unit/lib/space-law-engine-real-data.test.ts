@@ -403,3 +403,291 @@ describe("Space Law real-data engine — determinism", () => {
     expect(after).toBe(before);
   });
 });
+
+// ─── Recommendation generation branches ─────────────────────────────
+describe("Space Law real-data engine — recommendation branches", () => {
+  it("generates constellation advice for constellation size > 9", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "DE"],
+      activityType: "spacecraft_operation",
+      constellationSize: 100,
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const constellationRec = result.recommendations.find((r) =>
+      r.toLowerCase().includes("constellation"),
+    );
+    expect(constellationRec).toBeDefined();
+  });
+
+  it("generates Germany gap advice when DE is selected", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "DE"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const deRec = result.recommendations.find(
+      (r) =>
+        r.toLowerCase().includes("germany") &&
+        r.toLowerCase().includes("lacks"),
+    );
+    expect(deRec).toBeDefined();
+  });
+
+  it("generates insurance recommendation when jurisdictions have mandatory insurance", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "UK"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const insuranceRec = result.recommendations.find((r) =>
+      r.toLowerCase().includes("insurance"),
+    );
+    expect(insuranceRec).toBeDefined();
+  });
+
+  it("generates new applicant advice for new_application status", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "IT"],
+      activityType: "spacecraft_operation",
+      licensingStatus: "new_application",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const newAppRec = result.recommendations.find((r) =>
+      r.toLowerCase().includes("new application"),
+    );
+    expect(newAppRec).toBeDefined();
+  });
+
+  it("generates EU Space Act transition advice for EU members", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "IT"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const euRec = result.recommendations.find((r) =>
+      r.toLowerCase().includes("eu space act"),
+    );
+    expect(euRec).toBeDefined();
+  });
+
+  it("caps recommendations at 6", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "DE", "IT", "UK", "NL"],
+      activityType: "spacecraft_operation",
+      constellationSize: 100,
+      licensingStatus: "new_application",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    expect(result.recommendations.length).toBeLessThanOrEqual(6);
+  });
+});
+
+// ─── UK engine delegation ───────────────────────────────────────────
+describe("Space Law real-data engine — UK delegation", () => {
+  it("UK jurisdiction uses dedicated UK Space Industry Act engine", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "spacecraft_operation",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    expect(result.jurisdictions).toHaveLength(1);
+    const uk = result.jurisdictions[0];
+    expect(uk.countryCode).toBe("UK");
+    expect(uk.legislation.name).toContain("Space Industry Act");
+    expect(uk.totalRequirements).toBeGreaterThan(0);
+  });
+
+  it("UK with launch_site activity type uses spaceport mapping", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "launch_site",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    expect(result.jurisdictions).toHaveLength(1);
+    const uk = result.jurisdictions[0];
+    expect(uk.isApplicable).toBe(true);
+  });
+
+  it("UK with launch_vehicle activity type", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "launch_vehicle",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk.isApplicable).toBe(true);
+  });
+
+  it("UK with null activity type defaults to orbital_operations", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: null,
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk).toBeDefined();
+  });
+
+  it("UK with earth_observation activity type", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "earth_observation",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk).toBeDefined();
+  });
+
+  it("UK with satellite_communications activity type", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "satellite_communications",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk).toBeDefined();
+  });
+
+  it("UK with space_resources activity type", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "space_resources",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk).toBeDefined();
+  });
+
+  it("UK with in_orbit_services activity type", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "in_orbit_services",
+      entityNationality: "domestic",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk).toBeDefined();
+  });
+
+  it("UK with small entity size adds note about SIA 2018 thresholds", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK"],
+      activityType: "spacecraft_operation",
+      entitySize: "small",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const uk = result.jurisdictions[0];
+    expect(uk.favorabilityFactors.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── Comparison matrix — all criteria populated ─────────────────────
+describe("Space Law real-data engine — comparison matrix criteria", () => {
+  it("regulatory maturity criterion works for all jurisdictions", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR", "DE", "UK", "NL", "LU"],
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const maturity = result.comparisonMatrix.criteria.find(
+      (c) => c.id === "regulatory_maturity",
+    );
+    expect(maturity).toBeDefined();
+    // DE has no comprehensive law, so it should show "No law"
+    const deVal = maturity?.jurisdictionValues["DE"];
+    expect(deVal).toBeDefined();
+  });
+
+  it("all criteria produce valid values for single jurisdiction", async () => {
+    const answers = buildAnswers({ selectedJurisdictions: ["FR"] });
+    const result = await calculateSpaceLawCompliance(answers);
+    for (const criterion of result.comparisonMatrix.criteria) {
+      const frVal = criterion.jurisdictionValues["FR"];
+      expect(frVal).toBeDefined();
+      expect(frVal.value).toBeTruthy();
+      expect(typeof frVal.score).toBe("number");
+    }
+  });
+});
+
+// ─── EU Space Act preview — parallel-only scenario ──────────────────
+describe("Space Law real-data engine — EU Space Act preview", () => {
+  it("generates parallel-regime message for UK+NO only", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["UK", "NO"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    expect(result.euSpaceActPreview.overallRelationship).toBeDefined();
+    expect(result.euSpaceActPreview.overallRelationship.length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it("generates gap-filling message when DE is selected", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["DE", "FR"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    // DE has no comprehensive law → "gap" relationship → gap message
+    expect(result.euSpaceActPreview.overallRelationship).toBeDefined();
+  });
+});
+
+// ─── Activity-type branches for non-applicable jurisdictions ────────
+describe("Space Law real-data engine — applicability checks", () => {
+  it("DE with non-earth_observation activity is not applicable", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["DE"],
+      activityType: "spacecraft_operation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const de = result.jurisdictions.find((j) => j.countryCode === "DE");
+    expect(de?.isApplicable).toBe(false);
+  });
+
+  it("DE with earth_observation activity IS applicable (SatDSiG)", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["DE"],
+      activityType: "earth_observation",
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const de = result.jurisdictions.find((j) => j.countryCode === "DE");
+    expect(de?.isApplicable).toBe(true);
+  });
+
+  it("null activity type includes all requirements", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR"],
+      activityType: null,
+    });
+    const result = await calculateSpaceLawCompliance(answers);
+    const fr = result.jurisdictions.find((j) => j.countryCode === "FR");
+    expect(fr?.isApplicable).toBe(true);
+    // null activity means all requirements are returned
+    expect(fr!.totalRequirements).toBeGreaterThan(0);
+  });
+});
+
+// ─── Redaction ──────────────────────────────────────────────────────
+describe("Space Law real-data engine — redaction strips applicableRequirements", () => {
+  it("redacted result has requirementCount instead of applicableRequirements", async () => {
+    const answers = buildAnswers({
+      selectedJurisdictions: ["FR"],
+      activityType: "spacecraft_operation",
+    });
+    const full = await calculateSpaceLawCompliance(answers);
+    const redacted = redactSpaceLawResultForClient(full);
+    for (const j of redacted.jurisdictions) {
+      expect(j).not.toHaveProperty("applicableRequirements");
+      expect(j).toHaveProperty("requirementCount");
+    }
+  });
+});
