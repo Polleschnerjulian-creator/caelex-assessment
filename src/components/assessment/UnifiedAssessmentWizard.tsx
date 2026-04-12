@@ -211,22 +211,35 @@ export default function UnifiedAssessmentWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-save assessment to dashboard after Google OAuth return
+  // Auto-save assessment to dashboard for authenticated users.
+  // Fires when:
+  //  1. User completes assessment while already logged in (no gate shown)
+  //  2. User returns from Google OAuth with caelex-save-assessment-after-auth flag
+  // The savedViaOAuthRef prevents double-saving within a single session.
   useEffect(() => {
     if (!complianceResult) return;
     if (authStatus !== "authenticated" || !session?.user) return;
     if (savedViaOAuthRef.current) return;
 
-    let needsSave: string | null = null;
+    // Check if this is an OAuth return (has localStorage flag) OR if the user
+    // was already authenticated when they completed the assessment.
+    let isOAuthReturn = false;
     try {
-      needsSave = localStorage.getItem("caelex-save-assessment-after-auth");
+      isOAuthReturn = !!localStorage.getItem(
+        "caelex-save-assessment-after-auth",
+      );
     } catch {
-      return;
+      // localStorage unavailable — still save if authenticated
     }
-    if (!needsSave) return;
 
     savedViaOAuthRef.current = true;
-    setSavingToDashboard(true);
+
+    // Only show the saving overlay for OAuth returns (where the user sees
+    // a redirect). For already-authenticated users, save silently in the
+    // background so the results page renders immediately.
+    if (isOAuthReturn) {
+      setSavingToDashboard(true);
+    }
 
     fetch("/api/unified/save-to-dashboard", {
       method: "POST",
@@ -243,22 +256,12 @@ export default function UnifiedAssessmentWizard() {
           } catch {
             // ignore
           }
-          // Only mark authenticated after a confirmed successful save.
-          // Previously this was in .finally() which fired on failure too,
-          // creating a ghost state where the results UI rendered as if the
-          // assessment was saved while the pending-save localStorage flag
-          // remained set, triggering another save attempt on next visit.
           setIsAuthenticated(true);
         } else {
-          // Keep the pending flag so the next page load can retry. The user
-          // still sees results (isAuthenticated remains true if they were
-          // already authenticated via session).
           console.error("Failed to save assessment to dashboard:", res.status);
         }
       })
       .catch((err) => {
-        // Network error — also keep the pending flag for retry. Show results
-        // anyway so the user isn't stuck on a loading screen.
         console.error("Network error saving assessment:", err);
       })
       .finally(() => {
@@ -459,13 +462,33 @@ export default function UnifiedAssessmentWizard() {
     (value: string | boolean | number) => {
       setMultiSelect((prev) => {
         const maxSelections = currentQuestion?.maxSelections || 10;
-        if (prev.includes(value)) {
-          return prev.filter((v) => v !== value);
+        const options = currentQuestion?.options || [];
+
+        // Check if the clicked option is exclusive (e.g. "None", "Not sure yet")
+        const clickedOption = options.find((o) => o.value === value);
+        const isExclusive = clickedOption?.exclusive === true;
+
+        // If clicking an exclusive option
+        if (isExclusive) {
+          // Toggle it off if already selected, otherwise select only it
+          return prev.includes(value) ? [] : [value];
         }
-        if (prev.length >= maxSelections) {
-          return prev;
+
+        // If clicking a non-exclusive option, remove any exclusive options first
+        const exclusiveValues = options
+          .filter((o) => o.exclusive)
+          .map((o) => o.value);
+        const withoutExclusive = prev.filter(
+          (v) => !exclusiveValues.includes(v),
+        );
+
+        if (withoutExclusive.includes(value)) {
+          return withoutExclusive.filter((v) => v !== value);
         }
-        return [...prev, value];
+        if (withoutExclusive.length >= maxSelections) {
+          return withoutExclusive;
+        }
+        return [...withoutExclusive, value];
       });
     },
     [currentQuestion],

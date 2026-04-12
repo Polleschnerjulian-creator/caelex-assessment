@@ -385,12 +385,16 @@ function mapEntitySizeForSpaceLaw(
 
 /**
  * Derive licensing status from existing licenses.
+ * "NONE" is an exclusive option meaning "no current licenses".
  */
 function deriveLicensingStatus(
   currentLicenses: string[] | undefined,
 ): LicensingStatus | null {
   if (!currentLicenses || currentLicenses.length === 0)
     return "new_application";
+  // Filter out the "NONE" exclusive option
+  const realLicenses = currentLicenses.filter((l) => l !== "NONE");
+  if (realLicenses.length === 0) return "new_application";
   return "existing_license";
 }
 
@@ -442,8 +446,10 @@ export function mapToSpaceLawAnswers(
   unified: Partial<UnifiedAssessmentAnswers>,
 ): SpaceLawAssessmentAnswers {
   const activityTypes = unified.activityTypes || [];
-  const selectedJurisdictions = (unified.interestedJurisdictions ||
-    []) as SpaceLawCountryCode[];
+  // Filter out the "NOT_SURE" exclusive option which is not a real jurisdiction
+  const selectedJurisdictions = (
+    (unified.interestedJurisdictions || []) as string[]
+  ).filter((j) => j !== "NOT_SURE") as SpaceLawCountryCode[];
 
   return {
     selectedJurisdictions,

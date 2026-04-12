@@ -33,9 +33,74 @@ const profileSchema = z.object({
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function extractProfileFromAssessment(raw: string): CompanyProfileData {
+  const emptyProfile: CompanyProfileData = {
+    companyName: null,
+    establishmentCountry: null,
+    entitySize: null,
+    isResearchInstitution: false,
+    isStartup: false,
+    activityTypes: [],
+    serviceTypes: [],
+    primaryOrbitalRegime: null,
+    operatesConstellation: false,
+    constellationSize: null,
+    spacecraftCount: null,
+    missionDuration: null,
+    isDefenseOnly: false,
+  };
+
   try {
     const parsed = JSON.parse(raw);
-    // The stored assessment result can have .answers or be at root level
+
+    // Format 1: RedactedUnifiedResult (stored by /api/unified/save-to-dashboard)
+    // Has companySummary.name, companySummary.establishment, etc.
+    if (parsed.companySummary && typeof parsed.companySummary === "object") {
+      const cs = parsed.companySummary;
+
+      // Map activity labels back to codes (e.g. "Spacecraft Operator" -> "SCO")
+      const activityLabelToCode: Record<string, string> = {
+        "Spacecraft Operator": "SCO",
+        "Launch Operator": "LO",
+        "Launch Site Operator": "LSO",
+        "In-Space Service Operator": "ISOS",
+        "Collision Avoidance Provider": "CAP",
+        "Positional Data Provider": "PDP",
+        "Third Country Operator": "TCO",
+      };
+      const activityTypes = Array.isArray(cs.activities)
+        ? cs.activities.map((a: string) => activityLabelToCode[a] || a)
+        : [];
+
+      // Map size labels back to codes
+      const sizeLabelToCode: Record<string, string> = {
+        "Micro Enterprise": "micro",
+        "Small Enterprise": "small",
+        "Medium Enterprise": "medium",
+        "Large Enterprise": "large",
+      };
+      const entitySize = cs.size
+        ? sizeLabelToCode[cs.size] || cs.size.toLowerCase()
+        : null;
+
+      return {
+        companyName: cs.name ?? null,
+        establishmentCountry: cs.establishment ?? null,
+        entitySize: entitySize as CompanyProfileData["entitySize"],
+        isResearchInstitution: false,
+        isStartup: false,
+        activityTypes,
+        serviceTypes: [],
+        primaryOrbitalRegime: null,
+        operatesConstellation: false,
+        constellationSize: null,
+        spacecraftCount: null,
+        missionDuration: null,
+        isDefenseOnly: false,
+      };
+    }
+
+    // Format 2: Raw assessment answers (stored by legacy flow or profile PUT)
+    // Has flat .companyName, .establishmentCountry, etc.
     const answers = parsed.answers ?? parsed;
 
     return {
@@ -54,21 +119,7 @@ function extractProfileFromAssessment(raw: string): CompanyProfileData {
       isDefenseOnly: answers.isDefenseOnly ?? false,
     };
   } catch {
-    return {
-      companyName: null,
-      establishmentCountry: null,
-      entitySize: null,
-      isResearchInstitution: false,
-      isStartup: false,
-      activityTypes: [],
-      serviceTypes: [],
-      primaryOrbitalRegime: null,
-      operatesConstellation: false,
-      constellationSize: null,
-      spacecraftCount: null,
-      missionDuration: null,
-      isDefenseOnly: false,
-    };
+    return emptyProfile;
   }
 }
 

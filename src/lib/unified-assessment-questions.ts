@@ -1555,12 +1555,22 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     type: "multi",
     required: false,
     maxSelections: 10,
-    options: SPACE_LAW_JURISDICTIONS.map((code) => ({
-      id: code.toLowerCase(),
-      value: code,
-      label: JURISDICTION_NAMES[code] || code,
-      flag: code,
-    })),
+    options: [
+      {
+        id: "none",
+        value: "NONE",
+        label: "No current licenses",
+        description: "We don't hold any space licenses yet",
+        icon: "X",
+        exclusive: true,
+      },
+      ...SPACE_LAW_JURISDICTIONS.map((code) => ({
+        id: code.toLowerCase(),
+        value: code,
+        label: JURISDICTION_NAMES[code] || code,
+        flag: code,
+      })),
+    ],
   },
   {
     id: "interestedJurisdictions",
@@ -1574,20 +1584,30 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     required: true,
     maxSelections: 3,
     minSelections: 1,
-    options: SPACE_LAW_JURISDICTIONS.map((code) => ({
-      id: code.toLowerCase(),
-      value: code,
-      label: JURISDICTION_NAMES[code] || code,
-      description:
-        code === "LU"
-          ? "Popular for NewSpace"
-          : code === "UK"
-            ? "Post-Brexit regime"
-            : code === "FR"
-              ? "CNES expertise"
-              : undefined,
-      flag: code,
-    })),
+    options: [
+      {
+        id: "not_sure",
+        value: "NOT_SURE",
+        label: "Not sure yet",
+        description: "I need guidance on which jurisdiction to choose",
+        icon: "HelpCircle",
+        exclusive: true,
+      },
+      ...SPACE_LAW_JURISDICTIONS.map((code) => ({
+        id: code.toLowerCase(),
+        value: code,
+        label: JURISDICTION_NAMES[code] || code,
+        description:
+          code === "LU"
+            ? "Popular for NewSpace"
+            : code === "UK"
+              ? "Post-Brexit regime"
+              : code === "FR"
+                ? "CNES expertise"
+                : undefined,
+        flag: code,
+      })),
+    ],
   },
   {
     id: "licensingTimeline",

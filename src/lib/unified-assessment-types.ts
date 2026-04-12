@@ -658,6 +658,7 @@ export interface UnifiedQuestionOption {
   description?: string;
   icon?: string;
   flag?: string; // For country flags
+  exclusive?: boolean; // When true, selecting this deselects all others and vice versa
 }
 
 // ============================================================================
