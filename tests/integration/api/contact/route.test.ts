@@ -23,7 +23,32 @@ vi.mock("@/lib/ratelimit", () => ({
 // ─── Mock Logger ───
 vi.mock("@/lib/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+  maskEmail: (email: string) => email.replace(/(.{2}).*(@.*)/, "$1***$2"),
 }));
+
+// ─── Mock Prisma ───
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    contactRequest: {
+      create: vi.fn().mockResolvedValue({ id: "cr-1" }),
+    },
+  },
+}));
+
+// ─── Mock CRM auto-link (fire-and-forget in the route) ───
+vi.mock("@/lib/crm/auto-link.server", () => ({
+  linkInboundLead: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ─── Mock validations ───
+vi.mock("@/lib/validations", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/validations")>();
+  return {
+    ...actual,
+    getSafeErrorMessage: (err: unknown) =>
+      err instanceof Error ? err.message : "Unknown error",
+  };
+});
 
 // ─── Mock Resend ───
 const mockSend = vi.fn();
@@ -263,27 +288,35 @@ describe("POST /api/contact", () => {
 
   // ─── Missing Resend API Key ───
 
-  it("should return 503 when RESEND_API_KEY is not configured", async () => {
+  it("should still succeed when RESEND_API_KEY is not configured (record saved, email skipped)", async () => {
+    // The route saves the contact request to DB first, then attempts
+    // to send the notification email. When RESEND_API_KEY is missing
+    // it logs a warning but returns 200 — the customer's request was
+    // still captured, just no notification was sent.
     delete process.env.RESEND_API_KEY;
 
     const request = makeRequest(validContactData);
     const response = await POST(request);
     const data = await response.json();
 
-    expect(response.status).toBe(503);
-    expect(data.error).toBe("Service temporarily unavailable");
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
   });
 
   // ─── Resend Error ───
 
-  it("should return 500 when email service fails", async () => {
+  it("should still succeed when email service fails (record saved, email error is non-blocking)", async () => {
+    // The route saves the contact request to DB first, then attempts
+    // the notification email inside a try/catch. If Resend fails, the
+    // request was still captured — the route logs the error and
+    // returns 200 { success: true }.
     mockSend.mockRejectedValue(new Error("Resend API error"));
 
     const request = makeRequest(validContactData);
     const response = await POST(request);
     const data = await response.json();
 
-    expect(response.status).toBe(500);
-    expect(data.error).toBe("Failed to send message");
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
   });
 });
