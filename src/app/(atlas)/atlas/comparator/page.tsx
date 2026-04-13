@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, Layers } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
@@ -30,16 +29,14 @@ export default function ComparatorPage() {
       {/* ─── Header ─── */}
       <header className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <BarChart3 className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
           <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
-            Regulatory Comparator
+            Comparator
           </h1>
-          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-medium tracking-wider text-emerald-700 uppercase">
-            19 Jurisdictions
+          <span className="text-[10px] font-mono text-gray-400 tracking-wide">
+            19 jurisdictions
           </span>
         </div>
         <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
-          <Layers className="h-3 w-3" strokeWidth={1.5} />
           <span>{selected.length} selected</span>
           <span className="text-gray-300">|</span>
           <span>
@@ -59,18 +56,18 @@ export default function ComparatorPage() {
       </div>
 
       {/* ─── Dimension Tabs ─── */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-0.5 -mx-1 px-1">
+      <div className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200">
         {DIMENSIONS.map((dim) => (
           <button
             key={dim.key}
             onClick={() => setDimension(dim.key)}
             className={`
-              flex-shrink-0 rounded-md px-3 py-1.5 text-[11px] font-medium
-              border transition-all duration-150
+              flex-shrink-0 pb-2 text-[11px] font-medium
+              transition-all duration-150 border-b-2 -mb-[1px]
               ${
                 dimension === dim.key
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  : "bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                  ? "border-gray-900 text-gray-900"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
               }
             `}
           >

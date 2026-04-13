@@ -248,71 +248,77 @@ const DIMENSION_MAP: Record<string, RowDef[]> = {
   eu_readiness: EU_ROWS,
 };
 
-// ─── Highlight color logic (light mode) ───
+// ─── Cell rendering helpers ───
 
-function getRelationshipColor(val: string): string {
-  const upper = val.toUpperCase();
-  if (upper === "SUPERSEDED") return "text-amber-600";
-  if (upper === "COMPLEMENTARY") return "text-emerald-600";
-  if (upper === "PARALLEL") return "text-sky-600";
-  if (upper === "GAP") return "text-red-600";
-  return "";
-}
+type CellRender = {
+  className: string;
+  badge?: boolean;
+  badgeClassName?: string;
+};
 
-function getLiabilityColor(val: string): string {
-  const upper = val.toUpperCase();
-  if (upper === "UNLIMITED") return "text-red-600";
-  if (upper === "CAPPED") return "text-emerald-600";
-  if (upper === "TIERED") return "text-amber-600";
-  if (upper === "NEGOTIABLE") return "text-sky-600";
-  return "";
-}
+function getCellRender(label: string, value: string): CellRender {
+  const upper = value.toUpperCase();
 
-function getStatusColor(val: string): string {
-  const upper = val.toUpperCase();
-  if (upper === "ENACTED") return "text-emerald-600";
-  if (upper === "DRAFT") return "text-amber-600";
-  if (upper === "PENDING") return "text-amber-600";
-  if (upper === "NONE") return "text-red-600";
-  return "";
-}
-
-function getBoolColor(val: string): string {
-  if (val === "Yes") return "text-emerald-600";
-  if (val === "No") return "text-red-500";
-  return "";
-}
-
-function getCellHighlightClass(
-  label: string,
-  value: string,
-  allValues: string[],
-): string {
-  const unique = new Set(allValues);
-  const isMixed = unique.size > 1;
-
-  if (label === "Liability Regime") return getLiabilityColor(value);
-  if (label === "Relationship") return getRelationshipColor(value);
-  if (label === "Status") return getStatusColor(value);
-
-  if (value === "Yes" || value === "No") {
-    if (isMixed) return getBoolColor(value);
-    return "";
+  // Liability regime — only UNLIMITED is worth calling out
+  if (label === "Liability Regime") {
+    if (upper === "UNLIMITED") return { className: "text-red-600 font-medium" };
+    return { className: "text-gray-900" };
   }
 
-  if (isMixed && allValues.length > 2) {
-    const counts = new Map<string, number>();
-    for (const v of allValues) {
-      counts.set(v, (counts.get(v) || 0) + 1);
-    }
-    const maxCount = Math.max(...counts.values());
-    const thisCount = counts.get(value) || 0;
-    if (thisCount < maxCount) {
-      return "text-amber-600";
-    }
+  // Liability cap — highlight unlimited
+  if (label === "Liability Cap") {
+    if (upper === "UNLIMITED" || upper.includes("UNLIMITED"))
+      return { className: "text-red-600 font-medium" };
+    return { className: "text-gray-900" };
   }
 
-  return "";
+  // Status — badge style
+  if (label === "Status") {
+    if (upper === "ENACTED")
+      return {
+        className: "",
+        badge: true,
+        badgeClassName:
+          "text-[10px] font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded inline-block",
+      };
+    if (upper === "DRAFT" || upper === "PENDING")
+      return {
+        className: "",
+        badge: true,
+        badgeClassName:
+          "text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded inline-block",
+      };
+    if (upper === "NONE") return { className: "text-gray-400" };
+    return { className: "text-gray-900" };
+  }
+
+  // Relationship — subtle differentiation, no heavy color
+  if (label === "Relationship") {
+    if (upper === "GAP")
+      return {
+        className: "",
+        badge: true,
+        badgeClassName:
+          "text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded inline-block",
+      };
+    return {
+      className: "",
+      badge: true,
+      badgeClassName:
+        "text-[10px] font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded inline-block",
+    };
+  }
+
+  // Boolean Yes/No — black for Yes, gray for No
+  if (value === "Yes") return { className: "text-gray-900" };
+  if (value === "No") return { className: "text-gray-400" };
+  if (value === "N/A") return { className: "text-gray-300" };
+
+  // Yes with detail (e.g. "Yes — €60M")
+  if (value.startsWith("Yes —") || value.startsWith("Yes —"))
+    return { className: "text-gray-900" };
+
+  return { className: "text-gray-900" };
 }
 
 // ─── Section header mapping ───
@@ -380,28 +386,23 @@ export default function ComparisonTable({
         {/* Sticky header */}
         <thead className="sticky top-0 z-20">
           <tr>
-            <th className="text-left py-2 px-3 bg-gray-50 border-b border-gray-200 w-[200px] min-w-[180px]">
-              <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
+            <th className="text-left py-3 px-4 bg-gray-50 border-b border-gray-200 w-[200px] min-w-[180px]">
+              <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                 Provision
               </span>
             </th>
             {jurisdictions.map(({ code, data }) => (
               <th
                 key={code}
-                className="text-left py-2 px-3 bg-gray-50 border-b border-gray-200 min-w-[160px]"
+                className="text-left py-3 px-4 bg-gray-50 border-b border-gray-200 min-w-[180px]"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] leading-none">
-                    {data.flagEmoji}
+                <div>
+                  <span className="text-[12px] font-medium text-gray-900 block">
+                    {data.countryName}
                   </span>
-                  <div>
-                    <span className="text-[11px] font-semibold text-gray-900 block">
-                      {data.countryName}
-                    </span>
-                    <span className="text-[9px] font-mono text-gray-400">
-                      {code}
-                    </span>
-                  </div>
+                  <span className="text-[10px] font-mono text-gray-400">
+                    {code}
+                  </span>
                 </div>
               </th>
             ))}
@@ -443,9 +444,9 @@ function SectionBlock({
         <tr>
           <td
             colSpan={jurisdictions.length + 1}
-            className="pt-4 pb-1.5 px-3 bg-white"
+            className="pt-5 pb-2 px-4 bg-white border-b border-gray-100"
           >
-            <span className="text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase">
+            <span className="text-[11px] font-semibold tracking-[0.1em] text-gray-900 uppercase">
               {label}
             </span>
           </td>
@@ -457,36 +458,40 @@ function SectionBlock({
         return (
           <tr
             key={`${label}-${i}`}
-            className="group hover:bg-gray-50 transition-colors duration-100"
+            className={`group hover:bg-gray-50/80 transition-colors duration-100 ${
+              i % 2 === 1 ? "bg-gray-50/50" : "bg-white"
+            }`}
           >
-            <td className="py-1.5 px-3 border-b border-gray-100 align-top">
-              <span className="text-[11px] font-medium text-gray-500 leading-tight">
+            <td className="py-2.5 px-4 border-b border-gray-100 align-top">
+              <span className="text-[12px] font-medium text-gray-500 leading-tight">
                 {row.label}
               </span>
             </td>
             {jurisdictions.map(({ code, data }, colIdx) => {
               const value = row.accessor(data);
-              const highlightClass = row.highlightDifferences
-                ? getCellHighlightClass(row.label, value, allValues)
-                : "";
+              const render = getCellRender(row.label, value);
 
               return (
                 <td
                   key={code}
                   className={`
-                    py-1.5 px-3 border-b border-gray-100 align-top
+                    py-2.5 px-4 border-b border-gray-100 align-top
                     ${colIdx > 0 ? "border-l border-gray-100" : ""}
                   `}
                 >
-                  <span
-                    className={`
-                      text-[11px] leading-relaxed
-                      ${row.monospace ? "font-mono" : ""}
-                      ${highlightClass || "text-gray-700"}
-                    `}
-                  >
-                    {value}
-                  </span>
+                  {render.badge ? (
+                    <span className={render.badgeClassName}>{value}</span>
+                  ) : (
+                    <span
+                      className={`
+                        text-[13px] leading-relaxed
+                        ${row.monospace ? "font-mono text-[12px]" : ""}
+                        ${render.className}
+                      `}
+                    >
+                      {value}
+                    </span>
+                  )}
                 </td>
               );
             })}

@@ -77,15 +77,14 @@ export default function CountrySelector({
               onClick={() => toggle(code)}
               className="
                 flex items-center gap-1.5 rounded px-2 py-1
-                bg-emerald-50 border border-emerald-200
-                text-[11px] font-medium text-emerald-700
-                hover:bg-emerald-100 transition-colors duration-150
+                bg-gray-100 border-0
+                text-[11px] font-medium text-gray-700
+                hover:bg-gray-200 transition-colors duration-150
                 group
               "
             >
-              <span className="text-[13px] leading-none">{data.flagEmoji}</span>
               <span className="font-mono tracking-wide">{code}</span>
-              <X className="h-3 w-3 text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+              <X className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
             </button>
           );
         })}
@@ -96,11 +95,11 @@ export default function CountrySelector({
           disabled={selected.length >= MAX_SELECTIONS}
           className={`
             flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-medium
-            border transition-colors duration-150
+            transition-colors duration-150
             ${
               selected.length >= MAX_SELECTIONS
-                ? "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
-                : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 bg-white cursor-pointer"
+                ? "text-gray-300 cursor-not-allowed bg-gray-50"
+                : "text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer"
             }
           `}
         >
@@ -119,9 +118,8 @@ export default function CountrySelector({
           <button
             onClick={selectAllEU}
             className="
-              rounded px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-gray-500 hover:text-emerald-700 border border-gray-200
-              hover:border-emerald-200 bg-white hover:bg-emerald-50
+              px-2 py-1 text-[10px] font-medium tracking-wider uppercase
+              text-gray-400 hover:text-gray-700
               transition-colors duration-150
             "
           >
@@ -130,9 +128,8 @@ export default function CountrySelector({
           <button
             onClick={clearAll}
             className="
-              rounded px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-gray-500 hover:text-red-600 border border-gray-200
-              hover:border-red-200 bg-white hover:bg-red-50
+              px-2 py-1 text-[10px] font-medium tracking-wider uppercase
+              text-gray-400 hover:text-gray-700
               transition-colors duration-150
             "
           >
@@ -171,16 +168,13 @@ export default function CountrySelector({
                     transition-colors duration-100
                     ${
                       isSelected
-                        ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                        ? "bg-gray-100 text-gray-900"
                         : isDisabled
                           ? "opacity-30 cursor-not-allowed text-gray-400"
-                          : "hover:bg-gray-50 text-gray-700 border border-transparent"
+                          : "hover:bg-gray-50 text-gray-700"
                     }
                   `}
                 >
-                  <span className="text-[14px] leading-none flex-shrink-0">
-                    {data.flagEmoji}
-                  </span>
                   <div className="flex-1 min-w-0">
                     <span className="text-[11px] font-medium truncate block">
                       {data.countryName}
@@ -190,7 +184,7 @@ export default function CountrySelector({
                     </span>
                   </div>
                   {isSelected && (
-                    <Check className="h-3 w-3 text-emerald-600 flex-shrink-0" />
+                    <Check className="h-3 w-3 text-gray-600 flex-shrink-0" />
                   )}
                 </button>
               );
