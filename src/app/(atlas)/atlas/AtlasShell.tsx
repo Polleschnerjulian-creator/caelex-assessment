@@ -53,6 +53,7 @@ export default function AtlasShell({
         className={`
           fixed top-0 left-0 bottom-0 z-50
           flex flex-col items-start
+          bg-white border-r border-gray-200
           transition-opacity duration-300
           ${!mounted ? "opacity-0" : "opacity-100"}
         `}
