@@ -441,3 +441,398 @@ const TREATIES_DE: LegalSource[] = [
     last_verified: "2026-04-13",
   },
 ];
+
+// ─── German National Laws (10) ───────────────────────────────────────
+
+const NATIONAL_LAWS_DE: LegalSource[] = [
+  {
+    id: "DE-SATDSIG-2007",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Satellite Data Security Act",
+    title_local:
+      "Gesetz zum Schutz vor Gefährdung der Sicherheit der Bundesrepublik Deutschland durch das Verbreiten von hochwertigen Erdfernerkundungsdaten (Satellitendatensicherheitsgesetz — SatDSiG)",
+    date_enacted: "2007-11-23",
+    date_last_amended: "2021-04-19",
+    official_reference:
+      "BGBl. I S. 2590, zuletzt geändert durch Art. 5 G v. 19.4.2021 (BGBl. I S. 771)",
+    source_url: "https://www.gesetze-im-internet.de/satdsig/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BAFA", "DE-BSI"],
+    relevance_level: "critical",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["licensing", "data_security"],
+    key_provisions: [
+      {
+        section: "§§ 3-9 (Teil 2)",
+        title: "Licensing of Earth observation systems",
+        summary:
+          "Operating a high-resolution Earth observation system from German jurisdiction requires BAFA authorization. Applications must demonstrate data security measures, IT conformity (BSI TR-03140), and compliance with sensitivity thresholds.",
+        complianceImplication:
+          "Any German operator of EO satellites with ground resolution ≤ 2.5m needs a BAFA licence before operations begin.",
+      },
+      {
+        section: "§§ 11-20 (Teil 3)",
+        title: "Data provider licensing",
+        summary:
+          "Distributing high-resolution satellite data requires a separate data provider licence. Subject to sensitivity checks (§ 17) and priority government access (§§ 21-22).",
+        complianceImplication:
+          "Downstream data distributors — not just satellite operators — need their own licence.",
+      },
+      {
+        section: "§ 17",
+        title: "Sensitivity assessment for data requests",
+        summary:
+          "BAFA conducts security assessments on specific data distribution requests. Federal Intelligence Service (BND) may be consulted for high-sensitivity requests.",
+      },
+      {
+        section: "§§ 25-26 (Teil 6)",
+        title: "Penalties",
+        summary:
+          "Violations carry fines up to €500,000 (administrative offences) or criminal penalties for intentional violations involving national security data.",
+      },
+    ],
+    scope_description:
+      "Applies ONLY to operators of high-resolution Earth observation systems and distributors of EO data. Does NOT cover: spacecraft operations generally, launch, in-orbit services, communications satellites, or navigation. This is Germany's only space-specific federal law.",
+    related_sources: ["DE-BSI-TR-03140", "INT-OST-1967"],
+    caelex_engine_mapping: ["space-law-engine.server"],
+    caelex_data_file_mapping: ["national-space-laws.ts"],
+    notes: [
+      "SatDSiG is the ONLY space-specific German federal law. All other space activities fall under general legislation (LuftVG, TKG, AWG).",
+      "Supplemented by SatDSiV (Satellitendatensicherheitsverordnung) for technical thresholds.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-LUFTVG",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Air Traffic Act",
+    title_local: "Luftverkehrsgesetz (LuftVG)",
+    date_last_amended: "2024-07-15",
+    official_reference: "BGBl. I, diverse Änderungen",
+    source_url: "https://www.gesetze-im-internet.de/luftvg/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-LBA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "§ 1 Abs. 2",
+        title: "Space vehicles in airspace",
+        summary:
+          "Raumfahrzeuge, Raketen und ähnliche Flugkörper gelten als Luftfahrzeuge, solange sie sich im Luftraum befinden. — Launch vehicles are classified as aircraft while transiting through airspace.",
+        complianceImplication:
+          "Any launch from German territory requires LBA clearance for airspace transit, in addition to any future space-specific licence.",
+      },
+      {
+        section: "§§ 33 ff.",
+        title: "Liability provisions",
+        summary:
+          "Strict liability for damage caused by aircraft (including launch vehicles during airspace transit) to persons and property on the ground.",
+      },
+    ],
+    related_sources: ["INT-OST-1967"],
+    caelex_data_file_mapping: ["national-space-laws.ts"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-TKG-2021",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Telecommunications Act",
+    title_local: "Telekommunikationsgesetz (TKG)",
+    date_enacted: "2021-06-23",
+    date_last_amended: "2024-03-01",
+    official_reference: "BGBl. I 2021 S. 1858",
+    source_url: "https://www.gesetze-im-internet.de/tkg_2021/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BNETZA"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum", "cybersecurity"],
+    key_provisions: [
+      {
+        section: "§§ 91 ff.",
+        title: "Frequency allocation for satellite systems",
+        summary:
+          "Satellite operators must obtain frequency assignments from BNetzA for all TT&C and payload frequencies. BNetzA coordinates ITU filings (API, CR/C, Notification, Recording) on behalf of German operators.",
+        complianceImplication:
+          "No German satellite system may operate without a BNetzA frequency assignment. Filing lead times are typically 2-7 years for GEO, 1-3 years for LEO.",
+      },
+      {
+        section: "§ 165",
+        title: "Security requirements for TK networks",
+        summary:
+          "Operators of public telecommunications networks must implement appropriate technical and organizational security measures. Includes satellite networks. Critical components subject to § 165 Abs. 4 review.",
+        complianceImplication:
+          "Satellite communication networks are TK networks under the TKG — security obligations apply to ground segment and mission control infrastructure.",
+      },
+      {
+        section: "§ 168",
+        title: "Incident reporting obligations",
+        summary:
+          "Security incidents affecting TK networks must be reported to BNetzA and BSI without undue delay.",
+        complianceImplication:
+          "Overlaps with NIS2 incident reporting. Satellite operators must report to both BNetzA (TKG) and BSI (NIS2/BSIG) for cyber incidents.",
+      },
+    ],
+    related_sources: ["INT-ITU-CONST", "DE-BSIG-NIS2"],
+    caelex_engine_mapping: ["spectrum-engine.server"],
+    caelex_data_file_mapping: [
+      "national-space-laws.ts",
+      "spectrum-itu-requirements.ts",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-AWG-2013",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Foreign Trade and Payments Act",
+    title_local: "Außenwirtschaftsgesetz (AWG)",
+    date_enacted: "2013-06-06",
+    official_reference: "BGBl. I 2013 S. 1482",
+    source_url: "https://www.gesetze-im-internet.de/awg_2013/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BAFA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    key_provisions: [
+      {
+        section: "§§ 4-8",
+        title: "Export licensing requirements",
+        summary:
+          "Export of goods, software, and technology listed in the Dual-Use Regulation or national control lists requires BAFA authorization. Includes spacecraft components, ground station equipment, and cryptographic modules.",
+      },
+      {
+        section: "§§ 55 ff. AWV",
+        title: "Investment screening",
+        summary:
+          "Acquisitions of German companies by non-EU/EFTA investors are subject to BMWK review if the company operates in sensitive sectors including space/defence.",
+        complianceImplication:
+          "Foreign investment in German space companies triggers mandatory notification to BMWK if the investor acquires ≥10% of voting rights.",
+      },
+    ],
+    related_sources: ["DE-AWV-2013", "DE-DUALUSE-2021"],
+    caelex_engine_mapping: ["export-control-engine.server"],
+    caelex_data_file_mapping: ["itar-ear-requirements.ts"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-AWV-2013",
+    jurisdiction: "DE",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Foreign Trade and Payments Regulation",
+    title_local: "Außenwirtschaftsverordnung (AWV)",
+    date_enacted: "2013-08-02",
+    official_reference: "BGBl. I 2013 S. 2865",
+    source_url: "https://www.gesetze-im-internet.de/awv_2013/",
+    issuing_body: "Bundesregierung",
+    competent_authorities: ["DE-BAFA", "DE-BMWK"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    key_provisions: [
+      {
+        section: "§§ 55-62",
+        title: "Sector-specific investment screening",
+        summary:
+          "Detailed rules for investment screening in defence, IT security, and critical infrastructure sectors. Space sector falls under critical infrastructure.",
+      },
+    ],
+    related_sources: ["DE-AWG-2013"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-DUALUSE-2021",
+    jurisdiction: "DE",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Dual-Use Regulation",
+    title_local: "EU-Dual-Use-Verordnung",
+    date_in_force: "2021-09-09",
+    official_reference: "Verordnung (EU) 2021/821",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2021/821/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["DE-BAFA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    key_provisions: [
+      {
+        section: "Annex I, Category 7",
+        title: "Navigation and avionics",
+        summary:
+          "GNSS receivers, inertial navigation systems, star trackers, and related technology subject to export control.",
+      },
+      {
+        section: "Annex I, Category 9",
+        title: "Aerospace and propulsion",
+        summary:
+          "Spacecraft, launch vehicles, propulsion systems, and associated software/technology. Includes complete satellites, reaction wheels, solar arrays above specified thresholds.",
+      },
+      {
+        section: "Art. 4",
+        title: "Catch-all clause",
+        summary:
+          "Even unlisted items require authorization if the exporter is aware they may be intended for WMD, military end-use in embargoed countries, or listed end-users.",
+        complianceImplication:
+          "Space component exporters must screen every transaction, not just listed items.",
+      },
+    ],
+    related_sources: ["DE-AWG-2013", "DE-AWV-2013"],
+    notes: [
+      "Directly applicable in Germany as EU Regulation — no national transposition needed.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-KWKG",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "War Weapons Control Act",
+    title_local:
+      "Gesetz über die Kontrolle von Kriegswaffen (Kriegswaffenkontrollgesetz — KWKG)",
+    official_reference: "BGBl. I 1990 S. 2506",
+    source_url: "https://www.gesetze-im-internet.de/krwaffkontrg/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "export_control"],
+    key_provisions: [
+      {
+        section: "§§ 1-3",
+        title: "Prohibition and licensing of war weapons",
+        summary:
+          "Production, acquisition, transfer, and transport of war weapons requires government authorization. War weapons list includes certain missile systems and space-capable launch vehicles above specified thresholds.",
+      },
+    ],
+    related_sources: ["DE-AWG-2013"],
+    scope_description:
+      "Relevant for launch vehicles with military-origin technology and dual-use payloads. Most commercial space activities do not fall under KWKG unless the payload or carrier has military classification.",
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSIG-NIS2",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "BSI Act (with NIS2 Implementation)",
+    title_local:
+      "Gesetz über das Bundesamt für Sicherheit in der Informationstechnik (BSI-Gesetz — BSIG), geändert durch NIS2UmsuCG",
+    date_last_amended: "2025-03-01",
+    official_reference: "BGBl. I, zuletzt geändert durch NIS2UmsuCG",
+    source_url: "https://www.gesetze-im-internet.de/bsig_2009/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "ground_segment",
+      "constellation_operator",
+    ],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "§§ 30-31",
+        title: "Risk management and incident reporting for NIS2 entities",
+        summary:
+          "Entities in sectors of high criticality (including space — NIS2 Annex I) must implement cybersecurity risk management measures and report significant incidents to BSI within 24 hours (early warning) and 72 hours (full notification).",
+        complianceImplication:
+          "German space operators classified as 'important' or 'essential' under NIS2 must comply with BSIG §§ 30-31. This is the DE-specific implementation of NIS2 Art. 21 and Art. 23.",
+      },
+      {
+        section: "§ 33",
+        title: "Registration obligation",
+        summary:
+          "NIS2 entities must register with BSI, providing contact details, sector classification, and member state presence.",
+      },
+      {
+        section: "§ 41",
+        title: "Critical components",
+        summary:
+          "Use of critical components in covered infrastructure requires notification to BSI. BMWK may prohibit use of specific components from untrusted vendors.",
+        complianceImplication:
+          "Ground segment and mission control systems using components from certain vendors may require BSI clearance.",
+      },
+    ],
+    implements: "EU-NIS2-2022",
+    related_sources: ["EU-NIS2-2022", "DE-BSI-TR-03184-1", "DE-BSI-TR-03184-2"],
+    caelex_engine_mapping: ["nis2-engine.server"],
+    caelex_data_file_mapping: [
+      "nis2-requirements.ts",
+      "cybersecurity-requirements.ts",
+    ],
+    notes: [
+      "NIS2UmsuCG transposed the NIS2 Directive into German law, making space explicitly a sector of high criticality.",
+      "§§ 30-31 BSIG are the German equivalents of NIS2 Art. 21 (risk management) and Art. 23 (incident reporting).",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-UVPG",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Environmental Impact Assessment Act",
+    title_local: "Gesetz über die Umweltverträglichkeitsprüfung (UVPG)",
+    source_url: "https://www.gesetze-im-internet.de/uvpg/",
+    issuing_body: "Bundestag",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental"],
+    key_provisions: [
+      {
+        section: "§ 1",
+        title: "Purpose and scope",
+        summary:
+          "Environmental impact assessments are mandatory for projects that may have significant effects on the environment. Includes construction and operation of launch facilities.",
+        complianceImplication:
+          "Any launch site development in Germany triggers a full UVP. Relevant for future German spaceport proposals.",
+      },
+    ],
+    related_sources: [],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-PRODHAFTG",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Product Liability Act",
+    title_local: "Produkthaftungsgesetz (ProdHaftG)",
+    source_url: "https://www.gesetze-im-internet.de/prodhaftg/",
+    issuing_body: "Bundestag",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["liability"],
+    key_provisions: [
+      {
+        section: "§ 1",
+        title: "Strict product liability",
+        summary:
+          "A manufacturer is liable for damage caused by a defect in their product. Potentially applicable to spacecraft components, ground equipment, and satellite subsystems delivered to third parties.",
+        complianceImplication:
+          "Space component manufacturers should verify product liability coverage. The development risk defence (§ 1 Abs. 2 Nr. 5) may apply to novel space technologies.",
+      },
+    ],
+    related_sources: ["EU-CRA-2024"],
+    last_verified: "2026-04-13",
+  },
+];
