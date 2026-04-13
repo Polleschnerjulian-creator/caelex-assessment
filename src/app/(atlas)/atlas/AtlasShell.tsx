@@ -27,6 +27,9 @@ const MAIN_NAV = [
   { label: "API", href: "/atlas/api-access", icon: Key },
 ] as const;
 
+const COLLAPSED_W = 72;
+const EXPANDED_W = 260;
+
 export default function AtlasShell({
   children,
 }: {
@@ -38,170 +41,198 @@ export default function AtlasShell({
 
   useEffect(() => setMounted(true), []);
 
+  const sidebarWidth = hovered ? EXPANDED_W : COLLAPSED_W;
+  const collapsed = !hovered;
+
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  // Transition config matching dashboard sidebar
+  const widthTransition = mounted
+    ? `width ${collapsed ? "250ms cubic-bezier(0.25,0.46,0.45,0.94)" : "300ms cubic-bezier(0.34,1.56,0.64,1)"}`
+    : "none";
+
   return (
     <div
-      className="landing-light relative h-screen w-screen overflow-hidden bg-[#F7F8FA]"
+      className="landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
-      {/* ─── Fixed sidebar zone (hover target) ─── */}
-      <div
+      {/* ─── Sidebar ─── */}
+      <aside
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         className={`
-          fixed top-0 left-0 bottom-0 z-50
-          flex flex-col items-start
-          bg-white border-r border-gray-200
+          fixed z-40 flex flex-col
           transition-opacity duration-300
           ${!mounted ? "opacity-0" : "opacity-100"}
         `}
-        style={{ width: hovered ? 260 : 72 }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: sidebarWidth,
+          height: "calc(100vh - 24px)",
+          left: 12,
+          top: 12,
+          background: "#1a1a1a",
+          borderRadius: 20,
+          overflow: "hidden",
+          transition: widthTransition,
+          willChange: "width",
+        }}
       >
-        {/* ── Logo pill (top) ── */}
-        <div className="ml-3 mt-3 flex items-center justify-center h-10 w-[46px] rounded-xl bg-[#1a1a1a]">
+        {/* ── Logo ── */}
+        <div
+          className={`
+            flex items-center flex-shrink-0 border-b border-white/[0.08]
+            ${collapsed ? "h-14 justify-center" : "h-14 px-5 gap-3"}
+          `}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/caelex-logo-white.png"
             alt="Caelex"
-            className="h-6 w-6 object-contain"
+            className="h-8 w-8 object-contain flex-shrink-0"
           />
-        </div>
-
-        {/* ── Main nav pill (floating, NOT full height) ── */}
-        <div className="ml-3 mt-2 flex flex-col items-center rounded-2xl bg-[#1a1a1a] w-[46px] py-2 px-1">
-          {MAIN_NAV.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(
-              item.href,
-              "exact" in item ? item.exact : undefined,
-            );
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center justify-center
-                  h-9 w-9 rounded-xl transition-all duration-200 mb-0.5
-                  ${
-                    active
-                      ? "bg-white/15 text-white"
-                      : "text-white/35 hover:text-white/80 hover:bg-white/8"
-                  }
-                `}
-              >
-                <Icon
-                  className="h-[16px] w-[16px]"
-                  strokeWidth={active ? 2 : 1.5}
-                />
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* ── Bottom pills (separate: Back + Settings) ── */}
-        <div className="mt-auto ml-3 mb-3 flex flex-col gap-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center justify-center h-10 w-[46px] rounded-xl bg-[#1a1a1a] text-white/25 hover:text-white/60 transition-all duration-200"
-          >
-            <ArrowLeft className="h-[16px] w-[16px]" strokeWidth={1.5} />
-          </Link>
-          <Link
-            href="/atlas/settings"
-            className={`
-              flex items-center justify-center h-10 w-[46px] rounded-xl bg-[#1a1a1a] transition-all duration-200
-              ${isActive("/atlas/settings") ? "text-white" : "text-white/25 hover:text-white/60"}
-            `}
-          >
-            <Settings className="h-[16px] w-[16px]" strokeWidth={1.5} />
-          </Link>
-        </div>
-
-        {/* ── Expanded white overlay panel ── */}
-        <div
-          className={`
-            absolute top-0 left-[62px] bottom-0
-            bg-white/95 backdrop-blur-xl border-r border-gray-200 shadow-xl
-            overflow-hidden
-            transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          `}
-          style={{
-            width: hovered ? 198 : 0,
-            opacity: hovered ? 1 : 0,
-            pointerEvents: hovered ? "auto" : "none",
-          }}
-        >
-          {/* Header */}
-          <div className="h-[52px] flex items-center px-4 border-b border-gray-100 ml-0">
-            <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-semibold tracking-[0.1em] text-gray-900 whitespace-nowrap">
+          {!collapsed && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[13px] font-semibold tracking-[0.15em] text-white/90 whitespace-nowrap">
                 ATLAS
               </span>
-              <span className="text-[8px] font-medium tracking-[0.2em] text-emerald-600 uppercase whitespace-nowrap">
+              <span className="text-[8px] font-medium tracking-[0.2em] text-white/40 uppercase whitespace-nowrap">
                 Regulatory Intelligence
               </span>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Nav labels */}
-          <nav className="py-2 px-2">
-            <ul className="flex flex-col gap-px">
-              {MAIN_NAV.map((item) => {
-                const active = isActive(
-                  item.href,
-                  "exact" in item ? item.exact : undefined,
-                );
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`
-                        flex items-center h-9 px-3 rounded-lg whitespace-nowrap
-                        transition-all duration-150
-                        ${
-                          active
-                            ? "bg-gray-100 text-gray-900 font-medium"
-                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                        }
-                      `}
-                    >
-                      <span className="text-[12px] tracking-wide">
+        {/* ── Navigation ── */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2">
+          <ul className="flex flex-col gap-0.5">
+            {MAIN_NAV.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(
+                item.href,
+                "exact" in item ? item.exact : undefined,
+              );
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    className={`
+                      group relative flex items-center rounded-xl
+                      transition-all duration-200
+                      ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 gap-3 px-3"}
+                      ${
+                        active
+                          ? "bg-white/[0.12] text-white"
+                          : "text-white/35 hover:text-white/80 hover:bg-white/[0.06]"
+                      }
+                    `}
+                  >
+                    <Icon
+                      className={`flex-shrink-0 ${collapsed ? "h-[17px] w-[17px]" : "h-4 w-4"}`}
+                      strokeWidth={active ? 2 : 1.5}
+                    />
+
+                    {!collapsed && (
+                      <span className="truncate text-[12px] font-medium tracking-wide whitespace-nowrap">
                         {item.label}
                       </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+                    )}
 
-          {/* Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 py-2 px-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center h-8 px-3 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all duration-150 whitespace-nowrap"
-            >
-              <span className="text-[11px] tracking-wide">Back to Caelex</span>
-            </Link>
-            <Link
-              href="/atlas/settings"
-              className={`
-                flex items-center h-8 px-3 rounded-lg transition-all duration-150 whitespace-nowrap
-                ${isActive("/atlas/settings") ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"}
-              `}
-            >
-              <span className="text-[11px] tracking-wide">Settings</span>
-            </Link>
-          </div>
+                    {/* Tooltip collapsed mode */}
+                    {collapsed && (
+                      <span
+                        className="
+                          pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                          whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5
+                          text-[11px] font-medium text-white/90 opacity-0
+                          shadow-xl border border-white/10
+                          transition-opacity duration-150
+                          group-hover:opacity-100
+                        "
+                      >
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* ── Bottom ── */}
+        <div className="flex flex-col border-t border-white/[0.08] py-2 px-2 gap-0.5">
+          <Link
+            href="/dashboard"
+            title={collapsed ? "Back to Caelex" : undefined}
+            className={`
+              group relative flex items-center rounded-xl
+              text-white/25 hover:text-white/60 hover:bg-white/[0.06]
+              transition-all duration-200
+              ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 gap-3 px-3"}
+            `}
+          >
+            <ArrowLeft
+              className={`flex-shrink-0 ${collapsed ? "h-[17px] w-[17px]" : "h-4 w-4"}`}
+              strokeWidth={1.5}
+            />
+            {!collapsed && (
+              <span className="truncate text-[12px] font-medium tracking-wide whitespace-nowrap">
+                Back to Caelex
+              </span>
+            )}
+            {collapsed && (
+              <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
+                Back to Caelex
+              </span>
+            )}
+          </Link>
+
+          <Link
+            href="/atlas/settings"
+            title={collapsed ? "Settings" : undefined}
+            className={`
+              group relative flex items-center rounded-xl
+              transition-all duration-200
+              ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 gap-3 px-3"}
+              ${
+                isActive("/atlas/settings")
+                  ? "bg-white/[0.12] text-white"
+                  : "text-white/25 hover:text-white/60 hover:bg-white/[0.06]"
+              }
+            `}
+          >
+            <Settings
+              className={`flex-shrink-0 ${collapsed ? "h-[17px] w-[17px]" : "h-4 w-4"}`}
+              strokeWidth={1.5}
+            />
+            {!collapsed && (
+              <span className="truncate text-[12px] font-medium tracking-wide whitespace-nowrap">
+                Settings
+              </span>
+            )}
+            {collapsed && (
+              <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
+                Settings
+              </span>
+            )}
+          </Link>
         </div>
-      </div>
+      </aside>
 
-      {/* ─── Main Content (fixed margin, never pushed) ─── */}
-      <main className="ml-[72px] h-full overflow-y-auto overflow-x-hidden">
+      {/* ─── Main Content (reacts to sidebar width) ─── */}
+      <main
+        className="h-full overflow-y-auto overflow-x-hidden"
+        style={{
+          marginLeft: sidebarWidth + 24,
+          transition: widthTransition,
+          willChange: "margin-left",
+        }}
+      >
         <div className="min-h-full">{children}</div>
       </main>
     </div>
