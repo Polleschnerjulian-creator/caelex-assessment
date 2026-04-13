@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import LiveFeed from "@/components/atlas/LiveFeed";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
@@ -38,14 +39,14 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_IT,
 ];
 
-// ─── Greeting based on time of day ───────────────────────────────────
+// ─── Greeting key based on time of day ──────────────────────────────
 
-function getGreeting(): string {
+function getGreetingKey(): string {
   const hour = new Date().getHours();
-  if (hour < 5) return "Good evening";
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 5) return "atlas.greeting_evening";
+  if (hour < 12) return "atlas.greeting_morning";
+  if (hour < 17) return "atlas.greeting_afternoon";
+  return "atlas.greeting_evening";
 }
 
 // ─── Debounce hook ───────────────────────────────────────────────────
@@ -180,10 +181,11 @@ function performSearch(query: string): SearchResults | null {
 
 export default function CommandCenterPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
-  const [greeting] = useState(getGreeting);
+  const [greetingKey] = useState(getGreetingKey);
 
   const results = useMemo(
     () => performSearch(debouncedQuery),
@@ -223,7 +225,7 @@ export default function CommandCenterPage() {
         <p
           className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[16px]" : "text-[22px]"}`}
         >
-          {greeting}
+          {t(greetingKey)}
         </p>
       </div>
 
@@ -236,7 +238,7 @@ export default function CommandCenterPage() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search laws, treaties, authorities, standards..."
+          placeholder={t("atlas.search_placeholder")}
           spellCheck={false}
           autoComplete="off"
           className={`
@@ -273,8 +275,10 @@ export default function CommandCenterPage() {
               </button>
             ))}
             <span className="text-[12px] text-gray-300">
-              {ALL_SOURCES.length} sources &middot; {JURISDICTION_DATA.size}{" "}
-              jurisdictions
+              {t("atlas.sources_count", { count: ALL_SOURCES.length })} &middot;{" "}
+              {t("atlas.jurisdictions_count", {
+                count: JURISDICTION_DATA.size,
+              })}
             </span>
           </div>
         </div>
@@ -289,7 +293,7 @@ export default function CommandCenterPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Globe2 size={15} className="text-gray-400" strokeWidth={1.5} />
                 <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-                  Jurisdictions
+                  {t("atlas.jurisdictions")}
                 </h2>
                 <span className="text-[11px] text-gray-300">
                   {results.jurisdictions.length}
@@ -342,7 +346,7 @@ export default function CommandCenterPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Scale size={15} className="text-gray-400" strokeWidth={1.5} />
                 <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-                  Legal Sources
+                  {t("atlas.legal_sources")}
                 </h2>
                 <span className="text-[11px] text-gray-300">
                   {results.sources.length}
@@ -406,7 +410,7 @@ export default function CommandCenterPage() {
                     onClick={() => setShowAllSources(true)}
                     className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
                   >
-                    Show all {results.sources.length} results
+                    {t("atlas.show_all", { count: results.sources.length })}
                   </button>
                 )}
                 {showAllSources && results.sources.length > 8 && (
@@ -414,7 +418,7 @@ export default function CommandCenterPage() {
                     onClick={() => setShowAllSources(false)}
                     className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
                   >
-                    Show less
+                    {t("atlas.show_less")}
                   </button>
                 )}
               </div>
@@ -431,7 +435,7 @@ export default function CommandCenterPage() {
                   strokeWidth={1.5}
                 />
                 <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-                  Authorities
+                  {t("atlas.authorities")}
                 </h2>
                 <span className="text-[11px] text-gray-300">
                   {results.authorities.length}
@@ -481,7 +485,7 @@ export default function CommandCenterPage() {
       {!hasResults && (
         <div className="mt-14">
           <h2 className="text-[11px] font-medium text-gray-400 tracking-[0.15em] uppercase mb-4">
-            Tracked jurisdictions
+            {t("atlas.tracked_jurisdictions")}
           </h2>
           <LiveFeed />
         </div>
@@ -505,7 +509,7 @@ export default function CommandCenterPage() {
           <div className="space-y-3 text-[10px] text-gray-400 leading-[1.7]">
             <p>
               <span className="font-semibold text-gray-500">
-                No Legal Advice.
+                {t("atlas.disclaimer_no_legal_advice")}.
               </span>{" "}
               ATLAS is a regulatory information and research tool developed by
               Caelex. The information, data, assessments, and comparative
@@ -520,7 +524,7 @@ export default function CommandCenterPage() {
 
             <p>
               <span className="font-semibold text-gray-500">
-                No Guarantee of Accuracy.
+                {t("atlas.disclaimer_no_guarantee")}.
               </span>{" "}
               Caelex makes no representation or warranty, express or implied,
               regarding the accuracy, completeness, timeliness, or reliability
@@ -535,7 +539,7 @@ export default function CommandCenterPage() {
 
             <p>
               <span className="font-semibold text-gray-500">
-                Limitation of Liability.
+                {t("atlas.disclaimer_limitation")}.
               </span>{" "}
               To the maximum extent permitted by applicable law, Caelex, its
               directors, employees, and agents shall not be liable for any
@@ -550,7 +554,7 @@ export default function CommandCenterPage() {
 
             <p>
               <span className="font-semibold text-gray-500">
-                Third-Party Reliance.
+                {t("atlas.disclaimer_third_party")}.
               </span>{" "}
               ATLAS data and outputs are provided solely for the internal
               research and information purposes of the licensed user. Users
@@ -562,7 +566,9 @@ export default function CommandCenterPage() {
             </p>
 
             <p>
-              <span className="font-semibold text-gray-500">Data Sources.</span>{" "}
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_data_sources")}.
+              </span>{" "}
               ATLAS aggregates information from public legislative databases,
               official government publications, international treaty
               collections, and authoritative regulatory sources. Primary sources
@@ -577,7 +583,7 @@ export default function CommandCenterPage() {
 
             <p>
               <span className="font-semibold text-gray-500">
-                Intellectual Property.
+                {t("atlas.disclaimer_ip")}.
               </span>{" "}
               ATLAS, including its regulatory data structures, compliance
               mappings, cross-reference frameworks, and analytical

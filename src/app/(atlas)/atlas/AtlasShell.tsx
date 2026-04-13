@@ -15,16 +15,34 @@ import {
   Settings,
   ArrowLeft,
 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const MAIN_NAV = [
-  { label: "Command Center", href: "/atlas", icon: Globe, exact: true },
-  { label: "Comparator", href: "/atlas/comparator", icon: BarChart3 },
-  { label: "Jurisdictions", href: "/atlas/jurisdictions", icon: Map },
-  { label: "EU Space Act", href: "/atlas/eu-space-act", icon: ScrollText },
-  { label: "Cyber Standards", href: "/atlas/cyber-standards", icon: Shield },
-  { label: "Sustainability", href: "/atlas/sustainability", icon: Leaf },
-  { label: "Alerts", href: "/atlas/alerts", icon: Bell },
-  { label: "API", href: "/atlas/api-access", icon: Key },
+  {
+    labelKey: "atlas.command_center",
+    href: "/atlas",
+    icon: Globe,
+    exact: true,
+  },
+  { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
+  { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
+  {
+    labelKey: "atlas.eu_space_act",
+    href: "/atlas/eu-space-act",
+    icon: ScrollText,
+  },
+  {
+    labelKey: "atlas.cyber_standards",
+    href: "/atlas/cyber-standards",
+    icon: Shield,
+  },
+  {
+    labelKey: "atlas.sustainability",
+    href: "/atlas/sustainability",
+    icon: Leaf,
+  },
+  { labelKey: "atlas.alerts", href: "/atlas/alerts", icon: Bell },
+  { labelKey: "atlas.api", href: "/atlas/api-access", icon: Key },
 ] as const;
 
 const COLLAPSED_W = 58;
@@ -36,6 +54,7 @@ export default function AtlasShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -137,7 +156,7 @@ export default function AtlasShell({
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={item.label}
+                    title={t(item.labelKey)}
                     className={`
                       group relative flex items-center justify-center
                       h-8 w-8 rounded-lg mb-0.5
@@ -150,7 +169,7 @@ export default function AtlasShell({
                       strokeWidth={active ? 2 : 1.5}
                     />
                     <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                   </Link>
                 );
@@ -180,7 +199,7 @@ export default function AtlasShell({
                         strokeWidth={active ? 2 : 1.5}
                       />
                       <span className="text-[12px] tracking-wide">
-                        {item.label}
+                        {t(item.labelKey)}
                       </span>
                     </Link>
                   </li>
@@ -202,14 +221,14 @@ export default function AtlasShell({
             <div className="flex flex-col items-center gap-1.5">
               <Link
                 href="/dashboard"
-                title="Back to Caelex"
+                title={t("atlas.back_to_caelex")}
                 className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/60 hover:text-white/60 transition-all duration-150"
               >
                 <ArrowLeft className="h-[15px] w-[15px]" strokeWidth={1.5} />
               </Link>
               <Link
                 href="/atlas/settings"
-                title="Settings"
+                title={t("atlas.settings")}
                 className={`
                   flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-150
                   ${
@@ -231,7 +250,7 @@ export default function AtlasShell({
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
                 <span className="text-[12px] tracking-wide">
-                  Back to Caelex
+                  {t("atlas.back_to_caelex")}
                 </span>
               </Link>
               <Link
@@ -242,7 +261,9 @@ export default function AtlasShell({
                 `}
               >
                 <Settings className="h-4 w-4" strokeWidth={1.5} />
-                <span className="text-[12px] tracking-wide">Settings</span>
+                <span className="text-[12px] tracking-wide">
+                  {t("atlas.settings")}
+                </span>
               </Link>
             </>
           )}

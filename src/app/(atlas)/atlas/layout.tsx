@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 
 export const metadata = {
@@ -19,5 +20,9 @@ export default async function AtlasLayout({
     redirect("/login");
   }
 
-  return <AtlasShell>{children}</AtlasShell>;
+  return (
+    <LanguageProvider>
+      <AtlasShell>{children}</AtlasShell>
+    </LanguageProvider>
+  );
 }
