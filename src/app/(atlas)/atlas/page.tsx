@@ -486,10 +486,134 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* ─── Disclaimer ─── */}
-      <footer className="mt-16 text-[9px] text-gray-400 leading-relaxed max-w-2xl">
-        ATLAS is an information tool, not legal advice. Caelex assumes no
-        guarantee for completeness, accuracy, or timeliness.
+      {/* ─── Legal Footer ─── */}
+      <footer className="mt-20 pt-8 border-t border-gray-200">
+        <div className="max-w-3xl space-y-4">
+          {/* Product attribution */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
+              ATLAS
+            </span>
+            <span className="text-[10px] text-gray-300">by</span>
+            <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
+              Caelex GmbH
+            </span>
+          </div>
+
+          {/* Comprehensive disclaimer */}
+          <div className="space-y-3 text-[10px] text-gray-400 leading-[1.7]">
+            <p>
+              <span className="font-semibold text-gray-500">
+                No Legal Advice.
+              </span>{" "}
+              ATLAS is a regulatory information and research tool developed by
+              Caelex GmbH. The information, data, assessments, and comparative
+              analyses provided through ATLAS do not constitute legal,
+              compliance, tax, or professional advice of any kind. No
+              attorney-client, advisory, or fiduciary relationship is created
+              between Caelex and any user through access to or use of ATLAS.
+              Users must independently verify all information and consult
+              qualified legal counsel before making compliance, licensing, or
+              business decisions.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                No Guarantee of Accuracy.
+              </span>{" "}
+              Caelex makes no representation or warranty, express or implied,
+              regarding the accuracy, completeness, timeliness, or reliability
+              of any data presented in ATLAS. Regulatory frameworks are subject
+              to change without notice. Legislative references — including EU
+              Space Act citations based on COM(2025) 335 — refer to legislative
+              proposals that may be substantially amended during the legislative
+              process. National law data reflects the state of research at the
+              time of last verification and may not reflect subsequent
+              amendments, judicial interpretations, or administrative practice.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                Limitation of Liability.
+              </span>{" "}
+              To the maximum extent permitted by applicable law, Caelex GmbH,
+              its directors, employees, and agents shall not be liable for any
+              direct, indirect, incidental, consequential, or special damages —
+              including but not limited to loss of profits, regulatory
+              penalties, fines, business interruption, or reputational harm —
+              arising from or in connection with the use of or reliance on
+              information provided through ATLAS. This limitation applies
+              regardless of the legal theory upon which such damages are
+              claimed.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                Third-Party Reliance.
+              </span>{" "}
+              ATLAS data and outputs are provided solely for the internal
+              research and information purposes of the licensed user. Users
+              shall not represent ATLAS outputs as certified compliance
+              assessments, legal opinions, or regulatory clearances to third
+              parties, regulators, investors, or courts. Any reliance by third
+              parties on ATLAS-derived information is at their own risk and
+              without recourse to Caelex.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">Data Sources.</span>{" "}
+              ATLAS aggregates information from public legislative databases,
+              official government publications, international treaty
+              collections, and authoritative regulatory sources. Primary sources
+              include EUR-Lex, national official gazettes (Bundesgesetzblatt,
+              Journal Officiel, Gazzetta Ufficiale, legislation.gov.uk), UNOOSA
+              treaty database, ITU, ESA, BSI, CNES, CAA, and ASI publications.
+              While Caelex endeavours to maintain current and accurate data, the
+              platform is not affiliated with, endorsed by, or officially
+              connected to any government authority, regulatory body, or
+              international organization referenced herein.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                Intellectual Property.
+              </span>{" "}
+              ATLAS, including its regulatory data structures, compliance
+              mappings, cross-reference frameworks, and analytical
+              methodologies, is proprietary to Caelex GmbH. All rights reserved.
+              Unauthorized reproduction, reverse-engineering, or use of ATLAS
+              data to build competing products or services is strictly
+              prohibited.
+            </p>
+          </div>
+
+          {/* Bottom line */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+            <span className="text-[9px] text-gray-300">
+              © {new Date().getFullYear()} Caelex GmbH — All rights reserved
+            </span>
+            <div className="flex items-center gap-4">
+              <a
+                href="/legal/privacy"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Privacy
+              </a>
+              <a
+                href="/legal/terms"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Terms
+              </a>
+              <a
+                href="/legal/impressum"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Impressum
+              </a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
