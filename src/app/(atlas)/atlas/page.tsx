@@ -191,6 +191,12 @@ export default function CommandCenterPage() {
   );
 
   const hasResults = results !== null;
+  const [showAllSources, setShowAllSources] = useState(false);
+
+  // Reset "show all" when query changes
+  useEffect(() => {
+    setShowAllSources(false);
+  }, [debouncedQuery]);
 
   // Cmd+K to focus
   useEffect(() => {
@@ -343,7 +349,10 @@ export default function CommandCenterPage() {
                 </span>
               </div>
               <div className="space-y-1">
-                {results.sources.slice(0, 8).map((source) => (
+                {(showAllSources
+                  ? results.sources
+                  : results.sources.slice(0, 8)
+                ).map((source) => (
                   <button
                     key={source.id}
                     onClick={() =>
@@ -396,10 +405,21 @@ export default function CommandCenterPage() {
                     </span>
                   </button>
                 ))}
-                {results.sources.length > 8 && (
-                  <p className="text-[12px] text-gray-400 px-4 pt-1">
-                    + {results.sources.length - 8} more results
-                  </p>
+                {!showAllSources && results.sources.length > 8 && (
+                  <button
+                    onClick={() => setShowAllSources(true)}
+                    className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
+                  >
+                    Show all {results.sources.length} results
+                  </button>
+                )}
+                {showAllSources && results.sources.length > 8 && (
+                  <button
+                    onClick={() => setShowAllSources(false)}
+                    className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
+                  >
+                    Show less
+                  </button>
                 )}
               </div>
             </section>
