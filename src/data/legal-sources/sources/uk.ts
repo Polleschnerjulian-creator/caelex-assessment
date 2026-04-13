@@ -1,0 +1,1551 @@
+// src/data/legal-sources/sources/uk.ts
+
+/**
+ * Copyright 2026 Caelex GmbH. All rights reserved.
+ *
+ * PROPRIETARY AND CONFIDENTIAL
+ * UK space law sources — complete legal framework for jurisdiction UK.
+ *
+ * Sources: legislation.gov.uk, CAA Space, UK Space Agency, DSIT, Ofcom, MOD
+ * Last verified: 2026-04-13
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import type { LegalSource, Authority } from "../types";
+
+// ─── UK Authorities (14) ────────────────────────────────────────────
+
+export const AUTHORITIES_UK: Authority[] = [
+  {
+    id: "UK-CAA",
+    jurisdiction: "UK",
+    name_en: "Civil Aviation Authority (Space Regulation)",
+    name_local: "Civil Aviation Authority (Space Regulation)",
+    abbreviation: "CAA",
+    website: "https://www.caa.co.uk/space",
+    space_mandate:
+      "UK space regulator since July 2021. Issues all space licences under the Space Industry Act 2018 and overseas activity licences under the Outer Space Act 1986. Responsible for operator licensing, spaceport licensing, range control licensing, and orbital activity regulation.",
+    legal_basis: "Space Industry Act 2018; Outer Space Act 1986",
+    applicable_areas: ["licensing", "registration"],
+  },
+  {
+    id: "UK-UKSA",
+    jurisdiction: "UK",
+    name_en: "UK Space Agency",
+    name_local: "UK Space Agency",
+    abbreviation: "UKSA",
+    website: "https://www.gov.uk/uksa",
+    space_mandate:
+      "Policy, programme delivery, and international representation. Executive agency of the Department for Science, Innovation and Technology (DSIT). Manages UK participation in ESA programmes. Maintains the UK Registry of Space Objects. Merging with DSIT April 2026.",
+    applicable_areas: [
+      "licensing",
+      "registration",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+  },
+  {
+    id: "UK-OFCOM",
+    jurisdiction: "UK",
+    name_en: "Office of Communications",
+    name_local: "Office of Communications",
+    abbreviation: "Ofcom",
+    website: "https://www.ofcom.org.uk",
+    space_mandate:
+      "Satellite spectrum licensing and ITU filings on behalf of UK operators. Regulates satellite broadcasting and broadband services. Issues Wireless Telegraphy Act licences for satellite earth stations and space stations.",
+    legal_basis: "Communications Act 2003; Wireless Telegraphy Act 2006",
+    applicable_areas: ["frequency_spectrum"],
+  },
+  {
+    id: "UK-ECJU",
+    jurisdiction: "UK",
+    name_en: "Export Control Joint Unit",
+    name_local: "Export Control Joint Unit",
+    abbreviation: "ECJU",
+    parent_ministry: "Department for Business and Trade",
+    website:
+      "https://www.gov.uk/government/organisations/export-control-joint-unit",
+    space_mandate:
+      "Space technology export licensing. Administers UK export controls for military and dual-use items including spacecraft, launch vehicles, and satellite components under the Export Control Act 2002 and Export Control Order 2008.",
+    legal_basis: "Export Control Act 2002",
+    applicable_areas: ["export_control"],
+  },
+  {
+    id: "UK-SPACECOMMAND",
+    jurisdiction: "UK",
+    name_en: "UK Space Command",
+    name_local: "UK Space Command",
+    abbreviation: "UK Space Command",
+    parent_ministry: "Ministry of Defence",
+    website: "https://www.gov.uk/government/groups/uk-space-command",
+    space_mandate:
+      "Military space operations, space domain awareness (SDA), and Skynet satellite communications. Established 1 April 2021, headquartered at RAF High Wycombe. Operates UK's military space capabilities and coordinates with allied space commands.",
+    applicable_areas: ["military_dual_use", "space_traffic_management"],
+  },
+  {
+    id: "UK-NCSC",
+    jurisdiction: "UK",
+    name_en: "National Cyber Security Centre",
+    name_local: "National Cyber Security Centre (GCHQ)",
+    abbreviation: "NCSC",
+    website: "https://www.ncsc.gov.uk",
+    space_mandate:
+      "Cybersecurity guidance for space systems. Part of GCHQ. Advises the CAA on cybersecurity aspects of space licence applications. Published guidance on satellite security principles.",
+    applicable_areas: ["cybersecurity"],
+  },
+  {
+    id: "UK-HSE",
+    jurisdiction: "UK",
+    name_en: "Health and Safety Executive",
+    name_local: "Health and Safety Executive",
+    abbreviation: "HSE",
+    website: "https://www.hse.gov.uk",
+    space_mandate:
+      "Launch site safety regulation. Enforces COMAH (Control of Major Accident Hazards) regulations for rocket propellant storage and handling. Oversees explosives regulations for solid rocket motors and pyrotechnics at spaceports.",
+    applicable_areas: ["environmental"],
+  },
+  {
+    id: "UK-ICO",
+    jurisdiction: "UK",
+    name_en: "Information Commissioner's Office",
+    name_local: "Information Commissioner's Office",
+    abbreviation: "ICO",
+    website: "https://ico.org.uk",
+    space_mandate:
+      "Data protection authority for Earth observation imagery with personal data implications. Enforces UK GDPR and the Data Protection Act 2018 as they apply to satellite-derived geospatial data processing.",
+    legal_basis: "Data Protection Act 2018; UK GDPR",
+    applicable_areas: ["data_security"],
+  },
+  {
+    id: "UK-AAIB",
+    jurisdiction: "UK",
+    name_en:
+      "Air Accidents Investigation Branch / Space Accident Investigation Authority",
+    name_local:
+      "Air Accidents Investigation Branch / Space Accident Investigation Authority",
+    abbreviation: "AAIB/SAIA",
+    website:
+      "https://www.gov.uk/government/organisations/air-accidents-investigation-branch",
+    space_mandate:
+      "Space accident investigation. The SIA 2018 s.20 and SI 2021/793 establish the Space Accident Investigation Authority (SAIA) within the existing AAIB framework. Investigates spaceflight accidents and serious incidents.",
+    legal_basis: "SIA 2018 s.20; SI 2021/793",
+    applicable_areas: ["licensing"],
+  },
+  {
+    id: "UK-DSIT",
+    jurisdiction: "UK",
+    name_en: "Department for Science, Innovation and Technology",
+    name_local: "Department for Science, Innovation and Technology",
+    abbreviation: "DSIT",
+    website:
+      "https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology",
+    space_mandate:
+      "Overall civil space policy. Parent department for the UK Space Agency. Responsible for the National Space Strategy and space regulatory reform. UKSA merging into DSIT from April 2026.",
+    applicable_areas: ["licensing"],
+  },
+  {
+    id: "UK-DFT",
+    jurisdiction: "UK",
+    name_en: "Department for Transport",
+    name_local: "Department for Transport",
+    abbreviation: "DfT",
+    website:
+      "https://www.gov.uk/government/organisations/department-for-transport",
+    space_mandate:
+      "SIA 2018 regulatory policy. Issues Secretary of State consents for sub-orbital and non-orbital spaceflight licences. Responsible for spaceport planning policy.",
+    applicable_areas: ["licensing"],
+  },
+  {
+    id: "UK-MOD",
+    jurisdiction: "UK",
+    name_en: "Ministry of Defence",
+    name_local: "Ministry of Defence",
+    abbreviation: "MOD",
+    website: "https://www.gov.uk/government/organisations/ministry-of-defence",
+    space_mandate:
+      "Defence space policy and the Defence Space Portfolio. Oversees UK Space Command. Responsible for Skynet military satellite communications and defence space programmes.",
+    applicable_areas: ["military_dual_use"],
+  },
+  {
+    id: "UK-NSPOC",
+    jurisdiction: "UK",
+    name_en: "National Space Operations Centre",
+    name_local: "National Space Operations Centre",
+    abbreviation: "NSpOC",
+    website: "https://www.gov.uk/government/groups/uk-space-command",
+    space_mandate:
+      "Launched May 2024, headquartered at RAF High Wycombe. Approximately 70 personnel. Provides space situational awareness (SSA) and space surveillance and tracking (SST) services for the UK. Civil-military coordination for conjunction assessment and collision avoidance.",
+    applicable_areas: ["space_traffic_management"],
+  },
+  {
+    id: "UK-MCA",
+    jurisdiction: "UK",
+    name_en: "Maritime and Coastguard Agency",
+    name_local: "Maritime and Coastguard Agency",
+    abbreviation: "MCA",
+    website:
+      "https://www.gov.uk/government/organisations/maritime-and-coastguard-agency",
+    space_mandate:
+      "Sea range safety and maritime exclusion zones during launches. Coordinates vessel clearance and maritime safety for launch and re-entry operations from UK spaceports.",
+    applicable_areas: ["licensing"],
+  },
+];
+
+// ─── International Treaties (UK-specific entries, 6) ────────────────
+
+const TREATIES_UK: LegalSource[] = [
+  {
+    id: "UK-INT-OST-RATIFICATION",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Outer Space Treaty — UK Ratification Record",
+    date_enacted: "1967-01-27",
+    date_in_force: "1967-10-10",
+    source_url:
+      "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+    issuing_body: "United Nations General Assembly",
+    competent_authorities: ["UK-UKSA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "registration", "liability"],
+    key_provisions: [
+      {
+        section: "Art. VI",
+        title: "State responsibility and authorization",
+        summary:
+          "The UK bears international responsibility for all national space activities including by non-governmental entities. This is the constitutional foundation of both the Outer Space Act 1986 and the Space Industry Act 2018.",
+        complianceImplication:
+          "Art. VI is the direct legal basis for the UK's dual-statute licensing regime. Every UK space operator must be authorized because the UK bears responsibility under this article.",
+      },
+      {
+        section: "Art. VII",
+        title: "Launching State liability",
+        summary:
+          "The UK is a 'launching State' for objects launched from UK territory or by UK nationals. This drives the insurance and indemnification requirements in both OSA 1986 and SIA 2018.",
+      },
+    ],
+    related_sources: [
+      "UK-OSA-1986",
+      "UK-SIA-2018",
+      "UK-INT-LIABILITY-1972",
+      "UK-INT-REGISTRATION-1975",
+    ],
+    notes: [
+      "The UK was one of the original signatories and depositary states of the Outer Space Treaty (along with the USA and USSR). Ratified 10 October 1967.",
+      "Art. VI is the foundational legal basis for the UK's entire dual-statute space authorization framework (OSA 1986 + SIA 2018).",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-INT-LIABILITY-1972",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Liability Convention — UK Ratification Record",
+    date_enacted: "1972-03-29",
+    date_in_force: "1972-09-01",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introliability-convention.html",
+    issuing_body: "United Nations General Assembly",
+    competent_authorities: ["UK-UKSA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "insurance"],
+    key_provisions: [
+      {
+        section: "Art. II",
+        title: "Absolute liability for surface damage",
+        summary:
+          "The UK as launching State is absolutely liable for damage caused by space objects on the surface of the Earth or to aircraft in flight. This drives the mandatory insurance and government indemnity regime in SIA 2018 s.34-38.",
+        complianceImplication:
+          "The UK's 4-tier liability architecture (operator insurance, capped liability, discretionary indemnity, mandatory backstop) is designed to manage this international obligation.",
+      },
+      {
+        section: "Art. III",
+        title: "Fault-based liability in space",
+        summary:
+          "In-orbit damage requires proof of fault. Less burdensome than surface liability but still drives collision avoidance obligations.",
+      },
+    ],
+    related_sources: [
+      "UK-INT-OST-RATIFICATION",
+      "UK-OSA-1986",
+      "UK-SIA-2018",
+      "UK-LIABILITY-ARCHITECTURE",
+    ],
+    notes: [
+      "The UK ratified the Liability Convention in 1972. It is the direct legal basis for the insurance and indemnification requirements in both OSA 1986 (s.5, s.10) and SIA 2018 (s.34-38).",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-INT-REGISTRATION-1975",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Registration Convention — UK Ratification Record",
+    date_enacted: "1975-01-14",
+    date_in_force: "1976-09-15",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introregistration-convention.html",
+    issuing_body: "United Nations General Assembly",
+    competent_authorities: ["UK-UKSA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["registration"],
+    key_provisions: [
+      {
+        section: "Art. II",
+        title: "National registry obligation",
+        summary:
+          "The UK must maintain a national registry of space objects. UKSA maintains the UK Registry of Space Objects under OSA 1986 s.7 and SIA 2018.",
+        complianceImplication:
+          "All space objects launched under UK jurisdiction must be registered. Operators must provide launch and orbital data to enable registration.",
+      },
+    ],
+    related_sources: ["UK-INT-OST-RATIFICATION", "UK-OSA-1986", "UK-SIA-2018"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-INT-MOON-1979",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "not_ratified",
+    title_en:
+      "Agreement Governing the Activities of States on the Moon and Other Celestial Bodies",
+    date_enacted: "1979-12-18",
+    date_in_force: "1984-07-11",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/intromoon-agreement.html",
+    issuing_body: "United Nations General Assembly",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["space_resource_operator"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Art. 11",
+        title: "Common heritage of mankind",
+        summary:
+          "The Moon and its natural resources are the common heritage of mankind. An international regime shall govern exploitation of resources.",
+      },
+    ],
+    scope_description:
+      "NOT ratified by the UK. The UK signed the Artemis Accords in 2020 as a founding signatory, which take a different approach to space resource utilization than the Moon Agreement's common heritage principle.",
+    related_sources: ["UK-INT-OST-RATIFICATION", "INT-ARTEMIS-ACCORDS-2020"],
+    notes: [
+      "The UK has NOT ratified the Moon Agreement — no binding obligations for UK entities.",
+      "The UK's signing of the Artemis Accords (2020) as a founding member signals preference for the Accords' approach to space resource utilization.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "INT-ARTEMIS-ACCORDS-2020",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "The Artemis Accords: Principles for Cooperation in the Civil Exploration and Use of the Moon, Mars, Comets, and Asteroids for Peaceful Purposes",
+    date_enacted: "2020-10-13",
+    source_url: "https://www.nasa.gov/artemis-accords/",
+    issuing_body: "United States (NASA) — multilateral open accession",
+    competent_authorities: ["UK-UKSA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "registration", "debris_mitigation"],
+    key_provisions: [
+      {
+        section: "Section 10",
+        title: "Space resources",
+        summary:
+          "Signatories affirm that the extraction and utilization of space resources does not inherently constitute national appropriation under the Outer Space Treaty. Operators should conduct activities in a manner consistent with the Treaty.",
+        complianceImplication:
+          "Provides legal framework for UK entities engaged in space resource extraction. Non-binding but politically significant — 61 countries signed as of 2026.",
+      },
+      {
+        section: "Section 7",
+        title: "Transparency",
+        summary:
+          "Signatories commit to publicly sharing scientific data from their space activities and describing the location and general nature of operations on celestial bodies.",
+      },
+      {
+        section: "Section 9",
+        title: "Orbital debris and spacecraft disposal",
+        summary:
+          "Signatories commit to planning for the safe disposal of spacecraft and to limiting the generation of new debris.",
+      },
+    ],
+    related_sources: ["UK-INT-OST-RATIFICATION", "UK-INT-MOON-1979"],
+    notes: [
+      "The UK was a founding signatory on 13 October 2020. Non-binding political commitment but influential in shaping norms.",
+      "61 countries signed as of 2026. Contrasts with the Moon Agreement which has minimal adoption among spacefaring nations.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "INT-HCOC-2002",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Hague Code of Conduct against Ballistic Missile Proliferation",
+    date_enacted: "2002-11-25",
+    source_url: "https://www.hcoc.at",
+    issuing_body: "Multilateral (143 subscribing states)",
+    competent_authorities: ["UK-MOD"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["military_dual_use"],
+    key_provisions: [
+      {
+        section: "Principles",
+        title: "Pre-launch notifications",
+        summary:
+          "Subscribing states commit to provide pre-launch notifications of ballistic missile and space launch vehicle launches, and annual declarations of policies on space launch vehicles and ballistic missiles.",
+        complianceImplication:
+          "The UK as an original subscriber must notify the HCOC of space launch vehicle launches. Relevant for launch providers operating from UK spaceports.",
+      },
+    ],
+    related_sources: ["UK-INT-OST-RATIFICATION"],
+    notes: [
+      "The UK was an original subscriber. Non-binding but confidence-building measure. 143 subscribing states as of 2026.",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Primary Legislation (4) ────────────────────────────────────────
+
+const PRIMARY_LEGISLATION_UK: LegalSource[] = [
+  {
+    id: "UK-OSA-1986",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Outer Space Act 1986",
+    date_enacted: "1986-07-18",
+    date_last_amended: "2021-07-29",
+    official_reference: "1986 c.38",
+    source_url: "https://www.legislation.gov.uk/ukpga/1986/38",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-CAA", "UK-UKSA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "registration", "liability", "insurance"],
+    key_provisions: [
+      {
+        section: "s.1",
+        title: "Scope — activities in outer space",
+        summary:
+          "The Act applies to activities carried on in outer space by UK nationals, Scottish firms, and bodies incorporated under UK law. Since July 2021, limited to overseas activities only — UK-based activities are covered by SIA 2018.",
+        complianceImplication:
+          "UK-connected persons conducting space activities from non-UK territory still require an OSA 1986 licence from the CAA.",
+      },
+      {
+        section: "s.3",
+        title: "Prohibition of unlicensed activities",
+        summary:
+          "No person to whom the Act applies shall carry on any space activity except under the authority of a licence.",
+      },
+      {
+        section: "s.5",
+        title: "Terms of licence — insurance",
+        summary:
+          "Licences may contain conditions including requirements for the licensee to insure against liability for damage or loss.",
+        complianceImplication:
+          "Insurance is a standard licence condition. The CAA sets insurance requirements based on risk assessment.",
+      },
+      {
+        section: "s.7",
+        title: "Register of space objects",
+        summary:
+          "The Secretary of State shall maintain a register of space objects. Extended to cover objects launched under both OSA and SIA.",
+      },
+      {
+        section: "s.10",
+        title: "Government indemnity — capped by Deregulation Act 2015",
+        summary:
+          "The licensee is liable to indemnify the government against claims. The Deregulation Act 2015 s.12 introduced mandatory liability caps, limiting operator exposure.",
+        complianceImplication:
+          "Operator indemnity obligations are now capped. Published cap for OSA licences: EUR 60M.",
+      },
+      {
+        section: "s.12",
+        title: "Offences",
+        summary:
+          "Conducting unlicensed space activities is a criminal offence carrying up to 2 years imprisonment.",
+      },
+    ],
+    scope_description:
+      "Since July 2021, OSA 1986 applies ONLY to overseas activities by UK-connected persons. All UK-based spaceflight activities are governed by SIA 2018. The Act has been extended to the Isle of Man, Gibraltar, Cayman Islands, and Bermuda.",
+    related_sources: [
+      "UK-SIA-2018",
+      "UK-DEREGULATION-2015-S12",
+      "UK-INT-OST-RATIFICATION",
+      "UK-LIABILITY-ARCHITECTURE",
+    ],
+    amended_by: ["UK-DEREGULATION-2015-S12", "UK-SIA-2018"],
+    caelex_engine_mapping: ["space-law-engine.server"],
+    caelex_data_file_mapping: ["national-space-laws.ts"],
+    notes: [
+      "One of the earliest national space laws in the world. Now part of a dual-statute structure with SIA 2018.",
+      "Since July 2021, scope reduced to overseas activities only. UK-based activities are covered by SIA 2018.",
+      "Extended to Crown Dependencies and Overseas Territories: Isle of Man, Gibraltar, Cayman Islands, Bermuda.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SIA-2018",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Space Industry Act 2018",
+    date_enacted: "2018-03-15",
+    date_in_force: "2021-07-29",
+    official_reference: "2018 c.5",
+    source_url: "https://www.legislation.gov.uk/ukpga/2018/5",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-CAA", "UK-DSIT", "UK-DFT"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "registration",
+      "liability",
+      "insurance",
+      "environmental",
+      "cybersecurity",
+    ],
+    key_provisions: [
+      {
+        section: "s.1-4",
+        title: "Scope, regulator duties, and principal objectives",
+        summary:
+          "Establishes the regulatory framework for spaceflight activities carried out from the United Kingdom. 70 sections across 12 Schedules. Designates the CAA as the regulator.",
+        complianceImplication:
+          "Comprehensive framework — all UK-based spaceflight requires an SIA licence. Five licence types cover all aspects of spaceflight activities.",
+      },
+      {
+        section: "s.3",
+        title: "Prohibition of unlicensed spaceflight",
+        summary:
+          "It is an offence to carry out spaceflight activities, operate a spaceport, or provide range control services without a licence from the regulator.",
+      },
+      {
+        section: "s.8-15",
+        title: "Licences — five types",
+        summary:
+          "Five licence categories: (1) operator licence for launch/return, (2) spaceport licence, (3) range control licence, (4) orbital operator licence, and (5) mission management licence. Each with specific eligibility and safety requirements.",
+        complianceImplication:
+          "Operators must identify which licence type(s) apply to their activities and apply to the CAA accordingly.",
+      },
+      {
+        section: "s.11",
+        title: "Assessment of environmental effects (AEE)",
+        summary:
+          "The regulator must not grant a spaceport or launch licence unless satisfied that the applicant has carried out an assessment of environmental effects.",
+        complianceImplication:
+          "AEE is a mandatory prerequisite for spaceport and launch licences. Covers air quality, emissions, biodiversity, marine, noise, water, and soil impacts.",
+      },
+      {
+        section: "s.30-33",
+        title: "Offences",
+        summary:
+          "Comprehensive offence provisions including unlicensed activities, breach of licence conditions, and endangering safety. Schedule 4 includes hijacking offences carrying life imprisonment.",
+      },
+      {
+        section: "s.34-38",
+        title: "Liability and insurance",
+        summary:
+          "Establishes the liability framework for spaceflight activities. Operators must have insurance or financial security. The regulator may require indemnification of the government. Liability may be limited to a specified amount.",
+        complianceImplication:
+          "The SIA Indemnities Act 2025 amended s.12(2) so that all operator licences MUST specify a liability limit. This created the mandatory cap regime.",
+      },
+      {
+        section: "s.49-56",
+        title: "Accident investigation",
+        summary:
+          "Establishes the framework for space accident investigation. The Secretary of State may direct investigation of spaceflight accidents. Links to SI 2021/793 (SAIA regulations).",
+      },
+      {
+        section: "Sch.4",
+        title: "Hijacking of spacecraft — offences",
+        summary:
+          "Creates specific criminal offences for hijacking spacecraft, including endangering safety and acts of violence on board. Maximum penalty: life imprisonment.",
+      },
+    ],
+    scope_description:
+      "The SIA 2018 is the comprehensive framework for all UK-based spaceflight activities. 70 sections across 12 Schedules. In force since 29 July 2021. Covers launches, orbital operations, spaceports, range control, and return from space. Supplemented by SI 2021/792 (287 regulations, 6 Schedules).",
+    related_sources: [
+      "UK-OSA-1986",
+      "UK-SI-2021-792",
+      "UK-SI-2021-793",
+      "UK-SI-2021-816",
+      "UK-SIA-INDEMNITIES-2025",
+      "UK-INT-OST-RATIFICATION",
+      "UK-LIABILITY-ARCHITECTURE",
+    ],
+    amended_by: ["UK-SIA-INDEMNITIES-2025"],
+    caelex_engine_mapping: [
+      "space-law-engine.server",
+      "uk-space-engine.server",
+    ],
+    caelex_data_file_mapping: ["national-space-laws.ts"],
+    notes: [
+      "The SIA 2018 and OSA 1986 together form the UK's dual-statute space law framework — unique among spacefaring nations.",
+      "In force 29 July 2021. Enabled by SI 2021/792 (the principal implementing regulations, 287 regulations across 6 Schedules).",
+      "Five licence types: operator, spaceport, range control, orbital operator, mission management.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SIA-INDEMNITIES-2025",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Space Industry (Indemnities) Act 2025",
+    date_enacted: "2025-12-18",
+    date_in_force: "2026-02-18",
+    official_reference: "2025 c.35",
+    source_url: "https://www.legislation.gov.uk/ukpga/2025/35",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "insurance"],
+    key_provisions: [
+      {
+        section: "s.1",
+        title: "Amendment of SIA 2018 s.12(2) — mandatory liability cap",
+        summary:
+          "Changes 'may' to 'must' in SIA 2018 s.12(2) — all operator licences MUST now specify a maximum amount of the licensee's liability. Creates a mandatory liability cap for all licensed operators.",
+        complianceImplication:
+          "All SIA operator licences must include a specified liability limit. This provides regulatory certainty for operators and investors. Published caps include Virgin Orbit $250M, RFA GBP 10.5M, Skyrora GBP 10.5M.",
+      },
+    ],
+    amends: "UK-SIA-2018",
+    related_sources: [
+      "UK-SIA-2018",
+      "UK-OSA-1986",
+      "UK-LIABILITY-ARCHITECTURE",
+    ],
+    notes: [
+      "Royal Assent 18 December 2025, in force 18 February 2026.",
+      "Key reform: ensures all operators have defined liability caps, addressing industry concerns about uncapped indemnification exposure.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-DEREGULATION-2015-S12",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Deregulation Act 2015, Section 12 — Outer Space Act Liability Caps",
+    date_enacted: "2015-03-26",
+    date_in_force: "2015-10-01",
+    official_reference: "2015 c.20, s.12",
+    source_url: "https://www.legislation.gov.uk/ukpga/2015/20/section/12",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "insurance"],
+    key_provisions: [
+      {
+        section: "s.12",
+        title: "Mandatory liability caps in OSA 1986",
+        summary:
+          "Introduced mandatory liability caps into the Outer Space Act 1986. Enables the Secretary of State to set a maximum amount for which a licensee may be required to indemnify the government.",
+        complianceImplication:
+          "Landmark reform that capped operator liability under OSA licences. Published cap: EUR 60M for OSA licences. Paved the way for the SIA Indemnities Act 2025.",
+      },
+    ],
+    amends: "UK-OSA-1986",
+    related_sources: [
+      "UK-OSA-1986",
+      "UK-SIA-INDEMNITIES-2025",
+      "UK-LIABILITY-ARCHITECTURE",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Secondary Legislation — Space-Specific (6) ────────────────────
+
+const SECONDARY_LEGISLATION_UK: LegalSource[] = [
+  {
+    id: "UK-SI-2021-792",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Space Industry Regulations 2021",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/792",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/792",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "cybersecurity",
+      "environmental",
+      "liability",
+      "insurance",
+    ],
+    key_provisions: [
+      {
+        section: "Parts 1-17",
+        title:
+          "Principal implementing regulations — 287 regulations, 6 Schedules",
+        summary:
+          "THE principal implementing regulations for SIA 2018. 287 regulations across 6 Schedules and 17 Parts covering: licensing procedures, safety case requirements, security, cybersecurity (Part 11), training, liabilities and insurance, enforcement, and occurrence reporting.",
+        complianceImplication:
+          "Every SIA-licensed operator must comply with these regulations. Part 11 (cybersecurity) is particularly significant — requires cyber risk assessments and security measures for all licensed spaceflight activities.",
+      },
+      {
+        section: "Part 11",
+        title: "Security — cybersecurity requirements",
+        summary:
+          "Imposes cybersecurity obligations on all SIA licence holders. Requires risk assessments, security plans, incident reporting, and personnel vetting for spaceflight activities.",
+        complianceImplication:
+          "All SIA-licensed operators must implement cybersecurity measures. CAA may require compliance with NCSC guidance as a licence condition.",
+      },
+      {
+        section: "Schedule 1",
+        title: "Licence application requirements",
+        summary:
+          "Detailed requirements for licence applications including technical, financial, insurance, and safety documentation.",
+      },
+    ],
+    related_sources: [
+      "UK-SIA-2018",
+      "UK-SI-2021-793",
+      "UK-SI-2021-816",
+      "UK-SI-2021-815",
+    ],
+    caelex_engine_mapping: ["uk-space-engine.server"],
+    notes: [
+      "The most important secondary legislation for UK space activities. 287 regulations across 17 Parts — the operational detail behind the SIA 2018.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SI-2021-793",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Spaceflight Activities (Investigation of Spaceflight Accidents) Regulations 2021",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/793",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/793",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-AAIB"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Space Accident Investigation Authority establishment",
+        summary:
+          "Establishes the Space Accident Investigation Authority (SAIA) framework. Defines procedures for investigating spaceflight accidents and serious incidents. Investigation reports must not apportion blame or liability.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SI-2021-816",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Space Industry (Appeals) Regulations 2021",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/816",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/816",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Appeals framework for licensing decisions",
+        summary:
+          "Establishes the appeals process for CAA licensing decisions under SIA 2018. Operators may appeal refusals, conditions, or revocations of space licences.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SI-2021-815",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Contracting Out (Functions in Relation to Space) Order 2021",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/815",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/815",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Delegation of regulatory functions to CAA",
+        summary:
+          "Delegates spaceflight regulatory functions from the Secretary of State to the Civil Aviation Authority. Establishes the CAA as the operational regulator for space activities under SIA 2018.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SI-2021-879",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Air Navigation (Amendment) Order 2021",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/879",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/879",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Flight restriction zones around spaceports",
+        summary:
+          "Amends the Air Navigation Order to establish flight restriction zones around licensed spaceport sites during launch and re-entry operations. Protects airspace safety.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SI-2025-222",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Space Industry (Licence Exemption for Military Activities of Allies) Regulations 2025",
+    date_in_force: "2025-03-01",
+    official_reference: "SI 2025/222",
+    source_url: "https://www.legislation.gov.uk/uksi/2025/222",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-MOD", "UK-CAA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "military_dual_use"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Allied forces licence exemption",
+        summary:
+          "Exempts allied military forces from the requirement to hold a UK space licence for certain space activities conducted from UK territory. Facilitates NATO and bilateral space cooperation.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Telecommunications (2) ─────────────────────────────────────────
+
+const TELECOM_UK: LegalSource[] = [
+  {
+    id: "UK-WTA-2006",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Wireless Telegraphy Act 2006",
+    date_enacted: "2006-11-08",
+    official_reference: "2006 c.36",
+    source_url: "https://www.legislation.gov.uk/ukpga/2006/36",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-OFCOM"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    key_provisions: [
+      {
+        section: "s.8",
+        title: "Ofcom licensing power",
+        summary:
+          "Ofcom may grant wireless telegraphy licences for the use of radio spectrum. All satellite operators using spectrum from UK-filed frequencies require Ofcom licensing.",
+        complianceImplication:
+          "No UK satellite system may operate without an Ofcom wireless telegraphy licence. Filing lead times via Ofcom to the ITU apply.",
+      },
+    ],
+    related_sources: ["UK-CA-2003"],
+    caelex_engine_mapping: ["spectrum-engine.server"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-CA-2003",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Communications Act 2003",
+    date_enacted: "2003-07-17",
+    official_reference: "2003 c.21",
+    source_url: "https://www.legislation.gov.uk/ukpga/2003/21",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-OFCOM"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    key_provisions: [
+      {
+        section: "Parts 1-2",
+        title: "Ofcom regulatory powers and duties",
+        summary:
+          "Establishes Ofcom as the UK communications regulator. Grants powers for satellite broadcasting regulation, spectrum management, and network regulation. Ofcom acts as the UK's ITU administration.",
+        complianceImplication:
+          "Satellite broadband and broadcasting services must comply with Ofcom's regulatory framework under this Act.",
+      },
+    ],
+    related_sources: ["UK-WTA-2006"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Export Control (2) ─────────────────────────────────────────────
+
+const EXPORT_CONTROL_UK: LegalSource[] = [
+  {
+    id: "UK-ECA-2002",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Export Control Act 2002",
+    date_enacted: "2002-07-24",
+    official_reference: "2002 c.28",
+    source_url: "https://www.legislation.gov.uk/ukpga/2002/28",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-ECJU"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    key_provisions: [
+      {
+        section: "s.1-5",
+        title: "Export control powers",
+        summary:
+          "Primary enabling legislation for UK export controls. Gives the Secretary of State power to impose controls on the export of goods, transfer of technology, and provision of technical assistance for military, dual-use, and strategic items including space technology.",
+        complianceImplication:
+          "All exports of controlled space technology require ECJU licensing. The Act enables the Export Control Order 2008 which contains the detailed control lists.",
+      },
+    ],
+    related_sources: ["UK-ECO-2008"],
+    caelex_engine_mapping: ["export-control-engine.server"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-ECO-2008",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Export Control Order 2008",
+    date_enacted: "2008-12-05",
+    date_last_amended: "2025-05-01",
+    official_reference: "SI 2008/3231",
+    source_url: "https://www.legislation.gov.uk/uksi/2008/3231",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-ECJU"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    key_provisions: [
+      {
+        section: "Schedule 2",
+        title: "Military List",
+        summary:
+          "UK Military List — controls on military items including certain launch vehicles, military satellite systems, and military-grade space components.",
+      },
+      {
+        section: "Schedule 3",
+        title: "Dual-Use List",
+        summary:
+          "UK Dual-Use List — controls on dual-use items including spacecraft, satellite subsystems, ground station equipment, and space-related technology. Aligned with the Wassenaar Arrangement and (historically) the EU Dual-Use Regulation.",
+        complianceImplication:
+          "Space component exporters must screen all items against both the Military List and Dual-Use List. Extensively amended — latest amendment SI 2025/532.",
+      },
+    ],
+    related_sources: ["UK-ECA-2002"],
+    notes: [
+      "Extensively amended — latest amendment SI 2025/532. Post-Brexit, the UK maintains its own control lists aligned with Wassenaar but independent from the EU Dual-Use Regulation.",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Data Protection (1) ────────────────────────────────────────────
+
+const DATA_PROTECTION_UK: LegalSource[] = [
+  {
+    id: "UK-DPA-2018",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Data Protection Act 2018 and UK GDPR",
+    date_enacted: "2018-05-23",
+    official_reference: "2018 c.12",
+    source_url: "https://www.legislation.gov.uk/ukpga/2018/12",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-ICO"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["data_security"],
+    key_provisions: [
+      {
+        section: "Parts 1-7",
+        title: "Data protection framework",
+        summary:
+          "Comprehensive data protection legislation implementing the UK's retained version of GDPR. Applies to processing of personal data including satellite-derived geospatial data that can identify individuals. The ICO enforces compliance.",
+        complianceImplication:
+          "Earth observation operators processing imagery at sufficient resolution to identify individuals must comply with UK GDPR requirements including lawful basis, data minimization, and data protection impact assessments.",
+      },
+    ],
+    related_sources: [],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Environmental and Safety (3) ──────────────────────────────────
+
+const ENVIRONMENTAL_UK: LegalSource[] = [
+  {
+    id: "UK-SIA-S11-AEE",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Space Industry Act 2018, Section 11 — Assessment of Environmental Effects",
+    source_url: "https://www.legislation.gov.uk/ukpga/2018/5/section/11",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental"],
+    key_provisions: [
+      {
+        section: "s.11",
+        title: "AEE requirement for spaceport and launch licences",
+        summary:
+          "The regulator must not grant a spaceport licence or launch operator licence unless satisfied that an assessment of environmental effects has been carried out. The AEE must cover air quality, emissions, biodiversity, marine environment, noise, water quality, and soil contamination.",
+        complianceImplication:
+          "Mandatory for all spaceport and launch licence applications. The AEE requirement is in addition to any planning permission environmental impact assessment.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-COMAH-2015",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Control of Major Accident Hazards Regulations 2015",
+    official_reference: "SI 2015/483",
+    source_url: "https://www.legislation.gov.uk/uksi/2015/483",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-HSE"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Major accident hazard prevention for propellant storage",
+        summary:
+          "COMAH regulations apply to establishments storing dangerous substances above specified thresholds. Relevant for rocket propellant (LOX, RP-1, LH2, hydrazine) storage at spaceports and test facilities.",
+        complianceImplication:
+          "Spaceport operators storing rocket propellants above COMAH thresholds must prepare safety reports and implement major accident prevention policies.",
+      },
+    ],
+    related_sources: ["UK-EXPLOSIVES-2014"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-EXPLOSIVES-2014",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Explosives Regulations 2014",
+    official_reference: "SI 2014/1638",
+    source_url: "https://www.legislation.gov.uk/uksi/2014/1638",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-HSE"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental"],
+    key_provisions: [
+      {
+        section: "Full instrument",
+        title: "Solid rocket motor and pyrotechnic regulation",
+        summary:
+          "Regulates the manufacture, storage, and use of explosives. Applies to solid rocket motors, pyrotechnic initiators, and ordnance used in launch vehicle systems.",
+        complianceImplication:
+          "Launch providers using solid propulsion or pyrotechnic separation systems must hold appropriate explosives licences and comply with storage requirements.",
+      },
+    ],
+    related_sources: ["UK-COMAH-2015"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Cybersecurity (1) ──────────────────────────────────────────────
+
+const CYBERSECURITY_UK: LegalSource[] = [
+  {
+    id: "UK-NIS-REGS-2018",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Network and Information Systems Regulations 2018",
+    date_in_force: "2018-05-10",
+    official_reference: "SI 2018/506",
+    source_url: "https://www.legislation.gov.uk/uksi/2018/506",
+    issuing_body: "Secretary of State",
+    competent_authorities: ["UK-NCSC"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "ground_segment",
+      "constellation_operator",
+    ],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Parts 1-4",
+        title: "UK NIS framework",
+        summary:
+          "UK's own NIS framework (NOT EU NIS2 — the UK left the EU before NIS2 adoption). Imposes security duties and incident reporting obligations on operators of essential services and relevant digital service providers. Space operators providing essential services must comply.",
+        complianceImplication:
+          "The UK Cyber Security and Resilience Bill (progressing 2025-2026) is expected to significantly update this framework. Space operators should prepare for enhanced cybersecurity obligations.",
+      },
+    ],
+    related_sources: ["UK-SI-2021-792"],
+    notes: [
+      "The UK's NIS framework is separate from the EU NIS2 Directive. Post-Brexit, the UK is developing its own Cyber Security and Resilience Bill (progressing through Parliament 2025-2026) which will update this framework.",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Insurance and Liability Architecture (1) ──────────────────────
+
+const LIABILITY_UK: LegalSource[] = [
+  {
+    id: "UK-LIABILITY-ARCHITECTURE",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "UK Space Liability Architecture — 4-Tier Framework",
+    source_url: "https://www.caa.co.uk/space",
+    date_published: "2021-07-29",
+    issuing_body: "CAA / DSIT",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "insurance"],
+    key_provisions: [
+      {
+        section: "Tier 1",
+        title: "Operator insurance",
+        summary:
+          "Operators must maintain third-party liability insurance. Standard amounts: EUR 60M for orbital activities (OSA), Maximum Insurable Risk (MIR) for launches (SIA).",
+      },
+      {
+        section: "Tier 2",
+        title: "Operator liability capped",
+        summary:
+          "Operator liability is capped at a specified amount per licence. Published caps: OSA EUR 60M, Virgin Orbit $250M, RFA GBP 10.5M, Skyrora GBP 10.5M. The SIA Indemnities Act 2025 made caps mandatory for all licences.",
+        complianceImplication:
+          "The mandatory cap regime (post-Indemnities Act 2025) provides regulatory certainty. Operators know their maximum exposure in advance.",
+      },
+      {
+        section: "Tier 3",
+        title: "Discretionary government indemnity",
+        summary:
+          "The government may, at its discretion, provide indemnity for liabilities exceeding the operator's capped amount. Not guaranteed — assessed on a case-by-case basis.",
+      },
+      {
+        section: "Tier 4",
+        title: "Mandatory government backstop (uncapped)",
+        summary:
+          "The UK government provides an uncapped backstop to meet the UK's international obligations under the Liability Convention. This ensures that victims of space object damage are compensated regardless of operator insurance limits.",
+        complianceImplication:
+          "The UK's 4-tier architecture is unique among spacefaring nations. The uncapped government backstop reflects the UK's Liability Convention obligations.",
+      },
+    ],
+    related_sources: [
+      "UK-SIA-2018",
+      "UK-OSA-1986",
+      "UK-SIA-INDEMNITIES-2025",
+      "UK-DEREGULATION-2015-S12",
+      "UK-INT-LIABILITY-1972",
+    ],
+    notes: [
+      "UK's unique 4-tier liability structure: (1) Operator insurance, (2) Operator liability capped, (3) Discretionary government indemnity, (4) Mandatory government backstop (uncapped).",
+      "Published indemnity caps: OSA EUR 60M, Virgin Orbit $250M, RFA GBP 10.5M, Skyrora GBP 10.5M.",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── CAA Guidance Documents (3) ─────────────────────────────────────
+
+const CAA_GUIDANCE_UK: LegalSource[] = [
+  {
+    id: "UK-CAP-2209",
+    jurisdiction: "UK",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "CAP 2209: Applying for a Licence under the Space Industry Act 2018",
+    date_published: "2021-07-29",
+    date_last_amended: "2024-05-01",
+    source_url: "https://www.caa.co.uk/space",
+    issuing_body: "Civil Aviation Authority",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Principal licensing guidance",
+        summary:
+          "The CAA's main guidance document for applicants seeking space licences. Covers all five licence types, application procedures, assessment criteria, safety case requirements, insurance, and environmental effects assessments. Updated May 2024.",
+        complianceImplication:
+          "Essential reading for any entity seeking a UK space licence. Sets out CAA expectations for application completeness and technical standards.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792", "UK-CAP-2221"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-CAP-2221",
+    jurisdiction: "UK",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "CAP 2221: Regulator's Licensing Rules",
+    date_published: "2021-07-29",
+    source_url: "https://www.caa.co.uk/space",
+    issuing_body: "Civil Aviation Authority",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Core regulatory document for space licensing",
+        summary:
+          "The CAA's licensing rules — the core regulatory document specifying detailed requirements, assessment criteria, and conditions for each licence type. Complements the SIA 2018 and SI 2021/792.",
+        complianceImplication:
+          "Mandatory compliance. All licence applicants and holders must follow these rules. Defines the standard that the CAA will assess applications against.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792", "UK-CAP-2209"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-CAP-GUIDANCE-SET",
+    jurisdiction: "UK",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "CAA Space Guidance Collection (CAP 2210-2219, CAP 2987)",
+    date_published: "2021-07-29",
+    date_last_amended: "2025-01-01",
+    source_url: "https://www.caa.co.uk/space",
+    issuing_body: "Civil Aviation Authority",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "cybersecurity",
+      "environmental",
+      "debris_mitigation",
+    ],
+    key_provisions: [
+      {
+        section: "CAP 2210-2219",
+        title: "Topic-specific licensing guidance",
+        summary:
+          "Collection of 14+ CAP documents covering specific licensing topics including safety cases, orbital analysis, debris mitigation, insurance, cybersecurity, range safety, and environmental effects. CAP 2987 covers enforcement policy.",
+        complianceImplication:
+          "Operators should review all relevant CAP documents for their licence type. The guidance documents represent the CAA's interpretation of legislative requirements.",
+      },
+    ],
+    related_sources: ["UK-CAP-2209", "UK-CAP-2221", "UK-SIA-2018"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Policy Documents (4) ──────────────────────────────────────────
+
+const POLICY_UK: LegalSource[] = [
+  {
+    id: "UK-NSS-2021",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "National Space Strategy",
+    date_published: "2021-09-01",
+    source_url:
+      "https://www.gov.uk/government/publications/national-space-strategy",
+    issuing_body: "HM Government",
+    competent_authorities: ["UK-DSIT", "UK-UKSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+    key_provisions: [
+      {
+        section: "4 pillars",
+        title: "National Space Strategy framework",
+        summary:
+          "Four strategic pillars: (1) Unlocking growth in the space sector, (2) Collaborating internationally, (3) Growing the UK as a science and technology superpower, (4) Developing resilient space capabilities. 69 commitments across government.",
+        complianceImplication:
+          "Signals policy direction for regulatory evolution. Operators should anticipate regulatory changes aligned with the Strategy's objectives.",
+      },
+    ],
+    related_sources: ["UK-DSS-2022", "UK-SIP-2024"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-DSS-2022",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Defence Space Strategy",
+    date_published: "2022-02-01",
+    source_url:
+      "https://www.gov.uk/government/publications/defence-space-strategy-operationalising-the-space-domain",
+    issuing_body: "Ministry of Defence",
+    competent_authorities: ["UK-MOD", "UK-SPACECOMMAND"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "space_traffic_management"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Defence space investment and capability plan",
+        summary:
+          "GBP 1.4B additional investment in defence space capabilities. Establishes the UK's approach to space as an operational domain. Covers space domain awareness, Skynet 6, partnerships, and workforce development.",
+      },
+    ],
+    related_sources: ["UK-NSS-2021"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SIP-2024",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Space Industrial Plan",
+    date_published: "2024-03-01",
+    source_url:
+      "https://www.gov.uk/government/publications/uk-space-industrial-plan",
+    issuing_body: "DSIT / UK Space Agency",
+    competent_authorities: ["UK-DSIT", "UK-UKSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Five priority capability goals 2024-2033",
+        summary:
+          "Sets out the UK's space industrial priorities for 2024-2033. Five capability goals covering sovereign launch, satellite manufacturing, in-orbit services, Earth observation, and position/navigation/timing.",
+        complianceImplication:
+          "Signals areas of UK government investment and regulatory support. Operators in priority capability areas may benefit from accelerated licensing and funding.",
+      },
+    ],
+    related_sources: ["UK-NSS-2021", "UK-SRR-2024"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-SRR-2024",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Space Regulatory Review 2024",
+    date_published: "2024-06-01",
+    source_url:
+      "https://www.gov.uk/government/consultations/space-regulatory-review",
+    issuing_body: "DSIT / CAA",
+    competent_authorities: ["UK-DSIT", "UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "liability", "insurance"],
+    key_provisions: [
+      {
+        section: "17 recommendations",
+        title: "Regulatory reform recommendations",
+        summary:
+          "17 recommendations for modernizing the UK space regulatory framework. Covers licensing efficiency, liability caps, orbital sustainability, in-orbit services regulation, and alignment with international best practices.",
+        complianceImplication:
+          "The SIA Indemnities Act 2025 implemented one of the key recommendations (mandatory liability caps). Further reforms expected in 2026-2027.",
+      },
+    ],
+    related_sources: ["UK-SIA-INDEMNITIES-2025", "UK-SIA-2018", "UK-SIP-2024"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Post-Brexit Specific (2) ──────────────────────────────────────
+
+const POSTBREXIT_UK: LegalSource[] = [
+  {
+    id: "UK-TCA-2020",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "EU-UK Trade and Cooperation Agreement — Space Provisions",
+    date_enacted: "2020-12-30",
+    date_in_force: "2021-05-01",
+    source_url:
+      "https://www.gov.uk/government/publications/ukeu-trade-and-cooperation-agreement-ts-no82021",
+    issuing_body: "European Union / United Kingdom",
+    competent_authorities: ["UK-UKSA", "UK-DSIT"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "space_traffic_management"],
+    key_provisions: [
+      {
+        section: "Protocol I",
+        title: "Copernicus association",
+        summary:
+          "Provides for UK association to the EU Copernicus Earth observation programme. UK entities may access Copernicus data and participate in programme activities under negotiated terms.",
+        complianceImplication:
+          "UK Copernicus association was activated from 1 January 2024. Enables UK-based EO operators to access Sentinel data and contribute to Copernicus services.",
+      },
+      {
+        section: "Space provisions",
+        title: "Galileo and SST arrangements",
+        summary:
+          "No UK access to Galileo Public Regulated Service (PRS) — the most significant post-Brexit space loss. SST data access via Protocol II for space surveillance and tracking cooperation.",
+        complianceImplication:
+          "UK operators cannot rely on Galileo PRS for secure positioning. Must use alternative PNT sources. SST cooperation maintained for conjunction assessment.",
+      },
+    ],
+    related_sources: ["UK-COPERNICUS-2024"],
+    notes: [
+      "The TCA governs the post-Brexit UK-EU relationship in space. Key outcome: Copernicus association achieved, Galileo PRS access lost.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "UK-COPERNICUS-2024",
+    jurisdiction: "UK",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "UK Copernicus Association Agreement",
+    date_in_force: "2024-01-01",
+    source_url:
+      "https://www.gov.uk/government/news/uk-officially-associates-to-copernicus",
+    issuing_body: "European Union / United Kingdom",
+    competent_authorities: ["UK-UKSA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Full agreement",
+        title: "UK Copernicus association from 1 January 2024",
+        summary:
+          "UK officially associates to the EU Copernicus programme from 1 January 2024. Approximate contribution of EUR 750M. UK entities gain full access to Copernicus data and services, and may participate as suppliers in Copernicus procurements.",
+        complianceImplication:
+          "UK EO operators and data providers benefit from Copernicus association. Opens procurement opportunities for UK space industry in the Copernicus programme.",
+      },
+    ],
+    related_sources: ["UK-TCA-2020"],
+    notes: [
+      "UK Copernicus association activated 1 January 2024. Approximate UK contribution: EUR 750M.",
+      "Copernicus association is separate from ESA membership — the UK remains a full ESA member (not affected by Brexit as ESA is not an EU agency).",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Spaceports (1) ────────────────────────────────────────────────
+
+const SPACEPORTS_UK: LegalSource[] = [
+  {
+    id: "UK-SPACEPORTS",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "UK Licensed Spaceports — Reference Document",
+    date_published: "2023-12-01",
+    date_last_amended: "2026-03-01",
+    source_url: "https://www.caa.co.uk/space",
+    issuing_body: "Civil Aviation Authority",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Licensed sites",
+        title: "UK spaceport status overview",
+        summary:
+          "SaxaVord Spaceport (Unst, Shetland): vertical launch, licensed December 2023, first orbital launch expected 2026. Spaceport Cornwall (Newquay): horizontal launch, licensed November 2022, Virgin Orbit failure January 2023. In development: Space Hub Sutherland (Orbex — entered administration February 2026), Spaceport 1 North Uist.",
+        complianceImplication:
+          "Launch providers must operate from a licensed spaceport. As of April 2026, SaxaVord and Spaceport Cornwall hold active licences.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    notes: [
+      "SaxaVord (Unst, Shetland): vertical launch, licensed December 2023. First orbital launch from UK soil expected 2026.",
+      "Spaceport Cornwall (Newquay): horizontal launch, licensed November 2022. Virgin Orbit 'Start Me Up' mission failed 9 January 2023.",
+      "Space Hub Sutherland: Orbex entered administration February 2026 — status uncertain.",
+    ],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Aggregated Export ──────────────────────────────────────────────
+
+export const LEGAL_SOURCES_UK: LegalSource[] = [
+  ...TREATIES_UK,
+  ...PRIMARY_LEGISLATION_UK,
+  ...SECONDARY_LEGISLATION_UK,
+  ...TELECOM_UK,
+  ...EXPORT_CONTROL_UK,
+  ...DATA_PROTECTION_UK,
+  ...ENVIRONMENTAL_UK,
+  ...CYBERSECURITY_UK,
+  ...LIABILITY_UK,
+  ...CAA_GUIDANCE_UK,
+  ...POLICY_UK,
+  ...POSTBREXIT_UK,
+  ...SPACEPORTS_UK,
+];
