@@ -33,12 +33,12 @@ import type {
 
 const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
   international_treaty: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
+    bg: "bg-gray-100 border-gray-300",
+    text: "text-gray-900",
   },
   federal_law: {
     bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
+    text: "text-gray-800",
   },
   federal_regulation: {
     bg: "bg-teal-50 border-teal-200",
@@ -91,7 +91,7 @@ const STATUS_STYLES: Record<
 > = {
   in_force: {
     bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
+    text: "text-gray-800",
     label: "In Force",
   },
   draft: {
@@ -100,8 +100,8 @@ const STATUS_STYLES: Record<
     label: "Draft",
   },
   proposed: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
+    bg: "bg-gray-100 border-gray-300",
+    text: "text-gray-900",
     label: "Proposed",
   },
   superseded: {
@@ -313,7 +313,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             href={source.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
+            className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
           >
             View official text
             <ExternalLink size={13} strokeWidth={2} />
@@ -446,7 +446,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                 {provision.complianceImplication && (
                   <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
                     <p className="text-[12px] text-emerald-800 leading-[1.6]">
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-gray-900">
                         Compliance Implication
                       </span>
                       <br />
@@ -492,7 +492,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                 href={`/atlas/jurisdictions/${auth.jurisdiction}`}
                 className="flex items-start gap-4 py-3 px-4 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-150 group"
               >
-                <span className="text-[16px] font-bold text-gray-900 font-mono tracking-tight flex-shrink-0 w-16 group-hover:text-emerald-700 transition-colors">
+                <span className="text-[16px] font-bold text-gray-900 font-mono tracking-tight flex-shrink-0 w-16 group-hover:text-gray-800 transition-colors">
                   {auth.abbreviation}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -573,7 +573,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                       {TYPE_LABELS[rel.type]}
                     </span>
 
-                    <span className="text-[13px] text-gray-800 truncate group-hover:text-emerald-700 transition-colors flex-1 min-w-0">
+                    <span className="text-[13px] text-gray-800 truncate group-hover:text-gray-800 transition-colors flex-1 min-w-0">
                       {rel.title_en}
                     </span>
 
