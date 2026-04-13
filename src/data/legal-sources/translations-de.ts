@@ -2523,6 +2523,388 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LUXEMBOURG SOURCES
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "LU-OST-RATIFICA",
+    {
+      title:
+        "Weltraumvertrag — Luxemburger Ratifizierungsurkunde (Loi du 31 juillet 2005)",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit und Genehmigungspflicht",
+          summary:
+            "Luxemburg trägt die völkerrechtliche Verantwortung für alle nationalen Weltraumtätigkeiten. Dies ist die verfassungsrechtliche Grundlage des Weltraumressourcengesetzes 2017 und des Weltraumtätigkeitengesetzes 2020.",
+          complianceImplication:
+            "Art. VI ist die unmittelbare Rechtsgrundlage für Luxemburgs duales Weltraumgesetz-Genehmigungsregime.",
+        },
+        "Art. VII": {
+          title: "Haftung des Startstaats",
+          summary:
+            "Luxemburg ist als 'Startstaat' haftbar für Schäden durch Weltraumgegenstände, die von seinem Hoheitsgebiet oder durch luxemburgische Rechtsträger gestartet werden.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-LIABILITY-RATIFICA",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Luxemburger Ratifizierungsurkunde (Loi du 9 juin 1983)",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "Luxemburg haftet als Startstaat absolut für Schäden auf der Erdoberfläche. Das Weltraumtätigkeitengesetz 2020 sieht volle Betreiberhaftung OHNE gesetzliche Obergrenze und OHNE staatliche Entschädigung vor.",
+          complianceImplication:
+            "Eines der strengsten Haftungsregime in Europa — keine gesetzliche Haftungsobergrenze, kein staatlicher Rückgriff.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-REGISTRATION-RATIFICA",
+    {
+      title:
+        "Weltraumregistrierungsübereinkommen — Luxemburger Beitrittsurkunde (Loi du 15 décembre 2020)",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registrierungspflicht",
+          summary:
+            "Luxemburg muss ein nationales Register der Weltraumgegenstände führen. Das Weltraumtätigkeitengesetz 2020 (Kapitel 6) setzt diese Verpflichtung um — die LSA führt das nationale Register.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-INT-MOON-1979",
+    {
+      title: "Mondvertrag — Luxemburg (NICHT ratifiziert)",
+      scopeDescription:
+        "Von Luxemburg NICHT ratifiziert. Luxemburgs Weltraumressourcengesetz 2017 verfolgt einen grundlegend anderen Ansatz — Art. 1 gestattet ausdrücklich die Aneignung von Weltraumressourcen.",
+      provisions: {
+        "Art. 11": {
+          title: "Gemeinsames Erbe der Menschheit",
+          summary:
+            "Der Mond und seine natürlichen Ressourcen sind das gemeinsame Erbe der Menschheit.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-RESCUE-STATUS",
+    {
+      title:
+        "Weltraumrettungsübereinkommen — Luxemburg (unterzeichnet, NICHT ratifiziert)",
+      scopeDescription:
+        "Luxemburg hat das Rettungsübereinkommen unterzeichnet, aber NICHT ratifiziert. Keine bindenden Verpflichtungen über die allgemeine Pflicht nach Art. V des Weltraumvertrags hinaus.",
+      provisions: {
+        "Art. 1-4": {
+          title: "Rettung und Rückführung von Raumfahrern",
+          summary:
+            "Vertragsparteien benachrichtigen, retten und führen Raumfahrer zurück, die in ihrem Hoheitsgebiet landen.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-SPACE-RESOURCES-2017",
+    {
+      title:
+        "Gesetz vom 20. Juli 2017 über die Erforschung und Nutzung von Weltraumressourcen",
+      scopeDescription:
+        "Weltweit zweites Weltraumressourcengesetz nach dem US SPACE Act von 2015. 18 Artikel mit einem vollständigen Regulierungsrahmen für die Erforschung und Nutzung von Weltraumressourcen. Übernimmt ein Finanzplatz-Governance-Modell, das in der Weltraumgesetzgebung weltweit einzigartig ist.",
+      provisions: {
+        "Art. 1": {
+          title: "Eigentumsrechte — Aneignung von Weltraumressourcen",
+          summary:
+            "Les ressources de l'espace sont susceptibles d'appropriation — Weltraumressourcen können Gegenstand der Aneignung sein. Begründet private Eigentumsrechte an abgebauten Weltraumressourcen.",
+          complianceImplication:
+            "Luxemburgisches Recht gestattet ausdrücklich die Aneignung von Weltraumressourcen. Autorisierte Betreiber erwerben Rechtstitel an abgebauten Ressourcen.",
+        },
+        "Art. 2": {
+          title: "Genehmigungspflicht",
+          summary:
+            "Die Erforschung und Nutzung von Weltraumressourcen bedarf der vorherigen Genehmigung durch den Wirtschaftsminister.",
+        },
+        "Art. 4": {
+          title: "Luxemburger Gesellschaftsform erforderlich — SA/SCA/SARL/SE",
+          summary:
+            "Nur in Luxemburg als SA, SCA, SARL oder SE gegründete Gesellschaften können eine Genehmigung beantragen.",
+          complianceImplication:
+            "Ausländische Betreiber MÜSSEN eine luxemburgische Tochtergesellschaft in einer der vier zugelassenen Rechtsformen gründen.",
+        },
+        "Art. 7": {
+          title: "Finanzplatz-Governance-Modell",
+          summary:
+            "Das Gesetz übernimmt Luxemburgs bewährten Finanzplatz-Regulierungsrahmen für die Genehmigung und Aufsicht von Weltraumressourcenbetreibern.",
+        },
+        "Art. 8": {
+          title: "Meldepflicht bei Beteiligungsschwelle",
+          summary:
+            "Jede Person, die 10 % oder mehr der Anteile eines genehmigten Betreibers erwirbt, muss den Minister benachrichtigen.",
+        },
+        "Art. 10": {
+          title: "Risikobewertung und Versicherung",
+          summary:
+            "Genehmigte Betreiber müssen eine Risikobewertung durchführen und eine Versicherungsdeckung bei einem konzernfremden Versicherer aufrechterhalten.",
+        },
+        "Art. 13": {
+          title: "Genehmigungsgebühr",
+          summary: "Genehmigungsgebühr zwischen 5.000 EUR und 500.000 EUR.",
+        },
+        "Art. 18": {
+          title: "Strafrechtliche Sanktionen",
+          summary:
+            "Nicht autorisierte Weltraumressourcentätigkeiten: 8 Tage bis 5 Jahre Freiheitsstrafe und/oder Geldstrafe bis 1.250.000 EUR.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-SPACE-ACTIVITIES-2020",
+    {
+      title: "Gesetz vom 15. Dezember 2020 über Weltraumtätigkeiten",
+      scopeDescription:
+        "Umfassendes Rahmengesetz (lex generalis) für alle luxemburgischen Weltraumtätigkeiten. 8 Kapitel, 20 Artikel. Gleichzeitig mit dem Beitritt zum Registrierungsübereinkommen verabschiedet. Ergänzt das Weltraumressourcengesetz 2017 (lex specialis).",
+      provisions: {
+        "Ch. 1": {
+          title:
+            "Anwendungsbereich — Tätigkeiten unter luxemburgischer Verantwortung",
+          summary:
+            "Das Gesetz gilt für Weltraumtätigkeiten, für die Luxemburg die völkerrechtliche Verantwortung trägt.",
+        },
+        "Ch. 2": {
+          title: "Genehmigungsregime — Wirtschaftsminister",
+          summary:
+            "Genehmigung durch den Wirtschaftsminister. Antragstellung mindestens 6 Monate im Voraus. Genehmigungsgebühr 5.000–500.000 EUR. Jährliche Aufsichtsgebühr 2.000–50.000 EUR.",
+        },
+        "Ch. 3": {
+          title: "Laufende Aufsicht und öffentliches Register",
+          summary:
+            "Genehmigte Betreiber unterliegen der laufenden Aufsicht durch das Ministerium. Ein öffentliches Register genehmigter Betreiber wird geführt.",
+        },
+        "Ch. 4": {
+          title: "Übertragung und Kontrollwechselschwellen",
+          summary:
+            "Übertragung der Genehmigung erfordert ministerielle Zustimmung. Kontrollwechselschwellen bei 10 %, 20 %, 33 % und 50 %.",
+        },
+        "Ch. 5": {
+          title:
+            "Volle Betreiberhaftung — KEINE gesetzliche Obergrenze, KEINE staatliche Entschädigung",
+          summary:
+            "Betreiber haften in vollem Umfang für Schäden. KEINE gesetzliche Haftungsobergrenze und KEIN staatlicher Rückgriff.",
+          complianceImplication:
+            "Eines der strengsten Haftungsregime in Europa. Betreiber haften unbegrenzt ohne staatlichen Rückgriff. Versicherungsplanung ist entscheidend.",
+        },
+        "Ch. 6": {
+          title:
+            "Nationales Register — Umsetzung des Registrierungsübereinkommens",
+          summary:
+            "Einrichtung des nationalen Registers der Weltraumgegenstände Luxemburgs.",
+        },
+        "Ch. 7": {
+          title: "Strafrechtliche Sanktionen",
+          summary:
+            "Nicht genehmigte Weltraumtätigkeiten: bis zu 5 Jahre Freiheitsstrafe und/oder Geldstrafe bis 1.250.000 EUR.",
+        },
+        "Ch. 8": {
+          title: "Übergangsbestimmungen — SES-Konzession",
+          summary:
+            "SES-Konzessionsübergang: bestehende Konzessionsvereinbarungen müssen bis 31. Dezember 2022 zum neuen Genehmigungsregime übergehen. Steuerbefreiungen für Weltraumversicherungsprämien und Betreiber-Einkommensteuergutschrift.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-ELECTRONIC-MEDIA-1991",
+    {
+      title: "Geändertes Gesetz vom 27. Juli 1991 über elektronische Medien",
+      provisions: {
+        "Art. 20": {
+          title: "Konzession für luxemburgische Satellitensysteme",
+          summary:
+            "Konzessionspflicht für den Betrieb luxemburgischer Satellitensysteme. Die Regierung hält 33,33 % der Stimmrechte an SES über Klasse-B-Aktien.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-RGD-2025-FEES",
+    {
+      title:
+        "Großherzogliche Verordnung vom 11. Juli 2025 — Gebührenerhebungsverfahren",
+      provisions: {
+        "Full instrument": {
+          title: "Gebührenerhebung nach Art. 13 des Gesetzes von 2017",
+          summary:
+            "Detaillierte Verfahren zur Erhebung der Genehmigungsgebühren (5.000–500.000 EUR) nach Art. 13 des Weltraumressourcengesetzes 2017.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-ELECTRONIC-COMMS-2021",
+    {
+      title: "Gesetz vom 17. Dezember 2021 über elektronische Kommunikation",
+      provisions: {
+        "Full instrument": {
+          title: "Umsetzung des EU-Kodex für elektronische Kommunikation",
+          summary:
+            "Umsetzung des EU-Kodex für elektronische Kommunikation (Richtlinie 2018/1972) in luxemburgisches Recht. ILR als nationale Regulierungsbehörde.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-RADIO-FREQUENCIES-2005",
+    {
+      title:
+        "Geändertes Gesetz vom 30. Mai 2005 über die Verwaltung von Funkfrequenzbändern",
+      provisions: {
+        "Full instrument": {
+          title: "Verwaltung von Funkfrequenzbändern",
+          summary:
+            "Rahmen für die Zuweisung und Verwaltung von Funkfrequenzbändern. ILR verwaltet Frequenzzuweisungen einschließlich Satellitenfrequenzkoordination.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-EXPORT-CONTROL-2018",
+    {
+      title: "Gesetz vom 27. Juni 2018 über Exportkontrolle",
+      provisions: {
+        "Full instrument": {
+          title: "Konsolidierter Exportkontrollrahmen",
+          summary:
+            "Konsolidiertes Exportkontrollgesetz für Dual-Use-Güter, Verteidigungsprodukte und andere kontrollierte Güter. OCEIT als zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-EXPORT-IMPL-2018",
+    {
+      title:
+        "Großherzogliche Verordnung vom 14. Dezember 2018 — Exportkontrolldurchführung",
+      provisions: {
+        "Full instrument": {
+          title: "Durchführungsverordnung Exportkontrolle",
+          summary:
+            "Detaillierte Durchführungsbestimmungen einschließlich innergemeinschaftlicher Übertragungsverfahren für kryptografische Ausrüstung.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-NIS1-2019",
+    {
+      title:
+        "Gesetz vom 28. Mai 2019 über die Sicherheit von Netz- und Informationssystemen (NIS1)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS1-Richtlinienumsetzung",
+          summary:
+            "Umsetzung der NIS1-Richtlinie (EU 2016/1148) in luxemburgisches Recht. Cybersicherheitsverpflichtungen für Betreiber wesentlicher Dienste und Anbieter digitaler Dienste.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-NIS2-PENDING",
+    {
+      title: "NIS2-Umsetzung — Projet de loi n° 8364",
+      provisions: {
+        "Full draft": {
+          title: "NIS2-Richtlinienumsetzung",
+          summary:
+            "Gesetzentwurf zur Umsetzung der NIS2-Richtlinie (EU 2022/2555). Eingereicht 13. März 2024. Luxemburg hat die Umsetzungsfrist vom 17. Oktober 2024 versäumt. Europäische Kommission: mit Gründen versehene Stellungnahme vom 7. Mai 2025.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-CNPD-2018",
+    {
+      title: "Gesetz vom 1. August 2018 — CNPD/DSGVO-Rahmenwerk",
+      provisions: {
+        "Full instrument": {
+          title: "CNPD-Einrichtung und DSGVO-Umsetzung",
+          summary:
+            "Errichtung der Commission Nationale pour la Protection des Données (CNPD) als luxemburgische Datenschutzbehörde und Umsetzung der DSGVO-Bestimmungen.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-IRIS2",
+    {
+      title: "IRIS\u00B2 — Luxemburger Beteiligung und Kontrollzentrum",
+      provisions: {
+        Programme: {
+          title: "EU-Konstellation für sichere Konnektivität",
+          summary:
+            "IRIS\u00B2 — Luxemburg beherbergt eines von drei Kontrollzentren. SES führt das SpaceRise-Konsortium, das die Konzession gewonnen hat.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-SPACE-STRATEGY-2023",
+    {
+      title: "Nationale Weltraumstrategie 2023-2027 — Focus on Sustainability",
+      provisions: {
+        "4 Axes": {
+          title: "Nationale Weltraumstrategierahmen",
+          summary:
+            "Vier strategische Achsen für luxemburgische Weltraumtätigkeiten 2023-2027. Budget ca. 256 Mio. EUR. Schwerpunkt auf Nachhaltigkeit, Wettbewerbsfähigkeit und Innovation.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-SPACERESOURCES-LU",
+    {
+      title: "SpaceResources.lu-Initiative",
+      provisions: {
+        Initiative: {
+          title: "Nationales Weltraumressourcenprogramm",
+          summary:
+            "SpaceResources.lu-Initiative gestartet im Februar 2016 mit 200 Mio. EUR Regierungszusage. Über 80 Unternehmen und ca. 1.650 Beschäftigte im luxemburgischen Weltraumsektor.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-LUXIMPULSE",
+    {
+      title: "LuxIMPULSE Nationales Programm",
+      provisions: {
+        Programme: {
+          title: "Nationales Weltraumprogramm 2026-2029",
+          summary:
+            "LuxIMPULSE nationales Programm mit 115,8 Mio. EUR Budget für 2026-2029. Umsetzung mit ESA-Unterstützung.",
+        },
+      },
+    },
+  ],
+  [
+    "LU-GOVSAT",
+    {
+      title: "GovSat — Luxemburger Regierungssatellitenkommunikation",
+      provisions: {
+        Programme: {
+          title: "Staatliches Satellitenkommunikations-Joint-Venture",
+          summary:
+            "GovSat — LuxGovSat S.A. ist ein 50/50-Joint-Venture zwischen der luxemburgischen Regierung und SES. GovSat-1 gestartet am 31. Januar 2018 (X-Band und Ka-Band Militärkommunikation). GovSat-2 im Januar 2026 genehmigt mit 301 Mio. EUR Budget.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -2941,6 +3323,99 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Abteilung für Sicherheitsinformationen (DIS)",
       mandate:
         "Nachrichtendienstkoordinierung. Für Nachrichtendienstzwecke durchgeführte Weltraumaktivitäten sind nach Legge 89/2025 Art. 28 ausdrücklich vom zivilen Genehmigungsregime ausgenommen.",
+    },
+  ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LUXEMBOURG AUTHORITIES
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "LU-LSA",
+    {
+      name: "Luxemburgische Weltraumagentur (LSA)",
+      mandate:
+        "Operative Weltraumagentur, gegründet als Stiftung am 8. Juli 2021, unter der Aufsicht des Wirtschaftsministeriums. Bearbeitet Genehmigungsanträge nach den Weltraumgesetzen 2017 und 2020. Führt das nationale Register der Weltraumgegenstände. Leitet die SpaceResources.lu-Initiative. CEO: Marc Serres.",
+    },
+  ],
+  [
+    "LU-MECO",
+    {
+      name: "Wirtschaftsministerium",
+      mandate:
+        "Erteilt und entzieht Genehmigungen für Weltraumtätigkeiten und Weltraumressourcenerkundung/-nutzung per arrêté ministériel. Letzte Entscheidungsinstanz nach den Weltraumgesetzen 2017 und 2020.",
+    },
+  ],
+  [
+    "LU-ILR",
+    {
+      name: "Luxemburgisches Regulierungsinstitut (ILR)",
+      mandate:
+        "Frequenzverwaltung und Satellitenfrequenzkoordination. Verwaltet Funkfrequenzzuweisungen für Satellitenbetreiber. Zuständig für NIS-Registrierungen im Rahmen des Cybersicherheitsrechts.",
+    },
+  ],
+  [
+    "LU-SMC",
+    {
+      name: "Dienst für Medien, Konnektivität und Digitalpolitik (SMC)",
+      mandate:
+        "Konzessionen für Satellitensysteme und Frequenz-/Orbitalpositionskonzessionen. Verwaltet den regulatorischen Rahmen für luxemburgische Satellitensysteme einschließlich Konzessionsvereinbarungen mit SES.",
+    },
+  ],
+  [
+    "LU-CSSF",
+    {
+      name: "Finanzaufsichtskommission (CSSF)",
+      mandate:
+        "Finanzaufsicht über börsennotierte Weltraumunternehmen (SES S.A.) und Weltrauminvestitionsfonds. Reguliert das Governance-Modell des Finanzplatzes, das vom Weltraumressourcengesetz 2017 (Art. 7-9) übernommen wurde.",
+    },
+  ],
+  [
+    "LU-CNPD",
+    {
+      name: "Nationale Kommission für Datenschutz (CNPD)",
+      mandate:
+        "DSGVO-Compliance für Weltraumdatenverarbeitung. Setzt Datenschutzverpflichtungen für Erdbeobachtungsbilder und satellitengestützte Daten mit personenbezogenen Datenimplikationen durch.",
+    },
+  ],
+  [
+    "LU-DEFENCE",
+    {
+      name: "Direktion für Verteidigung",
+      mandate:
+        "Militärische Satellitenkommunikation über die GovSat-Partnerschaft (LuxGovSat S.A.). NATO-Weltraumdomänenkoordination. Verwaltet Luxemburgs Teilnahme an NATO- und EU-Verteidigungsweltraumprogrammen.",
+    },
+  ],
+  [
+    "LU-OCEIT",
+    {
+      name: "Amt für Export-, Import- und Transitkontrolle (OCEIT)",
+      mandate:
+        "Exportlizenzen für Dual-Use-Güter und Verteidigungsprodukte. Verwaltet Exportkontrollen nach dem Gesetz vom 27. Juni 2018 für Satellitenkomponenten, Verschlüsselungstechnologie und weltraumbezogene Güter.",
+    },
+  ],
+  [
+    "LU-MAE",
+    {
+      name: "Ministerium für auswärtige und europäische Angelegenheiten",
+      mandate:
+        "Internationale Weltraumdiplomatie und Vertragsverhandlungen. Vertritt Luxemburg im UN-COPUOS, bei den Artemis Accords und in bilateralen Weltraumkooperationsabkommen.",
+    },
+  ],
+  [
+    "LU-HCPN",
+    {
+      name: "Hochkommissariat für Landesschutz (HCPN)",
+      mandate:
+        "Nationale Cybersicherheitspolitik und Schutz kritischer Infrastrukturen. Koordiniert Luxemburgs Reaktion auf Cyberbedrohungen gegen Weltraumsysteme und Satelliten-Bodeninfrastruktur.",
+    },
+  ],
+  [
+    "LU-ESRIC",
+    {
+      name: "Europäisches Innovationszentrum für Weltraumressourcen (ESRIC)",
+      mandate:
+        "Weltweit erstes Innovationszentrum für Weltraumressourcen, gegründet August 2020. Gemeinsame Initiative von LSA, Luxembourg Institute of Science and Technology (LIST) und ESA. Betreibt Forschung und unterstützt Start-ups bei der Weltraumressourcennutzung.",
     },
   ],
 ]);

@@ -20,6 +20,8 @@ import {
   AUTHORITIES_UK,
   LEGAL_SOURCES_IT,
   AUTHORITIES_IT,
+  LEGAL_SOURCES_LU,
+  AUTHORITIES_LU,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -918,6 +920,224 @@ describe("Legal Sources — IT authority accuracy", () => {
 
   it("every IT authority has a valid website URL", () => {
     for (const a of AUTHORITIES_IT) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Luxembourg dataset sanity checks ─────────────────────────────
+describe("Legal Sources — LU dataset sanity", () => {
+  it("LU has at least 20 legal sources", () => {
+    expect(LEGAL_SOURCES_LU.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("LU has exactly 11 authorities", () => {
+    expect(AUTHORITIES_LU).toHaveLength(11);
+  });
+
+  it("every LU legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_LU) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("LU legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_LU) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("LU authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_LU) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every LU source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_LU) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every LU source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_LU) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every LU source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_LU) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all LU competent_authorities IDs map to existing LU authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_LU.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_LU) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all LU related_sources IDs map to existing LU legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_LU.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_LU) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Luxembourg regulatory accuracy ──────────────────────────────
+describe("Legal Sources — Luxembourg regulatory accuracy", () => {
+  it("2017 Space Resources Law is marked critical and in_force", () => {
+    const law2017 = getLegalSourceById("LU-SPACE-RESOURCES-2017")!;
+    expect(law2017).toBeDefined();
+    expect(law2017.relevance_level).toBe("critical");
+    expect(law2017.status).toBe("in_force");
+  });
+
+  it("2020 Space Activities Law is marked critical and in_force", () => {
+    const law2020 = getLegalSourceById("LU-SPACE-ACTIVITIES-2020")!;
+    expect(law2020).toBeDefined();
+    expect(law2020.relevance_level).toBe("critical");
+    expect(law2020.status).toBe("in_force");
+  });
+
+  it("2017 law has 'appropriation' in key provisions", () => {
+    const law2017 = getLegalSourceById("LU-SPACE-RESOURCES-2017")!;
+    expect(law2017).toBeDefined();
+    const allProvisionText = law2017.key_provisions
+      .map((p) => `${p.summary} ${p.complianceImplication ?? ""}`)
+      .join(" ");
+    expect(allProvisionText).toContain("appropriation");
+  });
+
+  it("Moon Agreement NOT ratified for LU", () => {
+    const moon = getLegalSourceById("LU-INT-MOON-1979")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("not_ratified");
+    expect(moon.relevance_level).toBe("low");
+  });
+
+  it("Rescue Agreement signed but not ratified for LU", () => {
+    const rescue = getLegalSourceById("LU-RESCUE-STATUS")!;
+    expect(rescue).toBeDefined();
+    expect(rescue.status).toBe("not_ratified");
+    const notes = rescue.notes!.join(" ");
+    expect(notes).toContain("signed");
+    expect(notes).toContain("NOT ratified");
+  });
+
+  it("ispace authorization referenced in notes of 2017 law", () => {
+    const law2017 = getLegalSourceById("LU-SPACE-RESOURCES-2017")!;
+    expect(law2017).toBeDefined();
+    const allNotes = law2017.notes!.join(" ");
+    expect(allNotes).toContain("ispace");
+  });
+
+  it("NIS2 transposition correctly marked as draft", () => {
+    const nis2 = getLegalSourceById("LU-NIS2-PENDING")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("draft");
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+  });
+
+  it("no statutory liability cap in 2020 law", () => {
+    const law2020 = getLegalSourceById("LU-SPACE-ACTIVITIES-2020")!;
+    expect(law2020).toBeDefined();
+    const allProvisionText = law2020.key_provisions
+      .map((p) => `${p.summary} ${p.complianceImplication ?? ""}`)
+      .join(" ");
+    expect(allProvisionText).toContain("NO statutory");
+  });
+
+  it("dual space law structure: both 2017 and 2020 laws present", () => {
+    const law2017 = getLegalSourceById("LU-SPACE-RESOURCES-2017");
+    const law2020 = getLegalSourceById("LU-SPACE-ACTIVITIES-2020");
+    expect(law2017).toBeDefined();
+    expect(law2020).toBeDefined();
+    expect(law2017!.type).toBe("federal_law");
+    expect(law2020!.type).toBe("federal_law");
+  });
+});
+
+// ─── LU lookup functions ──────────────────────────────────────────
+describe("Legal Sources — LU lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns LU sources", () => {
+    const sources = getLegalSourcesByJurisdiction("LU");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_LU.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns LU authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("LU");
+    expect(auths).toHaveLength(11);
+  });
+
+  it("getLegalSourceStats includes LU", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["LU"]).toBeDefined();
+    expect(stats["LU"]!.total).toBeGreaterThanOrEqual(20);
+  });
+
+  it("getAvailableJurisdictions includes LU", () => {
+    expect(getAvailableJurisdictions()).toContain("LU");
+  });
+
+  it("getLegalSourcesByComplianceArea returns licensing sources for LU", () => {
+    const licensing = getLegalSourcesByComplianceArea("LU", "licensing");
+    expect(licensing.length).toBeGreaterThan(0);
+    for (const s of licensing) {
+      expect(s.compliance_areas).toContain("licensing");
+    }
+  });
+});
+
+// ─── LU authority accuracy ────────────────────────────────────────
+describe("Legal Sources — LU authority accuracy", () => {
+  it("LSA is the space agency", () => {
+    const lsa = getAuthorityById("LU-LSA")!;
+    expect(lsa).toBeDefined();
+    expect(lsa.space_mandate).toContain("space agency");
+    expect(lsa.applicable_areas).toContain("licensing");
+    expect(lsa.applicable_areas).toContain("registration");
+  });
+
+  it("ILR handles frequency spectrum", () => {
+    const ilr = getAuthorityById("LU-ILR")!;
+    expect(ilr).toBeDefined();
+    expect(ilr.space_mandate).toContain("requenc");
+    expect(ilr.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("OCEIT handles export control", () => {
+    const oceit = getAuthorityById("LU-OCEIT")!;
+    expect(oceit).toBeDefined();
+    expect(oceit.space_mandate).toContain("Export");
+    expect(oceit.applicable_areas).toContain("export_control");
+  });
+
+  it("every LU authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_LU) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
