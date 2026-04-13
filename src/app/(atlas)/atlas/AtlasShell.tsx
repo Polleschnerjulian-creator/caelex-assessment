@@ -63,9 +63,12 @@ export default function AtlasShell({
       >
         {/* ── Logo pill (top) ── */}
         <div className="ml-3 mt-3 flex items-center justify-center h-10 w-[46px] rounded-xl bg-[#1a1a1a]">
-          <span className="text-[12px] font-bold tracking-[0.15em] text-white/80">
-            C
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/caelex-logo-white.png"
+            alt="Caelex"
+            className="h-6 w-6 object-contain"
+          />
         </div>
 
         {/* ── Main nav pill (floating, NOT full height) ── */}
