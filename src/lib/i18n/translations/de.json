@@ -602,6 +602,13 @@
     "disclaimer_limitation": "Haftungsbeschränkung",
     "disclaimer_third_party": "Drittpartei-Vertrauen",
     "disclaimer_data_sources": "Datenquellen",
-    "disclaimer_ip": "Geistiges Eigentum"
+    "disclaimer_ip": "Geistiges Eigentum",
+    "export_pdf": "PDF exportieren",
+    "export_title": "Regulatorischer Vergleichsbericht",
+    "export_date": "Erstellt",
+    "export_jurisdictions": "Jurisdiktionen",
+    "export_dimension": "Dimension",
+    "export_confidential": "Vertraulich \u2014 Nur f\u00fcr interne Recherchezwecke",
+    "export_disclaimer": "Dieses Dokument wurde von ATLAS (Caelex) ausschlie\u00dflich f\u00fcr Recherche- und interne Analysezwecke erstellt. Es stellt keine Rechtsberatung, kein Rechtsgutachten und keinen Ersatz f\u00fcr qualifizierten rechtlichen Beistand dar. Regulatorische Daten unterliegen \u00c4nderungen und sollten vor einer Berufung unabh\u00e4ngig \u00fcberpr\u00fcft werden."
   }
 }

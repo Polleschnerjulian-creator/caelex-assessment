@@ -1969,3 +1969,259 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   );
   background-size: 200% 100%;
 }
+
+/* ===== ATLAS COMPARATOR — PRINT / PDF EXPORT ===== */
+
+/* Hidden on screen, visible only when printing */
+.print-export-container {
+  display: none;
+}
+
+@media print {
+  /* ─── Reset everything ─── */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Hide the entire app shell ─── */
+  .print\\:hidden,
+  .print-export-container ~ *,
+  nav,
+  header:not(.print-header),
+  aside {
+    display: none !important;
+  }
+
+  /* Hide the AtlasShell sidebar (fixed positioned) */
+  body > div > div > div.fixed {
+    display: none !important;
+  }
+
+  /* ─── Show the export container ─── */
+  .print-export-container {
+    display: block !important;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ─── Page setup ─── */
+  @page {
+    size: A4 landscape;
+    margin: 18mm 15mm 22mm 15mm;
+  }
+
+  @page :first {
+    margin-top: 12mm;
+  }
+
+  /* ─── Header ─── */
+  .print-header {
+    padding-bottom: 16pt;
+    margin-bottom: 12pt;
+  }
+
+  .print-header-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8pt;
+    margin-bottom: 6pt;
+  }
+
+  .print-header-logo {
+    font-size: 20pt;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #000;
+  }
+
+  .print-header-subtitle {
+    font-size: 9pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .print-header-divider {
+    width: 100%;
+    height: 2px;
+    background: #000;
+    margin: 8pt 0 14pt 0;
+  }
+
+  .print-header-title {
+    font-size: 16pt;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #000;
+    margin: 0 0 12pt 0;
+  }
+
+  .print-header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3pt;
+    font-size: 9.5pt;
+    color: #333;
+  }
+
+  .print-header-meta-row {
+    display: flex;
+    gap: 6pt;
+  }
+
+  .print-header-meta-label {
+    font-weight: 600;
+    color: #000;
+    min-width: 90pt;
+  }
+
+  .print-header-confidential {
+    margin-top: 10pt;
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  /* ─── Section titles ─── */
+  .print-section-break {
+    page-break-before: auto;
+    margin-top: 18pt;
+  }
+
+  .print-section-title {
+    font-size: 12pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #000;
+    margin: 0 0 8pt 0;
+    padding-bottom: 4pt;
+    border-bottom: 1px solid #ccc;
+  }
+
+  /* ─── Table ─── */
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    line-height: 1.4;
+    margin-bottom: 14pt;
+    page-break-inside: auto;
+  }
+
+  .print-table thead {
+    display: table-header-group;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 0.5pt solid #999;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .print-table-provision {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #444;
+    background: #f2f2f2 !important;
+    width: 140pt;
+    min-width: 120pt;
+  }
+
+  .print-table-country {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #000;
+    background: #f2f2f2 !important;
+    min-width: 100pt;
+  }
+
+  .print-table-code {
+    font-weight: 400;
+    color: #666;
+    font-size: 8pt;
+  }
+
+  .print-table-label {
+    font-weight: 500;
+    color: #333;
+    background: #fafafa !important;
+  }
+
+  .print-table-cell {
+    color: #111;
+  }
+
+  /* Alternate row shading for readability */
+  .print-table tbody tr:nth-child(even) td {
+    background: #f8f8f8 !important;
+  }
+
+  .print-table tbody tr:nth-child(even) .print-table-label {
+    background: #f4f4f4 !important;
+  }
+
+  /* ─── Footer disclaimer block ─── */
+  .print-footer-block {
+    margin-top: 24pt;
+    page-break-inside: avoid;
+  }
+
+  .print-footer-divider {
+    width: 100%;
+    height: 1px;
+    background: #ccc;
+    margin-bottom: 10pt;
+  }
+
+  .print-footer-brand {
+    font-size: 8.5pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #444;
+    margin: 0 0 4pt 0;
+  }
+
+  .print-footer-disclaimer {
+    font-size: 7.5pt;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+  }
+}

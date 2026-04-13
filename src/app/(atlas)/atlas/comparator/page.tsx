@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { Download } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
+import ComparatorExport from "@/components/atlas/ComparatorExport";
 
 // ─── Dimension tabs ───
 
@@ -24,62 +26,87 @@ export default function ComparatorPage() {
     useState<SpaceLawCountryCode[]>(DEFAULT_COUNTRIES);
   const [dimension, setDimension] = useState<string>("all");
 
+  const handleExport = useCallback(() => {
+    window.print();
+  }, []);
+
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
-      {/* ─── Header ─── */}
-      <header className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
-            Comparator
-          </h1>
-          <span className="text-[10px] font-mono text-gray-400 tracking-wide">
-            19 jurisdictions
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
-          <span>{selected.length} selected</span>
-          <span className="text-gray-300">|</span>
-          <span>
-            {DIMENSIONS.find((d) => d.key === dimension)?.label || "All"}
-          </span>
-        </div>
-      </header>
+    <>
+      <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3 print:hidden">
+        {/* ─── Header ─── */}
+        <header className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+              Comparator
+            </h1>
+            <span className="text-[10px] font-mono text-gray-400 tracking-wide">
+              19 jurisdictions
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
+              <span>{selected.length} selected</span>
+              <span className="text-gray-300">|</span>
+              <span>
+                {DIMENSIONS.find((d) => d.key === dimension)?.label || "All"}
+              </span>
+            </div>
+            {selected.length > 0 && (
+              <button
+                onClick={handleExport}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-gray-500
+                  hover:text-gray-900 hover:bg-gray-100
+                  transition-colors duration-150
+                "
+              >
+                <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <span>Export PDF</span>
+              </button>
+            )}
+          </div>
+        </header>
 
-      {/* ─── Country Selector Bar ─── */}
-      <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
-            Jurisdictions
-          </span>
+        {/* ─── Country Selector Bar ─── */}
+        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
+              Jurisdictions
+            </span>
+          </div>
+          <CountrySelector selected={selected} onChange={setSelected} />
         </div>
-        <CountrySelector selected={selected} onChange={setSelected} />
+
+        {/* ─── Dimension Tabs ─── */}
+        <div className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200">
+          {DIMENSIONS.map((dim) => (
+            <button
+              key={dim.key}
+              onClick={() => setDimension(dim.key)}
+              className={`
+                flex-shrink-0 pb-2 text-[11px] font-medium
+                transition-all duration-150 border-b-2 -mb-[1px]
+                ${
+                  dimension === dim.key
+                    ? "border-gray-900 text-gray-900"
+                    : "border-transparent text-gray-400 hover:text-gray-600"
+                }
+              `}
+            >
+              {dim.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ─── Comparison Table ─── */}
+        <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <ComparisonTable countries={selected} dimension={dimension} />
+        </div>
       </div>
 
-      {/* ─── Dimension Tabs ─── */}
-      <div className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200">
-        {DIMENSIONS.map((dim) => (
-          <button
-            key={dim.key}
-            onClick={() => setDimension(dim.key)}
-            className={`
-              flex-shrink-0 pb-2 text-[11px] font-medium
-              transition-all duration-150 border-b-2 -mb-[1px]
-              ${
-                dimension === dim.key
-                  ? "border-gray-900 text-gray-900"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }
-            `}
-          >
-            {dim.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ─── Comparison Table ─── */}
-      <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <ComparisonTable countries={selected} dimension={dimension} />
-      </div>
-    </div>
+      {/* ─── Print-only export view ─── */}
+      <ComparatorExport countries={selected} dimension={dimension} />
+    </>
   );
 }
