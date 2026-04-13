@@ -1,143 +1,233 @@
-import { Map } from "lucide-react";
+"use client";
 
-const JURISDICTIONS = [
-  {
-    code: "EU",
-    name: "European Union",
-    status: "active",
-    regulations: 14,
-    lastUpdate: "2d ago",
-  },
-  {
-    code: "DE",
-    name: "Germany",
-    status: "active",
-    regulations: 8,
-    lastUpdate: "5d ago",
-  },
-  {
-    code: "FR",
-    name: "France",
-    status: "active",
-    regulations: 11,
-    lastUpdate: "1w ago",
-  },
-  {
-    code: "UK",
-    name: "United Kingdom",
-    status: "active",
-    regulations: 9,
-    lastUpdate: "3d ago",
-  },
-  {
-    code: "LU",
-    name: "Luxembourg",
-    status: "active",
-    regulations: 6,
-    lastUpdate: "2w ago",
-  },
-  {
-    code: "NL",
-    name: "Netherlands",
-    status: "active",
-    regulations: 5,
-    lastUpdate: "1w ago",
-  },
-  {
-    code: "IT",
-    name: "Italy",
-    status: "partial",
-    regulations: 7,
-    lastUpdate: "3w ago",
-  },
-  {
-    code: "US",
-    name: "United States",
-    status: "active",
-    regulations: 18,
-    lastUpdate: "1d ago",
-  },
-  {
-    code: "JP",
-    name: "Japan",
-    status: "partial",
-    regulations: 4,
-    lastUpdate: "1m ago",
-  },
-  {
-    code: "AU",
-    name: "Australia",
-    status: "active",
-    regulations: 6,
-    lastUpdate: "2w ago",
-  },
-  {
-    code: "NO",
-    name: "Norway",
-    status: "partial",
-    regulations: 3,
-    lastUpdate: "1m ago",
-  },
-  {
-    code: "SE",
-    name: "Sweden",
-    status: "partial",
-    regulations: 3,
-    lastUpdate: "1m ago",
-  },
-];
+import { useRouter } from "next/navigation";
+import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import {
+  getLegalSourcesByJurisdiction,
+  getAuthoritiesByJurisdiction,
+  getAvailableJurisdictions,
+} from "@/data/legal-sources";
+
+// ─── Build jurisdiction rows from real data ─────────────────────────
+
+const JURISDICTIONS_WITH_SOURCES = new Set(getAvailableJurisdictions());
+
+interface JurisdictionRow {
+  code: string;
+  country: string;
+  legislation: string;
+  year: number;
+  status: "enacted" | "draft" | "pending" | "none";
+  authority: string;
+  sourceCount: number;
+  group: "sources" | "enacted" | "none";
+}
+
+function buildRows(): JurisdictionRow[] {
+  const rows: JurisdictionRow[] = [];
+
+  for (const [code, data] of JURISDICTION_DATA) {
+    const hasSources = JURISDICTIONS_WITH_SOURCES.has(code);
+    const sourceCount = hasSources
+      ? getLegalSourcesByJurisdiction(code).length
+      : 0;
+    const authorities = getAuthoritiesByJurisdiction(code);
+
+    let group: JurisdictionRow["group"];
+    if (hasSources) {
+      group = "sources";
+    } else if (data.legislation.status === "enacted") {
+      group = "enacted";
+    } else {
+      group = "none";
+    }
+
+    rows.push({
+      code,
+      country: data.countryName,
+      legislation: data.legislation.name,
+      year: data.legislation.yearEnacted,
+      status: data.legislation.status,
+      authority:
+        authorities.length > 0
+          ? authorities[0].name
+          : data.licensingAuthority.name,
+      sourceCount,
+      group,
+    });
+  }
+
+  return rows;
+}
+
+const ALL_ROWS = buildRows();
+
+const GROUP_ORDER: JurisdictionRow["group"][] = ["sources", "enacted", "none"];
+
+const GROUP_LABELS: Record<JurisdictionRow["group"], string> = {
+  sources: "With Legal Sources",
+  enacted: "Enacted Legislation",
+  none: "No Comprehensive Law",
+};
+
+function groupAndSort(rows: JurisdictionRow[]) {
+  return GROUP_ORDER.map((groupKey) => ({
+    key: groupKey,
+    label: GROUP_LABELS[groupKey],
+    rows: rows
+      .filter((r) => r.group === groupKey)
+      .sort((a, b) => a.country.localeCompare(b.country)),
+  })).filter((g) => g.rows.length > 0);
+}
+
+const GROUPED = groupAndSort(ALL_ROWS);
+
+// ─── Status badge ───────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: JurisdictionRow["status"] }) {
+  if (status === "enacted") {
+    return (
+      <span className="inline-block text-[10px] font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded tracking-wide">
+        Enacted
+      </span>
+    );
+  }
+  if (status === "draft") {
+    return (
+      <span className="inline-block text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded tracking-wide">
+        Draft
+      </span>
+    );
+  }
+  return (
+    <span className="inline-block text-[10px] font-medium text-gray-400 tracking-wide">
+      None
+    </span>
+  );
+}
+
+// ─── Table header ───────────────────────────────────────────────────
+
+const COLUMNS = [
+  { key: "code", label: "Code", width: "w-[60px]" },
+  { key: "country", label: "Country", width: "w-[140px]" },
+  { key: "legislation", label: "Legislation", width: "flex-1 min-w-[200px]" },
+  { key: "year", label: "Year", width: "w-[60px]" },
+  { key: "status", label: "Status", width: "w-[80px]" },
+  { key: "authority", label: "Authority", width: "flex-1 min-w-[160px]" },
+  { key: "sources", label: "Sources", width: "w-[64px]" },
+  { key: "arrow", label: "", width: "w-[32px]" },
+] as const;
+
+// ─── Page ───────────────────────────────────────────────────────────
 
 export default function JurisdictionsPage() {
+  const router = useRouter();
+
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Map className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
-            Jurisdictions
-          </h1>
-          <span className="text-[11px] text-gray-400 font-mono">
-            {JURISDICTIONS.length} tracked
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Active
-            <span className="h-2 w-2 rounded-full bg-amber-500 ml-2" />
-            Partial
-          </div>
-        </div>
+    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-4">
+      {/* Header */}
+      <header className="flex items-center gap-3">
+        <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          Jurisdictions
+        </h1>
+        <span className="text-[11px] font-mono text-gray-400">
+          {ALL_ROWS.length} tracked
+        </span>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-        {JURISDICTIONS.map((j) => (
-          <a
-            key={j.code}
-            href={`/atlas/jurisdictions/${j.code.toLowerCase()}`}
-            className="
-              group relative overflow-hidden rounded-xl border border-gray-200
-              bg-white p-3.5 shadow-sm
-              hover:border-emerald-300 hover:shadow-md
-              transition-all duration-200 cursor-pointer
-            "
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[14px] font-mono font-bold text-gray-900 tracking-wider">
-                {j.code}
+      {/* Table */}
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        {/* Column headers */}
+        <div className="flex items-center gap-0 px-4 py-2.5 border-b border-gray-100">
+          {COLUMNS.map((col) => (
+            <div
+              key={col.key}
+              className={`${col.width} text-[10px] text-gray-400 uppercase tracking-[0.15em] font-medium ${
+                col.key === "sources" || col.key === "year" ? "text-right" : ""
+              } ${col.key === "arrow" ? "" : ""}`}
+            >
+              {col.label}
+            </div>
+          ))}
+        </div>
+
+        {/* Groups */}
+        {GROUPED.map((group) => (
+          <div key={group.key}>
+            {/* Group label */}
+            <div className="px-4 py-2 bg-[#F7F8FA] border-b border-gray-100">
+              <span className="text-[10px] font-semibold tracking-[0.15em] text-gray-500 uppercase">
+                {group.label}
               </span>
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  j.status === "active" ? "bg-emerald-500" : "bg-amber-500"
-                }`}
-              />
+              <span className="text-[10px] font-mono text-gray-400 ml-2">
+                {group.rows.length}
+              </span>
             </div>
-            <p className="text-[12px] text-gray-700 mb-2">{j.name}</p>
-            <div className="flex items-center justify-between text-[10px] text-gray-400">
-              <span>{j.regulations} regulations</span>
-              <span className="font-mono">{j.lastUpdate}</span>
-            </div>
-          </a>
+
+            {/* Rows */}
+            {group.rows.map((row) => (
+              <div
+                key={row.code}
+                onClick={() =>
+                  router.push(`/atlas/jurisdictions/${row.code.toLowerCase()}`)
+                }
+                className="flex items-center gap-0 px-4 py-2.5 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-white hover:shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
+              >
+                {/* Code */}
+                <div className="w-[60px]">
+                  <span className="text-[13px] font-mono font-bold text-gray-900 tracking-wider">
+                    {row.code}
+                  </span>
+                </div>
+
+                {/* Country */}
+                <div className="w-[140px]">
+                  <span className="text-[13px] text-gray-900">
+                    {row.country}
+                  </span>
+                </div>
+
+                {/* Legislation */}
+                <div className="flex-1 min-w-[200px] pr-3">
+                  <span className="text-[13px] text-gray-600 truncate block">
+                    {row.legislation}
+                  </span>
+                </div>
+
+                {/* Year */}
+                <div className="w-[60px] text-right">
+                  <span className="text-[13px] font-mono text-gray-900">
+                    {row.year > 0 ? row.year : "\u2014"}
+                  </span>
+                </div>
+
+                {/* Status */}
+                <div className="w-[80px] flex justify-center">
+                  <StatusBadge status={row.status} />
+                </div>
+
+                {/* Authority */}
+                <div className="flex-1 min-w-[160px] pr-3">
+                  <span className="text-[13px] text-gray-600 truncate block">
+                    {row.authority}
+                  </span>
+                </div>
+
+                {/* Sources */}
+                <div className="w-[64px] text-right">
+                  <span className="text-[13px] font-mono text-gray-900">
+                    {row.sourceCount > 0 ? row.sourceCount : "\u2014"}
+                  </span>
+                </div>
+
+                {/* Arrow */}
+                <div className="w-[32px] flex justify-end">
+                  <span className="text-gray-300 text-[13px]">&rarr;</span>
+                </div>
+              </div>
+            ))}
+          </div>
         ))}
       </div>
     </div>
