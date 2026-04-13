@@ -235,14 +235,15 @@ export default function CommandCenterPage() {
           autoComplete="off"
           className={`
             w-full bg-transparent
-            border-0 border-b border-gray-200
-            focus:border-gray-400 focus:outline-none
+            border-0 border-b border-gray-200 rounded-none
+            outline-none ring-0 shadow-none
+            focus:border-gray-300 focus:outline-none focus:ring-0 focus:shadow-none
             text-gray-900 placeholder:text-gray-300
             font-light tracking-[-0.02em]
-            transition-all duration-500 ease-out
+            transition-colors duration-300
             ${hasResults ? "text-[24px] lg:text-[28px] pb-3" : "text-[32px] lg:text-[40px] pb-4"}
           `}
-          style={{ caretColor: "#10B981" }}
+          style={{ caretColor: "#10B981", outline: "none", boxShadow: "none" }}
         />
 
         {/* Keyboard hint */}
@@ -259,10 +260,7 @@ export default function CommandCenterPage() {
       {!hasResults && (
         <div className="space-y-8">
           {/* Quick access */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[12px] text-gray-400 tracking-wide uppercase mr-1">
-              Jump to
-            </span>
+          <div className="flex items-center gap-6">
             {[
               { code: "DE", name: "Germany" },
               { code: "FR", name: "France" },
@@ -272,23 +270,16 @@ export default function CommandCenterPage() {
               <button
                 key={j.code}
                 onClick={() => router.push(`/atlas/jurisdictions/${j.code}`)}
-                className="
-                  px-3 py-1.5 text-[13px] font-medium text-gray-600
-                  bg-white border border-gray-200 rounded-lg
-                  hover:border-gray-400 hover:text-gray-900
-                  transition-all duration-150
-                "
+                className="text-[13px] text-gray-400 hover:text-gray-900 transition-colors duration-200"
               >
                 {j.name}
               </button>
             ))}
+            <span className="text-[12px] text-gray-300">
+              {ALL_SOURCES.length} sources &middot; {JURISDICTION_DATA.size}{" "}
+              jurisdictions
+            </span>
           </div>
-
-          {/* Stats line */}
-          <p className="text-[13px] text-gray-400">
-            {ALL_SOURCES.length} legal sources &middot; {ALL_AUTHORITIES.length}{" "}
-            authorities &middot; {JURISDICTION_DATA.size} jurisdictions
-          </p>
         </div>
       )}
 
