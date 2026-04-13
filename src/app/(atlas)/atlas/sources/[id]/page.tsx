@@ -261,136 +261,195 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   const jurisdictionFlag =
     JURISDICTION_FLAGS[source.jurisdiction] ?? source.jurisdiction;
 
+  // Counts for table of contents
+  const provisionCount = source.key_provisions.length;
+  const authorityCount = authorities.length;
+  const hasRelated =
+    related.length > 0 ||
+    amendsSource ||
+    amendedBySources.length > 0 ||
+    implementsSource ||
+    supersededBySource;
+  const relatedCount =
+    related.length +
+    (amendsSource ? 1 : 0) +
+    amendedBySources.length +
+    (implementsSource ? 1 : 0) +
+    (supersededBySource ? 1 : 0);
+
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
-      {/* ─── Header ─── */}
-      <header>
+    <div className="min-h-screen bg-[#F7F8FA] px-6 py-6 lg:px-12">
+      {/* ─── Breadcrumb line ─── */}
+      <nav className="flex items-center gap-2 text-[12px] text-gray-400">
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
+          className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
         >
-          <ArrowLeft size={14} strokeWidth={1.5} />
+          <ArrowLeft size={13} strokeWidth={1.5} />
           Back
         </button>
+        <span className="text-gray-300">·</span>
+        <span className={`font-medium ${typeStyle.text}`}>
+          {TYPE_LABELS[source.type]}
+        </span>
+        <span className="text-gray-300">·</span>
+        <span>{jurisdictionName}</span>
+      </nav>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          {/* Type badge */}
-          <span
-            className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${typeStyle.bg} ${typeStyle.text}`}
-          >
-            {TYPE_LABELS[source.type]}
-          </span>
-
-          {/* Status badge */}
-          <span
-            className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${statusStyle.bg} ${statusStyle.text}`}
-          >
-            {statusStyle.label}
-          </span>
-
-          {/* Relevance badge */}
-          <span
-            className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${relevanceStyle}`}
-          >
-            {source.relevance_level}
-          </span>
-        </div>
-
-        <h1 className="text-[26px] lg:text-[32px] font-semibold text-gray-900 tracking-tight leading-tight mt-4 max-w-4xl">
+      {/* ─── Title block ─── */}
+      <header className="mt-4 max-w-4xl">
+        <h1 className="text-[24px] lg:text-[28px] font-semibold text-gray-900 tracking-tight leading-[1.25]">
           {source.title_en}
         </h1>
-
         {source.title_local && (
-          <p className="text-[14px] text-gray-400 mt-1.5 max-w-4xl leading-relaxed">
+          <p className="text-[13px] text-gray-400 mt-1 leading-snug">
             {source.title_local}
           </p>
         )}
-      </header>
 
-      {/* ─── Metadata Row ─── */}
-      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 py-4 border-y border-gray-200">
-        {/* Jurisdiction */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-mono font-semibold text-gray-400">
-            {jurisdictionFlag}
-          </span>
-          <span className="text-[12px] text-gray-600">{jurisdictionName}</span>
-        </div>
-
-        {/* Date enacted / in force */}
-        {(source.date_enacted || source.date_in_force) && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-              {source.date_enacted ? "Enacted" : "In Force"}
-            </span>
-            <span className="text-[12px] text-gray-600">
-              {source.date_enacted ?? source.date_in_force}
-            </span>
-          </div>
-        )}
-
-        {/* Official reference */}
-        {source.official_reference && (
-          <span className="text-[11px] font-mono text-gray-400">
-            {source.official_reference}
-          </span>
-        )}
-
-        {/* Issuing body */}
-        <span className="text-[12px] text-gray-500">{source.issuing_body}</span>
-
-        {/* View official text */}
+        {/* ─── View official text — prominent action ─── */}
         {source.source_url && (
           <a
             href={source.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-700 transition-colors"
+            className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
           >
             View official text
-            <ExternalLink size={11} strokeWidth={1.5} />
+            <ExternalLink size={13} strokeWidth={2} />
           </a>
         )}
+      </header>
+
+      {/* ─── Metadata grid ─── */}
+      <div className="mt-5 py-4 border-y border-gray-200 max-w-2xl">
+        <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
+          <dt className="text-gray-400">Jurisdiction</dt>
+          <dd className="text-gray-800">
+            <span className="font-mono text-gray-500 text-[12px]">
+              {jurisdictionFlag}
+            </span>{" "}
+            · {jurisdictionName}
+          </dd>
+
+          <dt className="text-gray-400">Status</dt>
+          <dd>
+            <span
+              className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
+            >
+              {statusStyle.label}
+            </span>
+          </dd>
+
+          {(source.date_enacted || source.date_in_force) && (
+            <>
+              <dt className="text-gray-400">
+                {source.date_enacted ? "Enacted" : "In Force"}
+              </dt>
+              <dd className="text-gray-800">
+                {source.date_enacted ?? source.date_in_force}
+              </dd>
+            </>
+          )}
+
+          {source.official_reference && (
+            <>
+              <dt className="text-gray-400">Reference</dt>
+              <dd className="font-mono text-[12px] text-gray-600">
+                {source.official_reference}
+              </dd>
+            </>
+          )}
+
+          <dt className="text-gray-400">Issuing Body</dt>
+          <dd className="text-gray-800">{source.issuing_body}</dd>
+
+          <dt className="text-gray-400">Relevance</dt>
+          <dd>
+            <span
+              className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${relevanceStyle}`}
+            >
+              {source.relevance_level}
+            </span>
+          </dd>
+        </dl>
       </div>
 
-      {/* ─── Key Provisions (main content) ─── */}
+      {/* ─── Table of contents ─── */}
+      {(provisionCount > 0 || authorityCount > 0 || hasRelated) && (
+        <nav className="mt-4 flex items-center gap-4 text-[12px] text-gray-400">
+          {provisionCount > 0 && (
+            <a
+              href="#provisions"
+              className="hover:text-gray-700 transition-colors"
+            >
+              {provisionCount} Key Provision{provisionCount !== 1 ? "s" : ""}
+            </a>
+          )}
+          {provisionCount > 0 && authorityCount > 0 && (
+            <span className="text-gray-300">·</span>
+          )}
+          {authorityCount > 0 && (
+            <a
+              href="#authorities"
+              className="hover:text-gray-700 transition-colors"
+            >
+              {authorityCount} Authorit{authorityCount !== 1 ? "ies" : "y"}
+            </a>
+          )}
+          {(provisionCount > 0 || authorityCount > 0) && hasRelated && (
+            <span className="text-gray-300">·</span>
+          )}
+          {hasRelated && (
+            <a
+              href="#related"
+              className="hover:text-gray-700 transition-colors"
+            >
+              {relatedCount} Related Source{relatedCount !== 1 ? "s" : ""}
+            </a>
+          )}
+        </nav>
+      )}
+
+      {/* ─── Key Provisions ─── */}
       {source.key_provisions.length > 0 && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-6">
-            <BookOpen size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+        <section id="provisions" className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Key Provisions
             </h2>
-            <span className="text-[12px] text-gray-300">
-              {source.key_provisions.length}
-            </span>
           </div>
 
-          <div className="space-y-0">
+          <div className="space-y-0 max-w-3xl">
             {source.key_provisions.map((provision, i) => (
               <div
                 key={i}
-                className={`py-5 ${i !== source.key_provisions.length - 1 ? "border-b border-gray-100" : ""}`}
+                className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
               >
                 <div className="flex items-baseline gap-3">
-                  <span className="text-[13px] font-mono font-bold text-gray-900 flex-shrink-0">
+                  <span className="text-[11px] text-gray-400 font-mono flex-shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-[15px] font-mono font-bold text-gray-900 flex-shrink-0">
                     {provision.section}
                   </span>
-                  <h3 className="text-[15px] font-semibold text-gray-800">
+                  <h3 className="text-[14px] font-semibold text-gray-700">
                     {provision.title}
                   </h3>
                 </div>
 
-                <p className="text-[13px] text-gray-600 leading-[1.7] mt-2 max-w-3xl">
+                <p className="text-[13px] text-gray-600 leading-[1.75] mt-1.5 ml-[52px]">
                   {provision.summary}
                 </p>
 
                 {provision.complianceImplication && (
-                  <div className="mt-3 px-4 py-3 rounded-lg bg-emerald-50/60 border border-emerald-100">
+                  <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
                     <p className="text-[12px] text-emerald-800 leading-[1.6]">
-                      <span className="font-semibold">
-                        Compliance Implication:
-                      </span>{" "}
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">
+                        Compliance Implication
+                      </span>
+                      <br />
                       {provision.complianceImplication}
                     </p>
                   </div>
@@ -403,14 +462,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Scope Description ─── */}
       {source.scope_description && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+        <section className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Scope
             </h2>
           </div>
-          <p className="text-[13px] text-gray-600 leading-[1.7] max-w-3xl">
+          <p className="text-[13px] text-gray-600 leading-[1.75] max-w-3xl">
             {source.scope_description}
           </p>
         </section>
@@ -418,61 +477,45 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Competent Authorities ─── */}
       {authorities.length > 0 && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-5">
-            <Building2 size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+        <section id="authorities" className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Competent Authorities
             </h2>
-            <span className="text-[12px] text-gray-300">
-              {authorities.length}
-            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="space-y-1 max-w-3xl">
             {authorities.map((auth) => (
               <Link
                 key={auth.id}
                 href={`/atlas/jurisdictions/${auth.jurisdiction}`}
-                className="block py-5 px-5 rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-150 group"
+                className="flex items-start gap-4 py-3 px-4 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-150 group"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="text-[18px] font-bold text-gray-900 font-mono tracking-tight group-hover:text-emerald-700 transition-colors">
-                      {auth.abbreviation}
-                    </span>
-                    <h4 className="text-[13px] font-medium text-gray-700 mt-1">
+                <span className="text-[16px] font-bold text-gray-900 font-mono tracking-tight flex-shrink-0 w-16 group-hover:text-emerald-700 transition-colors">
+                  {auth.abbreviation}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[13px] font-medium text-gray-700">
                       {auth.name_en}
-                    </h4>
-                    {auth.name_local !== auth.name_en && (
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        {auth.name_local}
-                      </p>
-                    )}
+                    </span>
+                    <span className="text-[11px] font-mono text-gray-400">
+                      {JURISDICTION_FLAGS[auth.jurisdiction] ??
+                        auth.jurisdiction}
+                    </span>
                   </div>
-                  <ExternalLink
-                    size={12}
-                    className="text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0 mt-1"
-                    strokeWidth={1.5}
-                  />
+                  <p className="text-[12px] text-gray-500 leading-relaxed mt-0.5 truncate">
+                    {auth.space_mandate.length > 80
+                      ? auth.space_mandate.slice(0, 80) + "..."
+                      : auth.space_mandate}
+                  </p>
                 </div>
-
-                <p className="text-[11px] text-gray-500 leading-relaxed mt-3">
-                  {auth.space_mandate}
-                </p>
-
-                {auth.applicable_areas.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {auth.applicable_areas.map((area) => (
-                      <span
-                        key={area}
-                        className="text-[9px] font-medium uppercase tracking-wider text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5"
-                      >
-                        {AREA_LABELS[area] ?? area}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <ExternalLink
+                  size={12}
+                  className="text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0 mt-1"
+                  strokeWidth={1.5}
+                />
               </Link>
             ))}
           </div>
@@ -480,15 +523,11 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       )}
 
       {/* ─── Related Sources ─── */}
-      {(related.length > 0 ||
-        amendsSource ||
-        amendedBySources.length > 0 ||
-        implementsSource ||
-        supersededBySource) && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-5">
-            <Link2 size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+      {hasRelated && (
+        <section id="related" className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Link2 size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Related Sources
             </h2>
           </div>
@@ -498,7 +537,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             amendedBySources.length > 0 ||
             implementsSource ||
             supersededBySource) && (
-            <div className="space-y-2 mb-5">
+            <div className="space-y-1.5 mb-4">
               {amendsSource && (
                 <LinkedSource id={amendsSource.id} label="Amends:" />
               )}
@@ -517,43 +556,29 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </div>
           )}
 
-          {/* Related source cards */}
+          {/* Related source list — compact reference links */}
           {related.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-0 max-w-3xl">
               {related.map((rel) => {
                 const relTypeStyle = TYPE_STYLES[rel.type];
-                const relRelevanceStyle = RELEVANCE_STYLES[rel.relevance_level];
                 return (
                   <Link
                     key={rel.id}
                     href={`/atlas/sources/${rel.id}`}
-                    className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white hover:shadow-sm transition-all duration-150 group"
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white hover:shadow-sm transition-all duration-150 group"
                   >
                     <span
-                      className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border flex-shrink-0 w-14 text-center ${relTypeStyle.bg} ${relTypeStyle.text}`}
+                      className={`text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${relTypeStyle.bg} ${relTypeStyle.text}`}
                     >
                       {TYPE_LABELS[rel.type]}
                     </span>
 
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
-                        {rel.title_en}
-                      </span>
-                      {rel.official_reference && (
-                        <span className="text-[11px] text-gray-400 font-mono ml-2">
-                          {rel.official_reference}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-[13px] text-gray-800 truncate group-hover:text-emerald-700 transition-colors flex-1 min-w-0">
+                      {rel.title_en}
+                    </span>
 
                     <span className="text-[11px] font-mono text-gray-400 flex-shrink-0">
                       {JURISDICTION_FLAGS[rel.jurisdiction] ?? rel.jurisdiction}
-                    </span>
-
-                    <span
-                      className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${relRelevanceStyle}`}
-                    >
-                      {rel.relevance_level}
                     </span>
                   </Link>
                 );
@@ -565,14 +590,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Notes ─── */}
       {source.notes && source.notes.length > 0 && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Info size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+        <section className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <Info size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Notes
             </h2>
           </div>
-          <div className="bg-gray-50 rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="space-y-2 max-w-3xl">
             {source.notes.map((note, i) => (
               <p
                 key={i}
@@ -588,18 +613,18 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Caelex Integration ─── */}
       {(source.caelex_engine_mapping?.length ||
         source.caelex_data_file_mapping?.length) && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Cpu size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+        <section className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <Cpu size={15} className="text-gray-400" strokeWidth={1.5} />
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
               Caelex Integration
             </h2>
           </div>
-          <div className="bg-gray-50 rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="max-w-2xl space-y-2">
             {source.caelex_engine_mapping &&
               source.caelex_engine_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-24 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     Engines
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -618,7 +643,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.caelex_data_file_mapping &&
               source.caelex_data_file_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-24 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     Data Files
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -635,7 +660,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               )}
 
             <div className="flex items-start gap-4">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-24 flex-shrink-0 pt-0.5">
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                 Verified
               </span>
               <span className="text-[11px] text-gray-500">
@@ -647,7 +672,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       )}
 
       {/* ─── Footer ─── */}
-      <footer className="mt-20 pt-6 border-t border-gray-200">
+      <footer className="mt-12 pt-4 border-t border-gray-200">
         <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
           Last verified: {source.last_verified}. This information is for
           research and reference purposes only. It does not constitute legal
