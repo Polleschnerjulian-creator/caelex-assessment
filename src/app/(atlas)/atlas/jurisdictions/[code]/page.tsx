@@ -277,9 +277,11 @@ function SourceEntry({ source }: { source: LegalSource }) {
 
         <div className="flex-1 min-w-0">
           {/* Title */}
-          <h4 className="text-[14px] font-medium text-gray-900 leading-snug">
-            {source.title_en}
-          </h4>
+          <Link href={`/atlas/sources/${source.id}`} className="block">
+            <h4 className="text-[14px] font-medium text-gray-900 leading-snug hover:text-emerald-700 transition-colors">
+              {source.title_en}
+            </h4>
+          </Link>
 
           {/* Local title */}
           {source.title_local && (

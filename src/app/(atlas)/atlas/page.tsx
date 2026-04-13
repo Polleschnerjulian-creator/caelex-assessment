@@ -355,11 +355,7 @@ export default function CommandCenterPage() {
                 ).map((source) => (
                   <button
                     key={source.id}
-                    onClick={() =>
-                      router.push(
-                        `/atlas/jurisdictions/${source.jurisdiction === "INT" || source.jurisdiction === "EU" ? "DE" : source.jurisdiction}`,
-                      )
-                    }
+                    onClick={() => router.push(`/atlas/sources/${source.id}`)}
                     className="
                       w-full flex items-center gap-4 px-4 py-3
                       text-left rounded-xl
