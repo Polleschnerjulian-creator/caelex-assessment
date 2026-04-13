@@ -487,8 +487,8 @@ export default function CommandCenterPage() {
       )}
 
       {/* ─── Legal Footer ─── */}
-      <footer className="mt-20 pt-8 border-t border-gray-200">
-        <div className="max-w-3xl space-y-4">
+      <footer className="mt-40 pt-8 border-t border-gray-200">
+        <div className="max-w-5xl space-y-4">
           {/* Product attribution */}
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
@@ -496,7 +496,7 @@ export default function CommandCenterPage() {
             </span>
             <span className="text-[10px] text-gray-300">by</span>
             <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
-              Caelex GmbH
+              Caelex
             </span>
           </div>
 
@@ -507,7 +507,7 @@ export default function CommandCenterPage() {
                 No Legal Advice.
               </span>{" "}
               ATLAS is a regulatory information and research tool developed by
-              Caelex GmbH. The information, data, assessments, and comparative
+              Caelex. The information, data, assessments, and comparative
               analyses provided through ATLAS do not constitute legal,
               compliance, tax, or professional advice of any kind. No
               attorney-client, advisory, or fiduciary relationship is created
@@ -536,8 +536,8 @@ export default function CommandCenterPage() {
               <span className="font-semibold text-gray-500">
                 Limitation of Liability.
               </span>{" "}
-              To the maximum extent permitted by applicable law, Caelex GmbH,
-              its directors, employees, and agents shall not be liable for any
+              To the maximum extent permitted by applicable law, Caelex, its
+              directors, employees, and agents shall not be liable for any
               direct, indirect, incidental, consequential, or special damages —
               including but not limited to loss of profits, regulatory
               penalties, fines, business interruption, or reputational harm —
@@ -580,7 +580,7 @@ export default function CommandCenterPage() {
               </span>{" "}
               ATLAS, including its regulatory data structures, compliance
               mappings, cross-reference frameworks, and analytical
-              methodologies, is proprietary to Caelex GmbH. All rights reserved.
+              methodologies, is proprietary to Caelex. All rights reserved.
               Unauthorized reproduction, reverse-engineering, or use of ATLAS
               data to build competing products or services is strictly
               prohibited.
@@ -590,7 +590,7 @@ export default function CommandCenterPage() {
           {/* Bottom line */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
             <span className="text-[9px] text-gray-300">
-              © {new Date().getFullYear()} Caelex GmbH — All rights reserved
+              © {new Date().getFullYear()} Caelex — All rights reserved
             </span>
             <div className="flex items-center gap-4">
               <a
