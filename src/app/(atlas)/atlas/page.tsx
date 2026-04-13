@@ -212,40 +212,43 @@ export default function CommandCenterPage() {
     <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
       {/* ─── Greeting ─── */}
       <div
-        className={`transition-all duration-500 ease-out ${hasResults ? "mb-6" : "mb-10"}`}
+        className={`transition-all duration-700 ease-out ${hasResults ? "mb-4" : "mb-8"}`}
       >
-        <h1
-          className={`font-light text-gray-400 tracking-tight transition-all duration-500 ${hasResults ? "text-[20px]" : "text-[28px]"}`}
+        <p
+          className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[16px]" : "text-[22px]"}`}
         >
           {greeting}
-        </h1>
+        </p>
       </div>
 
-      {/* ─── Search Input (open line, no box) ─── */}
-      <div className="relative mb-8">
+      {/* ─── Search Input ─── */}
+      <div
+        className={`relative transition-all duration-700 ease-out ${hasResults ? "mb-10" : "mb-12"}`}
+      >
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search jurisdictions, laws, authorities, standards..."
+          placeholder="Search laws, treaties, authorities, standards..."
+          spellCheck={false}
+          autoComplete="off"
           className={`
-            w-full bg-transparent border-0 border-b-2 border-gray-300
-            focus:border-gray-900 focus:outline-none
+            w-full bg-transparent
+            border-0 border-b border-gray-200
+            focus:border-gray-400 focus:outline-none
             text-gray-900 placeholder:text-gray-300
-            caret-emerald-500
-            transition-all duration-300
-            ${hasResults ? "text-[28px] pb-3" : "text-[40px] lg:text-[48px] pb-4"}
+            font-light tracking-[-0.02em]
+            transition-all duration-500 ease-out
+            ${hasResults ? "text-[24px] lg:text-[28px] pb-3" : "text-[32px] lg:text-[40px] pb-4"}
           `}
-          style={{
-            caretColor: "#10B981",
-          }}
+          style={{ caretColor: "#10B981" }}
         />
 
-        {/* Subtle hint */}
+        {/* Keyboard hint */}
         {!query && (
-          <div className="absolute right-0 bottom-5 flex items-center gap-2">
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-gray-400 bg-gray-100 rounded border border-gray-200">
+          <div className="absolute right-0 bottom-5 flex items-center gap-1.5 opacity-60">
+            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono text-gray-400 bg-gray-100/80 rounded border border-gray-200/80">
               ⌘K
             </kbd>
           </div>
