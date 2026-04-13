@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
+import LiveFeed from "@/components/atlas/LiveFeed";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   LEGAL_SOURCES_DE,
@@ -472,6 +473,24 @@ export default function CommandCenterPage() {
               </div>
             </section>
           )}
+        </div>
+      )}
+
+      {/* ─── Live Regulatory Feed ─── */}
+      {!hasResults && (
+        <div className="mt-16">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h2 className="text-[13px] font-semibold text-gray-900 tracking-wide">
+                Live Regulatory Feed
+              </h2>
+            </div>
+            <span className="text-[11px] text-gray-400">
+              Auto-updated daily
+            </span>
+          </div>
+          <LiveFeed />
         </div>
       )}
 
