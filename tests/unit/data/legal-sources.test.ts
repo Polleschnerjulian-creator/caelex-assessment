@@ -18,6 +18,8 @@ import {
   AUTHORITIES_FR,
   LEGAL_SOURCES_UK,
   AUTHORITIES_UK,
+  LEGAL_SOURCES_IT,
+  AUTHORITIES_IT,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -695,6 +697,227 @@ describe("Legal Sources — UK authority accuracy", () => {
 
   it("every UK authority has a valid website URL", () => {
     for (const a of AUTHORITIES_UK) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Italian dataset sanity checks ─────────────────────────────────
+describe("Legal Sources — IT dataset sanity", () => {
+  it("IT has at least 30 legal sources", () => {
+    expect(LEGAL_SOURCES_IT.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it("IT has exactly 14 authorities", () => {
+    expect(AUTHORITIES_IT).toHaveLength(14);
+  });
+
+  it("every IT legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_IT) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("IT legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_IT) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("IT authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_IT) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every IT source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_IT) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every IT source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_IT) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every IT source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_IT) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all IT competent_authorities IDs map to existing IT authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_IT.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_IT) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all IT related_sources IDs map to existing IT legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_IT.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_IT) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Italian regulatory accuracy ───────────────────────────────────
+describe("Legal Sources — Italian regulatory accuracy", () => {
+  it("Legge 89/2025 is marked critical and in_force", () => {
+    const legge89 = getLegalSourceById("IT-LEGGE-89-2025")!;
+    expect(legge89).toBeDefined();
+    expect(legge89.relevance_level).toBe("critical");
+    expect(legge89.status).toBe("in_force");
+  });
+
+  it("MIMIT is in authorities (not MISE — audit finding)", () => {
+    const mimit = getAuthorityById("IT-MIMIT")!;
+    expect(mimit).toBeDefined();
+    expect(mimit.abbreviation).toBe("MIMIT");
+    expect(mimit.name_local).toContain("Made in Italy");
+  });
+
+  it("insurance cap EUR 100M referenced in key_provisions", () => {
+    const legge89 = getLegalSourceById("IT-LEGGE-89-2025")!;
+    expect(legge89).toBeDefined();
+    const allProvisionText = legge89.key_provisions
+      .map((p) => `${p.summary} ${p.complianceImplication ?? ""}`)
+      .join(" ");
+    expect(allProvisionText).toContain("100M");
+  });
+
+  it("implementing decrees marked as planned (Art. 13)", () => {
+    const decreti = getLegalSourceById("IT-DECRETI-ATTUATIVI-89-2025")!;
+    expect(decreti).toBeDefined();
+    expect(decreti.status).toBe("planned");
+    const allText = decreti.key_provisions
+      .map((p) => `${p.section} ${p.title} ${p.summary}`)
+      .join(" ");
+    expect(allText).toContain("Art. 13");
+  });
+
+  it("Moon Agreement marked not_ratified for IT", () => {
+    const moon = getLegalSourceById("IT-INT-MOON-1979")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("not_ratified");
+    expect(moon.relevance_level).toBe("low");
+  });
+
+  it("ASI designated as technical regulatory authority", () => {
+    const asi = getAuthorityById("IT-ASI")!;
+    expect(asi).toBeDefined();
+    expect(asi.space_mandate).toContain("Technical regulatory authority");
+    expect(asi.applicable_areas).toContain("licensing");
+    expect(asi.applicable_areas).toContain("registration");
+  });
+
+  it("NIS2 transposition correctly references EU-NIS2-2022", () => {
+    const nis2 = getLegalSourceById("IT-NIS2-DLGS-138-2024")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+    expect(nis2.relevance_level).toBe("critical");
+  });
+
+  it("criminal sanctions 3-6 years in Legge 89/2025", () => {
+    const legge89 = getLegalSourceById("IT-LEGGE-89-2025")!;
+    expect(legge89).toBeDefined();
+    const allProvisionText = legge89.key_provisions
+      .map((p) => `${p.summary} ${p.complianceImplication ?? ""}`)
+      .join(" ");
+    expect(allProvisionText).toContain("3-6 year");
+  });
+
+  it("no government backstop noted in Legge 89/2025", () => {
+    const legge89 = getLegalSourceById("IT-LEGGE-89-2025")!;
+    expect(legge89).toBeDefined();
+    const allNotes = legge89.notes!.join(" ");
+    expect(allNotes).toContain("NO government backstop");
+  });
+});
+
+// ─── IT lookup functions ───────────────────────────────────────────
+describe("Legal Sources — IT lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns IT sources", () => {
+    const sources = getLegalSourcesByJurisdiction("IT");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_IT.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns IT authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("IT");
+    expect(auths).toHaveLength(14);
+  });
+
+  it("getLegalSourceStats includes IT", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["IT"]).toBeDefined();
+    expect(stats["IT"]!.total).toBeGreaterThanOrEqual(30);
+  });
+
+  it("getAvailableJurisdictions includes IT", () => {
+    expect(getAvailableJurisdictions()).toContain("IT");
+  });
+
+  it("getLegalSourcesByComplianceArea returns licensing sources for IT", () => {
+    const licensing = getLegalSourcesByComplianceArea("IT", "licensing");
+    expect(licensing.length).toBeGreaterThan(0);
+    for (const s of licensing) {
+      expect(s.compliance_areas).toContain("licensing");
+    }
+  });
+});
+
+// ─── IT authority accuracy ─────────────────────────────────────────
+describe("Legal Sources — IT authority accuracy", () => {
+  it("ASI is the technical regulatory authority", () => {
+    const asi = getAuthorityById("IT-ASI")!;
+    expect(asi.space_mandate).toContain("Technical regulatory authority");
+    expect(asi.applicable_areas).toContain("licensing");
+    expect(asi.applicable_areas).toContain("registration");
+  });
+
+  it("ACN handles cybersecurity and NIS2", () => {
+    const acn = getAuthorityById("IT-ACN")!;
+    expect(acn.space_mandate).toContain("NIS2");
+    expect(acn.applicable_areas).toContain("cybersecurity");
+  });
+
+  it("AGCOM handles frequency spectrum", () => {
+    const agcom = getAuthorityById("IT-AGCOM")!;
+    expect(agcom.space_mandate).toContain("frequency");
+    expect(agcom.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("UAMA handles export control", () => {
+    const uama = getAuthorityById("IT-MAECI-UAMA")!;
+    expect(uama.space_mandate).toContain("Export control");
+    expect(uama.applicable_areas).toContain("export_control");
+  });
+
+  it("every IT authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_IT) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

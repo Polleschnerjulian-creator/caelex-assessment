@@ -35,6 +35,7 @@ export type {
 import { LEGAL_SOURCES_DE, AUTHORITIES_DE } from "./sources/de";
 import { LEGAL_SOURCES_FR, AUTHORITIES_FR } from "./sources/fr";
 import { LEGAL_SOURCES_UK, AUTHORITIES_UK } from "./sources/uk";
+import { LEGAL_SOURCES_IT, AUTHORITIES_IT } from "./sources/it";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -42,12 +43,14 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_DE,
   ...LEGAL_SOURCES_FR,
   ...LEGAL_SOURCES_UK,
+  ...LEGAL_SOURCES_IT,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_DE,
   ...AUTHORITIES_FR,
   ...AUTHORITIES_UK,
+  ...AUTHORITIES_IT,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -73,6 +76,14 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       jurisdiction: "UK",
       sources: LEGAL_SOURCES_UK,
       authorities: AUTHORITIES_UK,
+    },
+  ],
+  [
+    "IT",
+    {
+      jurisdiction: "IT",
+      sources: LEGAL_SOURCES_IT,
+      authorities: AUTHORITIES_IT,
     },
   ],
 ]);
@@ -176,3 +187,4 @@ export function getAvailableJurisdictions(): string[] {
 export { LEGAL_SOURCES_DE, AUTHORITIES_DE };
 export { LEGAL_SOURCES_FR, AUTHORITIES_FR };
 export { LEGAL_SOURCES_UK, AUTHORITIES_UK };
+export { LEGAL_SOURCES_IT, AUTHORITIES_IT };
