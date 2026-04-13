@@ -476,20 +476,12 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* ─── Live Regulatory Feed ─── */}
+      {/* ─── Regulatory Overview ─── */}
       {!hasResults && (
-        <div className="mt-16">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-[13px] font-semibold text-gray-900 tracking-wide">
-                Live Regulatory Feed
-              </h2>
-            </div>
-            <span className="text-[11px] text-gray-400">
-              Auto-updated daily
-            </span>
-          </div>
+        <div className="mt-14">
+          <h2 className="text-[11px] font-medium text-gray-400 tracking-[0.15em] uppercase mb-4">
+            Tracked jurisdictions
+          </h2>
           <LiveFeed />
         </div>
       )}
