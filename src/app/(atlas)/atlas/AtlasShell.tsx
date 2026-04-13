@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Globe,
@@ -14,14 +15,11 @@ import {
   Key,
   Settings,
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  Hexagon,
 } from "lucide-react";
 
-// ─── Sidebar navigation items ───
+// ─── Navigation items (Settings separated to bottom) ───
 
-const NAV_ITEMS = [
+const MAIN_NAV = [
   { label: "Command Center", href: "/atlas", icon: Globe, exact: true },
   { label: "Comparator", href: "/atlas/comparator", icon: BarChart3 },
   { label: "Jurisdictions", href: "/atlas/jurisdictions", icon: Map },
@@ -30,7 +28,6 @@ const NAV_ITEMS = [
   { label: "Sustainability", href: "/atlas/sustainability", icon: Leaf },
   { label: "Alerts", href: "/atlas/alerts", icon: Bell },
   { label: "API", href: "/atlas/api-access", icon: Key },
-  { label: "Settings", href: "/atlas/settings", icon: Settings },
 ] as const;
 
 // ─── AtlasShell ───
@@ -41,20 +38,12 @@ export default function AtlasShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("atlas-sidebar-collapsed");
-    if (stored === "false") setCollapsed(false);
     setMounted(true);
   }, []);
-
-  const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    localStorage.setItem("atlas-sidebar-collapsed", String(next));
-  };
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -66,167 +55,150 @@ export default function AtlasShell({
       className="landing-light flex h-screen w-screen overflow-hidden bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
-      {/* ─── Sidebar ─── */}
-      <aside
+      {/* ─── Dark Icon Strip (always visible) ─── */}
+      <div
         className={`
-          relative z-30 flex flex-col border-r border-gray-200
-          bg-white/80 backdrop-blur-xl
-          transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${collapsed ? "w-[56px]" : "w-[240px]"}
+          relative z-40 flex flex-col items-center
+          m-2 rounded-2xl bg-[#1a1a1a]
+          w-[52px] flex-shrink-0
+          transition-opacity duration-300
           ${!mounted ? "opacity-0" : "opacity-100"}
         `}
-        style={{ willChange: "width" }}
       >
-        {/* ─ Logo ─ */}
-        <div
-          className={`
-            flex items-center border-b border-gray-200 px-3
-            ${collapsed ? "h-[56px] justify-center" : "h-[56px] gap-3"}
-          `}
-        >
-          <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center">
-            <Hexagon className="h-8 w-8 text-emerald-500" strokeWidth={1.5} />
-            <span className="absolute text-[9px] font-bold tracking-wider text-emerald-600">
-              A
-            </span>
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-[13px] font-semibold tracking-[0.2em] text-gray-900">
-                ATLAS
-              </span>
-              <span className="text-[9px] font-medium tracking-widest text-emerald-600 uppercase">
-                Space Law Intel
-              </span>
-            </div>
-          )}
+        {/* Logo */}
+        <div className="flex items-center justify-center h-14 w-full">
+          <Image
+            src="/caelex-logo-icon.svg"
+            alt="Caelex"
+            width={24}
+            height={24}
+            className="opacity-90"
+            onError={(e) => {
+              // Fallback if logo doesn't exist
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+              target.parentElement!.innerHTML =
+                '<span class="text-[11px] font-bold tracking-wider text-white/80">C</span>';
+            }}
+          />
         </div>
 
-        {/* ─ Navigation ─ */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-1.5">
-          <ul className="flex flex-col gap-0.5">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(
-                item.href,
-                "exact" in item ? item.exact : undefined,
-              );
+        {/* Main nav icons */}
+        <nav className="flex-1 flex flex-col items-center gap-0.5 py-1 w-full px-1.5">
+          {MAIN_NAV.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(
+              item.href,
+              "exact" in item ? item.exact : undefined,
+            );
 
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    className={`
-                      group relative flex items-center rounded-lg
-                      transition-all duration-200
-                      ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
-                      ${
-                        active
-                          ? "bg-emerald-50 text-emerald-700 border-l-2 border-emerald-500"
-                          : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                      }
-                    `}
-                  >
-                    <Icon
-                      className={`flex-shrink-0 ${collapsed ? "h-[18px] w-[18px]" : "h-4 w-4"}`}
-                      strokeWidth={active ? 2 : 1.5}
-                    />
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={item.label}
+                className={`
+                  group relative flex items-center justify-center
+                  h-9 w-9 rounded-xl transition-all duration-200
+                  ${
+                    active
+                      ? "bg-white/15 text-white"
+                      : "text-white/40 hover:text-white/80 hover:bg-white/8"
+                  }
+                `}
+              >
+                <Icon
+                  className="h-[17px] w-[17px]"
+                  strokeWidth={active ? 2 : 1.5}
+                />
 
-                    {!collapsed && (
-                      <span className="truncate text-[12px] font-medium tracking-wide">
-                        {item.label}
-                      </span>
-                    )}
-
-                    {/* Tooltip for collapsed mode */}
-                    {collapsed && (
-                      <span
-                        className="
-                          pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
-                          whitespace-nowrap rounded-md bg-white px-2.5 py-1.5
-                          text-[11px] font-medium text-gray-700 opacity-0
-                          shadow-lg border border-gray-200
-                          transition-opacity duration-150
-                          group-hover:opacity-100
-                        "
-                      >
-                        {item.label}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                {/* Tooltip */}
+                <span
+                  className="
+                    pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                    whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5
+                    text-[11px] font-medium text-white/90 opacity-0
+                    shadow-xl border border-white/10
+                    transition-opacity duration-150
+                    group-hover:opacity-100
+                  "
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* ─ Bottom section ─ */}
-        <div className="flex flex-col border-t border-gray-200 py-2 px-1.5 gap-0.5">
-          {/* Back to Caelex */}
+        {/* Bottom icons: Back + Settings */}
+        <div className="flex flex-col items-center gap-0.5 pb-3 px-1.5">
           <Link
             href="/dashboard"
-            title={collapsed ? "Back to Caelex" : undefined}
-            className={`
-              group relative flex items-center rounded-lg text-gray-400
-              hover:text-gray-700 hover:bg-gray-50
+            title="Back to Caelex"
+            className="
+              group relative flex items-center justify-center
+              h-9 w-9 rounded-xl text-white/30
+              hover:text-white/70 hover:bg-white/8
               transition-all duration-200
-              ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
-            `}
+            "
           >
-            <ArrowLeft
-              className={`flex-shrink-0 ${collapsed ? "h-[18px] w-[18px]" : "h-4 w-4"}`}
-              strokeWidth={1.5}
-            />
-            {!collapsed && (
-              <span className="truncate text-[12px] font-medium tracking-wide">
-                Back to Caelex
-              </span>
-            )}
-            {collapsed && (
-              <span
-                className="
-                  pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
-                  whitespace-nowrap rounded-md bg-white px-2.5 py-1.5
-                  text-[11px] font-medium text-gray-700 opacity-0
-                  shadow-lg border border-gray-200
-                  transition-opacity duration-150
-                  group-hover:opacity-100
-                "
-              >
-                Back to Caelex
-              </span>
-            )}
+            <ArrowLeft className="h-[17px] w-[17px]" strokeWidth={1.5} />
+            <span
+              className="
+                pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5
+                text-[11px] font-medium text-white/90 opacity-0
+                shadow-xl border border-white/10
+                transition-opacity duration-150
+                group-hover:opacity-100
+              "
+            >
+              Back to Caelex
+            </span>
           </Link>
 
-          {/* Collapse toggle */}
-          <button
-            onClick={toggleCollapsed}
+          <Link
+            href="/atlas/settings"
+            title="Settings"
             className={`
-              flex items-center rounded-lg text-gray-400 hover:text-gray-700
-              hover:bg-gray-50 transition-all duration-200
-              ${collapsed ? "h-10 w-10 justify-center mx-auto" : "h-9 gap-3 px-3"}
+              group relative flex items-center justify-center
+              h-9 w-9 rounded-xl transition-all duration-200
+              ${
+                isActive("/atlas/settings")
+                  ? "bg-white/15 text-white"
+                  : "text-white/30 hover:text-white/70 hover:bg-white/8"
+              }
             `}
           >
-            {collapsed ? (
-              <ChevronRight
-                className="h-4 w-4 flex-shrink-0"
-                strokeWidth={1.5}
-              />
-            ) : (
-              <ChevronLeft
-                className="h-4 w-4 flex-shrink-0"
-                strokeWidth={1.5}
-              />
-            )}
-            {!collapsed && (
-              <span className="truncate text-[12px] font-medium tracking-wide">
-                Collapse
-              </span>
-            )}
-          </button>
+            <Settings className="h-[17px] w-[17px]" strokeWidth={1.5} />
+            <span
+              className="
+                pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5
+                text-[11px] font-medium text-white/90 opacity-0
+                shadow-xl border border-white/10
+                transition-opacity duration-150
+                group-hover:opacity-100
+              "
+            >
+              Settings
+            </span>
+          </Link>
         </div>
-      </aside>
+      </div>
+
+      {/* ─── Expanded Panel (white, slides out when hovered/toggled) ─── */}
+      {expanded && (
+        <aside
+          className="
+            relative z-30 w-[220px] flex-shrink-0
+            bg-white border-r border-gray-200 shadow-sm
+            animate-in slide-in-from-left-2 duration-200
+          "
+        >
+          {/* Panel content would go here for future expansion */}
+        </aside>
+      )}
 
       {/* ─── Main Content ─── */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
