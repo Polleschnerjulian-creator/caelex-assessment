@@ -8,6 +8,7 @@ import Footer from "@/components/landing/Footer";
 const EXCLUDED_ROUTES = [
   "/dashboard",
   "/assure",
+  "/atlas",
   "/login",
   "/signup",
   "/assessment",
