@@ -106,7 +106,7 @@ export default function AtlasShell({
                 <span className="text-[13px] font-semibold tracking-[0.12em] text-white/90 whitespace-nowrap">
                   ATLAS
                 </span>
-                <span className="text-[8px] font-medium tracking-[0.2em] text-white/40 uppercase whitespace-nowrap">
+                <span className="text-[8px] font-medium tracking-[0.2em] text-white/70 uppercase whitespace-nowrap">
                   Regulatory Intelligence
                 </span>
               </div>
@@ -142,7 +142,7 @@ export default function AtlasShell({
                       group relative flex items-center justify-center
                       h-8 w-8 rounded-lg mb-0.5
                       transition-all duration-150
-                      ${active ? "bg-white/[0.12] text-white" : "text-white/35 hover:text-white/80 hover:bg-white/[0.06]"}
+                      ${active ? "bg-white/[0.12] text-white" : "text-white/70 hover:text-white/80 hover:bg-white/[0.06]"}
                     `}
                   >
                     <Icon
@@ -172,7 +172,7 @@ export default function AtlasShell({
                       className={`
                         flex items-center gap-3 h-9 px-3 rounded-xl whitespace-nowrap
                         transition-all duration-150
-                        ${active ? "bg-white/[0.12] text-white font-medium" : "text-white/40 hover:text-white/80 hover:bg-white/[0.06]"}
+                        ${active ? "bg-white/[0.12] text-white font-medium" : "text-white/70 hover:text-white/80 hover:bg-white/[0.06]"}
                       `}
                     >
                       <Icon
@@ -203,7 +203,7 @@ export default function AtlasShell({
               <Link
                 href="/dashboard"
                 title="Back to Caelex"
-                className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/25 hover:text-white/60 transition-all duration-150"
+                className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/60 hover:text-white/60 transition-all duration-150"
               >
                 <ArrowLeft className="h-[15px] w-[15px]" strokeWidth={1.5} />
               </Link>
@@ -211,8 +211,12 @@ export default function AtlasShell({
                 href="/atlas/settings"
                 title="Settings"
                 className={`
-                  flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] transition-all duration-150
-                  ${isActive("/atlas/settings") ? "text-white" : "text-white/25 hover:text-white/60"}
+                  flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-150
+                  ${
+                    isActive("/atlas/settings")
+                      ? "bg-white text-[#1a1a1a]"
+                      : "bg-[#1a1a1a] text-white/70 hover:text-white hover:bg-[#2a2a2a]"
+                  }
                 `}
               >
                 <Settings className="h-[15px] w-[15px]" strokeWidth={1.5} />
@@ -223,7 +227,7 @@ export default function AtlasShell({
             <>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-3 h-9 px-3 rounded-xl text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-all duration-150 whitespace-nowrap"
+                className="flex items-center gap-3 h-9 px-3 rounded-xl text-white/60 hover:text-white/70 hover:bg-white/[0.06] transition-all duration-150 whitespace-nowrap"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
                 <span className="text-[12px] tracking-wide">
@@ -234,7 +238,7 @@ export default function AtlasShell({
                 href="/atlas/settings"
                 className={`
                   flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap
-                  ${isActive("/atlas/settings") ? "bg-white/[0.12] text-white" : "text-white/30 hover:text-white/70 hover:bg-white/[0.06]"}
+                  ${isActive("/atlas/settings") ? "bg-white/[0.12] text-white" : "text-white/60 hover:text-white/70 hover:bg-white/[0.06]"}
                 `}
               >
                 <Settings className="h-4 w-4" strokeWidth={1.5} />
