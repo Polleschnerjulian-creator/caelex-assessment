@@ -15,6 +15,7 @@ import {
   Info,
   Cpu,
 } from "lucide-react";
+import SourceNotes from "@/components/atlas/SourceNotes";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -694,6 +695,9 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           </div>
         </section>
       )}
+
+      {/* ─── Private Annotations ─── */}
+      <SourceNotes sourceId={source.id} />
 
       {/* ─── Footer ─── */}
       <footer className="mt-12 pt-4 border-t border-gray-200">

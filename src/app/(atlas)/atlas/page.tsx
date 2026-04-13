@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import LiveFeed from "@/components/atlas/LiveFeed";
+import LegalNetwork from "@/components/atlas/LegalNetwork";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   LEGAL_SOURCES_DE,
@@ -497,6 +498,16 @@ export default function CommandCenterPage() {
             {t("atlas.tracked_jurisdictions")}
           </h2>
           <LiveFeed />
+        </div>
+      )}
+
+      {/* ─── Legal Network ─── */}
+      {!hasResults && (
+        <div className="mt-14">
+          <h2 className="text-[11px] font-medium text-gray-400 tracking-[0.15em] uppercase mb-4">
+            {t("atlas.legal_network")}
+          </h2>
+          <LegalNetwork />
         </div>
       )}
 

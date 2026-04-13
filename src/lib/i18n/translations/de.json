@@ -609,6 +609,12 @@
     "export_jurisdictions": "Jurisdiktionen",
     "export_dimension": "Dimension",
     "export_confidential": "Vertraulich \u2014 Nur f\u00fcr interne Recherchezwecke",
-    "export_disclaimer": "Dieses Dokument wurde von ATLAS (Caelex) ausschlie\u00dflich f\u00fcr Recherche- und interne Analysezwecke erstellt. Es stellt keine Rechtsberatung, kein Rechtsgutachten und keinen Ersatz f\u00fcr qualifizierten rechtlichen Beistand dar. Regulatorische Daten unterliegen \u00c4nderungen und sollten vor einer Berufung unabh\u00e4ngig \u00fcberpr\u00fcft werden."
+    "export_disclaimer": "Dieses Dokument wurde von ATLAS (Caelex) ausschlie\u00dflich f\u00fcr Recherche- und interne Analysezwecke erstellt. Es stellt keine Rechtsberatung, kein Rechtsgutachten und keinen Ersatz f\u00fcr qualifizierten rechtlichen Beistand dar. Regulatorische Daten unterliegen \u00c4nderungen und sollten vor einer Berufung unabh\u00e4ngig \u00fcberpr\u00fcft werden.",
+    "annotations": "Notizen",
+    "annotations_add": "Notiz hinzuf\u00fcgen",
+    "annotations_empty": "Noch keine Notizen. F\u00fcgen Sie eine Notiz hinzu, um wichtige Punkte zu dieser Quelle festzuhalten.",
+    "annotations_delete": "L\u00f6schen",
+    "annotations_placeholder": "Notiz schreiben...",
+    "legal_network": "Rechtsnetzwerk"
   }
 }
