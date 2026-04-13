@@ -30,6 +30,16 @@ export type {
   KeyProvision,
 } from "./types";
 
+import {
+  LEGAL_SOURCE_TRANSLATIONS_DE,
+  AUTHORITY_TRANSLATIONS_DE,
+  type TranslatedProvision,
+  type TranslatedSource,
+  type TranslatedAuthority,
+} from "./translations-de";
+
+export type { TranslatedProvision, TranslatedSource, TranslatedAuthority };
+
 // ─── Import jurisdiction data ────────────────────────────────────────
 
 import { LEGAL_SOURCES_DE, AUTHORITIES_DE } from "./sources/de";
@@ -182,6 +192,79 @@ export function getLegalSourceStats(): Record<
 
 export function getAvailableJurisdictions(): string[] {
   return Array.from(JURISDICTION_DATA.keys());
+}
+
+// ─── Translation helpers ────────────────────────────────────────────
+
+/**
+ * Returns translated content for a legal source based on the active language.
+ * When language is "en", returns the original English content.
+ * When language is "de", looks up German translation with English fallback.
+ */
+export function getTranslatedSource(
+  source: LegalSource,
+  language: string,
+): {
+  title: string;
+  scopeDescription?: string;
+  getProvisionTranslation: (section: string) => TranslatedProvision | null;
+} {
+  if (language !== "de") {
+    return {
+      title: source.title_en,
+      scopeDescription: source.scope_description,
+      getProvisionTranslation: (_section: string) => null,
+    };
+  }
+
+  const translated = LEGAL_SOURCE_TRANSLATIONS_DE.get(source.id);
+  if (!translated) {
+    return {
+      title: source.title_local ?? source.title_en,
+      scopeDescription: source.scope_description,
+      getProvisionTranslation: (_section: string) => null,
+    };
+  }
+
+  return {
+    title: translated.title,
+    scopeDescription: translated.scopeDescription ?? source.scope_description,
+    getProvisionTranslation: (section: string) =>
+      translated.provisions[section] ?? null,
+  };
+}
+
+/**
+ * Returns translated content for an authority based on the active language.
+ * When language is "en", returns the original English content.
+ * When language is "de", looks up German translation with English fallback.
+ */
+export function getTranslatedAuthority(
+  authority: Authority,
+  language: string,
+): {
+  name: string;
+  mandate: string;
+} {
+  if (language !== "de") {
+    return {
+      name: authority.name_en,
+      mandate: authority.space_mandate,
+    };
+  }
+
+  const translated = AUTHORITY_TRANSLATIONS_DE.get(authority.id);
+  if (!translated) {
+    return {
+      name: authority.name_local ?? authority.name_en,
+      mandate: authority.space_mandate,
+    };
+  }
+
+  return {
+    name: translated.name,
+    mandate: translated.mandate,
+  };
 }
 
 export { LEGAL_SOURCES_DE, AUTHORITIES_DE };

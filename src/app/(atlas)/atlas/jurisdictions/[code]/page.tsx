@@ -15,6 +15,8 @@ import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   getLegalSourcesByJurisdiction,
   getAuthoritiesByJurisdiction,
+  getTranslatedSource,
+  getTranslatedAuthority,
 } from "@/data/legal-sources";
 import type {
   LegalSource,
@@ -25,6 +27,7 @@ import type {
   Authority,
   ComplianceArea,
 } from "@/data/legal-sources";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
@@ -212,10 +215,19 @@ const SOURCE_GROUPS: SourceGroup[] = [
 
 // ─── Expandable provisions component ────────────────────────────────
 
-function KeyProvisionsToggle({ provisions }: { provisions: KeyProvision[] }) {
+function KeyProvisionsToggle({
+  provisions,
+  source,
+}: {
+  provisions: KeyProvision[];
+  source: LegalSource;
+}) {
   const [open, setOpen] = useState(false);
+  const { language } = useLanguage();
 
   if (provisions.length === 0) return null;
+
+  const translatedSource = getTranslatedSource(source, language);
 
   return (
     <div className="mt-2">
@@ -228,30 +240,35 @@ function KeyProvisionsToggle({ provisions }: { provisions: KeyProvision[] }) {
           strokeWidth={1.5}
           className={`transition-transform duration-200 ${open ? "rotate-0" : "-rotate-90"}`}
         />
-        {provisions.length} key provision{provisions.length !== 1 ? "s" : ""}
+        {provisions.length}{" "}
+        {language === "de" ? "Schlüsselbestimmung" : "key provision"}
+        {provisions.length !== 1 ? (language === "de" ? "en" : "s") : ""}
       </button>
       {open && (
         <div className="mt-2 ml-4 space-y-2">
-          {provisions.map((p, i) => (
-            <div key={i} className="border-l-2 border-gray-200 pl-3">
-              <div className="flex items-baseline gap-2">
-                <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">
-                  {p.section}
-                </span>
-                <span className="text-[12px] font-medium text-gray-700">
-                  {p.title}
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">
-                {p.summary}
-              </p>
-              {p.complianceImplication && (
-                <p className="text-[10px] text-amber-600 mt-1">
-                  {p.complianceImplication}
+          {provisions.map((p, i) => {
+            const tp = translatedSource.getProvisionTranslation(p.section);
+            return (
+              <div key={i} className="border-l-2 border-gray-200 pl-3">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">
+                    {p.section}
+                  </span>
+                  <span className="text-[12px] font-medium text-gray-700">
+                    {tp?.title ?? p.title}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">
+                  {tp?.summary ?? p.summary}
                 </p>
-              )}
-            </div>
-          ))}
+                {(tp?.complianceImplication ?? p.complianceImplication) && (
+                  <p className="text-[10px] text-amber-600 mt-1">
+                    {tp?.complianceImplication ?? p.complianceImplication}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -261,9 +278,11 @@ function KeyProvisionsToggle({ provisions }: { provisions: KeyProvision[] }) {
 // ─── Single source entry ────────────────────────────────────────────
 
 function SourceEntry({ source }: { source: LegalSource }) {
+  const { language } = useLanguage();
   const typeStyle = TYPE_STYLES[source.type];
   const statusStyle = STATUS_STYLES[source.status];
   const relevanceStyle = RELEVANCE_STYLES[source.relevance_level];
+  const translated = getTranslatedSource(source, language);
 
   return (
     <div className="py-4 group">
@@ -279,14 +298,19 @@ function SourceEntry({ source }: { source: LegalSource }) {
           {/* Title */}
           <Link href={`/atlas/sources/${source.id}`} className="block">
             <h4 className="text-[14px] font-medium text-gray-900 leading-snug hover:text-emerald-700 transition-colors">
-              {source.title_en}
+              {translated.title}
             </h4>
           </Link>
 
-          {/* Local title */}
-          {source.title_local && (
+          {/* Secondary title */}
+          {language === "en" && source.title_local && (
             <p className="text-[12px] text-gray-400 mt-0.5">
               {source.title_local}
+            </p>
+          )}
+          {language !== "en" && source.title_en !== translated.title && (
+            <p className="text-[12px] text-gray-400 mt-0.5">
+              {source.title_en}
             </p>
           )}
 
@@ -328,7 +352,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
           {/* Scope description */}
           {source.scope_description && (
             <p className="text-[11px] text-gray-500 leading-relaxed mt-2">
-              {source.scope_description}
+              {translated.scopeDescription ?? source.scope_description}
             </p>
           )}
 
@@ -350,7 +374,10 @@ function SourceEntry({ source }: { source: LegalSource }) {
           )}
 
           {/* Key provisions */}
-          <KeyProvisionsToggle provisions={source.key_provisions} />
+          <KeyProvisionsToggle
+            provisions={source.key_provisions}
+            source={source}
+          />
         </div>
       </div>
     </div>
@@ -360,6 +387,8 @@ function SourceEntry({ source }: { source: LegalSource }) {
 // ─── Authority card ─────────────────────────────────────────────────
 
 function AuthorityCard({ authority }: { authority: Authority }) {
+  const { language } = useLanguage();
+  const translated = getTranslatedAuthority(authority, language);
   return (
     <div className="py-5 px-5 rounded-xl bg-white border border-gray-100">
       <div className="flex items-start justify-between gap-3">
@@ -368,11 +397,16 @@ function AuthorityCard({ authority }: { authority: Authority }) {
             {authority.abbreviation}
           </span>
           <h4 className="text-[13px] font-medium text-gray-700 mt-1">
-            {authority.name_en}
+            {translated.name}
           </h4>
-          {authority.name_local !== authority.name_en && (
+          {language === "en" && authority.name_local !== authority.name_en && (
             <p className="text-[11px] text-gray-400 mt-0.5">
               {authority.name_local}
+            </p>
+          )}
+          {language !== "en" && authority.name_en !== translated.name && (
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              {authority.name_en}
             </p>
           )}
         </div>
@@ -389,7 +423,7 @@ function AuthorityCard({ authority }: { authority: Authority }) {
       </div>
 
       <p className="text-[11px] text-gray-500 leading-relaxed mt-3">
-        {authority.space_mandate}
+        {translated.mandate}
       </p>
 
       {authority.applicable_areas.length > 0 && (

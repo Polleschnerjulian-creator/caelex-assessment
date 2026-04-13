@@ -15,6 +15,8 @@ import {
   AUTHORITIES_FR,
   AUTHORITIES_UK,
   AUTHORITIES_IT,
+  getTranslatedSource,
+  getTranslatedAuthority,
 } from "@/data/legal-sources";
 import type {
   LegalSource,
@@ -181,7 +183,7 @@ function performSearch(query: string): SearchResults | null {
 
 export default function CommandCenterPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
@@ -381,7 +383,7 @@ export default function CommandCenterPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-[14px] font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
-                          {source.title_en}
+                          {getTranslatedSource(source, language).title}
                         </span>
                       </div>
                       {source.official_reference && (
@@ -462,11 +464,18 @@ export default function CommandCenterPage() {
 
                     <div className="flex-1 min-w-0">
                       <span className="text-[14px] font-medium text-gray-900 group-hover:text-emerald-700 transition-colors">
-                        {auth.name_en}
+                        {getTranslatedAuthority(auth, language).name}
                       </span>
                       <p className="text-[11px] text-gray-400 truncate mt-0.5">
-                        {auth.space_mandate.slice(0, 100)}
-                        {auth.space_mandate.length > 100 ? "..." : ""}
+                        {(() => {
+                          const m = getTranslatedAuthority(
+                            auth,
+                            language,
+                          ).mandate;
+                          return (
+                            m.slice(0, 100) + (m.length > 100 ? "..." : "")
+                          );
+                        })()}
                       </p>
                     </div>
 

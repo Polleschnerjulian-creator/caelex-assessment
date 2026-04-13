@@ -19,6 +19,8 @@ import {
   getLegalSourceById,
   getAuthorityById,
   getRelatedSources,
+  getTranslatedSource,
+  getTranslatedAuthority,
 } from "@/data/legal-sources";
 import type {
   LegalSource,
@@ -28,6 +30,7 @@ import type {
   Authority,
   ComplianceArea,
 } from "@/data/legal-sources";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Style maps ─────────────────────────────────────────────────────
 
@@ -197,6 +200,7 @@ interface SourceDetailPageProps {
 export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
+  const { language } = useLanguage();
 
   const source = getLegalSourceById(id);
   const related = getRelatedSources(id);
@@ -299,13 +303,19 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Title block ─── */}
       <header className="mt-4 max-w-4xl">
         <h1 className="text-[24px] lg:text-[28px] font-semibold text-gray-900 tracking-tight leading-[1.25]">
-          {source.title_en}
+          {getTranslatedSource(source, language).title}
         </h1>
-        {source.title_local && (
+        {language === "en" && source.title_local && (
           <p className="text-[13px] text-gray-400 mt-1 leading-snug">
             {source.title_local}
           </p>
         )}
+        {language !== "en" &&
+          source.title_en !== getTranslatedSource(source, language).title && (
+            <p className="text-[13px] text-gray-400 mt-1 leading-snug">
+              {source.title_en}
+            </p>
+          )}
 
         {/* ─── View official text — prominent action ─── */}
         {source.source_url && (
@@ -422,40 +432,52 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           </div>
 
           <div className="space-y-0 max-w-3xl">
-            {source.key_provisions.map((provision, i) => (
-              <div
-                key={i}
-                className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
-              >
-                <div className="flex items-baseline gap-3">
-                  <span className="text-[11px] text-gray-400 font-mono flex-shrink-0">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-[15px] font-mono font-bold text-gray-900 flex-shrink-0">
-                    {provision.section}
-                  </span>
-                  <h3 className="text-[14px] font-semibold text-gray-700">
-                    {provision.title}
-                  </h3>
-                </div>
-
-                <p className="text-[13px] text-gray-600 leading-[1.75] mt-1.5 ml-[52px]">
-                  {provision.summary}
-                </p>
-
-                {provision.complianceImplication && (
-                  <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
-                    <p className="text-[12px] text-emerald-800 leading-[1.6]">
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-gray-900">
-                        Compliance Implication
-                      </span>
-                      <br />
-                      {provision.complianceImplication}
-                    </p>
+            {source.key_provisions.map((provision, i) => {
+              const translatedSource = getTranslatedSource(source, language);
+              const tp = translatedSource.getProvisionTranslation(
+                provision.section,
+              );
+              const displayTitle = tp?.title ?? provision.title;
+              const displaySummary = tp?.summary ?? provision.summary;
+              const displayImplication =
+                tp?.complianceImplication ?? provision.complianceImplication;
+              return (
+                <div
+                  key={i}
+                  className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
+                >
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-[11px] text-gray-400 font-mono flex-shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-[15px] font-mono font-bold text-gray-900 flex-shrink-0">
+                      {provision.section}
+                    </span>
+                    <h3 className="text-[14px] font-semibold text-gray-700">
+                      {displayTitle}
+                    </h3>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  <p className="text-[13px] text-gray-600 leading-[1.75] mt-1.5 ml-[52px]">
+                    {displaySummary}
+                  </p>
+
+                  {displayImplication && (
+                    <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
+                      <p className="text-[12px] text-emerald-800 leading-[1.6]">
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-gray-900">
+                          {language === "de"
+                            ? "Compliance-Auswirkung"
+                            : "Compliance Implication"}
+                        </span>
+                        <br />
+                        {displayImplication}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -466,11 +488,12 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-3">
             <FileText size={15} className="text-gray-400" strokeWidth={1.5} />
             <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-              Scope
+              {language === "de" ? "Anwendungsbereich" : "Scope"}
             </h2>
           </div>
           <p className="text-[13px] text-gray-600 leading-[1.75] max-w-3xl">
-            {source.scope_description}
+            {getTranslatedSource(source, language).scopeDescription ??
+              source.scope_description}
           </p>
         </section>
       )}
@@ -498,7 +521,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2">
                     <span className="text-[13px] font-medium text-gray-700">
-                      {auth.name_en}
+                      {getTranslatedAuthority(auth, language).name}
                     </span>
                     <span className="text-[11px] font-mono text-gray-400">
                       {JURISDICTION_FLAGS[auth.jurisdiction] ??
@@ -506,9 +529,10 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     </span>
                   </div>
                   <p className="text-[12px] text-gray-500 leading-relaxed mt-0.5 truncate">
-                    {auth.space_mandate.length > 80
-                      ? auth.space_mandate.slice(0, 80) + "..."
-                      : auth.space_mandate}
+                    {(() => {
+                      const m = getTranslatedAuthority(auth, language).mandate;
+                      return m.length > 80 ? m.slice(0, 80) + "..." : m;
+                    })()}
                   </p>
                 </div>
                 <ExternalLink

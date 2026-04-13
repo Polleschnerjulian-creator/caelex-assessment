@@ -6,7 +6,9 @@ import {
   getLegalSourcesByJurisdiction,
   getAuthoritiesByJurisdiction,
   getAvailableJurisdictions,
+  getTranslatedAuthority,
 } from "@/data/legal-sources";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Build jurisdiction rows from real data ─────────────────────────
 
@@ -123,6 +125,7 @@ const COLUMNS = [
 
 export default function JurisdictionsPage() {
   const router = useRouter();
+  const { language } = useLanguage();
 
   return (
     <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-4">
