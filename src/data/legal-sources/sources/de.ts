@@ -836,3 +836,592 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     last_verified: "2026-04-13",
   },
 ];
+
+// ─── BSI Technical Standards (6) ─────────────────────────────────────
+
+const STANDARDS_DE: LegalSource[] = [
+  {
+    id: "DE-BSI-TR-03184-1",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "BSI TR-03184 Part 1: Information Security for Space Systems — Space Segment",
+    title_local:
+      "BSI TR-03184-1: Informationssicherheit für Weltraumsysteme — Teil 1: Raumsegment",
+    date_enacted: "2023-07-01",
+    source_url:
+      "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03184/TR-03184_node.html",
+    issuing_body: "Bundesamt für Sicherheit in der Informationstechnik (BSI)",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "critical",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Chapter 3",
+        title: "Threat landscape for space segment",
+        summary:
+          "Systematic analysis of cybersecurity threats to satellite platforms: jamming, spoofing, replay attacks, command injection, firmware manipulation, supply chain compromise.",
+      },
+      {
+        section: "Chapter 4",
+        title: "Security measures for spacecraft",
+        summary:
+          "Mandatory and recommended countermeasures covering: encrypted TT&C links, authenticated command channels, firmware integrity verification, secure boot, anomaly detection, key management, redundancy.",
+        complianceImplication:
+          "Quasi-mandatory for KRITIS operators. ESA, DLR, and Bundeswehr contracts require TR-03184 compliance. Haftungsrelevanz: failure to implement creates negligence exposure.",
+      },
+    ],
+    related_sources: ["DE-BSI-TR-03184-2", "DE-BSIG-NIS2"],
+    caelex_data_file_mapping: [
+      "cybersecurity-requirements.ts",
+      "bnetza-regulatory-knowledge.ts",
+    ],
+    notes: [
+      "Formally a 'recommendation' (Empfehlung), but quasi-mandatory: ESA, DLR, and Bundeswehr require compliance. Failure to implement creates negligence exposure under tort law.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSI-TR-03184-2",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "BSI TR-03184 Part 2: Information Security for Space Systems — Ground Segment",
+    title_local:
+      "BSI TR-03184-2: Informationssicherheit für Weltraumsysteme — Teil 2: Bodensegment",
+    date_enacted: "2025-05-01",
+    source_url:
+      "https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Publikationen/TechnischeRichtlinien/TR03184/BSI-TR-03184-2.pdf",
+    issuing_body: "BSI",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "ground_segment",
+      "constellation_operator",
+    ],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Ground segment security requirements",
+        summary:
+          "Security requirements for mission control centres, ground stations, TT&C infrastructure, data processing. Covers network segmentation, access control, key management, secure operations, monitoring. Compatible with ISO 27001/27002, NIST CSF, ECSS, CCSDS, MITRE ATT&CK.",
+        complianceImplication:
+          "Ground segment operators who are NIS2 entities must implement these measures. TR-03184-2 is the BSI's interpretation of 'state of the art' for space ground infrastructure.",
+      },
+    ],
+    related_sources: ["DE-BSI-TR-03184-1", "DE-BSIG-NIS2"],
+    caelex_data_file_mapping: [
+      "cybersecurity-requirements.ts",
+      "bnetza-regulatory-knowledge.ts",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSI-TR-03184-AUDIT",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "BSI TR-03184 Conformity Assessment (Audit Standard)",
+    title_local:
+      "BSI TR-03184 Prüfvorschrift (Konformitätsbewertung Raum- und Bodensegment)",
+    date_enacted: "2026-03-01",
+    source_url:
+      "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03184/TR-03184_node.html",
+    issuing_body: "BSI",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "Conformity assessment procedures",
+        summary:
+          "Defines audit criteria and procedures for assessing compliance with TR-03184 Parts 1 and 2. Establishes the certification basis for space cybersecurity conformity.",
+        complianceImplication:
+          "Organizations seeking TR-03184 certification must follow this audit standard. Published March 2026 — the newest BSI space publication.",
+      },
+    ],
+    related_sources: ["DE-BSI-TR-03184-1", "DE-BSI-TR-03184-2"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSI-TR-03140",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "BSI TR-03140: Conformity Assessment under SatDSiG",
+    title_local:
+      "BSI TR-03140: Konformitätsbewertung nach Satellitendatensicherheitsgesetz",
+    source_url:
+      "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03140/tr-03140.html",
+    issuing_body: "BSI",
+    competent_authorities: ["DE-BSI", "DE-BAFA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["data_security", "cybersecurity"],
+    key_provisions: [
+      {
+        section: "Full document",
+        title: "IT security conformity for EO systems",
+        summary:
+          "Defines the IT security assessment criteria that must be met to obtain a BAFA licence under SatDSiG. BSI conducts the technical evaluation.",
+        complianceImplication:
+          "Mandatory prerequisite for SatDSiG licensing — BAFA will not issue a licence without a positive BSI TR-03140 conformity assessment.",
+      },
+    ],
+    related_sources: ["DE-SATDSIG-2007"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSI-GRUNDSCHUTZ-SPACE",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "BSI IT-Grundschutz Profile for Space Infrastructures",
+    title_local:
+      "IT-Grundschutz-Profil für Weltraumsysteme (Raum- und Bodensegment)",
+    source_url:
+      "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/it-grundschutz_node.html",
+    issuing_body: "BSI",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Full profile",
+        title: "Minimum security baseline for space systems",
+        summary:
+          "Applies the BSI IT-Grundschutz methodology to the entire space system lifecycle. Defines minimum security measures (Basisabsicherung) and standard measures (Standardabsicherung) for space and ground segments.",
+        complianceImplication:
+          "Provides a structured path to demonstrating NIS2 compliance via the IT-Grundschutz certification scheme. Recognized by German authorities as evidence of adequate security measures.",
+      },
+    ],
+    related_sources: ["DE-BSI-TR-03184-1", "DE-BSI-TR-03184-2", "DE-BSIG-NIS2"],
+    caelex_data_file_mapping: ["bnetza-regulatory-knowledge.ts"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-BSI-POSITION-SPACE",
+    jurisdiction: "DE",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "BSI Position Paper: Cybersecurity for Space Infrastructures",
+    title_local:
+      "BSI Positionspapier: Cybersicherheit für Weltrauminfrastrukturen",
+    source_url:
+      "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/IT-Sicherheit-in-Luft-und-Raumfahrt/it-sicherheit-in-luft-und-raumfahrt_node.html",
+    issuing_body: "BSI",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Full paper",
+        title: "BSI policy position on space cybersecurity",
+        summary:
+          "Strategic policy document outlining BSI's approach to space infrastructure protection. Contextualizes TR-03184, IT-Grundschutz, and NIS2 requirements within the broader cybersecurity policy framework.",
+      },
+    ],
+    related_sources: ["DE-BSI-TR-03184-1", "DE-BSIG-NIS2"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── EU Law with Space Relevance (6) ─────────────────────────────────
+
+const EU_LAW_DE: LegalSource[] = [
+  {
+    id: "EU-SPACE-ACT",
+    jurisdiction: "EU",
+    type: "draft_legislation",
+    status: "proposed",
+    title_en: "EU Space Act — Regulation on the European Space Economy",
+    date_published: "2025-06-25",
+    official_reference: "COM(2025) 335 final",
+    source_url:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
+    issuing_body: "European Commission",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "registration",
+      "liability",
+      "insurance",
+      "cybersecurity",
+      "debris_mitigation",
+      "environmental",
+      "space_traffic_management",
+    ],
+    key_provisions: [
+      {
+        section: "Art. 6-16",
+        title: "Harmonized authorization regime",
+        summary:
+          "Establishes a common EU authorization framework for space activities. National competent authorities issue authorizations based on harmonized criteria. Mutual recognition across member states.",
+        complianceImplication:
+          "When enacted, this will create the first comprehensive licensing obligation for ALL space activities in Germany — filling the gap left by the absent Weltraumgesetz.",
+      },
+      {
+        section: "Art. 20",
+        title: "Third-country operator obligations",
+        summary:
+          "Non-EU operators providing services in the EU must designate an EU representative and register with a national authority.",
+      },
+      {
+        section: "Art. 63-73",
+        title: "Debris mitigation and space sustainability",
+        summary:
+          "Mandatory trackability, collision avoidance, maneuverability, debris mitigation plans, end-of-life disposal, and environmental footprint declarations.",
+      },
+      {
+        section: "Art. 74-95",
+        title: "Cybersecurity requirements",
+        summary:
+          "Space-specific cybersecurity measures building on NIS2. Covers space segment, ground segment, and communication links.",
+      },
+    ],
+    related_sources: ["INT-OST-1967", "EU-NIS2-2022", "EU-CRA-2024"],
+    caelex_engine_mapping: ["engine.server"],
+    caelex_data_file_mapping: [
+      "articles.ts",
+      "caelex-eu-space-act-engine.json",
+    ],
+    notes: [
+      "Status as of April 2026: Commission Proposal published June 2025. EP rapporteur Donazzan (ITRE) published report March 2026. Cyprus Council Presidency compromise text March 2026. Trilogue not yet started.",
+      "Expected application date: 1 January 2030 (subject to adoption timeline).",
+      "Will be directly applicable as EU Regulation — no national transposition needed.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "EU-SPACE-PROG-2021",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Space Programme Regulation",
+    date_in_force: "2021-05-12",
+    official_reference: "Verordnung (EU) 2021/696",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2021/696/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["registration", "space_traffic_management"],
+    key_provisions: [
+      {
+        section: "Full regulation",
+        title: "Legal framework for EU space programmes",
+        summary:
+          "Establishes the legal basis for Copernicus (EO), Galileo/EGNOS (navigation), GOVSATCOM (governmental satellite communications), and SSA/SST (space situational awareness). Governs EUSPA's role.",
+        complianceImplication:
+          "Operators contributing to or using EU space programme services must comply with access and data policies. SSA/SST data sharing obligations apply to operators in EU member states.",
+      },
+    ],
+    related_sources: ["EU-SPACE-ACT"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "EU-NIS2-2022",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en: "NIS2 Directive — Network and Information Security",
+    date_in_force: "2023-01-16",
+    official_reference: "Richtlinie (EU) 2022/2555",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "ground_segment",
+      "constellation_operator",
+    ],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Annex I, Sector 11",
+        title: "Space as sector of high criticality",
+        summary:
+          "Space is explicitly listed as a sector of high criticality. Operators of ground-based infrastructure, satellite operators providing essential services, and space situational awareness providers fall within NIS2 scope.",
+        complianceImplication:
+          "Medium and large space operators in the EU are automatically in scope. Small/micro entities are excluded unless designated by a member state.",
+      },
+      {
+        section: "Art. 21",
+        title: "Cybersecurity risk management measures",
+        summary:
+          "Art. 21(2)(a)-(j): 10 categories of mandatory measures including risk analysis, incident handling, business continuity, supply chain, network security, effectiveness assessment, cyber hygiene, cryptography, HR/access control, MFA.",
+      },
+      {
+        section: "Art. 23",
+        title: "Incident reporting obligations",
+        summary:
+          "Early warning within 24 hours, notification within 72 hours, intermediate report on request, final report within 1 month.",
+      },
+    ],
+    related_sources: ["DE-BSIG-NIS2", "EU-CRA-2024", "EU-SPACE-ACT"],
+    caelex_engine_mapping: ["nis2-engine.server"],
+    caelex_data_file_mapping: ["nis2-requirements.ts"],
+    notes: ["Transposed in DE via NIS2UmsuCG → BSIG §§ 30-31."],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "EU-CRA-2024",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Cyber Resilience Act",
+    date_in_force: "2024-12-10",
+    official_reference: "Verordnung (EU) 2024/2847",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2024/2847/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["DE-BSI"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Annex I",
+        title:
+          "Essential cybersecurity requirements for products with digital elements",
+        summary:
+          "Security by design, vulnerability handling, SBOM, secure update mechanisms, 5-year support period.",
+        complianceImplication:
+          "Spacecraft flight software, ground station equipment, and satellite communication modules are 'products with digital elements' — CRA applies to manufacturers placing them on the EU market.",
+      },
+      {
+        section: "Annex III/IV",
+        title: "Product classification (Class I / Class II)",
+        summary:
+          "Class II products (critical infrastructure components, cryptographic hardware) require third-party conformity assessment. Class I products may use harmonised standards for self-assessment.",
+      },
+      {
+        section: "Art. 14",
+        title: "Vulnerability reporting",
+        summary:
+          "Actively exploited vulnerabilities must be reported to ENISA within 24 hours. Severe incidents within 72 hours. Patches within 14 days of availability.",
+      },
+    ],
+    related_sources: ["EU-NIS2-2022"],
+    caelex_engine_mapping: ["cra-engine.server", "cra-rule-engine.server"],
+    caelex_data_file_mapping: ["cra-requirements.ts", "cra-taxonomy.ts"],
+    notes: [
+      "CRA is the only enacted EU law (not proposal) that directly affects space hardware/software cybersecurity.",
+      "Full application from 11 December 2027. Reporting obligations apply from 11 September 2026.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "EU-DORA-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Digital Operational Resilience Act",
+    date_in_force: "2025-01-17",
+    official_reference: "Verordnung (EU) 2022/2554",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["cybersecurity"],
+    key_provisions: [
+      {
+        section: "Art. 3, 28-30",
+        title: "Third-party ICT risk management",
+        summary:
+          "Financial entities must manage ICT risks from third-party providers, including satellite communication providers. Relevant if a space operator provides critical ICT services to financial institutions.",
+      },
+    ],
+    scope_description:
+      "Only relevant for space operators that provide critical ICT services to the financial sector (e.g., SATCOM for trading platforms, timing services for financial networks).",
+    related_sources: ["EU-NIS2-2022"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "EU-EASA-2018",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EASA Basic Regulation",
+    date_in_force: "2018-09-11",
+    official_reference: "Verordnung (EU) 2018/1139",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2018/1139/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["DE-LBA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Art. 2(3)(d)",
+        title: "Suborbital flights and airspace transition",
+        summary:
+          "EASA's mandate covers aircraft operations including the transition phase of space-bound vehicles through regulated airspace. Suborbital flight vehicles may fall under EASA certification.",
+        complianceImplication:
+          "Launch vehicles transiting European airspace interact with EASA-regulated air traffic. Coordination with national aviation authorities (LBA in Germany) is required.",
+      },
+    ],
+    related_sources: ["DE-LUFTVG"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Policy Documents (3) ────────────────────────────────────────────
+
+const POLICY_DE: LegalSource[] = [
+  {
+    id: "DE-RAUMFAHRTSTRATEGIE-2023",
+    jurisdiction: "DE",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "German Federal Space Strategy 2023",
+    title_local: "Raumfahrtstrategie der Bundesregierung 2023",
+    date_published: "2023-09-01",
+    source_url:
+      "https://www.bmwk.de/Redaktion/DE/Publikationen/Technologie/raumfahrtstrategie-der-bundesregierung.html",
+    issuing_body: "Bundesregierung / BMWK",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Chapter: Regulatory Framework",
+        title: "Announcement of a national space law",
+        summary:
+          "The strategy commits to enacting a comprehensive German space law (Weltraumgesetz) to establish licensing, registration, liability, and insurance obligations for all non-governmental space activities.",
+        complianceImplication:
+          "Policy signal that a Weltraumgesetz is politically intended. Operators should prepare for future licensing obligations.",
+      },
+    ],
+    related_sources: ["DE-WRG-ECKPUNKTE-2024"],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-WRG-ECKPUNKTE-2024",
+    jurisdiction: "DE",
+    type: "draft_legislation",
+    status: "superseded",
+    title_en: "Key Points for a German Space Law (Weltraumgesetz)",
+    title_local: "Eckpunktepapier der Bundesregierung für ein Weltraumgesetz",
+    date_published: "2024-09-01",
+    parliamentary_reference: "BT-Drs. 20/12775",
+    source_url:
+      "https://www.bundeswirtschaftsministerium.de/Redaktion/DE/Downloads/E/eckpunkte-der-bundesregierung-fuer-ein-weltraumgesetz.pdf",
+    issuing_body: "BMWK / Raumfahrtkoordinatorin Anna Christmann",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "licensing",
+      "registration",
+      "liability",
+      "insurance",
+      "environmental",
+    ],
+    key_provisions: [
+      {
+        section: "Genehmigungspflicht",
+        title: "Licensing obligation for all non-governmental space activities",
+        summary:
+          "All private space activities conducted from German territory or by German-controlled entities would require government authorization.",
+      },
+      {
+        section: "Registrierung",
+        title: "National space object registry",
+        summary:
+          "Mandatory registration of all space objects launched under German jurisdiction in a national registry.",
+      },
+      {
+        section: "Haftung & Regress",
+        title: "Liability regime with capped recourse",
+        summary:
+          "Operator liability with recourse capped at 10% of 3-year average annual turnover, maximum €50 million. State bears residual liability above operator coverage.",
+        complianceImplication:
+          "If enacted, the €50M cap and 10% recourse limit would be the most operator-friendly regime in Europe. This was a key negotiation point.",
+      },
+      {
+        section: "Versicherungspflicht",
+        title: "Mandatory insurance",
+        summary:
+          "Operators must carry third-party liability insurance. Bank guarantee (Bankbürgschaft) accepted as alternative. Coverage thresholds to be set by regulation.",
+      },
+      {
+        section: "Startplatzzulassung",
+        title: "Launch site licensing with environmental assessment",
+        summary:
+          "Launch facilities on German territory require specific authorization including full environmental impact assessment (UVP).",
+      },
+      {
+        section: "Notstandsregelung",
+        title: "Emergency access provision",
+        summary:
+          "Bundeswehr granted emergency access rights to private space assets in crisis situations.",
+        complianceImplication:
+          "Controversial provision — space operators should be aware of potential military commandeering of commercial assets during emergencies.",
+      },
+    ],
+    scope_description:
+      "Cabinet-approved key points (September 2024). The full draft law was NEVER introduced to the Bundestag — the Ampel coalition collapsed in December 2024 before a legislative text was finalized. The Eckpunkte remain the most detailed public document on Germany's planned space law architecture.",
+    related_sources: [
+      "DE-RAUMFAHRTSTRATEGIE-2023",
+      "DE-KOALITIONSVERTRAG-2025",
+    ],
+    notes: [
+      "Status: SUPERSEDED — the Eckpunkte were the Ampel coalition's plan. The new CDU/SPD coalition (2025) has announced its own Weltraumgesetz effort but no draft exists as of April 2026.",
+      "Despite being superseded, the Eckpunkte are the best public indicator of what a German space law will contain, as many provisions were technically consensus positions across parties.",
+    ],
+    last_verified: "2026-04-13",
+  },
+  {
+    id: "DE-KOALITIONSVERTRAG-2025",
+    jurisdiction: "DE",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Coalition Agreement CDU/CSU-SPD 2025",
+    title_local:
+      "Koalitionsvertrag zwischen CDU, CSU und SPD — 21. Legislaturperiode",
+    date_published: "2025-04-01",
+    source_url:
+      "https://www.bundesregierung.de/breg-de/service/gesetzesvorhaben/koalitionsvertrag-2025",
+    issuing_body: "CDU/CSU, SPD",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Space section",
+        title: "Weltraumgesetz commitment",
+        summary:
+          "The coalition agreement explicitly mentions the enactment of a comprehensive German space law (Weltraumgesetz) as a legislative priority. Details and timeline not specified.",
+        complianceImplication:
+          "Political commitment exists — a new Weltraumgesetz effort is expected during this legislative period (2025-2029). Operators should anticipate future licensing obligations.",
+      },
+    ],
+    related_sources: ["DE-WRG-ECKPUNKTE-2024", "DE-RAUMFAHRTSTRATEGIE-2023"],
+    last_verified: "2026-04-13",
+  },
+];
+
+// ─── Aggregated Export ───────────────────────────────────────────────
+
+export const LEGAL_SOURCES_DE: LegalSource[] = [
+  ...TREATIES_DE,
+  ...NATIONAL_LAWS_DE,
+  ...STANDARDS_DE,
+  ...EU_LAW_DE,
+  ...POLICY_DE,
+];
