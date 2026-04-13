@@ -239,21 +239,12 @@ export default function CommandCenterPage() {
             outline-none ring-0 shadow-none
             focus:border-gray-300 focus:outline-none focus:ring-0 focus:shadow-none
             text-gray-900 placeholder:text-gray-300
-            font-light tracking-[-0.02em]
+            font-light tracking-[-0.02em] leading-none
             transition-colors duration-300
-            ${hasResults ? "text-[24px] lg:text-[28px] pb-3" : "text-[32px] lg:text-[40px] pb-4"}
+            ${hasResults ? "text-[24px] lg:text-[28px] py-3" : "text-[32px] lg:text-[40px] py-4"}
           `}
           style={{ caretColor: "#10B981", outline: "none", boxShadow: "none" }}
         />
-
-        {/* Keyboard hint */}
-        {!query && (
-          <div className="absolute right-0 bottom-5 flex items-center gap-1.5 opacity-60">
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono text-gray-400 bg-gray-100/80 rounded border border-gray-200/80">
-              ⌘K
-            </kbd>
-          </div>
-        )}
       </div>
 
       {/* ─── Empty State ─── */}
