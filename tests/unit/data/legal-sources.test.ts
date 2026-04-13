@@ -14,6 +14,8 @@ import {
   getAvailableJurisdictions,
   LEGAL_SOURCES_DE,
   AUTHORITIES_DE,
+  LEGAL_SOURCES_FR,
+  AUTHORITIES_FR,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -286,6 +288,203 @@ describe("Legal Sources — authority accuracy", () => {
 
   it("every authority has a valid website URL", () => {
     for (const a of AUTHORITIES_DE) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── French dataset sanity checks ────────────────────────────────────
+describe("Legal Sources — FR dataset sanity", () => {
+  it("FR has at least 30 legal sources", () => {
+    expect(LEGAL_SOURCES_FR.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it("FR has exactly 15 authorities", () => {
+    expect(AUTHORITIES_FR).toHaveLength(15);
+  });
+
+  it("every FR legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_FR) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("FR legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_FR) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("FR authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_FR) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every FR source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_FR) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every FR source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_FR) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every FR source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_FR) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all FR competent_authorities IDs map to existing FR authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_FR.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_FR) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all FR related_sources IDs map to existing FR legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_FR.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_FR) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── French regulatory accuracy ──────────────────────────────────────
+describe("Legal Sources — French regulatory accuracy", () => {
+  it("LOS-2008 has correct Legifrance URL", () => {
+    const los = getLegalSourceById("FR-LOS-2008")!;
+    expect(los).toBeDefined();
+    expect(los.source_url).toBe(
+      "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000018931380",
+    );
+  });
+
+  it("LOS-2008 is marked critical and in_force", () => {
+    const los = getLegalSourceById("FR-LOS-2008")!;
+    expect(los).toBeDefined();
+    expect(los.relevance_level).toBe("critical");
+    expect(los.status).toBe("in_force");
+  });
+
+  it("France was first to ratify the Registration Convention", () => {
+    const reg = getLegalSourceById("FR-INT-REGISTRATION-1975")!;
+    expect(reg).toBeDefined();
+    expect(reg.notes).toBeDefined();
+    const firstNote = reg.notes!.join(" ");
+    expect(firstNote).toContain("FIRST");
+    expect(firstNote).toContain("ratify");
+  });
+
+  it("Moon Agreement marked as signed but not_ratified for FR", () => {
+    const moon = getLegalSourceById("FR-INT-MOON-1979")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("not_ratified");
+    const notes = moon.notes!.join(" ");
+    expect(notes).toContain("signed");
+    expect(notes).toContain("never ratified");
+  });
+
+  it("Technical Regulations (Arrêté 2011) is marked critical", () => {
+    const rt = getLegalSourceById("FR-ARRETE-2011-RT")!;
+    expect(rt).toBeDefined();
+    expect(rt.relevance_level).toBe("critical");
+    expect(rt.compliance_areas).toContain("debris_mitigation");
+  });
+
+  it("NIS2 transposition is correctly marked as draft", () => {
+    const nis2 = getLegalSourceById("FR-NIS2-TRANSPOSITION")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("draft");
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+  });
+
+  it("CNES authority has correct website", () => {
+    const cnes = getAuthorityById("FR-CNES")!;
+    expect(cnes).toBeDefined();
+    expect(cnes.website).toBe("https://www.cnes.fr");
+    expect(cnes.applicable_areas).toContain("licensing");
+  });
+});
+
+// ─── FR lookup functions ─────────────────────────────────────────────
+describe("Legal Sources — FR lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns FR sources", () => {
+    const sources = getLegalSourcesByJurisdiction("FR");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_FR.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns FR authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("FR");
+    expect(auths).toHaveLength(15);
+  });
+
+  it("getLegalSourceStats includes FR", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["FR"]).toBeDefined();
+    expect(stats["FR"]!.total).toBeGreaterThanOrEqual(30);
+  });
+
+  it("getAvailableJurisdictions includes FR", () => {
+    expect(getAvailableJurisdictions()).toContain("FR");
+  });
+
+  it("getLegalSourcesByComplianceArea returns licensing sources for FR", () => {
+    const licensing = getLegalSourcesByComplianceArea("FR", "licensing");
+    expect(licensing.length).toBeGreaterThan(0);
+    for (const s of licensing) {
+      expect(s.compliance_areas).toContain("licensing");
+    }
+  });
+});
+
+// ─── FR authority accuracy ───────────────────────────────────────────
+describe("Legal Sources — FR authority accuracy", () => {
+  it("CNES is the space agency with police spéciale", () => {
+    const cnes = getAuthorityById("FR-CNES")!;
+    expect(cnes.space_mandate).toContain("police spéciale");
+    expect(cnes.applicable_areas).toContain("registration");
+  });
+
+  it("ANSSI handles cybersecurity and NIS2", () => {
+    const anssi = getAuthorityById("FR-ANSSI")!;
+    expect(anssi.space_mandate).toContain("NIS2");
+    expect(anssi.applicable_areas).toContain("cybersecurity");
+  });
+
+  it("ANFR handles frequency spectrum", () => {
+    const anfr = getAuthorityById("FR-ANFR")!;
+    expect(anfr.space_mandate).toContain("ITU");
+    expect(anfr.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("every FR authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_FR) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
