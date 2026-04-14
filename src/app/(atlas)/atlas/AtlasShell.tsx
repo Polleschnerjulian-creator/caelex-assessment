@@ -3,46 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Globe,
-  BarChart3,
-  Map,
-  ScrollText,
-  Shield,
-  Leaf,
-  Bell,
-  Key,
-  Settings,
-  ArrowLeft,
-} from "lucide-react";
+import { Search, BarChart3, Map, Settings, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const MAIN_NAV = [
   {
-    labelKey: "atlas.command_center",
+    labelKey: "atlas.search",
     href: "/atlas",
-    icon: Globe,
+    icon: Search,
     exact: true,
   },
   { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
   { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
-  {
-    labelKey: "atlas.eu_space_act",
-    href: "/atlas/eu-space-act",
-    icon: ScrollText,
-  },
-  {
-    labelKey: "atlas.cyber_standards",
-    href: "/atlas/cyber-standards",
-    icon: Shield,
-  },
-  {
-    labelKey: "atlas.sustainability",
-    href: "/atlas/sustainability",
-    icon: Leaf,
-  },
-  { labelKey: "atlas.alerts", href: "/atlas/alerts", icon: Bell },
-  { labelKey: "atlas.api", href: "/atlas/api-access", icon: Key },
 ] as const;
 
 const COLLAPSED_W = 58;
