@@ -452,22 +452,106 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* ─── Footer (only when no results) ─── */}
-      {!hasResults && (
-        <footer className="fixed bottom-0 left-0 right-0 px-8 lg:px-16 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold text-gray-300 tracking-wider">
-                ATLAS
-              </span>
-              <span className="text-[9px] text-gray-200">by Caelex</span>
-            </div>
-            <span className="text-[9px] text-gray-300">
-              © {new Date().getFullYear()} Caelex
+      {/* ─── Legal Footer ─── */}
+      <footer
+        className={`transition-all duration-700 ${hasResults ? "mt-20" : "mt-40"} pt-8 border-t border-gray-100 pb-10`}
+      >
+        <div className="max-w-4xl space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold text-gray-400 tracking-wider">
+              ATLAS
             </span>
+            <span className="text-[9px] text-gray-300">by Caelex</span>
           </div>
-        </footer>
-      )}
+
+          <div className="space-y-3 text-[10px] text-gray-400 leading-[1.7]">
+            <p>
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_no_legal_advice")}.
+              </span>{" "}
+              ATLAS is a regulatory information and research tool developed by
+              Caelex. The information, data, assessments, and comparative
+              analyses provided through ATLAS do not constitute legal,
+              compliance, tax, or professional advice of any kind. No
+              attorney-client, advisory, or fiduciary relationship is created
+              between Caelex and any user through access to or use of ATLAS.
+              Users must independently verify all information and consult
+              qualified legal counsel before making compliance, licensing, or
+              business decisions.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_no_guarantee")}.
+              </span>{" "}
+              Caelex makes no representation or warranty, express or implied,
+              regarding the accuracy, completeness, timeliness, or reliability
+              of any data presented in ATLAS. Regulatory frameworks are subject
+              to change without notice. National law data reflects the state of
+              research at the time of last verification and may not reflect
+              subsequent amendments, judicial interpretations, or administrative
+              practice.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_limitation")}.
+              </span>{" "}
+              To the maximum extent permitted by applicable law, Caelex shall
+              not be liable for any direct, indirect, incidental, consequential,
+              or special damages arising from or in connection with the use of
+              or reliance on information provided through ATLAS.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_data_sources")}.
+              </span>{" "}
+              ATLAS aggregates information from public legislative databases,
+              official government publications, international treaty
+              collections, and authoritative regulatory sources. Caelex is not
+              affiliated with, endorsed by, or officially connected to any
+              government authority, regulatory body, or international
+              organization referenced herein.
+            </p>
+
+            <p>
+              <span className="font-semibold text-gray-500">
+                {t("atlas.disclaimer_ip")}.
+              </span>{" "}
+              ATLAS, including its regulatory data structures, compliance
+              mappings, and analytical methodologies, is proprietary to Caelex.
+              All rights reserved.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+            <span className="text-[9px] text-gray-300">
+              © {new Date().getFullYear()} Caelex — All rights reserved
+            </span>
+            <div className="flex items-center gap-4">
+              <a
+                href="/legal/privacy"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Privacy
+              </a>
+              <a
+                href="/legal/terms"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Terms
+              </a>
+              <a
+                href="/legal/impressum"
+                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Impressum
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
