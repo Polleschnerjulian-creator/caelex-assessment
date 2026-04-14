@@ -30,6 +30,8 @@ import {
   AUTHORITIES_ES,
   LEGAL_SOURCES_NO,
   AUTHORITIES_NO,
+  LEGAL_SOURCES_SE,
+  AUTHORITIES_SE,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2057,6 +2059,176 @@ describe("Legal Sources — NO authority accuracy", () => {
 
   it("every NO authority has a valid website URL", () => {
     for (const a of AUTHORITIES_NO) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Sweden dataset sanity checks ────────────────────────────────
+describe("Legal Sources — SE dataset sanity", () => {
+  it("SE has at least 14 legal sources", () => {
+    expect(LEGAL_SOURCES_SE.length).toBeGreaterThanOrEqual(14);
+  });
+
+  it("SE has exactly 14 authorities", () => {
+    expect(AUTHORITIES_SE).toHaveLength(14);
+  });
+
+  it("SE legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_SE) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("SE authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_SE) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every SE source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_SE) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every SE source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_SE) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("all SE competent_authorities IDs map to existing SE authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_SE.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_SE) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all SE related_sources IDs map to existing SE legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_SE.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_SE) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Sweden regulatory accuracy ──────────────────────────────────
+describe("Legal Sources — SE regulatory accuracy", () => {
+  it("1982 Space Act has correct SFS reference", () => {
+    const act = getLegalSourceById("SE-SPACE-ACT-1982")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("SFS 1982:963");
+    expect(act.status).toBe("in_force");
+    expect(act.relevance_level).toBe("critical");
+  });
+
+  it("1982 Space Act excludes sounding rockets", () => {
+    const act = getLegalSourceById("SE-SPACE-ACT-1982")!;
+    const prov = act.key_provisions.find((p) => p.section === "§ 1")!;
+    expect(prov.summary).toContain("EXCLUDES");
+    expect(prov.summary).toContain("sounding rockets");
+  });
+
+  it("SOU 2021:91 is draft/unenacted", () => {
+    const sou = getLegalSourceById("SE-SOU-2021-91")!;
+    expect(sou).toBeDefined();
+    expect(sou.status).toBe("draft");
+  });
+
+  it("US-Sweden TSA is the 6th globally", () => {
+    const tsa = getLegalSourceById("SE-US-TSA-2025")!;
+    expect(tsa).toBeDefined();
+    expect(tsa.status).toBe("in_force");
+    const prov = tsa.key_provisions[0]!;
+    expect(prov.summary).toContain("6th");
+  });
+
+  it("Artemis Accords signed 2024", () => {
+    const artemis = getLegalSourceById("SE-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.date_enacted).toBe("2024-04-16");
+  });
+
+  it("NIS2 transposition via Cybersäkerhetslagen", () => {
+    const cyber = getLegalSourceById("SE-CYBERSECURITY-2025")!;
+    expect(cyber).toBeDefined();
+    expect(cyber.implements).toBe("EU-NIS2-2022");
+    expect(cyber.official_reference).toContain("SFS 2025:1506");
+  });
+
+  it("Defence space strategy published 2024", () => {
+    const strat = getLegalSourceById("SE-DEFENCE-SPACE-STRATEGY-2024")!;
+    expect(strat).toBeDefined();
+    expect(strat.date_published).toBe("2024-07-04");
+  });
+});
+
+// ─── SE lookup functions ──────────────────────────────────────────
+describe("Legal Sources — SE lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns SE sources", () => {
+    const sources = getLegalSourcesByJurisdiction("SE");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_SE.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns SE authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("SE");
+    expect(auths).toHaveLength(14);
+  });
+
+  it("getAvailableJurisdictions includes SE", () => {
+    expect(getAvailableJurisdictions()).toContain("SE");
+  });
+});
+
+// ─── SE authority accuracy ────────────────────────────────────────
+describe("Legal Sources — SE authority accuracy", () => {
+  it("SNSA does not decide on licences", () => {
+    const snsa = getAuthorityById("SE-SNSA")!;
+    expect(snsa).toBeDefined();
+    expect(snsa.space_mandate).toContain("NOT decide on licences");
+  });
+
+  it("SSC is operational entity, not regulator", () => {
+    const ssc = getAuthorityById("SE-SSC")!;
+    expect(ssc).toBeDefined();
+    expect(ssc.space_mandate).toContain("NOT a regulator");
+  });
+
+  it("ISP handles export control", () => {
+    const isp = getAuthorityById("SE-ISP")!;
+    expect(isp).toBeDefined();
+    expect(isp.applicable_areas).toContain("export_control");
+  });
+
+  it("Försvarsmakten has Space Division", () => {
+    const fm = getAuthorityById("SE-FORSVARSMAKTEN")!;
+    expect(fm).toBeDefined();
+    expect(fm.space_mandate).toContain("GNA-3");
+  });
+
+  it("every SE authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_SE) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

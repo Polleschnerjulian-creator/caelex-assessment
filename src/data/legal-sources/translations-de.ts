@@ -4283,6 +4283,224 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SWEDEN (SE) — 15 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "SE-OST-1967",
+    {
+      title: "Weltraumvertrag — Schwedischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Ratifiziert 11. Oktober 1967 — einen Tag nach Inkrafttreten. Das Weltraumgesetz von 1982 setzt Art. VI um.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-LIABILITY-CONV",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Schwedischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "§ 6 des Gesetzes von 1982 setzt den Rückgriffsmechanismus um — Betreiber erstattet dem Staat, aber OHNE Versicherungspflicht, OHNE Haftungsobergrenze, OHNE staatlichen Rückhalt.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-REGISTRATION-CONV",
+    {
+      title: "Registrierungsübereinkommen — Schwedischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Umgesetzt durch § 4 der Verordnung (1982:1069). Rymdstyrelsen führt das Register.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Schweden als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "38. Unterzeichner, 16. April 2024. Mondvertrag NICHT unterzeichnet.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SE-SPACE-ACT-1982",
+    {
+      title: "Weltraumgesetz (Lag om rymdverksamhet)",
+      scopeDescription:
+        "Eines der frühesten Weltraumgesetze der Welt. Nur 6 Paragraphen auf einer A4-Seite. Keine Versicherung, keine Haftungsobergrenze, keine Weltraummüllvorschriften, keine Lizenzkriterien. SOU 2021:91-Reform (455 Seiten) seit 2021 blockiert.",
+      provisions: {
+        "§ 1": {
+          title: "Geltungsbereich — Höhenforschungsraketen AUSGENOMMEN",
+          summary:
+            "Explizit AUSGENOMMEN: Signalempfang und Höhenforschungsraketen. Orbitale Starts erfordern Lizenzierung.",
+        },
+        "§ 2": {
+          title: "Doppelte Lizenzpflicht",
+          summary:
+            "Territorial- UND Staatsangehörigkeitsbasis. Schwedischer Staat ist befreit.",
+        },
+        "§ 3": {
+          title: "Regierungsentscheidung — keine Kriterien",
+          summary:
+            "Lizenzen durch die Regierung (Kabinett). KEINE Kriterien für Erteilung oder Ablehnung — vollständig diskretionär.",
+        },
+        "§ 6": {
+          title: "Staatsrückgriff — keine Obergrenze, keine Versicherung",
+          summary:
+            "Betreiber erstattet dem Staat Zahlungen aus dem Haftungsübereinkommen. KEINE Versicherungspflicht, KEINE Haftungsobergrenze, KEINE staatliche Absicherung.",
+          complianceImplication:
+            "Schwedens am meisten kritisierte Lücke. SOU 2021:91 schlug 600 Mio. SEK (~55 Mio. EUR) Pflichtversicherung vor — nicht verabschiedet.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-SPACE-ORDINANCE-1982",
+    {
+      title: "Verordnung über Weltraumtätigkeiten",
+      provisions: {
+        "§ 1": {
+          title: "Antragsverfahren",
+          summary:
+            "Schriftliche Anträge an Rymdstyrelsen, die PTS konsultiert und an die Regierung weiterleitet.",
+        },
+        "§ 4": {
+          title: "Registrierung von Weltraumgegenständen",
+          summary:
+            "Rymdstyrelsen führt Register. Daten über Außenministerium an UN-Generalsekretär.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-SOU-2021-91",
+    {
+      title: "SOU 2021:91 — ‚En ny rymdlag' (Ein neues Weltraumgesetz)",
+      provisions: {
+        "Full report": {
+          title: "Umfassende Weltraumrechtsreform (455 Seiten)",
+          summary:
+            "Vorschläge: SNSA als Lizenzbehörde; Pflichtversicherung 600 Mio. SEK; strikte Haftung; 100 km Schwelle; 25-Jahre-Deorbit; Umweltbestimmungen. Remiss endete April 2022 — kein Gesetzentwurf eingebracht, Reform blockiert.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SE-LEK-2022",
+    {
+      title: "Gesetz über elektronische Kommunikation (LEK)",
+      provisions: {
+        "Ch. 1 § 7 / Ch. 3 § 1": {
+          title: "Satellitenspektrumverwaltung",
+          summary:
+            "Telekommunikationsnetze umfassen Satellitennetze. PTS verwaltet ITU-Koordination und Erdstationslizenzen.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-DUAL-USE-2000",
+    {
+      title: "Dual-Use-Kontrollgesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Exportkontrolle für Weltraumtechnologie",
+          summary:
+            "Ergänzt EU-Dual-Use-Verordnung. ISP ist Lizenzbehörde. Einzigartig: demokratischer Status des Empfängerlandes als ‚zentrale Bedingung' bei Militärexporten.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-CYBERSECURITY-2025",
+    {
+      title: "Cybersicherheitsgesetz (NIS2-Umsetzung)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Richtlinienumsetzung",
+          summary:
+            "Weltraum als kritischer Sektor. MCF (vormals MSB) als Koordinator. Höchststrafen: 10 Mio. EUR oder 2% des Umsatzes. Schweden verfehlte die Frist Oktober 2024.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-DATASKYDDSLAGEN-2018",
+    {
+      title: "Datenschutzgesetz (DSGVO-Ergänzung)",
+      provisions: {
+        "Full instrument": {
+          title: "Nationale DSGVO-Ergänzung",
+          summary:
+            "IMY als Aufsichtsbehörde. Relevant für Erdbeobachtungsdaten und hochauflösende Bilder.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-US-TSA-2025",
+    {
+      title: "US-Schweden Technologieschutzabkommen (Esrange)",
+      provisions: {
+        "Full instrument": {
+          title: "ITAR-Technologieschutz in Esrange",
+          summary:
+            "Nur das 6. US-TSA weltweit. Ermöglicht Firefly-Alpha-Starts von Esrange. Fünf Jahre Verhandlungen. Unterzeichnet 20. Juni 2025.",
+          complianceImplication:
+            "Wesentlicher Ermöglicher für US-Starts von Esrange.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-SPACE-STRATEGY-2018",
+    {
+      title: "Strategie für schwedische Weltraumtätigkeiten (2018)",
+      provisions: {
+        "Full document": {
+          title: "Nationale zivile Weltraumstrategie",
+          summary:
+            "Schwerpunkte: ESA-Kooperation, nachhaltige Weltraumnutzung, Sicherheit, industrielle Wettbewerbsfähigkeit.",
+        },
+      },
+    },
+  ],
+  [
+    "SE-DEFENCE-SPACE-STRATEGY-2024",
+    {
+      title: "Verteidigungs- und Sicherheits-Weltraumstrategie (2024)",
+      provisions: {
+        "Full document": {
+          title: "Schwedens erste Verteidigungsweltraumstrategie",
+          summary:
+            "Vier Säulen: Handlungsfreiheit, Gesamtverteidigung, kohärente Politik, internationale Partnerschaft. Erster Militärsatellit GNA-3 im August 2024. 5,3 Mrd. SEK für Weltraumfähigkeiten.",
+          complianceImplication:
+            "NATO-Beitritt, Militärsatelliten, responsive Starts von Esrange.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -5250,6 +5468,120 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Justiz- und Bereitsschaftsministerium",
       mandate:
         "Entwirft NIS2-Umsetzungsgesetz. Verantwortlich für das Digitalsicherheitsgesetz (NIS1-Umsetzung, in Kraft 1. Oktober 2025).",
+    },
+  ],
+
+  // Sweden Authorities (14)
+  [
+    "SE-SNSA",
+    {
+      name: "Schwedische Raumfahrtagentur (Rymdstyrelsen)",
+      mandate:
+        "Zentrale Behörde unter dem Bildungsministerium. ~30 Mitarbeiter, Solna. Bereitet Lizenzanträge vor, überwacht lizenzierte Tätigkeiten, führt Register. Entscheidet NICHT über Lizenzen — leitet an die Regierung weiter. ~70% des ~900 MSEK Budgets für ESA.",
+    },
+  ],
+  [
+    "SE-SSC",
+    {
+      name: "SSC Space AB (vormals Swedish Space Corporation)",
+      mandate:
+        "100% staatseigen, gegründet 1972. ~750 Mitarbeiter. Betreibt Esrange Space Center und eines der weltweit größten kommerziellen Bodenstationsnetze. Nicht Regulierer — Schlüssel-Betriebsunternehmen.",
+    },
+  ],
+  [
+    "SE-PTS",
+    {
+      name: "Schwedische Post- und Telekommunikationsbehörde (PTS)",
+      mandate:
+        "Satellitenspektrumzuweisung, Erdstationslizenzen, ITU-Vertretung. Wird bei allen Weltraumlizenzen konsultiert.",
+    },
+  ],
+  [
+    "SE-ISP",
+    {
+      name: "Schwedische Inspektionsbehörde für strategische Produkte (ISP)",
+      mandate:
+        "Zuständig für Dual-Use- und Militärexportlizenzen. Kontrolliert Weltraumtechnologieexporte. Auch FDI-Prüfbehörde.",
+    },
+  ],
+  [
+    "SE-FORSVARSMAKTEN",
+    {
+      name: "Schwedische Streitkräfte — Weltraumabteilung",
+      mandate:
+        "Rymdavdelningen seit 2023 unter der Luftwaffe. Erster Militärsatellit GNA-3 am 16. August 2024. 5,3 Mrd. SEK für Weltraum, 1,3 Mrd. SEK für Aufklärungssatelliten.",
+    },
+  ],
+  [
+    "SE-FMV",
+    {
+      name: "Schwedische Verteidigungsmaterialverwaltung (FMV)",
+      mandate:
+        "209 Mio. SEK Vertrag mit SSC für Satellitenstarttfähigkeit (März 2026). ~10 Militär-ISR-Satelliten (~142 Mio. USD, Januar 2026). Militärstartfähigkeit bis 2028 geplant.",
+    },
+  ],
+  [
+    "SE-IMY",
+    {
+      name: "Schwedische Datenschutzbehörde (IMY)",
+      mandate:
+        "Nationale DSGVO-Aufsichtsbehörde. Relevant für Erdbeobachtungsdaten und hochauflösende Bilder.",
+    },
+  ],
+  [
+    "SE-MCF",
+    {
+      name: "Behörde für Zivilverteidigung (MCF, vormals MSB)",
+      mandate:
+        "Nationale Koordinierungsstelle für NIS2/Cybersicherheitsgesetz. Weltraumbetreiber müssen Cybersicherheitsrisikomanagement und Vorfallmeldung einhalten.",
+    },
+  ],
+  [
+    "SE-SMHI",
+    {
+      name: "Schwedisches Meteorologisches und Hydrologisches Institut (SMHI)",
+      mandate:
+        "Schwedens EUMETSAT-Vertreter. ~650 Mitarbeiter. Führt NWC-SAF und CM-SAF. Leitet Arctic Weather Satellite Programm.",
+    },
+  ],
+  [
+    "SE-IRF",
+    {
+      name: "Schwedisches Institut für Raumphysik (IRF)",
+      mandate:
+        "Staatliches Forschungsinstitut, Kiruna. Baut Instrumente für schwedische und internationale Satellitenmissionen.",
+    },
+  ],
+  [
+    "SE-FOI",
+    {
+      name: "Schwedische Verteidigungsforschungsagentur (FOI)",
+      mandate:
+        "Verteidigungsbezogene Weltraumforschung. Mitentwicklung des GNA-3-Satelliten. Bewertete Dual-Use-Risiken chinesischen Zugangs zu SSC-Stationen (führte zu Zugangssperre 2020).",
+    },
+  ],
+  [
+    "SE-MOD",
+    {
+      name: "Verteidigungsministerium",
+      mandate:
+        "Militärische Weltraumpolitik. Veröffentlichte Schwedens erste Verteidigungsweltraumstrategie (4. Juli 2024). NATO-Beitritt erhöhte Esrange als responsive Startanlage.",
+    },
+  ],
+  [
+    "SE-UTRIKESDEP",
+    {
+      name: "Außenministerium",
+      mandate:
+        "Vertragsplichten und COPUOS-Vertretung. US-Schweden TSA (20. Juni 2025). ISP untersteht diesem Ministerium.",
+    },
+  ],
+  [
+    "SE-NATURVARDSVERKET",
+    {
+      name: "Schwedische Umweltschutzbehörde (Naturvårdsverket)",
+      mandate:
+        "Umweltgenehmigungen für Esrange-Startoperationen unter dem Miljöbalken (Umweltgesetzbuch, 1998:808).",
     },
   ],
 ]);
