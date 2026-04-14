@@ -5211,6 +5211,152 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PORTUGAL (PT) — 10 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "PT-OST-1967",
+    {
+      title: "Weltraumvertrag — Portugiesischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Legislativ 1971 genehmigt, aber Hinterlegung erst 1996 — 25-jährige Lücke wegen Nelkenrevolution 1974. Weltraumgesetz 2019 setzt Art. VI vollständig um.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-LIABILITY-2019",
+    {
+      title: "Weltraumhaftungsübereinkommen — Portugiesischer Beitrittsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "Bemerkenswert spät: 47 JAHRE nach Verabschiedung beigetreten (2019). Massengestaffelte Versicherung: 2 Mio. EUR (≤50 kg), 60 Mio. EUR (>500 kg). Staatsrückgriff max. 50 Mio. EUR.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-REGISTRATION-2018",
+    {
+      title: "Registrierungsübereinkommen — Portugiesischer Beitrittsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Registerpflicht",
+          summary:
+            "Beitritt Oktober 2018. ANACOM führt Register. Registrierung innerhalb 2 Tagen nach Start. Erste Objekte UN-registriert: November 2025.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Portugal als Unterzeichner (2026)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "60. Unterzeichner, 11. Januar 2026 in Lissabon. Mondvertrag NICHT ratifiziert.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-SPACE-ACT-2019",
+    {
+      title: "Weltraumgesetz (Decreto-Lei n.º 16/2019)",
+      scopeDescription:
+        "Umfassendes Weltraumgesetz. Drei Lizenztypen (seit 2024). Massengestaffelte Versicherung. ANACOM als Doppelrolle: Telekommunikationsregulator + Weltraumbehörde. Erste Lizenzen 2024. Weltraumhafen Santa Maria lizenziert August 2025.",
+      provisions: {
+        Licensing: {
+          title: "Drei Lizenztypen (seit 2024-Änderung)",
+          summary:
+            "Einzellizenzen, Globallizenzen, Gemeinschaftslizenzen. Portal do Espaço. Entscheidung 90 Tage. Weltraumhafen-Lizenzen: 240 Tage, bis 15 Jahre (verlängerbar).",
+          complianceImplication:
+            "Erste Lizenzen 2024 erteilt. Erste Weltraumhafen-Lizenz: August 2025 (Santa Maria, Azoren).",
+        },
+        "Art. 18-19": {
+          title: "Doppeltes Haftungsregime",
+          summary:
+            "Strikte Haftung für Oberflächen-/Flugzeugschäden. Verschuldenshaftung für andere Schäden. Staatsrückgriff max. 50 Mio. EUR.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-SPACE-REGULATION-2019",
+    {
+      title: "Weltraumverordnung (ANACOM-Regulamento 697/2019)",
+      provisions: {
+        "Full instrument": {
+          title: "Detaillierte Lizenz- und Registrierungsverfahren",
+          summary:
+            "Verfahren für alle Lizenztypen, Vorqualifizierung, Registrierung, Eigentumsübertragung. 2024-Änderung: Weltraumhafen-Lizenzverfahren.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-INSURANCE-2023",
+    {
+      title: "Weltraumversicherungs-Verordnung (Portaria 279/2023)",
+      provisions: {
+        "Full instrument": {
+          title: "Massengestaffelte Pflichtversicherung",
+          summary:
+            "≤50 kg: 2 Mio. EUR; 50-500 kg: gestaffelter Betrag; >500 kg: 60 Mio. EUR. Staatsrückgriff max. 50 Mio. EUR. Befreiung für kleine Satelliten, Wissenschaft und reduziertes Risiko möglich.",
+          complianceImplication:
+            "Massenstaffelung: einzigartig in Europa. 2-Mio.-EUR-Untergrenze besonders NewSpace-freundlich.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-ECOMM-2022",
+    {
+      title: "Gesetz über elektronische Kommunikation",
+      provisions: {
+        "Full instrument": {
+          title: "Satellitenspektrum und ANACOMs Doppelmandat",
+          summary:
+            "Umsetzt EU-Kommunikationskodex. ANACOMs Doppelrolle als Telekommunikationsregulator UND Weltraumbehörde ist einzigartig in Europa.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-NIS2-2025",
+    {
+      title: "Rechtliches Regime für Cybersicherheit (NIS2-Umsetzung)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Umsetzung",
+          summary:
+            "CNCS als zuständige Behörde. In Kraft 3. April 2026. Strafen bis 10 Mio. EUR oder 2% des weltweiten Umsatzes.",
+        },
+      },
+    },
+  ],
+  [
+    "PT-SPACE-STRATEGY-2030",
+    {
+      title: "Strategie Portugal Espaço 2030",
+      provisions: {
+        "Full document": {
+          title: "Atlantische Weltraumnation",
+          summary:
+            "Ziel: 500 Mio. EUR Jahresumsatz, ~1.000 Fachkräfte bis 2030. CM25: 204,8 Mio. EUR (Rekord, 51% Steigerung). ESA-Rendite >2,17 EUR pro investiertem Euro.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -6651,6 +6797,87 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Swiss Space Industries Group (SSIG)",
       mandate:
         "~100 Unternehmen, ~2.500 Beschäftigte. Beyond Gravity CHF 402 Mio. Umsatz.",
+    },
+  ],
+
+  // Portugal Authorities (10)
+  [
+    "PT-ANACOM",
+    {
+      name: "ANACOM — Nationale Kommunikationsbehörde / Interim-Weltraumbehörde",
+      mandate:
+        "DOPPELROLLE: Telekommunikationsregulator UND Interim-Weltraumbehörde. Lizenziert Weltraumaktivitäten, überwacht, führt Register. Erste Lizenzen 2024, erste Weltraumhafen-Lizenz August 2025.",
+    },
+  ],
+  [
+    "PT-PTSPACE",
+    {
+      name: "Portugal Space — Portugiesische Raumfahrtagentur",
+      mandate:
+        "Setzt Strategie Portugal Espaço 2030 um. Vorabstellungnahmen zu Lizenzen (seit 2024). Sitz: Santa Maria Island, Azoren.",
+    },
+  ],
+  [
+    "PT-MECI",
+    {
+      name: "Ministerium für Bildung, Wissenschaft und Innovation",
+      mandate:
+        "Zuständiges Ministerium für Weltraumpolitik. Interministerieller Arbeitskreis Weltraum (Despacho 10547/2025).",
+    },
+  ],
+  [
+    "PT-MDN",
+    {
+      name: "Verteidigungsministerium — DGRDN",
+      mandate:
+        "Nationales SST-Programm. EU-SST-Konsortium (seit Dezember 2018). Genehmigung für Weltraumhafen-Lizenzen. 16,2% des CM25-Beitrags.",
+    },
+  ],
+  [
+    "PT-AT-CUSTOMS",
+    {
+      name: "Steuer- und Zollbehörde — Exportkontrolle",
+      mandate:
+        "Nationale Behörde für Dual-Use-Exportkontrollen unter DL 130/2015.",
+    },
+  ],
+  [
+    "PT-CNPD",
+    {
+      name: "Nationale Datenschutzkommission (CNPD)",
+      mandate:
+        "DSGVO-Aufsichtsbehörde. Keine spezifische Orientierung zu Satelliten-/EO-Daten.",
+    },
+  ],
+  [
+    "PT-CNCS",
+    {
+      name: "Nationales Cybersicherheitszentrum (CNCS)",
+      mandate:
+        "NIS2-Behörde. Regime Jurídico da Cibersegurança in Kraft 3. April 2026.",
+    },
+  ],
+  [
+    "PT-IPMA",
+    {
+      name: "Portugiesisches Institut für Meer und Atmosphäre (IPMA)",
+      mandate: "Erdbeobachtung und Meteorologie. EUMETSAT-Rahmen.",
+    },
+  ],
+  [
+    "PT-AZORES-SPACE",
+    {
+      name: "EMA-Espaço — Azoren-Weltraummissionsstruktur",
+      mandate:
+        "Koordiniert Azoren-Weltraumaktivitäten. Bindende Stellungnahmen zu Weltraumhafeninstallationen. Eigene Weltraumgesetzgebung: DLR 9/2019/A.",
+    },
+  ],
+  [
+    "PT-AIR-CENTRE",
+    {
+      name: "Atlantic International Research Centre",
+      mandate:
+        "Terceira Island, Azoren. 16 kooperierende Staaten/Regionen. Atlantic Constellation Satellitenprojekt.",
     },
   ],
 ]);

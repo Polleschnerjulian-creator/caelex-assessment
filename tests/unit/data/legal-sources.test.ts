@@ -40,6 +40,8 @@ import {
   AUTHORITIES_AT,
   LEGAL_SOURCES_CH,
   AUTHORITIES_CH,
+  LEGAL_SOURCES_PT,
+  AUTHORITIES_PT,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2828,6 +2830,141 @@ describe("Legal Sources — CH authority accuracy", () => {
 
   it("every CH authority has a valid website URL", () => {
     for (const a of AUTHORITIES_CH) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// PORTUGAL (PT)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── PT dataset sanity ──────────────────────────────────────────────────
+describe("Legal Sources — PT dataset sanity", () => {
+  it("PT has at least 8 legal sources", () => {
+    expect(LEGAL_SOURCES_PT.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("PT has exactly 10 authorities", () => {
+    expect(AUTHORITIES_PT).toHaveLength(10);
+  });
+
+  it("PT source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_PT) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every PT source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_PT) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every PT source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_PT) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every PT source references only known authorities", () => {
+    const authorityIds = new Set(AUTHORITIES_PT.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_PT) {
+      for (const caId of s.competent_authorities) {
+        expect(
+          authorityIds.has(caId),
+          `${s.id} references unknown authority ${caId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("related_sources reference only known PT sources", () => {
+    const allSourceIds = new Set(LEGAL_SOURCES_PT.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_PT) {
+      for (const relId of s.related_sources) {
+        if (relId.startsWith("PT-")) {
+          expect(
+            allSourceIds.has(relId),
+            `${s.id} references unknown related source ${relId}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+// ─── PT regulatory accuracy ─────────────────────────────────────────────
+describe("Legal Sources — PT regulatory accuracy", () => {
+  it("Space Act is DL 16/2019 and in force", () => {
+    const act = getLegalSourceById("PT-SPACE-ACT-2019")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("16/2019");
+    expect(act.status).toBe("in_force");
+  });
+
+  it("Insurance order is Portaria 279/2023", () => {
+    const ins = getLegalSourceById("PT-INSURANCE-2023")!;
+    expect(ins).toBeDefined();
+    expect(ins.official_reference).toContain("279/2023");
+  });
+
+  it("Artemis Accords signed 11 January 2026", () => {
+    const aa = getLegalSourceById("PT-ARTEMIS-ACCORDS")!;
+    expect(aa).toBeDefined();
+    expect(aa.date_enacted).toBe("2026-01-11");
+  });
+
+  it("NIS2 transposition is in force", () => {
+    const nis2 = getLegalSourceById("PT-NIS2-2025")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("in_force");
+    expect(nis2.date_in_force).toBe("2026-04-03");
+  });
+});
+
+// ─── PT lookup functions ────────────────────────────────────────────────
+describe("Legal Sources — PT lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns PT sources", () => {
+    const sources = getLegalSourcesByJurisdiction("PT");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_PT.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 10 PT authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("PT");
+    expect(auths).toHaveLength(10);
+  });
+
+  it("getAvailableJurisdictions includes PT", () => {
+    expect(getAvailableJurisdictions()).toContain("PT");
+  });
+});
+
+// ─── PT authority accuracy ──────────────────────────────────────────────
+describe("Legal Sources — PT authority accuracy", () => {
+  it("ANACOM has dual role as telecom + space authority", () => {
+    const anacom = getAuthorityById("PT-ANACOM")!;
+    expect(anacom).toBeDefined();
+    expect(anacom.space_mandate).toContain("DUAL ROLE");
+    expect(anacom.applicable_areas).toContain("licensing");
+  });
+
+  it("Portugal Space is the space agency", () => {
+    const ptspace = getAuthorityById("PT-PTSPACE")!;
+    expect(ptspace).toBeDefined();
+    expect(ptspace.name_en).toContain("Space Agency");
+  });
+
+  it("every PT authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_PT) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
