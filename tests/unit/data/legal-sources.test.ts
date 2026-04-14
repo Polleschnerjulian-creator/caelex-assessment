@@ -42,6 +42,8 @@ import {
   AUTHORITIES_CH,
   LEGAL_SOURCES_PT,
   AUTHORITIES_PT,
+  LEGAL_SOURCES_IE,
+  AUTHORITIES_IE,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2965,6 +2967,144 @@ describe("Legal Sources — PT authority accuracy", () => {
 
   it("every PT authority has a valid website URL", () => {
     for (const a of AUTHORITIES_PT) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IRELAND (IE)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── IE dataset sanity ─────────────────────────────────────────────────
+describe("Legal Sources — IE dataset sanity", () => {
+  it("IE has at least 5 legal sources", () => {
+    expect(LEGAL_SOURCES_IE.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it("IE has exactly 8 authorities", () => {
+    expect(AUTHORITIES_IE).toHaveLength(8);
+  });
+
+  it("IE source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_IE) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every IE source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_IE) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every IE source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_IE) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every IE source references only known authorities", () => {
+    const authorityIds = new Set(AUTHORITIES_IE.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_IE) {
+      for (const caId of s.competent_authorities) {
+        expect(
+          authorityIds.has(caId),
+          `${s.id} references unknown authority ${caId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("related_sources reference only known IE sources", () => {
+    const allSourceIds = new Set(LEGAL_SOURCES_IE.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_IE) {
+      for (const relId of s.related_sources) {
+        if (relId.startsWith("IE-")) {
+          expect(
+            allSourceIds.has(relId),
+            `${s.id} references unknown related source ${relId}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+// ─── IE regulatory accuracy ─────────────────────────────────────────────
+describe("Legal Sources — IE regulatory accuracy", () => {
+  it("OST ratified but no national space act", () => {
+    const ost = getLegalSourceById("IE-OST-1967")!;
+    expect(ost).toBeDefined();
+    expect(ost.status).toBe("in_force");
+    expect(ost.key_provisions[0].summary).toContain("Dáil approval");
+  });
+
+  it("Liability Convention ratified with belated Dáil approval", () => {
+    const liab = getLegalSourceById("IE-LIABILITY-1972")!;
+    expect(liab).toBeDefined();
+    expect(liab.status).toBe("in_force");
+    expect(liab.type).toBe("international_treaty");
+  });
+
+  it("Wireless Telegraphy Act 1926 is the satellite licensing basis", () => {
+    const wt = getLegalSourceById("IE-WIRELESS-TELEGRAPHY-1926")!;
+    expect(wt).toBeDefined();
+    expect(wt.date_enacted).toBe("1926-07-24");
+    expect(wt.type).toBe("federal_law");
+  });
+
+  it("Export Control Act 2023 is in force", () => {
+    const ec = getLegalSourceById("IE-EXPORT-CONTROL-2023")!;
+    expect(ec).toBeDefined();
+    expect(ec.status).toBe("in_force");
+    expect(ec.official_reference).toContain("35/2023");
+  });
+});
+
+// ─── IE lookup functions ────────────────────────────────────────────────
+describe("Legal Sources — IE lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns IE sources", () => {
+    const sources = getLegalSourcesByJurisdiction("IE");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_IE.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 8 IE authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("IE");
+    expect(auths).toHaveLength(8);
+  });
+
+  it("getAvailableJurisdictions includes IE", () => {
+    expect(getAvailableJurisdictions()).toContain("IE");
+  });
+});
+
+// ─── IE authority accuracy ──────────────────────────────────────────────
+describe("Legal Sources — IE authority accuracy", () => {
+  it("DETE is the lead ministry for space policy", () => {
+    const dete = getAuthorityById("IE-DETE")!;
+    expect(dete).toBeDefined();
+    expect(dete.space_mandate).toContain("Lead government department");
+    expect(dete.applicable_areas).toContain("licensing");
+  });
+
+  it("ComReg handles satellite spectrum", () => {
+    const comreg = getAuthorityById("IE-COMREG")!;
+    expect(comreg).toBeDefined();
+    expect(comreg.space_mandate).toContain("Satellite spectrum");
+    expect(comreg.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("every IE authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_IE) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

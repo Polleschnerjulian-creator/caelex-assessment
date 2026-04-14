@@ -5357,6 +5357,95 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // IRELAND (IE) — 6 Sources
+  [
+    "IE-OST-1967",
+    {
+      title:
+        "Weltraumvertrag — Irischer Ratifizierungsvermerk (Dáil-Genehmigung 2022)",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit — keine nationale Umsetzung",
+          summary:
+            "Unterzeichnet 1967, aber verfassungsrechtlich erforderliche Dáil-Genehmigung erst 12. Juli 2022 (55 Jahre spät) — Notdebatte wegen EIRSAT-1. Irland hat KEIN Genehmigungsregime zur Umsetzung von Art. VI.",
+          complianceImplication:
+            "EIRSAT-1 wurde durch Ad-hoc-Kabinettsentscheidung genehmigt. Kein dauerhaftes Verfahren für künftige Missionen.",
+        },
+      },
+    },
+  ],
+  [
+    "IE-LIABILITY-1972",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Irischer Ratifizierungsvermerk (Dáil-Genehmigung 2022)",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein nationales Rahmenwerk",
+          summary:
+            "KEIN Weltraumhaftungsgesetz, KEINE Pflichtversicherung, KEIN Entschädigungsmechanismus. Unter Irlands dualistischem System ist das Übereinkommen NICHT direkt vor irischen Gerichten durchsetzbar ohne Umsetzungsgesetz (existiert nicht).",
+        },
+      },
+    },
+  ],
+  [
+    "IE-WIRELESS-TELEGRAPHY-1926",
+    {
+      title:
+        "Gesetz über drahtlose Telegrafie 1926 — Satelliten-Erdstationslizenzen",
+      provisions: {
+        "Full instrument + S.I. No. 96/2024": {
+          title: "Grundlage ALLER Satellitenlizenzen in Irland",
+          summary:
+            "Ein 100 Jahre altes Drahtlos-Gesetz = Irlands EINZIGE gesetzliche Grundlage für die Regulierung jeglicher Satellitenoperationen.",
+        },
+      },
+    },
+  ],
+  [
+    "IE-EXPORT-CONTROL-2023",
+    {
+      title: "Exportkontrollgesetz 2023",
+      provisions: {
+        "Full instrument": {
+          title: "Irlands stärkstes Weltraum-Regulierungsinstrument",
+          summary:
+            "Umsetzt EU-Dual-Use-Verordnung. Strafen: 10 Mio. EUR oder 3× Warenwert und bis 5 Jahre Haft. Irland führte Wassenaar-Plenum 2022. Mitglied aller großen Exportkontrollregime.",
+          complianceImplication:
+            "Exportkontrolle ist Irlands ENTWICKELTESTES Weltraum-Regulierungsinstrument.",
+        },
+      },
+    },
+  ],
+  [
+    "IE-ESA-PRIVILEGES-1976",
+    {
+      title: "ESA-Vorrechte und Immunitäten (Irland) 1976",
+      provisions: {
+        "Full instrument": {
+          title: "ESA-Privilegien im irischen Recht",
+          summary:
+            "Irland unterzeichnete die ESA-Konvention am LETZTEN möglichen Tag (31. Dezember 1975). ESA-Gründungsmitglied.",
+        },
+      },
+    },
+  ],
+  [
+    "IE-SPACE-STRATEGY-2019",
+    {
+      title: "Nationale Weltraumstrategie für Unternehmen 2019-2025",
+      provisions: {
+        "Full document": {
+          title: "Nur Unternehmensstrategie — kein Regulierungsrahmen",
+          summary:
+            "Irlands einzige Weltraumstrategie. Ausschließlich unternehmensorientiert — behandelt NICHT Lizenzierung, Haftung, Weltraummüll oder Weltraumbehörde. CM25: 170 Mio. EUR. 116 ESA-aktive Unternehmen. Regierung verlässt sich auf EU Space Act (2030) als Lösung.",
+          complianceImplication:
+            "Kein nationales Weltraumgesetz geplant. EU Space Act = voraussichtlich Irlands erstes umfassendes Rahmenwerk.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -6878,6 +6967,71 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Atlantic International Research Centre",
       mandate:
         "Terceira Island, Azoren. 16 kooperierende Staaten/Regionen. Atlantic Constellation Satellitenprojekt.",
+    },
+  ],
+
+  // Ireland Authorities (8)
+  [
+    "IE-DETE",
+    {
+      name: "Ministerium für Unternehmen, Handel und Beschäftigung",
+      mandate:
+        "Federführendes Ministerium für Weltraumpolitik. ESA-Delegationsministerium. Genehmigte EIRSAT-1 per Kabinettsentscheidung. Exportkontrollbehörde.",
+    },
+  ],
+  [
+    "IE-EI",
+    {
+      name: "Enterprise Ireland",
+      mandate:
+        "De-facto-Raumfahrtagentur für Unternehmen. Koordiniert ESA-Industriebeteiligung. ESA BIC Ireland. 116 ESA-aktive Unternehmen. KEINE Regulierungs- oder Aufsichtsbefugnis.",
+    },
+  ],
+  [
+    "IE-COMREG",
+    {
+      name: "Kommunikationsregulierungskommission (ComReg)",
+      mandate:
+        "Satellitenspektrum und Erdstationslizenzen. NIS2-Sektorbehörde für Weltraum. Einzige regulierte Weltraumfunktion in Irland.",
+    },
+  ],
+  [
+    "IE-DFA",
+    {
+      name: "Außenministerium",
+      mandate:
+        "Internationale Vertragspflichten. Würde diplomatische Antwort auf Haftungsansprüche leiten.",
+    },
+  ],
+  [
+    "IE-DPC",
+    {
+      name: "Datenschutzkommission (DPC)",
+      mandate:
+        "DSGVO-Aufsicht. Leitende Aufsichtsbehörde für Google, Apple, Meta, Microsoft. Zuständig für Satellitendatenverarbeitung.",
+    },
+  ],
+  [
+    "IE-NCSC",
+    {
+      name: "Nationales Cybersicherheitszentrum",
+      mandate:
+        "CSIRT-IE. NIS2-Umsetzung ausstehend — EK-Stellungnahme Mai 2025.",
+    },
+  ],
+  [
+    "IE-IAA",
+    {
+      name: "Irische Luftfahrtbehörde",
+      mandate: "Shannon FIR (455.000 km²). Kein explizites Weltraummandat.",
+    },
+  ],
+  [
+    "IE-MET-EIREANN",
+    {
+      name: "Met Éireann",
+      mandate:
+        "EUMETSAT-Gründungsmitglied (1983). Direktor Eoin Moran = EUMETSAT-Ratsvorsitzender.",
     },
   ],
 ]);
