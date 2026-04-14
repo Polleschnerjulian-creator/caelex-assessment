@@ -3728,6 +3728,314 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SPAIN (ES) — 21 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "ES-OST-1967",
+    {
+      title: "Weltraumvertrag — Spanischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit und Genehmigungspflicht",
+          summary:
+            "Spanien trägt die Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEINEN nationalen Mechanismus, der diese Verpflichtung umsetzt — die grundlegendste Regulierungslücke.",
+          complianceImplication:
+            "Art. VI erfordert die Genehmigung privater Tätigkeiten, aber Spanien hat kein Genehmigungsregime.",
+        },
+        "Art. VII": {
+          title: "Haftung des Startstaats",
+          summary:
+            "Spanien ist ‚Startstaat' für von seinem Hoheitsgebiet oder durch spanische Einrichtungen gestartete Objekte.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-RESCUE-2001",
+    {
+      title: "Weltraumrettungsübereinkommen — Spanischer Beitrittsvermerk",
+      provisions: {
+        "Art. 1-4": {
+          title: "Rettung und Rückführung von Raumfahrern",
+          summary:
+            "Spanien trat erst 2001 bei — 33 Jahre nach Öffnung des Vertrags. Eine der spätesten Beitritte unter ESA-Gründungsmitgliedern.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-LIABILITY-1972",
+    {
+      title: "Weltraumhaftungsübereinkommen — Spanischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "Spanien haftet absolut für Oberflächenschäden. Es gibt KEIN nationales Versicherungs-, Haftungs- oder Rückgriffsregime für Weltraumbetreiber.",
+          complianceImplication:
+            "Keine gesetzlichen Versicherungspflichten, keine Haftungsobergrenzen, keine Finanzgarantien, kein staatlicher Rückhalt.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-REGISTRATION-1975",
+    {
+      title: "Registrierungsübereinkommen — Spanischer Beitrittsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Umgesetzt durch Real Decreto 278/1995 — das Registro Español de Objetos Espaciales.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Spanien als Unterzeichner (2023)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "Spanien unterzeichnete am 30. Mai 2023 als 25. Unterzeichnerstaat. Spanien hat den Mondvertrag NICHT ratifiziert und NICHT unterzeichnet.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-ORDEN-1968",
+    {
+      title: "Ministerialerlass vom 19. April 1968 — Private Weltraumstarts",
+      provisions: {
+        "Full instrument": {
+          title: "Regelung privater Weltraumstarts",
+          summary:
+            "Regelt private Weltraumstarts vom Staatsgebiet. Technisch noch in Kraft, aber allgemein als veraltet und unzureichend anerkannt. Älteste noch geltende weltraumspezifische Vorschrift unter den großen europäischen Raumfahrtnationen.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-RD-278-1995",
+    {
+      title:
+        "Königlicher Erlass 278/1995 — Spanisches Register der Weltraumgegenstände",
+      scopeDescription:
+        "Spaniens EINZIGES substanzielles weltraumspezifisches Rechtsinstrument neben dem Erlass von 1968. Eine Änderung zur Erweiterung der Datenanforderungen und Einführung von Versicherungspflichten ist in öffentlicher Konsultation, aber nicht veröffentlicht.",
+      provisions: {
+        "Art. 1": {
+          title: "Registererrichtung",
+          summary:
+            "Errichtet das Registro Español de Objetos Espaciales zur Umsetzung des Registrierungsübereinkommens von 1975.",
+        },
+        "Art. 5-6": {
+          title: "Registrierungspflichten und Datenanforderungen",
+          summary:
+            "Definiert Registrierungspflichten: Name des Startstaats, Bezeichnung, Orbitalparameter.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-LEY-17-2022",
+    {
+      title:
+        "Gesetz 17/2022 — Wissenschaftsgesetzänderung (AEE-Gründungsermächtigung)",
+      provisions: {
+        "Disposición Adicional Tercera": {
+          title: "Ermächtigung zur AEE-Gründung",
+          summary:
+            "Ermächtigte die Gründung der Agencia Espacial Española als agencia estatal unter dem Wissenschafts- und dem Verteidigungsministerium.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-RD-158-2023",
+    {
+      title:
+        "Königlicher Erlass 158/2023 — Statut der Agencia Espacial Española",
+      scopeDescription:
+        "Schafft Spaniens erste eigene Raumfahrtagentur. Art. 5(x) beauftragt die AEE, ein Anteproyecto de Ley de Actividades Espaciales vorzuschlagen.",
+      provisions: {
+        "Art. 5": {
+          title: "AEE-Kompetenzen",
+          summary:
+            "Umfassende Kompetenzen einschließlich Weltraum-F&E-Koordination, ESA-Beitragsverwaltung und — entscheidend — Mandat für ein Weltraumtätigkeitengesetz.",
+          complianceImplication:
+            "Die AEE ist ausdrücklich beauftragt, Spaniens erstes umfassendes Weltraumgesetz zu entwerfen. Bis zur Verabschiedung gibt es kein Genehmigungs- oder Versicherungsregime.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-RD-524-2022",
+    {
+      title:
+        "Königlicher Erlass 524/2022 — Umbenennung in Luft- und Weltraumstreitkräfte",
+      provisions: {
+        "Full instrument": {
+          title: "Ejército del Aire y del Espacio",
+          summary:
+            "Umbenennung der Luftwaffe in Luft- und Weltraumstreitkräfte.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-DEF-264-2023",
+    {
+      title:
+        "Erlass DEF/264/2023 — Organisation der Luft- und Weltraumstreitkräfte (MESPA)",
+      provisions: {
+        "Art. 9": {
+          title: "Mando del Espacio (MESPA) — Weltraumkommando",
+          summary:
+            "Schafft die Fuerza Aeroespacial mit MESPA als Weltraumkommando für Weltraumlageerfassung und Satellitenschutz.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-ESAN-2025",
+    {
+      title:
+        "Nationale Strategie für Luft- und Raumfahrtsicherheit 2025 (ESAN)",
+      provisions: {
+        "Full document": {
+          title: "Luft- und Raumfahrtsicherheit als einheitliche Domäne",
+          summary:
+            "Nationale Sicherheitsstrategie mit vereinheitlichter Luft- und Raumfahrtsicherheitsdomäne. Fordert nationale Weltraumgesetzgebung.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-SPACE-LAW-DRAFT",
+    {
+      title:
+        "Entwurf eines Weltraumtätigkeitengesetzes (Anteproyecto de Ley de Actividades Espaciales)",
+      provisions: {
+        "Public consultation": {
+          title: "Geplanter Umfang eines umfassenden Weltraumgesetzes",
+          summary:
+            "Öffentliche Konsultation November 2025. Geplant: Genehmigungsregime, Betriebssicherheit, Nachhaltigkeit, Versicherung, Registrierungsmodernisierung. KEIN Entwurfstext veröffentlicht — früheste vorgesetzgeberische Phase.",
+          complianceImplication:
+            "Wenn verabschiedet, wird dies Spaniens erstes umfassendes Weltraumtätigkeitengesetz sein. Kein projiziertes Verabschiedungsdatum.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-LEY-11-2022",
+    {
+      title: "Allgemeines Telekommunikationsgesetz (Ley 11/2022)",
+      provisions: {
+        "Art. 85.3": {
+          title: "Satelliten-Orbit-Spektrum-Ressourcen",
+          summary:
+            "Nutzung des Funkspektrums über Satellitennetze unterliegt staatlicher Verwaltung. SETID verwaltet Frequenzzuweisungen und ITU-Koordination.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-LEY-53-2007",
+    {
+      title:
+        "Gesetz 53/2007 — Außenhandelskontrolle für Verteidigungs- und Dual-Use-Güter",
+      provisions: {
+        "Art. 4 / Art. 14": {
+          title: "Kontrollierte Güter und Genehmigungsverfahren",
+          summary:
+            "Definiert kontrollierte Güter und das JIMDDU-Genehmigungsverfahren. Raumfahrttechnologieexporte werden einzelfallbezogen durch JIMDDU geprüft.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-RD-LEY-12-2018",
+    {
+      title: "Königlicher Gesetzesverordnung 12/2018 — NIS1-Umsetzung",
+      provisions: {
+        "Full instrument": {
+          title: "Umsetzung der NIS1-Richtlinie",
+          summary:
+            "Umsetzung der NIS1-Richtlinie. Spanien hat die NIS2-Umsetzungsfrist (17. Oktober 2024) VERSÄUMT — EK-Vertragsverletzungsverfahren eingeleitet.",
+          complianceImplication:
+            "Spanien steht unter aktivem EK-Vertragsverletzungsverfahren wegen versäumter Frist.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-NIS2-DRAFT",
+    {
+      title:
+        "Entwurf eines Cybersicherheits-Koordinations- und Governance-Gesetzes — NIS2-Umsetzung",
+      provisions: {
+        "Full draft": {
+          title: "NIS2-Richtlinienumsetzung",
+          summary:
+            "Ministerrat genehmigte Anteproyecto am 14. Januar 2025. Hat parlamentarisches Verfahren NICHT abgeschlossen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ES-LOPDGDD-2018",
+    {
+      title: "Organgesetz 3/2018 — DSGVO-Umsetzung (LOPDGDD)",
+      provisions: {
+        "Full instrument": {
+          title: "DSGVO-Umsetzung und digitale Rechte",
+          summary:
+            "Setzt die DSGVO in spanisches Recht um. AEPD ist die Aufsichtsbehörde.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-ESA-HOST-2012",
+    {
+      title: "Spanien-ESA Gastlandabkommen (ESAC und Cebreros)",
+      provisions: {
+        "Full instrument": {
+          title: "Dauerhafte ESA-Einrichtungen in Spanien",
+          summary:
+            "Regelt ESA-Standorte in Spanien: ESAC in Villafranca del Castillo und Cebreros-Tiefenraumantenne (35m). Erweitert durch Notenaustausch Juli 2024.",
+        },
+      },
+    },
+  ],
+  [
+    "ES-CM25-ESA",
+    {
+      title:
+        "Spaniens CM25 ESA-Verpflichtung — 1,85 Mrd. EUR (November 2025, Bremen)",
+      provisions: {
+        Programme: {
+          title: "Rekord-ESA-Verpflichtung — viertgrößter Beitragszahler",
+          summary:
+            "1,85 Mrd. EUR — 100%+ Steigerung gegenüber CM22. Spanien erstmals 4. größter ESA-Beitragszahler, vor dem Vereinigten Königreich.",
+          complianceImplication:
+            "Die institutionelle Infrastruktur (AEE, MESPA, CDTI) ist bereit — es fehlt der Rechtsrahmen (Ley de Actividades Espaciales).",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -4483,6 +4791,112 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Von Karman Institut für Strömungsdynamik (VKI)",
       mandate:
         "Internationale Forschungsorganisation (gegründet 1956). ~50 Einrichtungen einschließlich Mach-14/20-Hyperschall-Windkanäle und 1.200-kW-Plasmatron. Kooperationsabkommen mit ESA und NASA.",
+    },
+  ],
+
+  // Spain Authorities (13)
+  [
+    "ES-AEE",
+    {
+      name: "Spanische Raumfahrtagentur (AEE)",
+      mandate:
+        "Geschaffen durch RD 158/2023, operativ seit 20. April 2023. Sitz in Sevilla. Verwaltet ESA-Beiträge, koordiniert nationale Weltraumpolitik und ist beauftragt, das Anteproyecto de Ley de Actividades Espaciales vorzuschlagen. Derzeit KEINE Lizenzierungs-/Regulierungsbehörde.",
+    },
+  ],
+  [
+    "ES-INTA",
+    {
+      name: "Nationales Institut für Luft- und Raumfahrttechnik (INTA)",
+      mandate:
+        "Gegründet 1942. Öffentliche Forschungseinrichtung unter dem Verteidigungsministerium. ~1.500 Mitarbeiter. Luft- und Raumfahrtprüfung, Satellitenbau, Betrieb von Bodenstationen (MDSCC, Maspalomas). El Arenosillo (CEDEA) — Startplatz der PLD Space MIURA 1.",
+    },
+  ],
+  [
+    "ES-CDTI",
+    {
+      name: "Zentrum für technologische und industrielle Entwicklung (CDTI)",
+      mandate:
+        "Ursprünglich 1977 gegründet. Öffentliche Unternehmenseinrichtung unter dem Wissenschaftsministerium. Historisch Spaniens ESA-Delegation. AEE hat ESA-bezogene Funktionen übernommen, CDTI behält Programmausführung.",
+    },
+  ],
+  [
+    "ES-SETID",
+    {
+      name: "Staatssekretariat für Telekommunikation und Digitale Infrastruktur (SETID)",
+      mandate:
+        "Spaniens primäre Spektrumverwaltungsbehörde. Verwaltet Planung und Zuweisung des Funkspektrums einschließlich Satelliten-Orbit-Spektrum-Ressourcen. Führt das CNAF. Reicht Satellitennetzmeldungen beim ITU ein.",
+    },
+  ],
+  [
+    "ES-CNMC",
+    {
+      name: "Nationale Märkte- und Wettbewerbskommission (CNMC)",
+      mandate:
+        "Unabhängige Regulierungsbehörde. Nationale Regulierungsbehörde für elektronische Kommunikation einschließlich Satellitendienste. Verwaltet das Telekommunikationsbetreiberregister.",
+    },
+  ],
+  [
+    "ES-AEPD",
+    {
+      name: "Spanische Datenschutzbehörde (AEPD)",
+      mandate:
+        "Unabhängige Aufsichtsbehörde unter LO 3/2018 (LOPDGDD). Überwacht Verarbeitung personenbezogener Daten aus Satellitenbildern und Erdbeobachtungsdaten.",
+    },
+  ],
+  [
+    "ES-MOD",
+    {
+      name: "Verteidigungsministerium — Luft- und Weltraumstreitkräfte / MESPA",
+      mandate:
+        "Ejército del Aire y del Espacio seit 2022. MESPA (Weltraumkommando) seit 2023. AEE-Mitträgerbehörde. INTA-Trägerbehörde.",
+    },
+  ],
+  [
+    "ES-JIMDDU",
+    {
+      name: "Interministerielle Kommission für Verteidigungsgüter und Dual-Use-Handel (JIMDDU)",
+      mandate:
+        "Interministerielle Kommission für die Einzelfallprüfung ALLER Exportgenehmigungsanträge für Verteidigungsmaterial und Dual-Use-Technologien. Erteilt verbindliche Gutachten.",
+    },
+  ],
+  [
+    "ES-MINCIENCIA",
+    {
+      name: "Ministerium für Wissenschaft, Innovation und Universitäten",
+      mandate:
+        "Übergeordnetes Weltraumpolitik-Ministerium. AEE-Hauptträgerbehörde. CDTI-Trägerbehörde.",
+    },
+  ],
+  [
+    "ES-MAEC",
+    {
+      name: "Ministerium für Auswärtige Angelegenheiten, EU und Zusammenarbeit",
+      mandate:
+        "Vertragspflichten und diplomatische Vertretung bei COPUOS. Verwaltet das Registro Español de Objetos Espaciales (koordiniert über AEE).",
+    },
+  ],
+  [
+    "ES-AEMET",
+    {
+      name: "Spanische Meteorologische Agentur (AEMET)",
+      mandate:
+        "Staatliche Agentur unter dem Ministerium für Ökologischen Übergang. Spaniens EUMETSAT-Vertreter. Leitet die Nowcasting SAF (NWC SAF) von EUMETSAT.",
+    },
+  ],
+  [
+    "ES-CCN",
+    {
+      name: "Nationales Kryptologisches Zentrum (CCN)",
+      mandate:
+        "Nationale Cybersicherheitsbehörde unter dem CNI. Verwaltet das Esquema Nacional de Seguridad (ENS). NIS2-Umsetzung ausstehend — Spanien hat die Frist Oktober 2024 versäumt.",
+    },
+  ],
+  [
+    "ES-CNSA",
+    {
+      name: "Nationaler Rat für Luft- und Raumfahrtsicherheit (CNSA)",
+      mandate:
+        "Unterstützungsorgan des Nationalen Sicherheitsrats. Koordiniert Luft- und Raumfahrtsicherheitspolitik einschließlich der ESAN-2025-Strategie.",
     },
   ],
 ]);

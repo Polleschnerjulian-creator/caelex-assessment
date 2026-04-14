@@ -26,6 +26,8 @@ import {
   AUTHORITIES_NL,
   LEGAL_SOURCES_BE,
   AUTHORITIES_BE,
+  LEGAL_SOURCES_ES,
+  AUTHORITIES_ES,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -1653,6 +1655,212 @@ describe("Legal Sources — BE authority accuracy", () => {
 
   it("every BE authority has a valid website URL", () => {
     for (const a of AUTHORITIES_BE) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Spain dataset sanity checks ─────────────────────────────────
+describe("Legal Sources — ES dataset sanity", () => {
+  it("ES has at least 20 legal sources", () => {
+    expect(LEGAL_SOURCES_ES.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("ES has exactly 13 authorities", () => {
+    expect(AUTHORITIES_ES).toHaveLength(13);
+  });
+
+  it("every ES legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_ES) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("ES legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_ES) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("ES authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_ES) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every ES source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_ES) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every ES source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_ES) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every ES source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_ES) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all ES competent_authorities IDs map to existing ES authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_ES.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_ES) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all ES related_sources IDs map to existing ES legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_ES.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_ES) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Spain regulatory accuracy ───────────────────────────────────
+describe("Legal Sources — ES regulatory accuracy", () => {
+  it("1968 Orden is still in force (Europe's oldest)", () => {
+    const orden = getLegalSourceById("ES-ORDEN-1968")!;
+    expect(orden).toBeDefined();
+    expect(orden.status).toBe("in_force");
+    expect(orden.date_enacted).toBe("1968-04-19");
+  });
+
+  it("RD 278/1995 has correct BOE reference", () => {
+    const rd = getLegalSourceById("ES-RD-278-1995")!;
+    expect(rd).toBeDefined();
+    expect(rd.official_reference).toContain("BOE-A-1995-6058");
+    expect(rd.status).toBe("in_force");
+  });
+
+  it("AEE Statute has correct BOE reference and is critical", () => {
+    const aee = getLegalSourceById("ES-RD-158-2023")!;
+    expect(aee).toBeDefined();
+    expect(aee.official_reference).toContain("BOE-A-2023-6082");
+    expect(aee.relevance_level).toBe("critical");
+  });
+
+  it("draft Space Activities Law is in earliest phase", () => {
+    const draft = getLegalSourceById("ES-SPACE-LAW-DRAFT")!;
+    expect(draft).toBeDefined();
+    expect(draft.status).toBe("draft");
+    const notes = draft.notes!.join(" ");
+    expect(notes).toContain("EARLIEST");
+  });
+
+  it("Moon Agreement is NOT ratified for Spain", () => {
+    const moon = getLegalSourcesByJurisdiction("ES").find((s) =>
+      s.id.includes("MOON"),
+    );
+    expect(moon).toBeUndefined();
+  });
+
+  it("Artemis Accords signed 2023", () => {
+    const artemis = getLegalSourceById("ES-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.status).toBe("in_force");
+    expect(artemis.date_enacted).toBe("2023-05-30");
+  });
+
+  it("NIS2 transposition is draft (missed deadline)", () => {
+    const nis2 = getLegalSourceById("ES-NIS2-DRAFT")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("draft");
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+  });
+
+  it("MESPA Space Command created by DEF/264/2023", () => {
+    const mespa = getLegalSourceById("ES-DEF-264-2023")!;
+    expect(mespa).toBeDefined();
+    expect(mespa.official_reference).toContain("BOE-A-2023-7332");
+  });
+
+  it("CM25 commitment is €1.85B", () => {
+    const cm25 = getLegalSourceById("ES-CM25-ESA")!;
+    expect(cm25).toBeDefined();
+    const prov = cm25.key_provisions[0]!;
+    expect(prov.summary).toContain("1.85");
+  });
+});
+
+// ─── ES lookup functions ──────────────────────────────────────────
+describe("Legal Sources — ES lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns ES sources", () => {
+    const sources = getLegalSourcesByJurisdiction("ES");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_ES.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns ES authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("ES");
+    expect(auths).toHaveLength(13);
+  });
+
+  it("getLegalSourceStats includes ES", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["ES"]).toBeDefined();
+    expect(stats["ES"]!.total).toBeGreaterThanOrEqual(20);
+  });
+
+  it("getAvailableJurisdictions includes ES", () => {
+    expect(getAvailableJurisdictions()).toContain("ES");
+  });
+});
+
+// ─── ES authority accuracy ────────────────────────────────────────
+describe("Legal Sources — ES authority accuracy", () => {
+  it("AEE is the space agency (but not yet a regulator)", () => {
+    const aee = getAuthorityById("ES-AEE")!;
+    expect(aee).toBeDefined();
+    expect(aee.space_mandate).toContain("NOT currently a licensing");
+    expect(aee.applicable_areas).toContain("licensing");
+  });
+
+  it("INTA is the aerospace technology institute", () => {
+    const inta = getAuthorityById("ES-INTA")!;
+    expect(inta).toBeDefined();
+    expect(inta.space_mandate).toContain("1942");
+  });
+
+  it("SETID handles frequency spectrum", () => {
+    const setid = getAuthorityById("ES-SETID")!;
+    expect(setid).toBeDefined();
+    expect(setid.space_mandate).toContain("spectrum");
+    expect(setid.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("JIMDDU handles export control", () => {
+    const jimddu = getAuthorityById("ES-JIMDDU")!;
+    expect(jimddu).toBeDefined();
+    expect(jimddu.applicable_areas).toContain("export_control");
+  });
+
+  it("every ES authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_ES) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
