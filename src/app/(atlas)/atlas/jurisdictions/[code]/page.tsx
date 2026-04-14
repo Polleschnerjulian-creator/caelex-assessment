@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, use } from "react";
+import { useState, useCallback, useEffect, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -772,20 +772,52 @@ function BriefingPrint({
     year: "numeric",
   });
 
+  // Read firm branding from localStorage
+  const [firmLogo, setFirmLogo] = useState<string | null>(null);
+  const [firmName, setFirmName] = useState<string | null>(null);
+  useEffect(() => {
+    setFirmLogo(localStorage.getItem("atlas-firm-logo"));
+    setFirmName(localStorage.getItem("atlas-firm-name"));
+  }, []);
+
+  const brandLine = firmName
+    ? `${firmName} — powered by ATLAS / Caelex`
+    : "ATLAS Regulatory Intelligence — Caelex";
+
   return (
     <div className="hidden print:block print-export-container">
       {/* Cover / Header */}
       <div style={{ marginBottom: "24pt" }}>
         <div
           style={{
-            fontSize: "8pt",
-            color: "#999",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             marginBottom: "6pt",
           }}
         >
-          ATLAS Regulatory Intelligence — Caelex
+          <div
+            style={{
+              fontSize: "8pt",
+              color: "#999",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+            }}
+          >
+            {brandLine}
+          </div>
+          {firmLogo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={firmLogo}
+              alt=""
+              style={{
+                maxHeight: "28pt",
+                maxWidth: "120pt",
+                objectFit: "contain",
+              }}
+            />
+          )}
         </div>
         <div
           style={{
@@ -1134,8 +1166,8 @@ function BriefingPrint({
         }}
       >
         {language === "de"
-          ? `ATLAS Regulatory Intelligence — Caelex. Daten zuletzt aktualisiert: ${jurisdiction.lastUpdated}. Diese Informationen dienen ausschließlich der Recherche und Referenz. Sie stellen keine Rechtsberatung dar. Alle Angaben sind mit offiziellen Quellen und qualifiziertem Rechtsberater zu überprüfen.`
-          : `ATLAS Regulatory Intelligence — Caelex. Data last updated: ${jurisdiction.lastUpdated}. This information is for research and reference purposes only. It does not constitute legal advice. Verify all information with official sources and qualified legal counsel before making compliance decisions.`}
+          ? `${brandLine}. Daten zuletzt aktualisiert: ${jurisdiction.lastUpdated}. Diese Informationen dienen ausschließlich der Recherche und Referenz. Sie stellen keine Rechtsberatung dar. Alle Angaben sind mit offiziellen Quellen und qualifiziertem Rechtsberater zu überprüfen.`
+          : `${brandLine}. Data last updated: ${jurisdiction.lastUpdated}. This information is for research and reference purposes only. It does not constitute legal advice. Verify all information with official sources and qualified legal counsel before making compliance decisions.`}
       </div>
     </div>
   );
