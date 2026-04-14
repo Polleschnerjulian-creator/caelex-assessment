@@ -4501,6 +4501,204 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FINLAND (FI) — 12 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "FI-OST-1967",
+    {
+      title: "Weltraumvertrag — Finnischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Finnlands Umsetzung von Art. VI durch das Gesetz 63/2018 ist eine der gründlichsten in Europa — 8 kumulative Bedingungen, Pflichtversicherung, ministerielle Konsultation.",
+          complianceImplication:
+            "8 kumulative Lizenzbedingungen — Europas detaillierteste gesetzliche Kriterien.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-LIABILITY-1977",
+    {
+      title: "Weltraumhaftungsübereinkommen — Finnischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "§ 7 des Gesetzes setzt beide Ebenen um: absolute Haftung für Boden-/Flugzeugschäden, verschuldensabhängig für Weltraumschäden. Staat zahlt zuerst, dann Rückgriff auf Betreiber (max. 60 Mio. EUR für konforme Betreiber).",
+          complianceImplication:
+            "Finnlands kanalisierte Haftung schafft implizite Staatsabsicherung — über 60 Mio. EUR hinaus zahlt der Staat.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-REGISTRATION-2018",
+    {
+      title: "Registrierungsübereinkommen — Finnischer Beitrittsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Finnland trat 2018 bei — bewusst zeitgleich mit dem Weltraumgesetz. TEM führt das Register. 26 finnische Satelliten registriert (März 2026).",
+        },
+      },
+    },
+  ],
+  [
+    "FI-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Finnland als Unterzeichner (2025)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "53. Unterzeichner, 21. Januar 2025. Finnland bekräftigte die UN als ‚primäres Forum für Weltraumrecht'.",
+        },
+      },
+    },
+  ],
+
+  [
+    "FI-SPACE-ACT-2018",
+    {
+      title: "Weltraumgesetz (Laki avaruustoiminnasta)",
+      scopeDescription:
+        "Europas modernstes Weltraumgesetz. 4 Kapitel, 22 Paragraphen. Kernmerkmale: 60-Mio.-EUR-Haftungsobergrenze mit Compliance-Anreiz (Obergrenze entfällt bei Nichteinhaltung), risikobasierte Versicherungsbefreiungen, 8 kumulative Lizenzbedingungen, ministerübergreifende Konsultation.",
+      provisions: {
+        "§ 5": {
+          title: "Genehmigungsregime — 8 kumulative Bedingungen",
+          summary:
+            "Vorherige TEM-Genehmigung erforderlich. 8 Bedingungen: Zuverlässigkeit, Risikobewertung, Weltraummüllvermeidung, Abwicklungsplan, Sicherheitsvereinbarkeit, Versicherung, ITU-Konformität, Exportkontrolle.",
+        },
+        "§ 7": {
+          title:
+            "Kanalisierte Haftung — 60-Mio.-EUR-Obergrenze mit Compliance-Anreiz",
+          summary:
+            "Staat zahlt Schäden. Rückgriff auf Betreiber max. 60 Mio. EUR. Obergrenze ENTFÄLLT VOLLSTÄNDIG bei Nichtkonformität — unbegrenzte Haftung.",
+          complianceImplication:
+            "Einzigartigste Innovation: konforme Betreiber haben klare 60-Mio.-Obergrenze, nicht konforme unbegrenzte Haftung.",
+        },
+        "§ 8": {
+          title:
+            "Pflichtversicherung — 60 Mio. EUR mit risikobasierten Befreiungen",
+          summary:
+            "Mindestens 60 Mio. EUR Haftpflichtversicherung. TEM kann befreien wenn: Startversicherung ≥60 Mio. EUR deckt, ODER Risikobewertung Schwellenwerte des Erlasses 74/2018 erfüllt.",
+          complianceImplication:
+            "Risikobasierte Befreiung besonders vorteilhaft für Kleinsatellitenbetreiber.",
+        },
+        "§ 10": {
+          title: "Umweltschutz und Weltraummüll",
+          summary:
+            "‚Allgemein anerkannte internationale Leitlinien' (IADC/UN COPUOS) für Trümmervermeidung. Prinzipienbasierter, technologieneutraler Ansatz.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-SPACE-DECREE-2018",
+    {
+      title: "Weltraumverordnung (TEM-Erlass 74/2018)",
+      provisions: {
+        "§ 1": {
+          title: "Antragsfristen",
+          summary:
+            "Mindestens 6 Monate vor Start. Mindestens 3 Monate vor Erwerb eines Objekts im Orbit.",
+        },
+        "§ 5": {
+          title: "Risikogrenzen für Versicherungsbefreiung",
+          summary:
+            "Kollisionswahrscheinlichkeit mit Objekten ≥10 cm. Wiedereintritts-Opfererwartung unter 1/10.000.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-GROUND-STATIONS-2023",
+    {
+      title: "Gesetz über Bodenstationen und bestimmte Radaranlagen",
+      provisions: {
+        "Full instrument": {
+          title: "Bodenstations-Lizenzregime",
+          summary:
+            "Separate Lizenzierung für Erdstationen. Traficom als Behörde — Vorschau auf geplante Lizenztransfer. Sodankylä hat 10+ Anträge erhalten.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-ECOMM-2014",
+    {
+      title: "Gesetz über elektronische Kommunikationsdienste",
+      provisions: {
+        "Full instrument": {
+          title: "Satellitenspektrumverwaltung und Galileo PRS",
+          summary:
+            "Sendende Erdstationen erfordern Traficom-Funklizenzen. ITU-Koordination. Änderung 1211/2022: Personalüberprüfungen für Galileo-PRS-Anbieter.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-EXPORT-CONTROL-2024",
+    {
+      title: "Gesetz über die Exportkontrolle von Dual-Use-Gütern",
+      provisions: {
+        "Full instrument": {
+          title: "Moderne Dual-Use-Exportkontrolle mit nationaler Liste",
+          summary:
+            "Nationale Kontrollliste (Quantencomputing, Halbleiter). SAR-Technologie (ICEYEs Kern) unter Wassenaar Kategorie 6. ICEYEs ITAR-freie Architektur: Exporte unter finnischer/EU-Kontrolle, nicht US-ITAR.",
+          complianceImplication:
+            "USA setzten Finnland auf IEC-Zielliste (17. September 2024), da finnische Kontrollen US-Beschränkungen entsprechen.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-CYBERSECURITY-2025",
+    {
+      title: "Cybersicherheitsgesetz (NIS2-Umsetzung)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Umsetzung — Weltraum als hochkritischer Sektor",
+          summary:
+            "Traficom NCSC-FI als Aufsichtsbehörde. 13 Cybersicherheitsanforderungen. Vorfallmeldung: 24h, 72h, 30 Tage. Weltraumbetreiber (ICEYE, Bodenstationen) im Anwendungsbereich.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-DPA-2018",
+    {
+      title: "Datenschutzgesetz (DSGVO-Ergänzung)",
+      provisions: {
+        "Full instrument": {
+          title: "Nationale DSGVO-Ergänzung",
+          summary:
+            "Datenschutzbeauftragter als Aufsicht. ICEYE (Sitz Espoo) als finnischer Verantwortlicher direkt DSGVO-pflichtig. 16 cm SAR-Auflösung wirft Fragen zur kontextuellen Identifizierung auf.",
+        },
+      },
+    },
+  ],
+  [
+    "FI-SPACE-STRATEGY-2030",
+    {
+      title: "Weltraumstrategie 2030 (Dezember 2024)",
+      provisions: {
+        "Full document": {
+          title: "Dritte nationale Weltraumstrategie — Sicherheitswende",
+          summary:
+            "Vier Ziele: Nutzung von Weltraumdiensten, Verbesserung des Betriebsumfelds, Stärkung der Funktionsfähigkeit, internationale Zusammenarbeit. Bedeutende Wende Richtung Sicherheit/Verteidigung. ESA-Beitrag ~28 Mio. EUR jährlich.",
+          complianceImplication:
+            "NATO-Beitritt (April 2023) katalysierte militärische Weltraumentwicklung. 200+ Unternehmen.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -5582,6 +5780,112 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Schwedische Umweltschutzbehörde (Naturvårdsverket)",
       mandate:
         "Umweltgenehmigungen für Esrange-Startoperationen unter dem Miljöbalken (Umweltgesetzbuch, 1998:808).",
+    },
+  ],
+
+  // Finland Authorities (13)
+  [
+    "FI-TEM",
+    {
+      name: "Ministerium für Wirtschaft und Beschäftigung (TEM)",
+      mandate:
+        "Primäre Weltraumbehörde unter Gesetz 63/2018. Erteilt Genehmigungen, führt Register, überwacht Konformität. Genehmigungsgebühr: 7.000 EUR. Geplanter Transfer der Lizenzierung an Traficom.",
+    },
+  ],
+  [
+    "FI-TRAFICOM",
+    {
+      name: "Finnische Verkehrs- und Kommunikationsbehörde (Traficom)",
+      mandate:
+        "Satellitenspektrumverwaltung, ITU-Vertretung, Galileo-PRS-Sicherheitsbehörde, NIS2-Aufsicht für Weltraumsektor (via NCSC-FI). Lizenziert Bodenstationen. Künftiger Empfänger der Weltraumlizenzierung.",
+    },
+  ],
+  [
+    "FI-UM",
+    {
+      name: "Außenministerium — Exportkontrollstelle",
+      mandate:
+        "Nationale Lizenzbehörde für Dual-Use-Exportkontrollen. Gibt Stellungnahmen zu internationalen Verpflichtungen für Weltraumgenehmigungen ab.",
+    },
+  ],
+  [
+    "FI-MOD",
+    {
+      name: "Verteidigungsministerium",
+      mandate:
+        "Führung und Aufsicht der Weltraumaktivitäten der Streitkräfte. Verteidigungsgüter-Exportlizenzen. Streitkräfte teilweise von Gesetz 63/2018 befreit.",
+    },
+  ],
+  [
+    "FI-FMI",
+    {
+      name: "Finnisches Meteorologisches Institut (FMI)",
+      mandate:
+        "EU-SST-Partnerschaft (seit November 2022). Arctic Space Centre Sodankylä und National Satellite Data Centre. Leitet ziviles Kommandozentrum des nationalen SSA-Zentrums. Satelliteninstrumente seit 1986.",
+    },
+  ],
+  [
+    "FI-AIRFORCE",
+    {
+      name: "Finnische Streitkräfte / Luftwaffe — Weltraumkommando",
+      mandate:
+        "Luftwaffenkommandeur als Weltraumkommandeur. ICEYE-Vertrag 158 Mio. EUR (September 2025) für souveräne weltraumgestützte Aufklärung. NATO APSS, NORTHLINK, STARLIFT.",
+    },
+  ],
+  [
+    "FI-DPO",
+    {
+      name: "Büro des Datenschutzbeauftragten",
+      mandate:
+        "DSGVO-Durchsetzung für Satelliten-/EO-Daten. ICEYE (16 cm SAR-Auflösung) als finnischer Verantwortlicher direkt betroffen.",
+    },
+  ],
+  [
+    "FI-TUKES",
+    {
+      name: "Finnische Sicherheits- und Chemikalienbehörde (Tukes)",
+      mandate:
+        "Marktüberwachung für Produkte mit digitalen Elementen unter CRA. REACH/RoHS-Konformität für Satellitenherstellung.",
+    },
+  ],
+  [
+    "FI-BUSINESSFINLAND",
+    {
+      name: "Business Finland",
+      mandate:
+        "Koordiniert finnische ESA-Beteiligung (~16,2 Mio. EUR jährlich). Betreibt ESA BIC Finland an der Aalto-Universität.",
+    },
+  ],
+  [
+    "FI-SPACE-COMMITTEE",
+    {
+      name: "Finnischer Weltraumausschuss",
+      mandate:
+        "Beratungsgremium unter TEM (Erlass 739/2019). Ministerübergreifende Koordination mit Vertretern aus 6 Ministerien, Streitkräften und Industrieverbänden.",
+    },
+  ],
+  [
+    "FI-MoTC",
+    {
+      name: "Ministerium für Verkehr und Kommunikation",
+      mandate:
+        "Übergeordnetes Ministerium von Traficom. Telekommunikations- und Spektrumpolitik.",
+    },
+  ],
+  [
+    "FI-CUSTOMS",
+    {
+      name: "Finnischer Zoll (Tulli)",
+      mandate:
+        "Erweiterte Befugnisse über immaterielle Dual-Use-Güter unter Gesetz 500/2024. Physische Kontrollen strategischer Güterexporte.",
+    },
+  ],
+  [
+    "FI-MAANPUOLUSTUS",
+    {
+      name: "Außenministerium — Vertragsabteilung",
+      mandate:
+        "Internationale Vertragspflichten. Artemis Accords (53. Unterzeichner, Januar 2025). COPUOS-Vertretung (Mitglied seit 2018).",
     },
   ],
 ]);

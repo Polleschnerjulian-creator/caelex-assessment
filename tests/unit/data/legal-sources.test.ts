@@ -32,6 +32,8 @@ import {
   AUTHORITIES_NO,
   LEGAL_SOURCES_SE,
   AUTHORITIES_SE,
+  LEGAL_SOURCES_FI,
+  AUTHORITIES_FI,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2229,6 +2231,161 @@ describe("Legal Sources — SE authority accuracy", () => {
 
   it("every SE authority has a valid website URL", () => {
     for (const a of AUTHORITIES_SE) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Finland dataset sanity checks ───────────────────────────────
+describe("Legal Sources — FI dataset sanity", () => {
+  it("FI has at least 10 legal sources", () => {
+    expect(LEGAL_SOURCES_FI.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("FI has exactly 13 authorities", () => {
+    expect(AUTHORITIES_FI).toHaveLength(13);
+  });
+
+  it("FI legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_FI) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every FI source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_FI) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every FI source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_FI) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("all FI competent_authorities IDs map to existing FI authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_FI.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_FI) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all FI related_sources IDs map to existing FI legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_FI.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_FI) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Finland regulatory accuracy ─────────────────────────────────
+describe("Legal Sources — FI regulatory accuracy", () => {
+  it("Space Activities Act 63/2018 is critical and in force", () => {
+    const act = getLegalSourceById("FI-SPACE-ACT-2018")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("63/2018");
+    expect(act.status).toBe("in_force");
+    expect(act.relevance_level).toBe("critical");
+  });
+
+  it("Act has 8+ key provisions (comprehensive)", () => {
+    const act = getLegalSourceById("FI-SPACE-ACT-2018")!;
+    expect(act.key_provisions.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("€60M liability cap mentioned in provisions", () => {
+    const act = getLegalSourceById("FI-SPACE-ACT-2018")!;
+    const liabilityProv = act.key_provisions.find((p) => p.section === "§ 7")!;
+    expect(liabilityProv.summary).toContain("60");
+  });
+
+  it("Registration Convention acceded in 2018", () => {
+    const reg = getLegalSourceById("FI-REGISTRATION-2018")!;
+    expect(reg).toBeDefined();
+    expect(reg.official_reference).toContain("SopS 9/2018");
+    expect(reg.date_in_force).toBe("2018-01-23");
+  });
+
+  it("NIS2 transposition via Cybersecurity Act 124/2025", () => {
+    const cyber = getLegalSourceById("FI-CYBERSECURITY-2025")!;
+    expect(cyber).toBeDefined();
+    expect(cyber.implements).toBe("EU-NIS2-2022");
+    expect(cyber.official_reference).toContain("124/2025");
+  });
+
+  it("Artemis Accords signed January 2025", () => {
+    const aa = getLegalSourceById("FI-ARTEMIS-ACCORDS")!;
+    expect(aa).toBeDefined();
+    expect(aa.date_enacted).toBe("2025-01-21");
+  });
+
+  it("Export control act 500/2024 is in force", () => {
+    const ec = getLegalSourceById("FI-EXPORT-CONTROL-2024")!;
+    expect(ec).toBeDefined();
+    expect(ec.status).toBe("in_force");
+  });
+});
+
+// ─── FI lookup functions ──────────────────────────────────────────
+describe("Legal Sources — FI lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns FI sources", () => {
+    const sources = getLegalSourcesByJurisdiction("FI");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_FI.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns FI authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("FI");
+    expect(auths).toHaveLength(13);
+  });
+
+  it("getAvailableJurisdictions includes FI", () => {
+    expect(getAvailableJurisdictions()).toContain("FI");
+  });
+});
+
+// ─── FI authority accuracy ────────────────────────────────────────
+describe("Legal Sources — FI authority accuracy", () => {
+  it("TEM is the primary space authority", () => {
+    const tem = getAuthorityById("FI-TEM")!;
+    expect(tem).toBeDefined();
+    expect(tem.space_mandate).toContain("Primary space authority");
+    expect(tem.applicable_areas).toContain("licensing");
+  });
+
+  it("Traficom handles spectrum and will receive licensing", () => {
+    const traficom = getAuthorityById("FI-TRAFICOM")!;
+    expect(traficom).toBeDefined();
+    expect(traficom.space_mandate).toContain("Future recipient");
+    expect(traficom.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("FMI operates Arctic Space Centre", () => {
+    const fmi = getAuthorityById("FI-FMI")!;
+    expect(fmi).toBeDefined();
+    expect(fmi.space_mandate).toContain("Sodankylä");
+  });
+
+  it("every FI authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_FI) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

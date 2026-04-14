@@ -16,6 +16,7 @@ import {
   LEGAL_SOURCES_ES,
   LEGAL_SOURCES_NO,
   LEGAL_SOURCES_SE,
+  LEGAL_SOURCES_FI,
   AUTHORITIES_DE,
   AUTHORITIES_FR,
   AUTHORITIES_UK,
@@ -26,6 +27,7 @@ import {
   AUTHORITIES_ES,
   AUTHORITIES_NO,
   AUTHORITIES_SE,
+  AUTHORITIES_FI,
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
@@ -49,6 +51,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_ES,
   ...LEGAL_SOURCES_NO,
   ...LEGAL_SOURCES_SE,
+  ...LEGAL_SOURCES_FI,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -62,6 +65,7 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_ES,
   ...AUTHORITIES_NO,
   ...AUTHORITIES_SE,
+  ...AUTHORITIES_FI,
 ];
 
 // ─── Style maps ─────────────────────────────────────────────────────
