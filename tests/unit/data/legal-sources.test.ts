@@ -34,6 +34,8 @@ import {
   AUTHORITIES_SE,
   LEGAL_SOURCES_FI,
   AUTHORITIES_FI,
+  LEGAL_SOURCES_DK,
+  AUTHORITIES_DK,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2386,6 +2388,171 @@ describe("Legal Sources — FI authority accuracy", () => {
 
   it("every FI authority has a valid website URL", () => {
     for (const a of AUTHORITIES_FI) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Denmark dataset sanity checks ──────────────────────────────────
+describe("Legal Sources — DK dataset sanity", () => {
+  it("DK has at least 12 legal sources", () => {
+    expect(LEGAL_SOURCES_DK.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it("DK has exactly 11 authorities", () => {
+    expect(AUTHORITIES_DK).toHaveLength(11);
+  });
+
+  it("DK legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_DK) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("DK authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_DK) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every DK source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_DK) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every DK source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_DK) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("all DK competent_authorities IDs map to existing DK authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_DK.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_DK) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all DK related_sources IDs map to existing DK legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_DK.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_DK) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Denmark regulatory accuracy ────────────────────────────────────
+describe("Legal Sources — DK regulatory accuracy", () => {
+  it("Space Act 2016 has correct LOV reference and is in force", () => {
+    const act = getLegalSourceById("DK-SPACE-ACT-2016")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("LOV nr. 409");
+    expect(act.status).toBe("in_force");
+    expect(act.relevance_level).toBe("critical");
+  });
+
+  it("§23 excludes Greenland and Faroe Islands", () => {
+    const act = getLegalSourceById("DK-SPACE-ACT-2016")!;
+    const prov = act.key_provisions.find((p) => p.section === "§ 23")!;
+    expect(prov).toBeDefined();
+    expect(prov.summary).toContain("NOT apply");
+    expect(prov.summary).toContain("Greenland");
+  });
+
+  it("Pituffik Defence Agreement is 1951 and critical", () => {
+    const def = getLegalSourceById("DK-DEFENCE-GREENLAND-1951")!;
+    expect(def).toBeDefined();
+    expect(def.date_enacted).toBe("1951-04-27");
+    expect(def.relevance_level).toBe("critical");
+    const prov = def.key_provisions[0]!;
+    expect(prov.summary).toContain("Pituffik");
+    expect(prov.summary).toContain("UEWR");
+  });
+
+  it("Artemis Accords signed November 2024 (48th signatory)", () => {
+    const aa = getLegalSourceById("DK-ARTEMIS-ACCORDS")!;
+    expect(aa).toBeDefined();
+    expect(aa.date_enacted).toBe("2024-11-13");
+    const prov = aa.key_provisions[0]!;
+    expect(prov.summary).toContain("48th");
+  });
+
+  it("NIS2 transposition via Danish NIS2 Act", () => {
+    const nis2 = getLegalSourceById("DK-NIS2-2025")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+    expect(nis2.date_in_force).toBe("2025-07-01");
+  });
+
+  it("100 km Kármán line codified in §4", () => {
+    const act = getLegalSourceById("DK-SPACE-ACT-2016")!;
+    const prov = act.key_provisions.find((p) => p.section === "§ 4")!;
+    expect(prov).toBeDefined();
+    expect(prov.summary).toContain("100 km");
+  });
+});
+
+// ─── DK lookup functions ────────────────────────────────────────────
+describe("Legal Sources — DK lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns DK sources", () => {
+    const sources = getLegalSourcesByJurisdiction("DK");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_DK.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 11 DK authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("DK");
+    expect(auths).toHaveLength(11);
+  });
+
+  it("getAvailableJurisdictions includes DK", () => {
+    expect(getAvailableJurisdictions()).toContain("DK");
+  });
+});
+
+// ─── DK authority accuracy ──────────────────────────────────────────
+describe("Legal Sources — DK authority accuracy", () => {
+  it("UFST is the operational space regulator", () => {
+    const ufst = getAuthorityById("DK-UFST")!;
+    expect(ufst).toBeDefined();
+    expect(ufst.space_mandate).toContain("space regulator");
+    expect(ufst.applicable_areas).toContain("licensing");
+  });
+
+  it("DTU Space participated in 100+ missions", () => {
+    const dtu = getAuthorityById("DK-DTU-SPACE")!;
+    expect(dtu).toBeDefined();
+    expect(dtu.space_mandate).toContain("100+");
+  });
+
+  it("DALO has BIFROST satellite", () => {
+    const dalo = getAuthorityById("DK-FORSVARET")!;
+    expect(dalo).toBeDefined();
+    expect(dalo.space_mandate).toContain("BIFROST");
+  });
+
+  it("every DK authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_DK) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

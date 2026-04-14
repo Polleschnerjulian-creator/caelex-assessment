@@ -15,6 +15,7 @@ import {
   LEGAL_SOURCES_NO,
   LEGAL_SOURCES_SE,
   LEGAL_SOURCES_FI,
+  LEGAL_SOURCES_DK,
   getTranslatedSource,
 } from "@/data/legal-sources";
 import type { LegalSource, LegalSourceType } from "@/data/legal-sources";
@@ -33,6 +34,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_NO,
   ...LEGAL_SOURCES_SE,
   ...LEGAL_SOURCES_FI,
+  ...LEGAL_SOURCES_DK,
 ];
 
 /** Map jurisdiction codes to cluster labels */
@@ -48,6 +50,7 @@ const CLUSTER_LABELS: Record<string, string> = {
   NO: "NO",
   SE: "SE",
   FI: "FI",
+  DK: "DK",
   INT: "INT",
   EU: "EU",
 };
@@ -67,6 +70,7 @@ const CLUSTER_ORDER = [
   "NO",
   "SE",
   "FI",
+  "DK",
 ];
 
 /** Monochrome node fills by source type */

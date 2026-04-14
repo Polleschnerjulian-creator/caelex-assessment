@@ -4699,6 +4699,184 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // DENMARK (DK) — 12 Sources
+  [
+    "DK-OST-1967",
+    {
+      title: "Weltraumvertrag — Dänischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Dänemark ist für das GESAMTE Königreich verantwortlich (einschließlich Grönland/Färöer) — doch das Gesetz von 2016 schließt Grönland/Färöer explizit aus (§23).",
+          complianceImplication:
+            "Pituffik Space Base operiert unter dem Verteidigungsabkommen von 1951, nicht unter dänischem Weltraumrecht.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-LIABILITY-CONV",
+    {
+      title: "Weltraumhaftungsübereinkommen — Dänischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "§11 des Gesetzes setzt beide Ebenen um. Keine feste Versicherungssumme — Minister setzt Anforderungen nach Risikoprofil.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-REGISTRATION-CONV",
+    {
+      title: "Registrierungsübereinkommen — Dänischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Umgesetzt durch §10 des Gesetzes von 2016. UFST führt das Register.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Dänemark als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary: "48. Unterzeichner, 13. November 2024 in Kopenhagen.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-SPACE-ACT-2016",
+    {
+      title: "Weltraumgesetz (Lov om aktiviteter i det ydre rum)",
+      scopeDescription:
+        "10 Kapitel, 23 Paragraphen. 100 km Kármán-Linie. Schließt Grönland und Färöer EXPLIZIT AUS (§23). 25-Jahre-Deorbit-Regel im Durchführungserlass.",
+      provisions: {
+        "§ 4": {
+          title: "100 km Kármán-Linie",
+          summary:
+            "Weltraum definiert als Bereich über 100 km. Selten in nationalen Gesetzen kodifiziert.",
+        },
+        "§§ 11-14": {
+          title: "Haftung und Versicherung — ministerielles Ermessen",
+          summary:
+            "Strikte Haftung für Bodenschäden. Keine feste Versicherungssumme — Minister setzt Anforderungen. Befreiung möglich (BEK 552 §3). Kein Staats-Backstop.",
+        },
+        "§ 23": {
+          title: "SCHLIESST Grönland und Färöer AUS",
+          summary:
+            "Das Gesetz gilt NICHT für Grönland oder die Färöer. Kann per Königlichem Erlass ausgedehnt werden — aber KEIN solcher Erlass wurde erlassen.",
+          complianceImplication:
+            "Bedeutendste Regulierungslücke im dänischen Weltraumrecht.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-SPACE-EXEC-ORDER-2016",
+    {
+      title: "Durchführungserlass für Weltraumgenehmigungen",
+      provisions: {
+        "§ 3": {
+          title: "Versicherungsbefreiung/-reduzierung",
+          summary:
+            "Betreiber können Befreiung von Versicherungspflichten beantragen.",
+        },
+        "§ 6": {
+          title: "25-Jahre-Deorbit-Regel",
+          summary:
+            "Weltraumobjekte müssen innerhalb von 25 Jahren nach Betriebsende sicher die Umlaufbahn verlassen.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-DEFENCE-GREENLAND-1951",
+    {
+      title: "Verteidigungsabkommen für Grönland (1951) — Pituffik Space Base",
+      provisions: {
+        "Full instrument": {
+          title: "US-Militärweltraumoperationen bei Pituffik",
+          summary:
+            "Grundlegendes Abkommen für Pituffik Space Base (76°31'N). UEWR-Raketenwarnung, Satellitentracking (22.000+ Kontakte/Jahr). Kein Ablaufdatum. Operiert VOLLSTÄNDIG außerhalb dänischen Weltraumrechts.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-IGALIKU-2004",
+    {
+      title: "Igaliku-Abkommen (2004) — Änderung des Verteidigungsabkommens",
+      provisions: {
+        "Full instrument": {
+          title: "UEWR-Genehmigung und Grönland-Anerkennung",
+          summary:
+            "Trilaterales Instrument (USA-Dänemark-Grönland). Genehmigte UEWR-Radar-Upgrade. Erste trilaterale Anerkennung von Grönlands konsultativer Rolle.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-EXPORT-CONTROL",
+    {
+      title: "Dual-Use-Exportkontrolle — Dänische Ermächtigungsgesetzgebung",
+      provisions: {
+        "Full instrument": {
+          title: "Exportkontrolle für Weltraumtechnologie",
+          summary:
+            "Konsolidierungsgesetz 635/2011, geändert 2305/2021. Erhvervsstyrelsen verwaltet Lizenzen. FDI-Prüfung seit 1. Juli 2021.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-NIS2-2025",
+    {
+      title: "Dänisches NIS2-Gesetz (Cybersicherheit)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Umsetzung — Weltraum als hochkritischer Sektor",
+          summary:
+            "Erweitert Abdeckung von ~1.000 auf 6.000+ Einrichtungen. \u2018Kein Goldplating\u2019-Ansatz. In Kraft 1. Juli 2025.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-SPACE-STRATEGY-2025",
+    {
+      title: "Strategie für Weltraumforschung und -innovation 2025-2035",
+      provisions: {
+        "Full document": {
+          title: "Verdopplung der ESA-Beiträge",
+          summary:
+            "DKK 280 Mio. auf DKK 580 Mio. bis 2035. Bis zu 4 nationale Missionen. ~100 neue Start-ups.",
+        },
+      },
+    },
+  ],
+  [
+    "DK-GREENLAND-SELF-GOVT-2009",
+    {
+      title: "Grönländisches Selbstverwaltungsgesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Grönlands autonomer Status und Weltraumimplikationen",
+          summary:
+            "Verteidigung und Außenpolitik verbleiben bei Dänemark. Dänemark trägt Weltraumvertragsverantwortung für das gesamte Königreich — aber Weltraumgesetz schließt Grönland aus.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -5886,6 +6064,96 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Außenministerium — Vertragsabteilung",
       mandate:
         "Internationale Vertragspflichten. Artemis Accords (53. Unterzeichner, Januar 2025). COPUOS-Vertretung (Mitglied seit 2018).",
+    },
+  ],
+
+  // Denmark Authorities (11)
+  [
+    "DK-UFM",
+    {
+      name: "Ministerium für Hochschulbildung und Wissenschaft",
+      mandate:
+        "Nationale Koordinierungsbehörde für Weltraum. Formale Verantwortung für Regulierung, internationale Zusammenarbeit (ESA, EU, COPUOS). Minister erteilt Genehmigungen.",
+    },
+  ],
+  [
+    "DK-UFST",
+    {
+      name: "Dänische Agentur für Hochschulbildung und Wissenschaft (UFST)",
+      mandate:
+        "Operationale Weltraumbehörde — Dänemarks Weltraumregulator. Genehmigung, Aufsicht, Registrierung. Vertritt Dänemark bei ESA und COPUOS. Verwaltet nationales Weltraumprogramm ab 2026.",
+    },
+  ],
+  [
+    "DK-DTU-SPACE",
+    {
+      name: "DTU Space — Nationales Raumfahrtinstitut",
+      mandate:
+        "Dänemarks größte Weltraumforschungseinrichtung. 100+ internationale Missionen. ~169 Mitarbeiter. Betreibt Grönland-Magnetometerarray (19 Stationen). ESA BIC Denmark.",
+    },
+  ],
+  [
+    "DK-ENERGISTYRELSEN",
+    {
+      name: "Dänische Energiebehörde",
+      mandate:
+        "Spektrumzuweisung und Frequenzplanung für Weltraumdienste, einschließlich ITU-Frequenz- und GEO-Slot-Compliance.",
+    },
+  ],
+  [
+    "DK-FORSVARET",
+    {
+      name: "Dänische Verteidigung / DALO",
+      mandate:
+        "Militärische Weltraumaktivitäten. BIFROST-Satellit (Juni 2025 — Dänemarks erster Militärüberwachungssatellit). DKK 14,6 Mrd. Arktis-Verteidigungspaket.",
+    },
+  ],
+  [
+    "DK-ERHVERVSSTYRELSEN",
+    {
+      name: "Dänische Gewerbeaufsicht (Erhvervsstyrelsen)",
+      mandate:
+        "Verwaltet Dual-Use-Exportkontrollen und FDI-Prüfung für kritische Weltraumtechnologien (seit 1. Juli 2021).",
+    },
+  ],
+  [
+    "DK-MFA",
+    {
+      name: "Außenministerium",
+      mandate:
+        "Zugang zu Pituffik Space Base. Unterzeichnete Artemis Accords (November 2024, 48. Unterzeichner). Außen-/Sicherheitspolitische Bewertungen.",
+    },
+  ],
+  [
+    "DK-INTER-MINISTERIAL",
+    {
+      name: "Interministerieller Weltraumausschuss",
+      mandate:
+        "Gegründet 2016, Vorsitz UFM. Ministerien für Finanzen, Verteidigung, Umwelt, Verkehr und Auswärtiges.",
+    },
+  ],
+  [
+    "DK-DMI",
+    {
+      name: "Dänisches Meteorologisches Institut (DMI)",
+      mandate:
+        "Partner bei Weltraumprojekten, insbesondere maritime/Wettersatellitennanwendungen und Grönland-Eisüberwachung.",
+    },
+  ],
+  [
+    "DK-MOD",
+    {
+      name: "Verteidigungsministerium",
+      mandate:
+        "Militärische Weltraumpolitik. EU-Verteidigungsopt-out abgeschafft Juni 2022. DKK 14,6 Mrd. + DKK 27,4 Mrd. Arktis-Verteidigungspakete. Verteidigungsausgaben nähern sich 3% BIP.",
+    },
+  ],
+  [
+    "DK-RESILIENCE-MINISTRY",
+    {
+      name: "Ministerium für gesellschaftliche Resilienz und Krisenvorsorge",
+      mandate:
+        "Überwacht NIS2-Umsetzung. Dänisches NIS2-Gesetz in Kraft 1. Juli 2025. Abdeckung von ~1.000 auf 6.000+ Einrichtungen erweitert.",
     },
   ],
 ]);
