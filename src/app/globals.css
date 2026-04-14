@@ -2004,41 +2004,30 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ─── NUCLEAR: hide EVERYTHING on screen ─── */
-  body * {
-    visibility: hidden !important;
-  }
-
-  /* ─── Show ONLY the print container and its children ─── */
-  .print-export-container,
-  .print-export-container * {
-    visibility: visible !important;
-  }
-
-  .print-export-container {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    z-index: 99999 !important;
-    background: white !important;
-    overflow: visible !important;
-  }
-
-  /* ─── Force-kill fixed/sticky elements (sidebar) ─── */
-  .fixed,
-  .sticky {
+  /* ─── Hide screen-only content ─── */
+  .print-screen-content {
     display: none !important;
-    position: static !important;
   }
 
-  /* ─── Zero out layout offsets ─── */
+  /* ─── Kill the sidebar and any fixed/sticky overlays ─── */
+  .fixed {
+    display: none !important;
+  }
+
+  /* ─── Zero out main wrapper layout ─── */
   main {
     margin: 0 !important;
     margin-left: 0 !important;
     padding: 0 !important;
+  }
+
+  /* ─── Show the print briefing ─── */
+  .print-export-container {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
   }
 
   /* ─── Page setup ─── */

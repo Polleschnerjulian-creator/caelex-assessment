@@ -500,235 +500,246 @@ export default function JurisdictionDetailPage({
     LEGISLATION_STATUS_STYLES.none;
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
-      {/* ─── Header ─── */}
-      <header>
-        <Link
-          href="/atlas"
-          className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
-        >
-          <ArrowLeft size={14} strokeWidth={1.5} />
-          Back to ATLAS
-        </Link>
-
-        <div className="mt-6 flex items-baseline gap-4">
-          <span className="text-[36px] font-mono font-bold text-gray-200 leading-none tracking-tight">
-            {displayCode}
-          </span>
-          <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight leading-none">
-            {jurisdiction.countryName}
-          </h1>
-          <span
-            className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${legStatus.bg} ${legStatus.text}`}
+    <div className="min-h-screen bg-[#F7F8FA]">
+      {/* ─── Screen content (hidden during print) ─── */}
+      <div className="print-screen-content px-6 py-8 lg:px-12">
+        {/* ─── Header ─── */}
+        <header>
+          <Link
+            href="/atlas"
+            className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
           >
-            {legStatus.label}
-          </span>
-        </div>
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            Back to ATLAS
+          </Link>
 
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-[14px] text-gray-500">
-            {jurisdiction.legislation.name}
-            {jurisdiction.legislation.yearEnacted
-              ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, amended ${jurisdiction.legislation.yearAmended}` : ""})`
-              : ""}
-          </p>
-          {hasDetailedSources && (
-            <button
-              onClick={handleExportBriefing}
-              className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
+          <div className="mt-6 flex items-baseline gap-4">
+            <span className="text-[36px] font-mono font-bold text-gray-200 leading-none tracking-tight">
+              {displayCode}
+            </span>
+            <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight leading-none">
+              {jurisdiction.countryName}
+            </h1>
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${legStatus.bg} ${legStatus.text}`}
             >
-              <Download size={14} strokeWidth={1.5} />
-              {language === "de" ? "Briefing exportieren" : "Export Briefing"}
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* ─── Key Facts Row ─── */}
-      <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 py-5 border-y border-gray-200">
-        <Fact label="Authority" value={jurisdiction.licensingAuthority.name} />
-        <Fact
-          label="Liability Regime"
-          value={
-            jurisdiction.insuranceLiability.liabilityRegime
-              .charAt(0)
-              .toUpperCase() +
-            jurisdiction.insuranceLiability.liabilityRegime.slice(1)
-          }
-        />
-        <Fact
-          label="Processing Time"
-          value={`${jurisdiction.timeline.typicalProcessingWeeks.min}–${jurisdiction.timeline.typicalProcessingWeeks.max} weeks`}
-        />
-        <Fact
-          label="Mandatory Insurance"
-          value={
-            jurisdiction.insuranceLiability.mandatoryInsurance
-              ? `Yes${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
-              : "No"
-          }
-        />
-        <Fact
-          label="Status"
-          value={`${legStatus.label}${jurisdiction.legislation.yearEnacted ? ` (${jurisdiction.legislation.yearEnacted})` : ""}`}
-        />
-      </div>
-
-      {/* ─── Legal Sources Section ─── */}
-      {hasDetailedSources ? (
-        <div className="mt-10">
-          <div className="flex items-center gap-2 mb-6">
-            <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-              Legal Sources
-            </h2>
-            <span className="text-[12px] text-gray-300">
-              {legalSources.length}
+              {legStatus.label}
             </span>
           </div>
 
-          <div className="space-y-10">
-            {groupedSources.map((group) => {
-              const Icon = group.icon;
-              return (
-                <section key={group.key}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon
-                      size={14}
-                      className="text-gray-300"
-                      strokeWidth={1.5}
-                    />
-                    <h3 className="text-[11px] font-semibold text-gray-500 tracking-[0.12em] uppercase">
-                      {group.title}
-                    </h3>
-                    <span className="text-[11px] text-gray-300">
-                      {group.sources.length}
-                    </span>
-                  </div>
-
-                  <div className="divide-y divide-gray-100">
-                    {group.sources.map((source) => (
-                      <SourceEntry key={source.id} source={source} />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="mt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-              Legal Sources
-            </h2>
-          </div>
-
-          {/* Fallback: show national-space-laws data */}
-          <div className="rounded-xl bg-white border border-gray-100 p-6">
-            <p className="text-[11px] text-amber-600 font-medium mb-4">
-              Detailed legal sources coming soon. Showing summary data.
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-[14px] text-gray-500">
+              {jurisdiction.legislation.name}
+              {jurisdiction.legislation.yearEnacted
+                ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, amended ${jurisdiction.legislation.yearAmended}` : ""})`
+                : ""}
             </p>
+            {hasDetailedSources && (
+              <button
+                onClick={handleExportBriefing}
+                className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
+              >
+                <Download size={14} strokeWidth={1.5} />
+                {language === "de" ? "Briefing exportieren" : "Export Briefing"}
+              </button>
+            )}
+          </div>
+        </header>
 
-            <div className="space-y-4">
-              <FallbackRow
-                label="Legislation"
-                value={`${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted})`}
-              />
-              <FallbackRow
-                label="Local Name"
-                value={jurisdiction.legislation.nameLocal}
-              />
-              {jurisdiction.legislation.officialUrl && (
-                <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
-                    Official URL
-                  </span>
-                  <a
-                    href={jurisdiction.legislation.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
-                  >
-                    {jurisdiction.legislation.officialUrl}
-                  </a>
-                </div>
-              )}
-              <FallbackRow
-                label="Key Articles"
-                value={jurisdiction.legislation.keyArticles ?? "N/A"}
-              />
-              <FallbackRow
-                label="Debris Mitigation"
-                value={
-                  jurisdiction.debrisMitigation.deorbitRequirement
-                    ? `Required — ${jurisdiction.debrisMitigation.deorbitTimeline ?? "see legislation"}`
-                    : "Not required"
-                }
-              />
-              <FallbackRow
-                label="Registration"
-                value={
-                  jurisdiction.registration.nationalRegistryExists
-                    ? `${jurisdiction.registration.registryName ?? "National registry"}`
-                    : "No national registry"
-                }
-              />
+        {/* ─── Key Facts Row ─── */}
+        <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 py-5 border-y border-gray-200">
+          <Fact
+            label="Authority"
+            value={jurisdiction.licensingAuthority.name}
+          />
+          <Fact
+            label="Liability Regime"
+            value={
+              jurisdiction.insuranceLiability.liabilityRegime
+                .charAt(0)
+                .toUpperCase() +
+              jurisdiction.insuranceLiability.liabilityRegime.slice(1)
+            }
+          />
+          <Fact
+            label="Processing Time"
+            value={`${jurisdiction.timeline.typicalProcessingWeeks.min}–${jurisdiction.timeline.typicalProcessingWeeks.max} weeks`}
+          />
+          <Fact
+            label="Mandatory Insurance"
+            value={
+              jurisdiction.insuranceLiability.mandatoryInsurance
+                ? `Yes${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
+                : "No"
+            }
+          />
+          <Fact
+            label="Status"
+            value={`${legStatus.label}${jurisdiction.legislation.yearEnacted ? ` (${jurisdiction.legislation.yearEnacted})` : ""}`}
+          />
+        </div>
+
+        {/* ─── Legal Sources Section ─── */}
+        {hasDetailedSources ? (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-6">
+              <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
+              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+                Legal Sources
+              </h2>
+              <span className="text-[12px] text-gray-300">
+                {legalSources.length}
+              </span>
+            </div>
+
+            <div className="space-y-10">
+              {groupedSources.map((group) => {
+                const Icon = group.icon;
+                return (
+                  <section key={group.key}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon
+                        size={14}
+                        className="text-gray-300"
+                        strokeWidth={1.5}
+                      />
+                      <h3 className="text-[11px] font-semibold text-gray-500 tracking-[0.12em] uppercase">
+                        {group.title}
+                      </h3>
+                      <span className="text-[11px] text-gray-300">
+                        {group.sources.length}
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-gray-100">
+                      {group.sources.map((source) => (
+                        <SourceEntry key={source.id} source={source} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
+              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+                Legal Sources
+              </h2>
+            </div>
 
-      {/* ─── Authorities Section ─── */}
-      {authorities.length > 0 && (
-        <div className="mt-12">
-          <div className="flex items-center gap-2 mb-5">
-            <Building2 size={16} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
-              Authorities
+            {/* Fallback: show national-space-laws data */}
+            <div className="rounded-xl bg-white border border-gray-100 p-6">
+              <p className="text-[11px] text-amber-600 font-medium mb-4">
+                Detailed legal sources coming soon. Showing summary data.
+              </p>
+
+              <div className="space-y-4">
+                <FallbackRow
+                  label="Legislation"
+                  value={`${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted})`}
+                />
+                <FallbackRow
+                  label="Local Name"
+                  value={jurisdiction.legislation.nameLocal}
+                />
+                {jurisdiction.legislation.officialUrl && (
+                  <div className="flex items-start gap-4">
+                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
+                      Official URL
+                    </span>
+                    <a
+                      href={jurisdiction.legislation.officialUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
+                    >
+                      {jurisdiction.legislation.officialUrl}
+                    </a>
+                  </div>
+                )}
+                <FallbackRow
+                  label="Key Articles"
+                  value={jurisdiction.legislation.keyArticles ?? "N/A"}
+                />
+                <FallbackRow
+                  label="Debris Mitigation"
+                  value={
+                    jurisdiction.debrisMitigation.deorbitRequirement
+                      ? `Required — ${jurisdiction.debrisMitigation.deorbitTimeline ?? "see legislation"}`
+                      : "Not required"
+                  }
+                />
+                <FallbackRow
+                  label="Registration"
+                  value={
+                    jurisdiction.registration.nationalRegistryExists
+                      ? `${jurisdiction.registration.registryName ?? "National registry"}`
+                      : "No national registry"
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Authorities Section ─── */}
+        {authorities.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center gap-2 mb-5">
+              <Building2
+                size={16}
+                className="text-gray-400"
+                strokeWidth={1.5}
+              />
+              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+                Authorities
+              </h2>
+              <span className="text-[12px] text-gray-300">
+                {authorities.length}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {authorities.map((auth) => (
+                <AuthorityCard key={auth.id} authority={auth} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Notes ─── */}
+        {jurisdiction.notes && jurisdiction.notes.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">
+              Notes
             </h2>
-            <span className="text-[12px] text-gray-300">
-              {authorities.length}
-            </span>
+            <ul className="space-y-2">
+              {jurisdiction.notes.map((note, i) => (
+                <li
+                  key={i}
+                  className="text-[12px] text-gray-500 leading-relaxed pl-4 border-l-2 border-gray-200"
+                >
+                  {note}
+                </li>
+              ))}
+            </ul>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {authorities.map((auth) => (
-              <AuthorityCard key={auth.id} authority={auth} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ─── Notes ─── */}
-      {jurisdiction.notes && jurisdiction.notes.length > 0 && (
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">
-            Notes
-          </h2>
-          <ul className="space-y-2">
-            {jurisdiction.notes.map((note, i) => (
-              <li
-                key={i}
-                className="text-[12px] text-gray-500 leading-relaxed pl-4 border-l-2 border-gray-200"
-              >
-                {note}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ─── Footer ─── */}
-      <footer className="mt-20 pt-6 border-t border-gray-200 print:hidden">
-        <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
-          Data last updated: {jurisdiction.lastUpdated}. This information is for
-          research and reference purposes only. It does not constitute legal
-          advice. Verify all information with official sources and qualified
-          legal counsel before making compliance decisions.
-        </p>
-      </footer>
+        {/* ─── Footer ─── */}
+        <footer className="mt-20 pt-6 border-t border-gray-200">
+          <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
+            Data last updated: {jurisdiction.lastUpdated}. This information is
+            for research and reference purposes only. It does not constitute
+            legal advice. Verify all information with official sources and
+            qualified legal counsel before making compliance decisions.
+          </p>
+        </footer>
+      </div>
+      {/* end print-screen-content */}
 
       {/* ─── Print Briefing (hidden on screen, shown on print) ─── */}
       {hasDetailedSources && (
