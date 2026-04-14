@@ -36,6 +36,8 @@ import {
   AUTHORITIES_FI,
   LEGAL_SOURCES_DK,
   AUTHORITIES_DK,
+  LEGAL_SOURCES_AT,
+  AUTHORITIES_AT,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2553,6 +2555,142 @@ describe("Legal Sources — DK authority accuracy", () => {
 
   it("every DK authority has a valid website URL", () => {
     for (const a of AUTHORITIES_DK) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Austria dataset sanity checks ──────────────────────────────────
+describe("Legal Sources — AT dataset sanity", () => {
+  it("AT has at least 10 legal sources", () => {
+    expect(LEGAL_SOURCES_AT.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("AT has exactly 10 authorities", () => {
+    expect(AUTHORITIES_AT).toHaveLength(10);
+  });
+
+  it("AT legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_AT) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every AT source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_AT) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every AT source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_AT) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("all competent_authorities IDs map to existing AT authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_AT.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_AT) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("related_sources reference valid AT or cross-jurisdiction IDs", () => {
+    const allSourceIds = new Set(LEGAL_SOURCES_AT.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_AT) {
+      for (const relId of s.related_sources) {
+        if (relId.startsWith("AT-")) {
+          expect(
+            allSourceIds.has(relId),
+            `${s.id} references unknown related source ${relId}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+// ─── Austria regulatory accuracy ────────────────────────────────────
+describe("Legal Sources — AT regulatory accuracy", () => {
+  it("Weltraumgesetz has correct BGBl reference and is critical", () => {
+    const act = getLegalSourceById("AT-WELTRAUMGESETZ-2011")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("BGBl. I Nr. 132/2011");
+    expect(act.status).toBe("in_force");
+    expect(act.relevance_level).toBe("critical");
+  });
+
+  it("Moon Agreement 1984 is in force", () => {
+    const moon = getLegalSourceById("AT-MOON-1984")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("in_force");
+    expect(moon.date_in_force).toBe("1984-07-11");
+  });
+
+  it("Artemis Accords signed December 2024", () => {
+    const aa = getLegalSourceById("AT-ARTEMIS-ACCORDS")!;
+    expect(aa).toBeDefined();
+    expect(aa.date_enacted).toBe("2024-12-11");
+    const prov = aa.key_provisions[0]!;
+    expect(prov.summary).toContain("50th");
+  });
+
+  it("NISG 2026 is a draft", () => {
+    const nisg = getLegalSourceById("AT-NISG-2026")!;
+    expect(nisg).toBeDefined();
+    expect(nisg.status).toBe("draft");
+    expect(nisg.type).toBe("draft_legislation");
+    expect(nisg.implements).toBe("EU-NIS2-2022");
+  });
+});
+
+// ─── AT lookup functions ────────────────────────────────────────────
+describe("Legal Sources — AT lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns AT sources", () => {
+    const sources = getLegalSourcesByJurisdiction("AT");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_AT.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 10 AT authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("AT");
+    expect(auths).toHaveLength(10);
+  });
+
+  it("getAvailableJurisdictions includes AT", () => {
+    expect(getAvailableJurisdictions()).toContain("AT");
+  });
+});
+
+// ─── AT authority accuracy ──────────────────────────────────────────
+describe("Legal Sources — AT authority accuracy", () => {
+  it("BMIMI is the space ministry", () => {
+    const bmimi = getAuthorityById("AT-BMIMI")!;
+    expect(bmimi).toBeDefined();
+    expect(bmimi.space_mandate).toContain("space ministry");
+    expect(bmimi.applicable_areas).toContain("licensing");
+  });
+
+  it("FFG is the de facto national space agency", () => {
+    const ffg = getAuthorityById("AT-FFG")!;
+    expect(ffg).toBeDefined();
+    expect(ffg.space_mandate).toContain("de facto national space agency");
+  });
+
+  it("every AT authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_AT) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

@@ -54,6 +54,7 @@ import { LEGAL_SOURCES_NO, AUTHORITIES_NO } from "./sources/no";
 import { LEGAL_SOURCES_SE, AUTHORITIES_SE } from "./sources/se";
 import { LEGAL_SOURCES_FI, AUTHORITIES_FI } from "./sources/fi";
 import { LEGAL_SOURCES_DK, AUTHORITIES_DK } from "./sources/dk";
+import { LEGAL_SOURCES_AT, AUTHORITIES_AT } from "./sources/at";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_SE,
   ...LEGAL_SOURCES_FI,
   ...LEGAL_SOURCES_DK,
+  ...LEGAL_SOURCES_AT,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -85,6 +87,7 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_SE,
   ...AUTHORITIES_FI,
   ...AUTHORITIES_DK,
+  ...AUTHORITIES_AT,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -182,6 +185,14 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       jurisdiction: "DK",
       sources: LEGAL_SOURCES_DK,
       authorities: AUTHORITIES_DK,
+    },
+  ],
+  [
+    "AT",
+    {
+      jurisdiction: "AT",
+      sources: LEGAL_SOURCES_AT,
+      authorities: AUTHORITIES_AT,
     },
   ],
 ]);
@@ -367,3 +378,4 @@ export { LEGAL_SOURCES_NO, AUTHORITIES_NO };
 export { LEGAL_SOURCES_SE, AUTHORITIES_SE };
 export { LEGAL_SOURCES_FI, AUTHORITIES_FI };
 export { LEGAL_SOURCES_DK, AUTHORITIES_DK };
+export { LEGAL_SOURCES_AT, AUTHORITIES_AT };

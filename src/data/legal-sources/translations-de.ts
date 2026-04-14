@@ -4877,6 +4877,193 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // AUSTRIA (AT) — 12 Sources
+  [
+    "AT-OST-1967",
+    {
+      title: "Weltraumvertrag — Österreichischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Österreich setzt Art. VI mit einem 8-Bedingungen-Genehmigungsregime, 60-Mio.-EUR-Pflichtversicherung und Zwangsübertragungsmechanismus um.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-LIABILITY-1980",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Österreichischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "Weltraumgesetz § 11: Rückgriff gedeckelt auf Versicherungssumme (min. 60 Mio. EUR). Obergrenze entfällt bei Verschulden oder Genehmigungsverstoß. Kein Staats-Backstop.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-REGISTRATION-1980",
+    {
+      title:
+        "Registrierungsübereinkommen — Österreichischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Umgesetzt durch §§ 9-10 Weltraumgesetz. Register übertrifft Konventionsminimum um 3 Datenpunkte. TUGSAT-1, UniBRITE, PEGASUS, OPS-SAT, PRETTY registriert.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-MOON-1984",
+    {
+      title: "Mondvertrag — Österreichischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. 11": {
+          title: "Gemeinsames Erbe der Menschheit",
+          summary:
+            "Österreichs Ratifizierung 1984 war die FÜNFTE — löste direkt das Inkrafttreten des Mondvertrags aus. Eines von weniger als 20 Vertragsparteien.",
+          complianceImplication:
+            "Österreich unterzeichnete Artemis Accords (Dezember 2024) trotz Mondvertragspartei — neben Belgien und den Niederlanden.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Österreich als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "50. Unterzeichner, 11. Dezember 2024 bei NASA HQ. Doppelposition: Mondvertrag + Artemis Accords.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-WELTRAUMGESETZ-2011",
+    {
+      title:
+        "Weltraumgesetz (Bundesgesetz über die Genehmigung von Weltraumaktivitäten)",
+      scopeDescription:
+        "Eines der vollständigsten europäischen Weltraumgesetze. 18 Paragraphen. Einstimmig beschlossen. 60-Mio.-EUR-Versicherung mit akademischer Befreiung, 8 kumulative Genehmigungsbedingungen, Zwangsübertragungsmechanismus (§ 7(3)), Register über Konventionsminimum hinaus.",
+      provisions: {
+        "§ 4": {
+          title: "Acht kumulative Genehmigungsbedingungen",
+          summary:
+            "Zuverlässigkeit, kein Sicherheitsrisiko, internationale Konformität, Weltraummüll, Umwelt, ITU, 60-Mio.-EUR-Versicherung, geordnete Beendigung. Entscheidung innerhalb 6 Monaten.",
+          complianceImplication:
+            "Eines der detailliertesten gesetzlichen Lizenzregime Europas.",
+        },
+        "§ 4(4)": {
+          title: "60-Mio.-EUR-Pflichtversicherung pro Schadenfall",
+          summary:
+            "Mindestens 60 Mio. EUR pro Versicherungsfall. Nachlaufhaftung nicht ausschließbar. Für Wissenschaft/Forschung/Bildung: Reduzierung oder Befreiung möglich.",
+        },
+        "§ 7(3)": {
+          title: "Zwangsübertragung der Kontrolle",
+          summary:
+            "Bei Nichteinhaltung der Widerrufsentscheidung SOLL die Kontrolle per Verwaltungsbescheid auf einen anderen Betreiber übertragen werden. Einzigartig in europäischem Weltraumrecht.",
+        },
+        "§ 11": {
+          title: "Rückgriff — 60-Mio.-Obergrenze mit Verschuldensaufhebung",
+          summary:
+            "Gedeckelt auf Versicherungssumme für Oberflächen-/Flugzeugschäden. Obergrenze entfällt bei Verschulden oder Verstoß gegen §§ 3/4. Kein staatlicher Rückhalt.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-WELTRAUMVERORDNUNG-2015",
+    {
+      title: "Weltraumverordnung (Durchführungsverordnung)",
+      provisions: {
+        "Full instrument": {
+          title: "Detaillierte Antrags- und Weltraummüllanforderungen",
+          summary:
+            "Operationalisiert das Weltraumgesetz: 4 IADC-Weltraummüllkategorien, Sicherheitsprüfungen, Versicherungsnachweise, Notfallpläne. Verfahrensgebühr: 6.500 EUR.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-AUSSENWIRTSCHAFTSGESETZ-2011",
+    {
+      title: "Außenwirtschaftsgesetz 2011",
+      provisions: {
+        "Full instrument": {
+          title: "Nationale Dual-Use-Exportkontrolle",
+          summary:
+            "Ergänzt EU-Verordnung 2021/821. Lizenzen über PAWA-Portal. Österreich Mitglied aller 5 Exportkontrollregime. MTCR-Vorsitz 2020-2021.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-TKG-2021",
+    {
+      title: "Telekommunikationsgesetz 2021",
+      provisions: {
+        "§ 4 / §§ 10-19": {
+          title: "Satellitenspektrumverwaltung",
+          summary:
+            "Satellitennetze explizit einbezogen. Betreiber benötigen SOWOHL Weltraumgesetz-Genehmigung ALS AUCH TKG-Frequenzzuweisungen.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-NISG-2026",
+    {
+      title:
+        "NISG 2026 — Netz- und Informationssystemsicherheitsgesetz (NIS2-Umsetzung)",
+      provisions: {
+        "Full bill": {
+          title: "NIS2-Umsetzung — Weltraum als kritischer Sektor",
+          summary:
+            "Nationalrat lehnte NISG 2024 am 3. Juli 2024 ab. NISG 2026 als Gesetzentwurf 308 d.B. eingebracht. Strafen bis 10 Mio. EUR oder 2% des weltweiten Umsatzes.",
+          complianceImplication:
+            "NISG 2018 gilt als Übergangslösung bis Verabschiedung.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-DSG",
+    {
+      title: "Datenschutzgesetz",
+      provisions: {
+        "§ 1": {
+          title:
+            "Verfassungsrechtlicher Datenschutz — gilt auch für juristische Personen",
+          summary:
+            "§ 1 DSG hat VERFASSUNGSRANG und erstreckt Datenschutz auf juristische Personen — stärker als die meisten EU-Mitgliedstaaten.",
+        },
+      },
+    },
+  ],
+  [
+    "AT-SPACE-STRATEGY-2030",
+    {
+      title:
+        "Österreichische Weltraumstrategie 2030+ — Menschen, Klima und Wirtschaft",
+      provisions: {
+        "Full document": {
+          title: "Space is for EVERYONE",
+          summary:
+            "CM25-Verpflichtung: 336 Mio. EUR (48% Steigerung über CM22). ~70 Mio. EUR jährlicher ESA-Beitrag, ~90% Georeturn. Ergänzt durch Militärische Weltraumstrategie 2035+.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -6154,6 +6341,88 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Ministerium für gesellschaftliche Resilienz und Krisenvorsorge",
       mandate:
         "Überwacht NIS2-Umsetzung. Dänisches NIS2-Gesetz in Kraft 1. Juli 2025. Abdeckung von ~1.000 auf 6.000+ Einrichtungen erweitert.",
+    },
+  ],
+
+  // Austria Authorities (10)
+  [
+    "AT-BMIMI",
+    {
+      name: "Bundesministerium für Innovation, Mobilität und Infrastruktur (BMIMI)",
+      mandate:
+        "Österreichs Weltraumministerium und Genehmigungsbehörde. Umbenannt von BMK am 1. April 2025. Verwaltet nationales Register, übt Aufsicht aus. Minister: Peter Hanke (SPÖ).",
+    },
+  ],
+  [
+    "AT-FFG",
+    {
+      name: "Österreichische Forschungsförderungsgesellschaft — Agentur für Luft- und Raumfahrt (FFG/ALR)",
+      mandate:
+        "De-facto nationale Raumfahrtagentur. Gegründet 2004. Vertritt Österreich bei ESA. Verwaltet ASAP-Programm. Nationale Kontaktstelle für EU SST.",
+    },
+  ],
+  [
+    "AT-RTR",
+    {
+      name: "Rundfunk und Telekom Regulierungs-GmbH (RTR)",
+      mandate:
+        "Satellitenspektrumverwaltung unter TKG 2021. Frequenzzuweisungen. TKK führt Spektrumauktionen durch.",
+    },
+  ],
+  [
+    "AT-BMEIA",
+    {
+      name: "Bundesministerium für europäische und internationale Angelegenheiten",
+      mandate:
+        "Vertritt Österreich bei COPUOS. Verwaltet HCoC-Exekutivsekretariat (www.hcoc.at). Übermittelt Registerdaten an UN-Generalsekretär.",
+    },
+  ],
+  [
+    "AT-BMWET",
+    {
+      name: "Bundesministerium für Wirtschaft — Exportkontrollabteilung V/2",
+      mandate:
+        "Exportkontrolle für Dual-Use-Weltraumtechnologie. Lizenzen über PAWA-Portal. Österreich Mitglied aller 5 Exportkontrollregime. MTCR-Vorsitz 2020-2021.",
+    },
+  ],
+  [
+    "AT-BMLV",
+    {
+      name: "Bundesministerium für Landesverteidigung",
+      mandate:
+        "Militärische Weltraumpolitik. Kein Weltraumkommando (Neutralität). Erster Militärsatellit März 2026 (GATE Space). Militärische Weltraumstrategie 2035+. Goldhaube-Radar seit 1988.",
+    },
+  ],
+  [
+    "AT-DSB",
+    {
+      name: "Datenschutzbehörde (DSB)",
+      mandate:
+        "DSGVO-Aufsicht für Satellitendaten. DSG § 1 hat VERFASSUNGSRANG und erstreckt Datenschutz auf juristische Personen.",
+    },
+  ],
+  [
+    "AT-BMI",
+    {
+      name: "Bundesministerium für Inneres",
+      mandate:
+        "Öffentliche Sicherheitsbewertung für Weltraumgenehmigungen (§ 17). Zuverlässigkeitsüberprüfung der Betreiber.",
+    },
+  ],
+  [
+    "AT-AUSTROSPACE",
+    {
+      name: "AUSTROSPACE — Österreichische Raumfahrtindustrie",
+      mandate:
+        "Industrieverband, gegründet Februar 1991. ~19-20 Mitglieder. 120+ Organisationen aktiv, ~125 Mio. EUR Umsatz, ~1.000 direkte Beschäftigte.",
+    },
+  ],
+  [
+    "AT-NPOC",
+    {
+      name: "NPOC Weltraumrecht Österreich — Universität Wien",
+      mandate:
+        "Gegründet 2001 von Prof. Brünner (Graz). Geleitet von Prof. Marboe (Wien) — COPUOS AG Nationales Weltraumrecht (2008-2013, UNGA Res. 68/74). Netzwerk an 6 Universitäten.",
     },
   ],
 ]);
