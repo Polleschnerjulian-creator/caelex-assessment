@@ -22,6 +22,10 @@ import {
   AUTHORITIES_IT,
   LEGAL_SOURCES_LU,
   AUTHORITIES_LU,
+  LEGAL_SOURCES_NL,
+  AUTHORITIES_NL,
+  LEGAL_SOURCES_BE,
+  AUTHORITIES_BE,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -1138,6 +1142,517 @@ describe("Legal Sources — LU authority accuracy", () => {
 
   it("every LU authority has a valid website URL", () => {
     for (const a of AUTHORITIES_LU) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Netherlands dataset sanity checks ────────────────────────────
+describe("Legal Sources — NL dataset sanity", () => {
+  it("NL has at least 20 legal sources", () => {
+    expect(LEGAL_SOURCES_NL.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("NL has exactly 15 authorities", () => {
+    expect(AUTHORITIES_NL).toHaveLength(15);
+  });
+
+  it("every NL legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_NL) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("NL legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_NL) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("NL authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_NL) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every NL source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_NL) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every NL source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_NL) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every NL source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_NL) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all NL competent_authorities IDs map to existing NL authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_NL.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_NL) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all NL related_sources IDs map to existing NL legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_NL.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_NL) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Netherlands regulatory accuracy ──────────────────────────────
+describe("Legal Sources — NL regulatory accuracy", () => {
+  it("WRA 2007 has correct Stb. reference", () => {
+    const wra = getLegalSourceById("NL-WRA-2007")!;
+    expect(wra).toBeDefined();
+    expect(wra.official_reference).toContain("Stb. 2006, 580");
+    expect(wra.status).toBe("in_force");
+    expect(wra.relevance_level).toBe("critical");
+  });
+
+  it("WRA 2007 has comprehensive key provisions (7+)", () => {
+    const wra = getLegalSourceById("NL-WRA-2007")!;
+    expect(wra.key_provisions.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("Moon Agreement is RATIFIED for NL (unique among major space nations)", () => {
+    const moon = getLegalSourceById("NL-MOON-1979")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("in_force");
+    expect(moon.relevance_level).toBe("high");
+    const notes = moon.notes!.join(" ");
+    expect(notes).toContain("ONLY major space-faring nation");
+  });
+
+  it("all 5 UN treaties are present and ratified", () => {
+    const ost = getLegalSourceById("NL-OST-1967")!;
+    const rescue = getLegalSourceById("NL-RESCUE-1968")!;
+    const liability = getLegalSourceById("NL-LIABILITY-1972")!;
+    const registration = getLegalSourceById("NL-REGISTRATION-1975")!;
+    const moon = getLegalSourceById("NL-MOON-1979")!;
+    expect(ost.status).toBe("in_force");
+    expect(rescue.status).toBe("in_force");
+    expect(liability.status).toBe("in_force");
+    expect(registration.status).toBe("in_force");
+    expect(moon.status).toBe("in_force");
+  });
+
+  it("Artemis Accords signed 2024", () => {
+    const artemis = getLegalSourceById("NL-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.status).toBe("in_force");
+    expect(artemis.date_enacted).toBe("2024-04-08");
+  });
+
+  it("NIS2 transposition (Cbw) is correctly marked as draft", () => {
+    const cbw = getLegalSourceById("NL-CBW-NIS2")!;
+    expect(cbw).toBeDefined();
+    expect(cbw.status).toBe("draft");
+    expect(cbw.implements).toBe("EU-NIS2-2022");
+  });
+
+  it("Vifo investment screening is in force", () => {
+    const vifo = getLegalSourceById("NL-VIFO-2023")!;
+    expect(vifo).toBeDefined();
+    expect(vifo.status).toBe("in_force");
+    expect(vifo.compliance_areas).toContain("military_dual_use");
+  });
+
+  it("ESTEC HQ Agreement is present", () => {
+    const estec = getLegalSourceById("NL-ESA-HQ-AGREEMENT")!;
+    expect(estec).toBeDefined();
+    expect(estec.status).toBe("in_force");
+    expect(estec.type).toBe("international_treaty");
+  });
+
+  it("Wassenaar Arrangement is present and headquartered in NL", () => {
+    const wa = getLegalSourceById("NL-WASSENAAR")!;
+    expect(wa).toBeDefined();
+    expect(wa.status).toBe("in_force");
+    const notes = wa.notes!.join(" ");
+    expect(notes).toContain("Wassenaar");
+    expect(notes).toContain("Hague");
+  });
+
+  it("Hague Building Blocks present for space resources governance", () => {
+    const hbb = getLegalSourceById("NL-HAGUE-BUILDING-BLOCKS")!;
+    expect(hbb).toBeDefined();
+    expect(hbb.type).toBe("policy_document");
+    const notes = hbb.notes!.join(" ");
+    expect(notes).toContain("Leiden");
+  });
+});
+
+// ─── NL lookup functions ──────────────────────────────────────────
+describe("Legal Sources — NL lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns NL sources", () => {
+    const sources = getLegalSourcesByJurisdiction("NL");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_NL.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns NL authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("NL");
+    expect(auths).toHaveLength(15);
+  });
+
+  it("getLegalSourceStats includes NL", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["NL"]).toBeDefined();
+    expect(stats["NL"]!.total).toBeGreaterThanOrEqual(20);
+  });
+
+  it("getAvailableJurisdictions includes NL", () => {
+    expect(getAvailableJurisdictions()).toContain("NL");
+  });
+
+  it("getLegalSourcesByComplianceArea returns licensing sources for NL", () => {
+    const licensing = getLegalSourcesByComplianceArea("NL", "licensing");
+    expect(licensing.length).toBeGreaterThan(0);
+    for (const s of licensing) {
+      expect(s.compliance_areas).toContain("licensing");
+    }
+  });
+
+  it("getLegalBasisChain returns sorted by relevance for NL", () => {
+    const chain = getLegalBasisChain("NL", "licensing");
+    expect(chain.length).toBeGreaterThan(0);
+    expect(["fundamental", "critical"]).toContain(chain[0]!.relevance_level);
+  });
+});
+
+// ─── NL authority accuracy ────────────────────────────────────────
+describe("Legal Sources — NL authority accuracy", () => {
+  it("NSO is the space agency", () => {
+    const nso = getAuthorityById("NL-NSO")!;
+    expect(nso).toBeDefined();
+    expect(nso.space_mandate).toContain("space agency");
+    expect(nso.applicable_areas).toContain("licensing");
+    expect(nso.applicable_areas).toContain("registration");
+  });
+
+  it("RDI handles frequency spectrum", () => {
+    const rdi = getAuthorityById("NL-RDI")!;
+    expect(rdi).toBeDefined();
+    expect(rdi.space_mandate).toContain("requenc");
+    expect(rdi.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("NCSC handles cybersecurity", () => {
+    const ncsc = getAuthorityById("NL-NCSC")!;
+    expect(ncsc).toBeDefined();
+    expect(ncsc.space_mandate).toContain("ybersecurity");
+    expect(ncsc.applicable_areas).toContain("cybersecurity");
+  });
+
+  it("CDIU handles export control", () => {
+    const cdiu = getAuthorityById("NL-CDIU")!;
+    expect(cdiu).toBeDefined();
+    expect(cdiu.space_mandate).toContain("Export");
+    expect(cdiu.applicable_areas).toContain("export_control");
+  });
+
+  it("ESTEC is ESA's largest facility", () => {
+    const estec = getAuthorityById("NL-ESTEC")!;
+    expect(estec).toBeDefined();
+    expect(estec.space_mandate).toContain("largest");
+    expect(estec.space_mandate).toContain("Noordwijk");
+  });
+
+  it("BTI handles investment screening", () => {
+    const bti = getAuthorityById("NL-BTI")!;
+    expect(bti).toBeDefined();
+    expect(bti.space_mandate).toContain("investment screening");
+    expect(bti.applicable_areas).toContain("military_dual_use");
+  });
+
+  it("every NL authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_NL) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Belgium dataset sanity checks ───────────────────────────────
+describe("Legal Sources — BE dataset sanity", () => {
+  it("BE has at least 20 legal sources", () => {
+    expect(LEGAL_SOURCES_BE.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("BE has exactly 15 authorities", () => {
+    expect(AUTHORITIES_BE).toHaveLength(15);
+  });
+
+  it("every BE legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_BE) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("BE legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_BE) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("BE authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_BE) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every BE source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_BE) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every BE source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_BE) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every BE source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_BE) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all BE competent_authorities IDs map to existing BE authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_BE.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_BE) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all BE related_sources IDs map to existing BE legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_BE.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_BE) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Belgium regulatory accuracy ─────────────────────────────────
+describe("Legal Sources — BE regulatory accuracy", () => {
+  it("2005 Space Law has correct Numac reference", () => {
+    const law = getLegalSourceById("BE-SPACE-LAW-2005")!;
+    expect(law).toBeDefined();
+    expect(law.official_reference).toContain("Numac 2005011439");
+    expect(law.status).toBe("in_force");
+    expect(law.relevance_level).toBe("critical");
+  });
+
+  it("2005 Space Law is Europe's earliest new-wave space law", () => {
+    const law = getLegalSourceById("BE-SPACE-LAW-2005")!;
+    const notes = law.notes!.join(" ");
+    expect(notes).toContain("FIRST");
+    expect(notes).toContain("2005");
+  });
+
+  it("2005 Space Law has comprehensive key provisions (7+)", () => {
+    const law = getLegalSourceById("BE-SPACE-LAW-2005")!;
+    expect(law.key_provisions.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("2013 amendment correctly references 2005 law", () => {
+    const amendment = getLegalSourceById("BE-SPACE-LAW-AMENDMENT-2013")!;
+    expect(amendment).toBeDefined();
+    expect(amendment.amends).toBe("BE-SPACE-LAW-2005");
+  });
+
+  it("2022 Royal Decree is in force", () => {
+    const rd = getLegalSourceById("BE-RD-2022")!;
+    expect(rd).toBeDefined();
+    expect(rd.status).toBe("in_force");
+    expect(rd.official_reference).toContain("Numac 2022031435");
+  });
+
+  it("Moon Agreement ACCEDED (not just ratified) for BE", () => {
+    const moon = getLegalSourceById("BE-MOON-2004")!;
+    expect(moon).toBeDefined();
+    expect(moon.status).toBe("in_force");
+    expect(moon.relevance_level).toBe("high");
+    const notes = moon.notes!.join(" ");
+    expect(notes).toContain("acceded");
+    expect(notes).toContain("2004");
+  });
+
+  it("all 5 UN treaties present and ratified/acceded", () => {
+    const ost = getLegalSourceById("BE-OST-1967")!;
+    const rescue = getLegalSourceById("BE-RESCUE-1968")!;
+    const liability = getLegalSourceById("BE-LIABILITY-1972")!;
+    const registration = getLegalSourceById("BE-REGISTRATION-1975")!;
+    const moon = getLegalSourceById("BE-MOON-2004")!;
+    expect(ost.status).toBe("in_force");
+    expect(rescue.status).toBe("in_force");
+    expect(liability.status).toBe("in_force");
+    expect(registration.status).toBe("in_force");
+    expect(moon.status).toBe("in_force");
+  });
+
+  it("Artemis Accords signed 2024", () => {
+    const artemis = getLegalSourceById("BE-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.status).toBe("in_force");
+    expect(artemis.date_enacted).toBe("2024-01-23");
+  });
+
+  it("NIS2 transposition is first in EU", () => {
+    const nis2 = getLegalSourceById("BE-NIS2-2024")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("in_force");
+    expect(nis2.implements).toBe("EU-NIS2-2022");
+    const notes = nis2.notes!.join(" ");
+    expect(notes).toContain("FIRST");
+  });
+
+  it("Special Law 2003 creates regional export control split", () => {
+    const law = getLegalSourceById("BE-SPECIAL-LAW-2003")!;
+    expect(law).toBeDefined();
+    expect(law.competent_authorities).toContain("BE-WALL-EXPORT");
+    expect(law.competent_authorities).toContain("BE-FLAND-EXPORT");
+    expect(law.competent_authorities).toContain("BE-BXL-EXPORT");
+  });
+
+  it("FDI screening lists aerospace as sensitive", () => {
+    const fdi = getLegalSourceById("BE-FDI-2023")!;
+    expect(fdi).toBeDefined();
+    expect(fdi.status).toBe("in_force");
+  });
+});
+
+// ─── BE lookup functions ──────────────────────────────────────────
+describe("Legal Sources — BE lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns BE sources", () => {
+    const sources = getLegalSourcesByJurisdiction("BE");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_BE.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns BE authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("BE");
+    expect(auths).toHaveLength(15);
+  });
+
+  it("getLegalSourceStats includes BE", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["BE"]).toBeDefined();
+    expect(stats["BE"]!.total).toBeGreaterThanOrEqual(20);
+  });
+
+  it("getAvailableJurisdictions includes BE", () => {
+    expect(getAvailableJurisdictions()).toContain("BE");
+  });
+
+  it("getLegalSourcesByComplianceArea returns licensing sources for BE", () => {
+    const licensing = getLegalSourcesByComplianceArea("BE", "licensing");
+    expect(licensing.length).toBeGreaterThan(0);
+    for (const s of licensing) {
+      expect(s.compliance_areas).toContain("licensing");
+    }
+  });
+
+  it("getLegalBasisChain returns sorted by relevance for BE", () => {
+    const chain = getLegalBasisChain("BE", "licensing");
+    expect(chain.length).toBeGreaterThan(0);
+    expect(["fundamental", "critical"]).toContain(chain[0]!.relevance_level);
+  });
+});
+
+// ─── BE authority accuracy ────────────────────────────────────────
+describe("Legal Sources — BE authority accuracy", () => {
+  it("BELSPO is the de facto space agency", () => {
+    const belspo = getAuthorityById("BE-BELSPO")!;
+    expect(belspo).toBeDefined();
+    expect(belspo.space_mandate).toContain("facto space agency");
+    expect(belspo.applicable_areas).toContain("licensing");
+    expect(belspo.applicable_areas).toContain("registration");
+  });
+
+  it("BIPT handles frequency spectrum", () => {
+    const bipt = getAuthorityById("BE-BIPT")!;
+    expect(bipt).toBeDefined();
+    expect(bipt.space_mandate).toContain("spectrum");
+    expect(bipt.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("CCB handles cybersecurity and was first NIS2 in EU", () => {
+    const ccb = getAuthorityById("BE-CCB")!;
+    expect(ccb).toBeDefined();
+    expect(ccb.space_mandate).toContain("FIRST");
+    expect(ccb.applicable_areas).toContain("cybersecurity");
+  });
+
+  it("three regional export control authorities exist", () => {
+    const wall = getAuthorityById("BE-WALL-EXPORT")!;
+    const fland = getAuthorityById("BE-FLAND-EXPORT")!;
+    const bxl = getAuthorityById("BE-BXL-EXPORT")!;
+    expect(wall).toBeDefined();
+    expect(fland).toBeDefined();
+    expect(bxl).toBeDefined();
+    expect(wall.applicable_areas).toContain("export_control");
+    expect(fland.applicable_areas).toContain("export_control");
+    expect(bxl.applicable_areas).toContain("export_control");
+  });
+
+  it("NCCN is the crisis management body", () => {
+    const nccn = getAuthorityById("BE-NCCN")!;
+    expect(nccn).toBeDefined();
+    expect(nccn.space_mandate).toContain("risis");
+  });
+
+  it("every BE authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_BE) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

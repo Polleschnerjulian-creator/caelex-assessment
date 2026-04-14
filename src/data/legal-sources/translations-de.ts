@@ -2905,6 +2905,829 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // NETHERLANDS (NL) — 22 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  // International Treaties (NL)
+  [
+    "NL-OST-1967",
+    {
+      title: "Weltraumvertrag — Niederländischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit und Genehmigungspflicht",
+          summary:
+            "Die Niederlande tragen die völkerrechtliche Verantwortung für alle nationalen Weltraumtätigkeiten einschließlich der Tätigkeiten nichtstaatlicher Rechtsträger. Dies ist die verfassungsrechtliche Grundlage des WRA 2007.",
+          complianceImplication:
+            "Art. VI ist die unmittelbare Rechtsgrundlage des niederländischen Genehmigungsregimes unter dem WRA 2007. Jeder niederländische Weltraumbetreiber muss lizenziert werden.",
+        },
+        "Art. VII": {
+          title: "Haftung des Startstaats",
+          summary:
+            "Die Niederlande sind ‚Startstaat' für Objekte, die von ihrem Hoheitsgebiet oder durch niederländische Einrichtungen gestartet werden.",
+        },
+        "Art. VIII": {
+          title: "Registrierung und Hoheitsgewalt",
+          summary:
+            "Ein Staat, in dessen Register ein Weltraumgegenstand eingetragen ist, behält die Hoheitsgewalt. Die Niederlande führen ein Zweiteiliges Register (aktive + außer Dienst gestellte Objekte).",
+        },
+      },
+    },
+  ],
+  [
+    "NL-RESCUE-1968",
+    {
+      title:
+        "Weltraumrettungsübereinkommen — Niederländischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. 1-4": {
+          title: "Rettung und Rückführung von Raumfahrern",
+          summary:
+            "Vertragsstaaten müssen Raumfahrer, die in ihrem Hoheitsgebiet landen, benachrichtigen, retten und zurückführen. Die Niederlande haben dieses Abkommen RATIFIZIERT.",
+        },
+        "Art. 5": {
+          title: "Rückgabe von Weltraumgegenständen",
+          summary:
+            "Im Hoheitsgebiet eines Vertragsstaats gefundene Weltraumgegenstände sind dem Startstaat zurückzugeben.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-LIABILITY-1972",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Niederländischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "Die Niederlande haften als Startstaat absolut für Schäden, die durch ihre Weltraumgegenstände auf der Erdoberfläche verursacht werden.",
+          complianceImplication:
+            "Das WRA 2007 setzt ein flexibles Haftungsregime um — keine feste gesetzliche Obergrenze. Der Minister legt die Haftungsgrenzen im Einzelfall in den Lizenzbedingungen fest.",
+        },
+        "Art. III": {
+          title: "Verschuldenshaftung im Weltraum",
+          summary:
+            "Für Schäden außerhalb der Erdoberfläche haftet der Startstaat nur bei Verschulden.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-REGISTRATION-1975",
+    {
+      title:
+        "Registrierungsübereinkommen — Niederländischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Die Niederlande müssen ein nationales Register der Weltraumgegenstände führen. Umgesetzt durch WRA 2007 Kapitel 5 und das Besluit Register Ruimtevoorwerpen — ein einzigartiges Zweiteiliges Register.",
+          complianceImplication:
+            "Alle Weltraumgegenstände, für die die Niederlande die internationale Verantwortung tragen, müssen beim NSO registriert werden.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-MOON-1979",
+    {
+      title: "Mondvertrag — Niederländischer Ratifizierungsvermerk",
+      scopeDescription:
+        "Die Niederlande sind eine von nur 18 Vertragsparteien des Mondvertrags und die EINZIGE bedeutende Raumfahrtnation, die ihn ratifiziert hat (17. Februar 1983). Dies schafft eine einzigartige Spannung: Die NL haben die Artemis Accords (2024) unterzeichnet, obwohl das Gemeinsame-Erbe-Prinzip des Mondvertrags möglicherweise im Widerspruch zu Artemis Abschnitt 10 (Weltraumressourcen) steht.",
+      provisions: {
+        "Art. 11(1)": {
+          title: "Gemeinsames Erbe der Menschheit",
+          summary:
+            "Der Mond und seine natürlichen Ressourcen sind das gemeinsame Erbe der Menschheit. Kein Staat darf Souveränität über Himmelskörper beanspruchen.",
+          complianceImplication:
+            "Die Niederlande sind an das Gemeinsame-Erbe-Prinzip GEBUNDEN — im Gegensatz zu den USA, Luxemburg und den meisten anderen Raumfahrtnationen.",
+        },
+        "Art. 11(5)": {
+          title: "Internationales Regime für Ausbeutung",
+          summary:
+            "Ein internationales Regime soll die Ausbeutung der natürlichen Ressourcen des Mondes regeln, wenn eine solche Ausbeutung durchführbar wird.",
+        },
+        "Art. 6(2)": {
+          title: "Wissenschaftliche Proben zulässig",
+          summary:
+            "Proben von Mondmineralien und -substanzen dürfen für wissenschaftliche Zwecke gesammelt und entfernt werden.",
+        },
+      },
+    },
+  ],
+
+  // Primary National Legislation (NL)
+  [
+    "NL-WRA-2007",
+    {
+      title:
+        "Gesetz über Weltraumaktivitäten (Wet ruimtevaartactiviteiten — WRA)",
+      scopeDescription:
+        "Eines der frühesten umfassenden europäischen Weltraumgesetze (erlassen 2006, in Kraft 2007). 28 Abschnitte in 7 Kapiteln. Bemerkenswerte Merkmale: Erweiterung der Zuständigkeit auf Steuerung und Kontrolle, Zweiteiliges Register, flexible Einzelfall-Haftungsgrenzen.",
+      provisions: {
+        "§ 2 (Art. 3)": {
+          title: "Lizenzpflicht",
+          summary:
+            "Es ist verboten, Weltraumtätigkeiten vom Hoheitsgebiet der Niederlande oder von niederländisch registrierten Schiffen oder Flugzeugen ohne Lizenz des Ministers für Wirtschaft durchzuführen.",
+          complianceImplication:
+            "Alle den Niederlanden zurechenbaren Weltraumtätigkeiten erfordern eine Lizenz.",
+        },
+        "§ 2 (Art. 3a)": {
+          title: "Erweiterung auf Steuerung und Kontrolle",
+          summary:
+            "Die Lizenzpflicht erstreckt sich auf Steuerungs- und Kontrollaktivitäten über Weltraumgegenstände vom niederländischen Hoheitsgebiet aus, auch wenn das Objekt anderswo gestartet wurde.",
+          complianceImplication:
+            "Bodensegmentbetreiber, die ausländisch gestartete Satelliten von den Niederlanden aus steuern, benötigen ebenfalls eine WRA-Lizenz.",
+        },
+        "§ 3 (Art. 7-9)": {
+          title: "Registrierung — Zweiteiliges Register",
+          summary:
+            "Weltraumgegenstände müssen im nationalen Register des NSO eingetragen werden. Das Register hat zwei Teile: aktive Objekte und außer Dienst gestellte Objekte.",
+          complianceImplication:
+            "Das Zweiteilige Register ist eine niederländische Innovation. Außer Dienst gestellte Objekte werden weiterhin nachverfolgt.",
+        },
+        "§ 4 (Art. 10-11)": {
+          title: "Haftung — flexibles Regime, keine feste Obergrenze",
+          summary:
+            "Betreiber haften für durch ihre Weltraumtätigkeiten verursachte Schäden. Es gibt KEINE feste gesetzliche Haftungsobergrenze — der Minister legt die Haftungsgrenzen im Einzelfall fest.",
+          complianceImplication:
+            "Das flexible Haftungsregime ist ein wesentliches Unterscheidungsmerkmal. Anders als Deutschland (keine Obergrenze), Frankreich (60 Mio. EUR) oder Luxemburg (unbegrenzt, kein Rückgriff) bestimmen die Niederlande die Haftungsgrenzen pro Lizenz.",
+        },
+        "§ 5 (Art. 12-14)": {
+          title: "Aufsicht und Durchsetzung",
+          summary:
+            "Der Minister kann Verwaltungsstrafen verhängen. Lizenzbedingungen können Versicherungspflichten, Weltraummüllvermeidung und Betriebsbeschränkungen umfassen.",
+        },
+        "§ 6 (Art. 15-17)": {
+          title: "Strafvorschriften",
+          summary:
+            "Die Durchführung von Weltraumtätigkeiten ohne Lizenz ist eine Straftat (Wirtschaftsdelikt). Höchststrafe der vierten Kategorie (25.750 EUR Stand 2026).",
+          complianceImplication:
+            "Strafsanktionen sind vergleichsweise moderat gegenüber Luxemburg (1,25 Mio. EUR) oder Frankreich (200.000 EUR + Freiheitsstrafe).",
+        },
+        "§ 7 (Art. 18-28)": {
+          title: "Übergangs- und Schlussbestimmungen",
+          summary:
+            "Bestandsbetreiber hatten eine Übergangsfrist zur Erlangung von Lizenzen. Das Gesetz trat am 1. Januar 2007 in Kraft.",
+        },
+      },
+    },
+  ],
+
+  // Implementing Legislation (NL)
+  [
+    "NL-WRA-DECREE-2008",
+    {
+      title:
+        "Verordnung über Weltraumtätigkeiten (Besluit ruimtevaartactiviteiten)",
+      provisions: {
+        "Full instrument": {
+          title: "Anforderungen an Lizenzanträge",
+          summary:
+            "Detaillierte Anforderungen für Lizenzanträge: technische Dokumentation, Nachweis der finanziellen Leistungsfähigkeit, Versicherungsvereinbarungen, Pläne zur Weltraummüllvermeidung und Betreiberkompetenz.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-WRA-REGULATION-2008",
+    {
+      title:
+        "Ministerialverordnung Weltraumtätigkeiten (Regeling ruimtevaartactiviteiten)",
+      provisions: {
+        "Full instrument": {
+          title: "Antragsformulare und Verfahren",
+          summary:
+            "Detaillierte Ministerialverordnung mit Antragsformularen, Verfahrensanforderungen, Lizenzbedingungen und technischen Standards.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-REGISTRY-DECREE",
+    {
+      title:
+        "Verordnung über das Register der Weltraumgegenstände (Besluit Register Ruimtevoorwerpen)",
+      provisions: {
+        "Full instrument": {
+          title: "Nationales Register — Zweiteilige Struktur",
+          summary:
+            "Detaillierte Struktur und Betrieb des nationalen Registers. Teil A (aktive Weltraumgegenstände) und Teil B (außer Dienst gestellte Weltraumgegenstände).",
+          complianceImplication:
+            "Betreiber müssen Startdaten, Orbitalparameter und Stilllegungspläne für die Registrierung bereitstellen.",
+        },
+      },
+    },
+  ],
+
+  // Telecommunications (NL)
+  [
+    "NL-TW-2004",
+    {
+      title: "Telekommunikationsgesetz (Telecommunicatiewet)",
+      provisions: {
+        "Ch. 3": {
+          title: "Frequenzverwaltung",
+          summary:
+            "RDI (vormals Agentschap Telecom) verwaltet die Frequenzzuweisung und Satellitenfrequenzkoordination einschließlich ITU-Meldepflichten.",
+          complianceImplication:
+            "Satellitenbetreiber, die niederländisch angemeldete Frequenzen nutzen, benötigen eine RDI-Spektrumgenehmigung.",
+        },
+      },
+    },
+  ],
+
+  // Export Control (NL)
+  [
+    "NL-WSG-2012",
+    {
+      title: "Gesetz über strategische Güter (Wet strategische goederen — Wsg)",
+      provisions: {
+        "Full instrument": {
+          title: "Dual-Use- und Verteidigungsexportkontrolle",
+          summary:
+            "Umsetzung der EU-Dual-Use-Verordnung (EU 2021/821) und nationaler Verteidigungsexportkontrollen. CDIU ist die zuständige Behörde. Umfasst Wassenaar-Arrangement-Kontrolllisten — das Wassenaar Arrangement hat seinen Hauptsitz in Den Haag.",
+          complianceImplication:
+            "Satellitenkomponenten, Verschlüsselungstechnologie und weltraumbezogene Güter erfordern eine CDIU-Exportgenehmigung.",
+        },
+      },
+    },
+  ],
+
+  // Cybersecurity (NL)
+  [
+    "NL-WBNI-2018",
+    {
+      title: "Gesetz zur Sicherheit von Netz- und Informationssystemen (Wbni)",
+      provisions: {
+        "Full instrument": {
+          title: "Umsetzung der NIS1-Richtlinie",
+          summary:
+            "Umsetzung der NIS1-Richtlinie (EU 2016/1148) in niederländisches Recht. Cybersicherheitspflichten für Betreiber wesentlicher Dienste (AED). NCSC als zentrale Koordinierungsstelle.",
+          complianceImplication:
+            "Als wesentliche Dienste eingestufte Weltraumbetreiber müssen Sicherheits- und Meldepflichten erfüllen. Derzeit gültig bis zur NIS2-Umsetzung.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-CBW-NIS2",
+    {
+      title:
+        "Cybersicherheitsgesetz (Cyberbeveiligingswet — Cbw) — NIS2-Umsetzung",
+      provisions: {
+        "Full draft": {
+          title: "Umsetzung der NIS2-Richtlinie",
+          summary:
+            "Gesetzentwurf zur Umsetzung der NIS2-Richtlinie (EU 2022/2555). Raumfahrtsektor explizit als wesentlicher Dienstsektor einbezogen. Erweiterte Cybersicherheitspflichten und obligatorische Vorfallmeldung.",
+          complianceImplication:
+            "Weltraumbetreiber werden unter dem Cbw deutlich erweiterten Cybersicherheitspflichten unterliegen. Die Niederlande haben die Umsetzungsfrist vom 17. Oktober 2024 versäumt.",
+        },
+      },
+    },
+  ],
+
+  // Data Protection (NL)
+  [
+    "NL-UAVG-2018",
+    {
+      title: "DSGVO-Umsetzungsgesetz (Uitvoeringswet AVG — UAVG)",
+      provisions: {
+        "Full instrument": {
+          title: "Nationale DSGVO-Umsetzung",
+          summary:
+            "Setzt die DSGVO in niederländisches Recht um. Einrichtung der Autoriteit Persoonsgegevens (AP) als nationale Datenschutzbehörde.",
+          complianceImplication:
+            "Erdbeobachtungsbetreiber und Satellitendatenanbieter, die personenbezogene Daten verarbeiten, müssen die DSGVO über das UAVG-Rahmenwerk einhalten.",
+        },
+      },
+    },
+  ],
+
+  // Environmental (NL)
+  [
+    "NL-WM-1979",
+    {
+      title: "Umweltmanagementgesetz (Wet milieubeheer — Wm)",
+      provisions: {
+        "Full instrument": {
+          title: "Umweltmanagement-Rahmenwerk",
+          summary:
+            "Allgemeines Umweltmanagement-Rahmenwerk anwendbar auf Weltraumstart- und Bodeninfrastruktur. Umweltverträglichkeitsprüfung kann erforderlich sein.",
+        },
+      },
+    },
+  ],
+
+  // Investment Screening (NL)
+  [
+    "NL-VIFO-2023",
+    {
+      title:
+        "Sicherheitsüberprüfungsgesetz für Investitionen, Fusionen und Übernahmen (Wet Vifo)",
+      provisions: {
+        "Full instrument": {
+          title: "Auslandsinvestitionsprüfung für sensible Technologien",
+          summary:
+            "Obligatorische Prüfung von Investitionen und Übernahmen sensibler Technologieunternehmen. Raumfahrttechnologie explizit als sensible Technologie eingestuft. BTI verwaltet den Prüfprozess.",
+          complianceImplication:
+            "Übernahmen niederländischer Raumfahrtunternehmen durch Nicht-EU-Investoren unterliegen der obligatorischen BTI-Prüfung. Rückwirkend zum 8. September 2020.",
+        },
+      },
+    },
+  ],
+
+  // Policy Documents (NL)
+  [
+    "NL-SPACE-STRATEGY-2019",
+    {
+      title:
+        "Niederländische Langfristige Raumfahrtagenda (Lange-Termijn Ruimtevaart Agenda)",
+      provisions: {
+        "Full document": {
+          title: "Nationale Raumfahrtstrategie 2019-2025",
+          summary:
+            "Niederländische langfristige Raumfahrtpolitik-Agenda. Die Niederlande tragen jährlich etwa 200 Mio. EUR zur ESA bei. Prioritäten: Erdbeobachtung, Satellitennavigation, Weltraumwissenschaft und Weltraumsicherheit.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Niederlande als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "Unterzeichner bestätigen, dass die Gewinnung von Weltraumressourcen keine nationale Aneignung darstellt. Die Niederlande unterzeichneten trotz Mitgliedschaft im Mondvertrag.",
+          complianceImplication:
+            "Niederländische Betreiber unterliegen einem einzigartigen Doppelrahmen: gebunden an den Mondvertrag (gemeinsames Erbe) und die Artemis Accords (permissive Ressourcengewinnung).",
+        },
+        "Section 11": {
+          title: "Dekonfliktierung von Aktivitäten",
+          summary:
+            "Unterzeichner verpflichten sich, schädliche Interferenzen zu vermeiden und Aktivitäten zu melden, die Störungen verursachen könnten.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-HAGUE-BUILDING-BLOCKS",
+    {
+      title:
+        "Haager Arbeitsgruppe für internationale Weltraumressourcen-Governance — Bausteine",
+      provisions: {
+        "Building Blocks": {
+          title: "Internationaler Governance-Rahmen für Weltraumressourcen",
+          summary:
+            "20 Bausteine für einen internationalen Rahmen für Weltraumressourcenaktivitäten. Entwickelt von der Haager Arbeitsgruppe an der Universität Leiden.",
+          complianceImplication:
+            "Die Bausteine beeinflussen internationale Diskussionen bei COPUOS. Niederländische Betreiber sollten die Entwicklung beobachten.",
+        },
+      },
+    },
+  ],
+  [
+    "NL-HCOC",
+    {
+      title:
+        "Haager Verhaltenskodex gegen die Verbreitung ballistischer Raketen (HCoC)",
+      provisions: {
+        "Full instrument": {
+          title: "Nichtverbreitung ballistischer Raketen und Vertrauensbildung",
+          summary:
+            "Politisch bindender Verhaltenskodex mit Transparenz- und Vertrauensbildungsmaßnahmen für ballistische Raketen- und Raumfahrtträgerprogramme. Vorstartmeldungen erforderlich. Den Haag ist die namensgebende Stadt.",
+          complianceImplication:
+            "Startdienstleister müssen Vorstartmeldepflichten einhalten.",
+        },
+      },
+    },
+  ],
+
+  // EU/ESA (NL)
+  [
+    "NL-ESA-HQ-AGREEMENT",
+    {
+      title: "ESA/Niederlande-Sitzabkommen (ESTEC)",
+      provisions: {
+        "Full instrument": {
+          title: "ESTEC-Privilegien und Immunitäten",
+          summary:
+            "Gewährt der ESA Privilegien und Immunitäten für den ESTEC-Betrieb in Noordwijk. ESTEC ist die größte ESA-Einrichtung mit ca. 2.500 Mitarbeitern. Beherbergt das ESTEC Test Centre (größte Satellitentestanlage Europas).",
+          complianceImplication:
+            "ESA-Operationen am ESTEC unterliegen unter diesem Abkommen nicht der niederländischen Regulierungszuständigkeit.",
+        },
+      },
+    },
+  ],
+
+  // Wassenaar (NL)
+  [
+    "NL-WASSENAAR",
+    {
+      title:
+        "Wassenaar Arrangement über Exportkontrollen für konventionelle Waffen und Dual-Use-Güter",
+      provisions: {
+        "Dual-Use List": {
+          title: "Exportkontrolllisten für Raumfahrttechnologie",
+          summary:
+            "Führt Kontrolllisten für Dual-Use-Güter einschließlich Satellitenkomponenten, Antriebssysteme, Lenksysteme und Verschlüsselungstechnologie. 42 teilnehmende Staaten. Hauptsitz in Wassenaar bei Den Haag.",
+          complianceImplication:
+            "Die Wassenaar-Listen werden direkt in der EU-Verordnung 2021/821 und dem nationalen Exportkontrollgesetz (Wsg) umgesetzt.",
+        },
+      },
+    },
+  ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BELGIUM (BE) — 23 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "BE-OST-1967",
+    {
+      title: "Weltraumvertrag — Belgischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit und Genehmigungspflicht",
+          summary:
+            "Belgien trägt die völkerrechtliche Verantwortung für alle nationalen Weltraumtätigkeiten. Verfassungsrechtliche Grundlage des Weltraumgesetzes von 2005.",
+          complianceImplication:
+            "Art. VI ist die Rechtsgrundlage des belgischen Genehmigungsregimes. Belgien wählte bewusst nur territoriale Zuständigkeit (ratione loci).",
+        },
+        "Art. VII": {
+          title: "Haftung des Startstaats",
+          summary:
+            "Belgien ist ‚Startstaat' für von seinem Hoheitsgebiet oder durch belgische Einrichtungen gestartete Objekte. Belgien vertritt eine restriktive Position.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-RESCUE-1968",
+    {
+      title: "Weltraumrettungsübereinkommen — Belgischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. 1-4": {
+          title: "Rettung und Rückführung von Raumfahrern",
+          summary:
+            "Vertragsstaaten müssen Raumfahrer retten und zurückführen. Belgien hat ratifiziert.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-LIABILITY-1972",
+    {
+      title: "Weltraumhaftungsübereinkommen — Belgischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "Belgien haftet als Startstaat absolut für Schäden auf der Erdoberfläche. Das Gesetz von 2005 setzt dies durch das Rückgriffsrecht (action récursoire) um, gedeckelt auf 10% des Jahresumsatzes.",
+          complianceImplication:
+            "Die 10%-Umsatzobergrenze ist Belgiens charakteristische Innovation. Die Obergrenze verfällt bei Verletzung der Genehmigungsbedingungen.",
+        },
+        "Art. III": {
+          title: "Verschuldenshaftung im Weltraum",
+          summary:
+            "Für Schäden im Weltraum haftet der Startstaat nur bei Verschulden.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-REGISTRATION-1975",
+    {
+      title: "Registrierungsübereinkommen — Belgischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Belgien führt ein nationales Register der Weltraumgegenstände. Umgesetzt durch das Gesetz von 2005 (Kapitel V, Art. 14). BELSPO übermittelt Daten an den UN-Generalsekretär.",
+          complianceImplication:
+            "Zwischen 2014 und 2020 wurden 36 Objekte registriert.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-MOON-2004",
+    {
+      title: "Mondvertrag — Belgischer Beitrittsvermerk",
+      scopeDescription:
+        "Belgien trat am 12. November 2004 bei — eine von nur ~17 Vertragsparteien weltweit. Schafft einzigartige Spannung mit den Artemis Accords (unterzeichnet 23. Januar 2024). Belgien positioniert sich als Brücke zwischen dem Mondvertragsrahmen und den operativen Realitäten des Artemis-Programms.",
+      provisions: {
+        "Art. 11(1)": {
+          title: "Gemeinsames Erbe der Menschheit",
+          summary:
+            "Der Mond und seine Ressourcen sind gemeinsames Erbe der Menschheit. Belgien ist an dieses Prinzip GEBUNDEN.",
+          complianceImplication:
+            "Belgien löst die Spannung durch pragmatischen Multilateralismus — die Accords als nicht rechtsverbindliche politische Grundsätze behandelnd.",
+        },
+        "Art. 11(5)": {
+          title: "Internationales Regime für Ausbeutung",
+          summary:
+            "Ein internationales Regime soll die Ressourcenausbeutung regeln. Belgien ist führender Befürworter bei COPUOS.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Belgien als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "Belgien unterzeichnete trotz Mitgliedschaft im Mondvertrag — behandelt die Accords als rechtlich nicht bindende politische Grundsätze.",
+          complianceImplication:
+            "Belgische Betreiber unterliegen einem Doppelrahmen: Mondvertrag (gemeinsames Erbe) und Artemis Accords (permissive Gewinnung).",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-SPACE-LAW-2005",
+    {
+      title: "Gesetz vom 17. September 2005 über Weltraumtätigkeiten",
+      scopeDescription:
+        "Europas FRÜHESTES ‚neue Welle'-Weltraumgesetz — erlassen 2005, drei Jahre vor Frankreich. 7 Kapitel, 21 Artikel. Drei Säulen: Genehmigung/Aufsicht, nationales Register, Haftung/Rückgriff. Die umsatzbasierte 10%-Haftungsobergrenze und das ermessensbasierte Versicherungsregime sind einzigartige belgische Innovationen.",
+      provisions: {
+        "Art. 4": {
+          title: "Genehmigungspflicht — persönlich und nicht übertragbar",
+          summary:
+            "Alle Weltraumtätigkeiten im belgischen Zuständigkeitsbereich erfordern eine Genehmigung des Ministers für Weltraumforschung. Gebühr: 1.000 EUR. Entscheidung binnen 90 Tagen.",
+          complianceImplication:
+            "Belgien wählte nur territoriale Zuständigkeit (ratione loci). Schweigen bedeutet Ablehnung.",
+        },
+        "Art. 5": {
+          title: "Ermessensbasierte Versicherung",
+          summary:
+            "Keine feste Versicherungssumme vorgeschrieben. Der Minister kann Versicherungspflichten fallweise auferlegen — flexibler als Frankreichs obligatorische 60-Mio.-EUR-Obergrenze.",
+          complianceImplication:
+            "Besonders geeignet für Belgiens KMU-dominiertes Weltraum-Ökosystem.",
+        },
+        "Art. 15": {
+          title: "Haftung — 10%-Umsatz-Rückgriffsobergrenze",
+          summary:
+            "Der König kann den Rückgriff auf 10% des durchschnittlichen Jahresumsatzes deckeln. Dieses Modell beeinflusste Deutschlands geplantes Weltraumgesetz und EU-Diskussionen.",
+          complianceImplication:
+            "Die Obergrenze verfällt vollständig bei Verletzung der Genehmigungsbedingungen oder unterlassener Krisenbenachrichtigung.",
+        },
+        "Art. 19": {
+          title: "Strafvorschriften",
+          summary:
+            "Unbefugte Weltraumtätigkeiten: 8 Tage bis 1 Jahr Freiheitsstrafe und/oder 25 bis 25.000 EUR Geldstrafe.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-SPACE-LAW-AMENDMENT-2013",
+    {
+      title: "Gesetz vom 1. Dezember 2013 — Änderung des Weltraumgesetzes 2005",
+      scopeDescription:
+        "Änderte Artikel 3 für nicht manövrierbare Objekte im Orbit (Cubesats, Nanosatelliten). Versicherungs- und Haftungsbestimmungen NICHT geändert.",
+      provisions: {
+        "Art. 3, 2°": {
+          title: "Betreiberdefinition — nicht manövrierbare Objekte",
+          summary:
+            "Für nicht in der Flugbahn steuerbare Weltraumgegenstände gilt als Betreiber die Person, die die Positionierung in Auftrag gibt.",
+        },
+        "Art. 3, 3°": {
+          title: "Effektive Kontrolle — überarbeitete Definition",
+          summary:
+            "Geändert von ‚Beherrschung der Kommandomittel' zu ‚Autorität über die Aktivierung der Kommando- oder Fernsteuerungsmittel'.",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-RD-2022",
+    {
+      title:
+        "Königlicher Erlass vom 15. März 2022 — Durchführungserlass (aktuell)",
+      provisions: {
+        "Full instrument": {
+          title: "BELSPO-Rolle — Antragsbearbeitung",
+          summary:
+            "BELSPO-Rolle formal festgelegt. ESA-Fachexpertise für Class-U-Objekte (Cubesats) obligatorisch, Kosten zu Lasten des Antragstellers. Rahmen für Registrierungsübertragung. DSGVO-Konformität integriert.",
+          complianceImplication:
+            "Ausnahmen für staatlich beaufsichtigte Aktivitäten und Betreiber mit vorheriger Class-U-Genehmigung innerhalb der letzten 10 Jahre.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-ESA-REDU-2021",
+    {
+      title:
+        "Gesetz vom 12. Oktober 2021 — ESA/Belgien ESEC-Sitzabkommen (Redu)",
+      provisions: {
+        "Full instrument": {
+          title: "ESEC-Sitzabkommen-Ratifizierung",
+          summary:
+            "Ratifiziert das Sitzabkommen für das ESEC-Zentrum in Redu. ESEC beherbergt Missionskontrolle für Proba-Satelliten, Galileo-Signalvalidierung und Europas erstes Cybersicherheits-Trainingszentrum für Weltraumsysteme (30 Mio. EUR).",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-NIS2-2024",
+    {
+      title: "Gesetz vom 26. April 2024 — NIS2-Umsetzung",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Richtlinienumsetzung — erste in der EU",
+          summary:
+            "Belgien war der ERSTE EU-Mitgliedstaat mit vollständiger NIS2-Umsetzung. Weltraum als Sektor hoher Kritikalität eingestuft. Registrierungsfrist: 18. April 2026. Vorfallmeldung: 24h Erstwarnung, 72h weitere Informationen, 30-Tage-Abschlussbericht.",
+          complianceImplication:
+            "Leitungsorgane persönlich haftbar mit obligatorischer Schulung. CyberFundamentals (CyFun®) als ISO-27001-Alternative.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-NIS2-RD-2024",
+    {
+      title: "Königlicher Erlass vom 9. Juni 2024 — CCB-Benennung unter NIS2",
+      provisions: {
+        "Full instrument": {
+          title: "CCB als nationale Cybersicherheitsbehörde",
+          summary:
+            "Benennt das Centre for Cybersecurity Belgium (CCB) als nationale Cybersicherheitsbehörde und CSIRT (via CERT.be).",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-ECA-2005",
+    {
+      title: "Gesetz über elektronische Kommunikation vom 13. Juni 2005",
+      provisions: {
+        "Full instrument": {
+          title: "Rahmenwerk für elektronische Kommunikation",
+          summary:
+            "Allgemeines Genehmigungsregime mit BIPT-Meldung. BIPT verwaltet Satellitenfrequenzkoordination und ITU-Anmeldungen.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-SAT-EARTH-STATIONS-1998",
+    {
+      title: "Königlicher Erlass vom 16. April 1998 — Satelliten-Erdstationen",
+      provisions: {
+        "Full instrument": {
+          title: "Lizenzierung von Satelliten-Erdstationen",
+          summary:
+            "Regelt Satelliten-Erdstationen mit BIPT-Konformitätspflicht. TV-Empfangsantennen und Satellitentelefone sind befreit.",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-SPECIAL-LAW-2003",
+    {
+      title:
+        "Sondergesetz vom 12. August 2003 — Regionale Exportkontrollübertragung",
+      provisions: {
+        "Full instrument": {
+          title: "Übertragung der Dual-Use-Exportlizenzen auf die Regionen",
+          summary:
+            "Übertrug die Waffen- und Dual-Use-Exportlizenzierung an Belgiens drei Regionen: Flandern, Wallonien und Brüssel-Hauptstadt. Europas komplexeste Dual-Use-Lizenzarchitektur.",
+          complianceImplication:
+            "Weltraumunternehmen beantragen Exportlizenzen bei ihrer regionalen Behörde je nach Standort.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-FLANDERS-ARMS-2012",
+    {
+      title: "Flämisches Waffenhandelsgesetz vom 15. Juni 2012",
+      provisions: {
+        "Full instrument": {
+          title: "Flämische Exportkontrolle für strategische Güter",
+          summary:
+            "Flämische Regionalgesetzgebung für Dual-Use- und Waffenexportlizenzen. Gilt für in Flandern ansässige Unternehmen (z.B. Redwire Space Belgium, Newtec).",
+        },
+      },
+    },
+  ],
+  [
+    "BE-WALLONIA-EXPORT-2012",
+    {
+      title:
+        "Dekret der Wallonischen Region vom 21. Juni 2012 — Exportkontrolle",
+      provisions: {
+        "Full instrument": {
+          title: "Wallonisches Exportkontrollrahmenwerk",
+          summary:
+            "Wallonische Regionalgesetzgebung für Exportlizenzen. Wallonien umfasst >70% der belgischen Luftfahrtaktivität (z.B. Thales Alenia Space Belgium, Spacebel).",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-GDPR-2018",
+    {
+      title: "Gesetz vom 30. Juli 2018 — DSGVO-Rahmengesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Nationale DSGVO-Umsetzung",
+          summary:
+            "Setzt die DSGVO in belgisches Recht um. Keine weltraumspezifische Orientierung der Datenschutzbehörde.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-FDI-2023",
+    {
+      title: "Kooperationsabkommen vom 30. November 2022 — Investitionsprüfung",
+      provisions: {
+        "Full instrument": {
+          title: "Prüfung ausländischer Direktinvestitionen",
+          summary:
+            "Luft- und Raumfahrt sowie Verteidigung explizit als sensible Sektoren gelistet. Koordiniert durch den Interföderalen Prüfungsausschuss (ISC).",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-CM25-ESA",
+    {
+      title: "Belgiens CM25 ESA-Verpflichtung (November 2025, Bremen)",
+      provisions: {
+        Programme: {
+          title: "Fünfjahres-ESA-Verpflichtung ~1,1 Mrd. EUR",
+          summary:
+            "Belgien verpflichtete sich bei CM25 zu ca. 1,1 Mrd. EUR über fünf Jahre: 114 Mio. EUR für Trägersysteme, 113 Mio. EUR für Erdbeobachtung, 205 Mio. EUR für Forschung.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-BENELUX-MOU-2024",
+    {
+      title: "Benelux-Weltraumkooperation MOU (September 2024)",
+      provisions: {
+        MOU: {
+          title: "Benelux-Raumfahrtindustriekooperation",
+          summary:
+            "MOU zwischen SpaceNed (Niederlande), VRI (Flandern), BAG (Brüssel) und Wallonie Espace für Benelux-Weltraumkooperation.",
+        },
+      },
+    },
+  ],
+
+  [
+    "BE-CRA-2024",
+    {
+      title:
+        "Cyber-Resilienz-Gesetz (Verordnung (EU) 2024/2847) — Belgische Anwendung",
+      provisions: {
+        "Full regulation": {
+          title: "Produktcybersicherheit für Weltraumkomponenten",
+          summary:
+            "Gilt für alle Produkte mit digitalen Elementen einschließlich Satellitenkomponenten und Bodenstationssoftware. Meiste Pflichten ab 11. Dezember 2027.",
+          complianceImplication:
+            "Belgische Hersteller (Redwire, Thales Alenia Space Belgium, Aerospacelab, Spacebel) müssen Konformität vorbereiten.",
+        },
+      },
+    },
+  ],
+  [
+    "BE-BWHI-1980",
+    {
+      title:
+        "Sondergesetz zur Institutionenreform (BWHI-LSRI) — Weltraumkompetenz",
+      provisions: {
+        "Art. 6bis, §2, 3°": {
+          title: "Weltraumforschung als ausschließliche Bundeskompetenz",
+          summary:
+            "Weltraumforschung im Rahmen internationaler Institutionen ist ausschließliche Bundeskompetenz. Exportkontrolle ist regional, Forschung parallele Kompetenz.",
+          complianceImplication:
+            "Das Weltraumgesetz 2005 ist ausschließlich föderaler Zuständigkeit. Exportkontrolle ist ausschließlich regional (seit 2003) — einzigartig in Europa.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -3416,6 +4239,250 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Europäisches Innovationszentrum für Weltraumressourcen (ESRIC)",
       mandate:
         "Weltweit erstes Innovationszentrum für Weltraumressourcen, gegründet August 2020. Gemeinsame Initiative von LSA, Luxembourg Institute of Science and Technology (LIST) und ESA. Betreibt Forschung und unterstützt Start-ups bei der Weltraumressourcennutzung.",
+    },
+  ],
+
+  // Netherlands Authorities (15)
+  [
+    "NL-NSO",
+    {
+      name: "Niederländisches Raumfahrtbüro (NSO)",
+      mandate:
+        "Nationale Raumfahrtagentur und primäre Kontaktstelle für die Lizenzierung von Weltraumtätigkeiten unter dem WRA 2007. Verwaltet das niederländische Raumfahrtprogramm, die ESA-Delegation und die internationale Zusammenarbeit. Führt das nationale Register der Weltraumgegenstände (zweiteilig: aktiv + außer Dienst gestellt).",
+    },
+  ],
+  [
+    "NL-EZK",
+    {
+      name: "Ministerium für Wirtschaft und Klimapolitik",
+      mandate:
+        "Federführendes Ministerium für Raumfahrtpolitik. Erteilt Lizenzen unter dem WRA 2007. Verantwortlich für die nationale Raumfahrtstrategie und ESA-Ministerratskonferenz-Entscheidungen.",
+    },
+  ],
+  [
+    "NL-RDI",
+    {
+      name: "Nationale Aufsichtsbehörde für Digitale Infrastruktur (RDI)",
+      mandate:
+        "Frequenzverwaltung und Funkfrequenzkoordination für Satellitendienste. Vormals Agentschap Telecom. Nationale Frequenzregulierungsbehörde für ITU-Anmeldungen und Satellitenfrequenzzuweisungen.",
+    },
+  ],
+  [
+    "NL-NCSC",
+    {
+      name: "Nationales Zentrum für Cybersicherheit (NCSC)",
+      mandate:
+        "Cybersicherheitsbehörde für kritische Infrastrukturen einschließlich Weltraumsysteme. Koordiniert die NIS2-Umsetzung. Zentrale Stelle für Cyber-Vorfallreaktion.",
+    },
+  ],
+  [
+    "NL-AP",
+    {
+      name: "Niederländische Datenschutzbehörde (Autoriteit Persoonsgegevens)",
+      mandate:
+        "DSGVO/AVG-Durchsetzung für Weltraumdatenverarbeitung. Beaufsichtigt Erdbeobachtungsbetreiber und Satellitendatenanbieter, die personenbezogene Daten verarbeiten.",
+    },
+  ],
+  [
+    "NL-CDIU",
+    {
+      name: "Zentraler Dienst für Ein- und Ausfuhr (CDIU)",
+      mandate:
+        "Exportkontrolllizenzen für Dual-Use-Güter und Verteidigungsprodukte unter dem Wet strategische goederen (Wsg). Erteilt Exportlizenzen für Satellitenkomponenten und Verschlüsselungstechnologie.",
+    },
+  ],
+  [
+    "NL-DEFENCE",
+    {
+      name: "Ministerium für Verteidigung",
+      mandate:
+        "Militärische Weltraumoperationen und NATO Space Centre of Excellence (geplant Den Haag). Betreibt das Defensie Space Commando. Koordiniert militärische Satellitenkommunikation und Weltraumlageerfassung.",
+    },
+  ],
+  [
+    "NL-BZ",
+    {
+      name: "Ministerium für Auswärtige Angelegenheiten",
+      mandate:
+        "Internationale Weltraumdiplomatie und Vertragsverhandlungen. Vertretung der Niederlande bei UN-COPUOS. Verwaltet den Haager Verhaltenskodex gegen die Verbreitung ballistischer Raketen (HCoC).",
+    },
+  ],
+  [
+    "NL-IenW",
+    {
+      name: "Ministerium für Infrastruktur und Wasserwirtschaft",
+      mandate:
+        "Umweltregulierung für Start- und Wiedereintrittsaktivitäten unter dem Wet milieubeheer (Wm). Verantwortlich für Umweltverträglichkeitsprüfungen für Weltrauminfrastruktur.",
+    },
+  ],
+  [
+    "NL-KNMI",
+    {
+      name: "Königliches Niederländisches Meteorologisches Institut (KNMI)",
+      mandate:
+        "Nationaler meteorologischer und seismologischer Dienst. Betreibt den Copernicus-Klimawandeldienst (C3S) und verwaltet niederländische Erdbeobachtungssatellitendaten. Weltraumwetterüberwachung für Satellitenbetrieb.",
+    },
+  ],
+  [
+    "NL-BTI",
+    {
+      name: "Büro für Investitionsprüfung (BTI)",
+      mandate:
+        "Prüfung ausländischer Investitionen in sensible Technologien unter dem Wet veiligheidstoets investeringen (Vifo). Raumfahrttechnologie als sensible Technologie eingestuft — Übernahmen niederländischer Raumfahrtunternehmen durch Nicht-EU-Investoren unterliegen obligatorischer Prüfung.",
+    },
+  ],
+  [
+    "NL-ILT",
+    {
+      name: "Aufsichtsbehörde für Umwelt und Transport (ILT)",
+      mandate:
+        "Umweltdurchsetzung und Transportsicherheitsaufsicht. Überwacht Einhaltung der Wet milieubeheer-Anforderungen für weltraumbezogene Einrichtungen.",
+    },
+  ],
+  [
+    "NL-TUDELFT",
+    {
+      name: "Technische Universität Delft — Fakultät für Luft- und Raumfahrttechnik",
+      mandate:
+        "Führende europäische Luft- und Raumfahrt-Forschungsuniversität. Betreibt das Delfi-Programm (Studentensatelliten). Größte Fakultät für Luft- und Raumfahrttechnik in Europa.",
+    },
+  ],
+  [
+    "NL-ESTEC",
+    {
+      name: "Europäisches Zentrum für Weltraumforschung und -technologie (ESA/ESTEC)",
+      mandate:
+        "Größte ESA-Einrichtung in Noordwijk. Primäres Technologieentwicklungs- und Testzentrum der ESA. Beherbergt das ESTEC Test Centre (größte Satellitentestanlage Europas). Ca. 2.500 Mitarbeiter.",
+    },
+  ],
+  [
+    "NL-ACM",
+    {
+      name: "Behörde für Verbraucher und Märkte (ACM)",
+      mandate:
+        "Marktregulierung und Wettbewerbsbehörde. Beaufsichtigt den Telekommunikationsmarkt einschließlich Satellitenkommunikationsdienste.",
+    },
+  ],
+
+  // Belgium Authorities (15)
+  [
+    "BE-BELSPO",
+    {
+      name: "Belgisches Bundesamt für Wissenschaftspolitik (BELSPO)",
+      mandate:
+        "De-facto-Raumfahrtagentur Belgiens. Setzt das Genehmigungsverfahren unter dem Weltraumgesetz 2005 um, verwaltet ESA-Beiträge (~296 Mio. EUR 2024), führt das Nationale Register der Weltraumgegenstände. Raumfahrt macht über 40% des BELSPO-Budgets aus.",
+    },
+  ],
+  [
+    "BE-MINISTER-SCIENCE",
+    {
+      name: "Minister/Staatssekretär für Wissenschaftspolitik",
+      mandate:
+        "Erlässt ministerielle Genehmigungsdekrete (arrêtés ministériels) für Weltraumtätigkeiten unter dem Gesetz von 2005.",
+    },
+  ],
+  [
+    "BE-MOD",
+    {
+      name: "Verteidigungsministerium",
+      mandate:
+        "STAR-Plan mit 616 Mio. EUR für Weltraumfähigkeiten bis 2034: bodengestützte SSA-Sensoren, optisches Teleskop, Satellitenterminals. Cyber Command als 5. Militärkomponente.",
+    },
+  ],
+  [
+    "BE-BIPT",
+    {
+      name: "Belgisches Institut für Post und Telekommunikation (BIPT)",
+      mandate:
+        "Satellitenspektrumverwaltung, Frequenzzuweisung und ITU-Anmeldungen als belgische meldende Verwaltung. Lizenzierung von Satelliten-Erdstationen.",
+    },
+  ],
+  [
+    "BE-APD",
+    {
+      name: "Belgische Datenschutzbehörde (APD/GBA)",
+      mandate:
+        "DSGVO-Durchsetzung in Belgien. Keine weltraumspezifische Orientierung. Der Königliche Erlass 2022 integriert DSGVO-Konformität in das Weltraumgenehmigungsverfahren.",
+    },
+  ],
+  [
+    "BE-CCB",
+    {
+      name: "Zentrum für Cybersicherheit Belgien (CCB)",
+      mandate:
+        "Nationale Cybersicherheitsbehörde und CSIRT (via CERT.be) unter NIS2. Belgien war der ERSTE EU-Mitgliedstaat mit vollständiger NIS2-Umsetzung. Verwendet CyberFundamentals (CyFun®) als ISO-27001-Alternative.",
+    },
+  ],
+  [
+    "BE-NCCN",
+    {
+      name: "Nationales Krisenzentrum (NCCN)",
+      mandate:
+        "Krisenmanagement für Fehlfunktionen belgisch registrierter Weltraumgegenstände. Benannt seit 2008, bestätigt im Königlichen Erlass 2022. Unterlassene Meldung an das NCCN führt zum Verfall der 10%-Haftungsobergrenze.",
+    },
+  ],
+  [
+    "BE-FPS-FA",
+    {
+      name: "Föderaler Öffentlicher Dienst Auswärtige Angelegenheiten",
+      mandate:
+        "Internationale Weltraumdiplomatie. Führte EU-Präsidentschafts-Weltraumprioritäten 2024, startete Verhandlungen zum EU Space Act. Belgische COPUOS-Delegation unter Leitung des Botschafters in Wien.",
+    },
+  ],
+  [
+    "BE-FPS-ECO",
+    {
+      name: "FÖD Wirtschaft — Lizenzstelle",
+      mandate:
+        "Exportkontrollkompetenz NUR für Transaktionen der belgischen Armee/Polizei. Nukleargüterexporte über CANVEK. Für Privatunternehmen ist die Exportlizenzierung REGIONALE Kompetenz seit 2003.",
+    },
+  ],
+  [
+    "BE-WALL-EXPORT",
+    {
+      name: "Wallonien — Direktion für Waffenlizenzmanagement",
+      mandate:
+        "Regionale Exportkontrollbehörde für Wallonien unter dem Dekret vom 21. Juni 2012. Wallonien umfasst >70% der belgischen Luftfahrtaktivität.",
+    },
+  ],
+  [
+    "BE-FLAND-EXPORT",
+    {
+      name: "Flandern — Kontrolle strategischer Güter",
+      mandate:
+        "Regionale Exportkontrollbehörde für Flandern unter dem Flämischen Waffenhandelsgesetz vom 15. Juni 2012.",
+    },
+  ],
+  [
+    "BE-BXL-EXPORT",
+    {
+      name: "Brüssel-Hauptstadt — Lizenzbüro (SPRB)",
+      mandate:
+        "Regionale Exportkontrollbehörde für die Region Brüssel-Hauptstadt unter der Verordnung vom 20. Juni 2013.",
+    },
+  ],
+  [
+    "BE-ROB",
+    {
+      name: "Königliche Sternwarte von Belgien (ROB)",
+      mandate:
+        "Bundeswissenschaftliches Institut unter BELSPO. Beherbergt das Solar-Terrestrial Centre of Excellence (STCE) und das ESA-Weltraumwetter-Koordinierungszentrum (SSCC).",
+    },
+  ],
+  [
+    "BE-CSL",
+    {
+      name: "Raumfahrtzentrum Lüttich (CSL)",
+      mandate:
+        "Angewandtes Forschungszentrum an der Universität Lüttich (gegründet 1964). Eines von vier ESA-koordinierten Testeinrichtungen. ~100 Mitarbeiter, ~19 Mio. EUR Umsatz.",
+    },
+  ],
+  [
+    "BE-VKI",
+    {
+      name: "Von Karman Institut für Strömungsdynamik (VKI)",
+      mandate:
+        "Internationale Forschungsorganisation (gegründet 1956). ~50 Einrichtungen einschließlich Mach-14/20-Hyperschall-Windkanäle und 1.200-kW-Plasmatron. Kooperationsabkommen mit ESA und NASA.",
     },
   ],
 ]);
