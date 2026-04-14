@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import LiveFeed from "@/components/atlas/LiveFeed";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   LEGAL_SOURCES_DE,
@@ -65,60 +64,7 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_SE,
 ];
 
-// ─── Greeting key based on time of day ──────────────────────────────
-
-function getGreetingKey(): string {
-  const hour = new Date().getHours();
-  if (hour < 5) return "atlas.greeting_evening";
-  if (hour < 12) return "atlas.greeting_morning";
-  if (hour < 17) return "atlas.greeting_afternoon";
-  return "atlas.greeting_evening";
-}
-
-// ─── Debounce hook ───────────────────────────────────────────────────
-
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
-
-// ─── Type badge colors ───────────────────────────────────────────────
-
-const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
-  international_treaty: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
-  },
-  federal_law: {
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
-  },
-  federal_regulation: {
-    bg: "bg-teal-50 border-teal-200",
-    text: "text-teal-700",
-  },
-  technical_standard: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-  },
-  eu_regulation: {
-    bg: "bg-purple-50 border-purple-200",
-    text: "text-purple-700",
-  },
-  eu_directive: {
-    bg: "bg-violet-50 border-violet-200",
-    text: "text-violet-700",
-  },
-  policy_document: { bg: "bg-gray-50 border-gray-200", text: "text-gray-600" },
-  draft_legislation: {
-    bg: "bg-orange-50 border-orange-200",
-    text: "text-orange-700",
-  },
-};
+// ─── Style maps ─────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<LegalSourceType, string> = {
   international_treaty: "Treaty",
@@ -131,24 +77,36 @@ const TYPE_LABELS: Record<LegalSourceType, string> = {
   draft_legislation: "Draft",
 };
 
-const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
-  fundamental: "text-gray-900 font-semibold",
-  critical: "text-red-600",
-  high: "text-amber-600",
-  medium: "text-gray-500",
-  low: "text-gray-400",
+const RELEVANCE_DOT: Record<RelevanceLevel, string> = {
+  fundamental: "bg-gray-900",
+  critical: "bg-red-500",
+  high: "bg-amber-500",
+  medium: "bg-gray-300",
+  low: "bg-gray-200",
 };
 
-const JURISDICTION_FLAGS: Record<string, string> = {
-  DE: "DE",
-  FR: "FR",
-  UK: "UK",
-  IT: "IT",
-  INT: "INT",
-  EU: "EU",
-};
+// ─── Greeting ───────────────────────────────────────────────────────
 
-// ─── Search logic ────────────────────────────────────────────────────
+function getGreetingKey(): string {
+  const hour = new Date().getHours();
+  if (hour < 5) return "atlas.greeting_evening";
+  if (hour < 12) return "atlas.greeting_morning";
+  if (hour < 17) return "atlas.greeting_afternoon";
+  return "atlas.greeting_evening";
+}
+
+// ─── Debounce ───────────────────────────────────────────────────────
+
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+// ─── Search ─────────────────────────────────────────────────────────
 
 interface SearchResults {
   jurisdictions: Array<
@@ -203,7 +161,7 @@ function performSearch(query: string): SearchResults | null {
   return { jurisdictions, sources, authorities };
 }
 
-// ─── Page ────────────────────────────────────────────────────────────
+// ─── Page ───────────────────────────────────────────────────────────
 
 export default function CommandCenterPage() {
   const router = useRouter();
@@ -221,7 +179,6 @@ export default function CommandCenterPage() {
   const hasResults = results !== null;
   const [showAllSources, setShowAllSources] = useState(false);
 
-  // Reset "show all" when query changes
   useEffect(() => {
     setShowAllSources(false);
   }, [debouncedQuery]);
@@ -242,129 +199,129 @@ export default function CommandCenterPage() {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
+  const totalResults = hasResults
+    ? results.jurisdictions.length +
+      results.sources.length +
+      results.authorities.length
+    : 0;
+
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
-      {/* ─── Greeting ─── */}
+    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16">
+      {/* ─── Centered search area ─── */}
       <div
-        className={`transition-all duration-700 ease-out ${hasResults ? "mb-4" : "mb-10"}`}
+        className={`transition-all duration-700 ease-out ${hasResults ? "pt-10" : "pt-[22vh]"}`}
       >
+        {/* Greeting */}
         <p
-          className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[16px]" : "text-[26px] lg:text-[30px]"}`}
+          className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
         >
           {t(greetingKey)}
         </p>
-      </div>
 
-      {/* ─── Search Input ─── */}
-      <div
-        className={`relative transition-all duration-700 ease-out ${hasResults ? "mb-10" : "mb-14"}`}
-      >
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("atlas.search_placeholder")}
-          spellCheck={false}
-          autoComplete="off"
-          className={`
-            w-full bg-transparent
-            border-0 border-b border-gray-200 rounded-none
-            outline-none ring-0 shadow-none
-            focus:border-gray-300 focus:outline-none focus:ring-0 focus:shadow-none
-            text-gray-900 placeholder:text-gray-300
-            font-light tracking-[-0.02em] leading-none
-            transition-all duration-700
-            ${hasResults ? "text-[28px] lg:text-[36px] py-4" : "text-[42px] lg:text-[56px] py-6"}
-          `}
-          style={{ caretColor: "#10B981", outline: "none", boxShadow: "none" }}
-        />
-      </div>
-
-      {/* ─── Empty State ─── */}
-      {!hasResults && (
-        <div className="space-y-6">
-          {/* Quick access — all 10 jurisdictions with legal sources */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {[
-              { code: "DE", name: "Germany" },
-              { code: "FR", name: "France" },
-              { code: "UK", name: "United Kingdom" },
-              { code: "IT", name: "Italy" },
-              { code: "LU", name: "Luxembourg" },
-              { code: "NL", name: "Netherlands" },
-              { code: "BE", name: "Belgium" },
-              { code: "ES", name: "Spain" },
-              { code: "NO", name: "Norway" },
-              { code: "SE", name: "Sweden" },
-            ].map((j) => (
-              <button
-                key={j.code}
-                onClick={() => router.push(`/atlas/jurisdictions/${j.code}`)}
-                className="text-[13px] text-gray-400 hover:text-gray-900 transition-colors duration-200"
-              >
-                {j.name}
-              </button>
-            ))}
-            <span className="text-[12px] text-gray-300">
-              {t("atlas.sources_count", { count: ALL_SOURCES.length })} &middot;{" "}
-              {t("atlas.jurisdictions_count", {
-                count: JURISDICTION_DATA.size,
-              })}
-            </span>
-          </div>
+        {/* Search Input */}
+        <div className="relative mb-3">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("atlas.search_placeholder")}
+            spellCheck={false}
+            autoComplete="off"
+            className={`
+              w-full bg-transparent
+              border-0 border-b-2 border-gray-200 rounded-none
+              outline-none ring-0 shadow-none
+              focus:border-gray-900 focus:outline-none focus:ring-0 focus:shadow-none
+              text-gray-900 placeholder:text-gray-300
+              font-light tracking-[-0.02em] leading-none
+              transition-all duration-500
+              ${hasResults ? "text-[28px] lg:text-[36px] py-4" : "text-[40px] lg:text-[52px] py-5"}
+            `}
+            style={{ caretColor: "#111", outline: "none", boxShadow: "none" }}
+          />
         </div>
-      )}
+
+        {/* Subtle stats line */}
+        <div
+          className={`flex items-center gap-4 transition-all duration-500 ${hasResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
+        >
+          <span className="text-[11px] text-gray-300 font-mono tracking-wide">
+            {ALL_SOURCES.length} sources
+          </span>
+          <span className="text-[4px] text-gray-200">&#9679;</span>
+          <span className="text-[11px] text-gray-300 font-mono tracking-wide">
+            {ALL_AUTHORITIES.length} authorities
+          </span>
+          <span className="text-[4px] text-gray-200">&#9679;</span>
+          <span className="text-[11px] text-gray-300 font-mono tracking-wide">
+            10 jurisdictions
+          </span>
+        </div>
+
+        {/* Result count */}
+        {hasResults && (
+          <div className="flex items-center gap-3 mt-1 mb-8">
+            <span className="text-[11px] text-gray-400 font-mono">
+              {totalResults} {totalResults === 1 ? "result" : "results"}
+            </span>
+            {results.jurisdictions.length > 0 && (
+              <span className="text-[10px] text-gray-300">
+                {results.jurisdictions.length} jurisdictions
+              </span>
+            )}
+            {results.sources.length > 0 && (
+              <span className="text-[10px] text-gray-300">
+                {results.sources.length} sources
+              </span>
+            )}
+            {results.authorities.length > 0 && (
+              <span className="text-[10px] text-gray-300">
+                {results.authorities.length} authorities
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ─── Results ─── */}
       {hasResults && (
-        <div className="space-y-8">
+        <div className="space-y-6 pb-20">
           {/* Jurisdictions */}
           {results.jurisdictions.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-3">
-                <Globe2 size={15} className="text-gray-400" strokeWidth={1.5} />
-                <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe2 size={13} className="text-gray-300" strokeWidth={1.5} />
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
                   {t("atlas.jurisdictions")}
                 </h2>
-                <span className="text-[11px] text-gray-300">
-                  {results.jurisdictions.length}
-                </span>
               </div>
-              <div className="space-y-1">
-                {results.jurisdictions.slice(0, 5).map(([code, data]) => (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {results.jurisdictions.slice(0, 6).map(([code, data]) => (
                   <button
                     key={code}
                     onClick={() => router.push(`/atlas/jurisdictions/${code}`)}
-                    className="
-                      w-full flex items-center gap-4 px-4 py-3
-                      text-left rounded-xl
-                      hover:bg-white hover:shadow-sm
-                      transition-all duration-150 group
-                    "
+                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
                   >
-                    <span className="text-[13px] font-mono font-semibold text-gray-400 w-7">
+                    <span className="text-[22px] font-mono font-bold text-gray-200 w-10 group-hover:text-gray-400 transition-colors">
                       {code}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[15px] font-medium text-gray-900 group-hover:text-emerald-700 transition-colors">
+                      <span className="text-[15px] font-semibold text-gray-900 group-hover:text-black transition-colors">
                         {data.countryName}
                       </span>
-                      <span className="text-[13px] text-gray-400 ml-3">
+                      <span className="block text-[11px] text-gray-400 truncate mt-0.5">
                         {data.legislation.name}
                       </span>
                     </div>
                     <span
-                      className={`
-                        text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
-                        ${data.legislation.status === "enacted" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}
-                      `}
+                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${data.legislation.status === "enacted" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"}`}
                     >
                       {data.legislation.status}
                     </span>
                     <ArrowRight
                       size={14}
-                      className="text-gray-300 group-hover:text-emerald-500 transition-colors"
+                      className="text-gray-200 group-hover:text-gray-900 transition-colors"
                     />
                   </button>
                 ))}
@@ -375,80 +332,62 @@ export default function CommandCenterPage() {
           {/* Legal Sources */}
           {results.sources.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-3">
-                <Scale size={15} className="text-gray-400" strokeWidth={1.5} />
-                <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+              <div className="flex items-center gap-2 mb-2">
+                <Scale size={13} className="text-gray-300" strokeWidth={1.5} />
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
                   {t("atlas.legal_sources")}
                 </h2>
-                <span className="text-[11px] text-gray-300">
-                  {results.sources.length}
-                </span>
               </div>
               <div className="space-y-1">
                 {(showAllSources
                   ? results.sources
-                  : results.sources.slice(0, 8)
+                  : results.sources.slice(0, 10)
                 ).map((source) => (
                   <button
                     key={source.id}
                     onClick={() => router.push(`/atlas/sources/${source.id}`)}
-                    className="
-                      w-full flex items-center gap-4 px-4 py-3
-                      text-left rounded-xl
-                      hover:bg-white hover:shadow-sm
-                      transition-all duration-150 group
-                    "
+                    className="w-full flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm transition-all duration-200 group"
                   >
-                    {/* Type badge */}
+                    {/* Relevance dot */}
                     <span
-                      className={`
-                        text-[9px] font-semibold uppercase tracking-wider
-                        px-2 py-0.5 rounded border flex-shrink-0 w-14 text-center
-                        ${TYPE_STYLES[source.type]?.bg} ${TYPE_STYLES[source.type]?.text}
-                      `}
-                    >
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${RELEVANCE_DOT[source.relevance_level]}`}
+                    />
+
+                    {/* Type */}
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 w-12 flex-shrink-0 font-mono">
                       {TYPE_LABELS[source.type]}
                     </span>
 
+                    {/* Title */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
-                          {getTranslatedSource(source, language).title}
-                        </span>
-                      </div>
+                      <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black transition-colors">
+                        {getTranslatedSource(source, language).title}
+                      </span>
                       {source.official_reference && (
-                        <span className="text-[11px] text-gray-400 font-mono">
+                        <span className="text-[10px] text-gray-400 font-mono">
                           {source.official_reference}
                         </span>
                       )}
                     </div>
 
                     {/* Jurisdiction */}
-                    <span className="text-[11px] font-mono text-gray-400 flex-shrink-0">
-                      {JURISDICTION_FLAGS[source.jurisdiction] ??
-                        source.jurisdiction}
-                    </span>
-
-                    {/* Relevance */}
-                    <span
-                      className={`text-[10px] uppercase tracking-wider flex-shrink-0 ${RELEVANCE_STYLES[source.relevance_level]}`}
-                    >
-                      {source.relevance_level}
+                    <span className="text-[11px] font-mono font-bold text-gray-300 flex-shrink-0">
+                      {source.jurisdiction}
                     </span>
                   </button>
                 ))}
-                {!showAllSources && results.sources.length > 8 && (
+                {!showAllSources && results.sources.length > 10 && (
                   <button
                     onClick={() => setShowAllSources(true)}
-                    className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
+                    className="w-full py-3 text-[12px] font-medium text-gray-400 hover:text-gray-900 transition-colors"
                   >
                     {t("atlas.show_all", { count: results.sources.length })}
                   </button>
                 )}
-                {showAllSources && results.sources.length > 8 && (
+                {showAllSources && results.sources.length > 10 && (
                   <button
                     onClick={() => setShowAllSources(false)}
-                    className="text-[12px] text-gray-400 hover:text-gray-900 px-4 pt-2 transition-colors duration-200"
+                    className="w-full py-3 text-[12px] font-medium text-gray-400 hover:text-gray-900 transition-colors"
                   >
                     {t("atlas.show_less")}
                   </button>
@@ -460,56 +399,45 @@ export default function CommandCenterPage() {
           {/* Authorities */}
           {results.authorities.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 <Building2
-                  size={15}
-                  className="text-gray-400"
+                  size={13}
+                  className="text-gray-300"
                   strokeWidth={1.5}
                 />
-                <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
                   {t("atlas.authorities")}
                 </h2>
-                <span className="text-[11px] text-gray-300">
-                  {results.authorities.length}
-                </span>
               </div>
-              <div className="space-y-1">
-                {results.authorities.slice(0, 5).map((auth) => (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {results.authorities.slice(0, 6).map((auth) => (
                   <button
                     key={auth.id}
                     onClick={() =>
                       router.push(`/atlas/jurisdictions/${auth.jurisdiction}`)
                     }
-                    className="
-                      w-full flex items-center gap-4 px-4 py-3
-                      text-left rounded-xl
-                      hover:bg-white hover:shadow-sm
-                      transition-all duration-150 group
-                    "
+                    className="flex items-start gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
                   >
-                    {/* Abbreviation badge */}
-                    <span className="text-[10px] font-bold text-gray-600 bg-gray-100 border border-gray-200 rounded px-2 py-1 flex-shrink-0 w-14 text-center font-mono">
+                    <span className="text-[12px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1 flex-shrink-0 font-mono mt-0.5">
                       {auth.abbreviation}
                     </span>
-
                     <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-medium text-gray-900 group-hover:text-emerald-700 transition-colors">
+                      <span className="text-[14px] font-semibold text-gray-800 group-hover:text-black transition-colors block">
                         {getTranslatedAuthority(auth, language).name}
                       </span>
-                      <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                      <p className="text-[11px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">
                         {(() => {
                           const m = getTranslatedAuthority(
                             auth,
                             language,
                           ).mandate;
                           return (
-                            m.slice(0, 100) + (m.length > 100 ? "..." : "")
+                            m.slice(0, 120) + (m.length > 120 ? "..." : "")
                           );
                         })()}
                       </p>
                     </div>
-
-                    <span className="text-[11px] font-mono text-gray-400 flex-shrink-0">
+                    <span className="text-[10px] font-mono font-bold text-gray-300 flex-shrink-0 mt-1">
                       {auth.jurisdiction}
                     </span>
                   </button>
@@ -520,149 +448,22 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* ─── Regulatory Overview ─── */}
+      {/* ─── Footer (only when no results) ─── */}
       {!hasResults && (
-        <div className="mt-14">
-          <h2 className="text-[11px] font-medium text-gray-400 tracking-[0.15em] uppercase mb-4">
-            {t("atlas.tracked_jurisdictions")}
-          </h2>
-          <LiveFeed />
-        </div>
-      )}
-
-      {/* Legal Network removed — search is the primary interface */}
-
-      {/* ─── Legal Footer ─── */}
-      <footer className="mt-40 pt-8 border-t border-gray-200">
-        <div className="max-w-5xl space-y-4">
-          {/* Product attribution */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
-              ATLAS
-            </span>
-            <span className="text-[10px] text-gray-300">by</span>
-            <span className="text-[11px] font-semibold text-gray-500 tracking-wide">
-              Caelex
-            </span>
-          </div>
-
-          {/* Comprehensive disclaimer */}
-          <div className="space-y-3 text-[10px] text-gray-400 leading-[1.7]">
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_no_legal_advice")}.
-              </span>{" "}
-              ATLAS is a regulatory information and research tool developed by
-              Caelex. The information, data, assessments, and comparative
-              analyses provided through ATLAS do not constitute legal,
-              compliance, tax, or professional advice of any kind. No
-              attorney-client, advisory, or fiduciary relationship is created
-              between Caelex and any user through access to or use of ATLAS.
-              Users must independently verify all information and consult
-              qualified legal counsel before making compliance, licensing, or
-              business decisions.
-            </p>
-
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_no_guarantee")}.
-              </span>{" "}
-              Caelex makes no representation or warranty, express or implied,
-              regarding the accuracy, completeness, timeliness, or reliability
-              of any data presented in ATLAS. Regulatory frameworks are subject
-              to change without notice. Legislative references — including EU
-              Space Act citations based on COM(2025) 335 — refer to legislative
-              proposals that may be substantially amended during the legislative
-              process. National law data reflects the state of research at the
-              time of last verification and may not reflect subsequent
-              amendments, judicial interpretations, or administrative practice.
-            </p>
-
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_limitation")}.
-              </span>{" "}
-              To the maximum extent permitted by applicable law, Caelex, its
-              directors, employees, and agents shall not be liable for any
-              direct, indirect, incidental, consequential, or special damages —
-              including but not limited to loss of profits, regulatory
-              penalties, fines, business interruption, or reputational harm —
-              arising from or in connection with the use of or reliance on
-              information provided through ATLAS. This limitation applies
-              regardless of the legal theory upon which such damages are
-              claimed.
-            </p>
-
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_third_party")}.
-              </span>{" "}
-              ATLAS data and outputs are provided solely for the internal
-              research and information purposes of the licensed user. Users
-              shall not represent ATLAS outputs as certified compliance
-              assessments, legal opinions, or regulatory clearances to third
-              parties, regulators, investors, or courts. Any reliance by third
-              parties on ATLAS-derived information is at their own risk and
-              without recourse to Caelex.
-            </p>
-
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_data_sources")}.
-              </span>{" "}
-              ATLAS aggregates information from public legislative databases,
-              official government publications, international treaty
-              collections, and authoritative regulatory sources. Primary sources
-              include EUR-Lex, national official gazettes (Bundesgesetzblatt,
-              Journal Officiel, Gazzetta Ufficiale, legislation.gov.uk), UNOOSA
-              treaty database, ITU, ESA, BSI, CNES, CAA, and ASI publications.
-              While Caelex endeavours to maintain current and accurate data, the
-              platform is not affiliated with, endorsed by, or officially
-              connected to any government authority, regulatory body, or
-              international organization referenced herein.
-            </p>
-
-            <p>
-              <span className="font-semibold text-gray-500">
-                {t("atlas.disclaimer_ip")}.
-              </span>{" "}
-              ATLAS, including its regulatory data structures, compliance
-              mappings, cross-reference frameworks, and analytical
-              methodologies, is proprietary to Caelex. All rights reserved.
-              Unauthorized reproduction, reverse-engineering, or use of ATLAS
-              data to build competing products or services is strictly
-              prohibited.
-            </p>
-          </div>
-
-          {/* Bottom line */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <span className="text-[9px] text-gray-300">
-              © {new Date().getFullYear()} Caelex — All rights reserved
-            </span>
-            <div className="flex items-center gap-4">
-              <a
-                href="/legal/privacy"
-                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                Privacy
-              </a>
-              <a
-                href="/legal/terms"
-                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                Terms
-              </a>
-              <a
-                href="/legal/impressum"
-                className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                Impressum
-              </a>
+        <footer className="fixed bottom-0 left-0 right-0 px-8 lg:px-16 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold text-gray-300 tracking-wider">
+                ATLAS
+              </span>
+              <span className="text-[9px] text-gray-200">by Caelex</span>
             </div>
+            <span className="text-[9px] text-gray-300">
+              © {new Date().getFullYear()} Caelex
+            </span>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
