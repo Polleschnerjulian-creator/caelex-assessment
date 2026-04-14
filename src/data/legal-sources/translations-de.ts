@@ -5064,6 +5064,153 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SWITZERLAND (CH) — 10 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "CH-OST-1967",
+    {
+      title: "Weltraumvertrag — Schweizerische Ratifizierung",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Unter dem monistischen System direkt anwendbar — aber kein nationales Umsetzungsgesetz bis zum Raumfahrtgesetz (~2028).",
+        },
+      },
+    },
+  ],
+  [
+    "CH-LIABILITY-CONV",
+    {
+      title: "Weltraumhaftungsübereinkommen — Schweizerische Ratifizierung",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "Derzeit KEIN nationales Umsetzungsgesetz. Allgemeines Haftpflichtrecht (OR) gilt. Raumfahrtgesetz sieht DIREKTE Betreiberhaftung vor (nicht Staat-dann-Rückgriff).",
+        },
+      },
+    },
+  ],
+  [
+    "CH-REGISTRATION-CONV",
+    {
+      title: "Registrierungsübereinkommen — Schweizerische Ratifizierung",
+      provisions: {
+        "Art. II": {
+          title: "Registerpflicht",
+          summary:
+            "Ratifiziert ~1978 — aber KEIN nationales Register existiert. Raumfahrtgesetz wird erstmals eines einrichten.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Schweiz als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "37. Unterzeichner, 15. April 2024. Bundesrat Parmelin unterzeichnete. Mondvertrag NICHT ratifiziert.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-NARV",
+    {
+      title:
+        "Verordnung über die Förderung nationaler Aktivitäten im Bereich Raumfahrt (NARV)",
+      provisions: {
+        "Full instrument": {
+          title: "Forschungsförderung — KEIN Regulierungsrahmen",
+          summary:
+            "Ermöglicht ESA-Beteiligung und Forschungsförderung. Deckt NICHT ab: Genehmigung, Haftung, Versicherung, Register, Aufsicht. 'Weltraumverordnung SR 700.1' existiert NICHT — SR 700.1 ist Raumplanung.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-RAUMFAHRTGESETZ-DRAFT",
+    {
+      title: "Raumfahrtgesetz — Bundesgesetz über die Raumfahrt (Entwurf)",
+      scopeDescription:
+        "Botschaft 25. Februar 2026, vor dem Parlament. Inkrafttreten frühestens 2028. DIREKTE Betreiberhaftung (nicht Staat-dann-Rückgriff). Risikobasierte Versicherung. Nationales Register. Weltraummüllvorschriften.",
+      provisions: {
+        "Art. 23-25": {
+          title: "Direkte Betreiberhaftung",
+          summary:
+            "Betreiber (nicht der Staat) haftet direkt gegenüber Geschädigten. Strikte Haftung für Oberflächenschäden, verschuldensabhängig für Weltraumschäden. Einzigartig in Europa.",
+          complianceImplication:
+            "Anders als FR/AT/BE — kein Staatsrückgriff, sondern direkte Betreiberhaftung.",
+        },
+        "Art. 9(1)(j) / Art. 26": {
+          title: "Risikobasierte Versicherung",
+          summary:
+            "KEINE allgemeine Versicherungspflicht. Behörde KANN Versicherung verlangen bei erhöhtem Risiko. Flexibler als AT/FR/FI (60 Mio. EUR Mindest).",
+        },
+      },
+    },
+  ],
+  [
+    "CH-FMG",
+    {
+      title: "Fernmeldegesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Satellitenspektrumverwaltung via BAKOM",
+          summary:
+            "Funkspektrum bis 3.000 GHz erfordert Lizenz. BAKOM verwaltet Satellitenfrequenzen und vertritt die Schweiz beim ITU.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-GKG",
+    {
+      title: "Güterkontrollgesetz",
+      provisions: {
+        "Art. 1 / Art. 6 / Art. 14": {
+          title: "Dual-Use- und strategische Güterexportkontrolle",
+          summary:
+            "Kontrolle von Dual-Use-, Militär- und strategischen Gütern. Strafen bis 10 Jahre Haft. Kategorien 7 und 9 für Weltraumtechnologie. Schweiz Mitglied aller 4 Exportkontrollregime.",
+          complianceImplication:
+            "MTCR-Plenum 2022 in Montreux. HCoC-Vorsitz 2020. ~1.744 Dual-Use-Genehmigungen/Jahr.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-DSG",
+    {
+      title: "Datenschutzgesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Neues Datenschutzgesetz (seit 1. September 2023)",
+          summary:
+            "Ersetzt das Gesetz von 1992. EDÖB als Aufsichtsbehörde. Weder das Gesetz noch der Raumfahrtgesetz-Entwurf regeln Weltraumdaten-Governance.",
+        },
+      },
+    },
+  ],
+  [
+    "CH-SPACE-POLICY-2023",
+    {
+      title: "Weltraumpolitik 2023",
+      provisions: {
+        "Full document": {
+          title: "Drei strategische Prioritäten",
+          summary:
+            "Zugang und Resilienz, Wettbewerbsfähigkeit und Relevanz, Partnerschaft und Verlässlichkeit. CM25: 781 Mio. EUR. CHF 1.666,3 Mio. für 2025-2028.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -6423,6 +6570,87 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "NPOC Weltraumrecht Österreich — Universität Wien",
       mandate:
         "Gegründet 2001 von Prof. Brünner (Graz). Geleitet von Prof. Marboe (Wien) — COPUOS AG Nationales Weltraumrecht (2008-2013, UNGA Res. 68/74). Netzwerk an 6 Universitäten.",
+    },
+  ],
+
+  // Switzerland Authorities (10)
+  [
+    "CH-SSO",
+    {
+      name: "Swiss Space Office (SSO) im SBFI",
+      mandate:
+        "Kompetenzzentrum des Bundes für Weltraum. Dr. Krpoun führt ESA-Ratsvorsitz. Bereitet Raumfahrtgesetz vor.",
+    },
+  ],
+  [
+    "CH-OFCOM",
+    {
+      name: "Bundesamt für Kommunikation (BAKOM)",
+      mandate:
+        "Funkspektrum bis 3.000 GHz inkl. Satellitenbänder. ITU-Vertretung. NFAP 2026.",
+    },
+  ],
+  [
+    "CH-SECO",
+    {
+      name: "SECO — Exportkontrollen",
+      mandate:
+        "Lizenzierungsbehörde für Dual-Use-Güter. ELIC-System. ~1.744 Genehmigungen/Jahr.",
+    },
+  ],
+  [
+    "CH-DDPS",
+    {
+      name: "VBS — Kompetenzzentrum Weltraum",
+      mandate:
+        "Seit 1. Januar 2026. 10-15 Militärsatelliten geplant. Erster Testsatellit Januar 2025.",
+    },
+  ],
+  [
+    "CH-FDFA",
+    {
+      name: "EDA — Eidg. Departement für auswärtige Angelegenheiten",
+      mandate:
+        "COPUOS-Delegation (Dr. Archinard). UN-Weltraumsicherheit. Artemis Accords (37. Unterzeichner).",
+    },
+  ],
+  [
+    "CH-CFAS",
+    {
+      name: "Eidg. Kommission für Weltraumfragen (EKWF)",
+      mandate:
+        "Ausserparlamentarische Kommission. Berät den Bundesrat zur Weltraumpolitik.",
+    },
+  ],
+  [
+    "CH-IKAR",
+    {
+      name: "IKAR — Interdepartementaler Koordinationsausschuss",
+      mandate:
+        "Vorsitz SSO. Koordiniert Weltraumfragen über Departemente hinweg.",
+    },
+  ],
+  [
+    "CH-EDOEB",
+    {
+      name: "EDÖB — Datenschutzbeauftragter",
+      mandate:
+        "Datenschutzaufsicht unter nDSG (SR 235.1). Gilt für Satelliten-/EO-Daten.",
+    },
+  ],
+  [
+    "CH-ESPACE",
+    {
+      name: "EPFL Space Center (eSpace)",
+      mandate: "Akademischer Hub. Spinoffs: ClearSpace, Astrocast, SWISSto12.",
+    },
+  ],
+  [
+    "CH-SSIG",
+    {
+      name: "Swiss Space Industries Group (SSIG)",
+      mandate:
+        "~100 Unternehmen, ~2.500 Beschäftigte. Beyond Gravity CHF 402 Mio. Umsatz.",
     },
   ],
 ]);

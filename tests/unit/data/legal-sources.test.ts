@@ -38,6 +38,8 @@ import {
   AUTHORITIES_DK,
   LEGAL_SOURCES_AT,
   AUTHORITIES_AT,
+  LEGAL_SOURCES_CH,
+  AUTHORITIES_CH,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -2691,6 +2693,141 @@ describe("Legal Sources — AT authority accuracy", () => {
 
   it("every AT authority has a valid website URL", () => {
     for (const a of AUTHORITIES_AT) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Switzerland dataset sanity checks ────────────────────────────────
+describe("Legal Sources — CH dataset sanity", () => {
+  it("CH has at least 8 legal sources", () => {
+    expect(LEGAL_SOURCES_CH.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("CH has exactly 10 authorities", () => {
+    expect(AUTHORITIES_CH).toHaveLength(10);
+  });
+
+  it("CH legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_CH) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every CH source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_CH) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every CH source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_CH) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("all competent_authorities IDs map to existing CH authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_CH.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_CH) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("related_sources reference valid CH or cross-jurisdiction IDs", () => {
+    const allSourceIds = new Set(LEGAL_SOURCES_CH.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_CH) {
+      for (const relId of s.related_sources) {
+        if (relId.startsWith("CH-")) {
+          expect(
+            allSourceIds.has(relId),
+            `${s.id} references unknown related source ${relId}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+// ─── Switzerland regulatory accuracy ──────────────────────────────────
+describe("Legal Sources — CH regulatory accuracy", () => {
+  it("NARV has correct SR reference and is in force", () => {
+    const narv = getLegalSourceById("CH-NARV")!;
+    expect(narv).toBeDefined();
+    expect(narv.official_reference).toContain("SR 420.125");
+    expect(narv.status).toBe("in_force");
+  });
+
+  it("Raumfahrtgesetz is a draft", () => {
+    const draft = getLegalSourceById("CH-RAUMFAHRTGESETZ-DRAFT")!;
+    expect(draft).toBeDefined();
+    expect(draft.status).toBe("draft");
+    expect(draft.type).toBe("draft_legislation");
+  });
+
+  it("Artemis Accords signed 15 April 2024", () => {
+    const aa = getLegalSourceById("CH-ARTEMIS-ACCORDS")!;
+    expect(aa).toBeDefined();
+    expect(aa.date_enacted).toBe("2024-04-15");
+    const prov = aa.key_provisions[0]!;
+    expect(prov.summary).toContain("37th");
+  });
+
+  it("Registration Convention has no national register", () => {
+    const reg = getLegalSourceById("CH-REGISTRATION-CONV")!;
+    expect(reg).toBeDefined();
+    const prov = reg.key_provisions[0]!;
+    expect(prov.summary).toContain("NO national register");
+  });
+});
+
+// ─── CH lookup functions ──────────────────────────────────────────────
+describe("Legal Sources — CH lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns CH sources", () => {
+    const sources = getLegalSourcesByJurisdiction("CH");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_CH.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 10 CH authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("CH");
+    expect(auths).toHaveLength(10);
+  });
+
+  it("getAvailableJurisdictions includes CH", () => {
+    expect(getAvailableJurisdictions()).toContain("CH");
+  });
+});
+
+// ─── CH authority accuracy ────────────────────────────────────────────
+describe("Legal Sources — CH authority accuracy", () => {
+  it("SSO is the space competence centre", () => {
+    const sso = getAuthorityById("CH-SSO")!;
+    expect(sso).toBeDefined();
+    expect(sso.space_mandate).toContain("centre of competence for space");
+    expect(sso.applicable_areas).toContain("licensing");
+  });
+
+  it("SECO handles export controls", () => {
+    const seco = getAuthorityById("CH-SECO")!;
+    expect(seco).toBeDefined();
+    expect(seco.space_mandate).toContain("export licensing");
+    expect(seco.applicable_areas).toContain("export_control");
+  });
+
+  it("every CH authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_CH) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
