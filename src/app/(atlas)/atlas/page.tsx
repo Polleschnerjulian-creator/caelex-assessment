@@ -12,10 +12,22 @@ import {
   LEGAL_SOURCES_FR,
   LEGAL_SOURCES_UK,
   LEGAL_SOURCES_IT,
+  LEGAL_SOURCES_LU,
+  LEGAL_SOURCES_NL,
+  LEGAL_SOURCES_BE,
+  LEGAL_SOURCES_ES,
+  LEGAL_SOURCES_NO,
+  LEGAL_SOURCES_SE,
   AUTHORITIES_DE,
   AUTHORITIES_FR,
   AUTHORITIES_UK,
   AUTHORITIES_IT,
+  AUTHORITIES_LU,
+  AUTHORITIES_NL,
+  AUTHORITIES_BE,
+  AUTHORITIES_ES,
+  AUTHORITIES_NO,
+  AUTHORITIES_SE,
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
@@ -33,6 +45,12 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_FR,
   ...LEGAL_SOURCES_UK,
   ...LEGAL_SOURCES_IT,
+  ...LEGAL_SOURCES_LU,
+  ...LEGAL_SOURCES_NL,
+  ...LEGAL_SOURCES_BE,
+  ...LEGAL_SOURCES_ES,
+  ...LEGAL_SOURCES_NO,
+  ...LEGAL_SOURCES_SE,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -40,6 +58,12 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_FR,
   ...AUTHORITIES_UK,
   ...AUTHORITIES_IT,
+  ...AUTHORITIES_LU,
+  ...AUTHORITIES_NL,
+  ...AUTHORITIES_BE,
+  ...AUTHORITIES_ES,
+  ...AUTHORITIES_NO,
+  ...AUTHORITIES_SE,
 ];
 
 // ─── Greeting key based on time of day ──────────────────────────────

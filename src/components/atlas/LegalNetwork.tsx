@@ -8,6 +8,12 @@ import {
   LEGAL_SOURCES_FR,
   LEGAL_SOURCES_UK,
   LEGAL_SOURCES_IT,
+  LEGAL_SOURCES_LU,
+  LEGAL_SOURCES_NL,
+  LEGAL_SOURCES_BE,
+  LEGAL_SOURCES_ES,
+  LEGAL_SOURCES_NO,
+  LEGAL_SOURCES_SE,
   getTranslatedSource,
 } from "@/data/legal-sources";
 import type { LegalSource, LegalSourceType } from "@/data/legal-sources";
@@ -19,6 +25,12 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_FR,
   ...LEGAL_SOURCES_UK,
   ...LEGAL_SOURCES_IT,
+  ...LEGAL_SOURCES_LU,
+  ...LEGAL_SOURCES_NL,
+  ...LEGAL_SOURCES_BE,
+  ...LEGAL_SOURCES_ES,
+  ...LEGAL_SOURCES_NO,
+  ...LEGAL_SOURCES_SE,
 ];
 
 /** Map jurisdiction codes to cluster labels */
@@ -27,12 +39,31 @@ const CLUSTER_LABELS: Record<string, string> = {
   FR: "FR",
   UK: "UK",
   IT: "IT",
+  LU: "LU",
+  NL: "NL",
+  BE: "BE",
+  ES: "ES",
+  NO: "NO",
+  SE: "SE",
   INT: "INT",
   EU: "EU",
 };
 
 /** Cluster order for layout (left to right) */
-const CLUSTER_ORDER = ["INT", "EU", "DE", "FR", "UK", "IT"];
+const CLUSTER_ORDER = [
+  "INT",
+  "EU",
+  "DE",
+  "FR",
+  "UK",
+  "IT",
+  "LU",
+  "NL",
+  "BE",
+  "ES",
+  "NO",
+  "SE",
+];
 
 /** Monochrome node fills by source type */
 const TYPE_FILLS: Record<LegalSourceType, string> = {
