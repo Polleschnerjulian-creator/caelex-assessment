@@ -178,6 +178,11 @@ export default function CommandCenterPage() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
   const [greetingKey] = useState(getGreetingKey);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    setUserName(localStorage.getItem("atlas-user-name") ?? "");
+  }, []);
 
   const results = useMemo(
     () => performSearch(debouncedQuery),
@@ -224,6 +229,7 @@ export default function CommandCenterPage() {
           className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
         >
           {t(greetingKey)}
+          {userName && <span className="text-gray-400">, {userName}</span>}
         </p>
 
         {/* Search Input */}

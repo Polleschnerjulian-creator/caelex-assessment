@@ -12,6 +12,7 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; native: string }[] = [
 
 const LS_KEY_LOGO = "atlas-firm-logo";
 const LS_KEY_NAME = "atlas-firm-name";
+const LS_KEY_USER = "atlas-user-name";
 const MAX_LOGO_SIZE = 512 * 1024; // 512 KB
 
 export default function SettingsPage() {
@@ -19,12 +20,14 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [firmName, setFirmName] = useState("");
+  const [userName, setUserName] = useState("");
   const [firmLogo, setFirmLogo] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
     setFirmName(localStorage.getItem(LS_KEY_NAME) ?? "");
+    setUserName(localStorage.getItem(LS_KEY_USER) ?? "");
     setFirmLogo(localStorage.getItem(LS_KEY_LOGO));
     setMounted(true);
   }, []);
@@ -41,6 +44,19 @@ export default function SettingsPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, [firmName, mounted]);
+
+  // Save user name (debounced)
+  useEffect(() => {
+    if (!mounted) return;
+    const timer = setTimeout(() => {
+      if (userName.trim()) {
+        localStorage.setItem(LS_KEY_USER, userName.trim());
+      } else {
+        localStorage.removeItem(LS_KEY_USER);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [userName, mounted]);
 
   const handleLogoUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +123,25 @@ export default function SettingsPage() {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
+            {/* User name */}
+            <div>
+              <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                {language === "de" ? "Ihr Name" : "Your Name"}
+              </label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder={language === "de" ? "z.B. Julian" : "e.g. Julian"}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
+              />
+              <p className="text-[11px] text-gray-400 mt-1.5">
+                {language === "de"
+                  ? "Wird in der Begrüßung auf der Startseite angezeigt."
+                  : "Shown in the greeting on the home page."}
+              </p>
+            </div>
+
             {/* Firm name */}
             <div>
               <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
