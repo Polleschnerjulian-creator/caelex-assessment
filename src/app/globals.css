@@ -2004,28 +2004,41 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ─── Hide the entire app shell ─── */
-  .print\\:hidden,
-  .print-export-container ~ *,
-  nav,
-  header:not(.print-header),
-  aside {
-    display: none !important;
+  /* ─── NUCLEAR: hide EVERYTHING on screen ─── */
+  body * {
+    visibility: hidden !important;
   }
 
-  /* Hide the AtlasShell sidebar (fixed positioned) */
-  body > div > div > div.fixed {
-    display: none !important;
+  /* ─── Show ONLY the print container and its children ─── */
+  .print-export-container,
+  .print-export-container * {
+    visibility: visible !important;
   }
 
-  /* ─── Show the export container ─── */
   .print-export-container {
     display: block !important;
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 99999 !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+
+  /* ─── Force-kill fixed/sticky elements (sidebar) ─── */
+  .fixed,
+  .sticky {
+    display: none !important;
+    position: static !important;
+  }
+
+  /* ─── Zero out layout offsets ─── */
+  main {
+    margin: 0 !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
   }
 
   /* ─── Page setup ─── */
