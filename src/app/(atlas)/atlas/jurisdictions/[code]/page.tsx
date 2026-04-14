@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, useCallback, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,6 +10,7 @@ import {
   Building2,
   Globe2,
   FileText,
+  Download,
 } from "lucide-react";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
@@ -453,11 +454,16 @@ export default function JurisdictionDetailPage({
 }: JurisdictionDetailPageProps) {
   const { code } = use(params);
   const displayCode = code.toUpperCase();
+  const { language } = useLanguage();
 
   // Fetch data
   const jurisdiction = JURISDICTION_DATA.get(displayCode as any);
   const legalSources = getLegalSourcesByJurisdiction(displayCode);
   const authorities = getAuthoritiesByJurisdiction(displayCode);
+
+  const handleExportBriefing = useCallback(() => {
+    window.print();
+  }, []);
 
   const hasDetailedSources = legalSources.length > 0;
 
@@ -519,12 +525,23 @@ export default function JurisdictionDetailPage({
           </span>
         </div>
 
-        <p className="text-[14px] text-gray-500 mt-2">
-          {jurisdiction.legislation.name}
-          {jurisdiction.legislation.yearEnacted
-            ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, amended ${jurisdiction.legislation.yearAmended}` : ""})`
-            : ""}
-        </p>
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-[14px] text-gray-500">
+            {jurisdiction.legislation.name}
+            {jurisdiction.legislation.yearEnacted
+              ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, amended ${jurisdiction.legislation.yearAmended}` : ""})`
+              : ""}
+          </p>
+          {hasDetailedSources && (
+            <button
+              onClick={handleExportBriefing}
+              className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
+            >
+              <Download size={14} strokeWidth={1.5} />
+              {language === "de" ? "Briefing exportieren" : "Export Briefing"}
+            </button>
+          )}
+        </div>
       </header>
 
       {/* ─── Key Facts Row ─── */}
@@ -704,7 +721,7 @@ export default function JurisdictionDetailPage({
       )}
 
       {/* ─── Footer ─── */}
-      <footer className="mt-20 pt-6 border-t border-gray-200">
+      <footer className="mt-20 pt-6 border-t border-gray-200 print:hidden">
         <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
           Data last updated: {jurisdiction.lastUpdated}. This information is for
           research and reference purposes only. It does not constitute legal
@@ -712,6 +729,414 @@ export default function JurisdictionDetailPage({
           legal counsel before making compliance decisions.
         </p>
       </footer>
+
+      {/* ─── Print Briefing (hidden on screen, shown on print) ─── */}
+      {hasDetailedSources && (
+        <BriefingPrint
+          code={displayCode}
+          jurisdiction={jurisdiction}
+          legalSources={legalSources}
+          authorities={authorities}
+          groupedSources={groupedSources}
+          language={language}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Print-only Briefing Component ─────────────────────────────────
+
+function BriefingPrint({
+  code,
+  jurisdiction,
+  legalSources,
+  authorities,
+  groupedSources,
+  language,
+}: {
+  code: string;
+  jurisdiction: NonNullable<ReturnType<typeof JURISDICTION_DATA.get>>;
+  legalSources: LegalSource[];
+  authorities: Authority[];
+  groupedSources: Array<{
+    key: string;
+    title: string;
+    sources: LegalSource[];
+  }>;
+  language: string;
+}) {
+  const today = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  return (
+    <div className="hidden print:block print-export-container">
+      {/* Cover / Header */}
+      <div style={{ marginBottom: "24pt" }}>
+        <div
+          style={{
+            fontSize: "8pt",
+            color: "#999",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            marginBottom: "6pt",
+          }}
+        >
+          ATLAS Regulatory Intelligence — Caelex
+        </div>
+        <div
+          style={{
+            fontSize: "22pt",
+            fontWeight: 700,
+            color: "#111",
+            lineHeight: 1.2,
+          }}
+        >
+          {jurisdiction.countryName} ({code})
+        </div>
+        <div
+          style={{
+            fontSize: "11pt",
+            color: "#666",
+            marginTop: "4pt",
+          }}
+        >
+          {language === "de"
+            ? "Regulatorisches Briefing — Weltraumrecht"
+            : "Regulatory Briefing — Space Law"}
+        </div>
+        <div
+          style={{
+            fontSize: "9pt",
+            color: "#999",
+            marginTop: "8pt",
+          }}
+        >
+          {language === "de" ? "Erstellt am" : "Generated"} {today} &middot;{" "}
+          {legalSources.length}{" "}
+          {language === "de" ? "Rechtsquellen" : "legal sources"} &middot;{" "}
+          {authorities.length} {language === "de" ? "Behörden" : "authorities"}
+        </div>
+        <div
+          style={{
+            borderBottom: "2pt solid #111",
+            marginTop: "12pt",
+            paddingBottom: "0",
+          }}
+        />
+      </div>
+
+      {/* Key Facts */}
+      <div style={{ marginBottom: "18pt" }}>
+        <div
+          style={{
+            fontSize: "9pt",
+            fontWeight: 700,
+            color: "#111",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            marginBottom: "8pt",
+          }}
+        >
+          {language === "de" ? "Eckdaten" : "Key Facts"}
+        </div>
+        <table
+          style={{
+            width: "100%",
+            fontSize: "9pt",
+            borderCollapse: "collapse",
+          }}
+        >
+          <tbody>
+            {[
+              [
+                language === "de" ? "Gesetzgebung" : "Legislation",
+                `${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted || "N/A"})`,
+              ],
+              [
+                language === "de" ? "Status" : "Status",
+                jurisdiction.legislation.status.toUpperCase(),
+              ],
+              [
+                language === "de"
+                  ? "Genehmigungsbehörde"
+                  : "Licensing Authority",
+                jurisdiction.licensingAuthority.name,
+              ],
+              [
+                language === "de" ? "Haftungsregime" : "Liability Regime",
+                jurisdiction.insuranceLiability.liabilityRegime,
+              ],
+              [
+                language === "de"
+                  ? "Pflichtversicherung"
+                  : "Mandatory Insurance",
+                jurisdiction.insuranceLiability.mandatoryInsurance
+                  ? `${language === "de" ? "Ja" : "Yes"}${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
+                  : language === "de"
+                    ? "Nein"
+                    : "No",
+              ],
+              [
+                language === "de" ? "Bearbeitungszeit" : "Processing Time",
+                `${jurisdiction.timeline.typicalProcessingWeeks.min}–${jurisdiction.timeline.typicalProcessingWeeks.max} ${language === "de" ? "Wochen" : "weeks"}`,
+              ],
+            ].map(([label, value]) => (
+              <tr key={label}>
+                <td
+                  style={{
+                    padding: "4pt 12pt 4pt 0",
+                    color: "#999",
+                    fontWeight: 600,
+                    width: "35%",
+                    verticalAlign: "top",
+                  }}
+                >
+                  {label}
+                </td>
+                <td
+                  style={{
+                    padding: "4pt 0",
+                    color: "#333",
+                    verticalAlign: "top",
+                  }}
+                >
+                  {value}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Legal Sources */}
+      {groupedSources.map((group) => (
+        <div
+          key={group.key}
+          style={{ marginBottom: "16pt", pageBreakInside: "avoid" }}
+        >
+          <div
+            style={{
+              fontSize: "9pt",
+              fontWeight: 700,
+              color: "#111",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "6pt",
+              borderBottom: "0.5pt solid #ddd",
+              paddingBottom: "4pt",
+            }}
+          >
+            {group.title} ({group.sources.length})
+          </div>
+          {group.sources.map((source) => {
+            const translated = getTranslatedSource(source, language);
+            return (
+              <div
+                key={source.id}
+                style={{
+                  marginBottom: "10pt",
+                  paddingLeft: "8pt",
+                  borderLeft: "2pt solid #eee",
+                  pageBreakInside: "avoid",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "10pt",
+                    fontWeight: 600,
+                    color: "#111",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {translated.title}
+                </div>
+                <div
+                  style={{
+                    fontSize: "8pt",
+                    color: "#999",
+                    marginTop: "2pt",
+                  }}
+                >
+                  {[
+                    source.official_reference,
+                    source.date_enacted || source.date_in_force,
+                    source.status.replace(/_/g, " ").toUpperCase(),
+                    source.relevance_level.toUpperCase(),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
+                {source.scope_description && (
+                  <div
+                    style={{
+                      fontSize: "8.5pt",
+                      color: "#555",
+                      marginTop: "4pt",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {translated.scopeDescription ?? source.scope_description}
+                  </div>
+                )}
+                {source.key_provisions.length > 0 && (
+                  <div style={{ marginTop: "4pt" }}>
+                    {source.key_provisions.slice(0, 3).map((p, i) => {
+                      const tp = translated.getProvisionTranslation(p.section);
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            fontSize: "8pt",
+                            color: "#666",
+                            marginTop: "3pt",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, color: "#444" }}>
+                            {p.section}:
+                          </span>{" "}
+                          {tp?.summary ?? p.summary}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+
+      {/* Authorities */}
+      {authorities.length > 0 && (
+        <div style={{ marginTop: "12pt" }}>
+          <div
+            style={{
+              fontSize: "9pt",
+              fontWeight: 700,
+              color: "#111",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "8pt",
+              borderBottom: "0.5pt solid #ddd",
+              paddingBottom: "4pt",
+            }}
+          >
+            {language === "de"
+              ? `Zuständige Behörden (${authorities.length})`
+              : `Competent Authorities (${authorities.length})`}
+          </div>
+          <table
+            style={{
+              width: "100%",
+              fontSize: "8.5pt",
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "3pt 6pt 3pt 0",
+                    borderBottom: "0.5pt solid #ccc",
+                    color: "#999",
+                    fontWeight: 600,
+                    width: "12%",
+                  }}
+                >
+                  {language === "de" ? "Kürzel" : "Abbr."}
+                </th>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "3pt 6pt",
+                    borderBottom: "0.5pt solid #ccc",
+                    color: "#999",
+                    fontWeight: 600,
+                    width: "28%",
+                  }}
+                >
+                  {language === "de" ? "Name" : "Name"}
+                </th>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "3pt 0 3pt 6pt",
+                    borderBottom: "0.5pt solid #ccc",
+                    color: "#999",
+                    fontWeight: 600,
+                    width: "60%",
+                  }}
+                >
+                  {language === "de" ? "Mandat" : "Mandate"}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {authorities.map((auth) => {
+                const ta = getTranslatedAuthority(auth, language);
+                return (
+                  <tr key={auth.id}>
+                    <td
+                      style={{
+                        padding: "4pt 6pt 4pt 0",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                        color: "#333",
+                        verticalAlign: "top",
+                      }}
+                    >
+                      {auth.abbreviation}
+                    </td>
+                    <td
+                      style={{
+                        padding: "4pt 6pt",
+                        color: "#333",
+                        verticalAlign: "top",
+                      }}
+                    >
+                      {ta.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "4pt 0 4pt 6pt",
+                        color: "#555",
+                        lineHeight: 1.4,
+                        verticalAlign: "top",
+                      }}
+                    >
+                      {ta.mandate.length > 200
+                        ? ta.mandate.slice(0, 200) + "..."
+                        : ta.mandate}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      <div
+        style={{
+          marginTop: "24pt",
+          paddingTop: "8pt",
+          borderTop: "0.5pt solid #ddd",
+          fontSize: "7pt",
+          color: "#bbb",
+          lineHeight: 1.5,
+        }}
+      >
+        {language === "de"
+          ? `ATLAS Regulatory Intelligence — Caelex. Daten zuletzt aktualisiert: ${jurisdiction.lastUpdated}. Diese Informationen dienen ausschließlich der Recherche und Referenz. Sie stellen keine Rechtsberatung dar. Alle Angaben sind mit offiziellen Quellen und qualifiziertem Rechtsberater zu überprüfen.`
+          : `ATLAS Regulatory Intelligence — Caelex. Data last updated: ${jurisdiction.lastUpdated}. This information is for research and reference purposes only. It does not constitute legal advice. Verify all information with official sources and qualified legal counsel before making compliance decisions.`}
+      </div>
     </div>
   );
 }

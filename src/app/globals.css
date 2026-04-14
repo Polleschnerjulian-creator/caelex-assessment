@@ -2030,12 +2030,21 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
   /* ─── Page setup ─── */
   @page {
-    size: A4 landscape;
+    size: A4;
     margin: 18mm 15mm 22mm 15mm;
   }
 
   @page :first {
     margin-top: 12mm;
+  }
+
+  /* Landscape override for comparator tables */
+  .print-landscape {
+    page: landscape;
+  }
+
+  @page landscape {
+    size: A4 landscape;
   }
 
   /* ─── Header ─── */
