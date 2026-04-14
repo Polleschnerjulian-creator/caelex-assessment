@@ -28,6 +28,8 @@ import {
   AUTHORITIES_BE,
   LEGAL_SOURCES_ES,
   AUTHORITIES_ES,
+  LEGAL_SOURCES_NO,
+  AUTHORITIES_NO,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -1861,6 +1863,200 @@ describe("Legal Sources — ES authority accuracy", () => {
 
   it("every ES authority has a valid website URL", () => {
     for (const a of AUTHORITIES_ES) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── Norway dataset sanity checks ────────────────────────────────
+describe("Legal Sources — NO dataset sanity", () => {
+  it("NO has at least 15 legal sources", () => {
+    expect(LEGAL_SOURCES_NO.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it("NO has exactly 13 authorities", () => {
+    expect(AUTHORITIES_NO).toHaveLength(13);
+  });
+
+  it("every NO legal source has a non-empty id", () => {
+    for (const s of LEGAL_SOURCES_NO) {
+      expect(s.id).toBeTruthy();
+    }
+  });
+
+  it("NO legal source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_NO) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("NO authority IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const a of AUTHORITIES_NO) {
+      expect(ids.has(a.id)).toBe(false);
+      ids.add(a.id);
+    }
+  });
+
+  it("every NO source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_NO) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every NO source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_NO) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every NO source has a last_verified date", () => {
+    for (const s of LEGAL_SOURCES_NO) {
+      expect(s.last_verified).toBeTruthy();
+      expect(s.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("all NO competent_authorities IDs map to existing NO authority entries", () => {
+    const authorityIds = new Set(AUTHORITIES_NO.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_NO) {
+      for (const authId of s.competent_authorities) {
+        expect(
+          authorityIds.has(authId),
+          `${s.id} references unknown authority ${authId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("all NO related_sources IDs map to existing NO legal source entries", () => {
+    const sourceIds = new Set(LEGAL_SOURCES_NO.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_NO) {
+      for (const relId of s.related_sources) {
+        expect(
+          sourceIds.has(relId),
+          `${s.id} references unknown related source ${relId}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── Norway regulatory accuracy ──────────────────────────────────
+describe("Legal Sources — NO regulatory accuracy", () => {
+  it("1969 Space Act is world's first national space law", () => {
+    const act = getLegalSourceById("NO-SPACE-ACT-1969")!;
+    expect(act).toBeDefined();
+    expect(act.official_reference).toContain("LOV-1969-06-13-38");
+    expect(act.status).toBe("in_force");
+    const notes = act.notes!.join(" ");
+    expect(notes).toContain("FIRST");
+  });
+
+  it("proposed new Space Act has 29 provisions", () => {
+    const draft = getLegalSourceById("NO-NEW-SPACE-ACT-DRAFT")!;
+    expect(draft).toBeDefined();
+    expect(draft.status).toBe("draft");
+    const scope = draft.scope_description!;
+    expect(scope).toContain("29");
+  });
+
+  it("Svalbard Treaty is present and critical", () => {
+    const treaty = getLegalSourceById("NO-SVALBARD-TREATY")!;
+    expect(treaty).toBeDefined();
+    expect(treaty.status).toBe("in_force");
+    expect(treaty.relevance_level).toBe("critical");
+    expect(treaty.date_enacted).toBe("1920-02-09");
+  });
+
+  it("SvalSat regulation forbids military satellites", () => {
+    const reg = getLegalSourceById("NO-SVALBARD-EARTH-STATION-REG")!;
+    expect(reg).toBeDefined();
+    expect(reg.official_reference).toContain("FOR-2017-04-21-493");
+    const prov = reg.key_provisions[0]!;
+    expect(prov.summary).toContain("PROHIBITS military");
+  });
+
+  it("Ekomloven § 6-7 is sole insurance basis", () => {
+    const ekom = getLegalSourceById("NO-EKOMLOVEN-2024")!;
+    expect(ekom).toBeDefined();
+    expect(ekom.compliance_areas).toContain("insurance");
+  });
+
+  it("Artemis Accords signed 2025", () => {
+    const artemis = getLegalSourceById("NO-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.date_enacted).toBe("2025-05-15");
+  });
+
+  it("US-Norway TSA for Andøya in force", () => {
+    const tsa = getLegalSourceById("NO-US-TSA-2025")!;
+    expect(tsa).toBeDefined();
+    expect(tsa.status).toBe("in_force");
+  });
+});
+
+// ─── NO lookup functions ──────────────────────────────────────────
+describe("Legal Sources — NO lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns NO sources", () => {
+    const sources = getLegalSourcesByJurisdiction("NO");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_NO.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns NO authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("NO");
+    expect(auths).toHaveLength(13);
+  });
+
+  it("getLegalSourceStats includes NO", () => {
+    const stats = getLegalSourceStats();
+    expect(stats["NO"]).toBeDefined();
+    expect(stats["NO"]!.total).toBeGreaterThanOrEqual(15);
+  });
+
+  it("getAvailableJurisdictions includes NO", () => {
+    expect(getAvailableJurisdictions()).toContain("NO");
+  });
+});
+
+// ─── NO authority accuracy ────────────────────────────────────────
+describe("Legal Sources — NO authority accuracy", () => {
+  it("NOSA is the space agency (not the regulator)", () => {
+    const nosa = getAuthorityById("NO-NOSA")!;
+    expect(nosa).toBeDefined();
+    expect(nosa.space_mandate).toContain("NOT the regulatory authority");
+  });
+
+  it("CAA is the regulatory authority since 2023", () => {
+    const caa = getAuthorityById("NO-CAA")!;
+    expect(caa).toBeDefined();
+    expect(caa.space_mandate).toContain("supervisory authority");
+    expect(caa.applicable_areas).toContain("licensing");
+  });
+
+  it("Nkom handles satellite spectrum and SvalSat", () => {
+    const nkom = getAuthorityById("NO-NKOM")!;
+    expect(nkom).toBeDefined();
+    expect(nkom.space_mandate).toContain("Svalbard");
+    expect(nkom.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("Intelligence Service is military space authority", () => {
+    const etj = getAuthorityById("NO-ETJENESTEN")!;
+    expect(etj).toBeDefined();
+    expect(etj.space_mandate).toContain("military space authority");
+  });
+
+  it("every NO authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_NO) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }

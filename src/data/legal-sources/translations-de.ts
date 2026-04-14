@@ -4036,6 +4036,253 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // NORWAY (NO) — 16 Sources
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "NO-OST-1967",
+    {
+      title: "Weltraumvertrag — Norwegischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit und Genehmigungspflicht",
+          summary:
+            "Norwegen ratifizierte im Juni 1969 — im selben Monat wie das weltweit erste nationale Weltraumgesetz (LOV-1969-06-13-38).",
+          complianceImplication:
+            "Das Weltraumgesetz von 1969 war die weltweit erste nationale Umsetzung von Art. VI.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-LIABILITY-1995",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Norwegischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung für Oberflächenschäden",
+          summary:
+            "Verspätet 1995 ratifiziert — zeitgleich mit wachsenden SvalSat-Operationen. Kein nationales Umsetzungsgesetz erlassen.",
+          complianceImplication:
+            "Das Gesetz von 1969 enthält KEINE Haftungsbestimmungen. Nur Ekomloven § 6-7 bietet eine Rückgriffsgrundlage.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-REGISTRATION-1995",
+    {
+      title: "Registrierungsübereinkommen — Norwegischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Nationale Registerpflicht",
+          summary:
+            "Ratifiziert 28. Juni 1995. Registerverwaltung per Königlichem Erlass 31. Mai 2024 an die Luftfahrtbehörde (CAA) delegiert.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Norwegen als Unterzeichner (2025)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "Norwegen unterzeichnete am 15. Mai 2025 als 55. Unterzeichner. Mondvertrag NICHT unterzeichnet/ratifiziert.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-SVALBARD-TREATY",
+    {
+      title: "Spitzbergenvertrag (Svalbardtraktaten, 1920)",
+      scopeDescription:
+        "Schafft eine EINZIGARTIGE doppelte Regulierungsebene — SvalSat-Betreiber müssen sowohl norwegische Vorschriften ALS AUCH vertragliche Militärnutzungsverbote beachten. Russland und China erheben Bedenken wegen dualer Datennutzung.",
+      provisions: {
+        "Art. 9": {
+          title:
+            "Verbot von Marinestützpunkten, Befestigungen, kriegerischen Zwecken",
+          summary:
+            "Norwegen verpflichtet sich, keine Marinestützpunkte oder Befestigungen zu errichten. Norwegens Position: Svalbard ist NICHT entmilitarisiert — der Vertrag verbietet physische Militärinfrastruktur, nicht Informationsaktivitäten.",
+          complianceImplication:
+            "SvalSat-Betreiber benötigen Nkom-Konzessionen, die Satelliten mit ‚spezifisch militärischen Funktionen' ausschließen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NO-SPACE-ACT-1969",
+    {
+      title: "Weltraumgesetz 1969 — Weltweit erstes nationales Weltraumgesetz",
+      scopeDescription:
+        "Das WELTWEIT ERSTE nationale Weltraumgesetz. Nur 3 Paragraphen — das kürzeste Weltraumgesetz der Geschichte. Keine Haftungs-, Versicherungs-, Registrierungs-, Weltraummüll- oder Aufsichtsbestimmungen. Ersetzung durch umfassendes neues Gesetz 2026 erwartet.",
+      provisions: {
+        "§ 1": {
+          title: "Genehmigungspflicht",
+          summary:
+            "Verbietet das Starten von Gegenständen in den Weltraum ohne ministerielle Genehmigung vom norwegischen Hoheitsgebiet (einschließlich Svalbard und Jan Mayen), norwegischen Schiffen/Flugzeugen oder durch norwegische Staatsangehörige.",
+          complianceImplication:
+            "Startgenehmigungsbefugnis am 31. Mai 2024 an die CAA delegiert. Erste Startgenehmigung: Isar Aerospace, März 2025.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-NEW-SPACE-ACT-DRAFT",
+    {
+      title: "Vorgeschlagenes neues Weltraumgesetz — Prop. 155 L (2024-2025)",
+      scopeDescription:
+        "8 Kapitel, 29 Bestimmungen — ersetzt das kürzeste Weltraumgesetz der Welt (3 Paragraphen). Verabschiedung 2026 erwartet.",
+      provisions: {
+        "Ch. 5 (§§ 15-18)": {
+          title:
+            "Strikte Haftung, Staatsrückgriff, obligatorische Versicherung",
+          summary:
+            "Strikte (objektive) Haftung für Oberflächen-/Flugzeugschäden. Staatsrückgriff gegen Betreiber. Obligatorische Versicherung. Beträge werden per Parlament/Verordnungen festgelegt.",
+          complianceImplication:
+            "Transformiert Norwegen von null Haftungsbestimmungen zu einem umfassenden Rahmenwerk.",
+        },
+        "Ch. 4 (§ 11)": {
+          title: "Betreiberpflichten — Weltraummüll und Umwelt",
+          summary:
+            "Keine ‚unverhältnismäßigen Umweltschäden,' ‚so weit wie möglich' kein Weltraummüll. Bezieht sich auf IADC-, COPUOS- und LTS-Leitlinien.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NO-SVALBARD-EARTH-STATION-REG",
+    {
+      title: "Svalbard-Satelliten-Erdstationsverordnung",
+      provisions: {
+        "Full instrument": {
+          title: "SvalSat-Betriebsregime",
+          summary:
+            "Nkom-Genehmigung erforderlich. Pro Satellit separate Kommunikationsgenehmigung. Militärische Nutzung VERBOTEN — Stationen dürfen keine Daten von Satelliten mit ‚spezifisch militärischen Funktionen' senden/empfangen. Obligatorische Protokollierung ALLER Satellitenüberflüge.",
+          complianceImplication:
+            "Kritisch für SvalSat (150+ Antennen, weltweit größte kommerzielle Bodenstation). Nkom lehnte US- und türkische Militärsatellitenantrage ab.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-ANTARCTIC-EARTH-STATION-REG",
+    {
+      title: "Antarktis-Satelliten-Erdstationsverordnung",
+      provisions: {
+        "Full instrument": {
+          title: "TrollSat-Betriebsregime",
+          summary:
+            "Parallele Verordnung für antarktische Erdstationen. Friedliche Zwecke gemäß Antarktisvertrag. Regelt KSATs TrollSat (~23 Antennen).",
+        },
+      },
+    },
+  ],
+  [
+    "NO-EKOMLOVEN-2024",
+    {
+      title: "Gesetz über elektronische Kommunikation (neues Ekomloven)",
+      provisions: {
+        "Ch. 6": {
+          title: "Spektrumverwaltung und Orbitalplätze",
+          summary:
+            "§ 6-7 ist die EINZIGE bestehende Rechtsgrundlage für Versicherung und Staatsrückgriff — ermächtigt Nkom zum Rückgriff und verpflichtet Startantragsteller zur Sicherheitsleistung.",
+          complianceImplication:
+            "Bis zur Verabschiedung des neuen Weltraumgesetzes ist § 6-7 die einzige Rechtsgrundlage für Versicherungspflichten.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-EXPORT-CONTROL-1987",
+    {
+      title: "Exportkontrollgesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Exportkontrolle für strategische Güter",
+          summary:
+            "Drei Kontrolllisten: Liste I (Verteidigung), Liste II (Dual-Use nach EU 2021/821), Liste III (kritische Technologien über EU-Umfang hinaus, November 2024). ESA-Ausnahme (§ 5(d)). DEKSA verwaltet das Regime.",
+          complianceImplication:
+            "Liste III geht über den EU-Dual-Use-Umfang hinaus — kritisch für Weltraumtechnologieexporte.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-DIGITAL-SECURITY-2025",
+    {
+      title: "Digitalsicherheitsgesetz (NIS1-Umsetzung)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS1-Umsetzung mit Arktis-Erweiterungen",
+          summary:
+            "Norwegen hat ‚arktische Infrastruktur' (Svalbard-Kabel und Satelliten) proaktiv als wesentliche Infrastruktur eingestuft — ÜBER den NIS2-Standardumfang hinaus.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-SECURITY-ACT-2018",
+    {
+      title: "Nationales Sicherheitsgesetz (Sikkerhetsloven)",
+      provisions: {
+        "Full instrument": {
+          title: "Sicherheitsrahmen für Weltraumentitäten",
+          summary:
+            "Die Norwegische Raumfahrtagentur und Space Norway AS unterliegen diesem Gesetz. Alle SvalSat-Mitarbeiter benötigen Sicherheitsfreigabe.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-US-TSA-2025",
+    {
+      title: "US-Norwegen Technologieschutzabkommen (Andøya Spaceport)",
+      provisions: {
+        "Full instrument": {
+          title: "ITAR-Technologieschutz in Andøya",
+          summary:
+            "Verhindert unbefugte Weitergabe von US-Technologie am Andøya Spaceport. Unterzeichnet 16. Januar 2025.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-CM25-ESA",
+    {
+      title:
+        "Norwegens CM25 ESA-Verpflichtung — 292 Mio. EUR (November 2025, Bremen)",
+      provisions: {
+        Programme: {
+          title:
+            "ESA-Verpflichtung mit Absichtserklärung für Arktisches Raumfahrtzentrum",
+          summary:
+            "292 Mio. EUR. 55 Mio. EUR für Raumtransport. Absichtserklärung für ESA Arctic Space Centre in Tromsø.",
+        },
+      },
+    },
+  ],
+  [
+    "NO-MELD-ST-32-2013",
+    {
+      title: "Weißbuch: Zwischen Himmel und Erde — Norwegische Weltraumpolitik",
+      provisions: {
+        "Full document": {
+          title: "Erste umfassende Weltraumstrategie seit 1986",
+          summary:
+            "Nationale Weltraumstrategie — erste umfassende Überprüfung in 26 Jahren. Prioritäten: Arktische Satellitenkomm./Erdbeobachtung, Klimaüberwachung, maritime Überwachung.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -4897,6 +5144,112 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Nationaler Rat für Luft- und Raumfahrtsicherheit (CNSA)",
       mandate:
         "Unterstützungsorgan des Nationalen Sicherheitsrats. Koordiniert Luft- und Raumfahrtsicherheitspolitik einschließlich der ESAN-2025-Strategie.",
+    },
+  ],
+
+  // Norway Authorities (13)
+  [
+    "NO-NOSA",
+    {
+      name: "Norwegische Raumfahrtagentur (Direktoratet for romvirksomhet)",
+      mandate:
+        "Ursprünglich 1987 mit ESA-Beitritt gegründet. ~40-54 Mitarbeiter, Oslo. Verwaltet staatliche Investitionsfonds, vertritt Norwegen bei ESA/EU, koordiniert Weltraumpolitik. NICHT die Regulierungsbehörde — das ist die CAA.",
+    },
+  ],
+  [
+    "NO-CAA",
+    {
+      name: "Norwegische Zivilluftfahrtbehörde (Luftfartstilsynet)",
+      mandate:
+        "Nationale Aufsichtsbehörde für Weltraumtätigkeiten seit 1. Januar 2023. Erteilt Lizenzen und Genehmigungen, führt nationales Register, überwacht Startplätze. Erste Startgenehmigung: Isar Aerospace, März 2025.",
+    },
+  ],
+  [
+    "NO-NFD",
+    {
+      name: "Ministerium für Handel, Industrie und Fischerei",
+      mandate:
+        "Sektorale Zuständigkeit für Weltraumbetrieb. Unternehmensführung über Andøya Space AS und Space Norway AS. Verantwortlich für ESA/EU/UN-Weltraumkooperation. Bereitet das neue Weltraumgesetz vor.",
+    },
+  ],
+  [
+    "NO-NKOM",
+    {
+      name: "Norwegische Kommunikationsbehörde (Nkom)",
+      mandate:
+        "Verwaltet Funkfrequenzen einschließlich Satellitenspektrum. Erteilt Genehmigungen für Satelliten-Erdstationen auf Svalbard und in der Antarktis. Registriert Satellitennetze beim ITU. Lehnte US- und türkische Militärsatellitenantrage bei SvalSat ab.",
+    },
+  ],
+  [
+    "NO-ETJENESTEN",
+    {
+      name: "Norwegischer Nachrichtendienst (E-tjenesten)",
+      mandate:
+        "Seit 2020 Norwegens militärische Weltraumbehörde. Drei Schwerpunkte: Satellitenüberwachung, Weltraumbeobachtung und Satellitenkommunikation im Hohen Norden.",
+    },
+  ],
+  [
+    "NO-NSM",
+    {
+      name: "Nationale Sicherheitsbehörde Norwegens (NSM)",
+      mandate:
+        "Präventive nationale Sicherheit einschließlich IKT-Sicherheit (NorCERT). Norwegische Raumfahrtagentur und Space Norway unterliegen dem Sicherheitsgesetz. Alle SvalSat-Mitarbeiter benötigen NATO-Sicherheitsfreigabe über NSM.",
+    },
+  ],
+  [
+    "NO-FFI",
+    {
+      name: "Norwegisches Verteidigungsforschungsinstitut (FFI)",
+      mandate:
+        "Militärische Weltraumtechnologieentwicklung. NRD auf NorSat-3, Kameras auf NorSat-4, MilSpace2-Satelliten (Birkeland und Huygens — Radarüberwachung). Trieb die 2014-15 militärische Weltraumstrategie voran.",
+    },
+  ],
+  [
+    "NO-MOD",
+    {
+      name: "Verteidigungsministerium",
+      mandate:
+        "Militärische Weltraumpolitik. Langfristiger Verteidigungsplan 2025-2036: ~600 Mrd. NOK, Weltraum als Investitionspriorität. 200 Mio. NOK für militärische Nutzung von Andøya.",
+    },
+  ],
+  [
+    "NO-DEKSA",
+    {
+      name: "Direktorat für Exportkontrolle und Sanktionen (DEKSA)",
+      mandate:
+        "Ende 2024 eingerichtet. Verwaltet Exportkontrolle mit drei Kontrolllisten: Liste I (Verteidigung), Liste II (Dual-Use nach EU), Liste III (kritische Technologien über EU-Umfang, November 2024).",
+    },
+  ],
+  [
+    "NO-MET",
+    {
+      name: "Norwegisches Meteorologisches Institut (MET Norway)",
+      mandate:
+        "Vertritt Norwegen bei EUMETSAT. Hauptnutzer von Satellitendaten für Wettervorhersage und Arktisüberwachung.",
+    },
+  ],
+  [
+    "NO-KARTVERKET",
+    {
+      name: "Norwegische Kartierungsbehörde (Kartverket)",
+      mandate:
+        "Betreibt landesweites GNSS-Positionierungssystem (280+ Stationen) und geodätisches Observatorium in Ny-Ålesund in Zusammenarbeit mit der NASA.",
+    },
+  ],
+  [
+    "NO-MAEC",
+    {
+      name: "Außenministerium",
+      mandate:
+        "Vertragspflichten und diplomatische Vertretung. Norwegen trat COPUOS 2017 bei. Verwaltet Svalbardvertrag-Compliance und US-Norwegen Technologieschutzabkommen.",
+    },
+  ],
+  [
+    "NO-JUSTISDEP",
+    {
+      name: "Justiz- und Bereitsschaftsministerium",
+      mandate:
+        "Entwirft NIS2-Umsetzungsgesetz. Verantwortlich für das Digitalsicherheitsgesetz (NIS1-Umsetzung, in Kraft 1. Oktober 2025).",
     },
   ],
 ]);
