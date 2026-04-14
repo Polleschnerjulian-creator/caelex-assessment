@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import LiveFeed from "@/components/atlas/LiveFeed";
-import LegalNetwork from "@/components/atlas/LegalNetwork";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   LEGAL_SOURCES_DE,
@@ -247,10 +246,10 @@ export default function CommandCenterPage() {
     <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
       {/* ─── Greeting ─── */}
       <div
-        className={`transition-all duration-700 ease-out ${hasResults ? "mb-4" : "mb-8"}`}
+        className={`transition-all duration-700 ease-out ${hasResults ? "mb-4" : "mb-10"}`}
       >
         <p
-          className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[16px]" : "text-[22px]"}`}
+          className={`font-normal text-gray-300 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[16px]" : "text-[26px] lg:text-[30px]"}`}
         >
           {t(greetingKey)}
         </p>
@@ -258,7 +257,7 @@ export default function CommandCenterPage() {
 
       {/* ─── Search Input ─── */}
       <div
-        className={`relative transition-all duration-700 ease-out ${hasResults ? "mb-10" : "mb-12"}`}
+        className={`relative transition-all duration-700 ease-out ${hasResults ? "mb-10" : "mb-14"}`}
       >
         <input
           ref={inputRef}
@@ -275,8 +274,8 @@ export default function CommandCenterPage() {
             focus:border-gray-300 focus:outline-none focus:ring-0 focus:shadow-none
             text-gray-900 placeholder:text-gray-300
             font-light tracking-[-0.02em] leading-none
-            transition-colors duration-300
-            ${hasResults ? "text-[24px] lg:text-[28px] py-3" : "text-[32px] lg:text-[40px] py-4"}
+            transition-all duration-700
+            ${hasResults ? "text-[28px] lg:text-[36px] py-4" : "text-[42px] lg:text-[56px] py-6"}
           `}
           style={{ caretColor: "#10B981", outline: "none", boxShadow: "none" }}
         />
@@ -284,14 +283,20 @@ export default function CommandCenterPage() {
 
       {/* ─── Empty State ─── */}
       {!hasResults && (
-        <div className="space-y-8">
-          {/* Quick access */}
-          <div className="flex items-center gap-6">
+        <div className="space-y-6">
+          {/* Quick access — all 10 jurisdictions with legal sources */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {[
               { code: "DE", name: "Germany" },
               { code: "FR", name: "France" },
               { code: "UK", name: "United Kingdom" },
               { code: "IT", name: "Italy" },
+              { code: "LU", name: "Luxembourg" },
+              { code: "NL", name: "Netherlands" },
+              { code: "BE", name: "Belgium" },
+              { code: "ES", name: "Spain" },
+              { code: "NO", name: "Norway" },
+              { code: "SE", name: "Sweden" },
             ].map((j) => (
               <button
                 key={j.code}
@@ -525,15 +530,7 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* ─── Legal Network ─── */}
-      {!hasResults && (
-        <div className="mt-14">
-          <h2 className="text-[11px] font-medium text-gray-400 tracking-[0.15em] uppercase mb-4">
-            {t("atlas.legal_network")}
-          </h2>
-          <LegalNetwork />
-        </div>
-      )}
+      {/* Legal Network removed — search is the primary interface */}
 
       {/* ─── Legal Footer ─── */}
       <footer className="mt-40 pt-8 border-t border-gray-200">
