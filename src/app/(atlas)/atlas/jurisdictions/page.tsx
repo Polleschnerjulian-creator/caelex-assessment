@@ -102,7 +102,7 @@ function StatusBadge({ status }: { status: JurisdictionRow["status"] }) {
     );
   }
   return (
-    <span className="inline-block text-[10px] font-medium text-gray-400 tracking-wide">
+    <span className="inline-block text-[10px] font-medium text-gray-500 tracking-wide">
       None
     </span>
   );
@@ -134,7 +134,7 @@ export default function JurisdictionsPage() {
         <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
           Jurisdictions
         </h1>
-        <span className="text-[11px] font-mono text-gray-400">
+        <span className="text-[11px] font-mono text-gray-500">
           {ALL_ROWS.length} tracked
         </span>
       </header>
@@ -146,7 +146,7 @@ export default function JurisdictionsPage() {
           {COLUMNS.map((col) => (
             <div
               key={col.key}
-              className={`${col.width} text-[10px] text-gray-400 uppercase tracking-[0.15em] font-medium ${
+              className={`${col.width} text-[10px] text-gray-500 uppercase tracking-[0.15em] font-medium ${
                 col.key === "sources" || col.key === "year" ? "text-right" : ""
               } ${col.key === "arrow" ? "" : ""}`}
             >
@@ -163,7 +163,7 @@ export default function JurisdictionsPage() {
               <span className="text-[10px] font-semibold tracking-[0.15em] text-gray-500 uppercase">
                 {group.label}
               </span>
-              <span className="text-[10px] font-mono text-gray-400 ml-2">
+              <span className="text-[10px] font-mono text-gray-500 ml-2">
                 {group.rows.length}
               </span>
             </div>
@@ -172,10 +172,20 @@ export default function JurisdictionsPage() {
             {group.rows.map((row) => (
               <div
                 key={row.code}
+                role="button"
+                tabIndex={0}
                 onClick={() =>
                   router.push(`/atlas/jurisdictions/${row.code.toLowerCase()}`)
                 }
-                className="flex items-center gap-0 px-4 py-2.5 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-white hover:shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(
+                      `/atlas/jurisdictions/${row.code.toLowerCase()}`,
+                    );
+                  }
+                }}
+                className="flex items-center gap-0 px-4 py-2.5 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-white hover:shadow-[0_1px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
               >
                 {/* Code */}
                 <div className="w-[60px]">
@@ -226,7 +236,12 @@ export default function JurisdictionsPage() {
 
                 {/* Arrow */}
                 <div className="w-[32px] flex justify-end">
-                  <span className="text-gray-300 text-[13px]">&rarr;</span>
+                  <span
+                    className="text-gray-500 text-[13px]"
+                    aria-hidden="true"
+                  >
+                    &rarr;
+                  </span>
                 </div>
               </div>
             ))}

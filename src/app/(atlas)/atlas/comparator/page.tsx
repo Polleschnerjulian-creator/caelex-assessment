@@ -39,12 +39,12 @@ export default function ComparatorPage() {
             <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
               Comparator
             </h1>
-            <span className="text-[10px] font-mono text-gray-400 tracking-wide">
+            <span className="text-[10px] font-mono text-gray-500 tracking-wide">
               19 jurisdictions
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
+            <div className="flex items-center gap-2 text-[10px] text-gray-500 font-mono">
               <span>{selected.length} selected</span>
               <span className="text-gray-300">|</span>
               <span>
@@ -61,7 +61,11 @@ export default function ComparatorPage() {
                   transition-colors duration-150
                 "
               >
-                <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <Download
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                  strokeWidth={1.5}
+                />
                 <span>Export PDF</span>
               </button>
             )}
@@ -71,7 +75,7 @@ export default function ComparatorPage() {
         {/* ─── Country Selector Bar ─── */}
         <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
+            <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
               Jurisdictions
             </span>
           </div>
@@ -79,10 +83,15 @@ export default function ComparatorPage() {
         </div>
 
         {/* ─── Dimension Tabs ─── */}
-        <div className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200">
+        <div
+          role="tablist"
+          className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200"
+        >
           {DIMENSIONS.map((dim) => (
             <button
               key={dim.key}
+              role="tab"
+              aria-selected={dimension === dim.key}
               onClick={() => setDimension(dim.key)}
               className={`
                 flex-shrink-0 pb-2 text-[11px] font-medium
@@ -90,7 +99,7 @@ export default function ComparatorPage() {
                 ${
                   dimension === dim.key
                     ? "border-gray-900 text-gray-900"
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                    : "border-transparent text-gray-500 hover:text-gray-600"
                 }
               `}
             >

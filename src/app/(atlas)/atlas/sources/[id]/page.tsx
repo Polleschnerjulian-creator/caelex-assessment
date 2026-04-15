@@ -86,7 +86,7 @@ const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   critical: "text-red-700 bg-red-50 border-red-200",
   high: "text-amber-700 bg-amber-50 border-amber-200",
   medium: "text-gray-500 bg-gray-50 border-gray-200",
-  low: "text-gray-400 bg-gray-50 border-gray-100",
+  low: "text-gray-500 bg-gray-50 border-gray-100",
 };
 
 const STATUS_STYLES: Record<
@@ -174,7 +174,7 @@ function LinkedSource({ id, label }: { id: string; label: string }) {
 
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <span className="text-gray-400 flex-shrink-0">{label}</span>
+      <span className="text-gray-500 flex-shrink-0">{label}</span>
       <Link
         href={`/atlas/sources/${source.id}`}
         className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors group"
@@ -212,9 +212,9 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
         <Link
           href="/atlas"
-          className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
+          className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
         >
-          <ArrowLeft size={14} strokeWidth={1.5} />
+          <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
           Back to ATLAS
         </Link>
         <div className="mt-20 text-center">
@@ -222,14 +222,15 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             size={48}
             className="mx-auto text-gray-200 mb-4"
             strokeWidth={1}
+            aria-hidden="true"
           />
-          <p className="text-[20px] font-medium text-gray-400">
+          <p className="text-[20px] font-medium text-gray-500">
             Source not found
           </p>
-          <p className="text-[13px] text-gray-300 mt-2 font-mono">{id}</p>
+          <p className="text-[13px] text-gray-500 mt-2 font-mono">{id}</p>
           <button
             onClick={() => router.back()}
-            className="mt-6 text-[12px] text-gray-400 hover:text-gray-700 transition-colors underline underline-offset-4"
+            className="mt-6 text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-4"
           >
             Go back
           </button>
@@ -285,19 +286,26 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   return (
     <div className="min-h-screen bg-[#F7F8FA] px-6 py-6 lg:px-12">
       {/* ─── Breadcrumb line ─── */}
-      <nav className="flex items-center gap-2 text-[12px] text-gray-400">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex items-center gap-2 text-[12px] text-gray-500"
+      >
         <button
           onClick={() => router.back()}
           className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
         >
-          <ArrowLeft size={13} strokeWidth={1.5} />
+          <ArrowLeft size={13} strokeWidth={1.5} aria-hidden="true" />
           Back
         </button>
-        <span className="text-gray-300">·</span>
+        <span className="text-gray-500" aria-hidden="true">
+          ·
+        </span>
         <span className={`font-medium ${typeStyle.text}`}>
           {TYPE_LABELS[source.type]}
         </span>
-        <span className="text-gray-300">·</span>
+        <span className="text-gray-500" aria-hidden="true">
+          ·
+        </span>
         <span>{jurisdictionName}</span>
       </nav>
 
@@ -307,13 +315,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           {getTranslatedSource(source, language).title}
         </h1>
         {language === "en" && source.title_local && (
-          <p className="text-[13px] text-gray-400 mt-1 leading-snug">
+          <p className="text-[13px] text-gray-500 mt-1 leading-snug">
             {source.title_local}
           </p>
         )}
         {language !== "en" &&
           source.title_en !== getTranslatedSource(source, language).title && (
-            <p className="text-[13px] text-gray-400 mt-1 leading-snug">
+            <p className="text-[13px] text-gray-500 mt-1 leading-snug">
               {source.title_en}
             </p>
           )}
@@ -327,7 +335,8 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
           >
             View official text
-            <ExternalLink size={13} strokeWidth={2} />
+            <span className="sr-only">(opens in new window)</span>
+            <ExternalLink size={13} strokeWidth={2} aria-hidden="true" />
           </a>
         )}
       </header>
@@ -335,7 +344,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Metadata grid ─── */}
       <div className="mt-5 py-4 border-y border-gray-200 max-w-2xl">
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
-          <dt className="text-gray-400">Jurisdiction</dt>
+          <dt className="text-gray-500">Jurisdiction</dt>
           <dd className="text-gray-800">
             <span className="font-mono text-gray-500 text-[12px]">
               {jurisdictionFlag}
@@ -343,7 +352,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             · {jurisdictionName}
           </dd>
 
-          <dt className="text-gray-400">Status</dt>
+          <dt className="text-gray-500">Status</dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
@@ -354,7 +363,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
           {(source.date_enacted || source.date_in_force) && (
             <>
-              <dt className="text-gray-400">
+              <dt className="text-gray-500">
                 {source.date_enacted ? "Enacted" : "In Force"}
               </dt>
               <dd className="text-gray-800">
@@ -365,17 +374,17 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
           {source.official_reference && (
             <>
-              <dt className="text-gray-400">Reference</dt>
+              <dt className="text-gray-500">Reference</dt>
               <dd className="font-mono text-[12px] text-gray-600">
                 {source.official_reference}
               </dd>
             </>
           )}
 
-          <dt className="text-gray-400">Issuing Body</dt>
+          <dt className="text-gray-500">Issuing Body</dt>
           <dd className="text-gray-800">{source.issuing_body}</dd>
 
-          <dt className="text-gray-400">Relevance</dt>
+          <dt className="text-gray-500">Relevance</dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${relevanceStyle}`}
@@ -388,7 +397,10 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Table of contents ─── */}
       {(provisionCount > 0 || authorityCount > 0 || hasRelated) && (
-        <nav className="mt-4 flex items-center gap-4 text-[12px] text-gray-400">
+        <nav
+          aria-label="Table of contents"
+          className="mt-4 flex items-center gap-4 text-[12px] text-gray-500"
+        >
           {provisionCount > 0 && (
             <a
               href="#provisions"
@@ -398,7 +410,9 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </a>
           )}
           {provisionCount > 0 && authorityCount > 0 && (
-            <span className="text-gray-300">·</span>
+            <span className="text-gray-500" aria-hidden="true">
+              ·
+            </span>
           )}
           {authorityCount > 0 && (
             <a
@@ -409,7 +423,9 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </a>
           )}
           {(provisionCount > 0 || authorityCount > 0) && hasRelated && (
-            <span className="text-gray-300">·</span>
+            <span className="text-gray-500" aria-hidden="true">
+              ·
+            </span>
           )}
           {hasRelated && (
             <a
@@ -424,10 +440,22 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Key Provisions ─── */}
       {source.key_provisions.length > 0 && (
-        <section id="provisions" className="mt-8">
+        <section
+          id="provisions"
+          aria-labelledby="provisions-heading"
+          className="mt-8"
+        >
           <div className="flex items-center gap-2 mb-4">
-            <BookOpen size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <BookOpen
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="provisions-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               Key Provisions
             </h2>
           </div>
@@ -448,7 +476,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                   className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
                 >
                   <div className="flex items-baseline gap-3">
-                    <span className="text-[11px] text-gray-400 font-mono flex-shrink-0">
+                    <span className="text-[11px] text-gray-500 font-mono flex-shrink-0">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span className="text-[15px] font-mono font-bold text-gray-900 flex-shrink-0">
@@ -485,10 +513,18 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Scope Description ─── */}
       {source.scope_description && (
-        <section className="mt-8">
+        <section aria-labelledby="scope-heading" className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <FileText size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <FileText
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="scope-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               {language === "de" ? "Anwendungsbereich" : "Scope"}
             </h2>
           </div>
@@ -501,10 +537,22 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Competent Authorities ─── */}
       {authorities.length > 0 && (
-        <section id="authorities" className="mt-8">
+        <section
+          id="authorities"
+          aria-labelledby="authorities-heading"
+          className="mt-8"
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Building2 size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <Building2
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="authorities-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               Competent Authorities
             </h2>
           </div>
@@ -524,7 +572,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     <span className="text-[13px] font-medium text-gray-700">
                       {getTranslatedAuthority(auth, language).name}
                     </span>
-                    <span className="text-[11px] font-mono text-gray-400">
+                    <span className="text-[11px] font-mono text-gray-500">
                       {JURISDICTION_FLAGS[auth.jurisdiction] ??
                         auth.jurisdiction}
                     </span>
@@ -540,6 +588,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                   size={12}
                   className="text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0 mt-1"
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
               </Link>
             ))}
@@ -549,10 +598,22 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Related Sources ─── */}
       {hasRelated && (
-        <section id="related" className="mt-8">
+        <section
+          id="related"
+          aria-labelledby="related-heading"
+          className="mt-8"
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Link2 size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <Link2
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="related-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               Related Sources
             </h2>
           </div>
@@ -602,7 +663,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                       {rel.title_en}
                     </span>
 
-                    <span className="text-[11px] font-mono text-gray-400 flex-shrink-0">
+                    <span className="text-[11px] font-mono text-gray-500 flex-shrink-0">
                       {JURISDICTION_FLAGS[rel.jurisdiction] ?? rel.jurisdiction}
                     </span>
                   </Link>
@@ -615,10 +676,18 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Notes ─── */}
       {source.notes && source.notes.length > 0 && (
-        <section className="mt-8">
+        <section aria-labelledby="notes-heading" className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <Info size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <Info
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="notes-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               Notes
             </h2>
           </div>
@@ -638,10 +707,18 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Caelex Integration ─── */}
       {(source.caelex_engine_mapping?.length ||
         source.caelex_data_file_mapping?.length) && (
-        <section className="mt-8">
+        <section aria-labelledby="integration-heading" className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <Cpu size={15} className="text-gray-400" strokeWidth={1.5} />
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+            <Cpu
+              size={15}
+              className="text-gray-500"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="integration-heading"
+              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+            >
               Caelex Integration
             </h2>
           </div>
@@ -649,7 +726,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.caelex_engine_mapping &&
               source.caelex_engine_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     Engines
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -668,7 +745,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.caelex_data_file_mapping &&
               source.caelex_data_file_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     Data Files
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -685,7 +762,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               )}
 
             <div className="flex items-start gap-4">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+              <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                 Verified
               </span>
               <span className="text-[11px] text-gray-500">
@@ -701,7 +778,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Footer ─── */}
       <footer className="mt-12 pt-4 border-t border-gray-200">
-        <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
+        <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
           Last verified: {source.last_verified}. This information is for
           research and reference purposes only. It does not constitute legal
           advice. Verify all information with official sources and qualified

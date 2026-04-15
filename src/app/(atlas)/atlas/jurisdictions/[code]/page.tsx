@@ -83,7 +83,7 @@ const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   critical: "text-red-700 bg-red-50 border-red-200",
   high: "text-amber-700 bg-amber-50 border-amber-200",
   medium: "text-gray-500 bg-gray-50 border-gray-200",
-  low: "text-gray-400 bg-gray-50 border-gray-100",
+  low: "text-gray-500 bg-gray-50 border-gray-100",
 };
 
 const STATUS_STYLES: Record<
@@ -234,11 +234,13 @@ function KeyProvisionsToggle({
     <div className="mt-2">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 transition-colors duration-150"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-600 transition-colors duration-150"
       >
         <ChevronDown
           size={12}
           strokeWidth={1.5}
+          aria-hidden="true"
           className={`transition-transform duration-200 ${open ? "rotate-0" : "-rotate-90"}`}
         />
         {provisions.length}{" "}
@@ -252,7 +254,7 @@ function KeyProvisionsToggle({
             return (
               <div key={i} className="border-l-2 border-gray-200 pl-3">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">
+                  <span className="text-[10px] font-mono text-gray-500 flex-shrink-0">
                     {p.section}
                   </span>
                   <span className="text-[12px] font-medium text-gray-700">
@@ -305,12 +307,12 @@ function SourceEntry({ source }: { source: LegalSource }) {
 
           {/* Secondary title */}
           {language === "en" && source.title_local && (
-            <p className="text-[12px] text-gray-400 mt-0.5">
+            <p className="text-[12px] text-gray-500 mt-0.5">
               {source.title_local}
             </p>
           )}
           {language !== "en" && source.title_en !== translated.title && (
-            <p className="text-[12px] text-gray-400 mt-0.5">
+            <p className="text-[12px] text-gray-500 mt-0.5">
               {source.title_en}
             </p>
           )}
@@ -319,7 +321,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
             {/* Official reference */}
             {source.official_reference && (
-              <span className="text-[11px] font-mono text-gray-400">
+              <span className="text-[11px] font-mono text-gray-500">
                 {source.official_reference}
               </span>
             )}
@@ -328,7 +330,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
             {(source.date_enacted ||
               source.date_in_force ||
               source.date_published) && (
-              <span className="text-[11px] text-gray-400">
+              <span className="text-[11px] text-gray-500">
                 {source.date_enacted ||
                   source.date_in_force ||
                   source.date_published}
@@ -363,12 +365,14 @@ function SourceEntry({ source }: { source: LegalSource }) {
               href={source.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-700 transition-colors mt-2"
+              className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700 transition-colors mt-2"
             >
               View source
+              <span className="sr-only">(opens in new window)</span>
               <ArrowLeft
                 size={10}
                 strokeWidth={1.5}
+                aria-hidden="true"
                 className="rotate-[135deg]"
               />
             </a>
@@ -401,12 +405,12 @@ function AuthorityCard({ authority }: { authority: Authority }) {
             {translated.name}
           </h4>
           {language === "en" && authority.name_local !== authority.name_en && (
-            <p className="text-[11px] text-gray-400 mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               {authority.name_local}
             </p>
           )}
           {language !== "en" && authority.name_en !== translated.name && (
-            <p className="text-[11px] text-gray-400 mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               {authority.name_en}
             </p>
           )}
@@ -416,9 +420,12 @@ function AuthorityCard({ authority }: { authority: Authority }) {
             href={authority.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0 mt-1"
+            className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 mt-1"
           >
-            <ExternalLink size={10} strokeWidth={1.5} />
+            <ExternalLink size={10} strokeWidth={1.5} aria-hidden="true" />
+            <span className="sr-only">
+              {authority.abbreviation} website (opens in new window)
+            </span>
           </a>
         )}
       </div>
@@ -476,18 +483,20 @@ export default function JurisdictionDetailPage({
   if (!jurisdiction) {
     return (
       <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
-        <Link
-          href="/atlas"
-          className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
-        >
-          <ArrowLeft size={14} strokeWidth={1.5} />
-          Back to ATLAS
-        </Link>
+        <nav aria-label="Breadcrumb">
+          <Link
+            href="/atlas"
+            className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
+            Back to ATLAS
+          </Link>
+        </nav>
         <div className="mt-20 text-center">
           <span className="text-[72px] font-mono font-bold text-gray-100">
             {displayCode}
           </span>
-          <p className="text-[13px] text-gray-400 mt-4">
+          <p className="text-[13px] text-gray-500 mt-4">
             Jurisdiction not found in the database.
           </p>
         </div>
@@ -505,13 +514,15 @@ export default function JurisdictionDetailPage({
       <div className="print-screen-content px-6 py-8 lg:px-12">
         {/* ─── Header ─── */}
         <header>
-          <Link
-            href="/atlas"
-            className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
-          >
-            <ArrowLeft size={14} strokeWidth={1.5} />
-            Back to ATLAS
-          </Link>
+          <nav aria-label="Breadcrumb">
+            <Link
+              href="/atlas"
+              className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
+              Back to ATLAS
+            </Link>
+          </nav>
 
           <div className="mt-6 flex items-baseline gap-4">
             <span className="text-[36px] font-mono font-bold text-gray-200 leading-none tracking-tight">
@@ -539,7 +550,7 @@ export default function JurisdictionDetailPage({
                 onClick={handleExportBriefing}
                 className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
               >
-                <Download size={14} strokeWidth={1.5} />
+                <Download size={14} strokeWidth={1.5} aria-hidden="true" />
                 {language === "de" ? "Briefing exportieren" : "Export Briefing"}
               </button>
             )}
@@ -583,11 +594,16 @@ export default function JurisdictionDetailPage({
         {hasDetailedSources ? (
           <div className="mt-10">
             <div className="flex items-center gap-2 mb-6">
-              <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
-              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+              <Scale
+                size={16}
+                className="text-gray-500"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
                 Legal Sources
               </h2>
-              <span className="text-[12px] text-gray-300">
+              <span className="text-[12px] text-gray-500">
                 {legalSources.length}
               </span>
             </div>
@@ -600,13 +616,14 @@ export default function JurisdictionDetailPage({
                     <div className="flex items-center gap-2 mb-1">
                       <Icon
                         size={14}
-                        className="text-gray-300"
+                        className="text-gray-500"
                         strokeWidth={1.5}
+                        aria-hidden="true"
                       />
                       <h3 className="text-[11px] font-semibold text-gray-500 tracking-[0.12em] uppercase">
                         {group.title}
                       </h3>
-                      <span className="text-[11px] text-gray-300">
+                      <span className="text-[11px] text-gray-500">
                         {group.sources.length}
                       </span>
                     </div>
@@ -624,8 +641,13 @@ export default function JurisdictionDetailPage({
         ) : (
           <div className="mt-10">
             <div className="flex items-center gap-2 mb-4">
-              <Scale size={16} className="text-gray-400" strokeWidth={1.5} />
-              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+              <Scale
+                size={16}
+                className="text-gray-500"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
                 Legal Sources
               </h2>
             </div>
@@ -647,7 +669,7 @@ export default function JurisdictionDetailPage({
                 />
                 {jurisdiction.legislation.officialUrl && (
                   <div className="flex items-start gap-4">
-                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
                       Official URL
                     </span>
                     <a
@@ -657,6 +679,7 @@ export default function JurisdictionDetailPage({
                       className="text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
                     >
                       {jurisdiction.legislation.officialUrl}
+                      <span className="sr-only">(opens in new window)</span>
                     </a>
                   </div>
                 )}
@@ -691,13 +714,14 @@ export default function JurisdictionDetailPage({
             <div className="flex items-center gap-2 mb-5">
               <Building2
                 size={16}
-                className="text-gray-400"
+                className="text-gray-500"
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
-              <h2 className="text-[12px] font-semibold text-gray-400 tracking-[0.15em] uppercase">
+              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
                 Authorities
               </h2>
-              <span className="text-[12px] text-gray-300">
+              <span className="text-[12px] text-gray-500">
                 {authorities.length}
               </span>
             </div>
@@ -713,7 +737,7 @@ export default function JurisdictionDetailPage({
         {/* ─── Notes ─── */}
         {jurisdiction.notes && jurisdiction.notes.length > 0 && (
           <div className="mt-12 pt-8 border-t border-gray-200">
-            <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">
+            <h2 className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
               Notes
             </h2>
             <ul className="space-y-2">
@@ -731,7 +755,7 @@ export default function JurisdictionDetailPage({
 
         {/* ─── Footer ─── */}
         <footer className="mt-20 pt-6 border-t border-gray-200">
-          <p className="text-[10px] text-gray-300 leading-relaxed max-w-3xl">
+          <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
             Data last updated: {jurisdiction.lastUpdated}. This information is
             for research and reference purposes only. It does not constitute
             legal advice. Verify all information with official sources and
@@ -1189,7 +1213,7 @@ function BriefingPrint({
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
         {label}
       </span>
       <span className="text-[13px] font-medium text-gray-800">{value}</span>
@@ -1200,7 +1224,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 function FallbackRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-4">
-      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
+      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
         {label}
       </span>
       <span className="text-[12px] text-gray-700">{value}</span>

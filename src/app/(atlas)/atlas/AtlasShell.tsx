@@ -107,6 +107,7 @@ export default function AtlasShell({
 
         {/* Navigation */}
         <nav
+          aria-label="Main navigation"
           className={`
             flex-1 overflow-y-auto overflow-x-hidden py-2
             ${expanded ? "px-2 bg-[#1a1a1a]" : "px-1.5"}
@@ -129,6 +130,7 @@ export default function AtlasShell({
                     key={item.href}
                     href={item.href}
                     title={t(item.labelKey)}
+                    aria-label={t(item.labelKey)}
                     className={`
                       group relative flex items-center justify-center
                       h-8 w-8 rounded-lg mb-0.5
@@ -139,6 +141,7 @@ export default function AtlasShell({
                     <Icon
                       className="h-[15px] w-[15px]"
                       strokeWidth={active ? 2 : 1.5}
+                      aria-hidden="true"
                     />
                     <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
                       {t(item.labelKey)}
@@ -169,6 +172,7 @@ export default function AtlasShell({
                       <Icon
                         className="h-4 w-4 flex-shrink-0"
                         strokeWidth={active ? 2 : 1.5}
+                        aria-hidden="true"
                       />
                       <span className="text-[12px] tracking-wide">
                         {t(item.labelKey)}
@@ -194,13 +198,19 @@ export default function AtlasShell({
               <Link
                 href="/dashboard"
                 title={t("atlas.back_to_caelex")}
+                aria-label={t("atlas.back_to_caelex")}
                 className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/60 hover:text-white/60 transition-all duration-150"
               >
-                <ArrowLeft className="h-[15px] w-[15px]" strokeWidth={1.5} />
+                <ArrowLeft
+                  className="h-[15px] w-[15px]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
               </Link>
               <Link
                 href="/atlas/settings"
                 title={t("atlas.settings")}
+                aria-label={t("atlas.settings")}
                 className={`
                   flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-150
                   ${
@@ -210,7 +220,11 @@ export default function AtlasShell({
                   }
                 `}
               >
-                <Settings className="h-[15px] w-[15px]" strokeWidth={1.5} />
+                <Settings
+                  className="h-[15px] w-[15px]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
               </Link>
             </div>
           ) : (
@@ -218,21 +232,31 @@ export default function AtlasShell({
             <>
               <Link
                 href="/dashboard"
+                aria-label={t("atlas.back_to_caelex")}
                 className="flex items-center gap-3 h-9 px-3 rounded-xl text-white/60 hover:text-white/70 hover:bg-white/[0.06] transition-all duration-150 whitespace-nowrap"
               >
-                <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+                <ArrowLeft
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <span className="text-[12px] tracking-wide">
                   {t("atlas.back_to_caelex")}
                 </span>
               </Link>
               <Link
                 href="/atlas/settings"
+                aria-label={t("atlas.settings")}
                 className={`
                   flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap
                   ${isActive("/atlas/settings") ? "bg-white/[0.12] text-white" : "text-white/60 hover:text-white/70 hover:bg-white/[0.06]"}
                 `}
               >
-                <Settings className="h-4 w-4" strokeWidth={1.5} />
+                <Settings
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <span className="text-[12px] tracking-wide">
                   {t("atlas.settings")}
                 </span>

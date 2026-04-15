@@ -106,7 +106,7 @@ export default function SettingsPage() {
       <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
         {t("atlas.settings")}
       </h1>
-      <p className="text-[13px] text-gray-400 mb-10">
+      <p className="text-[13px] text-gray-500 mb-10">
         {language === "de"
           ? "Sprache, Kanzleiprofil und Exporteinstellungen konfigurieren."
           : "Configure language, firm profile, and export settings."}
@@ -116,7 +116,11 @@ export default function SettingsPage() {
         {/* ─── Firm Branding ─── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <Building2 className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
+            <Building2
+              className="h-4 w-4 text-gray-400"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
               {language === "de" ? "Kanzleiprofil" : "Firm Profile"}
             </h2>
@@ -133,9 +137,13 @@ export default function SettingsPage() {
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder={language === "de" ? "z.B. Julian" : "e.g. Julian"}
+                aria-describedby="user-name-hint"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
               />
-              <p className="text-[11px] text-gray-400 mt-1.5">
+              <p
+                id="user-name-hint"
+                className="text-[11px] text-gray-400 mt-1.5"
+              >
                 {language === "de"
                   ? "Wird in der Begrüßung auf der Startseite angezeigt."
                   : "Shown in the greeting on the home page."}
@@ -154,9 +162,13 @@ export default function SettingsPage() {
                 placeholder={
                   language === "de" ? "z.B. BHO Legal" : "e.g. BHO Legal"
                 }
+                aria-describedby="firm-name-hint"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
               />
-              <p className="text-[11px] text-gray-400 mt-1.5">
+              <p
+                id="firm-name-hint"
+                className="text-[11px] text-gray-400 mt-1.5"
+              >
                 {language === "de"
                   ? "Wird im Header der exportierten Briefings angezeigt."
                   : "Shown in the header of exported briefings."}
@@ -190,7 +202,7 @@ export default function SettingsPage() {
                       onClick={handleRemoveLogo}
                       className="flex items-center gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors"
                     >
-                      <X size={12} strokeWidth={2} />
+                      <X size={12} strokeWidth={2} aria-hidden="true" />
                       {language === "de" ? "Entfernen" : "Remove"}
                     </button>
                   </div>
@@ -204,6 +216,7 @@ export default function SettingsPage() {
                     size={18}
                     className="text-gray-400"
                     strokeWidth={1.5}
+                    aria-hidden="true"
                   />
                   <div className="text-left">
                     <span className="block text-[13px] text-gray-600">
@@ -221,10 +234,19 @@ export default function SettingsPage() {
                 type="file"
                 accept="image/*"
                 onChange={handleLogoUpload}
+                aria-label={
+                  language === "de"
+                    ? "Kanzleilogo hochladen"
+                    : "Upload firm logo"
+                }
+                aria-describedby="firm-logo-hint"
                 className="hidden"
               />
 
-              <p className="text-[11px] text-gray-400 mt-1.5">
+              <p
+                id="firm-logo-hint"
+                className="text-[11px] text-gray-400 mt-1.5"
+              >
                 {language === "de"
                   ? "Ersetzt das Caelex-Logo in exportierten PDF-Briefings."
                   : "Replaces the Caelex logo in exported PDF briefings."}
@@ -236,7 +258,11 @@ export default function SettingsPage() {
         {/* ─── Language ─── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
+            <Globe
+              className="h-4 w-4 text-gray-400"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
               {t("atlas.settings_language")}
             </h2>
@@ -249,6 +275,7 @@ export default function SettingsPage() {
                 <button
                   key={opt.code}
                   onClick={() => setLanguage(opt.code)}
+                  aria-pressed={isActive}
                   className={`
                     relative flex items-center justify-between
                     px-5 py-4 rounded-xl border-2 transition-all duration-200
@@ -271,7 +298,11 @@ export default function SettingsPage() {
                   </div>
                   {isActive && (
                     <div className="flex items-center justify-center h-5 w-5 rounded-full bg-gray-900">
-                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                      <Check
+                        className="h-3 w-3 text-white"
+                        strokeWidth={3}
+                        aria-hidden="true"
+                      />
                     </div>
                   )}
                 </button>
@@ -283,7 +314,11 @@ export default function SettingsPage() {
         {/* ─── About ─── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <Info className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
+            <Info
+              className="h-4 w-4 text-gray-400"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
               ATLAS
             </h2>
