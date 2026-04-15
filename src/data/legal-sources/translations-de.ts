@@ -5718,6 +5718,140 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // POLAND (PL) — 10 Sources
+  [
+    "PL-OST-1967",
+    {
+      title: "Weltraumvertrag — Polnischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Ratifiziert 30. Januar 1968. Erst 58 Jahre später (2026) erste nationale Umsetzung durch das Weltraumgesetz.",
+          complianceImplication:
+            "Bis April 2026 hatte Polen KEIN nationales Genehmigungsregime trotz Bindung seit 1968.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-LIABILITY-1973",
+    {
+      title: "Weltraumhaftungsübereinkommen — Polnischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "Weltraumgesetz 2026: strikte Haftung für Oberflächenschäden (kein höhere Gewalt), verschuldensabhängig im Weltraum. Pflichtversicherung bis 60 Mio. EUR. Staatsrückgriff beschränkt auf Versicherungssumme.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-REGISTRATION-1979",
+    {
+      title: "Registrierungsübereinkommen — Polnischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Registerpflicht",
+          summary:
+            "Krajowy Rejestr Obiektów Kosmicznych (POLSA). Registrierung innerhalb 30 Tagen. 20+ polnische Satelliten im Orbit.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Polen als Unterzeichner (2021)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "13. Unterzeichner, 25. Oktober 2021. Erster zentraleuropäischer Unterzeichnerstaat.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-SPACE-ACT-2026",
+    {
+      title: "Weltraumgesetz 2026 (Ustawa o działalności kosmicznej)",
+      scopeDescription:
+        "Polens ERSTES umfassendes Weltraumgesetz. Schließt eine 58-jährige Lücke. POLSA als Genehmigungsbehörde, 60-Mio.-EUR-Versicherung, nationales Register, strikte Haftung, Weltraummüll. Militärische Aktivitäten unter MON/ARGUS befreit. 566 Unternehmen im Ökosystem.",
+      provisions: {
+        Permits: {
+          title: "Umfassendes Genehmigungsregime",
+          summary:
+            "6 Bedingungen: Zuverlässigkeit, Risikobewertung, Weltraummüll, Umwelt, ITU, Versicherung. Entscheidung 60 Tage. Gültigkeit bis 25 Jahre. ABW-Sicherheitsgutachten. Militär BEFREIT.",
+          complianceImplication:
+            "POLSA kann Genehmigungen verweigern, aussetzen oder widerrufen.",
+        },
+        Insurance: {
+          title: "Pflichtversicherung 60 Mio. EUR pro Ereignis",
+          summary:
+            "Deckung Betreiber- und Staatshaftung. POLSA-Präsident setzt Summe je Risiko fest. Befreiung für Wissenschaft/Bildung und Militär.",
+          complianceImplication:
+            "60 Mio. EUR = höchste Stufe in Europa (wie FR/AT/FI).",
+        },
+      },
+    },
+  ],
+  [
+    "PL-POLSA-ACT-2014",
+    {
+      title: "Gesetz über die Polnische Raumfahrtagentur",
+      provisions: {
+        "Full instrument": {
+          title: "POLSA-Gründung und Mandat",
+          summary:
+            "Zentrale Regierungsbehörde seit 2014. Durch Weltraumgesetz 2026 zur Genehmigungsbehörde transformiert. Sitz: Danzig (seit 2024). ~120 Mitarbeiter.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-ECOMM-2024",
+    {
+      title: "Gesetz über elektronische Kommunikation",
+      provisions: {
+        "Full instrument": {
+          title: "Satellitenspektrumverwaltung",
+          summary:
+            "Neues Telekommunikationsgesetz. UKE verwaltet Satellitenfrequenzen und ITU-Koordination.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-STRATEGIC-GOODS-2000",
+    {
+      title: "Gesetz über den Handel mit strategischen Gütern",
+      provisions: {
+        "Full instrument": {
+          title: "Exportkontrolle mit Tracker 2.0",
+          summary:
+            "Mitglied aller 5 Exportkontrollregime. HCoC-Vorsitz 2017-2018. CAMILA/MIKROGLOB >90% polnische Technologie — bewusste ITAR-Vermeidung.",
+          complianceImplication:
+            "Polnische Programme minimieren bewusst ausländische Exportkontrollabhängigkeiten.",
+        },
+      },
+    },
+  ],
+  [
+    "PL-SPACE-STRATEGY-2017",
+    {
+      title: "Polnische Weltraumstrategie 2017-2030",
+      provisions: {
+        "Full document": {
+          title: "Drei strategische Ziele — 3% Marktanteil",
+          summary:
+            "CM25: 731 Mio. EUR (+277%). >1,2 Mrd. EUR Militärsatelliten. 566 Unternehmen. IAC 2027 in Posen. Sławosz Uznański: 2. Pole im Weltraum (Juni 2025).",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -7443,6 +7577,87 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Koordinierungsrat für Weltraumaktivitäten",
       mandate:
         "Ressortübergreifend seit 2011. 7 Regierungsmitglieder + Teilnehmer. Drei Ausschüsse: Industrie, Wissenschaft, Sicherheit.",
+    },
+  ],
+
+  // Poland Authorities (10)
+  [
+    "PL-POLSA",
+    {
+      name: "Polnische Raumfahrtagentur (POLSA)",
+      mandate:
+        "Zentrale Weltraumbehörde seit 2014. Durch Weltraumgesetz 2026 zur Genehmigungsbehörde. Erteilt Permits, führt Register, überwacht. Sitz: Danzig. ~120 Mitarbeiter.",
+    },
+  ],
+  [
+    "PL-MFIG",
+    {
+      name: "Ministerium für Finanzen und Wirtschaft",
+      mandate:
+        "Aufsichtsministerium für POLSA. Zuständig für zivile Weltraumpolitik. Berufungsinstanz für Genehmigungen.",
+    },
+  ],
+  [
+    "PL-MON",
+    {
+      name: "Verteidigungsministerium — ARGUS Weltraumzentrum",
+      mandate:
+        "Militärische Weltraumaktivitäten vom Weltraumgesetz BEFREIT. ARGUS seit 1. Jan 2025. >1,2 Mrd. EUR Satellitenbeschaffung (POLEOS, MikroSAR, MIKROGLOB, PIAST). Ziel: 12 Militärsatelliten.",
+    },
+  ],
+  [
+    "PL-UKE",
+    {
+      name: "Amt für Elektronische Kommunikation (UKE)",
+      mandate:
+        "Nationale Regulierungsbehörde. Satellitenspektrumverwaltung. ITU-Koordination.",
+    },
+  ],
+  [
+    "PL-ABW",
+    {
+      name: "Agentur für Innere Sicherheit (ABW)",
+      mandate:
+        "Verbindliche Sicherheitsgutachten für Weltraumgenehmigungen. Cybersicherheit.",
+    },
+  ],
+  [
+    "PL-EXPORT",
+    {
+      name: "MFiG — Abteilung Handel mit sensitiven Gütern",
+      mandate:
+        "Exportkontrolle für Dual-Use-Weltraumtechnologie. Tracker 2.0 Digitalsystem. Mitglied aller 5 Exportkontrollregime.",
+    },
+  ],
+  [
+    "PL-UODO",
+    {
+      name: "Amt für den Schutz personenbezogener Daten (UODO)",
+      mandate: "DSGVO-Aufsicht für Satellitendaten.",
+    },
+  ],
+  [
+    "PL-CBK-PAN",
+    {
+      name: "Weltraumforschungszentrum der PAN (CBK PAN)",
+      mandate:
+        "Polens führende Weltraumforschungseinrichtung seit 1977. Cassini, Rosetta, JUICE. Entwickelt CAMILA-Konstellation.",
+    },
+  ],
+  [
+    "PL-IMGW",
+    {
+      name: "Institut für Meteorologie und Wasserwirtschaft (IMGW)",
+      mandate:
+        "EUMETSAT-Vertreter. Copernicus-Datennutzer für Hochwasserüberwachung.",
+    },
+  ],
+  [
+    "PL-NASK",
+    {
+      name: "NASK — CSIRT NASK",
+      mandate:
+        "Nationales CSIRT. NIS2-Umsetzung ausstehend. Weltraum als kritischer Sektor.",
     },
   ],
 ]);

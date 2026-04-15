@@ -42,6 +42,8 @@ import {
   AUTHORITIES_GR,
   LEGAL_SOURCES_CZ,
   AUTHORITIES_CZ,
+  LEGAL_SOURCES_PL,
+  AUTHORITIES_PL,
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
@@ -73,6 +75,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_IE,
   ...LEGAL_SOURCES_GR,
   ...LEGAL_SOURCES_CZ,
+  ...LEGAL_SOURCES_PL,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -94,6 +97,7 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_IE,
   ...AUTHORITIES_GR,
   ...AUTHORITIES_CZ,
+  ...AUTHORITIES_PL,
 ];
 
 // ─── Style maps ─────────────────────────────────────────────────────
@@ -298,7 +302,7 @@ export default function CommandCenterPage() {
             &#9679;
           </span>
           <span className="text-[11px] text-gray-500  tracking-wide">
-            18 jurisdictions
+            19 jurisdictions
           </span>
         </div>
 

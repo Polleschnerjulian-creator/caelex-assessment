@@ -48,6 +48,8 @@ import {
   AUTHORITIES_GR,
   LEGAL_SOURCES_CZ,
   AUTHORITIES_CZ,
+  LEGAL_SOURCES_PL,
+  AUTHORITIES_PL,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -3373,6 +3375,137 @@ describe("Legal Sources — CZ authority accuracy", () => {
 
   it("every CZ authority has a valid website URL", () => {
     for (const a of AUTHORITIES_CZ) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ─── PL dataset sanity ─────────────────────────────────────────────────
+describe("Legal Sources — PL dataset sanity", () => {
+  it("PL has at least 8 legal sources", () => {
+    expect(LEGAL_SOURCES_PL.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("PL has exactly 10 authorities", () => {
+    expect(AUTHORITIES_PL).toHaveLength(10);
+  });
+
+  it("PL source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_PL) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every PL source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_PL) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every PL source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_PL) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every PL source references valid authority IDs", () => {
+    const authorityIds = new Set(AUTHORITIES_PL.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_PL) {
+      if (s.competent_authorities) {
+        for (const aId of s.competent_authorities) {
+          expect(authorityIds.has(aId)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("PL related_sources reference IDs that exist in the dataset", () => {
+    const allIds = new Set(LEGAL_SOURCES_PL.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_PL) {
+      for (const relId of s.related_sources) {
+        expect(allIds.has(relId)).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── PL regulatory accuracy ───────────────────────────────────────────
+describe("Legal Sources — PL regulatory accuracy", () => {
+  it("Space Act 2026 has Dz.U. poz. 465 reference", () => {
+    const spaceAct = getLegalSourceById("PL-SPACE-ACT-2026")!;
+    expect(spaceAct).toBeDefined();
+    expect(spaceAct.official_reference).toContain("poz. 465");
+    expect(spaceAct.status).toBe("in_force");
+    expect(spaceAct.type).toBe("federal_law");
+  });
+
+  it("Space Act 2026 provisions include €60M insurance", () => {
+    const spaceAct = getLegalSourceById("PL-SPACE-ACT-2026")!;
+    expect(spaceAct).toBeDefined();
+    const insuranceProvision = spaceAct.key_provisions.find(
+      (p) => p.section === "Insurance",
+    );
+    expect(insuranceProvision).toBeDefined();
+    expect(insuranceProvision!.summary).toContain("60M");
+  });
+
+  it("Artemis Accords signed 2021-10-25", () => {
+    const artemis = getLegalSourceById("PL-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.date_enacted).toBe("2021-10-25");
+  });
+
+  it("POLSA Act 2014 is in force", () => {
+    const polsaAct = getLegalSourceById("PL-POLSA-ACT-2014")!;
+    expect(polsaAct).toBeDefined();
+    expect(polsaAct.status).toBe("in_force");
+    expect(polsaAct.date_enacted).toBe("2014-09-26");
+  });
+});
+
+// ─── PL lookup functions ──────────────────────────────────────────────
+describe("Legal Sources — PL lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns PL sources", () => {
+    const sources = getLegalSourcesByJurisdiction("PL");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_PL.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 10 PL authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("PL");
+    expect(auths).toHaveLength(10);
+  });
+
+  it("getAvailableJurisdictions includes PL", () => {
+    expect(getAvailableJurisdictions()).toContain("PL");
+  });
+});
+
+// ─── PL authority accuracy ────────────────────────────────────────────
+describe("Legal Sources — PL authority accuracy", () => {
+  it("POLSA is the space agency", () => {
+    const polsa = getAuthorityById("PL-POLSA")!;
+    expect(polsa).toBeDefined();
+    expect(polsa.space_mandate).toContain("space authority");
+    expect(polsa.applicable_areas).toContain("licensing");
+  });
+
+  it("MON/ARGUS handles military space", () => {
+    const mon = getAuthorityById("PL-MON")!;
+    expect(mon).toBeDefined();
+    expect(mon.space_mandate).toContain("ARGUS");
+    expect(mon.applicable_areas).toContain("military_dual_use");
+  });
+
+  it("every PL authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_PL) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
