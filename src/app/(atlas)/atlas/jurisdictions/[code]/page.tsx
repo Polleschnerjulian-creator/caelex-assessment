@@ -817,7 +817,7 @@ function BriefingPrint({
 
   const brandLine = firmName
     ? `${firmName} — powered by ATLAS / Caelex`
-    : "ATLAS Regulatory Intelligence — Caelex";
+    : "ATLAS Space Law Database — Caelex";
 
   return (
     <div className="hidden print:block print-export-container">

@@ -98,7 +98,7 @@ export default function AtlasShell({
                   ATLAS
                 </span>
                 <span className="text-[8px] font-medium tracking-[0.2em] text-white/70 uppercase whitespace-nowrap">
-                  Regulatory Intelligence
+                  Space Law Database
                 </span>
               </div>
             </>

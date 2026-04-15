@@ -4,9 +4,9 @@ import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 
 export const metadata = {
-  title: "ATLAS — Space Law Intelligence",
+  title: "ATLAS — Space Law Database",
   description:
-    "Bloomberg Terminal for Space Law. Real-time regulatory intelligence across jurisdictions, frameworks, and compliance standards.",
+    "Comprehensive space law database covering 17 jurisdictions, 315 legal sources, and 202 regulatory authorities across Europe.",
 };
 
 export default async function AtlasLayout({
