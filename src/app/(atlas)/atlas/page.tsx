@@ -509,7 +509,7 @@ export default function CommandCenterPage() {
       <footer
         className={`transition-all duration-700 ${hasResults ? "mt-20" : "mt-40"} pt-8 border-t border-gray-100 pb-10`}
       >
-        <div className="max-w-4xl space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold text-gray-400 tracking-wider">
               ATLAS
