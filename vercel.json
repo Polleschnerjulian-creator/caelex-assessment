@@ -105,6 +105,10 @@
     {
       "path": "/api/cron/nca-deadlines",
       "schedule": "20 7 * * *"
+    },
+    {
+      "path": "/api/cron/atlas-source-check",
+      "schedule": "30 4 * * *"
     }
   ]
 }

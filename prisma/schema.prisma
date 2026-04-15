@@ -8078,3 +8078,39 @@ model OntologyVersion {
 
   @@index([version])
 }
+
+// ─── ATLAS Source Monitoring ────────────────────────────────────────
+
+model AtlasSourceCheck {
+  id            String   @id @default(cuid())
+  sourceId      String   // Legal source ID (e.g., "DE-SATDSIG-2007")
+  jurisdiction  String   // Country code (e.g., "DE")
+  sourceUrl     String   // URL that was checked
+  contentHash   String?  // SHA-256 hash of fetched content
+  previousHash  String?  // Previous hash for comparison
+  status        AtlasCheckStatus @default(PENDING)
+  httpStatus    Int?     // HTTP status code from fetch
+  errorMessage  String?  // Error details if fetch failed
+  lastChecked   DateTime @default(now())
+  lastChanged   DateTime? // When the content hash last changed
+  reviewedAt    DateTime? // When an admin reviewed the change
+  reviewedBy    String?  // Admin user ID who reviewed
+  reviewNote    String?  // Admin notes on the change
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([sourceId])
+  @@index([status])
+  @@index([jurisdiction])
+  @@index([lastChecked])
+  @@index([lastChanged])
+}
+
+enum AtlasCheckStatus {
+  PENDING     // Not yet checked
+  UNCHANGED   // Content hash matches
+  CHANGED     // Content hash differs — needs review
+  ERROR       // Fetch failed
+  REVIEWED    // Admin reviewed the change
+  DISMISSED   // Admin dismissed (false positive)
+}
