@@ -227,7 +227,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <p className="text-[20px] font-medium text-gray-500">
             Source not found
           </p>
-          <p className="text-[13px] text-gray-500 mt-2 font-mono">{id}</p>
+          <p className="text-[13px] text-gray-500 mt-2 ">{id}</p>
           <button
             onClick={() => router.back()}
             className="mt-6 text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-4"
@@ -346,7 +346,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
           <dt className="text-gray-500">Jurisdiction</dt>
           <dd className="text-gray-800">
-            <span className="font-mono text-gray-500 text-[12px]">
+            <span className=" text-gray-500 text-[12px]">
               {jurisdictionFlag}
             </span>{" "}
             · {jurisdictionName}
@@ -375,7 +375,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           {source.official_reference && (
             <>
               <dt className="text-gray-500">Reference</dt>
-              <dd className="font-mono text-[12px] text-gray-600">
+              <dd className=" text-[12px] text-gray-600">
                 {source.official_reference}
               </dd>
             </>
@@ -476,10 +476,10 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                   className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
                 >
                   <div className="flex items-baseline gap-3">
-                    <span className="text-[11px] text-gray-500 font-mono flex-shrink-0">
+                    <span className="text-[11px] text-gray-500  flex-shrink-0">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="text-[15px] font-mono font-bold text-gray-900 flex-shrink-0">
+                    <span className="text-[15px]  font-bold text-gray-900 flex-shrink-0">
                       {provision.section}
                     </span>
                     <h3 className="text-[14px] font-semibold text-gray-700">
@@ -564,7 +564,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                 href={`/atlas/jurisdictions/${auth.jurisdiction}`}
                 className="flex items-start gap-4 py-3 px-4 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-150 group"
               >
-                <span className="text-[16px] font-bold text-gray-900 font-mono tracking-tight flex-shrink-0 w-16 group-hover:text-gray-800 transition-colors">
+                <span className="text-[16px] font-bold text-gray-900  tracking-tight flex-shrink-0 w-16 group-hover:text-gray-800 transition-colors">
                   {auth.abbreviation}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -572,7 +572,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     <span className="text-[13px] font-medium text-gray-700">
                       {getTranslatedAuthority(auth, language).name}
                     </span>
-                    <span className="text-[11px] font-mono text-gray-500">
+                    <span className="text-[11px]  text-gray-500">
                       {JURISDICTION_FLAGS[auth.jurisdiction] ??
                         auth.jurisdiction}
                     </span>
@@ -663,7 +663,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                       {rel.title_en}
                     </span>
 
-                    <span className="text-[11px] font-mono text-gray-500 flex-shrink-0">
+                    <span className="text-[11px]  text-gray-500 flex-shrink-0">
                       {JURISDICTION_FLAGS[rel.jurisdiction] ?? rel.jurisdiction}
                     </span>
                   </Link>
@@ -733,7 +733,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     {source.caelex_engine_mapping.map((engine) => (
                       <span
                         key={engine}
-                        className="text-[10px] font-mono text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
+                        className="text-[10px]  text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
                       >
                         {engine}
                       </span>
@@ -752,7 +752,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     {source.caelex_data_file_mapping.map((file) => (
                       <span
                         key={file}
-                        className="text-[10px] font-mono text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
+                        className="text-[10px]  text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
                       >
                         {file}
                       </span>

@@ -83,7 +83,7 @@ export default function CountrySelector({
                 group
               "
             >
-              <span className="font-mono tracking-wide">{code}</span>
+              <span className=" tracking-wide">{code}</span>
               <X className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
             </button>
           );
@@ -138,7 +138,7 @@ export default function CountrySelector({
         </div>
 
         {/* Count indicator */}
-        <span className="text-[10px] text-gray-400 font-mono ml-auto">
+        <span className="text-[10px] text-gray-400  ml-auto">
           {selected.length}/{MAX_SELECTIONS}
         </span>
       </div>
@@ -179,9 +179,7 @@ export default function CountrySelector({
                     <span className="text-[11px] font-medium truncate block">
                       {data.countryName}
                     </span>
-                    <span className="text-[9px] font-mono text-gray-400">
-                      {code}
-                    </span>
+                    <span className="text-[9px]  text-gray-400">{code}</span>
                   </div>
                   {isSelected && (
                     <Check className="h-3 w-3 text-gray-600 flex-shrink-0" />

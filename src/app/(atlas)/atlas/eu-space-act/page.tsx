@@ -51,9 +51,7 @@ export default function EUSpaceActPage() {
           <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
             EU Space Act
           </h1>
-          <span className="text-[11px] text-gray-400 font-mono">
-            COM(2025) 335
-          </span>
+          <span className="text-[11px] text-gray-400 ">COM(2025) 335</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 shadow-sm">
@@ -82,7 +80,7 @@ export default function EUSpaceActPage() {
             "
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono font-bold text-emerald-600 tracking-wider">
+              <span className="text-[10px]  font-bold text-emerald-600 tracking-wider">
                 Chapter {ch.num}
               </span>
               <span
@@ -98,7 +96,7 @@ export default function EUSpaceActPage() {
             <h3 className="text-[13px] font-medium text-gray-900 mb-1">
               {ch.title}
             </h3>
-            <span className="text-[10px] text-gray-400 font-mono">
+            <span className="text-[10px] text-gray-400 ">
               Articles {ch.articles}
             </span>
           </div>

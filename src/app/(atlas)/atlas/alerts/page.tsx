@@ -144,7 +144,7 @@ export default function AlertsPage() {
                     <span className="text-[10px] text-gray-400">
                       {alert.source}
                     </span>
-                    <span className="text-[10px] text-gray-400 font-mono">
+                    <span className="text-[10px] text-gray-400 ">
                       {alert.time}
                     </span>
                   </div>

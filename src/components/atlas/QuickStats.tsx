@@ -92,20 +92,18 @@ export default function QuickStats() {
             className="flex-1 min-w-[120px] px-4 py-3 flex flex-col items-center justify-center text-center"
           >
             {/* Label */}
-            <span className="text-[9px] font-mono font-semibold text-gray-400 tracking-[0.1em] uppercase">
+            <span className="text-[9px]  font-semibold text-gray-400 tracking-[0.1em] uppercase">
               {stat.label}
             </span>
 
             {/* Value */}
-            <span
-              className={`text-lg font-mono font-bold mt-0.5 ${stat.color}`}
-            >
+            <span className={`text-lg  font-bold mt-0.5 ${stat.color}`}>
               {stat.value}
             </span>
 
             {/* Sub-label */}
             {stat.subLabel && (
-              <span className="text-[9px] font-mono text-gray-400 mt-0.5">
+              <span className="text-[9px]  text-gray-400 mt-0.5">
                 {stat.subLabel}
               </span>
             )}

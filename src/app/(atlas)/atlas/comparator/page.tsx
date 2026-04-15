@@ -39,12 +39,12 @@ export default function ComparatorPage() {
             <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
               Comparator
             </h1>
-            <span className="text-[10px] font-mono text-gray-500 tracking-wide">
+            <span className="text-[10px]  text-gray-500 tracking-wide">
               19 jurisdictions
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-[10px] text-gray-500 font-mono">
+            <div className="flex items-center gap-2 text-[10px] text-gray-500 ">
               <span>{selected.length} selected</span>
               <span className="text-gray-300">|</span>
               <span>

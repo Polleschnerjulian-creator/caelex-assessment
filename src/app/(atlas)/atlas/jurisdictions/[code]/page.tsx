@@ -254,7 +254,7 @@ function KeyProvisionsToggle({
             return (
               <div key={i} className="border-l-2 border-gray-200 pl-3">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[10px] font-mono text-gray-500 flex-shrink-0">
+                  <span className="text-[10px]  text-gray-500 flex-shrink-0">
                     {p.section}
                   </span>
                   <span className="text-[12px] font-medium text-gray-700">
@@ -321,7 +321,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
             {/* Official reference */}
             {source.official_reference && (
-              <span className="text-[11px] font-mono text-gray-500">
+              <span className="text-[11px]  text-gray-500">
                 {source.official_reference}
               </span>
             )}
@@ -398,7 +398,7 @@ function AuthorityCard({ authority }: { authority: Authority }) {
     <div className="py-5 px-5 rounded-xl bg-white border border-gray-100">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className="text-[18px] font-bold text-gray-900 font-mono tracking-tight">
+          <span className="text-[18px] font-bold text-gray-900  tracking-tight">
             {authority.abbreviation}
           </span>
           <h4 className="text-[13px] font-medium text-gray-700 mt-1">
@@ -493,7 +493,7 @@ export default function JurisdictionDetailPage({
           </Link>
         </nav>
         <div className="mt-20 text-center">
-          <span className="text-[72px] font-mono font-bold text-gray-100">
+          <span className="text-[72px]  font-bold text-gray-100">
             {displayCode}
           </span>
           <p className="text-[13px] text-gray-500 mt-4">
@@ -525,7 +525,7 @@ export default function JurisdictionDetailPage({
           </nav>
 
           <div className="mt-6 flex items-baseline gap-4">
-            <span className="text-[36px] font-mono font-bold text-gray-200 leading-none tracking-tight">
+            <span className="text-[36px]  font-bold text-gray-200 leading-none tracking-tight">
               {displayCode}
             </span>
             <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight leading-none">
@@ -1153,7 +1153,7 @@ function BriefingPrint({
                       style={{
                         padding: "4pt 6pt 4pt 0",
                         fontWeight: 700,
-                        fontFamily: "monospace",
+
                         color: "#333",
                         verticalAlign: "top",
                       }}

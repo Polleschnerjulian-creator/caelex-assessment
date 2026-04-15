@@ -84,7 +84,7 @@ export default function LiveFeed() {
           <span
             className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${TYPE_DOT[entry.type]}`}
           />
-          <span className="text-[12px] font-mono font-medium text-gray-400 w-5 flex-shrink-0">
+          <span className="text-[12px]  font-medium text-gray-400 w-5 flex-shrink-0">
             {entry.code}
           </span>
           <span className="text-[12px] text-gray-600 truncate group-hover:text-gray-900 transition-colors">

@@ -317,7 +317,7 @@ export default function LegalNetwork() {
     <div className="space-y-3">
       {/* Stats bar */}
       <div className="flex items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-400 tracking-wide">
+        <span className="text-[10px]  text-gray-400 tracking-wide">
           {stats.sources} {language === "de" ? "Quellen" : "sources"}
           {" · "}
           {stats.connections}{" "}

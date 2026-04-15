@@ -34,7 +34,7 @@ export default function ApiAccessPage() {
                   Production Key
                 </span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="text-[11px] text-gray-400 font-mono">
+                  <code className="text-[11px] text-gray-400 ">
                     atlas_pk_••••••••••••••••••••
                   </code>
                   <button className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -47,7 +47,7 @@ export default function ApiAccessPage() {
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-gray-400">Created</span>
-                <p className="text-[11px] text-gray-500 font-mono">&mdash;</p>
+                <p className="text-[11px] text-gray-500 ">&mdash;</p>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function ApiAccessPage() {
               className="flex items-center h-9 rounded-lg bg-gray-50 border border-gray-100 px-3 gap-3 group hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <span
-                className={`text-[10px] font-mono font-bold tracking-wider w-10 flex-shrink-0 ${
+                className={`text-[10px]  font-bold tracking-wider w-10 flex-shrink-0 ${
                   endpoint.method === "GET"
                     ? "text-emerald-600"
                     : "text-amber-600"
@@ -107,7 +107,7 @@ export default function ApiAccessPage() {
               >
                 {endpoint.method}
               </span>
-              <code className="text-[11px] text-gray-700 font-mono flex-shrink-0">
+              <code className="text-[11px] text-gray-700  flex-shrink-0">
                 {endpoint.path}
               </code>
               <span className="text-[10px] text-gray-400 ml-auto">
@@ -132,7 +132,7 @@ export default function ApiAccessPage() {
             <span className="text-[10px] font-medium tracking-wider text-gray-400 uppercase">
               {stat.label}
             </span>
-            <div className="mt-1 text-[16px] font-semibold text-gray-900 font-mono">
+            <div className="mt-1 text-[16px] font-semibold text-gray-900 ">
               {stat.value}
             </div>
           </div>

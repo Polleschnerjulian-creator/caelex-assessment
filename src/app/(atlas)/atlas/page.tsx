@@ -285,19 +285,19 @@ export default function CommandCenterPage() {
         <div
           className={`flex items-center gap-4 transition-all duration-500 ${hasResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
         >
-          <span className="text-[11px] text-gray-500 font-mono tracking-wide">
+          <span className="text-[11px] text-gray-500  tracking-wide">
             {ALL_SOURCES.length} sources
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-500 font-mono tracking-wide">
+          <span className="text-[11px] text-gray-500  tracking-wide">
             {ALL_AUTHORITIES.length} authorities
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-500 font-mono tracking-wide">
+          <span className="text-[11px] text-gray-500  tracking-wide">
             18 jurisdictions
           </span>
         </div>
@@ -305,7 +305,7 @@ export default function CommandCenterPage() {
         {/* Result count */}
         {hasResults && (
           <div className="flex items-center gap-3 mt-1 mb-8">
-            <span className="text-[11px] text-gray-400 font-mono">
+            <span className="text-[11px] text-gray-400 ">
               {totalResults} {totalResults === 1 ? "result" : "results"}
             </span>
             {results.jurisdictions.length > 0 && (
@@ -351,7 +351,7 @@ export default function CommandCenterPage() {
                     onClick={() => router.push(`/atlas/jurisdictions/${code}`)}
                     className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
                   >
-                    <span className="text-[22px] font-mono font-bold text-gray-400 w-10 group-hover:text-gray-500 transition-colors">
+                    <span className="text-[22px]  font-bold text-gray-400 w-10 group-hover:text-gray-500 transition-colors">
                       {code}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -408,7 +408,7 @@ export default function CommandCenterPage() {
                     />
 
                     {/* Type */}
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 w-12 flex-shrink-0 font-mono">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 w-12 flex-shrink-0 ">
                       {TYPE_LABELS[source.type]}
                     </span>
 
@@ -418,14 +418,14 @@ export default function CommandCenterPage() {
                         {getTranslatedSource(source, language).title}
                       </span>
                       {source.official_reference && (
-                        <span className="text-[10px] text-gray-400 font-mono">
+                        <span className="text-[10px] text-gray-400 ">
                           {source.official_reference}
                         </span>
                       )}
                     </div>
 
                     {/* Jurisdiction */}
-                    <span className="text-[11px] font-mono font-bold text-gray-500 flex-shrink-0">
+                    <span className="text-[11px]  font-bold text-gray-500 flex-shrink-0">
                       {source.jurisdiction}
                     </span>
                   </button>
@@ -475,7 +475,7 @@ export default function CommandCenterPage() {
                     }
                     className="flex items-start gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
                   >
-                    <span className="text-[12px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1 flex-shrink-0 font-mono mt-0.5">
+                    <span className="text-[12px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1 flex-shrink-0  mt-0.5">
                       {auth.abbreviation}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -494,7 +494,7 @@ export default function CommandCenterPage() {
                         })()}
                       </p>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-gray-500 flex-shrink-0 mt-1">
+                    <span className="text-[10px]  font-bold text-gray-500 flex-shrink-0 mt-1">
                       {auth.jurisdiction}
                     </span>
                   </button>

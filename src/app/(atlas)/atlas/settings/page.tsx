@@ -350,9 +350,7 @@ export default function SettingsPage() {
                 className="flex items-center justify-between px-5 py-3"
               >
                 <span className="text-[13px] text-gray-600">{row.label}</span>
-                <span className="text-[13px] text-gray-400 font-mono">
-                  {row.value}
-                </span>
+                <span className="text-[13px] text-gray-400 ">{row.value}</span>
               </div>
             ))}
           </div>

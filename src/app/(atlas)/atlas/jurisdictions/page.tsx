@@ -134,7 +134,7 @@ export default function JurisdictionsPage() {
         <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
           Jurisdictions
         </h1>
-        <span className="text-[11px] font-mono text-gray-500">
+        <span className="text-[11px]  text-gray-500">
           {ALL_ROWS.length} tracked
         </span>
       </header>
@@ -163,7 +163,7 @@ export default function JurisdictionsPage() {
               <span className="text-[10px] font-semibold tracking-[0.15em] text-gray-500 uppercase">
                 {group.label}
               </span>
-              <span className="text-[10px] font-mono text-gray-500 ml-2">
+              <span className="text-[10px]  text-gray-500 ml-2">
                 {group.rows.length}
               </span>
             </div>
@@ -189,7 +189,7 @@ export default function JurisdictionsPage() {
               >
                 {/* Code */}
                 <div className="w-[60px]">
-                  <span className="text-[13px] font-mono font-bold text-gray-900 tracking-wider">
+                  <span className="text-[13px]  font-bold text-gray-900 tracking-wider">
                     {row.code}
                   </span>
                 </div>
@@ -210,7 +210,7 @@ export default function JurisdictionsPage() {
 
                 {/* Year */}
                 <div className="w-[60px] text-right">
-                  <span className="text-[13px] font-mono text-gray-900">
+                  <span className="text-[13px]  text-gray-900">
                     {row.year > 0 ? row.year : "\u2014"}
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export default function JurisdictionsPage() {
 
                 {/* Sources */}
                 <div className="w-[64px] text-right">
-                  <span className="text-[13px] font-mono text-gray-900">
+                  <span className="text-[13px]  text-gray-900">
                     {row.sourceCount > 0 ? row.sourceCount : "\u2014"}
                   </span>
                 </div>

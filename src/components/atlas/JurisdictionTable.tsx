@@ -217,7 +217,7 @@ export default function JurisdictionTable({
           <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Jurisdiction Overview
           </h3>
-          <span className="text-[10px] text-gray-400 font-mono">
+          <span className="text-[10px] text-gray-400 ">
             {jurisdictions.length} tracked
           </span>
         </div>
@@ -325,7 +325,7 @@ export default function JurisdictionTable({
                       <div className="text-[13px] font-medium text-gray-900 leading-tight">
                         {law.countryName}
                       </div>
-                      <div className="text-[10px] font-mono text-gray-400">
+                      <div className="text-[10px]  text-gray-400">
                         {law.countryCode}
                       </div>
                     </div>
@@ -341,7 +341,7 @@ export default function JurisdictionTable({
 
                 {/* Year */}
                 <td className="px-3 py-2.5">
-                  <span className="text-[12px] font-mono text-gray-500">
+                  <span className="text-[12px]  text-gray-500">
                     {law.legislation.yearEnacted > 0
                       ? law.legislation.yearEnacted
                       : "\u2014"}
@@ -371,7 +371,7 @@ export default function JurisdictionTable({
 
                 {/* Processing Time */}
                 <td className="px-3 py-2.5 hidden lg:table-cell">
-                  <span className="text-[11px] font-mono text-gray-500">
+                  <span className="text-[11px]  text-gray-500">
                     {law.timeline.typicalProcessingWeeks.min}&ndash;
                     {law.timeline.typicalProcessingWeeks.max}w
                   </span>

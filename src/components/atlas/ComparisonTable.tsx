@@ -400,9 +400,7 @@ export default function ComparisonTable({
                   <span className="text-[12px] font-medium text-gray-900 block">
                     {data.countryName}
                   </span>
-                  <span className="text-[10px] font-mono text-gray-400">
-                    {code}
-                  </span>
+                  <span className="text-[10px]  text-gray-400">{code}</span>
                 </div>
               </th>
             ))}
@@ -485,7 +483,7 @@ function SectionBlock({
                     <span
                       className={`
                         text-[13px] leading-relaxed
-                        ${row.monospace ? "font-mono text-[12px]" : ""}
+                        ${row.monospace ? " text-[12px]" : ""}
                         ${render.className}
                       `}
                     >

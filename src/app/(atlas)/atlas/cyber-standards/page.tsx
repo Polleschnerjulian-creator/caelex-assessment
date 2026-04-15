@@ -61,7 +61,7 @@ export default function CyberStandardsPage() {
                     <span className="text-[10px] text-gray-400">
                       {fw.scope}
                     </span>
-                    <span className="text-[10px] text-gray-400 font-mono">
+                    <span className="text-[10px] text-gray-400 ">
                       {fw.controls} controls
                     </span>
                   </div>
@@ -78,7 +78,7 @@ export default function CyberStandardsPage() {
           <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
             Control Mapping Matrix
           </span>
-          <span className="text-[10px] text-gray-400 font-mono">
+          <span className="text-[10px] text-gray-400 ">
             Cross-framework alignment
           </span>
         </div>
