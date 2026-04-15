@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, BarChart3, Map, Settings } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
 
 const MAIN_NAV = [
   {
@@ -251,6 +252,9 @@ export default function AtlasShell({
       >
         <div className="min-h-full">{children}</div>
       </main>
+
+      {/* ─── Astra Chat (floating on all ATLAS pages) ─── */}
+      <AtlasAstraChat />
     </div>
   );
 }
