@@ -439,7 +439,8 @@ const DRAFT_LEGISLATION_SE: LegalSource[] = [
     title_en: "SOU 2021:91 — 'En ny rymdlag' (A New Space Act)",
     title_local: "SOU 2021:91 En ny rymdlag",
     date_published: "2021-11-01",
-    source_url: "https://www.riksdagen.se",
+    source_url:
+      "https://www.regeringen.se/rattsliga-dokument/statens-offentliga-utredningar/2021/11/sou-202191/",
     issuing_body: "Utredningen om en ny rymdlag",
     competent_authorities: ["SE-SNSA"],
     relevance_level: "high",
@@ -484,7 +485,8 @@ const TELECOM_SE: LegalSource[] = [
     title_local: "Lag (2022:482) om elektronisk kommunikation",
     date_enacted: "2022-05-01",
     official_reference: "SFS 2022:482",
-    source_url: "https://www.riksdagen.se",
+    source_url:
+      "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-2022482-om-elektronisk-kommunikation_sfs-2022-482",
     issuing_body: "Riksdagen",
     competent_authorities: ["SE-PTS"],
     relevance_level: "high",
@@ -525,7 +527,8 @@ const EXPORT_CONTROL_SE: LegalSource[] = [
     date_enacted: "2000-01-01",
     date_last_amended: "2022-01-01",
     official_reference: "SFS 2000:1064 (amended SFS 2022:1074)",
-    source_url: "https://www.riksdagen.se",
+    source_url:
+      "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-20001064-om-kontroll-av-produkter-med_sfs-2000-1064",
     issuing_body: "Riksdagen",
     competent_authorities: ["SE-ISP"],
     relevance_level: "high",
@@ -563,7 +566,8 @@ const CYBERSECURITY_SE: LegalSource[] = [
     date_enacted: "2025-12-01",
     date_in_force: "2026-01-15",
     official_reference: "SFS 2025:1506",
-    source_url: "https://www.riksdagen.se",
+    source_url:
+      "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/cybersakerhetslag-20251506_sfs-2025-1506",
     issuing_body: "Riksdagen",
     competent_authorities: ["SE-MCF"],
     relevance_level: "high",
@@ -602,7 +606,8 @@ const DATA_PROTECTION_SE: LegalSource[] = [
     title_local: "Dataskyddslagen",
     date_enacted: "2018-05-25",
     official_reference: "SFS 2018:218",
-    source_url: "https://www.riksdagen.se",
+    source_url:
+      "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-2018218-med-kompletterande-bestammelser_sfs-2018-218",
     issuing_body: "Riksdagen",
     competent_authorities: ["SE-IMY"],
     relevance_level: "high",
@@ -631,7 +636,8 @@ const BILATERAL_SE: LegalSource[] = [
     status: "in_force",
     title_en: "US-Sweden Technology Safeguards Agreement (Esrange)",
     date_enacted: "2025-06-20",
-    source_url: "https://www.government.se",
+    source_url:
+      "https://www.government.se/press-releases/2025/06/technology-safeguards-agreement-signed-with-the-united-states/",
     issuing_body: "Kingdom of Sweden / United States",
     competent_authorities: ["SE-UTRIKESDEP", "SE-SSC"],
     relevance_level: "critical",
@@ -668,7 +674,8 @@ const POLICY_SE: LegalSource[] = [
     title_en: "A Strategy for Swedish Space Activities (2018)",
     title_local: "Skr. 2017/18:259 En strategi för svensk rymdverksamhet",
     date_published: "2018-01-01",
-    source_url: "https://www.rymdstyrelsen.se",
+    source_url:
+      "https://www.regeringen.se/rattsliga-dokument/skrivelse/2018/06/skr.-201718259/",
     issuing_body: "Regeringen",
     competent_authorities: ["SE-SNSA"],
     relevance_level: "medium",
@@ -693,7 +700,8 @@ const POLICY_SE: LegalSource[] = [
     title_en: "Defence and Security Space Strategy (2024)",
     title_local: "Rymdens roll i en ny säkerhetspolitisk miljö",
     date_published: "2024-07-04",
-    source_url: "https://www.government.se",
+    source_url:
+      "https://www.government.se/information-material/2024/07/the-role-of-space-in-a-new-security-environment/",
     issuing_body: "Regeringen",
     competent_authorities: ["SE-MOD", "SE-FORSVARSMAKTEN"],
     relevance_level: "high",

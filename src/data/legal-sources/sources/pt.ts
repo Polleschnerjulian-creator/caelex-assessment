@@ -368,7 +368,7 @@ const PRIMARY_LEGISLATION_PT: LegalSource[] = [
     date_last_amended: "2024-10-21",
     official_reference:
       "Regulamento n.º 697/2019 (amended by Regulamento n.º 1206-A/2024)",
-    source_url: "https://www.anacom.pt",
+    source_url: "https://www.anacom.pt/render.jsp?contentId=1485498",
     issuing_body: "ANACOM",
     competent_authorities: ["PT-ANACOM"],
     relevance_level: "high",

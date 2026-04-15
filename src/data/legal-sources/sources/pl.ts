@@ -199,7 +199,8 @@ const TREATIES_PL: LegalSource[] = [
     date_enacted: "1972-03-29",
     date_in_force: "1973-01-01",
     official_reference: "Dz.U. 1973, Nr 27, poz. 154",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url:
+      "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU19730270154",
     issuing_body: "United Nations / Sejm",
     competent_authorities: ["PL-POLSA"],
     relevance_level: "critical",
@@ -227,7 +228,8 @@ const TREATIES_PL: LegalSource[] = [
     date_enacted: "1975-01-14",
     date_in_force: "1979-01-01",
     official_reference: "Dz.U. 1979, poz. 22",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url:
+      "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU19790020022",
     issuing_body: "United Nations / Sejm",
     competent_authorities: ["PL-POLSA"],
     relevance_level: "critical",
@@ -286,7 +288,7 @@ const PRIMARY_LEGISLATION_PL: LegalSource[] = [
     date_enacted: "2026-02-13",
     date_in_force: "2026-04-17",
     official_reference: "Dz.U. 2026, poz. 465",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url: "https://dziennikustaw.gov.pl/DU/2026/465",
     issuing_body: "Sejm Rzeczypospolitej Polskiej",
     competent_authorities: ["PL-POLSA", "PL-MFIG"],
     relevance_level: "critical",
@@ -373,7 +375,8 @@ const PRIMARY_LEGISLATION_PL: LegalSource[] = [
     date_last_amended: "2026-04-17",
     official_reference:
       "Dz.U. 2014, poz. 1533 (consolidated: Dz.U. 2020, poz. 1957)",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url:
+      "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20140001533",
     issuing_body: "Sejm",
     competent_authorities: ["PL-POLSA"],
     relevance_level: "high",
@@ -404,7 +407,8 @@ const TELECOM_PL: LegalSource[] = [
     title_local: "Prawo komunikacji elektronicznej",
     date_enacted: "2024-07-12",
     official_reference: "Dz.U. 2024, poz. 1221",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url:
+      "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20240001221",
     issuing_body: "Sejm",
     competent_authorities: ["PL-UKE"],
     relevance_level: "high",
@@ -440,7 +444,8 @@ const EXPORT_CONTROL_PL: LegalSource[] = [
       "Ustawa z dnia 29 listopada 2000 r. o obrocie z zagranicą towarami o znaczeniu strategicznym",
     date_enacted: "2000-11-29",
     date_last_amended: "2026-02-13",
-    source_url: "https://isap.sejm.gov.pl",
+    source_url:
+      "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20001201528",
     issuing_body: "Sejm",
     competent_authorities: ["PL-EXPORT"],
     relevance_level: "high",

@@ -644,7 +644,7 @@ const POLICY_FI: LegalSource[] = [
     title_en: "Space Strategy 2030 (December 2024)",
     title_local: "Avaruusstrategia 2030",
     date_published: "2024-12-30",
-    source_url: "https://tem.fi",
+    source_url: "https://tem.fi/en/space-strategy",
     issuing_body: "Valtioneuvosto (Government)",
     competent_authorities: ["FI-TEM"],
     relevance_level: "high",
