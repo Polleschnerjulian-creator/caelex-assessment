@@ -288,103 +288,67 @@ function SourceEntry({ source }: { source: LegalSource }) {
   const translated = getTranslatedSource(source, language);
 
   return (
-    <div className="py-4 group">
-      <div className="flex items-start gap-3">
-        {/* Type badge */}
+    <div className="rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm px-5 py-4 transition-all duration-200 group">
+      <div className="flex items-center gap-2 mb-2">
         <span
-          className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border flex-shrink-0 w-14 text-center mt-0.5 ${typeStyle.bg} ${typeStyle.text}`}
+          className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${typeStyle.bg} ${typeStyle.text}`}
         >
           {TYPE_LABELS[source.type]}
         </span>
-
-        <div className="flex-1 min-w-0">
-          {/* Title */}
-          <Link href={`/atlas/sources/${source.id}`} className="block">
-            <h4 className="text-[14px] font-medium text-gray-900 leading-snug hover:text-emerald-700 transition-colors">
-              {translated.title}
-            </h4>
-          </Link>
-
-          {/* Secondary title */}
-          {language === "en" && source.title_local && (
-            <p className="text-[12px] text-gray-500 mt-0.5">
-              {source.title_local}
-            </p>
-          )}
-          {language !== "en" && source.title_en !== translated.title && (
-            <p className="text-[12px] text-gray-500 mt-0.5">
-              {source.title_en}
-            </p>
-          )}
-
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-            {/* Official reference */}
-            {source.official_reference && (
-              <span className="text-[11px]  text-gray-500">
-                {source.official_reference}
-              </span>
-            )}
-
-            {/* Date */}
-            {(source.date_enacted ||
-              source.date_in_force ||
-              source.date_published) && (
-              <span className="text-[11px] text-gray-500">
-                {source.date_enacted ||
-                  source.date_in_force ||
-                  source.date_published}
-              </span>
-            )}
-
-            {/* Status badge */}
-            <span
-              className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
-            >
-              {statusStyle.label}
-            </span>
-
-            {/* Relevance badge */}
-            <span
-              className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${relevanceStyle}`}
-            >
-              {source.relevance_level}
-            </span>
-          </div>
-
-          {/* Scope description */}
-          {source.scope_description && (
-            <p className="text-[11px] text-gray-500 leading-relaxed mt-2">
-              {translated.scopeDescription ?? source.scope_description}
-            </p>
-          )}
-
-          {/* Source URL */}
-          {source.source_url && (
-            <a
-              href={source.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700 transition-colors mt-2"
-            >
-              View source
-              <span className="sr-only">(opens in new window)</span>
-              <ArrowLeft
-                size={10}
-                strokeWidth={1.5}
-                aria-hidden="true"
-                className="rotate-[135deg]"
-              />
-            </a>
-          )}
-
-          {/* Key provisions */}
-          <KeyProvisionsToggle
-            provisions={source.key_provisions}
-            source={source}
-          />
-        </div>
+        <span
+          className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
+        >
+          {statusStyle.label}
+        </span>
+        {source.official_reference && (
+          <span className="text-[10px] text-gray-400 ml-auto">
+            {source.official_reference}
+          </span>
+        )}
       </div>
+
+      <Link href={`/atlas/sources/${source.id}`} className="block">
+        <h4 className="text-[14px] font-semibold text-gray-900 leading-snug group-hover:text-gray-700 transition-colors">
+          {translated.title}
+        </h4>
+      </Link>
+
+      {language === "en" && source.title_local && (
+        <p className="text-[11px] text-gray-400 mt-0.5">{source.title_local}</p>
+      )}
+      {language !== "en" && source.title_en !== translated.title && (
+        <p className="text-[11px] text-gray-400 mt-0.5">{source.title_en}</p>
+      )}
+
+      <div className="flex items-center gap-3 mt-2">
+        {(source.date_enacted ||
+          source.date_in_force ||
+          source.date_published) && (
+          <span className="text-[10px] text-gray-400">
+            {source.date_enacted ||
+              source.date_in_force ||
+              source.date_published}
+          </span>
+        )}
+        {source.source_url && (
+          <a
+            href={source.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-gray-400 hover:text-gray-700 transition-colors"
+          >
+            View source <span className="sr-only">(opens in new window)</span>
+          </a>
+        )}
+      </div>
+
+      {source.scope_description && (
+        <p className="text-[11px] text-gray-500 leading-relaxed mt-2 line-clamp-3">
+          {translated.scopeDescription ?? source.scope_description}
+        </p>
+      )}
+
+      <KeyProvisionsToggle provisions={source.key_provisions} source={source} />
     </div>
   );
 }
@@ -557,37 +521,57 @@ export default function JurisdictionDetailPage({
           </div>
         </header>
 
-        {/* ─── Key Facts Row ─── */}
-        <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 py-5 border-y border-gray-200">
-          <Fact
-            label="Authority"
-            value={jurisdiction.licensingAuthority.name}
-          />
-          <Fact
-            label="Liability Regime"
-            value={
-              jurisdiction.insuranceLiability.liabilityRegime
+        {/* ─── Key Facts Grid ─── */}
+        <div className="mt-8 grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+              Authority
+            </span>
+            <span className="text-[13px] font-semibold text-gray-900 block leading-snug">
+              {jurisdiction.licensingAuthority.name}
+            </span>
+          </div>
+          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+              Liability
+            </span>
+            <span className="text-[13px] font-semibold text-gray-900 block">
+              {jurisdiction.insuranceLiability.liabilityRegime
                 .charAt(0)
                 .toUpperCase() +
-              jurisdiction.insuranceLiability.liabilityRegime.slice(1)
-            }
-          />
-          <Fact
-            label="Processing Time"
-            value={`${jurisdiction.timeline.typicalProcessingWeeks.min}–${jurisdiction.timeline.typicalProcessingWeeks.max} weeks`}
-          />
-          <Fact
-            label="Mandatory Insurance"
-            value={
-              jurisdiction.insuranceLiability.mandatoryInsurance
-                ? `Yes${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
-                : "No"
-            }
-          />
-          <Fact
-            label="Status"
-            value={`${legStatus.label}${jurisdiction.legislation.yearEnacted ? ` (${jurisdiction.legislation.yearEnacted})` : ""}`}
-          />
+                jurisdiction.insuranceLiability.liabilityRegime.slice(1)}
+            </span>
+          </div>
+          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+              Processing
+            </span>
+            <span className="text-[13px] font-semibold text-gray-900 block">
+              {jurisdiction.timeline.typicalProcessingWeeks.min}–
+              {jurisdiction.timeline.typicalProcessingWeeks.max} weeks
+            </span>
+          </div>
+          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+              Insurance
+            </span>
+            <span className="text-[13px] font-semibold text-gray-900 block">
+              {jurisdiction.insuranceLiability.mandatoryInsurance
+                ? jurisdiction.insuranceLiability.minimumCoverage || "Required"
+                : "Not required"}
+            </span>
+          </div>
+          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+              Status
+            </span>
+            <span className="text-[13px] font-semibold text-gray-900 block">
+              {legStatus.label}
+              {jurisdiction.legislation.yearEnacted
+                ? ` (${jurisdiction.legislation.yearEnacted})`
+                : ""}
+            </span>
+          </div>
         </div>
 
         {/* ─── Legal Sources Section ─── */}
@@ -628,7 +612,7 @@ export default function JurisdictionDetailPage({
                       </span>
                     </div>
 
-                    <div className="divide-y divide-gray-100">
+                    <div className="space-y-2">
                       {group.sources.map((source) => (
                         <SourceEntry key={source.id} source={source} />
                       ))}
