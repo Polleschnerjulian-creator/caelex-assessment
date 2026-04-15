@@ -5582,6 +5582,142 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // CZECH REPUBLIC (CZ) — 10 Sources
+  [
+    "CZ-OST-1967",
+    {
+      title:
+        "Weltraumvertrag — Tschechische Republik (Tschechoslowakische Sukzession)",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit — keine nationale Umsetzung",
+          summary:
+            "Ererbt via tschechoslowakische Sukzession (1. Januar 1993). KEIN nationales Genehmigungsregime — ‚právní vakuum' (Rechtsvakuum). Arbeit an einem Weltraumgesetz seit 2018, auf unbestimmte Zeit blockiert.",
+          complianceImplication:
+            "Die Tschechische Republik kann Art. VI (Genehmigung und Aufsicht) derzeit NICHT erfüllen.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-LIABILITY-1977",
+    {
+      title: "Weltraumhaftungsübereinkommen — Tschechische Sukzession",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein nationales Rahmenwerk",
+          summary:
+            "KEIN Weltraumhaftungsgesetz. Bürgerliches Gesetzbuch §2925 (strikte Haftung für besonders gefährliche Betriebe) gilt analog. KEINE Pflichtversicherung, KEINE Rückgriffsobergrenze.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-REGISTRATION-1978",
+    {
+      title: "Registrierungsübereinkommen — Tschechische Sukzession",
+      provisions: {
+        "Art. II": {
+          title: "Register per Regierungsbeschluss, nicht per Gesetz",
+          summary:
+            "Nationales Register durch Regierungsbeschluss 326/2014. 13+ Objekte registriert. Keine gesetzlichen Strafen für Nichtregistrierung.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Tschechische Republik (2023)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "24. Unterzeichner, 3. Mai 2023. Außenminister Lipavský unterzeichnete bei NASA HQ.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-GOV-RES-282-2011",
+    {
+      title:
+        "Regierungsbeschluss Nr. 282/2011 — Koordination der Weltraumaktivitäten",
+      provisions: {
+        "Full instrument": {
+          title: "Verkehrsministerium als Weltraumkoordinator",
+          summary:
+            "WICHTIGSTES Verwaltungsinstrument — aber kein Gesetz. Kann keine Lizenzen, Versicherungspflichten oder Strafen schaffen. Verfassungsrechtliches Legalitätsprinzip (Art. 2(3)) erfordert gesetzliche Grundlage.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-GOV-RES-326-2014",
+    {
+      title: "Regierungsbeschluss Nr. 326/2014 — Nationales Weltraumregister",
+      provisions: {
+        "Full instrument": {
+          title: "Register per Beschluss, nicht Gesetz",
+          summary:
+            "13+ Objekte registriert. Register hat 4-mal den Zuständigen gewechselt (1979-2014). Keine Strafen bei Nichtregistrierung.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-CIVIL-CODE-2012",
+    {
+      title: "Bürgerliches Gesetzbuch — §2925 Gefährdungshaftung",
+      provisions: {
+        "§ 2925": {
+          title: "Strikte Haftung für besonders gefährliche Betriebe",
+          summary:
+            "Einzige inländische Haftungsgrundlage für Weltraumoperationen. Keine Versicherungspflicht, keine Rückgriffsobergrenze — unbegrenzte Haftung für private Betreiber.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-NIS2-2025",
+    {
+      title: "Cybersicherheitsgesetz (NIS2-Umsetzung)",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2 — Raumtransport als hochkritischer Sektor",
+          summary:
+            "NÚKIB als Behörde. In Kraft 1. November 2025. Tschechien verfehlte Oktober 2024 Frist.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-EXPORT-CONTROL-2004",
+    {
+      title: "Dual-Use-Exportkontrollgesetz",
+      provisions: {
+        "Full instrument": {
+          title: "Exportkontrolle für Weltraumtechnologie",
+          summary:
+            "Ergänzt EU-Verordnung 2021/821. MPO erteilt Genehmigungen über ELIS-System. Mitglied aller 4 Exportkontrollregime. Wassenaar-Plenum-Vorsitz 2011.",
+        },
+      },
+    },
+  ],
+  [
+    "CZ-NSP-2020-2025",
+    {
+      title: "Nationaler Kosmischer Plan 2020-2025",
+      provisions: {
+        "Full document": {
+          title: "Dritter Weltraumplan — kein Gesetz erwähnt",
+          summary:
+            "Fünf Ziele inkl. ‚solider Rechtsrahmen' — aber keine konkrete gesetzgeberische Maßnahme. ~60 Mio. EUR/Jahr ESA-Beitrag. 65+ Unternehmen. Plan Ende 2025 ausgelaufen. EUSPA in Prag. Aleš Svoboda: ESA-Astronautenreserve.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -7234,6 +7370,79 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Hellenische Datenschutzbehörde (ΑΠΔΠΧ)",
       mandate:
         "DSGVO-Aufsicht unter Gesetz 4624/2019. Keine weltraumspezifische Orientierung.",
+    },
+  ],
+
+  // Czech Republic Authorities (9)
+  [
+    "CZ-MOT",
+    {
+      name: "Verkehrsministerium — Tschechische Raumfahrtagentur (Abt. 710)",
+      mandate:
+        "Hauptkoordinator seit 2011. ~46 Mio. EUR/Jahr ESA-Beiträge. Nationales Register. ESA-Delegationsministerium. EU-SST-Partnerschaft.",
+    },
+  ],
+  [
+    "CZ-CTU",
+    {
+      name: "Tschechisches Telekommunikationsamt (ČTÚ)",
+      mandate:
+        "Nationale Regulierungsbehörde. Funkspektrum inkl. Satellitenfrequenzen. ITU-Koordination. 10-Jahres-Strategie Mai 2025.",
+    },
+  ],
+  [
+    "CZ-MPO",
+    {
+      name: "Ministerium für Industrie und Handel — Exportkontrolle",
+      mandate:
+        "Dual-Use-Exportkontrolle. ELIS-System. Mitglied aller 4 Exportkontrollregime.",
+    },
+  ],
+  [
+    "CZ-MOD",
+    {
+      name: "Verteidigungsministerium — CZE SATCEN",
+      mandate:
+        "CZE SATCEN (seit 2018, Militärischer Nachrichtendienst). SATurnin-1 (Jan 2025): 14 kg, KI-Verarbeitung, ohne ausländische Technologie gebaut. AMBIC-Folgeprogramm.",
+    },
+  ],
+  [
+    "CZ-NUKIB",
+    {
+      name: "Nationale Agentur für Cyber- und Informationssicherheit (NÚKIB)",
+      mandate:
+        "NIS2-Behörde unter Gesetz 264/2025 Sb. Raumtransport als hochkritischer Sektor.",
+    },
+  ],
+  [
+    "CZ-MFA",
+    {
+      name: "Außenministerium",
+      mandate:
+        "Vertragspflichten, COPUOS-Vertretung. Prof. Kopal: COPUOS-Rechtsausschuss-Vorsitz (1999-2004, 2008-2010). Artemis Accords (24. Unterzeichner, Mai 2023).",
+    },
+  ],
+  [
+    "CZ-MSMT",
+    {
+      name: "Ministerium für Bildung, Jugend und Sport",
+      mandate: "~14,2 Mio. EUR/Jahr ESA-F&E (PRODEX, Wissenschaftsprogramm).",
+    },
+  ],
+  [
+    "CZ-UOOU",
+    {
+      name: "Amt für den Schutz personenbezogener Daten (ÚOOÚ)",
+      mandate:
+        "DSGVO-Durchsetzung für Satellitendaten unter Gesetz 110/2019 Sb.",
+    },
+  ],
+  [
+    "CZ-COORD-COUNCIL",
+    {
+      name: "Koordinierungsrat für Weltraumaktivitäten",
+      mandate:
+        "Ressortübergreifend seit 2011. 7 Regierungsmitglieder + Teilnehmer. Drei Ausschüsse: Industrie, Wissenschaft, Sicherheit.",
     },
   ],
 ]);

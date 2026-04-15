@@ -46,6 +46,8 @@ import {
   AUTHORITIES_IE,
   LEGAL_SOURCES_GR,
   AUTHORITIES_GR,
+  LEGAL_SOURCES_CZ,
+  AUTHORITIES_CZ,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -3240,6 +3242,137 @@ describe("Legal Sources — GR authority accuracy", () => {
 
   it("every GR authority has a valid website URL", () => {
     for (const a of AUTHORITIES_GR) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// CZECH REPUBLIC (CZ)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── CZ dataset sanity ─────────────────────────────────────────────────
+describe("Legal Sources — CZ dataset sanity", () => {
+  it("CZ has at least 8 legal sources", () => {
+    expect(LEGAL_SOURCES_CZ.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("CZ has exactly 9 authorities", () => {
+    expect(AUTHORITIES_CZ).toHaveLength(9);
+  });
+
+  it("CZ source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_CZ) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every CZ source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_CZ) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every CZ source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_CZ) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every CZ source references valid authority IDs", () => {
+    const authorityIds = new Set(AUTHORITIES_CZ.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_CZ) {
+      if (s.competent_authorities) {
+        for (const aId of s.competent_authorities) {
+          expect(authorityIds.has(aId)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("CZ related_sources reference IDs that exist in the dataset", () => {
+    const allIds = new Set(LEGAL_SOURCES_CZ.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_CZ) {
+      for (const relId of s.related_sources) {
+        expect(allIds.has(relId)).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── CZ regulatory accuracy ───────────────────────────────────────────
+describe("Legal Sources — CZ regulatory accuracy", () => {
+  it("no national space act — Gov Res 282 is policy_document", () => {
+    const govRes = getLegalSourceById("CZ-GOV-RES-282-2011")!;
+    expect(govRes).toBeDefined();
+    expect(govRes.type).toBe("policy_document");
+    expect(govRes.status).toBe("in_force");
+  });
+
+  it("Civil Code §2925 is the sole domestic liability basis", () => {
+    const cc = getLegalSourceById("CZ-CIVIL-CODE-2012")!;
+    expect(cc).toBeDefined();
+    expect(cc.type).toBe("federal_law");
+    expect(cc.key_provisions[0]!.section).toBe("§ 2925");
+  });
+
+  it("Artemis Accords signed 2023-05-03", () => {
+    const artemis = getLegalSourceById("CZ-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.date_enacted).toBe("2023-05-03");
+  });
+
+  it("NIS2 transposition is 264/2025", () => {
+    const nis2 = getLegalSourceById("CZ-NIS2-2025")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("in_force");
+    expect(nis2.official_reference).toContain("264/2025");
+  });
+});
+
+// ─── CZ lookup functions ──────────────────────────────────────────────
+describe("Legal Sources — CZ lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns CZ sources", () => {
+    const sources = getLegalSourcesByJurisdiction("CZ");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_CZ.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 9 CZ authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("CZ");
+    expect(auths).toHaveLength(9);
+  });
+
+  it("getAvailableJurisdictions includes CZ", () => {
+    expect(getAvailableJurisdictions()).toContain("CZ");
+  });
+});
+
+// ─── CZ authority accuracy ────────────────────────────────────────────
+describe("Legal Sources — CZ authority accuracy", () => {
+  it("MOT is the primary coordinator", () => {
+    const mot = getAuthorityById("CZ-MOT")!;
+    expect(mot).toBeDefined();
+    expect(mot.space_mandate).toContain("coordinator");
+    expect(mot.applicable_areas).toContain("licensing");
+  });
+
+  it("NUKIB handles cybersecurity", () => {
+    const nukib = getAuthorityById("CZ-NUKIB")!;
+    expect(nukib).toBeDefined();
+    expect(nukib.space_mandate).toContain("NIS2");
+    expect(nukib.applicable_areas).toContain("cybersecurity");
+  });
+
+  it("every CZ authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_CZ) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
