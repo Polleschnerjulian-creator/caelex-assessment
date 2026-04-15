@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, BarChart3, Map, Settings, ArrowLeft } from "lucide-react";
+import { Search, BarChart3, Map, Settings } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const MAIN_NAV = [
@@ -196,18 +196,6 @@ export default function AtlasShell({
             /* ── Collapsed: separate bottom pills ── */
             <div className="flex flex-col items-center gap-1.5">
               <Link
-                href="/dashboard"
-                title={t("atlas.back_to_caelex")}
-                aria-label={t("atlas.back_to_caelex")}
-                className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/60 hover:text-white/60 transition-all duration-150"
-              >
-                <ArrowLeft
-                  className="h-[15px] w-[15px]"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-              </Link>
-              <Link
                 href="/atlas/settings"
                 title={t("atlas.settings")}
                 aria-label={t("atlas.settings")}
@@ -230,20 +218,6 @@ export default function AtlasShell({
           ) : (
             /* ── Expanded: full labels ── */
             <>
-              <Link
-                href="/dashboard"
-                aria-label={t("atlas.back_to_caelex")}
-                className="flex items-center gap-3 h-9 px-3 rounded-xl text-white/60 hover:text-white/70 hover:bg-white/[0.06] transition-all duration-150 whitespace-nowrap"
-              >
-                <ArrowLeft
-                  className="h-4 w-4"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-                <span className="text-[12px] tracking-wide">
-                  {t("atlas.back_to_caelex")}
-                </span>
-              </Link>
               <Link
                 href="/atlas/settings"
                 aria-label={t("atlas.settings")}
