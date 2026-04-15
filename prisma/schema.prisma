@@ -8114,3 +8114,32 @@ enum AtlasCheckStatus {
   REVIEWED    // Admin reviewed the change
   DISMISSED   // Admin dismissed (false positive)
 }
+
+// ─── ATLAS Curated Updates (admin → users) ─────────────────────────
+
+model AtlasUpdate {
+  id            String   @id @default(cuid())
+  title         String   // Short headline: "Germany: NIS2 Implementation Act in force"
+  description   String   // 1-3 sentence detail
+  jurisdiction  String?  // Country code if relevant (e.g., "DE")
+  sourceId      String?  // Related legal source ID if relevant
+  category      AtlasUpdateCategory @default(AMENDMENT)
+  publishedAt   DateTime @default(now())
+  createdBy     String   // Admin user ID
+  isPublished   Boolean  @default(true)
+
+  @@index([publishedAt])
+  @@index([jurisdiction])
+  @@index([isPublished])
+}
+
+enum AtlasUpdateCategory {
+  NEW_LAW        // New legislation enacted
+  AMENDMENT      // Existing law amended
+  RATIFICATION   // Treaty ratified/acceded
+  DRAFT          // Draft legislation published
+  INSTITUTIONAL  // Agency created/renamed/restructured
+  NIS2           // NIS2 transposition update
+  EU_SPACE_ACT   // EU Space Act progress
+  DATA_UPDATE    // ATLAS database updated
+}
