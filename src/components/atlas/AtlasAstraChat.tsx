@@ -193,9 +193,6 @@ export default function AtlasAstraChat() {
             shadow-[0_20px_70px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.4)_inset]
             overflow-hidden
           "
-          style={{
-            animation: "astra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)",
-          }}
         >
           {/* ─── Header ─── */}
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200/40">
@@ -390,19 +387,7 @@ export default function AtlasAstraChat() {
         </div>
       )}
 
-      {/* ─── Animation keyframe ─── */}
-      <style jsx global>{`
-        @keyframes astra-slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `}</style>
+      {/* Animation via Tailwind animate classes instead of styled-jsx */}
     </>
   );
 }
