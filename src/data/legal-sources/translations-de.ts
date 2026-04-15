@@ -5446,6 +5446,142 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // GREECE (GR) — 9 Sources
+  [
+    "GR-OST-1967",
+    {
+      title: "Weltraumvertrag — Griechischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. VI": {
+          title: "Staatenverantwortlichkeit",
+          summary:
+            "Gesetz 4508/2017 setzt Art. VI umfassend um: Lizenzierung, Register, Umweltverträglichkeitsprüfung, Sanktionen. Unterzeichnet am Eröffnungstag (27. Januar 1967).",
+        },
+      },
+    },
+  ],
+  [
+    "GR-LIABILITY-1977",
+    {
+      title:
+        "Weltraumhaftungsübereinkommen — Griechischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung",
+          summary:
+            "Art. 11 des Gesetzes 4508/2017 regelt internationale Haftung. Keine feste Mindestversicherung — einzelfallbezogen in Lizenzbedingungen.",
+        },
+      },
+    },
+  ],
+  [
+    "GR-REGISTRATION-2003",
+    {
+      title: "Registrierungsübereinkommen — Griechischer Ratifizierungsvermerk",
+      provisions: {
+        "Art. II": {
+          title: "Registerpflicht",
+          summary:
+            "Spät ratifiziert (2003, 28 Jahre nach Verabschiedung). Art. 17: Nationales Register der Weltraumgegenstände. 9 griechische Satelliten im Orbit (Ende 2025).",
+        },
+      },
+    },
+  ],
+  [
+    "GR-ARTEMIS-ACCORDS",
+    {
+      title: "Artemis Accords — Griechenland als Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraumressourcen",
+          summary:
+            "35. Unterzeichner, 9. Februar 2024. Griechenland und Belgien schlugen gemeinsam die COPUOS-Arbeitsgruppe für Weltraumressourcen vor (2019).",
+        },
+      },
+    },
+  ],
+  [
+    "GR-SPACE-ACT-2017",
+    {
+      title:
+        "Gesetz 4508/2017 — Lizenzierung von Weltraumaktivitäten und Nationalregister",
+      scopeDescription:
+        "Eines der umfassenderen europäischen Weltraumgesetze. Drei Kapitel. Geändert durch Gesetze 4712/2020 und 5099/2024. Verteidigungsweltraum unter MOD-Autonomie ausgeklammert.",
+      provisions: {
+        "Art. 3": {
+          title: "Obligatorische Vorlizenzierung",
+          summary:
+            "Alle Weltraumtätigkeiten erfordern vorherige Lizenz. Gilt für griechisches Hoheitsgebiet, griechische Einrichtungen im Ausland, griechische Staatsangehörige.",
+        },
+        "Art. 6": {
+          title: "Umweltverträglichkeitsprüfung",
+          summary:
+            "Obligatorische UVP vor jeder lizenzierten Weltraumtätigkeit. Relativ ungewöhnlich in europäischen Weltraumgesetzen.",
+        },
+        "Art. 17": {
+          title: "Nationales Register der Weltraumgegenstände",
+          summary:
+            "Εθνικό Μητρώο mit eindeutigen nationalen Registrierungsnummern.",
+        },
+      },
+    },
+  ],
+  [
+    "GR-HSC-LAW-2019",
+    {
+      title:
+        "Gesetz 4623/2019, Art. 60-61 — Gründung des Hellenischen Raumfahrtzentrums",
+      provisions: {
+        "Art. 60": {
+          title: "HSC-Gründung und Mandat",
+          summary:
+            "ΕΛΚΕΔ als ΝΠΙΔ unter Ministerium für Digitale Governance. 9-faches Mandat. Art. 60(10): MOD behält VOLLE Autonomie über Verteidigungsweltraumprogramme.",
+          complianceImplication:
+            "Verteidigungsweltraum explizit ausgeklammert — dualer Regulierungspfad.",
+        },
+      },
+    },
+  ],
+  [
+    "GR-ECOMM-2020",
+    {
+      title: "Gesetz 4727/2020 — Kodex für elektronische Kommunikation",
+      provisions: {
+        "Art. 109 / Art. 119": {
+          title: "Satellitenspektrum und Orbitalverwaltung",
+          summary:
+            "Satellitennetze in Definition elektronischer Kommunikation einbezogen. Art. 119: Verwaltung von Satellitenbahnen und zugehörigen Frequenzen.",
+        },
+      },
+    },
+  ],
+  [
+    "GR-NIS2-2024",
+    {
+      title: "Gesetz 5160/2024 — NIS2-Umsetzung",
+      provisions: {
+        "Full instrument": {
+          title: "NIS2-Umsetzung — nur einen Monat verspätet",
+          summary:
+            "Griechenland transponierte NIS2 nur einen Monat nach EU-Frist — unter den schnellsten in der EU. Weltraum als kritischer Sektor. Drei Durchführungs-JMDs (2025).",
+        },
+      },
+    },
+  ],
+  [
+    "GR-SATELLITE-PROGRAMME",
+    {
+      title: "Griechisches Nationales Kleinsatellitenprogramm (200 Mio. EUR)",
+      provisions: {
+        "Full programme": {
+          title: "200 Mio. EUR aus EU-Aufbau- und Resilienzfazilität",
+          summary:
+            "13 Betriebssatelliten in 4 Instrumentenkategorien. 9 im Orbit Ende 2025. ~60 Unternehmen, 500 Mio. EUR Umsatz 2024 (verdoppelt seit 2020).",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -7032,6 +7168,72 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "Met Éireann",
       mandate:
         "EUMETSAT-Gründungsmitglied (1983). Direktor Eoin Moran = EUMETSAT-Ratsvorsitzender.",
+    },
+  ],
+
+  // Greece Authorities (8)
+  [
+    "GR-HSC",
+    {
+      name: "Hellenisches Raumfahrtzentrum (ΕΛΚΕΔ/HSC)",
+      mandate:
+        "Griechenlands Raumfahrtagentur. ΝΠΙΔ unter Ministerium für Digitale Governance. 200-Mio.-EUR-Satellitenprogramm. Präsident: Dr. Rammos (ex-ESA, 26 Patente).",
+    },
+  ],
+  [
+    "GR-MINDIGITAL",
+    {
+      name: "Ministerium für Digitale Governance — ΓΓΤΤ",
+      mandate:
+        "Aufsichtsministerium für HSC. Generalsekretär = Leiter der griechischen ESA-Delegation. Lizenzanträge unter Gesetz 5099/2024.",
+    },
+  ],
+  [
+    "GR-EETT",
+    {
+      name: "Griechische Telekommunikations- und Postkommission (EETT)",
+      mandate:
+        "Funkspektrum (außer Staatsnetze). Satelliten-Erdstationsfrequenzen. SSMS-Überwachungssystem. mySPECTRA-Portal.",
+    },
+  ],
+  [
+    "GR-MOD",
+    {
+      name: "Verteidigungsministerium — Weltraumabteilung",
+      mandate:
+        "Space Division seit 2024 unter ΓΕΕΘΑ. NCSA seit 1995 (Helios II, CSO). ELKAK: 25-Mio.-EUR-SAR-Satellit. Verteidigungsplannung 2025-2036: 25 Mrd. EUR inkl. Satellitensysteme.",
+    },
+  ],
+  [
+    "GR-NOA",
+    {
+      name: "Nationales Observatorium Athen — BEYOND-Zentrum",
+      mandate:
+        "EU-SST-Partnerschaft. GR-NOC SST. FireHub 24/7-Brandererkennung für EFFIS. Erste europäische Deep-Space-Optikkommunikation mit NASA Psyche (Juli 2025).",
+    },
+  ],
+  [
+    "GR-MFA-B6",
+    {
+      name: "Außenministerium — B6-Direktion (Exportkontrolle)",
+      mandate:
+        "Dual-Use-Lizenzbehörde. Griechenland = eines von 7 EU-Mitgliedstaaten mit nationalen Allgemeinausfuhrgenehmigungen.",
+    },
+  ],
+  [
+    "GR-NCA",
+    {
+      name: "Nationale Cybersicherheitsbehörde",
+      mandate:
+        "NIS2-Konformität für Weltraumsektor unter Gesetz 5160/2024. Griechenland transponierte NIS2 nur einen Monat verspätet.",
+    },
+  ],
+  [
+    "GR-HDPA",
+    {
+      name: "Hellenische Datenschutzbehörde (ΑΠΔΠΧ)",
+      mandate:
+        "DSGVO-Aufsicht unter Gesetz 4624/2019. Keine weltraumspezifische Orientierung.",
     },
   ],
 ]);

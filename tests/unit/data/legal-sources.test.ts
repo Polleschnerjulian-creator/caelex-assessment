@@ -44,6 +44,8 @@ import {
   AUTHORITIES_PT,
   LEGAL_SOURCES_IE,
   AUTHORITIES_IE,
+  LEGAL_SOURCES_GR,
+  AUTHORITIES_GR,
 } from "@/data/legal-sources";
 import type { LegalSource, Authority } from "@/data/legal-sources";
 
@@ -3105,6 +3107,139 @@ describe("Legal Sources — IE authority accuracy", () => {
 
   it("every IE authority has a valid website URL", () => {
     for (const a of AUTHORITIES_IE) {
+      expect(a.website).toBeTruthy();
+      expect(a.website.startsWith("http")).toBe(true);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// GREECE (GR)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── GR dataset sanity ─────────────────────────────────────────────────
+describe("Legal Sources — GR dataset sanity", () => {
+  it("GR has at least 8 legal sources", () => {
+    expect(LEGAL_SOURCES_GR.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("GR has exactly 8 authorities", () => {
+    expect(AUTHORITIES_GR).toHaveLength(8);
+  });
+
+  it("GR source IDs are unique", () => {
+    const ids = new Set<string>();
+    for (const s of LEGAL_SOURCES_GR) {
+      expect(ids.has(s.id)).toBe(false);
+      ids.add(s.id);
+    }
+  });
+
+  it("every GR source has a valid source_url", () => {
+    for (const s of LEGAL_SOURCES_GR) {
+      expect(s.source_url).toBeTruthy();
+      expect(s.source_url.startsWith("http")).toBe(true);
+    }
+  });
+
+  it("every GR source has at least 1 key provision", () => {
+    for (const s of LEGAL_SOURCES_GR) {
+      expect(
+        s.key_provisions.length,
+        `${s.id} has no key provisions`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("every GR source references valid authority IDs", () => {
+    const authorityIds = new Set(AUTHORITIES_GR.map((a) => a.id));
+    for (const s of LEGAL_SOURCES_GR) {
+      if (s.competent_authorities) {
+        for (const aId of s.competent_authorities) {
+          expect(authorityIds.has(aId)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("GR related_sources reference IDs that exist in the dataset", () => {
+    const allIds = new Set(LEGAL_SOURCES_GR.map((s) => s.id));
+    for (const s of LEGAL_SOURCES_GR) {
+      for (const relId of s.related_sources) {
+        expect(allIds.has(relId)).toBe(true);
+      }
+    }
+  });
+});
+
+// ─── GR regulatory accuracy ───────────────────────────────────────────
+describe("Legal Sources — GR regulatory accuracy", () => {
+  it("Space Act 4508/2017 is critical and in force", () => {
+    const act = getLegalSourceById("GR-SPACE-ACT-2017")!;
+    expect(act).toBeDefined();
+    expect(act.relevance_level).toBe("critical");
+    expect(act.status).toBe("in_force");
+    expect(act.type).toBe("federal_law");
+    expect(act.date_enacted).toBe("2017-12-22");
+  });
+
+  it("Registration Convention ratified late (2003)", () => {
+    const reg = getLegalSourceById("GR-REGISTRATION-2003")!;
+    expect(reg).toBeDefined();
+    expect(reg.date_in_force).toBe("2003-04-04");
+    expect(reg.type).toBe("international_treaty");
+  });
+
+  it("Artemis Accords signed 2024-02-09", () => {
+    const artemis = getLegalSourceById("GR-ARTEMIS-ACCORDS")!;
+    expect(artemis).toBeDefined();
+    expect(artemis.date_enacted).toBe("2024-02-09");
+  });
+
+  it("NIS2 Law 5160/2024 is in force", () => {
+    const nis2 = getLegalSourceById("GR-NIS2-2024")!;
+    expect(nis2).toBeDefined();
+    expect(nis2.status).toBe("in_force");
+    expect(nis2.official_reference).toContain("195");
+  });
+});
+
+// ─── GR lookup functions ──────────────────────────────────────────────
+describe("Legal Sources — GR lookup functions", () => {
+  it("getLegalSourcesByJurisdiction returns GR sources", () => {
+    const sources = getLegalSourcesByJurisdiction("GR");
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.length).toBe(LEGAL_SOURCES_GR.length);
+  });
+
+  it("getAuthoritiesByJurisdiction returns 8 GR authorities", () => {
+    const auths = getAuthoritiesByJurisdiction("GR");
+    expect(auths).toHaveLength(8);
+  });
+
+  it("getAvailableJurisdictions includes GR", () => {
+    expect(getAvailableJurisdictions()).toContain("GR");
+  });
+});
+
+// ─── GR authority accuracy ────────────────────────────────────────────
+describe("Legal Sources — GR authority accuracy", () => {
+  it("HSC is the space agency", () => {
+    const hsc = getAuthorityById("GR-HSC")!;
+    expect(hsc).toBeDefined();
+    expect(hsc.space_mandate).toContain("space agency");
+    expect(hsc.applicable_areas).toContain("licensing");
+  });
+
+  it("EETT handles spectrum", () => {
+    const eett = getAuthorityById("GR-EETT")!;
+    expect(eett).toBeDefined();
+    expect(eett.space_mandate).toContain("spectrum");
+    expect(eett.applicable_areas).toContain("frequency_spectrum");
+  });
+
+  it("every GR authority has a valid website URL", () => {
+    for (const a of AUTHORITIES_GR) {
       expect(a.website).toBeTruthy();
       expect(a.website.startsWith("http")).toBe(true);
     }
