@@ -13,6 +13,7 @@ interface Message {
 
 export default function AtlasAstraChat() {
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,13 +27,16 @@ export default function AtlasAstraChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Animate open
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      requestAnimationFrame(() => setVisible(true));
+      setTimeout(() => inputRef.current?.focus(), 200);
+    } else {
+      setVisible(false);
     }
   }, [open]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
@@ -63,14 +67,12 @@ export default function AtlasAstraChat() {
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
-
     setMessages((prev) => [
       ...prev,
       { id: `u-${Date.now()}`, role: "user", content: text },
     ]);
     setInput("");
     setLoading(true);
-
     try {
       const res = await fetch("/api/astra/chat", {
         method: "POST",
@@ -82,11 +84,9 @@ export default function AtlasAstraChat() {
           stream: false,
         }),
       });
-
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
       setConversationId(data.conversationId);
-
       setMessages((prev) => [
         ...prev,
         {
@@ -147,109 +147,102 @@ export default function AtlasAstraChat() {
         ];
   }, [pathname, language]);
 
+  const handleClose = useCallback(() => {
+    setVisible(false);
+    setTimeout(() => setOpen(false), 250);
+  }, []);
+
   return (
     <>
-      {/* ─── Floating Pill Button ─── */}
+      {/* ─── Floating Button ─── */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="
-            fixed bottom-5 right-5 z-50
-            flex items-center gap-2 px-5 py-2.5
-            rounded-full
-            bg-white/70 backdrop-blur-xl
-            border border-white/50
-            shadow-[0_4px_30px_rgba(0,0,0,0.08)]
-            hover:bg-white/90 hover:shadow-[0_8px_40px_rgba(0,0,0,0.12)]
-            hover:scale-[1.02]
-            active:scale-[0.98]
-            transition-all duration-300 ease-out
-            group
-          "
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 pl-4 pr-5 py-2.5 rounded-full bg-[#1a1a1a] text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-[#2a2a2a] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 ease-out group"
           aria-label={language === "de" ? "Astra öffnen" : "Open Astra"}
         >
-          <Sparkles
-            size={15}
-            strokeWidth={2}
-            aria-hidden="true"
-            className="text-gray-500 group-hover:text-gray-900 transition-colors"
-          />
-          <span className="text-[13px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+          <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
+            <Sparkles
+              size={13}
+              strokeWidth={2}
+              aria-hidden="true"
+              className="text-white/80 group-hover:text-white transition-colors"
+            />
+          </div>
+          <span className="text-[13px] font-medium text-white/90 group-hover:text-white transition-colors">
             Astra
           </span>
         </button>
       )}
 
-      {/* ─── Glass Chat Panel ─── */}
+      {/* ─── Dark Chat Panel ─── */}
       {open && (
         <div
-          className="
-            fixed bottom-5 right-5 z-50
-            w-[400px] h-[540px]
-            flex flex-col
-            rounded-3xl
-            bg-white/70 backdrop-blur-2xl
-            border border-white/60
-            shadow-[0_20px_70px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.4)_inset]
-            overflow-hidden
-          "
+          className="fixed bottom-5 right-5 z-50 w-[400px] h-[560px] flex flex-col rounded-2xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.5)]"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible
+              ? "translateY(0) scale(1)"
+              : "translateY(16px) scale(0.97)",
+            transition:
+              "opacity 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)",
+          }}
         >
-          {/* ─── Header ─── */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200/40">
-            <div className="flex items-center gap-2.5">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3 bg-[#1a1a1a] border-b border-white/[0.06]">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-white/15 to-white/5 flex items-center justify-center backdrop-blur-sm">
                   <Sparkles
-                    size={13}
-                    className="text-white"
+                    size={14}
+                    className="text-white/90"
                     aria-hidden="true"
                   />
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white" />
+                <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#1a1a1a]" />
               </div>
               <div>
-                <span className="text-[14px] font-semibold text-gray-900 block leading-tight">
+                <span className="text-[13px] font-semibold text-white/95 block leading-tight tracking-wide">
                   Astra
                 </span>
-                <span className="text-[10px] text-gray-400 leading-tight">
+                <span className="text-[10px] text-white/40 leading-tight">
                   Space Law Assistant
                 </span>
               </div>
             </div>
             <button
-              onClick={() => setOpen(false)}
-              className="h-7 w-7 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-colors"
+              onClick={handleClose}
+              className="h-7 w-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
               aria-label={language === "de" ? "Schließen" : "Close"}
             >
               <X
                 size={13}
-                strokeWidth={2.5}
-                className="text-gray-500"
+                strokeWidth={2}
+                className="text-white/50"
                 aria-hidden="true"
               />
             </button>
           </div>
 
-          {/* ─── Messages ─── */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-[#111111]">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full px-2">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mb-4">
+                <div className="h-14 w-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-4">
                   <Sparkles
-                    size={20}
-                    className="text-gray-500"
+                    size={22}
+                    className="text-white/30"
                     aria-hidden="true"
                   />
                 </div>
-                <p className="text-[15px] font-semibold text-gray-900 mb-0.5">
+                <p className="text-[15px] font-semibold text-white/90 mb-1">
                   {language === "de"
                     ? "Frag mich zum Weltraumrecht"
                     : "Ask me about space law"}
                 </p>
-                <p className="text-[11px] text-gray-400 mb-5">
-                  18 jurisdictions &middot; 325 sources &middot; 211 authorities
+                <p className="text-[11px] text-white/30 mb-6">
+                  18 jurisdictions · 325 sources · 211 authorities
                 </p>
-
                 <div className="space-y-2 w-full">
                   {suggestions().map((s) => (
                     <button
@@ -258,15 +251,7 @@ export default function AtlasAstraChat() {
                         setInput(s);
                         setTimeout(() => inputRef.current?.focus(), 50);
                       }}
-                      className="
-                        w-full text-left px-4 py-3
-                        rounded-2xl
-                        bg-white/60 backdrop-blur-sm
-                        border border-gray-200/60
-                        text-[12px] text-gray-600
-                        hover:bg-white hover:border-gray-300/80 hover:shadow-sm
-                        transition-all duration-200
-                      "
+                      className="w-full text-left px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/60 hover:bg-white/[0.07] hover:border-white/[0.1] hover:text-white/80 transition-all duration-200"
                     >
                       {s}
                     </button>
@@ -281,14 +266,7 @@ export default function AtlasAstraChat() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`
-                    max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed
-                    ${
-                      msg.role === "user"
-                        ? "bg-gray-900 text-white rounded-[20px] rounded-br-lg"
-                        : "bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-800 rounded-[20px] rounded-bl-lg shadow-sm"
-                    }
-                  `}
+                  className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${msg.role === "user" ? "bg-white text-gray-900 rounded-[18px] rounded-br-md" : "bg-white/[0.06] border border-white/[0.08] text-white/85 rounded-[18px] rounded-bl-md"}`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
@@ -297,41 +275,30 @@ export default function AtlasAstraChat() {
 
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 px-4 py-3 rounded-[20px] rounded-bl-lg shadow-sm">
-                  <div className="flex gap-1.5">
+                <div className="bg-white/[0.06] border border-white/[0.08] px-4 py-3 rounded-[18px] rounded-bl-md">
+                  <div className="flex gap-1">
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     />
                   </div>
                 </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
 
-          {/* ─── Input ─── */}
-          <div className="px-3 pb-3 pt-1">
-            <div
-              className="
-                flex items-end gap-2
-                px-3 py-2
-                rounded-2xl
-                bg-white/80 backdrop-blur-sm
-                border border-gray-200/60
-                focus-within:border-gray-300 focus-within:shadow-sm
-                transition-all duration-200
-              "
-            >
+          {/* Input */}
+          <div className="px-3 pb-3 pt-2 bg-[#111111] border-t border-white/[0.04]">
+            <div className="flex items-end gap-2 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] focus-within:border-white/[0.15] transition-all duration-200">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -344,15 +311,7 @@ export default function AtlasAstraChat() {
                 }
                 disabled={loading}
                 rows={1}
-                className="
-                  flex-1 resize-none
-                  text-[13px] text-gray-900
-                  placeholder:text-gray-400
-                  bg-transparent border-0 outline-none
-                  disabled:opacity-50
-                  max-h-[120px]
-                  py-1
-                "
+                className="flex-1 resize-none text-[13px] text-white/90 placeholder:text-white/25 bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-1"
                 aria-label={
                   language === "de" ? "Nachricht eingeben" : "Type your message"
                 }
@@ -360,16 +319,7 @@ export default function AtlasAstraChat() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="
-                  flex-shrink-0
-                  h-7 w-7 rounded-full
-                  bg-gray-900 text-white
-                  disabled:opacity-20
-                  hover:bg-black
-                  active:scale-95
-                  flex items-center justify-center
-                  transition-all duration-150
-                "
+                className="flex-shrink-0 h-7 w-7 rounded-lg bg-white text-[#111] disabled:opacity-20 hover:bg-white/90 active:scale-95 flex items-center justify-center transition-all duration-150"
                 aria-label={language === "de" ? "Senden" : "Send"}
               >
                 {loading ? (
@@ -386,8 +336,6 @@ export default function AtlasAstraChat() {
           </div>
         </div>
       )}
-
-      {/* Animation via Tailwind animate classes instead of styled-jsx */}
     </>
   );
 }
