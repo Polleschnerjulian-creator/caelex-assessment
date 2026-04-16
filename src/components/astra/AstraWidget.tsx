@@ -7,7 +7,7 @@ import { X, Maximize2, Send } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMissionBriefing from "./AstraMissionBriefing";
 
-// ─── Markdown Renderer (dark glass theme) ───────────────────────────────────
+// ─── Markdown Renderer (light theme) ─────────────────────────────────────────
 
 function processInline(line: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
@@ -22,7 +22,7 @@ function processInline(line: string): React.ReactNode[] {
           <span key={pk++}>{remaining.slice(0, boldMatch.index)}</span>,
         );
       parts.push(
-        <strong key={pk++} className="font-semibold text-white/90">
+        <strong key={pk++} className="font-semibold text-gray-900">
           {boldMatch[1]}
         </strong>,
       );
@@ -37,7 +37,7 @@ function processInline(line: string): React.ReactNode[] {
         parts.push(
           <code
             key={pk++}
-            className="px-1.5 py-0.5 rounded bg-white/[0.06] text-small font-mono text-emerald-400/80"
+            className="px-1.5 py-0.5 rounded bg-gray-100 text-small font-mono text-gray-700"
           >
             {codeMatch[1]}
           </code>,
@@ -63,7 +63,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <ul key={key++} className="my-1 pl-4 list-disc">
           {listItems.map((item, idx) => (
-            <li key={idx} className="mb-0.5 text-white/60">
+            <li key={idx} className="mb-0.5 text-gray-600">
               {processInline(item)}
             </li>
           ))}
@@ -94,7 +94,7 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
       elements.push(
-        <hr key={key++} className="border-t border-white/[0.06] my-2.5" />,
+        <hr key={key++} className="border-t border-gray-200 my-2.5" />,
       );
       continue;
     }
@@ -102,7 +102,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <div
           key={key++}
-          className="font-semibold text-small text-white/80 mt-2.5 mb-0.5"
+          className="font-semibold text-small text-gray-800 mt-2.5 mb-0.5"
         >
           {processInline(trimmed.slice(4))}
         </div>,
@@ -113,7 +113,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <div
           key={key++}
-          className="font-semibold text-body text-white/80 mt-3 mb-1"
+          className="font-semibold text-body text-gray-800 mt-3 mb-1"
         >
           {processInline(trimmed.slice(3))}
         </div>,
@@ -124,7 +124,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <div
           key={key++}
-          className="font-semibold text-body-lg text-white/90 mt-3 mb-1"
+          className="font-semibold text-body-lg text-gray-900 mt-3 mb-1"
         >
           {processInline(trimmed.slice(2))}
         </div>,
@@ -254,7 +254,7 @@ export default function AstraWidget({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/30"
           />
 
           {/* ─── Slide-Over Panel ─── */}
@@ -267,16 +267,15 @@ export default function AstraWidget({
             className="
               fixed right-0 top-0 h-full w-[480px] max-w-full z-50
               flex flex-col
-              bg-[#0A0F1E]/95 backdrop-blur-2xl border-l border-white/[0.08]
+              bg-white border-l border-gray-200 shadow-xl
               overflow-hidden
-              dark
             "
           >
             {/* ─── Header ─── */}
-            <div className="h-12 flex items-center justify-between px-4 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08] flex-shrink-0 relative z-10">
+            <div className="h-12 flex items-center justify-between px-4 bg-white border-b border-gray-200 flex-shrink-0 relative z-10">
               <div className="flex items-center gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-                <span className="text-small font-medium tracking-wider text-white/60 uppercase">
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-900" />
+                <span className="text-small font-medium tracking-wider text-gray-900 uppercase">
                   Astra
                 </span>
               </div>
@@ -284,7 +283,7 @@ export default function AstraWidget({
                 {hasUserMessages && (
                   <button
                     onClick={resetChat}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                     title="Neues Gespraech"
                   >
                     <svg
@@ -304,14 +303,14 @@ export default function AstraWidget({
                 )}
                 <Link
                   href="/dashboard/astra"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                   title="Vollbild"
                 >
                   <Maximize2 size={15} />
                 </Link>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                   title="Schliessen"
                 >
                   <X size={15} />
@@ -320,7 +319,7 @@ export default function AstraWidget({
             </div>
 
             {/* ─── Content Area ─── */}
-            <div className="flex-1 overflow-y-auto astra-panel-scroll relative z-10">
+            <div className="flex-1 overflow-y-auto astra-panel-scroll relative z-10 bg-[#F7F8FA]">
               {!hasUserMessages ? (
                 <AstraMissionBriefing onSendMessage={sendMessage} />
               ) : (
@@ -334,7 +333,7 @@ export default function AstraWidget({
                     if (isUser) {
                       return (
                         <div key={msg.id} className="flex justify-end mb-1.5">
-                          <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-emerald-500/20 border border-emerald-500/20 text-white/90 text-body leading-relaxed whitespace-pre-wrap break-words">
+                          <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-gray-900 text-white text-body leading-relaxed whitespace-pre-wrap break-words">
                             {msg.content}
                           </div>
                         </div>
@@ -347,14 +346,14 @@ export default function AstraWidget({
                         className="flex gap-2.5 items-start mb-2"
                       >
                         {/* Avatar */}
-                        <div className="w-6 h-6 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <div className="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-2 h-2 rounded-full bg-gray-900" />
                         </div>
                         {/* Message */}
-                        <div className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/[0.06] text-body leading-relaxed text-white/70 break-words">
+                        <div className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white border border-gray-200 text-body leading-relaxed text-gray-800 break-words">
                           {renderMarkdown(msg.content)}
                           {showCursor && (
-                            <span className="inline-block w-0.5 h-3.5 bg-emerald-400 ml-0.5 align-text-bottom rounded-sm animate-pulse" />
+                            <span className="inline-block w-0.5 h-3.5 bg-gray-900 ml-0.5 align-text-bottom rounded-sm animate-pulse" />
                           )}
                         </div>
                       </div>
@@ -364,8 +363,8 @@ export default function AstraWidget({
                   {/* Typing indicator */}
                   {isTyping && !isStreaming && (
                     <div className="flex gap-2.5 items-start mb-2">
-                      <div className="w-6 h-6 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <div className="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-2 h-2 rounded-full bg-gray-900" />
                       </div>
                       <div className="flex gap-1.5 items-center pt-2.5">
                         <span
@@ -397,7 +396,7 @@ export default function AstraWidget({
                     <button
                       key={pill}
                       onClick={() => sendMessage(pill)}
-                      className="px-3 py-1.5 rounded-xl text-caption text-white/40 border border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.08] hover:text-white/60 transition-colors"
+                      className="px-3 py-1.5 rounded-xl text-caption text-gray-600 border border-gray-200 bg-white hover:border-gray-300 hover:text-gray-800 transition-colors"
                     >
                       {pill}
                     </button>
@@ -406,7 +405,7 @@ export default function AstraWidget({
               )}
 
               {/* Command bar input */}
-              <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2.5 bg-white/[0.04] backdrop-blur-md border border-white/[0.08] focus-within:border-emerald-500/30 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,0.08)] transition-all">
+              <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2.5 bg-white border border-gray-200 focus-within:border-gray-400 focus-within:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] transition-all">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -420,7 +419,7 @@ export default function AstraWidget({
                   placeholder="Frag Astra etwas..."
                   disabled={isTyping}
                   rows={1}
-                  className="flex-1 bg-transparent border-none outline-none resize-none text-body text-white/90 placeholder:text-white/30 leading-relaxed max-h-[120px]"
+                  className="flex-1 bg-transparent border-none outline-none resize-none text-body text-gray-900 placeholder:text-gray-400 leading-relaxed max-h-[120px]"
                 />
                 <button
                   onClick={handleSend}
@@ -430,8 +429,8 @@ export default function AstraWidget({
                     transition-all duration-200
                     ${
                       input.trim()
-                        ? "bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-                        : "text-white/20 cursor-default"
+                        ? "bg-gray-900 text-white hover:bg-gray-800"
+                        : "text-gray-300 cursor-default"
                     }
                   `}
                 >
@@ -440,7 +439,7 @@ export default function AstraWidget({
               </div>
 
               {/* Privacy line */}
-              <div className="text-center text-micro text-white/20 mt-2">
+              <div className="text-center text-micro text-gray-400 mt-2">
                 Powered by Anthropic Claude
               </div>
             </div>
@@ -450,14 +449,14 @@ export default function AstraWidget({
           <style>{`
             .astra-panel-scroll::-webkit-scrollbar { width: 3px; }
             .astra-panel-scroll::-webkit-scrollbar-track { background: transparent; }
-            .astra-panel-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+            .astra-panel-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
 
             .astra-typing-dot {
               display: inline-block;
               width: 4px;
               height: 4px;
               border-radius: 50%;
-              background: rgba(16, 185, 129, 0.6);
+              background: rgb(156, 163, 175);
               animation: astraTypingBounce 1s ease-in-out infinite;
             }
             @keyframes astraTypingBounce {
