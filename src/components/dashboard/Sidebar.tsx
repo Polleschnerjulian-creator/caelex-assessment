@@ -1131,14 +1131,6 @@ export default function Sidebar({
               >
                 Hazard Analysis
               </NavItem>
-              <NavItem
-                href="/dashboard/nexus"
-                icon={<Network size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Asset Register
-              </NavItem>
             </div>
           </div>
 
