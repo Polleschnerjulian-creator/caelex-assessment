@@ -29,7 +29,7 @@ export default function CreateAttestationModal({
   onClose,
   onCreated,
 }: Props) {
-  const [step, setStep] = useState(0); // 0: type, 1: details, 2: review & sign
+  const [step, setStep] = useState(0);
   const [selectedType, setSelectedType] = useState<AttestationType | null>(
     null,
   );
@@ -37,7 +37,6 @@ export default function CreateAttestationModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form fields
   const [regulationRef, setRegulationRef] = useState("");
   const [regulationName, setRegulationName] = useState("");
   const [claimStatement, setClaimStatement] = useState("");
@@ -117,36 +116,42 @@ export default function CreateAttestationModal({
       ? ATTESTATION_TYPES
       : ATTESTATION_TYPES.filter((t) => t.category === categoryFilter);
 
+  const inputClass =
+    "w-full px-3 py-2.5 rounded-xl bg-white border border-gray-200 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none transition-colors";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={handleClose}
       />
 
       {/* Modal */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 8 }}
-        transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
-        className="relative w-full max-w-[640px] max-h-[85vh] glass-floating rounded-[var(--radius-xl)] border border-[var(--glass-border-medium)] overflow-hidden flex flex-col"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.2, ease: [0.22, 0.61, 0.36, 1] }}
+        role="dialog"
+        aria-label="Create Attestation"
+        aria-modal="true"
+        className="relative w-full max-w-[600px] max-h-[85vh] bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--separator)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[rgba(74,98,232,0.08)] flex items-center justify-center">
-              <Shield className="w-4 h-4 text-[var(--accent-400)]" />
+            <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-gray-600" />
             </div>
             <div>
-              <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+              <h2 className="text-[16px] font-semibold text-gray-900">
                 Create Attestation
               </h2>
-              <p className="text-[11px] text-[var(--text-tertiary)]">
+              <p className="text-[11px] text-gray-500">
                 {step === 0
                   ? "Select attestation type"
                   : step === 1
@@ -157,32 +162,24 @@ export default function CreateAttestationModal({
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--fill-light)] transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Close dialog"
           >
-            <X size={16} className="text-[var(--text-tertiary)]" />
+            <X size={16} className="text-gray-400" />
           </button>
         </div>
 
         {/* Step indicator */}
-        <div className="px-6 py-3 border-b border-[var(--separator)] flex items-center gap-2">
+        <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2">
           {["Type", "Details", "Sign"].map((label, i) => (
             <div key={label} className="flex items-center gap-2">
               {i > 0 && (
                 <div
-                  className={`w-8 h-px ${i <= step ? "bg-[var(--accent-primary)]" : "bg-[var(--fill-medium)]"}`}
+                  className={`w-8 h-px ${i <= step ? "bg-gray-900" : "bg-gray-200"}`}
                 />
               )}
               <div
-                className={`
-                  flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium
-                  ${
-                    i === step
-                      ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                      : i < step
-                        ? "bg-[var(--status-success-bg)] text-[var(--status-success)]"
-                        : "bg-[var(--fill-light)] text-[var(--text-disabled)]"
-                  }
-                `}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${i === step ? "bg-gray-900 text-white" : i < step ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-400"}`}
               >
                 {i < step ? <Check size={10} /> : null}
                 {label}
@@ -206,11 +203,7 @@ export default function CreateAttestationModal({
                 <div className="flex items-center gap-1.5 mb-4 flex-wrap">
                   <button
                     onClick={() => setCategoryFilter("all")}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ${
-                      categoryFilter === "all"
-                        ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                        : "bg-[var(--fill-light)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${categoryFilter === "all" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:text-gray-700"}`}
                   >
                     All
                   </button>
@@ -218,46 +211,38 @@ export default function CreateAttestationModal({
                     <button
                       key={cat}
                       onClick={() => setCategoryFilter(cat)}
-                      className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ${
-                        categoryFilter === cat
-                          ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                          : "bg-[var(--fill-light)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${categoryFilter === cat ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:text-gray-700"}`}
                     >
                       {cat}
                     </button>
                   ))}
                 </div>
 
-                {/* Type grid */}
+                {/* Type list */}
                 <div className="space-y-2">
                   {filteredTypes.map((type) => (
                     <button
                       key={type.id}
                       onClick={() => handleSelectType(type)}
-                      className="w-full text-left px-4 py-3 glass-inset rounded-[var(--radius-md)] hover:bg-[var(--fill-light)] border border-transparent hover:border-[var(--fill-strong)] transition-all duration-[var(--duration-fast)] group"
+                      className="w-full text-left px-4 py-3.5 rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-sm bg-white transition-all duration-150 group flex items-center justify-between"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[13px] font-medium text-[var(--text-primary)]">
-                              {type.label}
-                            </span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--fill-light)] text-[var(--text-tertiary)] font-medium">
-                              {type.category}
-                            </span>
-                          </div>
-                          {type.id !== "custom" && (
-                            <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5 truncate">
-                              {type.regulationName}
-                            </p>
-                          )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[14px] font-medium text-gray-900 group-hover:text-black">
+                            {type.name}
+                          </span>
+                          <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                            {type.category}
+                          </span>
                         </div>
-                        <ChevronRight
-                          size={14}
-                          className="text-[var(--text-disabled)] group-hover:text-[var(--text-tertiary)] transition-colors"
-                        />
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          {type.regulationName}
+                        </p>
                       </div>
+                      <ChevronRight
+                        size={14}
+                        className="text-gray-300 group-hover:text-gray-900 transition-colors flex-shrink-0"
+                      />
                     </button>
                   ))}
                 </div>
@@ -271,88 +256,69 @@ export default function CreateAttestationModal({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-4"
               >
-                {/* Regulation Ref */}
-                <div>
-                  <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                    Regulation Reference
-                  </label>
-                  <input
-                    type="text"
-                    value={regulationRef}
-                    onChange={(e) => setRegulationRef(e.target.value)}
-                    placeholder="e.g. nis2_art_21"
-                    disabled={selectedType?.id !== "custom"}
-                    className="w-full px-3 py-2 text-[13px] bg-[var(--fill-light)] border border-[var(--fill-strong)] rounded-[var(--radius-sm)] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors disabled:opacity-60"
-                  />
-                </div>
-
-                {/* Regulation Name */}
-                <div>
-                  <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                    Regulation Name
-                  </label>
-                  <input
-                    type="text"
-                    value={regulationName}
-                    onChange={(e) => setRegulationName(e.target.value)}
-                    placeholder="e.g. NIS2 Directive Art. 21"
-                    disabled={selectedType?.id !== "custom"}
-                    className="w-full px-3 py-2 text-[13px] bg-[var(--fill-light)] border border-[var(--fill-strong)] rounded-[var(--radius-sm)] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors disabled:opacity-60"
-                  />
-                </div>
-
-                {/* Claim Statement */}
-                <div>
-                  <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                    Claim Statement
-                  </label>
-                  <textarea
-                    value={claimStatement}
-                    onChange={(e) => setClaimStatement(e.target.value)}
-                    placeholder="Describe the compliance claim..."
-                    rows={3}
-                    className="w-full px-3 py-2 text-[13px] bg-[var(--fill-light)] border border-[var(--fill-strong)] rounded-[var(--radius-sm)] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                {/* Description (optional) */}
-                <div>
-                  <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                    Description{" "}
-                    <span className="text-[var(--text-disabled)]">
-                      (optional)
-                    </span>
-                  </label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Internal notes or additional context..."
-                    rows={2}
-                    className="w-full px-3 py-2 text-[13px] bg-[var(--fill-light)] border border-[var(--fill-strong)] rounded-[var(--radius-sm)] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                {/* Expiry */}
-                <div>
-                  <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                    Expires In
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {[30, 90, 180, 365].map((days) => (
-                      <button
-                        key={days}
-                        onClick={() => setExpiresInDays(days)}
-                        className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-colors ${
-                          expiresInDays === days
-                            ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border border-[rgba(74,98,232,0.2)]"
-                            : "bg-[var(--fill-light)] text-[var(--text-tertiary)] border border-transparent hover:border-[var(--fill-strong)]"
-                        }`}
-                      >
-                        {days}d
-                      </button>
-                    ))}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                      Regulation Reference *
+                    </label>
+                    <input
+                      type="text"
+                      value={regulationRef}
+                      onChange={(e) => setRegulationRef(e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g., NIS2 Art. 21"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                      Regulation Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={regulationName}
+                      onChange={(e) => setRegulationName(e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g., NIS2 Directive"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                      Claim Statement *
+                    </label>
+                    <textarea
+                      value={claimStatement}
+                      onChange={(e) => setClaimStatement(e.target.value)}
+                      className={`${inputClass} h-20 resize-none`}
+                      placeholder="What are you attesting to?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                      Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className={`${inputClass} h-16 resize-none`}
+                      placeholder="Optional additional details"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                      <Calendar size={12} className="inline mr-1" />
+                      Expires in (days)
+                    </label>
+                    <input
+                      type="number"
+                      value={expiresInDays}
+                      onChange={(e) =>
+                        setExpiresInDays(parseInt(e.target.value) || 90)
+                      }
+                      className={`${inputClass} w-32`}
+                      min={1}
+                      max={365}
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -365,118 +331,69 @@ export default function CreateAttestationModal({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-4"
               >
-                {/* Review card */}
-                <div className="glass-inset rounded-[var(--radius-md)] p-4 space-y-3">
-                  <div className="flex items-center gap-2 text-[12px] font-medium text-[var(--text-secondary)]">
-                    <FileSignature
-                      size={14}
-                      className="text-[var(--accent-400)]"
-                    />
-                    Attestation Summary
+                <div className="rounded-xl bg-gray-50 border border-gray-200 p-5 space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Fingerprint size={16} className="text-gray-600" />
+                    <span className="text-[14px] font-semibold text-gray-900">
+                      Review & Sign
+                    </span>
                   </div>
-
-                  <div className="space-y-2.5">
-                    <div className="flex items-start gap-3">
-                      <span className="text-[11px] text-[var(--text-tertiary)] w-24 flex-shrink-0 pt-0.5">
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
                         Regulation
                       </span>
-                      <span className="text-[12px] text-[var(--text-primary)] font-medium">
-                        {regulationName}
-                      </span>
+                      <p className="text-[13px] text-gray-900 font-medium">
+                        {regulationRef} — {regulationName}
+                      </p>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <span className="text-[11px] text-[var(--text-tertiary)] w-24 flex-shrink-0 pt-0.5">
-                        Ref
-                      </span>
-                      <span className="text-[12px] text-[var(--text-secondary)] font-mono">
-                        {regulationRef}
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="text-[11px] text-[var(--text-tertiary)] w-24 flex-shrink-0 pt-0.5">
+                    <div>
+                      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
                         Claim
                       </span>
-                      <span className="text-[12px] text-[var(--text-primary)]">
+                      <p className="text-[13px] text-gray-700">
                         {claimStatement}
-                      </span>
+                      </p>
                     </div>
                     {description && (
-                      <div className="flex items-start gap-3">
-                        <span className="text-[11px] text-[var(--text-tertiary)] w-24 flex-shrink-0 pt-0.5">
+                      <div>
+                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
                           Description
                         </span>
-                        <span className="text-[12px] text-[var(--text-secondary)]">
+                        <p className="text-[12px] text-gray-500">
                           {description}
-                        </span>
+                        </p>
                       </div>
                     )}
-                    <div className="flex items-start gap-3">
-                      <span className="text-[11px] text-[var(--text-tertiary)] w-24 flex-shrink-0 pt-0.5">
-                        Expires
+                    <div>
+                      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                        Validity
                       </span>
-                      <span className="text-[12px] text-[var(--text-secondary)]">
-                        {expiresInDays} days from now
-                      </span>
+                      <p className="text-[13px] text-gray-700">
+                        {expiresInDays} days
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Trust level warning */}
-                <div className="flex items-start gap-3 p-3 bg-[var(--status-warning-bg)] border border-[var(--status-warning-border)] rounded-[var(--radius-md)]">
-                  <AlertTriangle
-                    size={14}
-                    className="text-[var(--status-warning)] flex-shrink-0 mt-0.5"
-                  />
-                  <div>
-                    <p className="text-[12px] font-medium text-[var(--status-warning)]">
-                      Manual Attestation — LOW Trust Level
-                    </p>
-                    <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-                      Self-declared attestations carry a LOW trust level
-                      (0.50–0.69). They are cryptographically signed but not
-                      backed by automated evidence collection.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Crypto details */}
-                <div className="glass-inset rounded-[var(--radius-md)] p-4">
-                  <div className="flex items-center gap-2 text-[12px] font-medium text-[var(--text-secondary)] mb-3">
-                    <Fingerprint
+                <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle
                       size={14}
-                      className="text-[var(--accent-400)]"
+                      className="text-amber-600 mt-0.5 flex-shrink-0"
                     />
-                    Cryptographic Signing
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--status-success)]" />
-                      <span className="text-[11px] text-[var(--text-tertiary)]">
-                        Ed25519 digital signature
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--status-success)]" />
-                      <span className="text-[11px] text-[var(--text-tertiary)]">
-                        SHA-256 value commitment
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--status-success)]" />
-                      <span className="text-[11px] text-[var(--text-tertiary)]">
-                        Publicly verifiable at caelex.eu/verity/verify
-                      </span>
-                    </div>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      By signing this attestation, you confirm the accuracy of
+                      the above statements. This attestation will be
+                      cryptographically signed and timestamped.
+                    </p>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] rounded-[var(--radius-md)]">
-                    <p className="text-[12px] text-[var(--status-danger)]">
-                      {error}
-                    </p>
+                  <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200">
+                    <p className="text-[11px] text-red-600">{error}</p>
                   </div>
                 )}
               </motion.div>
@@ -485,38 +402,36 @@ export default function CreateAttestationModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[var(--separator)] flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
           <button
             onClick={() => (step === 0 ? handleClose() : setStep(step - 1))}
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <ChevronLeft size={14} />
             {step === 0 ? "Cancel" : "Back"}
           </button>
 
-          {step === 1 && (
+          {step < 2 ? (
             <button
-              onClick={() => setStep(2)}
-              disabled={!canProceedToReview}
-              className="flex items-center gap-1.5 px-5 py-2 bg-[var(--accent-primary)] text-white text-[13px] font-medium rounded-[var(--radius-sm)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setStep(step + 1)}
+              disabled={step === 1 && !canProceedToReview}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-[12px] font-medium hover:bg-black disabled:opacity-30 transition-all"
             >
-              Review & Sign
+              Continue
               <ChevronRight size={14} />
             </button>
-          )}
-
-          {step === 2 && (
+          ) : (
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex items-center gap-2 px-5 py-2 bg-[var(--accent-primary)] text-white text-[13px] font-medium rounded-[var(--radius-sm)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-[12px] font-medium hover:bg-black disabled:opacity-50 transition-all"
             >
               {submitting ? (
                 <Loader2 size={14} className="animate-spin" />
               ) : (
                 <FileSignature size={14} />
               )}
-              Sign & Create
+              {submitting ? "Signing..." : "Sign & Create"}
             </button>
           )}
         </div>
