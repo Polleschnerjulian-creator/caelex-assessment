@@ -1,135 +1,264 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronDown, ChevronRight, StickyNote, X } from "lucide-react";
+import { ChevronDown, ChevronRight, StickyNote, Trash2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
-interface Note {
+interface Annotation {
   id: string;
   text: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-interface NotesStore {
-  [sourceId: string]: Note[];
-}
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface SourceNotesProps {
   sourceId: string;
 }
 
-// ─── localStorage helpers ───────────────────────────────────────────
+// ─── localStorage migration helpers ─────────────────────────────────
 
-const STORAGE_KEY = "atlas-notes";
+const LEGACY_STORAGE_KEY = "atlas-notes";
 
-function loadNotes(): NotesStore {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as NotesStore;
-  } catch {}
-  return {};
+interface LegacyNote {
+  id: string;
+  text: string;
+  createdAt: string;
 }
 
-function saveNotes(store: NotesStore): void {
+function getLegacyNotes(sourceId: string): LegacyNote[] | null {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-  } catch {}
-}
-
-// ─── Timestamp formatter ────────────────────────────────────────────
-
-function formatTimestamp(iso: string, lang: string): string {
-  try {
-    const date = new Date(iso);
-    return date.toLocaleDateString(lang === "de" ? "de-DE" : "en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return null;
+    const store = JSON.parse(raw) as Record<string, LegacyNote[]>;
+    const notes = store[sourceId];
+    return notes && notes.length > 0 ? notes : null;
   } catch {
-    return iso;
+    return null;
+  }
+}
+
+function clearLegacyNotes(sourceId: string): void {
+  try {
+    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return;
+    const store = JSON.parse(raw) as Record<string, LegacyNote[]>;
+    delete store[sourceId];
+    // If store is now empty, remove the key entirely
+    if (Object.keys(store).length === 0) {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } else {
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(store));
+    }
+  } catch {
+    // Non-critical — ignore
   }
 }
 
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function SourceNotes({ sourceId }: SourceNotesProps) {
-  const { language, t } = useLanguage();
-  const [notes, setNotes] = useState<Note[]>([]);
+  const { t } = useLanguage();
+  const [text, setText] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
-  const [newText, setNewText] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [hasContent, setHasContent] = useState(false);
 
-  // Load notes from localStorage on mount
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track the text that the server last confirmed, to avoid spurious saves
+  const serverTextRef = useRef("");
+  // Track whether migration has been attempted for this sourceId
+  const migrationDoneRef = useRef(false);
+
+  // ─── Fetch annotation from API ──────────────────────────────────
+
   useEffect(() => {
-    const store = loadNotes();
-    setNotes(store[sourceId] ?? []);
+    let cancelled = false;
+    migrationDoneRef.current = false;
+
+    async function load() {
+      setIsLoading(true);
+      setSaveStatus("idle");
+
+      try {
+        const res = await fetch(
+          `/api/atlas/annotations?sourceId=${encodeURIComponent(sourceId)}`,
+        );
+
+        if (!res.ok) throw new Error("fetch failed");
+
+        const data = (await res.json()) as { annotation: Annotation | null };
+
+        if (cancelled) return;
+
+        if (data.annotation) {
+          // Server has an annotation — use it
+          setText(data.annotation.text);
+          serverTextRef.current = data.annotation.text;
+          setHasContent(data.annotation.text.length > 0);
+        } else {
+          // No server annotation — attempt one-time localStorage migration
+          const legacyNotes = getLegacyNotes(sourceId);
+          if (legacyNotes && !migrationDoneRef.current) {
+            migrationDoneRef.current = true;
+            const combined = legacyNotes.map((n) => n.text).join("\n\n");
+            setText(combined);
+            setHasContent(true);
+
+            // POST the migrated text to the API
+            try {
+              const postRes = await fetch("/api/atlas/annotations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sourceId, text: combined }),
+              });
+              if (postRes.ok) {
+                serverTextRef.current = combined;
+                clearLegacyNotes(sourceId);
+                if (!cancelled) setSaveStatus("saved");
+              }
+            } catch {
+              // Migration POST failed — text is still in the textarea and
+              // localStorage is preserved; user can trigger save by editing
+            }
+          } else {
+            setText("");
+            serverTextRef.current = "";
+            setHasContent(false);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          // On fetch error, try to show legacy notes as fallback (read-only feel)
+          const legacyNotes = getLegacyNotes(sourceId);
+          if (legacyNotes) {
+            const combined = legacyNotes.map((n) => n.text).join("\n\n");
+            setText(combined);
+            setHasContent(true);
+          } else {
+            setText("");
+            setHasContent(false);
+          }
+          setSaveStatus("error");
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [sourceId]);
 
-  // Persist helper
-  const persist = useCallback(
-    (updated: Note[]) => {
-      const store = loadNotes();
-      if (updated.length === 0) {
-        delete store[sourceId];
-      } else {
-        store[sourceId] = updated;
+  // ─── Debounced auto-save ────────────────────────────────────────
+
+  const saveToApi = useCallback(
+    async (value: string) => {
+      // Don't save if text hasn't actually changed from what server has
+      if (value === serverTextRef.current) {
+        setSaveStatus("saved");
+        return;
       }
-      saveNotes(store);
+
+      setSaveStatus("saving");
+
+      try {
+        const res = await fetch("/api/atlas/annotations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId, text: value }),
+        });
+
+        if (!res.ok) throw new Error("save failed");
+
+        serverTextRef.current = value;
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus("error");
+      }
     },
     [sourceId],
   );
 
-  // Add note
-  const handleAdd = useCallback(() => {
-    const trimmed = newText.trim();
-    if (!trimmed) return;
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      setText(value);
+      setHasContent(value.trim().length > 0);
+      setSaveStatus("idle");
 
-    const note: Note = {
-      id: crypto.randomUUID(),
-      text: trimmed,
-      createdAt: new Date().toISOString(),
-    };
+      // Clear any existing debounce timer
+      if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    const updated = [note, ...notes];
-    setNotes(updated);
-    persist(updated);
-    setNewText("");
-    textareaRef.current?.focus();
-  }, [newText, notes, persist]);
-
-  // Delete note with fade-out
-  const handleDelete = useCallback(
-    (id: string) => {
-      setDeletingId(id);
-      // Allow fade-out animation to complete
-      setTimeout(() => {
-        const updated = notes.filter((n) => n.id !== id);
-        setNotes(updated);
-        persist(updated);
-        setDeletingId(null);
-      }, 200);
+      // Set new debounce timer (800ms)
+      debounceRef.current = setTimeout(() => {
+        saveToApi(value);
+      }, 800);
     },
-    [notes, persist],
+    [saveToApi],
   );
 
-  // Handle keyboard shortcut in textarea
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleAdd();
-      }
-    },
-    [handleAdd],
-  );
+  // ─── Delete annotation ──────────────────────────────────────────
 
-  const noteCount = notes.length;
+  const handleDelete = useCallback(async () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setSaveStatus("saving");
+
+    try {
+      const res = await fetch(
+        `/api/atlas/annotations?sourceId=${encodeURIComponent(sourceId)}`,
+        { method: "DELETE" },
+      );
+
+      if (!res.ok) throw new Error("delete failed");
+
+      setText("");
+      serverTextRef.current = "";
+      setHasContent(false);
+      setSaveStatus("idle");
+      textareaRef.current?.focus();
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [sourceId]);
+
+  // ─── Save status label ──────────────────────────────────────────
+
+  function renderStatus() {
+    if (isLoading) return null;
+
+    switch (saveStatus) {
+      case "saving":
+        return (
+          <span className="text-[10px] text-amber-500/70 animate-pulse">
+            {t("atlas.annotations_saving")}
+          </span>
+        );
+      case "saved":
+        return (
+          <span className="text-[10px] text-emerald-500/80">
+            {t("atlas.annotations_saved")}
+          </span>
+        );
+      case "error":
+        return (
+          <span className="text-[10px] text-red-400">
+            {t("atlas.annotations_error")}
+          </span>
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
     <section className="mt-8">
@@ -138,7 +267,6 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
         onClick={() => {
           setIsExpanded((prev) => !prev);
           if (!isExpanded) {
-            // Focus textarea after expansion
             setTimeout(() => textareaRef.current?.focus(), 100);
           }
         }}
@@ -149,10 +277,8 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
           {t("atlas.annotations")}
         </h2>
 
-        {noteCount > 0 && (
-          <span className="text-[10px] font-medium text-amber-600/80 bg-amber-50 border border-amber-200/60 rounded-full px-1.5 py-px min-w-[20px] text-center">
-            {noteCount}
-          </span>
+        {hasContent && (
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80" />
         )}
 
         <span className="text-gray-300 group-hover:text-gray-400 transition-colors ml-auto">
@@ -167,60 +293,39 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
       {/* ─── Expanded content ─── */}
       {isExpanded && (
         <div className="mt-3 max-w-3xl rounded-lg border border-amber-100 bg-amber-50/50 p-4">
-          {/* ─── Add note input ─── */}
-          <div className="flex gap-2">
-            <textarea
-              ref={textareaRef}
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t("atlas.annotations_placeholder")}
-              rows={2}
-              className="flex-1 resize-none rounded border border-amber-200/60 bg-white/80 px-3 py-2 text-[13px] text-gray-700 placeholder:text-gray-400/60 focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-200 transition-colors"
-            />
-            <button
-              onClick={handleAdd}
-              disabled={!newText.trim()}
-              className="self-end rounded bg-gray-800 px-3 py-1.5 text-[11px] font-medium text-white tracking-wide uppercase transition-all hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
-            >
-              {t("atlas.annotations_add")}
-            </button>
-          </div>
-
-          {/* ─── Notes list ─── */}
-          {noteCount === 0 ? (
-            <p className="mt-4 text-[12px] text-gray-400 leading-relaxed text-center py-2">
-              {t("atlas.annotations_empty")}
-            </p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-300 border-t-transparent" />
+            </div>
           ) : (
-            <div className="mt-4 space-y-2">
-              {notes.map((note) => (
-                <div
-                  key={note.id}
-                  className={`group/note flex items-start gap-3 rounded-md bg-white/60 border border-amber-100/80 px-3 py-2.5 transition-all duration-200 ${
-                    deletingId === note.id
-                      ? "opacity-0 scale-95"
-                      : "opacity-100 scale-100"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-gray-700 leading-[1.65] whitespace-pre-wrap break-words">
-                      {note.text}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      {formatTimestamp(note.createdAt, language)}
-                    </p>
-                  </div>
+            <>
+              <textarea
+                ref={textareaRef}
+                value={text}
+                onChange={handleChange}
+                placeholder={t("atlas.annotations_placeholder")}
+                rows={4}
+                className="w-full resize-none rounded border border-amber-200/60 bg-white/80 px-3 py-2 text-[13px] text-gray-700 placeholder:text-gray-400/60 focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-200 transition-colors"
+              />
+
+              {/* ─── Footer: status + delete ─── */}
+              <div className="flex items-center justify-between mt-2">
+                <div className="min-h-[16px]">{renderStatus()}</div>
+
+                {hasContent && (
                   <button
-                    onClick={() => handleDelete(note.id)}
-                    className="flex-shrink-0 mt-0.5 rounded p-1 text-gray-300 opacity-0 group-hover/note:opacity-100 hover:text-red-400 hover:bg-red-50 transition-all duration-150"
+                    onClick={handleDelete}
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[10px] text-gray-400 hover:text-red-400 hover:bg-red-50 transition-all duration-150"
                     title={t("atlas.annotations_delete")}
                   >
-                    <X size={13} strokeWidth={1.5} />
+                    <Trash2 size={11} strokeWidth={1.5} />
+                    <span className="uppercase tracking-wide font-medium">
+                      {t("atlas.annotations_delete")}
+                    </span>
                   </button>
-                </div>
-              ))}
-            </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
