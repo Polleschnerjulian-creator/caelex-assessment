@@ -439,8 +439,8 @@ function UsRegulatoryPageContent() {
       const res = await fetch("/api/us-regulatory");
       if (res.ok) {
         const data = await res.json();
-        setAssessments(data.assessments);
-        if (data.assessments.length === 1) {
+        setAssessments(data.assessments || []);
+        if (data.assessments?.length === 1) {
           await selectAssessment(data.assessments[0]);
         }
       }
@@ -458,12 +458,12 @@ function UsRegulatoryPageContent() {
       const res = await fetch(`/api/us-regulatory/${assessment.id}`);
       if (res.ok) {
         const data = await res.json();
-        setRequirements(data.applicableRequirements);
-        setGapAnalysis(data.gapAnalysis);
-        setScore(data.score);
-        setRequiredLicenses(data.requiredLicenses);
-        setRequiredAgencies(data.requiredAgencies);
-        setAgencyStatuses(data.agencyStatuses);
+        setRequirements(data.applicableRequirements || []);
+        setGapAnalysis(data.gapAnalysis || []);
+        setScore(data.score ?? null);
+        setRequiredLicenses(data.requiredLicenses || []);
+        setRequiredAgencies(data.requiredAgencies || []);
+        setAgencyStatuses(data.agencyStatuses || {});
 
         // Check deorbit compliance
         if (data.deorbitCompliance) {
@@ -544,9 +544,9 @@ function UsRegulatoryPageContent() {
       if (res.ok) {
         const data = await res.json();
         setSelectedAssessment(data.assessment);
-        setScore(data.score);
-        setGapAnalysis(data.gapAnalysis);
-        setAgencyStatuses(data.agencyStatuses);
+        setScore(data.score ?? null);
+        setGapAnalysis(data.gapAnalysis || []);
+        setAgencyStatuses(data.agencyStatuses || {});
       }
     } catch (error) {
       console.error("Error updating requirement status:", error);

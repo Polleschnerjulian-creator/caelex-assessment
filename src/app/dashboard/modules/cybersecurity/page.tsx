@@ -246,10 +246,10 @@ function CybersecurityPageContent() {
       );
       if (res.ok) {
         const data = await res.json();
-        setRequirements(data.requirements);
+        setRequirements(data.requirements || []);
         // Initialize local responses from persisted data
         const initial: Record<string, Record<string, unknown>> = {};
-        for (const req of data.requirements) {
+        for (const req of data.requirements || []) {
           if (req.responses) {
             initial[req.id] = req.responses;
           }
@@ -267,8 +267,8 @@ function CybersecurityPageContent() {
         const res = await fetch("/api/cybersecurity");
         if (res.ok) {
           const data = await res.json();
-          setAssessments(data.assessments);
-          if (data.assessments.length === 1) {
+          setAssessments(data.assessments || []);
+          if (data.assessments?.length === 1) {
             setSelectedAssessment(data.assessments[0]);
             await fetchRequirements(data.assessments[0].id);
           }

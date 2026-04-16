@@ -218,8 +218,8 @@ function EnvironmentalPageContent() {
       const response = await fetch("/api/environmental");
       if (response.ok) {
         const data = await response.json();
-        setAssessments(data.assessments);
-        if (data.assessments.length > 0) {
+        setAssessments(data.assessments || []);
+        if (data.assessments?.length > 0) {
           const firstAssessment = data.assessments[0];
           setSelectedAssessment(firstAssessment);
           populateFormFromAssessment(firstAssessment);
@@ -372,7 +372,7 @@ function EnvironmentalPageContent() {
       );
       if (response.ok) {
         const data = await response.json();
-        setSuppliers(data.suppliers);
+        setSuppliers(data.suppliers || []);
       }
     } catch (err) {
       console.error("Failed to fetch suppliers");

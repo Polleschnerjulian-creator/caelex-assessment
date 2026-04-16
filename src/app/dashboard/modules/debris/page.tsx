@@ -317,7 +317,7 @@ function DebrisPageContent() {
       const res = await fetch(`/api/debris/${assessmentId}/maneuvers`);
       if (res.ok) {
         const data = await res.json();
-        setManeuvers(data.maneuvers);
+        setManeuvers(data.maneuvers || []);
       }
     } catch (error) {
       console.error("Error fetching maneuvers:", error);
@@ -436,8 +436,8 @@ function DebrisPageContent() {
       const res = await fetch("/api/debris");
       if (res.ok) {
         const data = await res.json();
-        setAssessments(data.assessments);
-        if (data.assessments.length === 1) {
+        setAssessments(data.assessments || []);
+        if (data.assessments?.length === 1) {
           setSelectedAssessment(data.assessments[0]);
           await fetchRequirements(data.assessments[0].id);
         }
@@ -456,10 +456,10 @@ function DebrisPageContent() {
       );
       if (res.ok) {
         const data = await res.json();
-        setRequirements(data.requirements);
+        setRequirements(data.requirements || []);
         // Initialize local responses from persisted data
         const initial: Record<string, Record<string, unknown>> = {};
-        for (const req of data.requirements) {
+        for (const req of data.requirements || []) {
           if (req.responses) {
             initial[req.id] = req.responses;
           }

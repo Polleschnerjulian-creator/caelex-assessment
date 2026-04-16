@@ -311,8 +311,8 @@ function UkSpacePageContent() {
       const res = await fetch("/api/uk-space");
       if (res.ok) {
         const data = await res.json();
-        setAssessments(data.assessments);
-        if (data.assessments.length === 1) {
+        setAssessments(data.assessments || []);
+        if (data.assessments?.length === 1) {
           await selectAssessment(data.assessments[0]);
         }
       }
@@ -330,10 +330,10 @@ function UkSpacePageContent() {
       const res = await fetch(`/api/uk-space/${assessment.id}`);
       if (res.ok) {
         const data = await res.json();
-        setRequirements(data.applicableRequirements);
-        setGapAnalysis(data.gapAnalysis);
-        setScore(data.score);
-        setRequiredLicenses(data.requiredLicenses);
+        setRequirements(data.applicableRequirements || []);
+        setGapAnalysis(data.gapAnalysis || []);
+        setScore(data.score ?? null);
+        setRequiredLicenses(data.requiredLicenses || []);
       }
     } catch (error) {
       console.error("Error fetching assessment details:", error);
@@ -391,8 +391,8 @@ function UkSpacePageContent() {
       if (res.ok) {
         const data = await res.json();
         setSelectedAssessment(data.assessment);
-        setScore(data.score);
-        setGapAnalysis(data.gapAnalysis);
+        setScore(data.score ?? null);
+        setGapAnalysis(data.gapAnalysis || []);
       }
     } catch (error) {
       console.error("Error updating requirement status:", error);

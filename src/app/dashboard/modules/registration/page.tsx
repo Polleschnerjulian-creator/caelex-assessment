@@ -147,7 +147,7 @@ function RegistrationPageContent() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setRegistrations(data.registrations);
+        setRegistrations(data.registrations || []);
       }
     } catch (error) {
       console.error("Error fetching registrations:", error);
@@ -165,7 +165,7 @@ function RegistrationPageContent() {
       );
       if (response.ok) {
         const data = await response.json();
-        setSpacecraft(data.spacecraft);
+        setSpacecraft(data.spacecraft || []);
       }
     } catch (error) {
       console.error("Error fetching spacecraft:", error);

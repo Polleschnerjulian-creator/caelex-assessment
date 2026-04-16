@@ -274,8 +274,8 @@ function CopuosPageContent() {
       const res = await fetch("/api/copuos");
       if (res.ok) {
         const data = await res.json();
-        setAssessments(data.assessments);
-        if (data.assessments.length === 1) {
+        setAssessments(data.assessments || []);
+        if (data.assessments?.length === 1) {
           await selectAssessment(data.assessments[0]);
         }
       }
@@ -293,9 +293,9 @@ function CopuosPageContent() {
       const res = await fetch(`/api/copuos/${assessment.id}`);
       if (res.ok) {
         const data = await res.json();
-        setGuidelines(data.applicableGuidelines);
-        setGapAnalysis(data.gapAnalysis);
-        setScore(data.score);
+        setGuidelines(data.applicableGuidelines || []);
+        setGapAnalysis(data.gapAnalysis || []);
+        setScore(data.score ?? null);
       }
     } catch (error) {
       console.error("Error fetching assessment details:", error);
