@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       atlas.userId,
     );
 
-    const inviteUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || ""}/atlas/invite/${invitation.token}`;
+    const inviteUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || ""}/atlas-invite/${invitation.token}`;
 
     // Send invitation email via Resend (non-blocking)
     try {
