@@ -228,7 +228,7 @@ function AuthorizationPageContent() {
       if (!prev) return prev;
       return {
         ...prev,
-        documents: prev.documents.map((doc) =>
+        documents: (prev.documents || []).map((doc) =>
           doc.id === documentId ? { ...doc, status } : doc,
         ),
       };
@@ -259,7 +259,8 @@ function AuthorizationPageContent() {
 
   // Calculate document progress
   const getDocumentProgress = () => {
-    if (!selectedWorkflow) return { total: 0, ready: 0, percent: 0 };
+    if (!selectedWorkflow || !selectedWorkflow.documents)
+      return { total: 0, ready: 0, percent: 0 };
     const required = selectedWorkflow.documents.filter((d) => d.required);
     const ready = required.filter(
       (d) =>
@@ -466,13 +467,13 @@ function AuthorizationPageContent() {
                           <span className="flex items-center gap-1.5">
                             <FileCheck size={12} aria-hidden="true" />
                             {
-                              workflow.documents.filter(
+                              (workflow.documents || []).filter(
                                 (d) =>
                                   d.status === "ready" ||
                                   d.status === "submitted",
                               ).length
                             }
-                            /{workflow.documents.length} documents ready
+                            /{(workflow.documents || []).length} documents ready
                           </span>
                         </div>
                       </div>
