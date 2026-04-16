@@ -64,20 +64,12 @@ export default function SettingsPage() {
       if (!file) return;
 
       if (file.size > MAX_LOGO_SIZE) {
-        alert(
-          language === "de"
-            ? "Logo darf maximal 512 KB groß sein."
-            : "Logo must be 512 KB or smaller.",
-        );
+        alert(t("atlas.settings_logo_size_error"));
         return;
       }
 
       if (!file.type.startsWith("image/")) {
-        alert(
-          language === "de"
-            ? "Bitte eine Bilddatei wählen."
-            : "Please select an image file.",
-        );
+        alert(t("atlas.settings_image_file_error"));
         return;
       }
 
@@ -92,7 +84,7 @@ export default function SettingsPage() {
       // Reset input so same file can be re-selected
       e.target.value = "";
     },
-    [language],
+    [t],
   );
 
   const handleRemoveLogo = useCallback(() => {
@@ -107,9 +99,7 @@ export default function SettingsPage() {
         {t("atlas.settings")}
       </h1>
       <p className="text-[13px] text-gray-500 mb-10">
-        {language === "de"
-          ? "Sprache, Kanzleiprofil und Exporteinstellungen konfigurieren."
-          : "Configure language, firm profile, and export settings."}
+        {t("atlas.settings_desc")}
       </p>
 
       <div className="max-w-xl space-y-10">
@@ -122,7 +112,7 @@ export default function SettingsPage() {
               aria-hidden="true"
             />
             <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
-              {language === "de" ? "Kanzleiprofil" : "Firm Profile"}
+              {t("atlas.settings_firm_profile")}
             </h2>
           </div>
 
@@ -130,13 +120,13 @@ export default function SettingsPage() {
             {/* User name */}
             <div>
               <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
-                {language === "de" ? "Ihr Name" : "Your Name"}
+                {t("atlas.settings_your_name")}
               </label>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder={language === "de" ? "z.B. Julian" : "e.g. Julian"}
+                placeholder={t("atlas.settings_name_placeholder")}
                 aria-describedby="user-name-hint"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
               />
@@ -144,24 +134,20 @@ export default function SettingsPage() {
                 id="user-name-hint"
                 className="text-[11px] text-gray-400 mt-1.5"
               >
-                {language === "de"
-                  ? "Wird in der Begrüßung auf der Startseite angezeigt."
-                  : "Shown in the greeting on the home page."}
+                {t("atlas.settings_name_hint")}
               </p>
             </div>
 
             {/* Firm name */}
             <div>
               <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
-                {language === "de" ? "Kanzleiname" : "Firm Name"}
+                {t("atlas.settings_firm_name")}
               </label>
               <input
                 type="text"
                 value={firmName}
                 onChange={(e) => setFirmName(e.target.value)}
-                placeholder={
-                  language === "de" ? "z.B. BHO Legal" : "e.g. BHO Legal"
-                }
+                placeholder={t("atlas.settings_firm_name_placeholder")}
                 aria-describedby="firm-name-hint"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
               />
@@ -169,16 +155,14 @@ export default function SettingsPage() {
                 id="firm-name-hint"
                 className="text-[11px] text-gray-400 mt-1.5"
               >
-                {language === "de"
-                  ? "Wird im Header der exportierten Briefings angezeigt."
-                  : "Shown in the header of exported briefings."}
+                {t("atlas.settings_logo_replaces_hint")}
               </p>
             </div>
 
             {/* Logo upload */}
             <div>
               <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
-                {language === "de" ? "Kanzleilogo" : "Firm Logo"}
+                {t("atlas.settings_firm_logo")}
               </label>
 
               {firmLogo ? (
@@ -196,14 +180,14 @@ export default function SettingsPage() {
                       onClick={() => fileRef.current?.click()}
                       className="text-[12px] text-gray-500 hover:text-gray-900 transition-colors"
                     >
-                      {language === "de" ? "Ersetzen" : "Replace"}
+                      {t("atlas.settings_replace_logo")}
                     </button>
                     <button
                       onClick={handleRemoveLogo}
                       className="flex items-center gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors"
                     >
                       <X size={12} strokeWidth={2} aria-hidden="true" />
-                      {language === "de" ? "Entfernen" : "Remove"}
+                      {t("atlas.settings_remove_logo")}
                     </button>
                   </div>
                 </div>
@@ -220,10 +204,10 @@ export default function SettingsPage() {
                   />
                   <div className="text-left">
                     <span className="block text-[13px] text-gray-600">
-                      {language === "de" ? "Logo hochladen" : "Upload logo"}
+                      {t("atlas.settings_upload_logo")}
                     </span>
                     <span className="block text-[11px] text-gray-400">
-                      PNG, SVG, JPG &middot; max 512 KB
+                      {t("atlas.settings_logo_formats_size")}
                     </span>
                   </div>
                 </button>
@@ -234,11 +218,7 @@ export default function SettingsPage() {
                 type="file"
                 accept="image/*"
                 onChange={handleLogoUpload}
-                aria-label={
-                  language === "de"
-                    ? "Kanzleilogo hochladen"
-                    : "Upload firm logo"
-                }
+                aria-label={t("atlas.settings_upload_logo_aria")}
                 aria-describedby="firm-logo-hint"
                 className="hidden"
               />
@@ -247,9 +227,7 @@ export default function SettingsPage() {
                 id="firm-logo-hint"
                 className="text-[11px] text-gray-400 mt-1.5"
               >
-                {language === "de"
-                  ? "Ersetzt das Caelex-Logo in exportierten PDF-Briefings."
-                  : "Replaces the Caelex logo in exported PDF briefings."}
+                {t("atlas.settings_logo_replaces_hint")}
               </p>
             </div>
           </div>
@@ -326,23 +304,23 @@ export default function SettingsPage() {
 
           <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
             {[
-              { label: "Version", value: "1.0" },
+              { label: t("atlas.settings_version"), value: "1.0" },
               {
-                label: language === "de" ? "Jurisdiktionen" : "Jurisdictions",
+                label: t("atlas.settings_jurisdictions"),
                 value: "10",
               },
               {
-                label: language === "de" ? "Rechtsquellen" : "Legal Sources",
+                label: t("atlas.settings_legal_sources"),
                 value: "244",
               },
               {
-                label: language === "de" ? "Behörden" : "Authorities",
+                label: t("atlas.settings_authorities"),
                 value: "132",
               },
-              { label: "Theme", value: "Light" },
+              { label: t("atlas.settings_theme"), value: "Light" },
               {
-                label: language === "de" ? "Datenstand" : "Data",
-                value: language === "de" ? "April 2026" : "April 2026",
+                label: t("atlas.settings_data"),
+                value: t("atlas.settings_data_value"),
               },
             ].map((row) => (
               <div

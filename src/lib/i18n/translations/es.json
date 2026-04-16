@@ -41,7 +41,8 @@
     "critical": "Crítico",
     "high": "Alto",
     "medium": "Medio",
-    "low": "Bajo"
+    "low": "Bajo",
+    "send": "Enviar"
   },
   "sidebar": {
     "overview": "Resumen",

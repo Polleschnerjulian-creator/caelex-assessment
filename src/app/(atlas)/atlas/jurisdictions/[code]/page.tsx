@@ -29,6 +29,13 @@ import type {
   ComplianceArea,
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import {
+  getTypeLabels,
+  getStatusLabels,
+  getAreaLabels,
+  getLegislationStatusLabels,
+  getSourceGroupTitles,
+} from "../../i18n-labels";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
@@ -67,17 +74,6 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
   },
 };
 
-const TYPE_LABELS: Record<LegalSourceType, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-};
-
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   fundamental: "text-gray-900 bg-gray-100 border-gray-300",
   critical: "text-red-700 bg-red-50 border-red-200",
@@ -86,94 +82,40 @@ const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   low: "text-gray-500 bg-gray-50 border-gray-100",
 };
 
-const STATUS_STYLES: Record<
-  LegalSourceStatus,
-  { bg: string; text: string; label: string }
-> = {
+const STATUS_COLORS: Record<LegalSourceStatus, { bg: string; text: string }> = {
   in_force: {
     bg: "bg-emerald-50 border-emerald-200",
     text: "text-emerald-700",
-    label: "In Force",
   },
-  draft: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-    label: "Draft",
-  },
-  proposed: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
-    label: "Proposed",
-  },
-  superseded: {
-    bg: "bg-gray-50 border-gray-200",
-    text: "text-gray-500",
-    label: "Superseded",
-  },
+  draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
+  proposed: { bg: "bg-blue-50 border-blue-200", text: "text-blue-700" },
+  superseded: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
   planned: {
     bg: "bg-violet-50 border-violet-200",
     text: "text-violet-700",
-    label: "Planned",
   },
   not_ratified: {
     bg: "bg-orange-50 border-orange-200",
     text: "text-orange-700",
-    label: "Not Ratified",
   },
-  expired: {
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-500",
-    label: "Expired",
-  },
+  expired: { bg: "bg-red-50 border-red-200", text: "text-red-500" },
 };
 
-const LEGISLATION_STATUS_STYLES: Record<
-  string,
-  { bg: string; text: string; label: string }
-> = {
-  enacted: {
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
-    label: "Enacted",
-  },
-  draft: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-    label: "Draft",
-  },
-  pending: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
-    label: "Pending",
-  },
-  none: {
-    bg: "bg-gray-50 border-gray-200",
-    text: "text-gray-500",
-    label: "None",
-  },
-};
-
-const AREA_LABELS: Record<ComplianceArea, string> = {
-  licensing: "Licensing",
-  registration: "Registration",
-  liability: "Liability",
-  insurance: "Insurance",
-  cybersecurity: "Cybersecurity",
-  export_control: "Export Control",
-  data_security: "Data Security",
-  frequency_spectrum: "Spectrum",
-  environmental: "Environmental",
-  debris_mitigation: "Debris",
-  space_traffic_management: "STM",
-  human_spaceflight: "Human Spaceflight",
-  military_dual_use: "Dual-Use",
-};
+const LEGISLATION_STATUS_COLORS: Record<string, { bg: string; text: string }> =
+  {
+    enacted: {
+      bg: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+    },
+    draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
+    pending: { bg: "bg-blue-50 border-blue-200", text: "text-blue-700" },
+    none: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
+  };
 
 // ─── Source group definitions ───────────────────────────────────────
 
 interface SourceGroup {
   key: string;
-  title: string;
   icon: typeof Scale;
   filter: (s: LegalSource) => boolean;
 }
@@ -181,25 +123,21 @@ interface SourceGroup {
 const SOURCE_GROUPS: SourceGroup[] = [
   {
     key: "treaties",
-    title: "International Treaties",
     icon: Globe2,
     filter: (s) => s.type === "international_treaty",
   },
   {
     key: "national",
-    title: "National Laws",
     icon: Scale,
     filter: (s) => s.type === "federal_law" || s.type === "federal_regulation",
   },
   {
     key: "standards",
-    title: "Technical Standards",
     icon: FileText,
     filter: (s) => s.type === "technical_standard",
   },
   {
     key: "eu",
-    title: "EU Law",
     icon: Building2,
     filter: (s) =>
       s.type === "eu_regulation" ||
@@ -208,7 +146,6 @@ const SOURCE_GROUPS: SourceGroup[] = [
   },
   {
     key: "policy",
-    title: "Policy Documents",
     icon: FileText,
     filter: (s) => s.type === "policy_document",
   },
@@ -224,7 +161,7 @@ function KeyProvisionsToggle({
   source: LegalSource;
 }) {
   const [open, setOpen] = useState(false);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   if (provisions.length === 0) return null;
 
@@ -244,8 +181,9 @@ function KeyProvisionsToggle({
           className={`transition-transform duration-200 ${open ? "rotate-0" : "-rotate-90"}`}
         />
         {provisions.length}{" "}
-        {language === "de" ? "Schlüsselbestimmung" : "key provision"}
-        {provisions.length !== 1 ? (language === "de" ? "en" : "s") : ""}
+        {provisions.length !== 1
+          ? t("atlas.key_provision_plural")
+          : t("atlas.key_provision")}
       </button>
       {open && (
         <div className="mt-2 ml-4 space-y-2">
@@ -281,11 +219,13 @@ function KeyProvisionsToggle({
 // ─── Single source entry ────────────────────────────────────────────
 
 function SourceEntry({ source }: { source: LegalSource }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const typeStyle = TYPE_STYLES[source.type];
-  const statusStyle = STATUS_STYLES[source.status];
+  const statusColor = STATUS_COLORS[source.status];
   const relevanceStyle = RELEVANCE_STYLES[source.relevance_level];
   const translated = getTranslatedSource(source, language);
+  const TYPE_LABELS = getTypeLabels(t);
+  const statusLabels = getStatusLabels(t);
 
   return (
     <div className="rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm px-5 py-4 transition-all duration-200 group">
@@ -296,9 +236,9 @@ function SourceEntry({ source }: { source: LegalSource }) {
           {TYPE_LABELS[source.type]}
         </span>
         <span
-          className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
+          className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${statusColor.bg} ${statusColor.text}`}
         >
-          {statusStyle.label}
+          {statusLabels[source.status] || source.status}
         </span>
         {source.official_reference && (
           <span className="text-[10px] text-gray-400 ml-auto">
@@ -337,7 +277,8 @@ function SourceEntry({ source }: { source: LegalSource }) {
             rel="noopener noreferrer"
             className="text-[10px] text-gray-400 hover:text-gray-700 transition-colors"
           >
-            View source <span className="sr-only">(opens in new window)</span>
+            {t("atlas.view_source")}{" "}
+            <span className="sr-only">(opens in new window)</span>
           </a>
         )}
       </div>
@@ -356,8 +297,9 @@ function SourceEntry({ source }: { source: LegalSource }) {
 // ─── Authority card ─────────────────────────────────────────────────
 
 function AuthorityCard({ authority }: { authority: Authority }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const translated = getTranslatedAuthority(authority, language);
+  const AREA_LABELS = getAreaLabels(t);
   return (
     <div className="py-5 px-5 rounded-xl bg-white border border-gray-100">
       <div className="flex items-start justify-between gap-3">
@@ -425,7 +367,11 @@ export default function JurisdictionDetailPage({
 }: JurisdictionDetailPageProps) {
   const { code } = use(params);
   const displayCode = code.toUpperCase();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+
+  // Shared translated labels
+  const legislationStatusLabels = getLegislationStatusLabels(t);
+  const sourceGroupTitles = getSourceGroupTitles(t);
 
   // Fetch data
   const jurisdiction = JURISDICTION_DATA.get(displayCode as any);
@@ -441,6 +387,7 @@ export default function JurisdictionDetailPage({
   // Group sources
   const groupedSources = SOURCE_GROUPS.map((group) => ({
     ...group,
+    title: sourceGroupTitles[group.key] ?? group.key,
     sources: legalSources.filter(group.filter),
   })).filter((g) => g.sources.length > 0);
 
@@ -453,7 +400,7 @@ export default function JurisdictionDetailPage({
             className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
           >
             <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
-            Back to ATLAS
+            {t("atlas.back_to_atlas")}
           </Link>
         </nav>
         <div className="mt-20 text-center">
@@ -461,16 +408,19 @@ export default function JurisdictionDetailPage({
             {displayCode}
           </span>
           <p className="text-[13px] text-gray-500 mt-4">
-            Jurisdiction not found in the database.
+            {t("atlas.jurisdiction_not_found")}
           </p>
         </div>
       </div>
     );
   }
 
-  const legStatus =
-    LEGISLATION_STATUS_STYLES[jurisdiction.legislation.status] ??
-    LEGISLATION_STATUS_STYLES.none;
+  const legStatusColor =
+    LEGISLATION_STATUS_COLORS[jurisdiction.legislation.status] ??
+    LEGISLATION_STATUS_COLORS.none;
+  const legStatusLabel =
+    legislationStatusLabels[jurisdiction.legislation.status] ??
+    jurisdiction.legislation.status;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -484,7 +434,7 @@ export default function JurisdictionDetailPage({
               className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
             >
               <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
-              Back to ATLAS
+              {t("atlas.back_to_atlas")}
             </Link>
           </nav>
 
@@ -496,9 +446,9 @@ export default function JurisdictionDetailPage({
               {jurisdiction.countryName}
             </h1>
             <span
-              className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${legStatus.bg} ${legStatus.text}`}
+              className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border ${legStatusColor.bg} ${legStatusColor.text}`}
             >
-              {legStatus.label}
+              {legStatusLabel}
             </span>
           </div>
 
@@ -506,7 +456,7 @@ export default function JurisdictionDetailPage({
             <p className="text-[14px] text-gray-500">
               {jurisdiction.legislation.name}
               {jurisdiction.legislation.yearEnacted
-                ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, amended ${jurisdiction.legislation.yearAmended}` : ""})`
+                ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, ${t("atlas.amended", { year: String(jurisdiction.legislation.yearAmended) })}` : ""})`
                 : ""}
             </p>
             {hasDetailedSources && (
@@ -515,7 +465,7 @@ export default function JurisdictionDetailPage({
                 className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
               >
                 <Download size={14} strokeWidth={1.5} aria-hidden="true" />
-                {language === "de" ? "Briefing exportieren" : "Export Briefing"}
+                {t("atlas.briefing_export")}
               </button>
             )}
           </div>
@@ -525,7 +475,7 @@ export default function JurisdictionDetailPage({
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
-              Authority
+              {t("atlas.label_authority")}
             </span>
             <span className="text-[13px] font-semibold text-gray-900 block leading-snug">
               {jurisdiction.licensingAuthority.name}
@@ -533,7 +483,7 @@ export default function JurisdictionDetailPage({
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
-              Liability
+              {t("atlas.label_liability")}
             </span>
             <span className="text-[13px] font-semibold text-gray-900 block">
               {jurisdiction.insuranceLiability.liabilityRegime
@@ -544,29 +494,32 @@ export default function JurisdictionDetailPage({
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
-              Processing
+              {t("atlas.label_processing")}
             </span>
             <span className="text-[13px] font-semibold text-gray-900 block">
-              {jurisdiction.timeline.typicalProcessingWeeks.min}–
-              {jurisdiction.timeline.typicalProcessingWeeks.max} weeks
+              {t("atlas.processing_weeks", {
+                min: String(jurisdiction.timeline.typicalProcessingWeeks.min),
+                max: String(jurisdiction.timeline.typicalProcessingWeeks.max),
+              })}
             </span>
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
-              Insurance
+              {t("atlas.label_insurance")}
             </span>
             <span className="text-[13px] font-semibold text-gray-900 block">
               {jurisdiction.insuranceLiability.mandatoryInsurance
-                ? jurisdiction.insuranceLiability.minimumCoverage || "Required"
-                : "Not required"}
+                ? jurisdiction.insuranceLiability.minimumCoverage ||
+                  t("atlas.required")
+                : t("atlas.not_required")}
             </span>
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
-              Status
+              {t("atlas.label_status")}
             </span>
             <span className="text-[13px] font-semibold text-gray-900 block">
-              {legStatus.label}
+              {legStatusLabel}
               {jurisdiction.legislation.yearEnacted
                 ? ` (${jurisdiction.legislation.yearEnacted})`
                 : ""}
@@ -585,7 +538,7 @@ export default function JurisdictionDetailPage({
                 aria-hidden="true"
               />
               <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
-                Legal Sources
+                {t("atlas.legal_sources")}
               </h2>
               <span className="text-[12px] text-gray-500">
                 {legalSources.length}
@@ -632,29 +585,29 @@ export default function JurisdictionDetailPage({
                 aria-hidden="true"
               />
               <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
-                Legal Sources
+                {t("atlas.legal_sources")}
               </h2>
             </div>
 
             {/* Fallback: show national-space-laws data */}
             <div className="rounded-xl bg-white border border-gray-100 p-6">
               <p className="text-[11px] text-amber-600 font-medium mb-4">
-                Detailed legal sources coming soon. Showing summary data.
+                {t("atlas.detailed_sources_coming_soon")}
               </p>
 
               <div className="space-y-4">
                 <FallbackRow
-                  label="Legislation"
+                  label={t("atlas.legislation")}
                   value={`${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted})`}
                 />
                 <FallbackRow
-                  label="Local Name"
+                  label={t("atlas.label_local_name")}
                   value={jurisdiction.legislation.nameLocal}
                 />
                 {jurisdiction.legislation.officialUrl && (
                   <div className="flex items-start gap-4">
                     <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
-                      Official URL
+                      {t("atlas.label_official_url")}
                     </span>
                     <a
                       href={jurisdiction.legislation.officialUrl}
@@ -668,23 +621,23 @@ export default function JurisdictionDetailPage({
                   </div>
                 )}
                 <FallbackRow
-                  label="Key Articles"
+                  label={t("atlas.key_articles")}
                   value={jurisdiction.legislation.keyArticles ?? "N/A"}
                 />
                 <FallbackRow
-                  label="Debris Mitigation"
+                  label={t("atlas.label_debris_mitigation")}
                   value={
                     jurisdiction.debrisMitigation.deorbitRequirement
-                      ? `Required — ${jurisdiction.debrisMitigation.deorbitTimeline ?? "see legislation"}`
-                      : "Not required"
+                      ? `${t("atlas.required")} — ${jurisdiction.debrisMitigation.deorbitTimeline ?? t("atlas.required_see_legislation")}`
+                      : t("atlas.not_required")
                   }
                 />
                 <FallbackRow
-                  label="Registration"
+                  label={t("atlas.label_registration")}
                   value={
                     jurisdiction.registration.nationalRegistryExists
-                      ? `${jurisdiction.registration.registryName ?? "National registry"}`
-                      : "No national registry"
+                      ? `${jurisdiction.registration.registryName ?? t("atlas.national_registry")}`
+                      : t("atlas.no_national_registry")
                   }
                 />
               </div>
@@ -703,7 +656,7 @@ export default function JurisdictionDetailPage({
                 aria-hidden="true"
               />
               <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
-                Authorities
+                {t("atlas.competent_authorities")}
               </h2>
               <span className="text-[12px] text-gray-500">
                 {authorities.length}
@@ -722,7 +675,7 @@ export default function JurisdictionDetailPage({
         {jurisdiction.notes && jurisdiction.notes.length > 0 && (
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h2 className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
-              Notes
+              {t("atlas.notes")}
             </h2>
             <ul className="space-y-2">
               {jurisdiction.notes.map((note, i) => (
@@ -740,10 +693,9 @@ export default function JurisdictionDetailPage({
         {/* ─── Footer ─── */}
         <footer className="mt-20 pt-6 border-t border-gray-200">
           <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
-            Data last updated: {jurisdiction.lastUpdated}. This information is
-            for research and reference purposes only. It does not constitute
-            legal advice. Verify all information with official sources and
-            qualified legal counsel before making compliance decisions.
+            {t("atlas.data_disclaimer_footer", {
+              date: jurisdiction.lastUpdated,
+            })}
           </p>
         </footer>
       </div>
@@ -758,6 +710,7 @@ export default function JurisdictionDetailPage({
           authorities={authorities}
           groupedSources={groupedSources}
           language={language}
+          t={t}
         />
       )}
     </div>
@@ -773,6 +726,7 @@ function BriefingPrint({
   authorities,
   groupedSources,
   language,
+  t,
 }: {
   code: string;
   jurisdiction: NonNullable<ReturnType<typeof JURISDICTION_DATA.get>>;
@@ -784,6 +738,7 @@ function BriefingPrint({
     sources: LegalSource[];
   }>;
   language: string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const today = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -855,9 +810,7 @@ function BriefingPrint({
             marginTop: "4pt",
           }}
         >
-          {language === "de"
-            ? "Regulatorisches Briefing — Weltraumrecht"
-            : "Regulatory Briefing — Space Law"}
+          {t("atlas.briefing_subtitle")}
         </div>
         <div
           style={{
@@ -866,10 +819,14 @@ function BriefingPrint({
             marginTop: "8pt",
           }}
         >
-          {language === "de" ? "Erstellt am" : "Generated"} {today} &middot;{" "}
-          {legalSources.length}{" "}
-          {language === "de" ? "Rechtsquellen" : "legal sources"} &middot;{" "}
-          {authorities.length} {language === "de" ? "Behörden" : "authorities"}
+          {t("atlas.export_date")} {today} &middot;{" "}
+          {t("atlas.legal_sources_count", {
+            count: String(legalSources.length),
+          })}{" "}
+          &middot;{" "}
+          {t("atlas.authorities_count", {
+            count: String(authorities.length),
+          })}
         </div>
         <div
           style={{
@@ -892,7 +849,7 @@ function BriefingPrint({
             marginBottom: "8pt",
           }}
         >
-          {language === "de" ? "Eckdaten" : "Key Facts"}
+          {t("atlas.key_facts")}
         </div>
         <table
           style={{
@@ -904,36 +861,33 @@ function BriefingPrint({
           <tbody>
             {[
               [
-                language === "de" ? "Gesetzgebung" : "Legislation",
+                t("atlas.legislation"),
                 `${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted || "N/A"})`,
               ],
               [
-                language === "de" ? "Status" : "Status",
+                t("atlas.status"),
                 jurisdiction.legislation.status.toUpperCase(),
               ],
               [
-                language === "de"
-                  ? "Genehmigungsbehörde"
-                  : "Licensing Authority",
+                t("atlas.licensing_authority"),
                 jurisdiction.licensingAuthority.name,
               ],
               [
-                language === "de" ? "Haftungsregime" : "Liability Regime",
+                t("atlas.liability_regime"),
                 jurisdiction.insuranceLiability.liabilityRegime,
               ],
               [
-                language === "de"
-                  ? "Pflichtversicherung"
-                  : "Mandatory Insurance",
+                t("atlas.mandatory_insurance"),
                 jurisdiction.insuranceLiability.mandatoryInsurance
-                  ? `${language === "de" ? "Ja" : "Yes"}${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
-                  : language === "de"
-                    ? "Nein"
-                    : "No",
+                  ? `${t("atlas.yes")}${jurisdiction.insuranceLiability.minimumCoverage ? ` / ${jurisdiction.insuranceLiability.minimumCoverage}` : ""}`
+                  : t("atlas.no"),
               ],
               [
-                language === "de" ? "Bearbeitungszeit" : "Processing Time",
-                `${jurisdiction.timeline.typicalProcessingWeeks.min}–${jurisdiction.timeline.typicalProcessingWeeks.max} ${language === "de" ? "Wochen" : "weeks"}`,
+                t("atlas.processing_time"),
+                t("atlas.processing_weeks", {
+                  min: String(jurisdiction.timeline.typicalProcessingWeeks.min),
+                  max: String(jurisdiction.timeline.typicalProcessingWeeks.max),
+                }),
               ],
             ].map(([label, value]) => (
               <tr key={label}>
@@ -1077,9 +1031,7 @@ function BriefingPrint({
               paddingBottom: "4pt",
             }}
           >
-            {language === "de"
-              ? `Zuständige Behörden (${authorities.length})`
-              : `Competent Authorities (${authorities.length})`}
+            {t("atlas.competent_authorities")} ({authorities.length})
           </div>
           <table
             style={{
@@ -1100,7 +1052,7 @@ function BriefingPrint({
                     width: "12%",
                   }}
                 >
-                  {language === "de" ? "Kürzel" : "Abbr."}
+                  {t("atlas.abbr")}
                 </th>
                 <th
                   style={{
@@ -1112,7 +1064,7 @@ function BriefingPrint({
                     width: "28%",
                   }}
                 >
-                  {language === "de" ? "Name" : "Name"}
+                  {t("atlas.name")}
                 </th>
                 <th
                   style={{
@@ -1124,7 +1076,7 @@ function BriefingPrint({
                     width: "60%",
                   }}
                 >
-                  {language === "de" ? "Mandat" : "Mandate"}
+                  {t("atlas.mandate")}
                 </th>
               </tr>
             </thead>
@@ -1184,9 +1136,10 @@ function BriefingPrint({
           lineHeight: 1.5,
         }}
       >
-        {language === "de"
-          ? `${brandLine}. Daten zuletzt aktualisiert: ${jurisdiction.lastUpdated}. Diese Informationen dienen ausschließlich der Recherche und Referenz. Sie stellen keine Rechtsberatung dar. Alle Angaben sind mit offiziellen Quellen und qualifiziertem Rechtsberater zu überprüfen.`
-          : `${brandLine}. Data last updated: ${jurisdiction.lastUpdated}. This information is for research and reference purposes only. It does not constitute legal advice. Verify all information with official sources and qualified legal counsel before making compliance decisions.`}
+        {brandLine}.{" "}
+        {t("atlas.data_disclaimer_footer", {
+          date: jurisdiction.lastUpdated,
+        })}
       </div>
     </div>
   );

@@ -102,16 +102,20 @@ const ALL_AUTHORITIES: Authority[] = [
 
 // ─── Style maps ─────────────────────────────────────────────────────
 
-const TYPE_LABELS: Record<LegalSourceType, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-};
+function getTypeLabels(
+  t: (key: string) => string,
+): Record<LegalSourceType, string> {
+  return {
+    international_treaty: t("atlas.type_treaty"),
+    federal_law: t("atlas.type_law"),
+    federal_regulation: t("atlas.type_regulation"),
+    technical_standard: t("atlas.type_standard"),
+    eu_regulation: t("atlas.type_eu_regulation"),
+    eu_directive: t("atlas.type_eu_directive"),
+    policy_document: t("atlas.type_policy"),
+    draft_legislation: t("atlas.type_draft"),
+  };
+}
 
 const RELEVANCE_DOT: Record<RelevanceLevel, string> = {
   fundamental: "bg-gray-900",
@@ -202,6 +206,7 @@ function performSearch(query: string): SearchResults | null {
 export default function CommandCenterPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
+  const TYPE_LABELS = getTypeLabels(t);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
@@ -290,19 +295,19 @@ export default function CommandCenterPage() {
           className={`flex items-center gap-4 transition-all duration-500 ${hasResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
         >
           <span className="text-[11px] text-gray-500  tracking-wide">
-            {ALL_SOURCES.length} sources
+            {t("atlas.sources_count", { count: ALL_SOURCES.length })}
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
           <span className="text-[11px] text-gray-500  tracking-wide">
-            {ALL_AUTHORITIES.length} authorities
+            {t("atlas.authorities_count", { count: ALL_AUTHORITIES.length })}
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
           <span className="text-[11px] text-gray-500  tracking-wide">
-            19 jurisdictions
+            {t("atlas.jurisdictions_count", { count: 19 })}
           </span>
         </div>
 
@@ -310,21 +315,27 @@ export default function CommandCenterPage() {
         {hasResults && (
           <div className="flex items-center gap-3 mt-1 mb-8">
             <span className="text-[11px] text-gray-400 ">
-              {totalResults} {totalResults === 1 ? "result" : "results"}
+              {totalResults === 1
+                ? t("atlas.result_count_singular")
+                : t("atlas.result_count", { count: totalResults })}
             </span>
             {results.jurisdictions.length > 0 && (
               <span className="text-[10px] text-gray-500">
-                {results.jurisdictions.length} jurisdictions
+                {t("atlas.jurisdictions_count", {
+                  count: results.jurisdictions.length,
+                })}
               </span>
             )}
             {results.sources.length > 0 && (
               <span className="text-[10px] text-gray-500">
-                {results.sources.length} sources
+                {t("atlas.sources_count", { count: results.sources.length })}
               </span>
             )}
             {results.authorities.length > 0 && (
               <span className="text-[10px] text-gray-500">
-                {results.authorities.length} authorities
+                {t("atlas.authorities_count", {
+                  count: results.authorities.length,
+                })}
               </span>
             )}
           </div>
@@ -369,7 +380,7 @@ export default function CommandCenterPage() {
                     <span
                       className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${data.legislation.status === "enacted" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"}`}
                     >
-                      {data.legislation.status}
+                      {t(`atlas.status_${data.legislation.status}`)}
                     </span>
                     <ArrowRight
                       size={14}
@@ -518,7 +529,9 @@ export default function CommandCenterPage() {
             <span className="text-[10px] font-semibold text-gray-400 tracking-wider">
               ATLAS
             </span>
-            <span className="text-[9px] text-gray-500">by Caelex</span>
+            <span className="text-[9px] text-gray-500">
+              {t("atlas.footer_by_caelex")}
+            </span>
           </div>
 
           <div className="space-y-3 text-[10px] text-gray-500 leading-[1.7]">
@@ -526,84 +539,61 @@ export default function CommandCenterPage() {
               <span className="font-semibold text-gray-500">
                 {t("atlas.disclaimer_no_legal_advice")}.
               </span>{" "}
-              ATLAS is a regulatory information and research tool developed by
-              Caelex. The information, data, assessments, and comparative
-              analyses provided through ATLAS do not constitute legal,
-              compliance, tax, or professional advice of any kind. No
-              attorney-client, advisory, or fiduciary relationship is created
-              between Caelex and any user through access to or use of ATLAS.
-              Users must independently verify all information and consult
-              qualified legal counsel before making compliance, licensing, or
-              business decisions.
+              {t("atlas.disclaimer_body_no_legal_advice")}
             </p>
 
             <p>
               <span className="font-semibold text-gray-500">
                 {t("atlas.disclaimer_no_guarantee")}.
               </span>{" "}
-              Caelex makes no representation or warranty, express or implied,
-              regarding the accuracy, completeness, timeliness, or reliability
-              of any data presented in ATLAS. Regulatory frameworks are subject
-              to change without notice. National law data reflects the state of
-              research at the time of last verification and may not reflect
-              subsequent amendments, judicial interpretations, or administrative
-              practice.
+              {t("atlas.disclaimer_body_no_guarantee")}
             </p>
 
             <p>
               <span className="font-semibold text-gray-500">
                 {t("atlas.disclaimer_limitation")}.
               </span>{" "}
-              To the maximum extent permitted by applicable law, Caelex shall
-              not be liable for any direct, indirect, incidental, consequential,
-              or special damages arising from or in connection with the use of
-              or reliance on information provided through ATLAS.
+              {t("atlas.disclaimer_body_limitation")}
             </p>
 
             <p>
               <span className="font-semibold text-gray-500">
                 {t("atlas.disclaimer_data_sources")}.
               </span>{" "}
-              ATLAS aggregates information from public legislative databases,
-              official government publications, international treaty
-              collections, and authoritative regulatory sources. Caelex is not
-              affiliated with, endorsed by, or officially connected to any
-              government authority, regulatory body, or international
-              organization referenced herein.
+              {t("atlas.disclaimer_body_data_sources")}
             </p>
 
             <p>
               <span className="font-semibold text-gray-500">
                 {t("atlas.disclaimer_ip")}.
               </span>{" "}
-              ATLAS, including its regulatory data structures, compliance
-              mappings, and analytical methodologies, is proprietary to Caelex.
-              All rights reserved.
+              {t("atlas.disclaimer_body_ip")}
             </p>
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
             <span className="text-[9px] text-gray-500">
-              © {new Date().getFullYear()} Caelex — All rights reserved
+              © {new Date().getFullYear()} Caelex —{" "}
+              {t("atlas.footer_all_rights")}
             </span>
             <div className="flex items-center gap-4">
               <a
                 href="/legal/privacy"
                 className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
               >
-                Privacy
+                {t("atlas.footer_privacy")}
               </a>
               <a
                 href="/legal/terms"
                 className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
               >
-                Terms
+                {t("atlas.footer_terms")}
               </a>
               <a
                 href="/legal/impressum"
                 className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
               >
-                Impressum
+                {t("atlas.footer_impressum")}
               </a>
             </div>
           </div>

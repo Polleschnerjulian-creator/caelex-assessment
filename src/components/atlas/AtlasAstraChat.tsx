@@ -21,7 +21,7 @@ export default function AtlasAstraChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const pathname = usePathname();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -102,16 +102,13 @@ export default function AtlasAstraChat() {
         {
           id: `e-${Date.now()}`,
           role: "assistant",
-          content:
-            language === "de"
-              ? "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
-              : "An error occurred. Please try again.",
+          content: t("atlas.astra_error"),
         },
       ]);
     } finally {
       setLoading(false);
     }
-  }, [input, loading, conversationId, getPageContext, language]);
+  }, [input, loading, conversationId, getPageContext, t]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -159,7 +156,7 @@ export default function AtlasAstraChat() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 pl-4 pr-5 py-2.5 rounded-full bg-[#1a1a1a] text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-[#2a2a2a] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 ease-out group"
-          aria-label={language === "de" ? "Astra öffnen" : "Open Astra"}
+          aria-label={t("atlas.astra_open")}
         >
           <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
             <Sparkles
@@ -206,14 +203,14 @@ export default function AtlasAstraChat() {
                   Astra
                 </span>
                 <span className="text-[10px] text-white/40 leading-tight">
-                  Space Law Assistant
+                  {t("atlas.astra_subtitle")}
                 </span>
               </div>
             </div>
             <button
               onClick={handleClose}
               className="h-7 w-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
-              aria-label={language === "de" ? "Schließen" : "Close"}
+              aria-label={t("common.close")}
             >
               <X
                 size={13}
@@ -236,12 +233,10 @@ export default function AtlasAstraChat() {
                   />
                 </div>
                 <p className="text-[15px] font-semibold text-white/90 mb-1">
-                  {language === "de"
-                    ? "Frag mich zum Weltraumrecht"
-                    : "Ask me about space law"}
+                  {t("atlas.astra_ask_space_law")}
                 </p>
                 <p className="text-[11px] text-white/30 mb-6">
-                  18 jurisdictions · 325 sources · 211 authorities
+                  {t("atlas.astra_stats_line")}
                 </p>
                 <div className="space-y-2 w-full">
                   {suggestions().map((s) => (
@@ -304,23 +299,17 @@ export default function AtlasAstraChat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={
-                  language === "de"
-                    ? "Frage zum Weltraumrecht..."
-                    : "Ask about space law..."
-                }
+                placeholder={t("atlas.astra_input_placeholder")}
                 disabled={loading}
                 rows={1}
                 className="flex-1 resize-none text-[13px] text-white/90 placeholder:text-white/25 bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-1"
-                aria-label={
-                  language === "de" ? "Nachricht eingeben" : "Type your message"
-                }
+                aria-label={t("atlas.astra_input_aria")}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
                 className="flex-shrink-0 h-7 w-7 rounded-lg bg-white text-[#111] disabled:opacity-20 hover:bg-white/90 active:scale-95 flex items-center justify-center transition-all duration-150"
-                aria-label={language === "de" ? "Senden" : "Send"}
+                aria-label={t("common.send")}
               >
                 {loading ? (
                   <Loader2

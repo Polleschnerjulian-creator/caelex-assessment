@@ -9,6 +9,7 @@ import {
   getAvailableJurisdictions,
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getJurisdictionNames } from "../i18n-labels";
 import { ArrowRight, Filter, Check } from "lucide-react";
 
 // ─── Build enriched jurisdiction data ──────────────────────────────
@@ -107,7 +108,8 @@ type FilterKey = "all" | "hasAct" | "noAct" | "mandatory" | "moon";
 
 export default function JurisdictionsPage() {
   const router = useRouter();
-  const { language } = useLanguage();
+  const { t } = useLanguage();
+  const JURISDICTION_NAMES = getJurisdictionNames(t);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("sources");
 
@@ -133,30 +135,18 @@ export default function JurisdictionsPage() {
   }, [filter, sort]);
 
   const filters: { key: FilterKey; label: string }[] = [
-    { key: "all", label: language === "de" ? "Alle" : "All" },
-    {
-      key: "hasAct",
-      label: language === "de" ? "Mit Weltraumgesetz" : "Has Space Act",
-    },
-    { key: "noAct", label: language === "de" ? "Ohne Gesetz" : "No Space Act" },
-    {
-      key: "mandatory",
-      label: language === "de" ? "Pflichtversicherung" : "Mandatory Insurance",
-    },
-    {
-      key: "moon",
-      label: language === "de" ? "Mondvertrag" : "Moon Agreement",
-    },
+    { key: "all", label: t("atlas.filter_all") },
+    { key: "hasAct", label: t("atlas.filter_has_space_act") },
+    { key: "noAct", label: t("atlas.filter_no_space_act") },
+    { key: "mandatory", label: t("atlas.filter_mandatory_insurance") },
+    { key: "moon", label: t("atlas.filter_moon_agreement") },
   ];
 
   const sorts: { key: SortKey; label: string }[] = [
-    { key: "sources", label: "Sources" },
-    { key: "country", label: language === "de" ? "Land" : "Country" },
-    { key: "year", label: language === "de" ? "Jahr" : "Year" },
-    {
-      key: "insurance",
-      label: language === "de" ? "Versicherung" : "Insurance",
-    },
+    { key: "sources", label: t("atlas.sort_sources") },
+    { key: "country", label: t("atlas.sort_country") },
+    { key: "year", label: t("atlas.sort_year") },
+    { key: "insurance", label: t("atlas.sort_insurance") },
   ];
 
   // Stats
@@ -169,12 +159,14 @@ export default function JurisdictionsPage() {
       {/* ─── Header ─── */}
       <div className="mb-8">
         <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
-          {language === "de" ? "Jurisdiktionen" : "Jurisdictions"}
+          {t("atlas.jurisdictions")}
         </h1>
         <p className="text-[13px] text-gray-500">
-          {language === "de"
-            ? `${ALL.length} Länder · ${WITH_SOURCES.length} mit Rechtsquellen · ${withAct} mit Weltraumgesetz`
-            : `${ALL.length} countries · ${WITH_SOURCES.length} with legal sources · ${withAct} with space acts`}
+          {t("atlas.countries_stats", {
+            total: ALL.length,
+            withSources: WITH_SOURCES.length,
+            withAct,
+          })}
         </p>
       </div>
 
@@ -183,25 +175,25 @@ export default function JurisdictionsPage() {
         {[
           {
             n: WITH_SOURCES.length,
-            label:
-              language === "de" ? "Mit Rechtsquellen" : "With Legal Sources",
-            sub: `${ALL.reduce((a, j) => a + j.sourceCount, 0)} total`,
+            label: t("atlas.with_legal_sources"),
+            sub: t("atlas.total_sources", {
+              count: ALL.reduce((a, j) => a + j.sourceCount, 0),
+            }),
           },
           {
             n: withAct,
-            label: language === "de" ? "Weltraumgesetz" : "Space Act Enacted",
-            sub: `${ALL.length - withAct} ${language === "de" ? "ohne" : "without"}`,
+            label: t("atlas.space_act_enacted"),
+            sub: t("atlas.without_act", { count: ALL.length - withAct }),
           },
           {
             n: withMandatory,
-            label:
-              language === "de" ? "Pflichtversicherung" : "Mandatory Insurance",
-            sub: language === "de" ? "€2M–€60M Spanne" : "€2M–€60M range",
+            label: t("atlas.filter_mandatory_insurance"),
+            sub: t("atlas.insurance_range"),
           },
           {
             n: withMoon,
-            label: language === "de" ? "Mondvertrag" : "Moon Agreement",
-            sub: language === "de" ? "von ~18 weltweit" : "of ~18 globally",
+            label: t("atlas.filter_moon_agreement"),
+            sub: t("atlas.moon_globally"),
           },
         ].map((s) => (
           <div
@@ -234,9 +226,7 @@ export default function JurisdictionsPage() {
           </button>
         ))}
         <span className="text-[10px] text-gray-300 mx-2">|</span>
-        <span className="text-[10px] text-gray-500">
-          {language === "de" ? "Sortieren:" : "Sort:"}
-        </span>
+        <span className="text-[10px] text-gray-500">{t("atlas.sort")}</span>
         {sorts.map((s) => (
           <button
             key={s.key}
@@ -265,7 +255,7 @@ export default function JurisdictionsPage() {
                   {j.code}
                 </span>
                 <span className="text-[15px] font-semibold text-gray-900">
-                  {j.country}
+                  {JURISDICTION_NAMES[j.code] || j.country}
                 </span>
               </div>
               <ArrowRight
@@ -279,23 +269,31 @@ export default function JurisdictionsPage() {
             <p className="text-[11px] text-gray-500 truncate mb-3">
               {j.hasSpaceAct
                 ? `${j.actName} (${j.actYear})`
-                : j.actName ||
-                  (language === "de" ? "Kein Weltraumgesetz" : "No space act")}
+                : j.actName || t("atlas.no_comprehensive_law")}
             </p>
 
             {/* Compliance indicators */}
             <div className="grid grid-cols-5 gap-1.5 mb-3">
               <Indicator
                 active={j.hasSpaceAct}
-                label={language === "de" ? "Gesetz" : "Act"}
+                label={t("atlas.indicator_act")}
               />
               <Indicator
                 active={j.mandatoryInsurance}
-                label={language === "de" ? "Versicherung" : "Insurance"}
+                label={t("atlas.indicator_insurance")}
               />
-              <Indicator active={j.hasRegistry} label="Registry" />
-              <Indicator active={j.hasDebrisRules} label="Debris" />
-              <Indicator active={j.sourceCount > 0} label="Sources" />
+              <Indicator
+                active={j.hasRegistry}
+                label={t("atlas.indicator_registry")}
+              />
+              <Indicator
+                active={j.hasDebrisRules}
+                label={t("atlas.debris_indicator")}
+              />
+              <Indicator
+                active={j.sourceCount > 0}
+                label={t("atlas.indicator_sources")}
+              />
             </div>
 
             {/* Bottom row: insurance + liability + sources count */}
@@ -312,7 +310,10 @@ export default function JurisdictionsPage() {
               </div>
               {j.sourceCount > 0 && (
                 <span className="text-[10px] font-medium text-gray-500">
-                  {j.sourceCount} sources · {j.authorityCount} auth.
+                  {t("atlas.sources_auth", {
+                    sources: j.sourceCount,
+                    auth: j.authorityCount,
+                  })}
                 </span>
               )}
             </div>
@@ -323,37 +324,35 @@ export default function JurisdictionsPage() {
       {/* ─── Treaty Ratification Matrix ─── */}
       <section className="mb-10">
         <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-4">
-          {language === "de"
-            ? "Vertragsratifizierungsmatrix"
-            : "Treaty Ratification Matrix"}
+          {t("atlas.treaty_matrix")}
         </h2>
         <div className="rounded-xl bg-white border border-gray-100 overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left px-4 py-2.5 font-medium text-gray-500 w-[100px]">
-                  Country
+                  {t("atlas.sort_country")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  OST
+                  {t("atlas.treaty_ost")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  Liability
+                  {t("atlas.treaty_liability")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  Registration
+                  {t("atlas.treaty_registration")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  Moon
+                  {t("atlas.treaty_moon")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  Artemis
+                  {t("atlas.treaty_artemis")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  {language === "de" ? "Gesetz" : "Act"}
+                  {t("atlas.indicator_act")}
                 </th>
                 <th className="text-center px-2 py-2.5 font-medium text-gray-500">
-                  {language === "de" ? "Versicherung" : "Insurance"}
+                  {t("atlas.indicator_insurance")}
                 </th>
               </tr>
             </thead>
@@ -366,7 +365,7 @@ export default function JurisdictionsPage() {
                   <td className="px-4 py-2 font-semibold text-gray-900">
                     {j.code}{" "}
                     <span className="font-normal text-gray-400">
-                      {j.country}
+                      {JURISDICTION_NAMES[j.code] || j.country}
                     </span>
                   </td>
                   <td className="text-center px-2 py-2">

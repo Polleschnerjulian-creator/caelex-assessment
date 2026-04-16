@@ -1,23 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Download } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
 import ComparatorExport from "@/components/atlas/ComparatorExport";
-
-// ─── Dimension tabs ───
-
-const DIMENSIONS = [
-  { key: "all", label: "All Dimensions" },
-  { key: "authorization", label: "Authorization & Licensing" },
-  { key: "liability", label: "Liability & Insurance" },
-  { key: "debris", label: "Debris Mitigation" },
-  { key: "registration", label: "Registration" },
-  { key: "timeline", label: "Timeline & Costs" },
-  { key: "eu_readiness", label: "EU Space Act Readiness" },
-] as const;
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
 
@@ -25,6 +14,21 @@ export default function ComparatorPage() {
   const [selected, setSelected] =
     useState<SpaceLawCountryCode[]>(DEFAULT_COUNTRIES);
   const [dimension, setDimension] = useState<string>("all");
+  const { t } = useLanguage();
+
+  // ─── Dimension tabs (translated) ───
+  const dimensions = useMemo(
+    () => [
+      { key: "all", label: t("atlas.all_dimensions") },
+      { key: "authorization", label: t("atlas.authorization_licensing") },
+      { key: "liability", label: t("atlas.liability_insurance") },
+      { key: "debris", label: t("atlas.debris_mitigation") },
+      { key: "registration", label: t("atlas.registration") },
+      { key: "timeline", label: t("atlas.timeline_costs") },
+      { key: "eu_readiness", label: t("atlas.eu_space_act_readiness") },
+    ],
+    [t],
+  );
 
   const handleExport = useCallback(() => {
     window.print();
@@ -37,18 +41,21 @@ export default function ComparatorPage() {
         <header className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
-              Comparator
+              {t("atlas.comparator")}
             </h1>
             <span className="text-[10px]  text-gray-500 tracking-wide">
-              19 jurisdictions
+              {t("atlas.jurisdictions_count", { count: 19 })}
             </span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-[10px] text-gray-500 ">
-              <span>{selected.length} selected</span>
+              <span>
+                {selected.length} {t("atlas.selected")}
+              </span>
               <span className="text-gray-300">|</span>
               <span>
-                {DIMENSIONS.find((d) => d.key === dimension)?.label || "All"}
+                {dimensions.find((d) => d.key === dimension)?.label ||
+                  t("atlas.all_dimensions")}
               </span>
             </div>
             {selected.length > 0 && (
@@ -66,7 +73,7 @@ export default function ComparatorPage() {
                   aria-hidden="true"
                   strokeWidth={1.5}
                 />
-                <span>Export PDF</span>
+                <span>{t("atlas.export_pdf_btn")}</span>
               </button>
             )}
           </div>
@@ -76,7 +83,7 @@ export default function ComparatorPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
-              Jurisdictions
+              {t("atlas.jurisdictions")}
             </span>
           </div>
           <CountrySelector selected={selected} onChange={setSelected} />
@@ -87,7 +94,7 @@ export default function ComparatorPage() {
           role="tablist"
           className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200"
         >
-          {DIMENSIONS.map((dim) => (
+          {dimensions.map((dim) => (
             <button
               key={dim.key}
               role="tab"

@@ -29,9 +29,14 @@ import type {
   LegalSourceStatus,
   RelevanceLevel,
   Authority,
-  ComplianceArea,
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import {
+  getTypeLabels,
+  getStatusLabels,
+  getAreaLabels,
+  getJurisdictionNames,
+} from "../../i18n-labels";
 
 // ─── Style maps ─────────────────────────────────────────────────────
 
@@ -70,17 +75,6 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
   },
 };
 
-const TYPE_LABELS: Record<LegalSourceType, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-};
-
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   fundamental: "text-gray-900 bg-gray-100 border-gray-300",
   critical: "text-red-700 bg-red-50 border-red-200",
@@ -89,70 +83,17 @@ const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   low: "text-gray-500 bg-gray-50 border-gray-100",
 };
 
-const STATUS_STYLES: Record<
-  LegalSourceStatus,
-  { bg: string; text: string; label: string }
-> = {
-  in_force: {
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-gray-800",
-    label: "In Force",
-  },
-  draft: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-    label: "Draft",
-  },
-  proposed: {
-    bg: "bg-gray-100 border-gray-300",
-    text: "text-gray-900",
-    label: "Proposed",
-  },
-  superseded: {
-    bg: "bg-gray-50 border-gray-200",
-    text: "text-gray-500",
-    label: "Superseded",
-  },
-  planned: {
-    bg: "bg-violet-50 border-violet-200",
-    text: "text-violet-700",
-    label: "Planned",
-  },
+const STATUS_COLORS: Record<LegalSourceStatus, { bg: string; text: string }> = {
+  in_force: { bg: "bg-emerald-50 border-emerald-200", text: "text-gray-800" },
+  draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
+  proposed: { bg: "bg-gray-100 border-gray-300", text: "text-gray-900" },
+  superseded: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
+  planned: { bg: "bg-violet-50 border-violet-200", text: "text-violet-700" },
   not_ratified: {
     bg: "bg-orange-50 border-orange-200",
     text: "text-orange-700",
-    label: "Not Ratified",
   },
-  expired: {
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-500",
-    label: "Expired",
-  },
-};
-
-const AREA_LABELS: Record<ComplianceArea, string> = {
-  licensing: "Licensing",
-  registration: "Registration",
-  liability: "Liability",
-  insurance: "Insurance",
-  cybersecurity: "Cybersecurity",
-  export_control: "Export Control",
-  data_security: "Data Security",
-  frequency_spectrum: "Spectrum",
-  environmental: "Environmental",
-  debris_mitigation: "Debris",
-  space_traffic_management: "STM",
-  human_spaceflight: "Human Spaceflight",
-  military_dual_use: "Dual-Use",
-};
-
-const JURISDICTION_NAMES: Record<string, string> = {
-  DE: "Germany",
-  FR: "France",
-  UK: "United Kingdom",
-  IT: "Italy",
-  INT: "International",
-  EU: "European Union",
+  expired: { bg: "bg-red-50 border-red-200", text: "text-red-500" },
 };
 
 const JURISDICTION_FLAGS: Record<string, string> = {
@@ -166,7 +107,15 @@ const JURISDICTION_FLAGS: Record<string, string> = {
 
 // ─── Linked source helper ───────────────────────────────────────────
 
-function LinkedSource({ id, label }: { id: string; label: string }) {
+function LinkedSource({
+  id,
+  label,
+  typeLabels,
+}: {
+  id: string;
+  label: string;
+  typeLabels: Record<LegalSourceType, string>;
+}) {
   const source = getLegalSourceById(id);
   if (!source) return null;
 
@@ -182,7 +131,7 @@ function LinkedSource({ id, label }: { id: string; label: string }) {
         <span
           className={`text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${typeStyle.bg} ${typeStyle.text}`}
         >
-          {TYPE_LABELS[source.type]}
+          {typeLabels[source.type]}
         </span>
         <span className="group-hover:underline underline-offset-2">
           {source.title_en}
@@ -201,7 +150,12 @@ interface SourceDetailPageProps {
 export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const TYPE_LABELS = getTypeLabels(t);
+  const STATUS_LABELS = getStatusLabels(t);
+  const AREA_LABELS = getAreaLabels(t);
+  const JURISDICTION_NAMES = getJurisdictionNames(t);
 
   const source = getLegalSourceById(id);
   const related = getRelatedSources(id);
@@ -215,7 +169,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
         >
           <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
-          Back to ATLAS
+          {t("atlas.back_to_atlas")}
         </Link>
         <div className="mt-20 text-center">
           <AlertCircle
@@ -225,14 +179,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             aria-hidden="true"
           />
           <p className="text-[20px] font-medium text-gray-500">
-            Source not found
+            {t("atlas.source_not_found")}
           </p>
           <p className="text-[13px] text-gray-500 mt-2 ">{id}</p>
           <button
             onClick={() => router.back()}
             className="mt-6 text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-4"
           >
-            Go back
+            {t("atlas.go_back")}
           </button>
         </div>
       </div>
@@ -240,7 +194,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   }
 
   const typeStyle = TYPE_STYLES[source.type];
-  const statusStyle = STATUS_STYLES[source.status];
+  const statusStyle = STATUS_COLORS[source.status];
   const relevanceStyle = RELEVANCE_STYLES[source.relevance_level];
 
   // Resolve authorities
@@ -295,7 +249,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
         >
           <ArrowLeft size={13} strokeWidth={1.5} aria-hidden="true" />
-          Back
+          {t("atlas.back")}
         </button>
         <span className="text-gray-500" aria-hidden="true">
           ·
@@ -334,7 +288,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
           >
-            View official text
+            {t("atlas.view_official_text")}
             <span className="sr-only">(opens in new window)</span>
             <ExternalLink size={13} strokeWidth={2} aria-hidden="true" />
           </a>
@@ -344,7 +298,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Metadata grid ─── */}
       <div className="mt-5 py-4 border-y border-gray-200 max-w-2xl">
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
-          <dt className="text-gray-500">Jurisdiction</dt>
+          <dt className="text-gray-500">{t("atlas.jurisdiction_label")}</dt>
           <dd className="text-gray-800">
             <span className=" text-gray-500 text-[12px]">
               {jurisdictionFlag}
@@ -352,19 +306,21 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             · {jurisdictionName}
           </dd>
 
-          <dt className="text-gray-500">Status</dt>
+          <dt className="text-gray-500">{t("atlas.status_label")}</dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
             >
-              {statusStyle.label}
+              {STATUS_LABELS[source.status] ?? source.status}
             </span>
           </dd>
 
           {(source.date_enacted || source.date_in_force) && (
             <>
               <dt className="text-gray-500">
-                {source.date_enacted ? "Enacted" : "In Force"}
+                {source.date_enacted
+                  ? t("atlas.enacted_label")
+                  : t("atlas.in_force_label")}
               </dt>
               <dd className="text-gray-800">
                 {source.date_enacted ?? source.date_in_force}
@@ -374,17 +330,17 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
           {source.official_reference && (
             <>
-              <dt className="text-gray-500">Reference</dt>
+              <dt className="text-gray-500">{t("atlas.reference_label")}</dt>
               <dd className=" text-[12px] text-gray-600">
                 {source.official_reference}
               </dd>
             </>
           )}
 
-          <dt className="text-gray-500">Issuing Body</dt>
+          <dt className="text-gray-500">{t("atlas.issuing_body")}</dt>
           <dd className="text-gray-800">{source.issuing_body}</dd>
 
-          <dt className="text-gray-500">Relevance</dt>
+          <dt className="text-gray-500">{t("atlas.relevance_label")}</dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${relevanceStyle}`}
@@ -406,7 +362,11 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               href="#provisions"
               className="hover:text-gray-700 transition-colors"
             >
-              {provisionCount} Key Provision{provisionCount !== 1 ? "s" : ""}
+              {provisionCount !== 1
+                ? t("atlas.key_provisions_count_plural", {
+                    count: provisionCount,
+                  })
+                : t("atlas.key_provisions_count", { count: provisionCount })}
             </a>
           )}
           {provisionCount > 0 && authorityCount > 0 && (
@@ -419,7 +379,11 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               href="#authorities"
               className="hover:text-gray-700 transition-colors"
             >
-              {authorityCount} Authorit{authorityCount !== 1 ? "ies" : "y"}
+              {authorityCount !== 1
+                ? t("atlas.authorities_count_toc_plural", {
+                    count: authorityCount,
+                  })
+                : t("atlas.authorities_count_toc", { count: authorityCount })}
             </a>
           )}
           {(provisionCount > 0 || authorityCount > 0) && hasRelated && (
@@ -432,7 +396,11 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               href="#related"
               className="hover:text-gray-700 transition-colors"
             >
-              {relatedCount} Related Source{relatedCount !== 1 ? "s" : ""}
+              {relatedCount !== 1
+                ? t("atlas.related_sources_count_plural", {
+                    count: relatedCount,
+                  })
+                : t("atlas.related_sources_count", { count: relatedCount })}
             </a>
           )}
         </nav>
@@ -456,7 +424,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="provisions-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              Key Provisions
+              {t("atlas.key_provisions")}
             </h2>
           </div>
 
@@ -495,9 +463,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
                       <p className="text-[12px] text-emerald-800 leading-[1.6]">
                         <span className="text-[10px] font-medium uppercase tracking-wider text-gray-900">
-                          {language === "de"
-                            ? "Compliance-Auswirkung"
-                            : "Compliance Implication"}
+                          {t("atlas.compliance_implication")}
                         </span>
                         <br />
                         {displayImplication}
@@ -525,7 +491,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="scope-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              {language === "de" ? "Anwendungsbereich" : "Scope"}
+              {t("atlas.scope")}
             </h2>
           </div>
           <p className="text-[13px] text-gray-600 leading-[1.75] max-w-3xl">
@@ -553,7 +519,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="authorities-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              Competent Authorities
+              {t("atlas.competent_authorities")}
             </h2>
           </div>
 
@@ -614,7 +580,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="related-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              Related Sources
+              {t("atlas.related_sources")}
             </h2>
           </div>
 
@@ -625,18 +591,32 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             supersededBySource) && (
             <div className="space-y-1.5 mb-4">
               {amendsSource && (
-                <LinkedSource id={amendsSource.id} label="Amends:" />
+                <LinkedSource
+                  id={amendsSource.id}
+                  label={t("atlas.amends_label")}
+                  typeLabels={TYPE_LABELS}
+                />
               )}
               {amendedBySources.map((s) => (
-                <LinkedSource key={s.id} id={s.id} label="Amended by:" />
+                <LinkedSource
+                  key={s.id}
+                  id={s.id}
+                  label={t("atlas.amended_by_label")}
+                  typeLabels={TYPE_LABELS}
+                />
               ))}
               {implementsSource && (
-                <LinkedSource id={implementsSource.id} label="Implements:" />
+                <LinkedSource
+                  id={implementsSource.id}
+                  label={t("atlas.implements_label")}
+                  typeLabels={TYPE_LABELS}
+                />
               )}
               {supersededBySource && (
                 <LinkedSource
                   id={supersededBySource.id}
-                  label="Superseded by:"
+                  label={t("atlas.superseded_by_label")}
+                  typeLabels={TYPE_LABELS}
                 />
               )}
             </div>
@@ -688,7 +668,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="notes-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              Notes
+              {t("atlas.notes")}
             </h2>
           </div>
           <div className="space-y-2 max-w-3xl">
@@ -719,7 +699,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="integration-heading"
               className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
             >
-              Caelex Integration
+              {t("atlas.caelex_integration")}
             </h2>
           </div>
           <div className="max-w-2xl space-y-2">
@@ -727,7 +707,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               source.caelex_engine_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
                   <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
-                    Engines
+                    {t("atlas.engines_label")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {source.caelex_engine_mapping.map((engine) => (
@@ -746,7 +726,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               source.caelex_data_file_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
                   <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
-                    Data Files
+                    {t("atlas.data_files_label")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {source.caelex_data_file_mapping.map((file) => (
@@ -763,7 +743,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
             <div className="flex items-start gap-4">
               <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
-                Verified
+                {t("atlas.verified_label")}
               </span>
               <span className="text-[11px] text-gray-500">
                 {source.last_verified}
@@ -779,10 +759,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Footer ─── */}
       <footer className="mt-12 pt-4 border-t border-gray-200">
         <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
-          Last verified: {source.last_verified}. This information is for
-          research and reference purposes only. It does not constitute legal
-          advice. Verify all information with official sources and qualified
-          legal counsel before making compliance decisions.
+          {t("atlas.footer_disclaimer", { date: source.last_verified })}
         </p>
       </footer>
     </div>
