@@ -1213,14 +1213,6 @@ export default function Sidebar({
               >
                 {t("sidebar.regulatoryFeed")}
               </NavItem>
-              <NavItem
-                href="/dashboard/evidence"
-                icon={<FileCheck size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Evidence
-              </NavItem>
             </div>
           </div>
 
