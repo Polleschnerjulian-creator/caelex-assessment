@@ -51,7 +51,7 @@ function renderMarkdown(text: string): React.ReactNode {
           );
         }
         parts.push(
-          <strong key={partKey++} className="font-semibold text-white">
+          <strong key={partKey++} className="font-semibold text-gray-900">
             {boldMatch[1]}
           </strong>,
         );
@@ -70,7 +70,7 @@ function renderMarkdown(text: string): React.ReactNode {
           parts.push(
             <code
               key={partKey++}
-              className="px-1 py-0.5 rounded bg-white/[0.06] text-emerald-300 text-caption font-mono"
+              className="px-1 py-0.5 rounded bg-gray-100 text-gray-700 text-caption font-mono"
             >
               {codeMatch[1]}
             </code>,
@@ -91,7 +91,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <ul key={key++} className="list-disc list-inside space-y-1 my-2 ml-1">
           {listItems.map((item, idx) => (
-            <li key={idx} className="text-white/70">
+            <li key={idx} className="text-gray-600">
               {processInlineMarkdown(item)}
             </li>
           ))}
@@ -136,7 +136,7 @@ function renderMarkdown(text: string): React.ReactNode {
     // Headers
     if (trimmed.startsWith("### ")) {
       elements.push(
-        <h4 key={key++} className="font-semibold text-white/90 mt-3 mb-1">
+        <h4 key={key++} className="font-semibold text-gray-800 mt-3 mb-1">
           {processInlineMarkdown(trimmed.slice(4))}
         </h4>,
       );
@@ -144,7 +144,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (trimmed.startsWith("## ")) {
       elements.push(
-        <h3 key={key++} className="font-semibold text-white mt-3 mb-1.5">
+        <h3 key={key++} className="font-semibold text-gray-900 mt-3 mb-1.5">
           {processInlineMarkdown(trimmed.slice(3))}
         </h3>,
       );
@@ -152,7 +152,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (trimmed.startsWith("# ")) {
       elements.push(
-        <h2 key={key++} className="font-medium text-white mt-3 mb-2">
+        <h2 key={key++} className="font-medium text-gray-900 mt-3 mb-2">
           {processInlineMarkdown(trimmed.slice(2))}
         </h2>,
       );
@@ -178,23 +178,23 @@ function renderMarkdown(text: string): React.ReactNode {
 function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
   const config = {
     HIGH: {
-      bg: "bg-green-500/10",
-      border: "border-green-500/20",
-      text: "text-green-400",
+      bg: "bg-green-50",
+      border: "border-green-200",
+      text: "text-green-700",
       icon: CheckCircle,
       label: "High Confidence",
     },
     MEDIUM: {
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/20",
-      text: "text-amber-400",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      text: "text-amber-700",
       icon: Info,
       label: "Medium Confidence",
     },
     LOW: {
-      bg: "bg-red-500/10",
-      border: "border-red-500/20",
-      text: "text-red-400",
+      bg: "bg-red-50",
+      border: "border-red-200",
+      text: "text-red-600",
       icon: AlertTriangle,
       label: "Low Confidence",
     },
@@ -217,9 +217,9 @@ function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
 
 function SourceBadge({ source }: { source: AstraSource }) {
   const confidenceColor = {
-    HIGH: "border-emerald-500/30 hover:bg-emerald-500/10",
-    MEDIUM: "border-amber-500/30 hover:bg-amber-500/10",
-    LOW: "border-white/[0.08] hover:bg-white/[0.04]",
+    HIGH: "border-green-200 hover:bg-green-50",
+    MEDIUM: "border-amber-200 hover:bg-amber-50",
+    LOW: "border-gray-200 hover:bg-gray-50",
   }[source.confidence];
 
   return (
@@ -227,19 +227,19 @@ function SourceBadge({ source }: { source: AstraSource }) {
       href={source.url || "#"}
       target={source.url ? "_blank" : undefined}
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 glass-interactive glass-surface rounded-full px-2 py-0.5 border ${confidenceColor} transition-colors cursor-pointer group`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-white border ${confidenceColor} transition-colors cursor-pointer group`}
       title={`${source.regulation} ${source.article}${source.title ? ` - ${source.title}` : ""}`}
     >
-      <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
+      <span className="text-micro text-gray-500 group-hover:text-gray-700 transition-colors">
         {source.regulation}
       </span>
-      <span className="text-micro font-medium text-emerald-400">
+      <span className="text-micro font-medium text-gray-900">
         {source.article}
       </span>
       {source.url && (
         <ExternalLink
           size={9}
-          className="text-white/50 group-hover:text-white/70"
+          className="text-gray-400 group-hover:text-gray-600"
         />
       )}
     </a>
@@ -256,10 +256,9 @@ function ActionButton({
   onClick: () => void;
 }) {
   const priorityStyles = {
-    high: "glass-interactive glass-surface border-emerald-500/30 hover:bg-emerald-500/15 text-emerald-400",
-    medium:
-      "glass-interactive glass-surface hover:bg-white/[0.08] text-white/70",
-    low: "glass-interactive glass-surface hover:bg-white/[0.04] text-white/50",
+    high: "bg-gray-900 border-gray-900 text-white hover:bg-black",
+    medium: "bg-white border-gray-200 hover:bg-gray-50 text-gray-700",
+    low: "bg-white border-gray-200 hover:bg-gray-50 text-gray-500",
   }[action.priority];
 
   return (
@@ -280,17 +279,17 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
   const isImprovement = scoreDiff > 0;
 
   const riskColors = {
-    low: "text-green-400",
-    medium: "text-amber-400",
-    high: "text-orange-400",
-    critical: "text-red-400",
+    low: "text-green-600",
+    medium: "text-amber-600",
+    high: "text-orange-600",
+    critical: "text-red-600",
   };
 
   return (
-    <div className="mt-3 p-3 rounded-lg glass-elevated">
+    <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
       <div className="flex items-center gap-2 mb-2">
-        <Shield size={14} className="text-emerald-400" />
-        <span className="text-caption font-medium text-white/70">
+        <Shield size={14} className="text-gray-600" />
+        <span className="text-caption font-medium text-gray-700">
           Compliance Impact: {impact.module}
         </span>
         {impact.riskLevel && (
@@ -304,23 +303,23 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
 
       <div className="flex items-center gap-4 mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-micro text-white/45">Current:</span>
-          <span className="text-small font-medium text-white">
+          <span className="text-micro text-gray-500">Current:</span>
+          <span className="text-small font-medium text-gray-900">
             {impact.currentScore}%
           </span>
         </div>
         {scoreDiff !== 0 && (
           <>
-            <ArrowRight size={12} className="text-white/40" />
+            <ArrowRight size={12} className="text-gray-400" />
             <div className="flex items-center gap-2">
-              <span className="text-micro text-white/45">Projected:</span>
+              <span className="text-micro text-gray-500">Projected:</span>
               <span
-                className={`text-small font-medium ${isImprovement ? "text-green-400" : "text-amber-400"}`}
+                className={`text-small font-medium ${isImprovement ? "text-green-600" : "text-amber-600"}`}
               >
                 {impact.projectedScore}%
               </span>
               <span
-                className={`text-[9px] ${isImprovement ? "text-green-400" : "text-amber-400"}`}
+                className={`text-[9px] ${isImprovement ? "text-green-600" : "text-amber-600"}`}
               >
                 ({isImprovement ? "+" : ""}
                 {scoreDiff}%)
@@ -332,11 +331,11 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
 
       {impact.affectedArticles.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          <span className="text-[9px] text-white/45">Affected:</span>
+          <span className="text-[9px] text-gray-500">Affected:</span>
           {impact.affectedArticles.map((article, idx) => (
             <span
               key={idx}
-              className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/50"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600"
             >
               {article}
             </span>
@@ -345,7 +344,7 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
       )}
 
       {impact.deadline && (
-        <div className="mt-2 text-[9px] text-amber-400">
+        <div className="mt-2 text-[9px] text-amber-600">
           Deadline: {new Date(impact.deadline).toLocaleDateString("de-DE")}
         </div>
       )}
@@ -384,8 +383,8 @@ export default function AstraMessageBubble({
     >
       {/* ASTRA avatar */}
       {isAstra && (
-        <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Zap size={13} className="text-emerald-400" />
+        <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Zap size={13} className="text-gray-600" />
         </div>
       )}
 
@@ -393,14 +392,14 @@ export default function AstraMessageBubble({
       <div
         className={`max-w-[85%] ${
           isAstra
-            ? "glass-elevated border-l-2 border-l-emerald-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl"
-            : "glass-surface bg-emerald-500/[0.04] rounded-tl-xl rounded-bl-xl rounded-br-xl"
+            ? "bg-white border border-gray-200 rounded-2xl rounded-bl-md shadow-sm"
+            : "bg-gray-900 text-white rounded-2xl rounded-br-md"
         } ${message.type === "text" ? "px-3.5 py-2.5" : "px-3.5 pt-2.5 pb-1"}`}
       >
         {/* AI-generated indicator + Confidence (for ASTRA messages) */}
         {isAstra && (
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] text-white/40 font-medium uppercase tracking-wider">
+            <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
               AI-generated
             </span>
             {confidence && <ConfidenceBadge level={confidence} />}
@@ -411,7 +410,7 @@ export default function AstraMessageBubble({
         {message.content && (
           <div
             className={`text-small leading-relaxed ${
-              isAstra ? "text-white/70" : "text-emerald-100 whitespace-pre-wrap"
+              isAstra ? "text-gray-700" : "text-white whitespace-pre-wrap"
             }`}
           >
             {isAstra ? renderMarkdown(message.content) : message.content}
@@ -420,8 +419,8 @@ export default function AstraMessageBubble({
 
         {/* Sources */}
         {isAstra && sources.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-white/[0.06]">
-            <p className="text-[9px] text-white/50 mb-1.5">Sources:</p>
+          <div className="mt-3 pt-2 border-t border-gray-100">
+            <p className="text-[9px] text-gray-500 mb-1.5">Sources:</p>
             <div className="flex flex-wrap gap-1.5">
               {sources.map((source, idx) => (
                 <SourceBadge key={idx} source={source} />
@@ -444,8 +443,8 @@ export default function AstraMessageBubble({
 
         {/* Actions */}
         {isAstra && actions.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-white/[0.06]">
-            <p className="text-[9px] text-white/50 mb-1.5">
+          <div className="mt-3 pt-2 border-t border-gray-100">
+            <p className="text-[9px] text-gray-500 mb-1.5">
               Suggested Actions:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -483,7 +482,7 @@ export default function AstraMessageBubble({
         {/* Timestamp */}
         <p
           className={`text-[9px] mt-1.5 ${
-            isAstra ? "text-white/30" : "text-emerald-400/30"
+            isAstra ? "text-gray-400" : "text-white/50"
           }`}
         >
           {message.timestamp.toLocaleTimeString("de-DE", {

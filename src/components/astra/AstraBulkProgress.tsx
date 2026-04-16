@@ -15,19 +15,19 @@ const statusIcons: Record<
 > = {
   pending: {
     icon: <Square size={12} />,
-    color: "text-white/40",
+    color: "text-gray-400",
   },
   generating: {
     icon: <Loader2 size={12} className="animate-spin" />,
-    color: "text-amber-400",
+    color: "text-amber-500",
   },
   complete: {
     icon: <Check size={12} />,
-    color: "text-green-400",
+    color: "text-green-600",
   },
   error: {
     icon: <AlertCircle size={12} />,
-    color: "text-red-400",
+    color: "text-red-500",
   },
 };
 
@@ -64,7 +64,7 @@ export default function AstraBulkProgress({
   }, [items, isGenerating, checkedCount]);
 
   return (
-    <div className="my-2 glass-elevated rounded-lg p-3">
+    <div className="my-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
       {/* Item list */}
       <div className="space-y-1 mb-3">
         {items.map((item) => {
@@ -72,7 +72,7 @@ export default function AstraBulkProgress({
           return (
             <div
               key={item.id}
-              className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.02] transition-colors"
+              className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               {/* Checkbox */}
               <button
@@ -80,8 +80,8 @@ export default function AstraBulkProgress({
                 disabled={isGenerating || isDone}
                 className={`flex-shrink-0 ${
                   item.checked
-                    ? "text-emerald-400"
-                    : "text-white/40 hover:text-white/60"
+                    ? "text-gray-900"
+                    : "text-gray-400 hover:text-gray-600"
                 } ${isGenerating || isDone ? "cursor-not-allowed" : ""}`}
               >
                 {item.checked ? (
@@ -92,10 +92,10 @@ export default function AstraBulkProgress({
               </button>
 
               {/* Article info */}
-              <span className="text-micro text-white/45 w-14 flex-shrink-0">
+              <span className="text-micro text-gray-500 w-14 flex-shrink-0">
                 {item.articleRef}
               </span>
-              <span className="text-caption text-white/45 flex-1 truncate">
+              <span className="text-caption text-gray-600 flex-1 truncate">
                 {item.title}
               </span>
 
@@ -111,14 +111,14 @@ export default function AstraBulkProgress({
       {/* Progress bar (when generating) */}
       {isGenerating && (
         <div className="mb-3">
-          <div className="flex items-center justify-between text-micro text-white/45 mb-1">
+          <div className="flex items-center justify-between text-micro text-gray-500 mb-1">
             <span>
               Generierung {completedCount}/{checkedCount}...
             </span>
           </div>
-          <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+          <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full transition-all duration-300"
+              className="h-full bg-gray-900 rounded-full transition-all duration-300"
               style={{
                 width: `${checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0}%`,
               }}
@@ -132,7 +132,7 @@ export default function AstraBulkProgress({
         <button
           onClick={handleGenerate}
           disabled={isGenerating || checkedCount === 0}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 rounded-lg text-caption font-medium text-emerald-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-900 hover:bg-black rounded-lg text-caption font-medium text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
@@ -147,9 +147,9 @@ export default function AstraBulkProgress({
 
       {/* Done message */}
       {isDone && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-          <Check size={12} className="text-green-400" />
-          <span className="text-caption text-green-400">
+        <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+          <Check size={12} className="text-green-600" />
+          <span className="text-caption text-green-700">
             {completedCount} Dokumente generiert (Framework-Modus)
           </span>
         </div>

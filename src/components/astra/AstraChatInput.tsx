@@ -35,7 +35,7 @@ export default function AstraChatInput() {
   };
 
   return (
-    <div className="flex-shrink-0 px-4 py-3 glass-surface border-t border-white/[0.06]">
+    <div className="flex-shrink-0 px-4 py-3 bg-white border-t border-gray-200">
       <div className="max-w-[800px] mx-auto">
         <div className="flex items-end gap-2">
           <label htmlFor="astra-fullpage-input" className="sr-only">
@@ -50,21 +50,21 @@ export default function AstraChatInput() {
             placeholder="Ask about regulations..."
             disabled={isTyping}
             rows={1}
-            className="flex-1 glass-elevated rounded-2xl px-4 py-3 text-body text-white/80 placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_20px_rgba(16,185,129,0.08)] disabled:opacity-50 transition-all resize-none"
+            className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] disabled:opacity-50 transition-all resize-none bg-[#F7F8FA]"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
             aria-label="Send message"
-            className="p-3 rounded-xl glass-interactive bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 text-emerald-400 hover:shadow-[0_0_12px_rgba(16,185,129,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+            className="p-3 rounded-xl bg-gray-900 hover:bg-black text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
           >
             <Send size={16} />
           </button>
         </div>
         <div className="flex items-center justify-between mt-1.5 px-1">
-          <p className="text-[9px] text-white/30">Shift+Enter for new line</p>
+          <p className="text-[9px] text-gray-400">Shift+Enter for new line</p>
           {remainingQueries !== null && (
-            <p className="text-[9px] text-white/30">
+            <p className="text-[9px] text-gray-400">
               {remainingQueries} queries remaining
             </p>
           )}

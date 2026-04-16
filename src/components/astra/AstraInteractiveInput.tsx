@@ -67,10 +67,10 @@ export default function AstraInteractiveInput({
                     transition-all duration-150
                     ${
                       isSelected
-                        ? "glass-accent text-emerald-300"
+                        ? "bg-gray-900 text-white"
                         : submitted
-                          ? "bg-white/[0.02] border border-white/[0.04] text-white/40 cursor-not-allowed"
-                          : "glass-surface glass-interactive text-white/70 hover:text-white"
+                          ? "bg-gray-50 border border-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:text-gray-900"
                     }
                   `}
                 >
@@ -94,12 +94,12 @@ export default function AstraInteractiveInput({
               options.find((o) => o.type === "text_input")?.label ||
               "Eingabe..."
             }
-            className="flex-1 glass-elevated rounded-lg px-3 py-1.5 text-caption text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/30"
+            className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-caption text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 bg-white"
           />
           <button
             onClick={handleTextSubmit}
             disabled={!textValue.trim()}
-            className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-lg bg-gray-900 text-white hover:bg-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Send size={12} />
           </button>
@@ -108,9 +108,9 @@ export default function AstraInteractiveInput({
 
       {/* Submitted text value display */}
       {hasTextInput && submitted && selectedValue && (
-        <div className="flex items-center gap-1.5 mt-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-          <Check size={10} className="text-emerald-400" />
-          <span className="text-caption text-emerald-300">{selectedValue}</span>
+        <div className="flex items-center gap-1.5 mt-1.5 px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg">
+          <Check size={10} className="text-gray-600" />
+          <span className="text-caption text-gray-700">{selectedValue}</span>
         </div>
       )}
     </div>

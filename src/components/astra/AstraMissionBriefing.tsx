@@ -38,22 +38,22 @@ const SEVERITY_CONFIG = {
   critical: {
     border: "border-l-red-400",
     icon: AlertTriangle,
-    iconColor: "text-red-400",
+    iconColor: "text-red-500",
   },
   high: {
     border: "border-l-amber-400",
     icon: Clock,
-    iconColor: "text-amber-400",
+    iconColor: "text-amber-500",
   },
   medium: {
-    border: "border-l-white/20",
+    border: "border-l-gray-300",
     icon: Shield,
-    iconColor: "text-white/40",
+    iconColor: "text-gray-400",
   },
   low: {
-    border: "border-l-white/20",
+    border: "border-l-gray-300",
     icon: Shield,
-    iconColor: "text-white/40",
+    iconColor: "text-gray-400",
   },
 };
 
@@ -120,8 +120,8 @@ function ComplianceRing({ score }: { score: number }) {
       <svg width={100} height={100} className="absolute inset-0 -rotate-90">
         <defs>
           <linearGradient id="rrs-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#10B981" />
-            <stop offset="100%" stopColor="#06B6D4" />
+            <stop offset="0%" stopColor="#111827" />
+            <stop offset="100%" stopColor="#6B7280" />
           </linearGradient>
         </defs>
         {/* Background track */}
@@ -130,7 +130,7 @@ function ComplianceRing({ score }: { score: number }) {
           cy={50}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="rgba(0,0,0,0.06)"
           strokeWidth={5}
         />
         {/* Score arc */}
@@ -147,10 +147,10 @@ function ComplianceRing({ score }: { score: number }) {
         />
       </svg>
       <div className="flex flex-col items-center z-10">
-        <span className="text-display font-bold text-white leading-none">
+        <span className="text-display font-bold text-gray-900 leading-none">
           {rendered}
         </span>
-        <span className="text-micro text-white/30 uppercase tracking-wider mt-0.5">
+        <span className="text-micro text-gray-400 uppercase tracking-wider mt-0.5">
           RRS
         </span>
       </div>
@@ -164,19 +164,16 @@ function BriefingSkeleton() {
   return (
     <div className="flex flex-col items-center px-6 py-8 gap-6">
       {/* Ring skeleton */}
-      <div className="w-[100px] h-[100px] rounded-full bg-white/[0.06] animate-pulse" />
+      <div className="w-[100px] h-[100px] rounded-full bg-gray-100 animate-pulse" />
       {/* Greeting skeleton */}
       <div className="flex flex-col items-center gap-2">
-        <div className="h-5 w-48 rounded bg-white/[0.06] animate-pulse" />
-        <div className="h-3 w-36 rounded bg-white/[0.06] animate-pulse" />
+        <div className="h-5 w-48 rounded bg-gray-100 animate-pulse" />
+        <div className="h-3 w-36 rounded bg-gray-100 animate-pulse" />
       </div>
       {/* Card skeletons */}
       <div className="w-full flex flex-col gap-2">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-16 rounded-xl bg-white/[0.06] animate-pulse"
-          />
+          <div key={i} className="h-16 rounded-xl bg-gray-100 animate-pulse" />
         ))}
       </div>
     </div>
@@ -298,11 +295,11 @@ export default function AstraMissionBriefing({
         transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-col items-center gap-1"
       >
-        <h2 className="text-heading font-medium text-white/90">
+        <h2 className="text-heading font-medium text-gray-900">
           {greeting}
           {userName ? `, ${userName}.` : "."}
         </h2>
-        <p className="text-body text-white/45">
+        <p className="text-body text-gray-500">
           {deadlineCount > 0
             ? `${deadlineCount} Deadline${deadlineCount !== 1 ? "s" : ""}`
             : "Keine Deadlines"}
@@ -345,8 +342,8 @@ export default function AstraMissionBriefing({
                 }}
                 className={`
                   group w-full text-left rounded-xl
-                  bg-white/[0.04] backdrop-blur-md border border-white/[0.08]
-                  hover:bg-white/[0.07] transition-all duration-200
+                  bg-white border border-gray-200
+                  hover:border-gray-300 hover:shadow-sm transition-all duration-200
                   border-l-2 ${config.border}
                   p-3.5 flex items-start gap-3 cursor-pointer
                 `}
@@ -355,16 +352,16 @@ export default function AstraMissionBriefing({
                   <Icon size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-small font-medium text-white/80 truncate">
+                  <div className="text-small font-medium text-gray-800 truncate">
                     {insight.title}
                   </div>
-                  <div className="text-caption text-white/45 truncate mt-0.5">
+                  <div className="text-caption text-gray-500 truncate mt-0.5">
                     {insight.description}
                   </div>
                 </div>
                 <ChevronRight
                   size={14}
-                  className="text-white/20 group-hover:text-white/40 transition-colors mt-0.5 flex-shrink-0"
+                  className="text-gray-300 group-hover:text-gray-500 transition-colors mt-0.5 flex-shrink-0"
                 />
               </motion.button>
             );
@@ -384,14 +381,14 @@ export default function AstraMissionBriefing({
             key={action.label}
             onClick={() => onSendMessage(action.prompt)}
             className="
-              bg-white/[0.04] hover:bg-white/[0.08]
-              border border-white/[0.08] rounded-xl
+              bg-white hover:bg-gray-50
+              border border-gray-200 rounded-xl
               px-4 py-2 flex items-center gap-2
-              text-caption font-medium text-white/60
-              hover:text-white/80 transition-all duration-200 cursor-pointer
+              text-caption font-medium text-gray-600
+              hover:text-gray-800 hover:border-gray-300 transition-all duration-200 cursor-pointer
             "
           >
-            <action.icon size={13} className="opacity-60" />
+            <action.icon size={13} className="text-gray-400" />
             {action.label}
           </button>
         ))}

@@ -29,35 +29,35 @@ export default function AstraToolExecutionCard({
   if (!toolCalls.length) return null;
 
   return (
-    <div className="mt-2 rounded-lg glass-surface overflow-hidden">
+    <div className="mt-2 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 transition-colors"
       >
-        <Wrench size={12} className="text-emerald-400 flex-shrink-0" />
-        <span className="text-caption text-white/45 flex-1">
+        <Wrench size={12} className="text-gray-500 flex-shrink-0" />
+        <span className="text-caption text-gray-500 flex-1">
           Used {toolCalls.length} tool{toolCalls.length !== 1 ? "s" : ""}
         </span>
         <ChevronDown
           size={12}
-          className={`text-white/40 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          className={`text-gray-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
 
       {expanded && (
-        <div className="border-t border-white/[0.06] px-3 py-2 space-y-1.5">
+        <div className="border-t border-gray-200 px-3 py-2 space-y-1.5">
           {toolCalls.map((call) => (
             <div key={call.id} className="flex items-start gap-2">
               <Check
                 size={10}
-                className="text-green-400 mt-0.5 flex-shrink-0"
+                className="text-green-600 mt-0.5 flex-shrink-0"
               />
               <div className="min-w-0">
-                <span className="text-caption text-white/70 font-medium">
+                <span className="text-caption text-gray-700 font-medium">
                   {humanizeToolName(call.name)}
                 </span>
                 {Object.keys(call.input).length > 0 && (
-                  <span className="text-micro text-white/50 ml-1.5">
+                  <span className="text-micro text-gray-500 ml-1.5">
                     (
                     {Object.entries(call.input)
                       .slice(0, 3)
