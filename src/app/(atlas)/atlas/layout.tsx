@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 
@@ -18,6 +19,20 @@ export default async function AtlasLayout({
 
   if (!session?.user) {
     redirect("/login");
+  }
+
+  // Check organization membership
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId: session.user.id },
+    include: {
+      organization: {
+        select: { isActive: true },
+      },
+    },
+  });
+
+  if (!membership || !membership.organization.isActive) {
+    redirect("/atlas-no-access");
   }
 
   return (
