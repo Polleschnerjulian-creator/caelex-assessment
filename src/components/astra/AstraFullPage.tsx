@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  Zap,
+  Sparkles,
   ShieldCheck,
   MessageSquare,
   PanelRightOpen,
@@ -45,19 +45,16 @@ export default function AstraFullPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const contextInitRef = useRef(false);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // ─── URL Context Recognition ───
   useEffect(() => {
     if (contextInitRef.current) return;
     contextInitRef.current = true;
 
     const article = searchParams.get("article");
     const category = searchParams.get("category");
-    const convId = searchParams.get("conversation");
 
     if (article) {
       const ref = searchParams.get("ref") || article;
@@ -68,7 +65,6 @@ export default function AstraFullPage() {
     } else if (category) {
       const label = searchParams.get("label") || category;
       const regulation = searchParams.get("regulation") || "eu-space-act";
-      // Try to load articles from sessionStorage
       let articles: Array<{
         id: string;
         articleRef: string;
@@ -82,10 +78,7 @@ export default function AstraFullPage() {
         // Ignore
       }
       setCategoryContext(category, label, articles, regulation);
-    } else if (convId) {
-      // Loading conversation handled by the caller
     } else {
-      // General mode — only init if no messages yet
       if (messages.length === 0) {
         setGeneralContext();
       }
@@ -103,56 +96,55 @@ export default function AstraFullPage() {
   // ─── Consent Gate ───
   if (!astraConsented) {
     return (
-      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-light-bg dark:bg-dark-bg">
+      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-[#F7F8FA]">
         <div className="max-w-md w-full px-6">
-          <div className="flex flex-col items-center text-center glass-floating rounded-2xl p-8">
-            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
-              <ShieldCheck size={28} className="text-emerald-400" />
+          <div className="flex flex-col items-center text-center bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-5">
+              <ShieldCheck size={28} className="text-gray-600" />
             </div>
-            <h2 className="text-heading font-semibold text-slate-900 dark:text-white mb-2">
+            <h2 className="text-[18px] font-semibold text-gray-900 mb-2">
               ASTRA AI Einwilligung
             </h2>
-            <p className="text-body text-slate-500 dark:text-white/45 leading-relaxed mb-3">
+            <p className="text-[13px] text-gray-500 leading-relaxed mb-3">
               ASTRA verwendet Ihre Compliance-Daten, um kontextbezogene
               regulatorische Beratung zu liefern. Ihre Eingaben werden
               verarbeitet, aber nicht zum Trainieren von KI-Modellen verwendet.
             </p>
-            <p className="text-small text-amber-400/70 leading-relaxed mb-5 px-3 py-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+            <p className="text-[12px] text-amber-700 leading-relaxed mb-5 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
               Hinweis gem. EU AI Act Art. 50: ASTRA ist ein KI-System (Large
               Language Model). Alle Antworten sind KI-generiert und stellen
-              keine Rechtsberatung dar. Bitte verifizieren Sie regulatorische
-              Informationen stets mit qualifizierten Fachleuten.
+              keine Rechtsberatung dar.
             </p>
-            <ul className="text-small text-slate-500 dark:text-white/45 space-y-2 mb-6 text-left">
+            <ul className="text-[12px] text-gray-500 space-y-2 mb-6 text-left">
               <li className="flex items-start gap-2">
-                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
-                <span>Gesprachsdaten werden verschlusselt gespeichert</span>
+                <span className="text-gray-400 mt-0.5">&#x2022;</span>
+                <span>Gesprächsdaten werden verschlüsselt gespeichert</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
+                <span className="text-gray-400 mt-0.5">&#x2022;</span>
                 <span>Keine Weitergabe an Dritte</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-400 mt-0.5">&#x2022;</span>
+                <span className="text-gray-400 mt-0.5">&#x2022;</span>
                 <span>Einwilligung jederzeit widerrufbar</span>
               </li>
             </ul>
             <button
               onClick={handleAcceptConsent}
-              className="px-8 py-3 rounded-xl glass-interactive bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 text-emerald-400 text-body-lg font-medium transition-colors"
+              className="px-8 py-3 rounded-xl bg-gray-900 text-white text-[14px] font-medium hover:bg-black transition-colors"
             >
-              Einverstanden &mdash; ASTRA aktivieren
+              Einverstanden — ASTRA aktivieren
             </button>
-            <p className="text-micro text-slate-500 dark:text-white/45 mt-4">
+            <p className="text-[10px] text-gray-400 mt-4">
               Siehe unsere{" "}
               <a
                 href="/legal/privacy"
                 target="_blank"
-                className="text-emerald-500/60 hover:text-emerald-400 underline"
+                className="text-gray-500 hover:text-gray-700 underline"
               >
-                Datenschutzerkl&auml;rung
+                Datenschutzerklärung
               </a>{" "}
-              fur Details zur Datenverarbeitung.
+              für Details zur Datenverarbeitung.
             </p>
           </div>
         </div>
@@ -162,8 +154,8 @@ export default function AstraFullPage() {
 
   // ─── Main Layout ───
   return (
-    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-light-bg dark:bg-dark-bg">
-      {/* Conversation List (toggle, left) */}
+    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-[#F7F8FA]">
+      {/* Conversation List */}
       <AnimatePresence>
         {showConversations && (
           <motion.div
@@ -182,34 +174,31 @@ export default function AstraFullPage() {
 
       {/* Center Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Chat Header */}
-        <div className="flex items-center justify-between px-4 h-12 glass-surface border-b border-white/[0.06] flex-shrink-0">
-          <div className="flex items-center gap-2">
-            {/* Toggle Conversations */}
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 h-14 bg-white border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowConversations(!showConversations)}
-              className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
               aria-label="Toggle conversations"
-              title="Conversations"
             >
               <PanelLeftOpen size={16} />
             </button>
 
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
-              <Zap size={12} className="text-emerald-400" />
+            <div className="h-8 w-8 rounded-xl bg-gray-900 flex items-center justify-center">
+              <Sparkles size={14} className="text-white" />
             </div>
-            <span className="text-body font-medium text-slate-900 dark:text-white">
-              ASTRA
-            </span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium uppercase tracking-wider">
-              Beta
-            </span>
+            <div>
+              <span className="text-[14px] font-semibold text-gray-900 block leading-tight">
+                Astra
+              </span>
+              <span className="text-[10px] text-gray-400 leading-tight">
+                Compliance Copilot
+              </span>
+            </div>
 
             {conversationId && (
-              <div
-                className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.03] text-white/20"
-                title={`Conversation: ${conversationId.slice(0, 8)}...`}
-              >
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 text-gray-400">
                 <MessageSquare size={10} />
                 <span className="text-[9px]">{conversationId.slice(0, 8)}</span>
               </div>
@@ -220,21 +209,16 @@ export default function AstraFullPage() {
             {hasUserMessages && (
               <button
                 onClick={resetChat}
-                className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                 aria-label="New chat"
                 title="New Chat"
               >
                 <RotateCcw size={14} />
               </button>
             )}
-            {/* Toggle Tool Browser */}
             <button
               onClick={() => setShowToolBrowser(!showToolBrowser)}
-              className={`p-1.5 rounded-lg transition-colors ${
-                showToolBrowser
-                  ? "text-emerald-400 bg-emerald-500/10"
-                  : "text-white/30 hover:text-white/70 hover:bg-white/[0.04]"
-              }`}
+              className={`p-1.5 rounded-lg transition-colors ${showToolBrowser ? "text-gray-900 bg-gray-100" : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"}`}
               aria-label="Toggle tool browser"
               title="Tool Browser"
             >
@@ -252,15 +236,15 @@ export default function AstraFullPage() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
+              <div className="px-4 py-2 bg-red-50 border-b border-red-200 flex items-center justify-between">
                 <div className="flex items-center gap-2" role="alert">
-                  <AlertCircle size={14} className="text-red-400" />
-                  <span className="text-caption text-red-400">{error}</span>
+                  <AlertCircle size={14} className="text-red-500" />
+                  <span className="text-[12px] text-red-600">{error}</span>
                 </div>
                 <button
                   onClick={clearError}
                   aria-label="Dismiss error"
-                  className="p-1 rounded hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors"
+                  className="p-1 rounded hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors"
                 >
                   <X size={12} />
                 </button>
@@ -278,7 +262,7 @@ export default function AstraFullPage() {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="max-w-[800px] mx-auto space-y-4">
             {messages.map((msg) => (
               <AstraMessageBubble key={msg.id} message={msg} />
@@ -291,21 +275,21 @@ export default function AstraFullPage() {
                 aria-label="ASTRA is typing"
                 role="status"
               >
-                <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <Zap size={13} className="text-emerald-400" />
+                <div className="w-7 h-7 rounded-xl bg-gray-900 flex items-center justify-center flex-shrink-0">
+                  <Sparkles size={13} className="text-white" />
                 </div>
-                <div className="glass-elevated border-l-2 border-l-emerald-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
                   <div className="flex gap-1">
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     />
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     />
                     <span
-                      className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     />
                   </div>
@@ -321,7 +305,7 @@ export default function AstraFullPage() {
         <AstraChatInput />
       </div>
 
-      {/* Tool Browser (toggle, right) */}
+      {/* Tool Browser */}
       <AnimatePresence>
         {showToolBrowser && (
           <motion.div

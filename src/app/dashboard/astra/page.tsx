@@ -11,8 +11,8 @@ export default function AstraPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-[var(--surface-raised)]">
-          <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
+        <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-[#F7F8FA]">
+          <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
         </div>
       }
     >
