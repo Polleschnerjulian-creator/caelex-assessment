@@ -298,12 +298,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         data-content="caelex"
         className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle relative z-[1]"
       >
-        {/* Company Profile Bar — always visible */}
-        <CompanyProfileBar
-          data={profileData}
-          onEditClick={() => setProfileOpen(true)}
-          complianceScore={complianceScore}
-        />
+        {/* Company Profile Bar — only on main dashboard */}
+        {pathname === "/dashboard" && (
+          <CompanyProfileBar
+            data={profileData}
+            onEditClick={() => setProfileOpen(true)}
+            complianceScore={complianceScore}
+          />
+        )}
         {!isEphemerisPage && !isFullscreenPage && (
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
         )}
