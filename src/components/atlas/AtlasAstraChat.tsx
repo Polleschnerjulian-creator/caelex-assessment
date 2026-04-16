@@ -261,7 +261,7 @@ export default function AtlasAstraChat() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${msg.role === "user" ? "bg-white text-gray-900 rounded-[18px] rounded-br-md" : "bg-white/[0.06] border border-white/[0.08] text-white/85 rounded-[18px] rounded-bl-md"}`}
+                  className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${msg.role === "user" ? "bg-white text-gray-900 rounded-[18px] rounded-br-md" : "bg-white/[0.06] border border-white/[0.08] text-white rounded-[18px] rounded-bl-md"}`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
