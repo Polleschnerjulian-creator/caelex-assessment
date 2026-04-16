@@ -53,10 +53,6 @@ const ComplianceTimelineChart = dynamic(
   () => import("@/components/dashboard/charts/ComplianceTimelineChart"),
   { ssr: false, loading: () => <ChartSkeleton /> },
 );
-const RegulatoryRadarChart = dynamic(
-  () => import("@/components/dashboard/charts/RegulatoryRadarChart"),
-  { ssr: false, loading: () => <ChartSkeleton /> },
-);
 const Sparkline = dynamic(
   () => import("@/components/dashboard/charts/Sparkline"),
   { ssr: false, loading: () => <div className="h-8 w-16" /> },
@@ -168,16 +164,6 @@ const DEMO_TIMELINE_DATA = [
   { month: "Nov", overall: 35, eu: 38, us: 32, uk: 30 },
   { month: "Dec", overall: 42, eu: 45, us: 38, uk: 35 },
   { month: "Jan", overall: 48, eu: 52, us: 45, uk: 42 },
-];
-
-const DEMO_RADAR_DATA = [
-  { category: "Auth", value: 75, fullMark: 100 },
-  { category: "Cyber", value: 60, fullMark: 100 },
-  { category: "Debris", value: 45, fullMark: 100 },
-  { category: "Enviro", value: 35, fullMark: 100 },
-  { category: "Insur", value: 20, fullMark: 100 },
-  { category: "Export", value: 50, fullMark: 100 },
-  { category: "Spectrum", value: 40, fullMark: 100 },
 ];
 
 const DEMO_DEADLINES: Deadline[] = [
@@ -688,95 +674,6 @@ function DashboardContent() {
       })
     : DEMO_MODULE_PROGRESS;
 
-  const radarData = hasData
-    ? [
-        {
-          category: "Auth",
-          value:
-            moduleProgress.authorization?.total > 0
-              ? Math.round(
-                  (moduleProgress.authorization.compliant /
-                    moduleProgress.authorization.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Cyber",
-          value:
-            moduleProgress.cybersecurity?.total > 0
-              ? Math.round(
-                  (moduleProgress.cybersecurity.compliant /
-                    moduleProgress.cybersecurity.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Debris",
-          value:
-            moduleProgress.debris?.total > 0
-              ? Math.round(
-                  (moduleProgress.debris.compliant /
-                    moduleProgress.debris.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Enviro",
-          value:
-            moduleProgress.environmental?.total > 0
-              ? Math.round(
-                  (moduleProgress.environmental.compliant /
-                    moduleProgress.environmental.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Insur",
-          value:
-            moduleProgress.insurance?.total > 0
-              ? Math.round(
-                  (moduleProgress.insurance.compliant /
-                    moduleProgress.insurance.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Regist",
-          value:
-            moduleProgress.registration?.total > 0
-              ? Math.round(
-                  (moduleProgress.registration.compliant /
-                    moduleProgress.registration.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-        {
-          category: "Super",
-          value:
-            moduleProgress.supervision?.total > 0
-              ? Math.round(
-                  (moduleProgress.supervision.compliant /
-                    moduleProgress.supervision.total) *
-                    100,
-                )
-              : 0,
-          fullMark: 100,
-        },
-      ]
-    : DEMO_RADAR_DATA;
-
   // Import handlers
   const handleImport = useCallback(async () => {
     if (!selectedOperator) return;
@@ -925,12 +822,6 @@ function DashboardContent() {
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06]">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">
-                {daysUntilEnforcement}d to enforcement
-              </span>
-            </div>
           </motion.div>
         </div>
 
@@ -1079,10 +970,6 @@ function DashboardContent() {
               data={DEMO_TIMELINE_DATA}
               isDemo={!hasData}
             />
-          </GlassPanel>
-          <GlassPanel delay={9} className="p-5">
-            <SectionLabel>{t("dashboard.regulatoryCoverage")}</SectionLabel>
-            <RegulatoryRadarChart data={radarData} isDemo={!hasData} />
           </GlassPanel>
         </div>
 
