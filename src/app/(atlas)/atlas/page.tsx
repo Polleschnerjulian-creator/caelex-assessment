@@ -207,6 +207,30 @@ export default function CommandCenterPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
   const TYPE_LABELS = getTypeLabels(t);
+  const JURISDICTION_NAMES: Record<string, string> = useMemo(
+    () => ({
+      DE: t("atlas.jurisdiction_de"),
+      FR: t("atlas.jurisdiction_fr"),
+      UK: t("atlas.jurisdiction_uk"),
+      IT: t("atlas.jurisdiction_it"),
+      LU: t("atlas.jurisdiction_lu"),
+      NL: t("atlas.jurisdiction_nl"),
+      BE: t("atlas.jurisdiction_be"),
+      ES: t("atlas.jurisdiction_es"),
+      NO: t("atlas.jurisdiction_no"),
+      SE: t("atlas.jurisdiction_se"),
+      FI: t("atlas.jurisdiction_fi"),
+      DK: t("atlas.jurisdiction_dk"),
+      AT: t("atlas.jurisdiction_at"),
+      CH: t("atlas.jurisdiction_ch"),
+      PT: t("atlas.jurisdiction_pt"),
+      IE: t("atlas.jurisdiction_ie"),
+      GR: t("atlas.jurisdiction_gr"),
+      CZ: t("atlas.jurisdiction_cz"),
+      PL: t("atlas.jurisdiction_pl"),
+    }),
+    [t],
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
@@ -371,7 +395,7 @@ export default function CommandCenterPage() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <span className="text-[15px] font-semibold text-gray-900 group-hover:text-black transition-colors">
-                        {data.countryName}
+                        {JURISDICTION_NAMES[code] || data.countryName}
                       </span>
                       <span className="block text-[11px] text-gray-400 truncate mt-0.5">
                         {data.legislation.name}

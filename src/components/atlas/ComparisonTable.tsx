@@ -6,6 +6,8 @@ import type {
   SpaceLawCountryCode,
   JurisdictionLaw,
 } from "@/lib/space-law-types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getJurisdictionNames } from "@/app/(atlas)/atlas/i18n-labels";
 
 // ─── Types ───
 
@@ -23,9 +25,12 @@ interface RowDef {
 
 // ─── Helpers ───
 
-function boolLabel(val: boolean | undefined): string {
+function boolLabel(
+  val: boolean | undefined,
+  t: (key: string) => string,
+): string {
   if (val === undefined) return "N/A";
-  return val ? "Yes" : "No";
+  return val ? t("atlas.yes") : t("atlas.no");
 }
 
 function safeStr(val: string | undefined | null, fallback = "N/A"): string {
@@ -37,216 +42,215 @@ function arrJoin(val: string[] | undefined, fallback = "N/A"): string {
   return val.join("; ");
 }
 
-// ─── Dimension Row Definitions ───
+// ─── Dimension Row Definition Factories ───
 
-const AUTH_ROWS: RowDef[] = [
-  {
-    label: "Licensing Authority",
-    accessor: (l) => l.licensingAuthority.name,
-    highlightDifferences: false,
-  },
-  {
-    label: "Legislation",
-    accessor: (l) =>
-      `${l.legislation.name} (${l.legislation.yearEnacted || "N/A"})`,
-    highlightDifferences: false,
-  },
-  {
-    label: "Status",
-    accessor: (l) => l.legislation.status.toUpperCase(),
-    highlightDifferences: true,
-  },
-  {
-    label: "Processing Time",
-    accessor: (l) =>
-      `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} weeks`,
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Application Fee",
-    accessor: (l) => safeStr(l.timeline.applicationFee),
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Mandatory Insurance",
-    accessor: (l) =>
-      l.insuranceLiability.mandatoryInsurance
-        ? `Yes — ${safeStr(l.insuranceLiability.minimumCoverage, "TBD")}`
-        : "No",
-    highlightDifferences: true,
-  },
-  {
-    label: "Gov. Indemnification",
-    accessor: (l) => boolLabel(l.insuranceLiability.governmentIndemnification),
-    highlightDifferences: true,
-  },
-  {
-    label: "Licensing Requirements",
-    accessor: (l) => `${l.licensingRequirements.length} requirements`,
-    monospace: true,
-    highlightDifferences: true,
-  },
-];
+function getAuthRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.licensing_authority"),
+      accessor: (l) => l.licensingAuthority.name,
+      highlightDifferences: false,
+    },
+    {
+      label: t("atlas.legislation"),
+      accessor: (l) =>
+        `${l.legislation.name} (${l.legislation.yearEnacted || "N/A"})`,
+      highlightDifferences: false,
+    },
+    {
+      label: t("atlas.comp_status"),
+      accessor: (l) => l.legislation.status.toUpperCase(),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.processing_time"),
+      accessor: (l) =>
+        `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} ${t("atlas.weeks")}`,
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_application_fee"),
+      accessor: (l) => safeStr(l.timeline.applicationFee),
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.mandatory_insurance"),
+      accessor: (l) =>
+        l.insuranceLiability.mandatoryInsurance
+          ? `${t("atlas.yes")} — ${safeStr(l.insuranceLiability.minimumCoverage, "TBD")}`
+          : t("atlas.no"),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_gov_indemnification"),
+      accessor: (l) =>
+        boolLabel(l.insuranceLiability.governmentIndemnification, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_licensing_requirements"),
+      accessor: (l) =>
+        `${l.licensingRequirements.length} ${t("atlas.comp_requirements")}`,
+      monospace: true,
+      highlightDifferences: true,
+    },
+  ];
+}
 
-const LIABILITY_ROWS: RowDef[] = [
-  {
-    label: "Liability Regime",
-    accessor: (l) => l.insuranceLiability.liabilityRegime.toUpperCase(),
-    highlightDifferences: true,
-  },
-  {
-    label: "Liability Cap",
-    accessor: (l) => safeStr(l.insuranceLiability.liabilityCap),
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Mandatory Insurance",
-    accessor: (l) => boolLabel(l.insuranceLiability.mandatoryInsurance),
-    highlightDifferences: true,
-  },
-  {
-    label: "Min. Coverage",
-    accessor: (l) => safeStr(l.insuranceLiability.minimumCoverage),
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Third-Party Required",
-    accessor: (l) => boolLabel(l.insuranceLiability.thirdPartyRequired),
-    highlightDifferences: true,
-  },
-  {
-    label: "Gov. Indemnification",
-    accessor: (l) => boolLabel(l.insuranceLiability.governmentIndemnification),
-    highlightDifferences: true,
-  },
-  {
-    label: "Indemnification Cap",
-    accessor: (l) => safeStr(l.insuranceLiability.indemnificationCap),
-    highlightDifferences: false,
-  },
-];
+function getLiabilityRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.liability_regime"),
+      accessor: (l) => l.insuranceLiability.liabilityRegime.toUpperCase(),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_liability_cap"),
+      accessor: (l) => safeStr(l.insuranceLiability.liabilityCap),
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.mandatory_insurance"),
+      accessor: (l) => boolLabel(l.insuranceLiability.mandatoryInsurance, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_min_coverage"),
+      accessor: (l) => safeStr(l.insuranceLiability.minimumCoverage),
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_third_party_required"),
+      accessor: (l) => boolLabel(l.insuranceLiability.thirdPartyRequired, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_gov_indemnification"),
+      accessor: (l) =>
+        boolLabel(l.insuranceLiability.governmentIndemnification, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_indemnification_cap"),
+      accessor: (l) => safeStr(l.insuranceLiability.indemnificationCap),
+      highlightDifferences: false,
+    },
+  ];
+}
 
-const DEBRIS_ROWS: RowDef[] = [
-  {
-    label: "Deorbit Requirement",
-    accessor: (l) => boolLabel(l.debrisMitigation.deorbitRequirement),
-    highlightDifferences: true,
-  },
-  {
-    label: "Deorbit Timeline",
-    accessor: (l) => safeStr(l.debrisMitigation.deorbitTimeline),
-    highlightDifferences: true,
-  },
-  {
-    label: "Passivation Required",
-    accessor: (l) => boolLabel(l.debrisMitigation.passivationRequired),
-    highlightDifferences: true,
-  },
-  {
-    label: "Debris Mitigation Plan",
-    accessor: (l) => boolLabel(l.debrisMitigation.debrisMitigationPlan),
-    highlightDifferences: true,
-  },
-  {
-    label: "Collision Avoidance",
-    accessor: (l) => boolLabel(l.debrisMitigation.collisionAvoidance),
-    highlightDifferences: true,
-  },
-  {
-    label: "Standards",
-    accessor: (l) => arrJoin(l.debrisMitigation.standards),
-    highlightDifferences: false,
-  },
-];
+function getDebrisRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.comp_deorbit_requirement"),
+      accessor: (l) => boolLabel(l.debrisMitigation.deorbitRequirement, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_deorbit_timeline"),
+      accessor: (l) => safeStr(l.debrisMitigation.deorbitTimeline),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_passivation"),
+      accessor: (l) => boolLabel(l.debrisMitigation.passivationRequired, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_debris_plan"),
+      accessor: (l) => boolLabel(l.debrisMitigation.debrisMitigationPlan, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_collision_avoidance"),
+      accessor: (l) => boolLabel(l.debrisMitigation.collisionAvoidance, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_standards"),
+      accessor: (l) => arrJoin(l.debrisMitigation.standards),
+      highlightDifferences: false,
+    },
+  ];
+}
 
-const TIMELINE_ROWS: RowDef[] = [
-  {
-    label: "Processing Time",
-    accessor: (l) =>
-      `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} weeks`,
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Application Fee",
-    accessor: (l) => safeStr(l.timeline.applicationFee),
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Annual Fee",
-    accessor: (l) => safeStr(l.timeline.annualFee),
-    monospace: true,
-    highlightDifferences: true,
-  },
-  {
-    label: "Other Costs",
-    accessor: (l) => arrJoin(l.timeline.otherCosts, "None specified"),
-    highlightDifferences: false,
-  },
-];
+function getTimelineRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.processing_time"),
+      accessor: (l) =>
+        `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} ${t("atlas.weeks")}`,
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_application_fee"),
+      accessor: (l) => safeStr(l.timeline.applicationFee),
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_annual_fee"),
+      accessor: (l) => safeStr(l.timeline.annualFee),
+      monospace: true,
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_other_costs"),
+      accessor: (l) =>
+        arrJoin(l.timeline.otherCosts, t("atlas.comp_none_specified")),
+      highlightDifferences: false,
+    },
+  ];
+}
 
-const EU_ROWS: RowDef[] = [
-  {
-    label: "Relationship",
-    accessor: (l) => l.euSpaceActCrossRef.relationship.toUpperCase(),
-    highlightDifferences: true,
-  },
-  {
-    label: "Description",
-    accessor: (l) => l.euSpaceActCrossRef.description,
-    highlightDifferences: false,
-  },
-  {
-    label: "Key Articles",
-    accessor: (l) => arrJoin(l.euSpaceActCrossRef.keyArticles),
-    highlightDifferences: false,
-  },
-  {
-    label: "Transition Notes",
-    accessor: (l) => safeStr(l.euSpaceActCrossRef.transitionNotes),
-    highlightDifferences: false,
-  },
-];
+function getEuRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.comp_relationship"),
+      accessor: (l) => l.euSpaceActCrossRef.relationship.toUpperCase(),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_description"),
+      accessor: (l) => l.euSpaceActCrossRef.description,
+      highlightDifferences: false,
+    },
+    {
+      label: t("atlas.key_articles"),
+      accessor: (l) => arrJoin(l.euSpaceActCrossRef.keyArticles),
+      highlightDifferences: false,
+    },
+    {
+      label: t("atlas.comp_transition_notes"),
+      accessor: (l) => safeStr(l.euSpaceActCrossRef.transitionNotes),
+      highlightDifferences: false,
+    },
+  ];
+}
 
-const REGISTRATION_ROWS: RowDef[] = [
-  {
-    label: "National Registry",
-    accessor: (l) => boolLabel(l.registration.nationalRegistryExists),
-    highlightDifferences: true,
-  },
-  {
-    label: "Registry Name",
-    accessor: (l) => safeStr(l.registration.registryName),
-    highlightDifferences: false,
-  },
-  {
-    label: "UN Registration Required",
-    accessor: (l) => boolLabel(l.registration.unRegistrationRequired),
-    highlightDifferences: true,
-  },
-];
-
-const DIMENSION_MAP: Record<string, RowDef[]> = {
-  all: [
-    ...AUTH_ROWS,
-    ...LIABILITY_ROWS,
-    ...DEBRIS_ROWS,
-    ...TIMELINE_ROWS,
-    ...REGISTRATION_ROWS,
-    ...EU_ROWS,
-  ],
-  authorization: AUTH_ROWS,
-  liability: LIABILITY_ROWS,
-  debris: DEBRIS_ROWS,
-  registration: REGISTRATION_ROWS,
-  timeline: TIMELINE_ROWS,
-  eu_readiness: EU_ROWS,
-};
+function getRegistrationRows(t: (key: string) => string): RowDef[] {
+  return [
+    {
+      label: t("atlas.national_registry"),
+      accessor: (l) => boolLabel(l.registration.nationalRegistryExists, t),
+      highlightDifferences: true,
+    },
+    {
+      label: t("atlas.comp_registry_name"),
+      accessor: (l) => safeStr(l.registration.registryName),
+      highlightDifferences: false,
+    },
+    {
+      label: t("atlas.comp_un_registration"),
+      accessor: (l) => boolLabel(l.registration.unRegistrationRequired, t),
+      highlightDifferences: true,
+    },
+  ];
+}
 
 // ─── Cell rendering helpers ───
 
@@ -256,24 +260,37 @@ type CellRender = {
   badgeClassName?: string;
 };
 
-function getCellRender(label: string, value: string): CellRender {
+// getCellRender uses the original English key concepts for matching logic,
+// but since labels are now translated, we match on translation keys stored
+// alongside the label. Instead, we use a stable lookup based on the
+// untranslated concept. We pass the original row index/concept identifier.
+// However, since the render function receives the displayed label, and the
+// label text changes by language, we need a language-independent approach.
+// Solution: pass a "conceptKey" alongside label for render matching.
+
+interface RowDefInternal extends RowDef {
+  /** Stable key used for cell rendering logic (language-independent) */
+  conceptKey?: string;
+}
+
+function getCellRender(conceptKey: string, value: string): CellRender {
   const upper = value.toUpperCase();
 
-  // Liability regime — only UNLIMITED is worth calling out
-  if (label === "Liability Regime") {
+  // Liability regime -- only UNLIMITED is worth calling out
+  if (conceptKey === "liability_regime") {
     if (upper === "UNLIMITED") return { className: "text-red-600 font-medium" };
     return { className: "text-gray-900" };
   }
 
-  // Liability cap — highlight unlimited
-  if (label === "Liability Cap") {
+  // Liability cap -- highlight unlimited
+  if (conceptKey === "liability_cap") {
     if (upper === "UNLIMITED" || upper.includes("UNLIMITED"))
       return { className: "text-red-600 font-medium" };
     return { className: "text-gray-900" };
   }
 
-  // Status — badge style
-  if (label === "Status") {
+  // Status -- badge style
+  if (conceptKey === "status") {
     if (upper === "ENACTED")
       return {
         className: "",
@@ -292,8 +309,8 @@ function getCellRender(label: string, value: string): CellRender {
     return { className: "text-gray-900" };
   }
 
-  // Relationship — subtle differentiation, no heavy color
-  if (label === "Relationship") {
+  // Relationship -- subtle differentiation, no heavy color
+  if (conceptKey === "relationship") {
     if (upper === "GAP")
       return {
         className: "",
@@ -309,33 +326,24 @@ function getCellRender(label: string, value: string): CellRender {
     };
   }
 
-  // Boolean Yes/No — black for Yes, gray for No
-  if (value === "Yes") return { className: "text-gray-900" };
-  if (value === "No") return { className: "text-gray-400" };
+  // Boolean Yes/No -- check both English and German values
+  const yesValues = ["YES", "JA"];
+  const noValues = ["NO", "NEIN"];
+  if (yesValues.includes(upper)) return { className: "text-gray-900" };
+  if (noValues.includes(upper)) return { className: "text-gray-400" };
   if (value === "N/A") return { className: "text-gray-300" };
 
-  // Yes with detail (e.g. "Yes — €60M")
-  if (value.startsWith("Yes —") || value.startsWith("Yes —"))
+  // Yes/Ja with detail (e.g. "Yes — €60M" / "Ja — €60M")
+  if (
+    value.startsWith("Yes —") ||
+    value.startsWith("Yes —") ||
+    value.startsWith("Ja —") ||
+    value.startsWith("Ja —")
+  )
     return { className: "text-gray-900" };
 
   return { className: "text-gray-900" };
 }
-
-// ─── Section header mapping ───
-
-const DIMENSION_SECTION_MAP: Record<
-  string,
-  { label: string; rows: RowDef[] }[]
-> = {
-  all: [
-    { label: "Authorization & Licensing", rows: AUTH_ROWS },
-    { label: "Liability & Insurance", rows: LIABILITY_ROWS },
-    { label: "Debris Mitigation", rows: DEBRIS_ROWS },
-    { label: "Timeline & Costs", rows: TIMELINE_ROWS },
-    { label: "Registration", rows: REGISTRATION_ROWS },
-    { label: "EU Space Act Readiness", rows: EU_ROWS },
-  ],
-};
 
 // ─── Component ───
 
@@ -343,6 +351,133 @@ export default function ComparisonTable({
   countries,
   dimension,
 }: ComparisonTableProps) {
+  const { t } = useLanguage();
+  const jurisdictionNames = useMemo(() => getJurisdictionNames(t), [t]);
+
+  // Build translated row definitions
+  const authRows = useMemo(
+    () =>
+      addConceptKeys(getAuthRows(t), [
+        "licensing_authority",
+        "legislation",
+        "status",
+        "processing_time",
+        "application_fee",
+        "mandatory_insurance",
+        "gov_indemnification",
+        "licensing_requirements",
+      ]),
+    [t],
+  );
+
+  const liabilityRows = useMemo(
+    () =>
+      addConceptKeys(getLiabilityRows(t), [
+        "liability_regime",
+        "liability_cap",
+        "mandatory_insurance",
+        "min_coverage",
+        "third_party_required",
+        "gov_indemnification",
+        "indemnification_cap",
+      ]),
+    [t],
+  );
+
+  const debrisRows = useMemo(
+    () =>
+      addConceptKeys(getDebrisRows(t), [
+        "deorbit_requirement",
+        "deorbit_timeline",
+        "passivation",
+        "debris_plan",
+        "collision_avoidance",
+        "standards",
+      ]),
+    [t],
+  );
+
+  const timelineRows = useMemo(
+    () =>
+      addConceptKeys(getTimelineRows(t), [
+        "processing_time",
+        "application_fee",
+        "annual_fee",
+        "other_costs",
+      ]),
+    [t],
+  );
+
+  const euRows = useMemo(
+    () =>
+      addConceptKeys(getEuRows(t), [
+        "relationship",
+        "description",
+        "key_articles",
+        "transition_notes",
+      ]),
+    [t],
+  );
+
+  const registrationRows = useMemo(
+    () =>
+      addConceptKeys(getRegistrationRows(t), [
+        "national_registry",
+        "registry_name",
+        "un_registration",
+      ]),
+    [t],
+  );
+
+  const dimensionMap: Record<string, RowDefInternal[]> = useMemo(
+    () => ({
+      all: [
+        ...authRows,
+        ...liabilityRows,
+        ...debrisRows,
+        ...timelineRows,
+        ...registrationRows,
+        ...euRows,
+      ],
+      authorization: authRows,
+      liability: liabilityRows,
+      debris: debrisRows,
+      registration: registrationRows,
+      timeline: timelineRows,
+      eu_readiness: euRows,
+    }),
+    [
+      authRows,
+      liabilityRows,
+      debrisRows,
+      timelineRows,
+      euRows,
+      registrationRows,
+    ],
+  );
+
+  const dimensionSectionMap = useMemo(
+    () => ({
+      all: [
+        { label: t("atlas.authorization_licensing"), rows: authRows },
+        { label: t("atlas.liability_insurance"), rows: liabilityRows },
+        { label: t("atlas.debris_mitigation"), rows: debrisRows },
+        { label: t("atlas.timeline_costs"), rows: timelineRows },
+        { label: t("atlas.registration"), rows: registrationRows },
+        { label: t("atlas.eu_space_act_readiness"), rows: euRows },
+      ],
+    }),
+    [
+      t,
+      authRows,
+      liabilityRows,
+      debrisRows,
+      timelineRows,
+      euRows,
+      registrationRows,
+    ],
+  );
+
   const jurisdictions = useMemo(() => {
     return countries
       .map((code) => {
@@ -360,10 +495,10 @@ export default function ComparisonTable({
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <p className="text-[13px] text-gray-500">
-            Select at least one country to begin comparison.
+            {t("atlas.comp_select_country")}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
-            Choose up to 5 jurisdictions from the selector above.
+            {t("atlas.comp_select_hint")}
           </p>
         </div>
       </div>
@@ -372,11 +507,11 @@ export default function ComparisonTable({
 
   const sections =
     dimension === "all"
-      ? DIMENSION_SECTION_MAP.all
+      ? dimensionSectionMap.all
       : [
           {
             label: dimension,
-            rows: DIMENSION_MAP[dimension] || [],
+            rows: dimensionMap[dimension] || [],
           },
         ];
 
@@ -388,7 +523,7 @@ export default function ComparisonTable({
           <tr>
             <th className="text-left py-3 px-4 bg-gray-50 border-b border-gray-200 w-[200px] min-w-[180px]">
               <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
-                Provision
+                {t("atlas.provision")}
               </span>
             </th>
             {jurisdictions.map(({ code, data }) => (
@@ -398,7 +533,7 @@ export default function ComparisonTable({
               >
                 <div>
                   <span className="text-[12px] font-medium text-gray-900 block">
-                    {data.countryName}
+                    {jurisdictionNames[code] || data.countryName}
                   </span>
                   <span className="text-[10px]  text-gray-400">{code}</span>
                 </div>
@@ -412,7 +547,7 @@ export default function ComparisonTable({
             <SectionBlock
               key={section.label}
               label={section.label}
-              rows={section.rows}
+              rows={section.rows as RowDefInternal[]}
               jurisdictions={jurisdictions}
               showSectionHeader={dimension === "all"}
             />
@@ -421,6 +556,15 @@ export default function ComparisonTable({
       </table>
     </div>
   );
+}
+
+// ─── Utilities ───
+
+function addConceptKeys(rows: RowDef[], keys: string[]): RowDefInternal[] {
+  return rows.map((row, i) => ({
+    ...row,
+    conceptKey: keys[i] || "",
+  }));
 }
 
 // ─── Section Block ───
@@ -432,7 +576,7 @@ function SectionBlock({
   showSectionHeader,
 }: {
   label: string;
-  rows: RowDef[];
+  rows: RowDefInternal[];
   jurisdictions: { code: SpaceLawCountryCode; data: JurisdictionLaw }[];
   showSectionHeader: boolean;
 }) {
@@ -451,8 +595,6 @@ function SectionBlock({
         </tr>
       )}
       {rows.map((row, i) => {
-        const allValues = jurisdictions.map(({ data }) => row.accessor(data));
-
         return (
           <tr
             key={`${label}-${i}`}
@@ -467,7 +609,7 @@ function SectionBlock({
             </td>
             {jurisdictions.map(({ code, data }, colIdx) => {
               const value = row.accessor(data);
-              const render = getCellRender(row.label, value);
+              const render = getCellRender(row.conceptKey || "", value);
 
               return (
                 <td
