@@ -746,12 +746,21 @@ function BriefingPrint({
     year: "numeric",
   });
 
-  // Read firm branding from localStorage
+  // Fetch firm branding from organization API
   const [firmLogo, setFirmLogo] = useState<string | null>(null);
   const [firmName, setFirmName] = useState<string | null>(null);
   useEffect(() => {
-    setFirmLogo(localStorage.getItem("atlas-firm-logo"));
-    setFirmName(localStorage.getItem("atlas-firm-name"));
+    fetch("/api/atlas/settings/firm")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setFirmName(data.name || null);
+          setFirmLogo(data.logoUrl || null);
+        }
+      })
+      .catch(() => {
+        // Silently fail — export works without branding
+      });
   }, []);
 
   const brandLine = firmName
