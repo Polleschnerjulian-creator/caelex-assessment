@@ -152,18 +152,21 @@ export const OperatorMatrixRowSchema = z.object({
 });
 export type OperatorMatrixRow = z.infer<typeof OperatorMatrixRowSchema>;
 
+export const ConductTypeSchema = z.enum([
+  "data_localization",
+  "lawful_intercept",
+  "geo_fencing",
+  "indigenization",
+  "suspension_capability",
+  "local_content",
+  "other",
+]);
+export type ConductType = z.infer<typeof ConductTypeSchema>;
+
 export const ConductConditionSchema = z.object({
   id: z.string(),
   jurisdiction: JurisdictionCodeSchema,
-  type: z.enum([
-    "data_localization",
-    "lawful_intercept",
-    "geo_fencing",
-    "indigenization",
-    "suspension_capability",
-    "local_content",
-    "other",
-  ]),
+  type: ConductTypeSchema,
   title: z.string(),
   requirement: z.string(),
   legal_source_id: z.string().optional(),
