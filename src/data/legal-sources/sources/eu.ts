@@ -142,7 +142,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
-  ,
   {
     id: "EU-SPACE-PROG-2021",
     applies_to_jurisdictions: [
@@ -188,7 +187,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-SPACE-ACT"],
     last_verified: "2026-04-13",
   },
-  ,
   {
     id: "EU-NIS2-2022",
     applies_to_jurisdictions: [
@@ -253,7 +251,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     notes: ["Transposed in DE via NIS2UmsuCG → BSIG §§ 30-31."],
     last_verified: "2026-04-13",
   },
-  ,
   {
     id: "EU-CRA-2024",
     applies_to_jurisdictions: [
@@ -318,7 +315,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
-  ,
   {
     id: "EU-DORA-2022",
     applies_to_jurisdictions: [
@@ -364,7 +360,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-NIS2-2022"],
     last_verified: "2026-04-13",
   },
-  ,
   {
     id: "EU-EASA-2018",
     applies_to_jurisdictions: [
