@@ -21,6 +21,16 @@ import type { JurisdictionCode } from "./_helpers";
 import { PROFILE_DE } from "./profiles/de";
 import { PROFILE_US } from "./profiles/us";
 import { PROFILE_IN } from "./profiles/in";
+import { PROFILE_AU } from "./profiles/au";
+import { PROFILE_BE } from "./profiles/be";
+import { PROFILE_CA } from "./profiles/ca";
+import { PROFILE_ES } from "./profiles/es";
+import { PROFILE_FR } from "./profiles/fr";
+import { PROFILE_IT } from "./profiles/it";
+import { PROFILE_JP } from "./profiles/jp";
+import { PROFILE_LU } from "./profiles/lu";
+import { PROFILE_NL } from "./profiles/nl";
+import { PROFILE_UK } from "./profiles/uk";
 
 // ─── Category deep-dive imports ──────────────────────────────────────
 import { MARKET_ACCESS_DEEP_DIVES } from "./category-deep-dives/market-access";
@@ -51,6 +61,16 @@ export type { JurisdictionCode } from "./_helpers";
 
 export const ALL_LANDING_RIGHTS_PROFILES: LandingRightsProfile[] = [
   PROFILE_DE,
+  PROFILE_FR,
+  PROFILE_UK,
+  PROFILE_IT,
+  PROFILE_LU,
+  PROFILE_NL,
+  PROFILE_BE,
+  PROFILE_ES,
+  PROFILE_AU,
+  PROFILE_CA,
+  PROFILE_JP,
   PROFILE_US,
   PROFILE_IN,
 ];
