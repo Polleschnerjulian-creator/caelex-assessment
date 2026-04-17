@@ -540,6 +540,8 @@
   },
   "atlas": {
     "map": "Carte",
+    "international": "International",
+    "eu": "Union européenne",
     "landing_rights": "Landing Rights",
     "landing_rights_case_studies": "Case Studies",
     "landing_rights_category_earth_station": "Earth Station & ESIM",
