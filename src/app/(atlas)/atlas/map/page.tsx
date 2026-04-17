@@ -3,6 +3,11 @@ import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import { ALL_LANDING_RIGHTS_PROFILES } from "@/data/landing-rights";
 import RegulatoryMapClient from "./RegulatoryMapClient";
 
+// Skip static generation — (atlas) layout requires auth + Prisma DB access,
+// which hangs the build-time prerender. Dynamic render is correct anyway
+// because the layout enforces authentication at request time.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Regulatory Map — Atlas",
   description:
