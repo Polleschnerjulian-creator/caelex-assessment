@@ -7,7 +7,6 @@ import {
   Search,
   BarChart3,
   Map,
-  Globe2,
   Ticket,
   Newspaper,
   Settings,
@@ -23,7 +22,6 @@ const MAIN_NAV = [
     exact: true,
   },
   { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
-  { labelKey: "atlas.map", href: "/atlas/map", icon: Globe2 },
   { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
   {
     labelKey: "atlas.landing_rights",
