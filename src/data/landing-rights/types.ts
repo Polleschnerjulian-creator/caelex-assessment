@@ -183,3 +183,95 @@ export const ConductConditionSchema = z.object({
   last_verified: z.string(),
 });
 export type ConductCondition = z.infer<typeof ConductConditionSchema>;
+
+// ─── Primary Source (verifiable document linkage) ──────────────────
+
+export const PrimarySourceSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  title_en: z.string().optional(),
+  jurisdiction: z.union([
+    JurisdictionCodeSchema,
+    z.literal("INTL"),
+    z.literal("EU"),
+  ]),
+  official_url: z.string().url(),
+  publisher: z.string(),
+  last_accessed: z.string(),
+  type: z.enum([
+    "statute",
+    "regulation",
+    "policy",
+    "court_decision",
+    "guidance",
+    "treaty",
+    "delegated_act",
+  ]),
+  language: z.string(),
+  citation_short: z.string().optional(),
+});
+export type PrimarySource = z.infer<typeof PrimarySourceSchema>;
+
+// ─── Calendar Event (auto-computed from profiles + milestones) ─────
+
+export const CalendarEventSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  type: z.enum([
+    "license_renewal",
+    "milestone",
+    "wrc",
+    "biu_deadline",
+    "regulatory_change",
+    "enforcement",
+  ]),
+  jurisdiction: JurisdictionCodeSchema.optional(),
+  operator: z.string().optional(),
+  title: z.string(),
+  description: z.string().optional(),
+  source_url: z.string().url().optional(),
+  status: z.enum(["upcoming", "past", "satisfied"]),
+});
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+
+// ─── ITU Filing (static curation, SRS deep links) ──────────────────
+
+export const ITUSystemTypeSchema = z.enum([
+  "GSO",
+  "NGSO-FSS",
+  "NGSO-MSS",
+  "OTHER",
+]);
+export type ITUSystemType = z.infer<typeof ITUSystemTypeSchema>;
+
+export const ITUBIUStatusSchema = z.enum([
+  "pre_biu",
+  "biu_achieved",
+  "biu_failed",
+  "unknown",
+]);
+export type ITUBIUStatus = z.infer<typeof ITUBIUStatusSchema>;
+
+export const ITUFilingSchema = z.object({
+  id: z.string(),
+  satellite_network_id: z.string(),
+  operator: z.string(),
+  system_type: ITUSystemTypeSchema,
+  api_filed: z.string().optional(),
+  cr_c_filed: z.string().optional(),
+  notification_filed: z.string().optional(),
+  biu_status: ITUBIUStatusSchema,
+  biu_date: z.string().optional(),
+  resolution_35_milestones: z
+    .object({
+      milestone_10_pct: z.string().optional(),
+      milestone_50_pct: z.string().optional(),
+      milestone_100_pct: z.string().optional(),
+      current_progress_pct: z.number().optional(),
+    })
+    .optional(),
+  itu_srs_url: z.string().url().optional(),
+  notes: z.string().optional(),
+  last_verified: z.string(),
+});
+export type ITUFiling = z.infer<typeof ITUFilingSchema>;

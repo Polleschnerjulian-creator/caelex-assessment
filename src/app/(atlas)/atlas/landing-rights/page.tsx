@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Calendar as CalendarIcon, ArrowRight } from "lucide-react";
 import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
@@ -9,6 +11,10 @@ import {
   type OperatorStatus,
   type RegimeType,
 } from "@/data/landing-rights";
+import {
+  getNextDeadline,
+  formatDaysUntil,
+} from "@/data/landing-rights/calendar";
 import { LandingRightsFilters } from "@/components/atlas/landing-rights/LandingRightsFilters";
 import { LandingRightsList } from "@/components/atlas/landing-rights/LandingRightsList";
 
@@ -102,6 +108,7 @@ export default async function LandingRightsPage({
   const standardCount = ALL_LANDING_RIGHTS_PROFILES.filter(
     (p) => p.depth === "standard",
   ).length;
+  const nextDeadline = getNextDeadline();
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,6 +151,33 @@ export default async function LandingRightsPage({
             sublabel="status matrix"
           />
         </div>
+        {nextDeadline && (
+          <Link
+            href="/atlas/landing-rights/calendar"
+            className="group flex items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 text-white px-5 py-3 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <CalendarIcon size={16} className="text-emerald-400" />
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-400/80">
+                  Next deadline
+                </span>
+                <p className="text-[13px] font-medium truncate">
+                  {nextDeadline.title}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <span className="text-[11px] text-gray-300">
+                {formatDaysUntil(nextDeadline.date)}
+              </span>
+              <ArrowRight
+                size={14}
+                className="text-gray-400 group-hover:translate-x-0.5 transition-transform"
+              />
+            </div>
+          </Link>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-start">

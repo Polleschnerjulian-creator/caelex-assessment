@@ -54,6 +54,11 @@ export type {
   RegimeType,
   CoverageDepth,
   ConductType,
+  PrimarySource,
+  CalendarEvent,
+  ITUFiling,
+  ITUSystemType,
+  ITUBIUStatus,
 } from "./types";
 export type { JurisdictionCode } from "./_helpers";
 
