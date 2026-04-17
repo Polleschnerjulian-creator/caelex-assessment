@@ -28,7 +28,7 @@ const navSections = {
         { label: "Insurance", href: "/modules/insurance" },
       ],
     },
-    { label: "Shield", href: "/platform" },
+    { label: "Atlas", href: "/atlas" },
     { label: "Sentinel", href: "/platform" },
     { label: "Ephemeris", href: "/systems/ephemeris" },
     { label: "Verity", href: "/verity" },
