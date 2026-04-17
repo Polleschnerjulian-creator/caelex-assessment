@@ -111,6 +111,13 @@ export interface CybersecurityRequirement {
   evidenceRequired: string[];
   nis2Reference?: string;
   isoReference?: string;
+  /**
+   * Canonical URL to the primary source for this requirement.
+   * - EU Space Act articles link to EUR-Lex proposal COM(2025) 335.
+   * - NIS2 articles link to the NIS2 Directive ELI permalink.
+   * - ISO standards link to the canonical ISO catalogue page (text may be paywalled).
+   */
+  officialUrl?: string;
   severity: "critical" | "major" | "minor";
   implementationTimeWeeks?: number;
   assessmentFields?: AssessmentField[];
@@ -156,6 +163,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(a)",
     isoReference: "ISO 27001:2022 A.5.1",
+    officialUrl: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
     severity: "critical",
     implementationTimeWeeks: 4,
     assessmentFields: [
@@ -304,6 +312,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(a)",
     isoReference: "ISO 27005:2022",
+    officialUrl: "https://www.iso.org/standard/80585.html",
     severity: "critical",
     implementationTimeWeeks: 8,
     assessmentFields: [
@@ -446,6 +455,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "RACI matrix for security",
     ],
     nis2Reference: "NIS2 Art. 20(1)",
+    officialUrl: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
     severity: "major",
     implementationTimeWeeks: 2,
     assessmentFields: [
@@ -557,6 +567,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(a)",
     isoReference: "ISO 27001:2022 6.1.2",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "critical",
     implementationTimeWeeks: 6,
     assessmentFields: [
@@ -679,6 +690,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Threat briefing records",
     ],
     nis2Reference: "NIS2 Art. 21(2)(e)",
+    officialUrl: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
     severity: "major",
     implementationTimeWeeks: 4,
     assessmentFields: [
@@ -779,6 +791,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(d)",
     isoReference: "ISO 27001:2022 A.5.19-A.5.23",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "major",
     implementationTimeWeeks: 6,
     assessmentFields: [
@@ -929,6 +942,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(i)",
     isoReference: "ISO 27001:2022 A.5.15-A.5.18",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "critical",
     implementationTimeWeeks: 6,
     assessmentFields: [
@@ -1073,6 +1087,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Coverage report",
     ],
     nis2Reference: "NIS2 Art. 21(2)(j)",
+    officialUrl: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
     severity: "critical",
     implementationTimeWeeks: 4,
     assessmentFields: [
@@ -1204,6 +1219,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "DLP implementation evidence",
     ],
     isoReference: "ISO 27001:2022 A.5.12-A.5.14",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "major",
     implementationTimeWeeks: 6,
     assessmentFields: [
@@ -1310,6 +1326,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Penetration test reports",
     ],
     isoReference: "ISO 27001:2022 A.8.20-A.8.22",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "major",
     implementationTimeWeeks: 8,
     assessmentFields: [
@@ -1440,6 +1457,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Key management procedures",
     ],
     isoReference: "ISO 27001:2022 A.8.24",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "major",
     implementationTimeWeeks: 4,
     assessmentFields: [
@@ -1574,6 +1592,8 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Cryptographic implementation certificates",
       "Key management documentation",
     ],
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A52025PC0335",
     severity: "critical",
     implementationTimeWeeks: 12,
     assessmentFields: [
@@ -1719,6 +1739,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       "Key inventory and lifecycle records",
     ],
     isoReference: "ISO 27001:2022 A.8.24",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "major",
     implementationTimeWeeks: 6,
     assessmentFields: [
@@ -1847,6 +1868,7 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     nis2Reference: "NIS2 Art. 21(2)(b)",
     isoReference: "ISO 27001:2022 A.8.15-A.8.16",
+    officialUrl: "https://www.iso.org/standard/27001",
     severity: "critical",
     implementationTimeWeeks: 8,
     assessmentFields: [

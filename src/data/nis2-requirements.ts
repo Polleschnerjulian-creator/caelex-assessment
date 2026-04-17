@@ -35,6 +35,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-001",
     articleRef: "NIS2 Art. 21(2)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "policies_risk_analysis",
     title: "Information Security Policy for Space Systems",
     description:
@@ -108,6 +110,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-002",
     articleRef: "NIS2 Art. 21(2)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "policies_risk_analysis",
     title: "Cybersecurity Risk Analysis for Space Operations",
     description:
@@ -181,6 +185,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-003",
     articleRef: "NIS2 Art. 21(2)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "policies_risk_analysis",
     title: "Risk Appetite and Tolerance Statement",
     description:
@@ -246,6 +252,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-004",
     articleRef: "NIS2 Art. 21(2)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "policies_risk_analysis",
     title: "Space Segment Security Classification",
     description:
@@ -309,6 +317,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-005",
     articleRef: "NIS2 Art. 21(2)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "policies_risk_analysis",
     title: "Periodic Risk Reassessment Cycle",
     description:
@@ -376,6 +386,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-006",
     articleRef: "NIS2 Art. 21(2)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "incident_handling",
     title: "Incident Detection for Space Systems",
     description:
@@ -449,6 +461,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-007",
     articleRef: "NIS2 Art. 21(2)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "incident_handling",
     title: "Incident Response Procedures for Space Operations",
     description:
@@ -522,6 +536,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-008",
     articleRef: "NIS2 Art. 21(2)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "incident_handling",
     title: "Space-Specific Incident Classification Scheme",
     description:
@@ -589,6 +605,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-009",
     articleRef: "NIS2 Art. 21(2)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "incident_handling",
     title: "Incident Containment and Eradication",
     description:
@@ -660,6 +678,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-010",
     articleRef: "NIS2 Art. 21(2)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "incident_handling",
     title: "Post-Incident Review and Lessons Learned",
     description:
@@ -730,6 +750,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-011",
     articleRef: "NIS2 Art. 21(2)(c)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "business_continuity",
     title: "Business Continuity Plan for Mission-Critical Ground Operations",
     description:
@@ -801,6 +823,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-012",
     articleRef: "NIS2 Art. 21(2)(c)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "business_continuity",
     title: "Backup and Disaster Recovery for TT&C Systems",
     description:
@@ -874,6 +898,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-013",
     articleRef: "NIS2 Art. 21(2)(c)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "business_continuity",
     title: "Crisis Management for Space Segment Anomalies",
     description:
@@ -946,6 +972,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-014",
     articleRef: "NIS2 Art. 21(2)(c)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "business_continuity",
     title: "Continuity Testing and Exercises",
     description:
@@ -1022,6 +1050,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-015",
     articleRef: "NIS2 Art. 21(2)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "supply_chain",
     title: "Supplier Risk Assessment for Space Components",
     description:
@@ -1094,6 +1124,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-016",
     articleRef: "NIS2 Art. 21(2)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "supply_chain",
     title: "Security Requirements for Subcontractors",
     description:
@@ -1160,6 +1192,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-017",
     articleRef: "NIS2 Art. 21(2)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "supply_chain",
     title: "Secure Software Development for Flight Software",
     description:
@@ -1232,6 +1266,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-018",
     articleRef: "NIS2 Art. 21(2)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "supply_chain",
     title: "Supply Chain Incident Notification",
     description:
@@ -1298,6 +1334,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-019",
     articleRef: "NIS2 Art. 21(2)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "supply_chain",
     title: "Hardware Provenance and Anti-Counterfeit Measures",
     description:
@@ -1369,6 +1407,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-020",
     articleRef: "NIS2 Art. 21(2)(e)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "network_acquisition",
     title: "Secure Development Lifecycle for Ground Segment Software",
     description:
@@ -1439,6 +1479,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-021",
     articleRef: "NIS2 Art. 21(2)(e)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "network_acquisition",
     title: "Vulnerability Management for Ground Segment",
     description:
@@ -1511,6 +1553,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-022",
     articleRef: "NIS2 Art. 21(2)(e)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "network_acquisition",
     title: "Patch Management for Mission Control Systems",
     description:
@@ -1583,6 +1627,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-023",
     articleRef: "NIS2 Art. 21(2)(e)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "network_acquisition",
     title: "Network Segmentation for Space Operations Infrastructure",
     description:
@@ -1662,6 +1708,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-024",
     articleRef: "NIS2 Art. 21(2)(f)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "effectiveness_assessment",
     title: "Regular Security Audits of Space Operations",
     description:
@@ -1734,6 +1782,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-025",
     articleRef: "NIS2 Art. 21(2)(f)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "effectiveness_assessment",
     title: "Penetration Testing Including RF Testing",
     description:
@@ -1802,6 +1852,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-026",
     articleRef: "NIS2 Art. 21(2)(f)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "effectiveness_assessment",
     title: "Security Metrics and KPI Tracking",
     description:
@@ -1872,6 +1924,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-027",
     articleRef: "NIS2 Art. 21(2)(g)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cyber_hygiene",
     title: "Security Awareness Training Programme",
     description:
@@ -1944,6 +1998,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-028",
     articleRef: "NIS2 Art. 21(2)(g)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cyber_hygiene",
     title: "Cyber Hygiene Practices for Space Operations",
     description:
@@ -2016,6 +2072,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-029",
     articleRef: "NIS2 Art. 21(2)(g)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cyber_hygiene",
     title: "Space-Specific Security Training (SATCOM and Link Security)",
     description:
@@ -2087,6 +2145,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-030",
     articleRef: "NIS2 Art. 21(2)(h)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cryptography",
     title: "Encryption of Uplink and Downlink Communications",
     description:
@@ -2164,6 +2224,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-031",
     articleRef: "NIS2 Art. 21(2)(h)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cryptography",
     title: "Key Management for Telecommand Authentication",
     description:
@@ -2238,6 +2300,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-032",
     articleRef: "NIS2 Art. 21(2)(h)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cryptography",
     title: "Crypto Agility and Post-Quantum Preparedness",
     description:
@@ -2300,6 +2364,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-033",
     articleRef: "NIS2 Art. 21(2)(h)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "cryptography",
     title: "Encryption for Ground Segment Data at Rest",
     description:
@@ -2376,6 +2442,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-034",
     articleRef: "NIS2 Art. 21(2)(i)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Personnel Security Screening for Mission-Critical Roles",
     description:
@@ -2440,6 +2508,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-035",
     articleRef: "NIS2 Art. 21(2)(i)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Access Control for Ground Stations and Mission Control",
     description:
@@ -2512,6 +2582,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-036",
     articleRef: "NIS2 Art. 21(2)(i)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Asset Inventory for Space and Ground Segments",
     description:
@@ -2582,6 +2654,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-037",
     articleRef: "NIS2 Art. 21(2)(i)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Privileged Access Management for Space Operations",
     description:
@@ -2658,6 +2732,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-038",
     articleRef: "NIS2 Art. 21(2)(j)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "mfa_authentication",
     title: "Multi-Factor Authentication for Mission Control Access",
     description:
@@ -2726,6 +2802,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-039",
     articleRef: "NIS2 Art. 21(2)(j)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "mfa_authentication",
     title: "Emergency Access Procedures",
     description:
@@ -2798,6 +2876,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-040",
     articleRef: "NIS2 Art. 21(2)(j)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "mfa_authentication",
     title: "Secure Communications for Operations Teams",
     description:
@@ -2866,6 +2946,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-041",
     articleRef: "NIS2 Art. 20(1)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_20",
     category: "governance",
     title: "Board-Level Cybersecurity Oversight",
     description:
@@ -2929,6 +3011,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-042",
     articleRef: "NIS2 Art. 20(2)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_20",
     category: "governance",
     title: "Management Body Cybersecurity Training",
     description:
@@ -3000,6 +3084,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-043",
     articleRef: "NIS2 Art. 20(1)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_20",
     category: "governance",
     title: "CISO or Equivalent Appointment",
     description:
@@ -3066,6 +3152,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-044",
     articleRef: "NIS2 Art. 23(4)(a)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_23",
     category: "reporting",
     title: "24-Hour Early Warning to CSIRT/Competent Authority",
     description:
@@ -3138,6 +3226,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-045",
     articleRef: "NIS2 Art. 23(4)(b)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_23",
     category: "reporting",
     title: "72-Hour Incident Notification",
     description:
@@ -3204,6 +3294,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-046",
     articleRef: "NIS2 Art. 23(4)(d)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_23",
     category: "reporting",
     title: "One-Month Final Incident Report",
     description:
@@ -3269,6 +3361,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-047",
     articleRef: "NIS2 Art. 23(1)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_23",
     category: "reporting",
     title: "Significant Incident Determination for Space Operations",
     description:
@@ -3341,6 +3435,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-048",
     articleRef: "NIS2 Art. 27",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_27",
     category: "registration",
     title: "Registration with Competent Authority",
     description:
@@ -3410,6 +3506,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-049",
     articleRef: "NIS2 Art. 27(2)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_27",
     category: "registration",
     title: "Domain Name and IP Range Registration",
     description:
@@ -3479,6 +3577,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-050",
     articleRef: "NIS2 Art. 29",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_29",
     category: "information_sharing",
     title: "Voluntary Cybersecurity Information Sharing",
     description:
@@ -3540,6 +3640,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-051",
     articleRef: "NIS2 Art. 29",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_29",
     category: "information_sharing",
     title: "Cross-Operator Coordination for Shared Threats",
     description:
@@ -3608,6 +3710,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-052",
     articleRef: "NIS2 Art. 21(2)(k)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Physical Access Control for Ground Infrastructure",
     description:
@@ -3677,6 +3781,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-053",
     articleRef: "NIS2 Art. 21(2)(k)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Environmental and Tamper Protection for Critical Equipment",
     description:
@@ -3713,6 +3819,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-054",
     articleRef: "NIS2 Art. 21(2)(k)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Physical Security for Remote and Unmanned Ground Sites",
     description:
@@ -3750,6 +3858,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-055",
     articleRef: "NIS2 Art. 21(2)(k)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_21",
     category: "hr_access_asset",
     title: "Media Handling and Secure Disposal",
     description:
@@ -3789,6 +3899,8 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
   {
     id: "nis2-056",
     articleRef: "NIS2 Art. 23(4)(c)",
+    officialUrl:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555#art_23",
     category: "reporting",
     title: "Intermediate Status Report on CSIRT Request",
     description:

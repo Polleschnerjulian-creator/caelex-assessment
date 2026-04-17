@@ -104,6 +104,11 @@ export interface NIS2Requirement {
   // ASTRA deep assessment fields
   assessmentFields?: import("@/lib/compliance/types").AssessmentField[];
   complianceRule?: import("@/lib/compliance/types").ComplianceRule;
+  /**
+   * Canonical EUR-Lex URL for the NIS2 Directive (EU) 2022/2555,
+   * pointing to the specific article where possible (EUR-Lex anchor convention).
+   */
+  officialUrl?: string;
 }
 
 // ─── ENISA Space Control Interface ───
