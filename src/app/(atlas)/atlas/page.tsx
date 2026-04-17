@@ -53,6 +53,14 @@ import type {
   LegalSourceType,
   RelevanceLevel,
 } from "@/data/legal-sources";
+import {
+  ALL_LANDING_RIGHTS_PROFILES,
+  ALL_CASE_STUDIES,
+  ALL_CONDUCT_CONDITIONS,
+  type LandingRightsProfile,
+  type CaseStudy,
+  type ConductCondition,
+} from "@/data/landing-rights";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -154,6 +162,9 @@ interface SearchResults {
   >;
   sources: LegalSource[];
   authorities: Authority[];
+  landingRightsProfiles: LandingRightsProfile[];
+  landingRightsCaseStudies: CaseStudy[];
+  landingRightsConduct: ConductCondition[];
 }
 
 function performSearch(query: string): SearchResults | null {
@@ -190,15 +201,49 @@ function performSearch(query: string): SearchResults | null {
       a.space_mandate.toLowerCase().includes(q),
   );
 
+  const landingRightsProfiles = ALL_LANDING_RIGHTS_PROFILES.filter(
+    (p) =>
+      p.overview.summary.toLowerCase().includes(q) ||
+      p.regulators.some(
+        (r) =>
+          r.name.toLowerCase().includes(q) ||
+          r.abbreviation.toLowerCase().includes(q),
+      ) ||
+      p.jurisdiction.toLowerCase() === q,
+  );
+
+  const landingRightsCaseStudies = ALL_CASE_STUDIES.filter(
+    (cs) =>
+      cs.title.toLowerCase().includes(q) ||
+      cs.operator.toLowerCase().includes(q) ||
+      cs.narrative.toLowerCase().includes(q),
+  );
+
+  const landingRightsConduct = ALL_CONDUCT_CONDITIONS.filter(
+    (c) =>
+      c.title.toLowerCase().includes(q) ||
+      c.requirement.toLowerCase().includes(q),
+  );
+
   if (
     jurisdictions.length === 0 &&
     sources.length === 0 &&
-    authorities.length === 0
+    authorities.length === 0 &&
+    landingRightsProfiles.length === 0 &&
+    landingRightsCaseStudies.length === 0 &&
+    landingRightsConduct.length === 0
   ) {
     return null;
   }
 
-  return { jurisdictions, sources, authorities };
+  return {
+    jurisdictions,
+    sources,
+    authorities,
+    landingRightsProfiles,
+    landingRightsCaseStudies,
+    landingRightsConduct,
+  };
 }
 
 // ─── Page ───────────────────────────────────────────────────────────
@@ -272,7 +317,10 @@ export default function CommandCenterPage() {
   const totalResults = hasResults
     ? results.jurisdictions.length +
       results.sources.length +
-      results.authorities.length
+      results.authorities.length +
+      results.landingRightsProfiles.length +
+      results.landingRightsCaseStudies.length +
+      results.landingRightsConduct.length
     : 0;
 
   return (
@@ -536,6 +584,95 @@ export default function CommandCenterPage() {
                     <span className="text-[10px]  font-bold text-gray-500 flex-shrink-0 mt-1">
                       {auth.jurisdiction}
                     </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {results.landingRightsProfiles.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                  Landing Rights — Profiles
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {results.landingRightsProfiles.slice(0, 6).map((p) => (
+                  <button
+                    key={p.jurisdiction}
+                    onClick={() =>
+                      router.push(
+                        `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
+                      )
+                    }
+                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 transition"
+                  >
+                    <span className="text-[22px] font-bold text-gray-400 w-10">
+                      {p.jurisdiction}
+                    </span>
+                    <span className="text-[13px] text-gray-700 line-clamp-2 flex-1">
+                      {p.overview.summary}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {results.landingRightsCaseStudies.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                  Landing Rights — Case Studies
+                </h2>
+              </div>
+              <div className="space-y-1">
+                {results.landingRightsCaseStudies.slice(0, 10).map((cs) => (
+                  <button
+                    key={cs.id}
+                    onClick={() =>
+                      router.push(`/atlas/landing-rights/case-studies/${cs.id}`)
+                    }
+                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 transition"
+                  >
+                    <span className="text-[11px] font-bold text-gray-500 w-10">
+                      {cs.jurisdiction}
+                    </span>
+                    <span className="text-[13px] font-medium text-gray-800 flex-1">
+                      {cs.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {results.landingRightsConduct.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                  Landing Rights — Conduct Conditions
+                </h2>
+              </div>
+              <div className="space-y-1">
+                {results.landingRightsConduct.slice(0, 10).map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => router.push(`/atlas/landing-rights/conduct`)}
+                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 transition"
+                  >
+                    <span className="text-[11px] font-bold text-gray-500 w-10">
+                      {c.jurisdiction}
+                    </span>
+                    <div className="flex-1">
+                      <span className="text-[13px] font-medium text-gray-800 block">
+                        {c.title}
+                      </span>
+                      <span className="text-[11px] text-gray-500">
+                        {c.type.replace("_", " ")}
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
