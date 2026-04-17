@@ -132,6 +132,13 @@ export interface UsRequirement {
     maxFine?: number;
     perViolation?: boolean;
   };
+  /**
+   * Canonical government URL for the primary citation.
+   * - CFR references use eCFR (ecfr.gov/current/...)
+   * - USC references use Cornell LII (law.cornell.edu/uscode/...)
+   * - Pending legislation (e.g. ORBITS Act) is undefined with TODO verify
+   */
+  officialUrl?: string;
 }
 
 export interface UsEuComparison {
@@ -357,6 +364,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-license",
     cfrReference: "47 CFR § 25.102",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.102",
     title: "Space Station Authorization Required",
     description:
       "No person shall operate a space station from the United States or provide service in the United States using a non-U.S.-licensed space station without prior FCC authorization.",
@@ -397,6 +405,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-ngso-processing",
     cfrReference: "47 CFR § 25.157",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.157",
     title: "NGSO-like Satellite Processing Rules",
     description:
       "Applications for NGSO satellite systems must demonstrate spectrum sharing capabilities and comply with processing round requirements.",
@@ -426,6 +435,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-technical-standards",
     cfrReference: "47 CFR § 25.202-25.228",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/subpart-C",
     title: "Technical Standards Compliance",
     description:
       "Space stations must meet technical standards including power flux density limits, out-of-band emissions limits, and antenna performance requirements.",
@@ -455,6 +465,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-coordination",
     cfrReference: "47 CFR § 25.111",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.111",
     title: "ITU Coordination Requirements",
     description:
       "Applicants must complete international coordination through ITU and notify FCC of any coordination agreements or interference issues.",
@@ -484,6 +495,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-bond-requirement",
     cfrReference: "47 CFR § 25.165",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.165",
     title: "Performance Bond Requirement (NGSO)",
     description:
       "NGSO satellite system licensees must post a performance bond to ensure timely deployment of authorized systems.",
@@ -513,6 +525,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-part25-milestone",
     cfrReference: "47 CFR § 25.164",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.164",
     title: "Deployment Milestones",
     description:
       "Licensees must meet deployment milestones: non-GSO systems must deploy 50% within 6 years, 100% within 9 years of authorization.",
@@ -549,6 +562,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-5year-rule",
     cfrReference: "47 CFR § 25.114(d)(14)(iv)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "5-Year Post-Mission Disposal Rule (LEO)",
     description:
       "Satellites in LEO (below 2,000 km) must be disposed of within 5 years of mission completion. This rule applies to all new applications filed after September 2024.",
@@ -581,6 +595,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-mitigation-plan",
     cfrReference: "47 CFR § 25.114(d)(14)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "Orbital Debris Mitigation Plan",
     description:
       "All space station applications must include a detailed debris mitigation plan addressing collision avoidance, passivation, and disposal.",
@@ -613,6 +628,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-collision-avoidance",
     cfrReference: "47 CFR § 25.114(d)(14)(i)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "Collision Avoidance Capability",
     description:
       "Satellites must have capability to perform collision avoidance maneuvers and demonstrate procedures for responding to conjunction warnings.",
@@ -644,6 +660,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-passivation",
     cfrReference: "47 CFR § 25.114(d)(14)(ii)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "End-of-Life Passivation",
     description:
       "All stored energy sources must be depleted or safed at end of mission to minimize risk of explosion or fragmentation.",
@@ -673,6 +690,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-casualty-risk",
     cfrReference: "47 CFR § 25.114(d)(14)(v)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "Reentry Casualty Risk Assessment",
     description:
       "If satellite will reenter atmosphere, human casualty expectation must be calculated and demonstrated to be below 1:10,000.",
@@ -704,6 +722,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-trackability",
     cfrReference: "47 CFR § 25.114(d)(14)(vi)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "Trackability Requirements",
     description:
       "Satellites must be trackable by US Space Surveillance Network and share orbital data with 18th Space Defense Squadron.",
@@ -733,6 +752,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-debris-indemnification",
     cfrReference: "47 CFR § 25.114(d)(14)(viii)",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.114",
     title: "Debris-Related Indemnification",
     description:
       "Applicants must describe third-party liability coverage and indemnification arrangements related to orbital debris risks.",
@@ -765,6 +785,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-spectrum-allocation",
     cfrReference: "47 CFR Part 2",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-2",
     title: "Spectrum Allocation Compliance",
     description:
       "Satellite systems must operate within allocated spectrum bands and comply with US Table of Frequency Allocations.",
@@ -792,6 +813,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-spectrum-interference",
     cfrReference: "47 CFR § 25.140",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.140",
     title: "Interference Protection",
     description:
       "NGSO systems must accept interference from and not cause harmful interference to GSO systems in shared bands.",
@@ -820,6 +842,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "fcc-spectrum-earth-stations",
     cfrReference: "47 CFR § 25.115",
+    officialUrl: "https://www.ecfr.gov/current/title-47/part-25/section-25.115",
     title: "Earth Station Authorization",
     description:
       "Earth stations communicating with space stations must be individually licensed or operate under blanket license authority.",
@@ -852,6 +875,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-launch-license",
     cfrReference: "14 CFR § 450.3",
+    officialUrl: "https://www.ecfr.gov/current/title-14/part-450/section-450.3",
     title: "Launch License Requirement",
     description:
       "No person may conduct a launch in the United States or by a US person anywhere without a license from the FAA.",
@@ -888,6 +912,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-reentry-license",
     cfrReference: "14 CFR § 450.3",
+    officialUrl: "https://www.ecfr.gov/current/title-14/part-450/section-450.3",
     title: "Reentry License Requirement",
     description:
       "No person may conduct a reentry in the United States or by a US person anywhere without a license from the FAA.",
@@ -917,6 +942,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-safety-analysis",
     cfrReference: "14 CFR § 450.101-450.187",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/chapter-III/subchapter-C/part-450/subpart-C",
     title: "Flight Safety Analysis",
     description:
       "Licensees must conduct flight safety analysis demonstrating acceptable risk to the public from launch/reentry operations.",
@@ -948,6 +975,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-ec-threshold",
     cfrReference: "14 CFR § 450.101(a)(1)",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.101",
     title: "Collective Risk Threshold (EC < 1:10,000)",
     description:
       "Expected casualty (EC) for any one flight must not exceed 1:10,000 for all persons exposed to hazardous debris.",
@@ -976,6 +1005,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-individual-risk",
     cfrReference: "14 CFR § 450.101(a)(2)",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.101",
     title: "Individual Risk Threshold",
     description:
       "Risk to any individual must not exceed 1:1,000,000 per launch/reentry for members of the public.",
@@ -1002,6 +1033,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-hazard-areas",
     cfrReference: "14 CFR § 450.133",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.133",
     title: "Flight Hazard Area Requirements",
     description:
       "Licensees must establish and enforce flight hazard areas to protect the public during launch and reentry.",
@@ -1031,6 +1064,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-fts",
     cfrReference: "14 CFR § 450.145",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.145",
     title: "Flight Safety System (Flight Termination)",
     description:
       "Launch vehicles must have a flight safety system capable of terminating propulsive flight if the vehicle deviates from acceptable parameters.",
@@ -1060,6 +1095,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-financial-responsibility",
     cfrReference: "14 CFR Part 440",
+    officialUrl: "https://www.ecfr.gov/current/title-14/part-440",
     title: "Financial Responsibility Requirements",
     description:
       "Licensees must obtain and maintain third-party liability insurance or demonstrate financial responsibility for potential damages.",
@@ -1093,6 +1129,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-environmental",
     cfrReference: "14 CFR § 450.35",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.35",
     title: "Environmental Review Requirements",
     description:
       "Launch license applications must include environmental documentation per NEPA requirements.",
@@ -1126,6 +1164,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-operations-manual",
     cfrReference: "14 CFR § 450.45",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-14/part-450/section-450.45",
     title: "Launch Operator License Requirements - Operator Manual",
     description:
       "Licensees must maintain operations manuals covering all aspects of launch operations, safety procedures, and contingency responses.",
@@ -1155,6 +1195,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-site-license",
     cfrReference: "14 CFR Part 420",
+    officialUrl: "https://www.ecfr.gov/current/title-14/part-420",
     title: "Launch Site License",
     description:
       "Operation of a launch or reentry site requires a separate FAA license demonstrating public safety protections.",
@@ -1185,6 +1226,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "faa-safety-approval",
     cfrReference: "14 CFR Part 414",
+    officialUrl: "https://www.ecfr.gov/current/title-14/part-414",
     title: "Safety Element Approval",
     description:
       "Safety-critical elements and systems may be pre-approved through the Safety Element Approval process for use across multiple licenses.",
@@ -1216,6 +1258,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-remote-sensing-license",
     cfrReference: "15 CFR § 960.4",
+    officialUrl: "https://www.ecfr.gov/current/title-15/part-960/section-960.4",
     title: "Private Remote Sensing License Requirement",
     description:
       "No person may operate a private remote sensing space system without a license from NOAA/CRSRA.",
@@ -1252,6 +1295,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-tier-classification",
     cfrReference: "15 CFR § 960.6",
+    officialUrl: "https://www.ecfr.gov/current/title-15/part-960/section-960.6",
     title: "System Tier Classification",
     description:
       "Remote sensing systems are classified into three tiers based on capabilities, with different license conditions for each tier.",
@@ -1281,6 +1325,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-data-distribution",
     cfrReference: "15 CFR § 960.8",
+    officialUrl: "https://www.ecfr.gov/current/title-15/part-960/section-960.8",
     title: "Data Distribution Requirements",
     description:
       "Licensees must comply with any conditions on distribution of remote sensing data, particularly for higher-tier systems.",
@@ -1309,6 +1354,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-operations-reporting",
     cfrReference: "15 CFR § 960.10",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-15/part-960/section-960.10",
     title: "Operations and Reporting Requirements",
     description:
       "Licensees must notify NOAA of significant events, maintain operational records, and allow inspections.",
@@ -1338,6 +1385,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-foreign-agreements",
     cfrReference: "15 CFR § 960.9",
+    officialUrl: "https://www.ecfr.gov/current/title-15/part-960/section-960.9",
     title: "Foreign Agreement Notifications",
     description:
       "Licensees must notify NOAA of significant agreements with foreign entities and comply with any resulting conditions.",
@@ -1366,6 +1414,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "noaa-shutter-control",
     cfrReference: "15 CFR § 960.11",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-15/part-960/section-960.11",
     title: "Shutter Control Authority",
     description:
       "The US Government retains authority to limit collection and/or distribution during periods affecting national security or foreign policy.",
@@ -1399,6 +1449,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "orbits-uniform-standards",
     cfrReference: "ORBITS Act § 3",
+    // TODO verify: ORBITS Act text not yet enacted into US Code — canonical URL pending
     title: "Uniform Orbital Debris Standards",
     description:
       "The ORBITS Act of 2025 requires agencies to apply consistent orbital debris mitigation standards across FCC, FAA, and NOAA licenses.",
@@ -1432,6 +1483,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "orbits-inter-agency-coordination",
     cfrReference: "ORBITS Act § 4",
+    // TODO verify: ORBITS Act text not yet enacted into US Code — canonical URL pending
     title: "Inter-Agency Coordination",
     description:
       "Agencies must coordinate on debris requirements and avoid conflicting conditions across licenses.",
@@ -1458,6 +1510,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "orbits-5year-alignment",
     cfrReference: "ORBITS Act § 5",
+    // TODO verify: ORBITS Act text not yet enacted into US Code — canonical URL pending
     title: "5-Year Rule Alignment",
     description:
       "The ORBITS Act codifies the FCC 5-year deorbit rule and requires FAA/NOAA alignment for LEO operations.",
@@ -1490,6 +1543,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "us-registration-requirement",
     cfrReference: "51 USC § 50112",
+    officialUrl: "https://www.law.cornell.edu/uscode/text/51/50112",
     title: "US Registry of Space Objects",
     description:
       "Space objects launched from the United States or by US persons must be registered with the US registry maintained by DoD.",
@@ -1519,6 +1573,8 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "us-export-control",
     cfrReference: "22 CFR Part 121 / 15 CFR Part 774",
+    officialUrl:
+      "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-M/part-121",
     title: "Export Control Compliance (ITAR/EAR)",
     description:
       "Space systems and components are subject to US export controls. Compliance with ITAR and EAR is required for international activities.",
@@ -1557,6 +1613,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "us-ssa-sharing",
     cfrReference: "10 USC § 2274",
+    officialUrl: "https://www.law.cornell.edu/uscode/text/10/2274",
     title: "Space Situational Awareness Data Sharing",
     description:
       "Operators should establish SSA data sharing agreements with 18th Space Defense Squadron for conjunction warnings and catalog maintenance.",
@@ -1587,6 +1644,7 @@ export const usSpaceRequirements: UsRequirement[] = [
   {
     id: "us-spectrum-authorization",
     cfrReference: "47 USC § 301",
+    officialUrl: "https://www.law.cornell.edu/uscode/text/47/301",
     title: "Spectrum Authorization Requirement",
     description:
       "All radio frequency transmissions from space stations require FCC authorization or coordination.",
