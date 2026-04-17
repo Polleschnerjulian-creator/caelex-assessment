@@ -95,6 +95,12 @@ export interface UkSpaceRequirement {
   euSpaceActCrossRef?: string[];
   severity: "critical" | "major" | "minor";
   licenseTypes: UkLicenseType[];
+  /**
+   * Canonical legislation.gov.uk URL for the primary citation
+   * (Space Industry Act 2018 or Space Industry Regulations 2021 SI 2021/792).
+   * Undefined for CAA guidance documents (no legislation.gov.uk URL).
+   */
+  officialUrl?: string;
 }
 
 export interface UkEuComparison {
@@ -228,6 +234,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s3-licence",
     sectionRef: "SIA s.3",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/3",
     title: "Requirement for Launch/Return Licence",
     description:
       "A person must not carry out spaceflight activities in the UK, or procure the carrying out of such activities, without a licence granted by the regulator.",
@@ -257,6 +264,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s5-spaceport",
     sectionRef: "SIA s.5",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/5",
     title: "Spaceport Licence Requirement",
     description:
       "A person must not operate a spaceport in the UK without a spaceport licence granted by the regulator.",
@@ -287,6 +295,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s6-range",
     sectionRef: "SIA s.6",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/6",
     title: "Range Control Licence Requirement",
     description:
       "A person must not provide range control services in the UK for spaceflight activities without a range control licence.",
@@ -314,6 +323,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s7-orbital",
     sectionRef: "SIA s.7",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/7",
     title: "Orbital Operator Licence Requirement",
     description:
       "UK persons procuring the launch of a space object, or operating a space object in orbit, require an orbital operator licence.",
@@ -345,6 +355,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s8-exemptions",
     sectionRef: "SIA s.8",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/8",
     title: "Exemptions from Licensing",
     description:
       "The regulator may grant exemptions from licensing requirements in certain circumstances, such as for governmental activities.",
@@ -376,6 +387,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s17-safety-regs",
     sectionRef: "SIA s.17 / SIR Part 4",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/17",
     title: "Safety Regulations Compliance",
     description:
       "Licence holders must comply with safety regulations made under the Act, including safety cases, risk assessments, and safety management systems.",
@@ -417,6 +429,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg9-safety-case",
     sectionRef: "SIR Reg.9",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/9",
     title: "Safety Case Requirement",
     description:
       "A safety case demonstrating that risks are as low as reasonably practicable (ALARP) must be submitted as part of licence application.",
@@ -451,6 +464,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg14-ground-safety",
     sectionRef: "SIR Reg.14",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/14",
     title: "Ground Safety Requirements",
     description:
       "Measures must be in place to protect persons on the ground from risks arising from spaceflight activities.",
@@ -484,6 +498,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg15-flight-safety",
     sectionRef: "SIR Reg.15",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/15",
     title: "Flight Safety Requirements",
     description:
       "Flight safety systems and procedures must be in place to ensure safe conduct of spaceflight and ability to terminate flight if necessary.",
@@ -516,6 +531,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s34-liability",
     sectionRef: "SIA s.34",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/34",
     title: "Operator Liability for Injury and Damage",
     description:
       "An operator is liable for injury or damage caused by their spaceflight activities, subject to the liability provisions of the Act.",
@@ -551,6 +567,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s36-indemnity",
     sectionRef: "SIA s.36",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/36",
     title: "Indemnity to Government",
     description:
       "Operators must indemnify the UK government against claims arising from their spaceflight activities under international law.",
@@ -582,6 +599,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s38-insurance",
     sectionRef: "SIA s.38 / SIR Part 7",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/38",
     title: "Insurance Requirements",
     description:
       "Licensees must maintain third party liability insurance to the satisfaction of the regulator.",
@@ -622,6 +640,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg55-insurance-amount",
     sectionRef: "SIR Reg.55",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/55",
     title: "Insurance Amount Determination",
     description:
       "The regulator determines the required insurance amount based on maximum probable loss assessment.",
@@ -658,6 +677,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s18-environment",
     sectionRef: "SIA s.18 / SIR Part 5",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/18",
     title: "Environmental Protection Duties",
     description:
       "Operators must take all reasonable steps to prevent adverse effects on the environment, including space debris mitigation.",
@@ -690,6 +710,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg31-debris-mitigation",
     sectionRef: "SIR Reg.31",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/31",
     title: "Space Debris Mitigation",
     description:
       "Orbital operators must submit a debris mitigation plan demonstrating compliance with debris mitigation requirements.",
@@ -721,6 +742,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg32-eol-disposal",
     sectionRef: "SIR Reg.32",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/32",
     title: "End-of-Life Disposal Plan",
     description:
       "A plan for post-mission disposal of spacecraft must be submitted, demonstrating compliance with the 25-year rule.",
@@ -752,6 +774,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg33-reentry-safety",
     sectionRef: "SIR Reg.33",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/33",
     title: "Re-entry Safety Assessment",
     description:
       "For spacecraft re-entering the atmosphere, an assessment of ground casualty risk must demonstrate acceptable risk levels.",
@@ -783,6 +806,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s61-registration",
     sectionRef: "SIA s.61",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/61",
     title: "UK Space Registry",
     description:
       "Space objects launched under UK jurisdiction must be registered in the UK Register of Space Objects.",
@@ -811,6 +835,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg62-registration-info",
     sectionRef: "SIR Reg.62",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/62",
     title: "Registration Information Requirements",
     description:
       "Specific information must be provided for registration, including designator, launch details, and orbital parameters.",
@@ -842,6 +867,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg41-security",
     sectionRef: "SIR Reg.41",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/41",
     title: "Security Requirements",
     description:
       "Operators must implement appropriate security measures to protect spaceflight activities and infrastructure.",
@@ -877,6 +903,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg42-cyber",
     sectionRef: "SIR Reg.42",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/42",
     title: "Cyber Security Requirements",
     description:
       "Appropriate cyber security measures must be in place to protect systems critical to spaceflight safety.",
@@ -918,6 +945,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sia-s16-informed-consent",
     sectionRef: "SIA s.16 / SIR Part 6",
+    officialUrl: "https://www.legislation.gov.uk/ukpga/2018/5/section/16",
     title: "Informed Consent for Human Spaceflight",
     description:
       "Individuals participating in human spaceflight must give informed consent acknowledging the risks involved.",
@@ -947,6 +975,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg46-medical",
     sectionRef: "SIR Reg.46",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/46",
     title: "Medical Requirements for Participants",
     description:
       "Spaceflight participants may be subject to medical requirements to ensure fitness for spaceflight.",
@@ -977,6 +1006,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg19-emergency",
     sectionRef: "SIR Reg.19",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/19",
     title: "Emergency Response Planning",
     description:
       "Operators must have emergency response plans coordinated with relevant authorities.",
@@ -1010,6 +1040,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-sir-reg20-incident-reporting",
     sectionRef: "SIR Reg.20",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/20",
     title: "Incident Reporting Requirements",
     description:
       "Safety-related incidents must be reported to the CAA within specified timeframes.",
@@ -1053,6 +1084,8 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-caa-technical-capability",
     sectionRef: "CAA Guidance",
+    // TODO verify: CAA guidance doc ref (CAP number) not yet mapped to a canonical URL
+
     title: "Technical Capability Demonstration",
     description:
       "Applicants must demonstrate adequate technical capability to safely conduct their proposed activities.",
@@ -1094,6 +1127,8 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-caa-financial-capability",
     sectionRef: "CAA Guidance",
+    // TODO verify: CAA guidance doc ref (CAP number) not yet mapped to a canonical URL
+
     title: "Financial Capability Demonstration",
     description:
       "Applicants must demonstrate adequate financial resources to safely conduct activities and meet obligations.",
@@ -1133,6 +1168,7 @@ export const ukSiaRequirements: UkSpaceRequirement[] = [
   {
     id: "uk-caa-continuous-compliance",
     sectionRef: "SIR Reg.70",
+    officialUrl: "https://www.legislation.gov.uk/uksi/2021/792/regulation/70",
     title: "Continuous Compliance Obligation",
     description:
       "Licence holders must maintain continuous compliance with licence conditions throughout the licence period.",
