@@ -23,6 +23,7 @@ export function LandingRightsStatusBadge({
   return (
     <span className="inline-flex items-center gap-1.5">
       <span
+        role="img"
         className={`h-2 w-2 rounded-full flex-shrink-0 ${STATUS_COLORS[status]}`}
         aria-label={t(`atlas.landing_rights_status_${status}`)}
       />
