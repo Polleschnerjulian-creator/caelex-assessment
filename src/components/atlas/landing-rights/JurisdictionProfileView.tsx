@@ -9,6 +9,9 @@ import {
 import { DepthBadge } from "./DepthBadge";
 import { LastVerifiedStamp } from "./LastVerifiedStamp";
 import { LandingRightsStatusBadge } from "./LandingRightsStatusBadge";
+import { SourceLink } from "./SourceLink";
+import { ITUFilingCard } from "./ITUFilingCard";
+import { getITUFilingsByOperator } from "@/data/landing-rights/itu-filings";
 
 const CATEGORIES: LandingRightsCategory[] = [
   "market_access",
@@ -85,6 +88,25 @@ export function JurisdictionProfileView({
           ))}
         </ul>
       </section>
+
+      {profile.legal_basis.length > 0 && (
+        <section className="rounded-xl bg-white border border-gray-100 p-6">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+            Legal basis
+          </h2>
+          <ul className="space-y-2">
+            {profile.legal_basis.map((lb) => (
+              <li key={lb.source_id}>
+                <SourceLink
+                  sourceId={lb.source_id}
+                  title={lb.title}
+                  citation={lb.citation}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="rounded-xl bg-white border border-gray-100 p-6">
         <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
@@ -204,6 +226,32 @@ export function JurisdictionProfileView({
           </ul>
         </section>
       )}
+
+      {(() => {
+        const activeOperators = (
+          ["starlink", "kuiper", "oneweb"] as const
+        ).filter(
+          (op) =>
+            profile.operator_snapshots[op]?.status === "licensed" ||
+            profile.operator_snapshots[op]?.status === "pending",
+        );
+        const filings = activeOperators.flatMap((op) =>
+          getITUFilingsByOperator(op),
+        );
+        if (filings.length === 0) return null;
+        return (
+          <section className="rounded-xl bg-white border border-gray-100 p-6">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+              ITU filings covering this market
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filings.map((f) => (
+                <ITUFilingCard key={f.id} filing={f} />
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {caseStudies.length > 0 && (
         <section className="rounded-xl bg-white border border-gray-100 p-6">
