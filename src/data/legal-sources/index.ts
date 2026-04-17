@@ -61,10 +61,14 @@ import { LEGAL_SOURCES_IE, AUTHORITIES_IE } from "./sources/ie";
 import { LEGAL_SOURCES_GR, AUTHORITIES_GR } from "./sources/gr";
 import { LEGAL_SOURCES_CZ, AUTHORITIES_CZ } from "./sources/cz";
 import { LEGAL_SOURCES_PL, AUTHORITIES_PL } from "./sources/pl";
+import { LEGAL_SOURCES_INT, AUTHORITIES_INT } from "./sources/intl";
+import { LEGAL_SOURCES_EU, AUTHORITIES_EU } from "./sources/eu";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
 const ALL_SOURCES: LegalSource[] = [
+  ...LEGAL_SOURCES_INT,
+  ...LEGAL_SOURCES_EU,
   ...LEGAL_SOURCES_DE,
   ...LEGAL_SOURCES_FR,
   ...LEGAL_SOURCES_UK,
@@ -87,6 +91,8 @@ const ALL_SOURCES: LegalSource[] = [
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
+  ...AUTHORITIES_INT,
+  ...AUTHORITIES_EU,
   ...AUTHORITIES_DE,
   ...AUTHORITIES_FR,
   ...AUTHORITIES_UK,
@@ -109,6 +115,22 @@ const ALL_AUTHORITIES: Authority[] = [
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
+  [
+    "INT",
+    {
+      jurisdiction: "INT",
+      sources: LEGAL_SOURCES_INT,
+      authorities: AUTHORITIES_INT,
+    },
+  ],
+  [
+    "EU",
+    {
+      jurisdiction: "EU",
+      sources: LEGAL_SOURCES_EU,
+      authorities: AUTHORITIES_EU,
+    },
+  ],
   [
     "DE",
     {
@@ -266,11 +288,46 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
 // ─── Lookup functions ────────────────────────────────────────────────
 
 export function getLegalSourcesByJurisdiction(code: string): LegalSource[] {
-  // Include international treaties (jurisdiction "INT") and EU law
-  // (jurisdiction "EU") alongside the national sources
+  // Country-specific sources
   const data = JURISDICTION_DATA.get(code);
-  if (!data) return [];
-  return data.sources;
+  const national = data?.sources ?? [];
+
+  // Plus international + EU instruments that list this country in
+  // applies_to_jurisdictions. Single-source-of-truth: the canonical
+  // treaty/regulation record lives in intl.ts or eu.ts, and country
+  // pages pull from there via filter instead of duplicating.
+  if (code === "INT" || code === "EU") {
+    return national;
+  }
+  const applicable = ALL_SOURCES.filter(
+    (s) =>
+      (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+      s.applies_to_jurisdictions?.includes(code),
+  );
+
+  return [...applicable, ...national];
+}
+
+/**
+ * Returns only the national sources for a country (no INT/EU cross-refs).
+ * Useful when the UI wants to show "national laws" separately from
+ * "international instruments that apply here".
+ */
+export function getNationalSources(code: string): LegalSource[] {
+  const data = JURISDICTION_DATA.get(code);
+  return data?.sources ?? [];
+}
+
+/**
+ * Returns only the international + EU instruments that apply to a country.
+ * Filters by applies_to_jurisdictions.
+ */
+export function getApplicableInternationalSources(code: string): LegalSource[] {
+  return ALL_SOURCES.filter(
+    (s) =>
+      (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+      s.applies_to_jurisdictions?.includes(code),
+  );
 }
 
 export function getLegalSourcesByComplianceArea(

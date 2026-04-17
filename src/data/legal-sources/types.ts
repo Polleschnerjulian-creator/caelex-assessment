@@ -111,6 +111,14 @@ export interface LegalSource {
   caelex_engine_mapping?: string[];
   caelex_data_file_mapping?: string[];
 
+  /**
+   * For jurisdiction "INT" or "EU" records: list of ISO-alpha-2 country
+   * codes that have ratified/are party to / are bound by this instrument.
+   * Allows the UI to surface "Applies to this jurisdiction" on country
+   * detail pages without duplicating the instrument across country files.
+   */
+  applies_to_jurisdictions?: string[];
+
   notes?: string[];
   last_verified: string;
 }
