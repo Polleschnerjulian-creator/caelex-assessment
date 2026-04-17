@@ -537,5 +537,30 @@
     "context": "Contexte",
     "exportPdf": "PDF",
     "exportDocx": "DOCX"
+  },
+  "atlas": {
+    "landing_rights": "Landing Rights",
+    "landing_rights_case_studies": "Case Studies",
+    "landing_rights_category_earth_station": "Earth Station & ESIM",
+    "landing_rights_category_itu_coordination": "ITU Coordination",
+    "landing_rights_category_market_access": "Market Access",
+    "landing_rights_category_re_entry": "Re-entry",
+    "landing_rights_conduct": "Conduct Conditions",
+    "landing_rights_coverage_pending": "Coverage pending",
+    "landing_rights_depth_deep": "Deep coverage",
+    "landing_rights_depth_standard": "Standard coverage",
+    "landing_rights_depth_stub": "Limited coverage",
+    "landing_rights_depth_stub_note": "Not independently verified",
+    "landing_rights_disclaimer_extra": "Landing-rights regimes change frequently. Verify with licensed counsel before operational decisions.",
+    "landing_rights_last_verified": "Last verified",
+    "landing_rights_operators": "Operator Matrix",
+    "landing_rights_status_denied": "Denied",
+    "landing_rights_status_licensed": "Licensed",
+    "landing_rights_status_not_entered": "Not entered",
+    "landing_rights_status_pending": "Pending",
+    "landing_rights_status_sector_limited": "Sector-limited",
+    "landing_rights_status_unknown": "Unknown",
+    "landing_rights_subtitle": "National authorisations for satellite market access across 29 jurisdictions",
+    "landing_rights_title": "Landing Rights Database"
   }
 }

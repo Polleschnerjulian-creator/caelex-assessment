@@ -36,6 +36,8 @@ import {
   getLegislationStatusLabels,
   getSourceGroupTitles,
 } from "../../i18n-labels";
+import { getProfile, type JurisdictionCode } from "@/data/landing-rights";
+import { JurisdictionProfileView } from "@/components/atlas/landing-rights/JurisdictionProfileView";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
@@ -689,6 +691,27 @@ export default function JurisdictionDetailPage({
             </ul>
           </div>
         )}
+
+        {(() => {
+          const lrProfile = getProfile(displayCode as JurisdictionCode);
+          if (!lrProfile) return null;
+          return (
+            <section className="mt-10 pt-8 border-t border-gray-100">
+              <div className="flex items-baseline justify-between mb-4">
+                <h2 className="text-[18px] font-semibold text-gray-900">
+                  Landing Rights
+                </h2>
+                <Link
+                  href={`/atlas/landing-rights/${displayCode.toLowerCase()}`}
+                  className="text-[12px] text-emerald-600 hover:text-emerald-700"
+                >
+                  Full view →
+                </Link>
+              </div>
+              <JurisdictionProfileView profile={lrProfile} embed />
+            </section>
+          );
+        })()}
 
         {/* ─── Footer ─── */}
         <footer className="mt-20 pt-6 border-t border-gray-200">

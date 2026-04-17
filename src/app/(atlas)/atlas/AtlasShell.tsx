@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, BarChart3, Map, Newspaper, Settings } from "lucide-react";
+import {
+  Search,
+  BarChart3,
+  Map,
+  Ticket,
+  Newspaper,
+  Settings,
+} from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
 
@@ -16,6 +23,11 @@ const MAIN_NAV = [
   },
   { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
   { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
+  {
+    labelKey: "atlas.landing_rights",
+    href: "/atlas/landing-rights",
+    icon: Ticket,
+  },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
 ] as const;
 
