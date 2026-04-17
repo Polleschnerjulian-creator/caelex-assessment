@@ -206,54 +206,6 @@ export const AUTHORITIES_FR: Authority[] = [
 
 const TREATIES_FR: LegalSource[] = [
   {
-    id: "INT-ESA-CONV-1975",
-    jurisdiction: "INT",
-    type: "international_treaty",
-    status: "in_force",
-    title_en: "Convention for the Establishment of a European Space Agency",
-    title_local: "Convention portant création d'une Agence spatiale européenne",
-    date_enacted: "1975-05-30",
-    date_in_force: "1980-10-30",
-    official_reference: "Loi n° 80-494 du 02/07/1980; JORF du 03/07/1980",
-    source_url:
-      "https://www.esa.int/About_Us/Corporate_news/ESA_Convention_and_Council_Rules_of_Procedure",
-    issuing_body: "European Space Conference",
-    competent_authorities: ["FR-CNES", "FR-MESR"],
-    relevance_level: "critical",
-    applicable_to: ["all"],
-    compliance_areas: ["licensing", "registration"],
-    key_provisions: [
-      {
-        section: "Art. II",
-        title: "Purpose of the Agency",
-        summary:
-          "ESA shall provide for and promote cooperation among European States in space research and technology for exclusively peaceful purposes.",
-        complianceImplication:
-          "France as founding member participates in all mandatory ESA programmes and contributes ~25% of ESA's budget, making it the largest contributor.",
-      },
-      {
-        section: "Art. V",
-        title: "Programmes and activities",
-        summary:
-          "Establishes mandatory and optional programme categories. Member states must contribute to mandatory activities (science, general budget) and may opt into optional programmes (launchers, Earth observation, telecommunications).",
-      },
-      {
-        section: "Annex V",
-        title: "Industrial policy",
-        summary:
-          "ESA's industrial policy aims at 'fair return' (juste retour) — each member state receives industrial contracts in proportion to its financial contribution.",
-        complianceImplication:
-          "French space industry benefits from geographic return on France's contributions. Arianespace and ArianeGroup are primary beneficiaries of the launcher programme.",
-      },
-    ],
-    related_sources: ["FR-INT-OST-RATIFICATION"],
-    notes: [
-      "France was a founding member of ESA (and its predecessor ESRO). Ratified by Loi n° 80-494 du 02/07/1980.",
-      "ESA Convention amended multiple times, most recently by the Ministerial Council resolutions.",
-    ],
-    last_verified: "2026-04-13",
-  },
-  {
     id: "INT-ISS-1998",
     jurisdiction: "INT",
     type: "international_treaty",

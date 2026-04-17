@@ -119,6 +119,13 @@ export interface LegalSource {
    */
   applies_to_jurisdictions?: string[];
 
+  /**
+   * Countries that have signed but not ratified the instrument.
+   * Separately tracked from applies_to_jurisdictions so UI can show
+   * "Signatory only" status differently from "Party" status.
+   */
+  signed_by_jurisdictions?: string[];
+
   notes?: string[];
   last_verified: string;
 }
