@@ -43,6 +43,7 @@ import AstraButton from "@/components/astra/AstraButton";
 import AssessmentFieldForm from "@/components/shared/AssessmentFieldForm";
 import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
 import { NIS2_REQUIREMENTS } from "@/data/nis2-requirements";
+import { resolveRegulatoryUrl } from "@/lib/regulatory-urls";
 import { getIcon } from "@/lib/icons";
 import type { Question, QuestionOption } from "@/lib/questions";
 
@@ -1562,9 +1563,26 @@ export default function NIS2AssessmentDetailPage() {
                                 className="px-5 py-3 flex items-center justify-between gap-4"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <span className="text-micro font-mono text-[var(--text-tertiary)] flex-shrink-0 w-[70px]">
-                                    {pr.articleRef}
-                                  </span>
+                                  {(() => {
+                                    const url = resolveRegulatoryUrl(
+                                      pr.articleRef,
+                                    );
+                                    return url ? (
+                                      <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Open EUR-Lex source"
+                                        className="text-micro font-mono text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] hover:underline flex-shrink-0 w-[70px]"
+                                      >
+                                        {pr.articleRef}
+                                      </a>
+                                    ) : (
+                                      <span className="text-micro font-mono text-[var(--text-tertiary)] flex-shrink-0 w-[70px]">
+                                        {pr.articleRef}
+                                      </span>
+                                    );
+                                  })()}
                                   <div className="min-w-0 flex-1">
                                     <div className="text-xs text-[var(--text-secondary)] truncate">
                                       {pr.title}
@@ -1904,9 +1922,26 @@ export default function NIS2AssessmentDetailPage() {
                         <StatusIcon
                           className={`w-4 h-4 ${sc.color} flex-shrink-0`}
                         />
-                        <span className="text-caption font-mono text-[var(--text-tertiary)] flex-shrink-0">
-                          {meta?.articleRef || req.requirementId}
-                        </span>
+                        {(() => {
+                          const ref = meta?.articleRef || req.requirementId;
+                          const url = resolveRegulatoryUrl(ref);
+                          return url ? (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              title="Open EUR-Lex source"
+                              className="text-caption font-mono text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] hover:underline flex-shrink-0"
+                            >
+                              {ref}
+                            </a>
+                          ) : (
+                            <span className="text-caption font-mono text-[var(--text-tertiary)] flex-shrink-0">
+                              {ref}
+                            </span>
+                          );
+                        })()}
                         <span className="text-sm text-[var(--text-primary)] truncate">
                           {meta?.title || req.requirementId}
                         </span>
