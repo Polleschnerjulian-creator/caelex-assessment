@@ -24,6 +24,15 @@ const DISCLAIMER =
   "may change during trilogue negotiations. This is not enacted law and " +
   "does not constitute legal advice.";
 
+/**
+ * Canonical EUR-Lex URL for COM(2025) 335.
+ * CELEX identifier: 52025PC0335 (5 = EU prep act; 2025 = year; PC = Commission proposal).
+ * EUR-Lex does not expose stable per-article HTML fragments for proposal (PC) documents,
+ * so every article references the document-level URL.
+ */
+const OFFICIAL_URL =
+  "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52025PC0335";
+
 // ─── Article Data ───────────────────────────────────────────────────────────
 
 const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
@@ -45,6 +54,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: "all",
@@ -62,6 +72,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "COPUOS_LTS",
@@ -87,6 +98,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 3", relationship: "codifies" },
       {
@@ -111,6 +123,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: "all",
@@ -129,6 +142,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: "all",
@@ -151,6 +165,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -168,6 +183,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -185,6 +201,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -202,6 +219,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 5", relationship: "codifies" },
     ],
@@ -221,6 +239,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -238,6 +257,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -255,6 +275,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -272,6 +293,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -289,6 +311,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -306,6 +329,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["SCO"],
@@ -323,6 +347,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: ["TCO"],
@@ -340,6 +365,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: "all",
@@ -357,6 +383,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -374,6 +401,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "authorization",
     applicableTo: "all",
@@ -396,6 +424,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "COPUOS_LTS",
@@ -419,6 +448,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "COPUOS_LTS",
@@ -442,6 +472,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "registration",
     applicableTo: "all",
@@ -459,6 +490,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "registration",
     applicableTo: ["TCO", "PDP"],
@@ -476,6 +508,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "registration",
     applicableTo: ["PDP"],
@@ -493,6 +526,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "registration",
     applicableTo: "all",
@@ -510,6 +544,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "COPUOS_LTS",
@@ -533,6 +568,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "insurance",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -551,6 +587,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "environmental",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -573,6 +610,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 5.1", relationship: "codifies" },
       {
@@ -602,6 +640,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 5.1", relationship: "codifies" },
     ],
@@ -621,6 +660,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "debris",
     applicableTo: ["LO"],
@@ -638,6 +678,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -666,6 +707,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -689,6 +731,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "COPUOS_LTS",
@@ -712,6 +755,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -740,6 +784,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -763,6 +808,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "ISO_24113",
@@ -786,6 +832,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 5", relationship: "codifies" },
       {
@@ -815,6 +862,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "environmental",
     applicableTo: ["SCO"],
@@ -832,6 +880,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "ITU_RR", reference: "Art. 22", relationship: "codifies" },
     ],
@@ -851,6 +900,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "IADC", reference: "Section 5.1", relationship: "extends" },
     ],
@@ -870,6 +920,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -899,6 +950,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "IADC",
@@ -932,6 +984,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "debris",
     applicableTo: ["SCO", "LO"],
@@ -954,6 +1007,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -973,6 +1027,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
       {
@@ -997,6 +1052,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1016,6 +1072,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21(2)", relationship: "extends" },
       {
@@ -1040,6 +1097,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21(2)", relationship: "extends" },
       {
@@ -1064,6 +1122,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
       {
@@ -1088,6 +1147,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
       {
@@ -1112,6 +1172,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1131,6 +1192,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1150,6 +1212,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1169,6 +1232,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1188,6 +1252,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1216,6 +1281,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1239,6 +1305,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1262,6 +1329,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 21", relationship: "extends" },
     ],
@@ -1281,6 +1349,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1304,6 +1373,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1327,6 +1397,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1350,6 +1421,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 23", relationship: "extends" },
     ],
@@ -1369,6 +1441,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1392,6 +1465,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1415,6 +1489,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       {
         framework: "NIS2",
@@ -1443,6 +1518,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1460,6 +1536,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1477,6 +1554,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1494,6 +1572,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 34", relationship: "codifies" },
     ],
@@ -1513,6 +1592,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: ["SCO", "LO", "LSO", "ISOS", "TCO"],
@@ -1530,6 +1610,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -1547,6 +1628,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [
       { framework: "NIS2", reference: "Art. 34", relationship: "codifies" },
     ],
@@ -1566,6 +1648,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: ["SCO", "LO", "LSO", "ISOS"],
@@ -1583,6 +1666,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1600,6 +1684,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1617,6 +1702,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",
@@ -1634,6 +1720,7 @@ const EU_SPACE_ACT_ARTICLES: EUSpaceActArticle[] = [
     proposalDate: "2025-06-25",
     councilUpdate: "2025-12-05",
     disclaimer: DISCLAIMER,
+    officialUrl: OFFICIAL_URL,
     enactedEquivalents: [],
     category: "supervision",
     applicableTo: "all",

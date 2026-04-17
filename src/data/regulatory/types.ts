@@ -203,6 +203,9 @@ export interface EUSpaceActArticle {
 
   category: ComplianceCategory;
   applicableTo: OperatorType[] | "all";
+
+  /** Canonical EUR-Lex URL for the COM(2025) 335 proposal document. */
+  officialUrl?: string;
 }
 
 // ─── Layer 4: Cross-Reference Map ────────────────────────────────────────────
