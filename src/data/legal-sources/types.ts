@@ -73,6 +73,24 @@ export interface KeyProvision {
   complianceImplication?: string;
 }
 
+/**
+ * A dated amendment to a law or regulation. Captures what changed,
+ * when, and points back to the official amending instrument.
+ */
+export interface Amendment {
+  /** ISO date when the amendment entered into force. */
+  date: string;
+  /** Parliamentary/official reference for the amending instrument
+   *  (e.g. "BGBl. I 2023 p. 417", "SI 2023/503", "COM(2024) 191"). */
+  reference: string;
+  /** One-line human summary of what changed. */
+  summary: string;
+  /** Optional list of affected articles/sections. */
+  affected_sections?: string[];
+  /** Direct link to the amending instrument's official text. */
+  source_url?: string;
+}
+
 export interface LegalSource {
   id: string;
   jurisdiction: string;
@@ -110,6 +128,12 @@ export interface LegalSource {
 
   caelex_engine_mapping?: string[];
   caelex_data_file_mapping?: string[];
+
+  /**
+   * Chronological amendment history. Most-recent-first is the
+   * render convention; the UI sorts by date descending regardless.
+   */
+  amendments?: Amendment[];
 
   /**
    * For jurisdiction "INT" or "EU" records: list of ISO-alpha-2 country

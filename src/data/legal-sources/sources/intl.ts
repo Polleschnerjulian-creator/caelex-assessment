@@ -466,6 +466,24 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       },
     ],
     related_sources: ["DE-TKG-2021"],
+    amendments: [
+      {
+        date: "2022-10-07",
+        reference:
+          "Plenipotentiary Conference 2022 (PP-22), Bucharest — Final Acts",
+        summary:
+          "Revisions to the ITU Constitution and Convention adopted at PP-22 (Bucharest, 2022). Updates governance provisions and refines the ITU mandate; consolidated text published 2023.",
+        source_url: "https://www.itu.int/hub/publication/S-CONF-PLENI-2022/",
+      },
+      {
+        date: "2018-11-16",
+        reference:
+          "Plenipotentiary Conference 2018 (PP-18), Dubai — Final Acts",
+        summary:
+          "Amendments adopted at PP-18 (Dubai, 2018), including cybersecurity-related mandate adjustments.",
+        source_url: "https://www.itu.int/hub/publication/S-CONF-PLENI-2018/",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 

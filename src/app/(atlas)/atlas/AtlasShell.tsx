@@ -12,6 +12,7 @@ import {
   Ticket,
   Newspaper,
   Settings,
+  Bookmark,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
@@ -38,6 +39,7 @@ const MAIN_NAV = [
     icon: Ticket,
   },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
+  { labelKey: "atlas.bookmarks", href: "/atlas/bookmarks", icon: Bookmark },
 ] as const;
 
 const COLLAPSED_W = 58;

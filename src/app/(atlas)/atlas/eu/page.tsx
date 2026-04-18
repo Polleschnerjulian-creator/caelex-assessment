@@ -7,6 +7,9 @@ import {
 import { getLinkStatusMap } from "@/lib/atlas/link-status";
 import { LinkStatusBadge } from "../_components/LinkStatusBadge";
 import { CitationButton } from "../_components/CitationButton";
+import { AmendmentHistory } from "../_components/AmendmentHistory";
+import { SchemaOrgLegislation } from "../_components/SchemaOrgLegislation";
+import { BookmarkButton } from "../_components/BookmarkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +26,11 @@ export default async function EUPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-10">
+      <SchemaOrgLegislation
+        sources={sources}
+        authorities={authorities}
+        pageUrl="https://caelex.io/atlas/eu"
+      />
       <header className="mb-10 max-w-3xl">
         <div className="inline-flex items-center gap-2 mb-3 text-[10px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-1">
           <Landmark size={12} />
@@ -45,7 +53,8 @@ export default async function EUPage() {
         {sources.map((s) => (
           <article
             key={s.id}
-            className="flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition"
+            id={s.id}
+            className="flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition scroll-mt-8"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
@@ -70,6 +79,15 @@ export default async function EUPage() {
                   status={linkStatus[s.id]}
                   lastVerified={s.last_verified}
                 />
+                <BookmarkButton
+                  item={{
+                    id: s.id,
+                    type: "source",
+                    title: s.title_en,
+                    subtitle: `${s.jurisdiction} · ${s.official_reference ?? s.id}`,
+                    href: `/atlas/eu#${s.id}`,
+                  }}
+                />
                 <CitationButton source={s} />
                 {s.source_url && (
                   <a
@@ -89,6 +107,11 @@ export default async function EUPage() {
                 {s.scope_description}
               </p>
             )}
+
+            <AmendmentHistory
+              amendments={s.amendments}
+              dateEnacted={s.date_enacted}
+            />
 
             {s.applies_to_jurisdictions &&
               s.applies_to_jurisdictions.length > 0 && (

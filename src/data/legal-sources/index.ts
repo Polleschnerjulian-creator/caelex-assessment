@@ -28,6 +28,7 @@ export type {
   RelevanceLevel,
   OperatorApplicability,
   KeyProvision,
+  Amendment,
 } from "./types";
 
 import {

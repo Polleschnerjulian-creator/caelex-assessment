@@ -912,6 +912,7 @@
     "comp_requirements": "Anforderungen",
     "comp_none_specified": "Keine angegeben",
     "comp_select_country": "Wählen Sie mindestens ein Land aus, um den Vergleich zu starten.",
-    "comp_select_hint": "Wählen Sie bis zu 5 Jurisdiktionen aus dem Selektor oben."
+    "comp_select_hint": "Wählen Sie bis zu 5 Jurisdiktionen aus dem Selektor oben.",
+    "bookmarks": "Lesezeichen"
   }
 }

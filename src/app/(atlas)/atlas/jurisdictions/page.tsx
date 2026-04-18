@@ -10,7 +10,7 @@ import {
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getJurisdictionNames } from "../i18n-labels";
-import { ArrowRight, Filter, Check } from "lucide-react";
+import { ArrowRight, Filter, Check, FileDown } from "lucide-react";
 
 // ─── Build enriched jurisdiction data ──────────────────────────────
 
@@ -309,11 +309,22 @@ export default function JurisdictionsPage() {
                 </span>
               </div>
               {j.sourceCount > 0 && (
-                <span className="text-[10px] font-medium text-gray-500">
-                  {t("atlas.sources_auth", {
-                    sources: j.sourceCount,
-                    auth: j.authorityCount,
-                  })}
+                <span className="flex items-center gap-2">
+                  <a
+                    href={`/api/atlas/country-memo/${j.code}`}
+                    onClick={(e) => e.stopPropagation()}
+                    title="Download PDF country memo"
+                    className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-600 hover:text-emerald-700 bg-white border border-gray-200 hover:border-emerald-300 rounded-full px-2 py-0.5 transition-colors"
+                  >
+                    <FileDown size={10} strokeWidth={2} />
+                    PDF
+                  </a>
+                  <span className="text-[10px] font-medium text-gray-500">
+                    {t("atlas.sources_auth", {
+                      sources: j.sourceCount,
+                      auth: j.authorityCount,
+                    })}
+                  </span>
                 </span>
               )}
             </div>

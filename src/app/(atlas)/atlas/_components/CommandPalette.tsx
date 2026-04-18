@@ -13,7 +13,7 @@ import {
   Search,
   Globe2,
   Landmark,
-  Map,
+  Map as MapIcon,
   BarChart3,
   Newspaper,
   Ticket,
@@ -21,6 +21,7 @@ import {
   FileText,
   Building2,
   ArrowRight,
+  type LucideIcon,
 } from "lucide-react";
 import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
 import type { LegalSource, Authority } from "@/data/legal-sources";
@@ -58,7 +59,7 @@ interface Item {
   title: string;
   subtitle: string;
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   haystack: string; // pre-lowered lookup field
 }
 
@@ -115,7 +116,7 @@ const NAV_ITEMS: Item[] = [
     title: "Jurisdictions",
     subtitle: "All 19 country profiles",
     href: "/atlas/jurisdictions",
-    icon: Map,
+    icon: MapIcon,
     haystack: "jurisdictions länder countries national",
   },
   {
@@ -171,7 +172,7 @@ const COUNTRY_ITEMS: Item[] = Array.from(NATIONAL_DATA, ([code, data]) => ({
   title: data.countryName,
   subtitle: `${code} · ${data.legislation.name || "No comprehensive law"}`,
   href: `/atlas/jurisdictions/${code.toLowerCase()}`,
-  icon: Map,
+  icon: MapIcon,
   haystack:
     `${code} ${data.countryName} ${data.legislation.name}`.toLowerCase(),
 }));
