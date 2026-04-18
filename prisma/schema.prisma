@@ -65,6 +65,7 @@ model User {
   breachReports            BreachReport[] // GDPR Art. 33/34 breach reports
   complianceSnapshots      ComplianceSnapshot[] // Digital Twin: daily compliance snapshots
   whatIfScenarios          WhatIfScenario[] // Digital Twin: saved what-if scenarios
+  atlasBookmarks           AtlasBookmark[] // Atlas: per-user bookmarks
   ncaDocuments             NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages           NCADocPackage[] // Generate 2.0: NCA submission packages
   // Assure: created share links and DD packages
@@ -80,13 +81,13 @@ model User {
   instructedClassrooms     AcademyClassroom[]        @relation("ClassroomInstructor")
 
   // HUB: Project Management
-  hubOwnedProjects   HubProject[]       @relation("HubProjectOwner")
-  hubProjectMembers  HubProjectMember[] @relation("HubProjectMembers")
-  hubAssignedTasks   HubTask[]          @relation("HubTaskAssignee")
-  hubCreatedTasks    HubTask[]          @relation("HubTaskCreator")
-  hubTaskComments    HubTaskComment[]   @relation("HubTaskComments")
-  hubTimeEntries     HubTimeEntry[]     @relation("HubTimeEntries")
-  hubCalendarEvents  HubCalendarEvent[] @relation("HubCalendarEvents")
+  hubOwnedProjects  HubProject[]       @relation("HubProjectOwner")
+  hubProjectMembers HubProjectMember[] @relation("HubProjectMembers")
+  hubAssignedTasks  HubTask[]          @relation("HubTaskAssignee")
+  hubCreatedTasks   HubTask[]          @relation("HubTaskCreator")
+  hubTaskComments   HubTaskComment[]   @relation("HubTaskComments")
+  hubTimeEntries    HubTimeEntry[]     @relation("HubTimeEntries")
+  hubCalendarEvents HubCalendarEvent[] @relation("HubCalendarEvents")
 
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage Int       @default(0)
@@ -591,22 +592,22 @@ model CRAAssessment {
   isEUEstablished         Boolean?
 
   // Existing certifications
-  hasIEC62443     Boolean?
-  hasETSIEN303645 Boolean?
+  hasIEC62443       Boolean?
+  hasETSIEN303645   Boolean?
   hasCommonCriteria Boolean?
-  hasISO27001     Boolean?
+  hasISO27001       Boolean?
 
   // Scores
-  complianceScore   Int?
-  maturityScore     Int?
-  riskLevel         String?
+  complianceScore Int?
+  maturityScore   Int?
+  riskLevel       String?
 
   // NIS2 cross-link
-  nis2OverlapCount  Int?
-  nis2AssessmentId  String?
+  nis2OverlapCount Int?
+  nis2AssessmentId String?
 
   // Report
-  reportGenerated   Boolean  @default(false)
+  reportGenerated   Boolean   @default(false)
   reportGeneratedAt DateTime?
 
   requirements CRARequirementStatus[]
@@ -626,8 +627,8 @@ model CRARequirementStatus {
 
   requirementId String
   status        String
-  notes         String?  @db.Text
-  evidenceNotes String?  @db.Text
+  notes         String? @db.Text
+  evidenceNotes String? @db.Text
   responses     Json?
 
   @@unique([assessmentId, requirementId])
@@ -649,10 +650,10 @@ model InsuranceAssessment {
   assessmentName String?
 
   // Risk Profile
-  primaryJurisdiction    String   // FR, DE, IT, etc.
+  primaryJurisdiction    String // FR, DE, IT, etc.
   secondaryJurisdictions String[] // Additional jurisdictions for cross-border ops
-  operatorType           String   // spacecraft, launch, launch_site
-  companySize            String   // micro, small, medium, large
+  operatorType           String // spacecraft, launch, launch_site
+  companySize            String // micro, small, medium, large
 
   // Operations Profile
   orbitRegime             String // LEO, MEO, GEO, HEO, cislunar, deep_space
@@ -2666,7 +2667,7 @@ model Organization {
 
   // Verity: compliance attestations (multi-tenant FK)
   verityAttestations VerityAttestation[]
-  verityPassports   VerityPassport[]
+  verityPassports    VerityPassport[]
 
   // Ephemeris: predictive compliance intelligence
   satelliteComplianceStates  SatelliteComplianceState[]
@@ -2693,7 +2694,7 @@ model Organization {
   hubCalendarEvents HubCalendarEvent[]
 
   // Hazard Report (CNES/FSOA Template Nr. 20)
-  hazardEntries       HazardEntry[]
+  hazardEntries        HazardEntry[]
   hazardReportVersions HazardReportVersion[]
 
   // Legal Portal
@@ -4712,11 +4713,11 @@ enum CrmOperatorType {
 }
 
 model CrmCompany {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  domain      String?  @unique // primary identifier (canonical key)
+  domain      String? @unique // primary identifier (canonical key)
   website     String?
-  description String?  @db.Text
+  description String? @db.Text
   industry    String?
   sizeBand    String? // "1-10" | "11-50" | "51-200" | "201-1000" | "1000+"
   country     String? // ISO-2
@@ -4724,16 +4725,16 @@ model CrmCompany {
   logoUrl     String?
 
   // Caelex-specific regulatory profile
-  operatorType       CrmOperatorType? @default(OTHER)
-  jurisdictions      String[] // e.g. ["EU", "US", "UK", "DE"]
-  primaryOrbit       String? // LEO / MEO / GEO / HEO
-  spacecraftCount    Int? // total in orbit
-  plannedSpacecraft  Int? // planned / manifested
-  frequencyBands     String[] // ["Ku", "Ka", "X"]
-  fundingStage       String? // seed / series_a / series_b / ipo / gov / other
-  isRaising          Boolean?
-  nextLaunchDate     DateTime?
-  licenseExpiryDate  DateTime?
+  operatorType      CrmOperatorType? @default(OTHER)
+  jurisdictions     String[] // e.g. ["EU", "US", "UK", "DE"]
+  primaryOrbit      String? // LEO / MEO / GEO / HEO
+  spacecraftCount   Int? // total in orbit
+  plannedSpacecraft Int? // planned / manifested
+  frequencyBands    String[] // ["Ku", "Ka", "X"]
+  fundingStage      String? // seed / series_a / series_b / ipo / gov / other
+  isRaising         Boolean?
+  nextLaunchDate    DateTime?
+  licenseExpiryDate DateTime?
 
   // CRM state
   lifecycleStage CrmLifecycleStage @default(LEAD)
@@ -4767,14 +4768,14 @@ model CrmCompany {
 }
 
 model CrmContact {
-  id        String  @id @default(cuid())
-  firstName String?
-  lastName  String?
-  email     String? @unique // primary identifier
-  phone     String?
-  title     String?
+  id          String  @id @default(cuid())
+  firstName   String?
+  lastName    String?
+  email       String? @unique // primary identifier
+  phone       String?
+  title       String?
   linkedinUrl String?
-  avatarUrl String?
+  avatarUrl   String?
 
   // Company link
   companyId String?
@@ -4788,7 +4789,7 @@ model CrmContact {
   owner          User?             @relation("CrmContactOwner", fields: [ownerId], references: [id])
 
   // Origin tracking
-  sourceTags String[] // ["website", "demo", "contact_form", "booking"]
+  sourceTags   String[] // ["website", "demo", "contact_form", "booking"]
   firstTouchAt DateTime?
   lastTouchAt  DateTime?
 
@@ -4868,8 +4869,8 @@ model CrmDeal {
 // Named relation defined on CrmDeal side above.
 
 model CrmActivity {
-  id   String          @id @default(cuid())
-  type CrmActivityType
+  id     String            @id @default(cuid())
+  type   CrmActivityType
   source CrmActivitySource @default(SYSTEM)
 
   // Polymorphic — any combination can be set. All indexed for fast filtering.
@@ -4885,8 +4886,8 @@ model CrmActivity {
   user   User?   @relation("CrmActivityUser", fields: [userId], references: [id])
 
   // Core content
-  summary   String // one-line human description, indexed for search
-  body      String? @db.Text // full content (email body, meeting notes, transcription)
+  summary    String // one-line human description, indexed for search
+  body       String?  @db.Text // full content (email body, meeting notes, transcription)
   occurredAt DateTime @default(now())
 
   // Typed metadata — varies by activity type
@@ -4902,8 +4903,8 @@ model CrmActivity {
 }
 
 model CrmNote {
-  id     String @id @default(cuid())
-  body   String @db.Text
+  id   String @id @default(cuid())
+  body String @db.Text
 
   authorId String
   author   User   @relation("CrmNoteAuthor", fields: [authorId], references: [id])
@@ -5220,20 +5221,20 @@ model NCAReasoningPlan {
 }
 
 model NCAConsistencyCheck {
-  id              String   @id @default(cuid())
-  documentId      String?
-  packageId       String?
-  userId          String
-  organizationId  String
-  findings        Json
-  findingCount    Int
-  errorCount      Int
-  warningCount    Int
-  infoCount       Int
-  aiModelUsed     String?
-  aiTokensUsed    Int?
-  durationMs      Int
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  documentId     String?
+  packageId      String?
+  userId         String
+  organizationId String
+  findings       Json
+  findingCount   Int
+  errorCount     Int
+  warningCount   Int
+  infoCount      Int
+  aiModelUsed    String?
+  aiTokensUsed   Int?
+  durationMs     Int
+  createdAt      DateTime @default(now())
 
   @@index([documentId])
   @@index([packageId])
@@ -5241,7 +5242,7 @@ model NCAConsistencyCheck {
 }
 
 model NCAImpactAlert {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   userId            String
   organizationId    String
   changedField      String
@@ -5250,8 +5251,8 @@ model NCAImpactAlert {
   newValue          String?
   affectedDocuments Json
   totalSections     Int
-  resolved          Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  resolved          Boolean   @default(false)
+  createdAt         DateTime  @default(now())
   resolvedAt        DateTime?
 
   @@index([userId, organizationId, resolved])
@@ -5531,15 +5532,15 @@ model LegalFirm {
 }
 
 model LegalAttorney {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
   firmId    String
   firm      LegalFirm @relation(fields: [firmId], references: [id])
   title     String?
   barNumber String?
-  isAdmin   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  isAdmin   Boolean   @default(false)
+  createdAt DateTime  @default(now())
 
   engagements LegalEngagementAttorney[]
   comments    LegalReviewComment[]
@@ -5557,16 +5558,16 @@ model LegalEngagement {
   engagementType String
   title          String
   description    String?
-  status         String       @default("pending")
+  status         String  @default("pending")
 
   scopedModules       String[]
   scopedDataTypes     String[]
   scopedAssessmentIds String[]
   includeNIS2Overlap  Boolean  @default(false)
 
-  expiresAt      DateTime
-  allowExport    Boolean  @default(false)
-  ipWhitelist    String[]
+  expiresAt   DateTime
+  allowExport Boolean  @default(false)
+  ipWhitelist String[]
 
   invitedBy String
   note      String?
@@ -5584,7 +5585,7 @@ model LegalEngagement {
 }
 
 model LegalEngagementAttorney {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   engagementId String
   engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
   attorneyId   String
@@ -5595,7 +5596,7 @@ model LegalEngagementAttorney {
 }
 
 model LegalAccessLog {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   engagementId String
   engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
   attorneyId   String
@@ -5603,17 +5604,17 @@ model LegalAccessLog {
   resource     String
   ipAddress    String?
   userAgent    String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime        @default(now())
 
   @@index([engagementId, createdAt])
 }
 
 model LegalReviewComment {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   engagementId String
   engagement   LegalEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
   attorneyId   String
-  attorney     LegalAttorney @relation(fields: [attorneyId], references: [id])
+  attorney     LegalAttorney   @relation(fields: [attorneyId], references: [id])
 
   targetType  String
   targetId    String?
@@ -6971,8 +6972,8 @@ model VerityCertificateClaim {
 }
 
 model VerityPassport {
-  id             String   @id @default(cuid())
-  passportId     String   @unique @default(cuid())
+  id             String       @id @default(cuid())
+  passportId     String       @unique @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   operatorId     String
@@ -6981,21 +6982,21 @@ model VerityPassport {
   satelliteName  String?
   label          String
 
-  attestationCount    Int
-  certificateCount    Int
-  complianceScore     Int
-  scoreBreakdown      Json
-  attestationSummary  Json
-  jurisdictions       String[]
+  attestationCount   Int
+  certificateCount   Int
+  complianceScore    Int
+  scoreBreakdown     Json
+  attestationSummary Json
+  jurisdictions      String[]
 
-  isPublic       Boolean  @default(true)
-  accessToken    String?  @unique
-  viewCount      Int      @default(0)
-  lastViewedAt   DateTime?
+  isPublic     Boolean   @default(true)
+  accessToken  String?   @unique
+  viewCount    Int       @default(0)
+  lastViewedAt DateTime?
 
-  generatedAt    DateTime @default(now())
-  expiresAt      DateTime
-  revokedAt      DateTime?
+  generatedAt DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
 
   @@index([organizationId])
   @@index([operatorId])
@@ -7004,28 +7005,28 @@ model VerityPassport {
 }
 
 model VerityP2PRequest {
-  id              String   @id @default(cuid())
-  requestId       String   @unique @default(cuid())
+  id        String @id @default(cuid())
+  requestId String @unique @default(cuid())
 
-  requesterOrgId  String
-  requesterName   String
-  requesterEmail  String?
+  requesterOrgId String
+  requesterName  String
+  requesterEmail String?
 
-  targetOrgId     String
-  targetNoradId   String?
+  targetOrgId   String
+  targetNoradId String?
 
-  regulationRefs  String[]
-  purpose         String
-  message         String?
+  regulationRefs String[]
+  purpose        String
+  message        String?
 
-  status          String   @default("PENDING")
+  status          String    @default("PENDING")
   responseAt      DateTime?
   responseMessage String?
   attestationIds  String[]
   certificateId   String?
 
-  createdAt       DateTime @default(now())
-  expiresAt       DateTime
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
   @@index([requesterOrgId])
   @@index([targetOrgId, status])
@@ -7033,19 +7034,19 @@ model VerityP2PRequest {
 }
 
 model VerityAuditChainEntry {
-  id              String   @id @default(cuid())
-  organizationId  String
-  sequenceNumber  Int
+  id             String @id @default(cuid())
+  organizationId String
+  sequenceNumber Int
 
-  eventType       String
-  entityId        String
-  entityType      String
-  eventData       Json
+  eventType  String
+  entityId   String
+  entityType String
+  eventData  Json
 
-  entryHash       String
-  previousHash    String
+  entryHash    String
+  previousHash String
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([organizationId, sequenceNumber])
   @@index([organizationId, createdAt])
@@ -7209,8 +7210,8 @@ model SolarFluxRecord {
 
 model SpaceWeatherEvent {
   id          String    @id @default(cuid())
-  eventType   String    // GEOMAGNETIC_STORM, SOLAR_RADIATION, RADIO_BLACKOUT
-  severity    String    // G1-G5, S1-S5, R1-R5
+  eventType   String // GEOMAGNETIC_STORM, SOLAR_RADIATION, RADIO_BLACKOUT
+  severity    String // G1-G5, S1-S5, R1-R5
   kpIndex     Float?
   startedAt   DateTime
   endedAt     DateTime?
@@ -7654,7 +7655,7 @@ model CDMRecord {
   riskTier  RiskTier
   createdAt DateTime @default(now())
 
-  source            String   @default("space_track")
+  source String @default("space_track")
 
   conjunctionEvent ConjunctionEvent @relation(fields: [conjunctionEventId], references: [id], onDelete: Cascade)
 
@@ -7696,8 +7697,8 @@ model CAConfig {
 
   defaultAssigneeId String?
 
-  leolabsEnabled    Boolean  @default(false)
-  leolabsApiKey     String?  @db.Text
+  leolabsEnabled Boolean @default(false)
+  leolabsApiKey  String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -7785,9 +7786,9 @@ model HubTask {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  project    HubProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee   User?            @relation("HubTaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  creator    User?            @relation("HubTaskCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  project     HubProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?            @relation("HubTaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creator     User?            @relation("HubTaskCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   comments    HubTaskComment[]
   taskLabels  HubTaskLabel[]
   timeEntries HubTimeEntry[]
@@ -7864,8 +7865,8 @@ model HubCalendarEvent {
   title          String
   description    String?
   date           DateTime @db.Date
-  startTime      String?  // HH:mm format, null = all-day
-  endTime        String?  // HH:mm format
+  startTime      String? // HH:mm format, null = all-day
+  endTime        String? // HH:mm format
   color          String   @default("#3B82F6")
   creatorId      String
   createdAt      DateTime @default(now())
@@ -7933,7 +7934,7 @@ enum TargetNCA {
 }
 
 model HazardEntry {
-  id             String         @id @default(cuid())
+  id             String             @id @default(cuid())
   organizationId String
   spacecraftId   String
   hazardId       String // e.g. "G01", "G02"
@@ -7941,14 +7942,14 @@ model HazardEntry {
   sourceModule   SourceModule
   sourceRecordId String? // FK to source record in Shield/Debris/etc.
   title          String
-  description    String         @db.Text
+  description    String             @db.Text
   severity       HazardSeverity
   likelihood     Int // 1-5
   riskIndex      Int // severity_score × likelihood, computed
   mitigations    HazardMitigation[]
 
   mitigationStatus HazardMitigationStatus @default(OPEN)
-  residualRisk     String?          @db.Text
+  residualRisk     String?                @db.Text
   regulatoryRefs   String[] // e.g. ["FSOA Art. 34", "ECSS-Q-ST-40-02C Task 4"]
 
   acceptanceStatus    AcceptanceStatus @default(PENDING)
@@ -7957,10 +7958,10 @@ model HazardEntry {
   verityAttestationId String?
 
   // Predictive Hazard Intelligence
-  isPredicted          Boolean   @default(false)
-  predictedBreachDate  DateTime? // When the threshold will be exceeded
-  forecastConfidence   String?   // HIGH, MEDIUM, LOW
-  forecastSourceDate   DateTime? // When the forecast was calculated
+  isPredicted         Boolean   @default(false)
+  predictedBreachDate DateTime? // When the threshold will be exceeded
+  forecastConfidence  String? // HIGH, MEDIUM, LOW
+  forecastSourceDate  DateTime? // When the forecast was calculated
 
   // FMECA operator input (Chapter 4.4)
   fmecaNotes String? @db.Text
@@ -8002,13 +8003,13 @@ model HazardReportVersion {
   version        Int // Auto-incremented per spacecraft
   targetNCA      TargetNCA
   language       String    @default("en")
-  milestone      String?   // SRR, PDR, CDR, FRR, etc.
+  milestone      String? // SRR, PDR, CDR, FRR, etc.
 
   // PDF storage
-  fileHash   String // SHA-256 of the PDF buffer
-  fileSize   Int
+  fileHash    String // SHA-256 of the PDF buffer
+  fileSize    Int
   storagePath String? // R2/S3 path if stored remotely
-  pdfData    Bytes? // Inline storage for small reports
+  pdfData     Bytes? // Inline storage for small reports
 
   // Verity report-level attestation
   verityAttestationId String?
@@ -8032,20 +8033,20 @@ model HazardReportVersion {
 // ─── Regulatory Ontology ─────────────────────────────────────────────────────
 
 model OntologyNode {
-  id            String   @id @default(cuid())
-  type          String
-  code          String   @unique
-  label         String
-  properties    Json
-  validFrom     DateTime @default(now())
-  validUntil    DateTime?
-  confidence    Float    @default(1.0)
-  sourceFile    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         String    @id @default(cuid())
+  type       String
+  code       String    @unique
+  label      String
+  properties Json
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+  confidence Float     @default(1.0)
+  sourceFile String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  outEdges      OntologyEdge[] @relation("FromNode")
-  inEdges       OntologyEdge[] @relation("ToNode")
+  outEdges OntologyEdge[] @relation("FromNode")
+  inEdges  OntologyEdge[] @relation("ToNode")
 
   @@index([type])
   @@index([type, code])
@@ -8053,17 +8054,17 @@ model OntologyNode {
 }
 
 model OntologyEdge {
-  id            String   @id @default(cuid())
-  type          String
-  fromNodeId    String
-  toNodeId      String
-  properties    Json?
-  weight        Float    @default(1.0)
-  validFrom     DateTime @default(now())
-  validUntil    DateTime?
+  id         String    @id @default(cuid())
+  type       String
+  fromNodeId String
+  toNodeId   String
+  properties Json?
+  weight     Float     @default(1.0)
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
 
-  fromNode      OntologyNode @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
-  toNode        OntologyNode @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+  fromNode OntologyNode @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode   OntologyNode @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
 
   @@unique([fromNodeId, toNodeId, type])
   @@index([fromNodeId])
@@ -8074,13 +8075,13 @@ model OntologyEdge {
 }
 
 model OntologyVersion {
-  id            String   @id @default(cuid())
-  version       String
-  description   String
-  nodeCount     Int
-  edgeCount     Int
-  seededFrom    String
-  seededAt      DateTime @default(now())
+  id          String   @id @default(cuid())
+  version     String
+  description String
+  nodeCount   Int
+  edgeCount   Int
+  seededFrom  String
+  seededAt    DateTime @default(now())
 
   @@index([version])
 }
@@ -8088,22 +8089,22 @@ model OntologyVersion {
 // ─── ATLAS Source Monitoring ────────────────────────────────────────
 
 model AtlasSourceCheck {
-  id            String   @id @default(cuid())
-  sourceId      String   // Legal source ID (e.g., "DE-SATDSIG-2007")
-  jurisdiction  String   // Country code (e.g., "DE")
-  sourceUrl     String   // URL that was checked
-  contentHash   String?  // SHA-256 hash of fetched content
-  previousHash  String?  // Previous hash for comparison
-  status        AtlasCheckStatus @default(PENDING)
-  httpStatus    Int?     // HTTP status code from fetch
-  errorMessage  String?  // Error details if fetch failed
-  lastChecked   DateTime @default(now())
-  lastChanged   DateTime? // When the content hash last changed
-  reviewedAt    DateTime? // When an admin reviewed the change
-  reviewedBy    String?  // Admin user ID who reviewed
-  reviewNote    String?  // Admin notes on the change
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String           @id @default(cuid())
+  sourceId     String // Legal source ID (e.g., "DE-SATDSIG-2007")
+  jurisdiction String // Country code (e.g., "DE")
+  sourceUrl    String // URL that was checked
+  contentHash  String? // SHA-256 hash of fetched content
+  previousHash String? // Previous hash for comparison
+  status       AtlasCheckStatus @default(PENDING)
+  httpStatus   Int? // HTTP status code from fetch
+  errorMessage String? // Error details if fetch failed
+  lastChecked  DateTime         @default(now())
+  lastChanged  DateTime? // When the content hash last changed
+  reviewedAt   DateTime? // When an admin reviewed the change
+  reviewedBy   String? // Admin user ID who reviewed
+  reviewNote   String? // Admin notes on the change
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@unique([sourceId])
   @@index([status])
@@ -8113,26 +8114,54 @@ model AtlasSourceCheck {
 }
 
 enum AtlasCheckStatus {
-  PENDING     // Not yet checked
-  UNCHANGED   // Content hash matches
-  CHANGED     // Content hash differs — needs review
-  ERROR       // Fetch failed
-  REVIEWED    // Admin reviewed the change
-  DISMISSED   // Admin dismissed (false positive)
+  PENDING // Not yet checked
+  UNCHANGED // Content hash matches
+  CHANGED // Content hash differs — needs review
+  ERROR // Fetch failed
+  REVIEWED // Admin reviewed the change
+  DISMISSED // Admin dismissed (false positive)
+}
+
+// ─── ATLAS Bookmarks (per-user) ────────────────────────────────────
+
+/// Per-user saved items across Atlas (legal sources, country profiles,
+/// authorities). Anonymous users fall back to localStorage client-side;
+/// on login, the client migrates local bookmarks into this table.
+model AtlasBookmark {
+  id        String            @id @default(cuid())
+  userId    String
+  itemId    String // e.g. "EU-NIS2", "DE", "INT-UNOOSA"
+  itemType  AtlasBookmarkType
+  title     String
+  subtitle  String?
+  href      String
+  note      String? // optional free-form annotation
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@index([userId, createdAt])
+}
+
+enum AtlasBookmarkType {
+  source
+  jurisdiction
+  authority
 }
 
 // ─── ATLAS Curated Updates (admin → users) ─────────────────────────
 
 model AtlasUpdate {
-  id            String   @id @default(cuid())
-  title         String   // Short headline: "Germany: NIS2 Implementation Act in force"
-  description   String   // 1-3 sentence detail
-  jurisdiction  String?  // Country code if relevant (e.g., "DE")
-  sourceId      String?  // Related legal source ID if relevant
-  category      AtlasUpdateCategory @default(AMENDMENT)
-  publishedAt   DateTime @default(now())
-  createdBy     String   // Admin user ID
-  isPublished   Boolean  @default(true)
+  id           String              @id @default(cuid())
+  title        String // Short headline: "Germany: NIS2 Implementation Act in force"
+  description  String // 1-3 sentence detail
+  jurisdiction String? // Country code if relevant (e.g., "DE")
+  sourceId     String? // Related legal source ID if relevant
+  category     AtlasUpdateCategory @default(AMENDMENT)
+  publishedAt  DateTime            @default(now())
+  createdBy    String // Admin user ID
+  isPublished  Boolean             @default(true)
 
   @@index([publishedAt])
   @@index([jurisdiction])
@@ -8140,14 +8169,14 @@ model AtlasUpdate {
 }
 
 enum AtlasUpdateCategory {
-  NEW_LAW        // New legislation enacted
-  AMENDMENT      // Existing law amended
-  RATIFICATION   // Treaty ratified/acceded
-  DRAFT          // Draft legislation published
-  INSTITUTIONAL  // Agency created/renamed/restructured
-  NIS2           // NIS2 transposition update
-  EU_SPACE_ACT   // EU Space Act progress
-  DATA_UPDATE    // ATLAS database updated
+  NEW_LAW // New legislation enacted
+  AMENDMENT // Existing law amended
+  RATIFICATION // Treaty ratified/acceded
+  DRAFT // Draft legislation published
+  INSTITUTIONAL // Agency created/renamed/restructured
+  NIS2 // NIS2 transposition update
+  EU_SPACE_ACT // EU Space Act progress
+  DATA_UPDATE // ATLAS database updated
 }
 
 // ============================================

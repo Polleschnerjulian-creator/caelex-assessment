@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Trash2, ArrowRight } from "lucide-react";
+import { Bookmark, Trash2, ArrowRight, Cloud, Laptop } from "lucide-react";
 import { useBookmarks } from "../_components/BookmarkButton";
 
 export default function BookmarksPage() {
-  const { all, remove } = useBookmarks();
+  const { all, remove, persistence } = useBookmarks();
 
   const grouped = {
     source: all.filter((b) => b.type === "source"),
@@ -24,10 +24,28 @@ export default function BookmarksPage() {
           Bookmarks
         </h1>
         <p className="mt-3 text-[14px] text-gray-600 leading-relaxed">
-          Items you&rsquo;ve saved across Atlas. Stored locally in your browser
-          — no account required. Clearing your browser data will reset this
-          list.
+          Items you&rsquo;ve saved across Atlas.
         </p>
+        {persistence !== "loading" && (
+          <div className="mt-3 inline-flex items-center gap-2 text-[11px] font-medium rounded-full px-3 py-1 border bg-white border-gray-200 text-gray-700">
+            {persistence === "remote" ? (
+              <>
+                <Cloud size={11} className="text-emerald-500" />
+                Synced to your account — available on every device you sign in
+                on.
+              </>
+            ) : (
+              <>
+                <Laptop size={11} className="text-amber-500" />
+                Stored in this browser only.{" "}
+                <Link href="/login" className="underline hover:text-gray-900">
+                  Sign in
+                </Link>{" "}
+                to sync across devices.
+              </>
+            )}
+          </div>
+        )}
       </header>
 
       {all.length === 0 ? (

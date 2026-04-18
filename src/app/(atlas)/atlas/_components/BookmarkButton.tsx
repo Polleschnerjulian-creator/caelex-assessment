@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { Bookmark } from "lucide-react";
 
 const STORAGE_KEY = "atlas:bookmarks:v1";
@@ -15,7 +16,7 @@ export interface BookmarkRef {
 
 // ─── localStorage helpers ─────────────────────────────────────────────
 
-function readAll(): BookmarkRef[] {
+function readLocal(): BookmarkRef[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -28,62 +29,198 @@ function readAll(): BookmarkRef[] {
   }
 }
 
-function writeAll(items: BookmarkRef[]) {
+function writeLocal(items: BookmarkRef[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  // Notify same-tab listeners
   window.dispatchEvent(new CustomEvent("atlas:bookmarks-changed"));
 }
+
+function clearLocal() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_KEY);
+}
+
+// ─── API calls ────────────────────────────────────────────────────────
+
+async function fetchFromApi(): Promise<BookmarkRef[]> {
+  const res = await fetch("/api/atlas/bookmarks", { cache: "no-store" });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { bookmarks: BookmarkRef[] };
+  return data.bookmarks ?? [];
+}
+
+async function createOnApi(item: BookmarkRef): Promise<boolean> {
+  const res = await fetch("/api/atlas/bookmarks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      itemId: item.id,
+      itemType: item.type,
+      title: item.title,
+      subtitle: item.subtitle ?? null,
+      href: item.href,
+    }),
+  });
+  return res.ok;
+}
+
+async function deleteOnApi(itemId: string): Promise<boolean> {
+  const res = await fetch(
+    `/api/atlas/bookmarks?itemId=${encodeURIComponent(itemId)}`,
+    { method: "DELETE" },
+  );
+  return res.ok;
+}
+
+async function bulkImport(items: BookmarkRef[]): Promise<boolean> {
+  if (items.length === 0) return true;
+  const res = await fetch("/api/atlas/bookmarks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: items.map((i) => ({
+        itemId: i.id,
+        itemType: i.type,
+        title: i.title,
+        subtitle: i.subtitle ?? null,
+        href: i.href,
+      })),
+    }),
+  });
+  return res.ok;
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────
 
 export function useBookmarks(): {
   all: BookmarkRef[];
   has: (id: string) => boolean;
   toggle: (item: BookmarkRef) => void;
   remove: (id: string) => void;
+  /** "local" = anonymous session persists in localStorage;
+   *  "remote" = signed in, persists to DB across devices;
+   *  "loading" = auth status not yet known. */
+  persistence: "local" | "remote" | "loading";
 } {
-  const [all, setAll] = useState<BookmarkRef[]>([]);
+  const { data: session, status } = useSession();
+  const isAuthed = status === "authenticated" && !!session?.user?.id;
 
+  const [all, setAll] = useState<BookmarkRef[]>([]);
+  const migratedRef = useRef(false);
+
+  // Load: from API if authed, else from localStorage
   useEffect(() => {
-    setAll(readAll());
-    const onChange = () => setAll(readAll());
+    if (status === "loading") return;
+
+    if (isAuthed) {
+      // 1. optimistic: show localStorage immediately (avoids flicker)
+      const local = readLocal();
+      if (local.length > 0 && !migratedRef.current) {
+        setAll(local);
+      }
+
+      // 2. fetch authoritative list from DB
+      fetchFromApi().then(async (remote) => {
+        if (!migratedRef.current && local.length > 0) {
+          // First authed load with pending local bookmarks → migrate
+          migratedRef.current = true;
+          const toMigrate = local.filter(
+            (l) => !remote.some((r) => r.id === l.id),
+          );
+          if (toMigrate.length > 0) {
+            const ok = await bulkImport(toMigrate);
+            if (ok) {
+              clearLocal();
+              const merged = await fetchFromApi();
+              setAll(merged);
+              return;
+            }
+          } else {
+            clearLocal();
+          }
+        }
+        setAll(remote);
+      });
+    } else {
+      setAll(readLocal());
+    }
+  }, [isAuthed, status]);
+
+  // Cross-tab / same-tab sync for the local branch
+  useEffect(() => {
+    if (isAuthed) return;
+    const onChange = () => setAll(readLocal());
     window.addEventListener("atlas:bookmarks-changed", onChange);
     window.addEventListener("storage", onChange);
     return () => {
       window.removeEventListener("atlas:bookmarks-changed", onChange);
       window.removeEventListener("storage", onChange);
     };
-  }, []);
+  }, [isAuthed]);
 
-  const has = (id: string) => all.some((b) => b.id === id);
+  const has = useCallback((id: string) => all.some((b) => b.id === id), [all]);
 
-  const toggle = (item: BookmarkRef) => {
-    const next = has(item.id)
-      ? all.filter((b) => b.id !== item.id)
-      : [...all, item];
-    writeAll(next);
-    setAll(next);
-  };
+  const toggle = useCallback(
+    (item: BookmarkRef) => {
+      const isSaved = all.some((b) => b.id === item.id);
+      const next = isSaved
+        ? all.filter((b) => b.id !== item.id)
+        : [...all, item];
 
-  const remove = (id: string) => {
-    const next = all.filter((b) => b.id !== id);
-    writeAll(next);
-    setAll(next);
-  };
+      // Optimistic UI
+      setAll(next);
 
-  return { all, has, toggle, remove };
+      if (isAuthed) {
+        if (isSaved) {
+          deleteOnApi(item.id).catch(() => setAll(all));
+        } else {
+          createOnApi(item).catch(() => setAll(all));
+        }
+      } else {
+        writeLocal(next);
+      }
+    },
+    [all, isAuthed],
+  );
+
+  const remove = useCallback(
+    (id: string) => {
+      const next = all.filter((b) => b.id !== id);
+      setAll(next);
+      if (isAuthed) {
+        deleteOnApi(id).catch(() => setAll(all));
+      } else {
+        writeLocal(next);
+      }
+    },
+    [all, isAuthed],
+  );
+
+  const persistence: "local" | "remote" | "loading" =
+    status === "loading" ? "loading" : isAuthed ? "remote" : "local";
+
+  return { all, has, toggle, remove, persistence };
 }
 
 // ─── Button component ─────────────────────────────────────────────────
 
 export function BookmarkButton({ item }: { item: BookmarkRef }) {
-  const { has, toggle } = useBookmarks();
+  const { has, toggle, persistence } = useBookmarks();
   const saved = has(item.id);
 
   return (
     <button
       type="button"
       onClick={() => toggle(item)}
-      title={saved ? "Remove bookmark" : "Save to bookmarks"}
+      title={
+        saved
+          ? persistence === "remote"
+            ? "Remove bookmark (synced to your account)"
+            : "Remove bookmark (stored in this browser)"
+          : persistence === "remote"
+            ? "Save to bookmarks (synced to your account)"
+            : "Save to bookmarks (stored in this browser — sign in to sync)"
+      }
       className={`inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 border transition-colors ${
         saved
           ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"

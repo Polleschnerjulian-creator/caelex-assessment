@@ -37,7 +37,7 @@ export async function getLinkStatusMap(
     for (const r of rows) {
       result[r.sourceId] = {
         sourceId: r.sourceId,
-        status: r.status,
+        status: r.status as LinkStatus["status"],
         httpStatus: r.httpStatus,
         lastChecked: r.lastChecked.toISOString(),
         lastChanged: r.lastChanged?.toISOString() ?? null,
