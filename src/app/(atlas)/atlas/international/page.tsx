@@ -4,6 +4,9 @@ import {
   getLegalSourcesByJurisdiction,
   getAuthoritiesByJurisdiction,
 } from "@/data/legal-sources";
+import { getLinkStatusMap } from "@/lib/atlas/link-status";
+import { LinkStatusBadge } from "../_components/LinkStatusBadge";
+import { CitationButton } from "../_components/CitationButton";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +16,10 @@ export const metadata = {
     "UN Space Treaties, ITU Constitution, and other international instruments binding on space-faring nations. Canonical single source with full list of Parties.",
 };
 
-export default function InternationalPage() {
+export default async function InternationalPage() {
   const sources = getLegalSourcesByJurisdiction("INT");
   const authorities = getAuthoritiesByJurisdiction("INT");
+  const linkStatus = await getLinkStatusMap(sources.map((s) => s.id));
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-10">
@@ -59,16 +63,23 @@ export default function InternationalPage() {
                   </span>
                 </div>
               </div>
-              {s.source_url && (
-                <a
-                  href={s.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-emerald-700"
-                >
-                  Official text <ExternalLink size={10} />
-                </a>
-              )}
+              <div className="flex-shrink-0 flex items-center gap-2">
+                <LinkStatusBadge
+                  status={linkStatus[s.id]}
+                  lastVerified={s.last_verified}
+                />
+                <CitationButton source={s} />
+                {s.source_url && (
+                  <a
+                    href={s.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-emerald-700"
+                  >
+                    Official text <ExternalLink size={10} />
+                  </a>
+                )}
+              </div>
             </div>
 
             {s.scope_description && (

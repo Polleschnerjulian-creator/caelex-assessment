@@ -23,13 +23,18 @@ import {
   LEGAL_SOURCES_IE,
   LEGAL_SOURCES_GR,
   LEGAL_SOURCES_CZ,
+  LEGAL_SOURCES_PL,
 } from "@/data/legal-sources";
+import { LEGAL_SOURCES_INT } from "@/data/legal-sources/sources/intl";
+import { LEGAL_SOURCES_EU } from "@/data/legal-sources/sources/eu";
 import type { LegalSource } from "@/data/legal-sources";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes — checking many URLs
 
 const ALL_SOURCES: LegalSource[] = [
+  ...LEGAL_SOURCES_INT,
+  ...LEGAL_SOURCES_EU,
   ...LEGAL_SOURCES_DE,
   ...LEGAL_SOURCES_FR,
   ...LEGAL_SOURCES_UK,
@@ -48,6 +53,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_IE,
   ...LEGAL_SOURCES_GR,
   ...LEGAL_SOURCES_CZ,
+  ...LEGAL_SOURCES_PL,
 ];
 
 // Check ~50 sources per run (full cycle in ~7 days for 325 sources)

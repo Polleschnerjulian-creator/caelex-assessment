@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
+import { CommandPalette } from "./_components/CommandPalette";
 
 const MAIN_NAV = [
   {
@@ -276,6 +277,9 @@ export default function AtlasShell({
 
       {/* ─── Astra Chat (floating on all ATLAS pages) ─── */}
       <AtlasAstraChat />
+
+      {/* ─── Cmd+K Command Palette ─── */}
+      <CommandPalette />
     </div>
   );
 }
