@@ -1,4 +1,4 @@
-import type { LegalDocument, LegalSection } from "./types";
+import type { LegalDocument, LegalSection } from "@/lib/legal/types";
 
 export const TERMS_EN: LegalDocument = {
   lang: "en",

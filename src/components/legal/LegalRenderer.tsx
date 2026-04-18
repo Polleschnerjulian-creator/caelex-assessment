@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { AlertTriangle, Info } from "lucide-react";
-import type { LegalDocument, LegalBlock, LegalSection } from "./types";
+import type {
+  LegalDocument,
+  LegalBlock,
+  LegalSection,
+} from "@/lib/legal/types";
 
 function Block({ block }: { block: LegalBlock }) {
   switch (block.type) {

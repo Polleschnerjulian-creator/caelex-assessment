@@ -1,6 +1,6 @@
 import { generateMetadata as genMeta } from "@/lib/seo";
 import type { Metadata } from "next";
-import { LegalRenderer } from "../terms/_shared/LegalRenderer";
+import { LegalRenderer } from "@/components/legal/LegalRenderer";
 import { TERMS_EN } from "../terms/_shared/content-en";
 
 export const metadata: Metadata = {
