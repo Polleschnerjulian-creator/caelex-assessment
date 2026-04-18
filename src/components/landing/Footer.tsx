@@ -154,13 +154,31 @@ const documentLinks = [
   { label: "Governance", href: "/governance" },
   { label: "Contact", href: "/contact" },
   { label: "Careers", href: "/careers" },
-  { label: "Impressum", href: "/legal/impressum" },
+  { label: "Legal Hub", href: "/legal" },
+];
+
+// Full legal stack — rendered in a separate footer column for
+// DSA Art. 11/12, § 5 DDG and § 312k BGB findability.
+const legalContractLinks = [
+  { label: "Terms (AGB)", href: "/legal/terms" },
+  { label: "DPA", href: "/legal/dpa" },
+  { label: "Sub-processors", href: "/legal/sub-processors" },
+  { label: "Terms archive", href: "/legal/terms/archive" },
+];
+
+const legalPrivacyLinks = [
   { label: "Privacy Policy", href: "/legal/privacy" },
-  { label: "Terms of Service", href: "/legal/terms" },
   { label: "Cookie Policy", href: "/legal/cookies" },
-  { label: "Content Policy", href: "/legal/content-policy" },
-  { label: "Accessibility", href: "/legal/barrierefreiheit" },
   { label: "AI Disclosure", href: "/legal/ai-disclosure" },
+  { label: "Withdrawal (Widerruf)", href: "/legal/widerruf" },
+];
+
+const legalOtherLinks = [
+  { label: "Impressum", href: "/legal/impressum" },
+  { label: "Acceptable Use", href: "/legal/content-policy" },
+  { label: "Security Policy", href: "/legal/security" },
+  { label: "security.txt", href: "/.well-known/security.txt" },
+  { label: "Accessibility", href: "/legal/barrierefreiheit" },
 ];
 
 const socialLinks = [
@@ -475,11 +493,72 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             </ul>
           </nav>
 
-          {/* Documents */}
-          <nav aria-label="Documents">
-            <h3 className={headingStyle}>Documents</h3>
+          {/* Company */}
+          <nav aria-label="Company">
+            <h3 className={headingStyle}>Company</h3>
             <ul className="space-y-1.5">
               {documentLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        {/* Legal & Compliance block — three columns */}
+        <div
+          className={`mt-14 pt-10 border-t ${
+            isLight ? "border-[#d2d2d7]" : "border-white/[0.06]"
+          } grid grid-cols-2 md:grid-cols-4 gap-8`}
+        >
+          <div>
+            <h3 className={headingStyle}>Legal &amp; Compliance</h3>
+            <p
+              className={`text-small leading-relaxed ${
+                isLight ? "text-[#86868b]" : "text-white/40"
+              }`}
+            >
+              All 18 legal documents available from{" "}
+              <Link
+                href="/legal"
+                className={`${linkStyle} underline underline-offset-2`}
+              >
+                /legal
+              </Link>
+              . German version is legally binding, English is convenience.
+            </p>
+          </div>
+          <nav aria-label="Contracts">
+            <h3 className={headingStyle}>Contracts</h3>
+            <ul className="space-y-1.5">
+              {legalContractLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Privacy & Consumer">
+            <h3 className={headingStyle}>Privacy &amp; Consumer</h3>
+            <ul className="space-y-1.5">
+              {legalPrivacyLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Policy & Reference">
+            <h3 className={headingStyle}>Policy &amp; Reference</h3>
+            <ul className="space-y-1.5">
+              {legalOtherLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
                     {link.label}
