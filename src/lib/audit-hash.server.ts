@@ -309,7 +309,43 @@ export async function createAuditEntryWithHash(data: {
       },
     );
 
-    // Fall back: create entry without hash (never break logging)
+    // C8 fix: raise a CRITICAL SecurityEvent IMMEDIATELY on the very first
+    // hash failure (was only raised after 10). Use a deterministic
+    // "self-hash" derived from the prior entry so the chain can still be
+    // verified end-to-end — no more `entryHash: null` rows that silently
+    // break the chain before anyone notices.
+    try {
+      await prisma.securityEvent.create({
+        data: {
+          type: "HASH_CHAIN_DEGRADED",
+          severity: "CRITICAL",
+          description: `Audit hash computation failed for org ${orgId}. Chain integrity at risk.`,
+          metadata: JSON.stringify({
+            organizationId: orgId,
+            userId: data.userId,
+            action: data.action,
+            lastError:
+              hashError instanceof Error
+                ? hashError.message
+                : String(hashError),
+          }),
+        },
+      });
+    } catch {
+      // even SecurityEvent write failed — last resort, still persist entry
+    }
+
+    // Compute an emergency fallback hash from the previous row's entryHash
+    // so we never write `entryHash: null`. If there's no prior row we
+    // seed with a deterministic marker. Subsequent entries can still chain.
+    const previousRow = await prisma.auditLog.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { timestamp: "desc" },
+      select: { entryHash: true },
+    });
+    const priorHash = previousRow?.entryHash ?? "0".repeat(64);
+    const fallbackHash = computeFallbackHash(priorHash, data);
+
     await prisma.auditLog.create({
       data: {
         userId: data.userId,
@@ -323,42 +359,41 @@ export async function createAuditEntryWithHash(data: {
         ipAddress: data.ipAddress,
         userAgent: data.userAgent,
         timestamp: data.timestamp,
-        entryHash: null,
-        previousHash: null,
+        entryHash: fallbackHash,
+        previousHash: priorHash,
       },
     });
-
-    // Track failure count — if threshold exceeded, create a security event
-    try {
-      const recentFailures = await prisma.auditLog.count({
-        where: {
-          organizationId: orgId,
-          entryHash: null,
-          timestamp: { gte: new Date(Date.now() - 60 * 60 * 1000) }, // last hour
-        },
-      });
-
-      if (recentFailures > 10) {
-        await prisma.securityEvent.create({
-          data: {
-            type: "HASH_CHAIN_DEGRADED",
-            severity: "CRITICAL",
-            description: `${recentFailures} unhashed audit entries in the last hour for org ${orgId}. Hash chain integrity is degraded.`,
-            metadata: JSON.stringify({
-              organizationId: orgId,
-              recentFailures,
-              lastError:
-                hashError instanceof Error
-                  ? hashError.message
-                  : String(hashError),
-            }),
-          },
-        });
-      }
-    } catch {
-      // Don't fail the audit log for monitoring failures
-    }
   }
+}
+
+/**
+ * Deterministic fallback hash used only when the normal hash-computation
+ * transaction fails. Not as strong as the full chain hash (doesn't cover
+ * all fields in canonical form), but keeps the chain unbroken and
+ * non-nullable so that verifyChain can at least identify gaps.
+ */
+function computeFallbackHash(
+  priorHash: string,
+  data: {
+    userId: string | null;
+    organizationId: string | null;
+    action: string;
+    entityType?: string | null;
+    entityId?: string | null;
+    timestamp?: Date;
+  },
+): string {
+  const payload = [
+    "fallback",
+    priorHash,
+    data.userId ?? "",
+    data.organizationId ?? "",
+    data.action,
+    data.entityType ?? "",
+    data.entityId ?? "",
+    (data.timestamp ?? new Date()).toISOString(),
+  ].join("|");
+  return createHash("sha256").update(payload).digest("hex");
 }
 
 /**
