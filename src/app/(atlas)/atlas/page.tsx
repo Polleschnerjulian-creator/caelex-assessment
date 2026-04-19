@@ -279,10 +279,15 @@ export default function CommandCenterPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
-  const [greetingKey] = useState(getGreetingKey);
+  // M8: greetingKey is derived from new Date().getHours(), which resolves
+  // to the server's timezone on SSR and the user's timezone on hydration.
+  // Initialise to a neutral value on both sides, then pick the real
+  // greeting in an effect after mount — no hydration mismatch.
+  const [greetingKey, setGreetingKey] = useState<string>("atlas.greeting_hi");
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
+    setGreetingKey(getGreetingKey());
     setUserName(localStorage.getItem("atlas-user-name") ?? "");
   }, []);
 
@@ -298,10 +303,17 @@ export default function CommandCenterPage() {
     setShowAllSources(false);
   }, [debouncedQuery]);
 
-  // Cmd+K to focus
+  // M9: previously also bound to Cmd+K, colliding with the global
+  // CommandPalette shortcut. Now uses "/" (conventional for page-level
+  // search focus) and skips when the user is already typing in a field.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      const target = e.target as HTMLElement | null;
+      const inField =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+      if (e.key === "/" && !inField) {
         e.preventDefault();
         inputRef.current?.focus();
       }

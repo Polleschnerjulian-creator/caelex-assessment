@@ -14,23 +14,41 @@ function yearOf(iso: string | undefined): string {
   return iso.slice(0, 4);
 }
 
+/**
+ * H2 (subfinding): title can contain {, }, \, " in BibTeX context which
+ * corrupt the .bib file. Strip straight quotes and escape BibTeX-specific
+ * characters so the Clipboard output always parses cleanly.
+ */
 function safeTitle(s: LegalSource): string {
-  return s.title_en.replace(/"/g, "'");
+  return s.title_en
+    .replace(/[\\{}]/g, "") // drop BibTeX escape/brace chars
+    .replace(/"/g, "'");
+}
+
+/** Strip characters that would break an OSCOLA bracketed URL. */
+function safeUrl(url: string | undefined): string {
+  if (!url) return "";
+  return url.replace(/[<>\s]/g, "");
 }
 
 /**
  * Build a human-readable citation in one of four formats.
  * All formats are rendered client-side from the structured source record —
  * no external service, no API call.
+ *
+ * M6: `accessedOn` is an explicit argument (defaults to today's UTC date).
+ * This way repeated renders of the same <CitationButton> produce the
+ * identical string, and call sites can inject a frozen date for tests.
  */
 export function formatCitation(
   source: LegalSource,
   format: CitationFormat,
+  accessedOn: string = new Date().toISOString().slice(0, 10),
 ): string {
   const year = yearOf(source.date_enacted);
   const title = safeTitle(source);
   const ref = source.official_reference ?? source.un_reference ?? "";
-  const url = source.source_url;
+  const url = safeUrl(source.source_url);
   const body = source.issuing_body;
 
   switch (format) {
@@ -40,10 +58,10 @@ export function formatCitation(
 
     case "oscola":
       // OSCOLA for international instruments & legislation
-      return `${title} (${year})${ref ? ` ${ref}` : ""} <${url ?? ""}> accessed ${new Date().toISOString().slice(0, 10)}.`;
+      return `${title} (${year})${ref ? ` ${ref}` : ""} <${url}> accessed ${accessedOn}.`;
 
     case "apa":
-      return `${body ? `${body}. ` : ""}(${year}). ${title}${ref ? `. ${ref}` : ""}. ${url ?? ""}`;
+      return `${body ? `${body}. ` : ""}(${year}). ${title}${ref ? `. ${ref}` : ""}. ${url}`;
 
     case "bibtex": {
       const key = source.id.toLowerCase().replace(/[^a-z0-9]+/g, "_");
@@ -53,7 +71,7 @@ export function formatCitation(
         `  year   = {${year}}`,
         ref ? `  note   = {${ref}}` : "",
         url ? `  url    = {${url}}` : "",
-        `  urldate = {${new Date().toISOString().slice(0, 10)}}`,
+        `  urldate = {${accessedOn}}`,
       ]
         .filter(Boolean)
         .join(",\n");

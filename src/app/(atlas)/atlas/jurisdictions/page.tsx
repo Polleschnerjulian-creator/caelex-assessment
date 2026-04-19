@@ -452,15 +452,29 @@ function Indicator({ active, label }: { active: boolean; label: string }) {
 function Dot({
   active,
   color = "emerald",
+  label,
 }: {
   active: boolean;
   color?: "emerald" | "amber";
+  /** Optional semantic label so screen readers announce status. */
+  label?: string;
 }) {
+  // M5: non-active state needs ≥ 3:1 contrast on white for WCAG 2.1 AA
+  // "Non-Text Contrast" (SC 1.4.11). bg-gray-200 on white is ~1.3:1 —
+  // bumped to bg-gray-400 which is ~3.5:1.
   if (!active)
-    return <span className="inline-block h-2 w-2 rounded-full bg-gray-200" />;
+    return (
+      <span
+        className="inline-block h-2 w-2 rounded-full bg-gray-400 ring-1 ring-gray-100"
+        aria-label={label ? `${label}: not ratified` : "not ratified"}
+        role="img"
+      />
+    );
   return (
     <span
-      className={`inline-block h-2 w-2 rounded-full ${color === "amber" ? "bg-amber-400" : "bg-emerald-500"}`}
+      className={`inline-block h-2 w-2 rounded-full ${color === "amber" ? "bg-amber-500" : "bg-emerald-500"}`}
+      aria-label={label ? `${label}: ratified` : "ratified"}
+      role="img"
     />
   );
 }
