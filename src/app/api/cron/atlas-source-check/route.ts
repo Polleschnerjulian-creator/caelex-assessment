@@ -60,6 +60,15 @@ const ALL_SOURCES: LegalSource[] = [
 const BATCH_SIZE = 50;
 const FETCH_TIMEOUT = 10_000; // 10 seconds per URL
 
+/** M7: parallel fetch concurrency. With 8 simultaneous requests and a
+ *  10s per-URL timeout, worst-case batch duration drops from ~500s
+ *  serial to ~65s, well under the maxDuration=300 ceiling. */
+const FETCH_CONCURRENCY = 8;
+
+/** M20 / C9: cap fetched body size to prevent memory exhaustion from
+ *  a hostile redirect target serving a huge response. */
+const MAX_BODY_BYTES = 5_000_000; // 5 MB
+
 function isValidCronSecret(header: string, secret: string): boolean {
   try {
     const headerBuffer = Buffer.from(header);
@@ -125,8 +134,82 @@ export async function GET(request: Request) {
     // Take batch
     const batch = sortedSources.slice(0, BATCH_SIZE);
 
-    // Process batch
-    for (const source of batch) {
+    // M22: fetch existing rows for the batch only (vs. the whole table)
+    // so we don't transfer all 350+ hashes for 50 records we'll touch.
+    const batchIds = batch.map((s) => s.id);
+    const existingMap = new Map(
+      (
+        await prisma.atlasSourceCheck.findMany({
+          where: { sourceId: { in: batchIds } },
+          select: { sourceId: true, contentHash: true, previousHash: true },
+        })
+      ).map((r) => [r.sourceId, r]),
+    );
+
+    // C9: whitelist the URL protocol + reject private / loopback targets
+    // before ever calling fetch().
+    function isSafeHttpUrl(url: string): boolean {
+      try {
+        const u = new URL(url);
+        if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+        const host = u.hostname;
+        if (host === "localhost" || host === "0.0.0.0") return false;
+        if (host.startsWith("127.") || host.startsWith("10.")) return false;
+        if (host.startsWith("192.168.")) return false;
+        if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
+        if (host === "169.254.169.254") return false; // cloud-metadata
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    // C9: read up to MAX_BODY_BYTES from the response stream, stop early
+    // past that threshold so a hostile gigabyte body can't OOM the runtime.
+    async function readBodyBounded(resp: Response): Promise<string> {
+      if (!resp.body) return "";
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder("utf-8", { fatal: false });
+      let total = 0;
+      let out = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        if (total > MAX_BODY_BYTES) {
+          await reader.cancel();
+          break;
+        }
+        out += decoder.decode(value, { stream: true });
+      }
+      out += decoder.decode();
+      return out;
+    }
+
+    // Process a single source: returns a stat tag. Thrown errors are
+    // caught by the caller so we always land in a final upsert.
+    type Stat = "changed" | "unchanged" | "error";
+    async function processOne(source: (typeof batch)[number]): Promise<Stat> {
+      if (!isSafeHttpUrl(source.source_url)) {
+        await prisma.atlasSourceCheck.upsert({
+          where: { sourceId: source.id },
+          create: {
+            sourceId: source.id,
+            jurisdiction: source.jurisdiction,
+            sourceUrl: source.source_url,
+            status: "ERROR",
+            errorMessage: "unsafe-url",
+            lastChecked: new Date(),
+          },
+          update: {
+            status: "ERROR",
+            errorMessage: "unsafe-url",
+            lastChecked: new Date(),
+          },
+        });
+        return "error";
+      }
+
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
@@ -146,7 +229,6 @@ export async function GET(request: Request) {
         const httpStatus = response.status;
 
         if (!response.ok) {
-          // HTTP error — record it
           await prisma.atlasSourceCheck.upsert({
             where: { sourceId: source.id },
             create: {
@@ -165,20 +247,13 @@ export async function GET(request: Request) {
               lastChecked: new Date(),
             },
           });
-          errors++;
-          checked++;
-          continue;
+          return "error";
         }
 
-        // Get content and hash it
-        const content = await response.text();
+        const content = await readBodyBounded(response);
         const newHash = hashContent(content);
 
-        // Get existing record
-        const existing = await prisma.atlasSourceCheck.findUnique({
-          where: { sourceId: source.id },
-        });
-
+        const existing = existingMap.get(source.id);
         const previousHash = existing?.contentHash ?? null;
         const isChanged = previousHash !== null && previousHash !== newHash;
 
@@ -205,14 +280,8 @@ export async function GET(request: Request) {
           },
         });
 
-        if (isChanged) {
-          changed++;
-        } else {
-          unchanged++;
-        }
-        checked++;
+        return isChanged ? "changed" : "unchanged";
       } catch (err) {
-        // Fetch error (timeout, network, etc.)
         const message =
           err instanceof Error ? err.message : "Unknown fetch error";
         await prisma.atlasSourceCheck.upsert({
@@ -231,10 +300,27 @@ export async function GET(request: Request) {
             lastChecked: new Date(),
           },
         });
-        errors++;
+        return "error";
+      }
+    }
+
+    // M7: process the batch with bounded concurrency. A tiny semaphore
+    // keeps FETCH_CONCURRENCY workers draining a shared queue.
+    const queue = [...batch];
+    async function worker() {
+      for (;;) {
+        const source = queue.shift();
+        if (!source) return;
+        const stat = await processOne(source);
+        if (stat === "changed") changed++;
+        else if (stat === "unchanged") unchanged++;
+        else errors++;
         checked++;
       }
     }
+    await Promise.all(
+      Array.from({ length: FETCH_CONCURRENCY }, () => worker()),
+    );
 
     const duration = Date.now() - startTime;
 
