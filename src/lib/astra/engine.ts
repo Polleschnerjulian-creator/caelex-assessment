@@ -572,7 +572,7 @@ export class AstraEngine implements IAstraEngine {
 
     // Get conversation history for context
     const history = this.config.enableHistory
-      ? await getHistoryForLLM(conversation.id)
+      ? await getHistoryForLLM(conversation.id, userId)
       : [];
 
     // Build user context
@@ -612,8 +612,11 @@ export class AstraEngine implements IAstraEngine {
     });
 
     // Check if we should summarize older messages
-    if (this.config.autoSummarize && (await shouldSummarize(conversation.id))) {
-      await summarizeOlderMessages(conversation.id);
+    if (
+      this.config.autoSummarize &&
+      (await shouldSummarize(conversation.id, userId))
+    ) {
+      await summarizeOlderMessages(conversation.id, userId);
     }
 
     return {
@@ -653,7 +656,7 @@ export class AstraEngine implements IAstraEngine {
     const addResult = await addUserMessage(conversation.id, message);
 
     const history = this.config.enableHistory
-      ? await getHistoryForLLM(conversation.id)
+      ? await getHistoryForLLM(conversation.id, userId)
       : [];
 
     const { userContext, contextString } = await buildCompleteContext(
@@ -732,9 +735,9 @@ export class AstraEngine implements IAstraEngine {
 
       if (
         this.config.autoSummarize &&
-        (await shouldSummarize(conversation.id))
+        (await shouldSummarize(conversation.id, userId))
       ) {
-        await summarizeOlderMessages(conversation.id);
+        await summarizeOlderMessages(conversation.id, userId);
       }
 
       return {

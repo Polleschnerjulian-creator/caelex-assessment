@@ -145,6 +145,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // H-API5: if the caller passes a conversationId, verify it belongs
+    // to this user BEFORE feeding the message into the engine. Without
+    // this, a user could post into another user's conversation (the
+    // engine uses upsert patterns that don't re-check ownership on
+    // every call) and see the streamed response.
+    if (body.conversationId) {
+      const owned = await prisma.astraConversation.findFirst({
+        where: { id: body.conversationId, userId },
+        select: { id: true },
+      });
+      if (!owned) {
+        return NextResponse.json(
+          { error: "Forbidden", message: "Conversation not found" },
+          { status: 403 },
+        );
+      }
+    }
+
     // ─── Build Page Context ───
     let pageContext: AstraContext | undefined;
 

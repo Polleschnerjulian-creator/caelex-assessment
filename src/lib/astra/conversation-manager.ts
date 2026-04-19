@@ -118,7 +118,16 @@ export async function addMessage(
   });
 
   if (messageCount >= MAX_TOTAL_MESSAGES) {
-    await summarizeOlderMessages(conversationId);
+    // H-D3: internal caller already owns the conversation (it just
+    // appended a message). Look the userId up from the row so we keep
+    // the ownership guarantee end-to-end.
+    const conv = await prisma.astraConversation.findUnique({
+      where: { id: conversationId },
+      select: { userId: true },
+    });
+    if (conv) {
+      await summarizeOlderMessages(conversationId, conv.userId);
+    }
   }
 
   // Truncate content if too long
@@ -199,12 +208,17 @@ export async function addAssistantMessage(
 
 // ─── History Retrieval ───
 
+// H-D3 fix: every function that takes a conversationId now requires a
+// userId too. the prior signatures let a caller read / summarise /
+// measure any conversation in the database if they knew its id.
+
 export async function getConversationHistory(
   conversationId: string,
+  userId: string,
   maxMessages: number = MAX_MESSAGES_IN_CONTEXT,
 ): Promise<AstraConversationMessage[]> {
-  const conversation = await prisma.astraConversation.findUnique({
-    where: { id: conversationId },
+  const conversation = await prisma.astraConversation.findFirst({
+    where: { id: conversationId, userId },
     include: {
       messages: {
         orderBy: { createdAt: "desc" },
@@ -221,9 +235,14 @@ export async function getConversationHistory(
 
 export async function getHistoryForLLM(
   conversationId: string,
+  userId: string,
   maxMessages: number = MAX_MESSAGES_IN_CONTEXT,
 ): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
-  const messages = await getConversationHistory(conversationId, maxMessages);
+  const messages = await getConversationHistory(
+    conversationId,
+    userId,
+    maxMessages,
+  );
 
   return messages
     .filter((m) => m.role === "user" || m.role === "assistant")
@@ -237,9 +256,10 @@ export async function getHistoryForLLM(
 
 export async function shouldSummarize(
   conversationId: string,
+  userId: string,
 ): Promise<boolean> {
   const count = await prisma.astraMessage.count({
-    where: { conversationId },
+    where: { conversationId, conversation: { userId } },
   });
 
   return count > SUMMARIZE_THRESHOLD;
@@ -247,9 +267,10 @@ export async function shouldSummarize(
 
 export async function summarizeOlderMessages(
   conversationId: string,
+  userId: string,
 ): Promise<void> {
-  const conversation = await prisma.astraConversation.findUnique({
-    where: { id: conversationId },
+  const conversation = await prisma.astraConversation.findFirst({
+    where: { id: conversationId, userId },
     include: {
       messages: {
         orderBy: { createdAt: "asc" },
