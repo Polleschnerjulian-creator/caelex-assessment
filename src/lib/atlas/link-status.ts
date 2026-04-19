@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export interface LinkStatus {
   sourceId: string;
@@ -16,6 +17,10 @@ export interface LinkStatus {
  * next to each source. Returns a map keyed by sourceId.
  *
  * Missing IDs (never checked yet) are simply absent from the map.
+ *
+ * M23: failures no longer degrade silently — they emit a structured
+ *      log event so Sentry / Vercel observability catches Neon outages.
+ *      The empty-map fallback is kept so Atlas pages still render.
  */
 export async function getLinkStatusMap(
   sourceIds: string[],
@@ -45,8 +50,11 @@ export async function getLinkStatusMap(
       };
     }
     return result;
-  } catch {
-    // DB unavailable (e.g. local dev without DATABASE_URL) — degrade silently.
+  } catch (err) {
+    logger.warn("getLinkStatusMap: falling back to empty map", {
+      error: err instanceof Error ? err.message : String(err),
+      sourceIdCount: sourceIds.length,
+    });
     return {};
   }
 }

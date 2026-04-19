@@ -257,28 +257,47 @@ export async function GET(request: Request) {
         const previousHash = existing?.contentHash ?? null;
         const isChanged = previousHash !== null && previousHash !== newHash;
 
-        await prisma.atlasSourceCheck.upsert({
-          where: { sourceId: source.id },
-          create: {
-            sourceId: source.id,
-            jurisdiction: source.jurisdiction,
-            sourceUrl: source.source_url,
-            contentHash: newHash,
-            previousHash: null,
-            status: "UNCHANGED",
-            httpStatus,
-            lastChecked: new Date(),
-          },
-          update: {
-            contentHash: newHash,
-            previousHash: isChanged ? previousHash : existing?.previousHash,
-            status: isChanged ? "CHANGED" : "UNCHANGED",
-            httpStatus,
-            errorMessage: null,
-            lastChecked: new Date(),
-            ...(isChanged ? { lastChanged: new Date() } : {}),
-          },
-        });
+        // M20: each real content change is also appended to the
+        // AtlasSourceCheckHistory table so we never lose prior versions.
+        // AtlasSourceCheck.previousHash only holds the most recent prior
+        // hash; the history row is the append-only audit trail.
+        await prisma.$transaction([
+          prisma.atlasSourceCheck.upsert({
+            where: { sourceId: source.id },
+            create: {
+              sourceId: source.id,
+              jurisdiction: source.jurisdiction,
+              sourceUrl: source.source_url,
+              contentHash: newHash,
+              previousHash: null,
+              status: "UNCHANGED",
+              httpStatus,
+              lastChecked: new Date(),
+            },
+            update: {
+              contentHash: newHash,
+              previousHash: isChanged ? previousHash : existing?.previousHash,
+              status: isChanged ? "CHANGED" : "UNCHANGED",
+              httpStatus,
+              errorMessage: null,
+              lastChecked: new Date(),
+              ...(isChanged ? { lastChanged: new Date() } : {}),
+            },
+          }),
+          ...(isChanged
+            ? [
+                prisma.atlasSourceCheckHistory.create({
+                  data: {
+                    sourceId: source.id,
+                    jurisdiction: source.jurisdiction,
+                    contentHash: newHash,
+                    previousHash,
+                    httpStatus,
+                  },
+                }),
+              ]
+            : []),
+        ]);
 
         return isChanged ? "changed" : "unchanged";
       } catch (err) {

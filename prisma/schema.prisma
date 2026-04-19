@@ -8122,6 +8122,24 @@ enum AtlasCheckStatus {
   DISMISSED // Admin dismissed (false positive)
 }
 
+/// M20 — append-only history of content changes detected by the cron.
+/// Each time AtlasSourceCheck.previousHash != contentHash, the cron
+/// writes a new row here. Lets us answer "what changed on date X and
+/// at what revision?" without the previousHash overwrite destroying
+/// prior versions.
+model AtlasSourceCheckHistory {
+  id           String   @id @default(cuid())
+  sourceId     String // Legal-source id this history belongs to
+  jurisdiction String
+  contentHash  String // New hash at detection time
+  previousHash String? // Prior hash if present
+  httpStatus   Int?
+  detectedAt   DateTime @default(now())
+
+  @@index([sourceId, detectedAt])
+  @@index([jurisdiction, detectedAt])
+}
+
 // ─── ATLAS Bookmarks (per-user) ────────────────────────────────────
 
 /// Per-user saved items across Atlas (legal sources, country profiles,
@@ -8166,6 +8184,9 @@ model AtlasUpdate {
   @@index([publishedAt])
   @@index([jurisdiction])
   @@index([isPublished])
+  /// M21: composite index for the typical "latest 20 published updates"
+  /// query — avoids two separate index scans.
+  @@index([isPublished, publishedAt])
 }
 
 enum AtlasUpdateCategory {
