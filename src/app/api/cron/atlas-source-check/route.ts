@@ -362,10 +362,12 @@ export async function GET(request: Request) {
       durationMs: duration,
     });
   } catch (err) {
-    logger.error("ATLAS source check failed", { error: err });
-    return NextResponse.json(
-      { error: "Internal error", message: String(err) },
-      { status: 500 },
-    );
+    // L3: details land in logger only; the cron response stays generic
+    // so that even an accidental external caller cannot read raw stack
+    // traces or DB error strings.
+    logger.error("ATLAS source check failed", {
+      error: err instanceof Error ? (err.stack ?? err.message) : String(err),
+    });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -111,7 +111,12 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Invalid sourceId" }, { status: 400 });
   }
 
-  await prisma.atlasAnnotation.deleteMany({
+  // L7: use deleteMany as an idempotent no-op-on-missing. The unique
+  // composite key would be (userId, sourceId) via prisma.delete, but the
+  // row may legitimately not exist yet (users toggling annotations
+  // before ever saving) and we don't want a 404 — a successful no-op
+  // is the right UX.
+  const result = await prisma.atlasAnnotation.deleteMany({
     where: {
       userId: atlas.userId,
       sourceId: parsed.data,
@@ -119,5 +124,5 @@ export async function DELETE(request: Request) {
     },
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, deleted: result.count });
 }

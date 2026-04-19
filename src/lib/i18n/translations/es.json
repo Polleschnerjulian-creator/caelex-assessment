@@ -564,6 +564,16 @@
     "landing_rights_status_unknown": "Unknown",
     "landing_rights_subtitle": "National authorisations for satellite market access across 29 jurisdictions",
     "landing_rights_title": "Landing Rights Database",
-    "bookmarks": "Favoritos"
+    "bookmarks": "Favoritos",
+    "palette_placeholder": "Buscar leyes, tratados, autoridades, países…",
+    "palette_group_navigation": "Navegación",
+    "palette_group_countries": "Países",
+    "palette_group_sources": "Fuentes",
+    "palette_group_authorities": "Autoridades",
+    "palette_no_matches": "Sin resultados para",
+    "palette_navigate": "navegar",
+    "palette_open": "abrir",
+    "palette_results_count_one": "resultado",
+    "palette_results_count_other": "resultados"
   }
 }

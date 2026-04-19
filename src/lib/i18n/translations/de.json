@@ -913,6 +913,16 @@
     "comp_none_specified": "Keine angegeben",
     "comp_select_country": "Wählen Sie mindestens ein Land aus, um den Vergleich zu starten.",
     "comp_select_hint": "Wählen Sie bis zu 5 Jurisdiktionen aus dem Selektor oben.",
-    "bookmarks": "Lesezeichen"
+    "bookmarks": "Lesezeichen",
+    "palette_placeholder": "Gesetze, Verträge, Behörden, Länder durchsuchen…",
+    "palette_group_navigation": "Navigation",
+    "palette_group_countries": "Länder",
+    "palette_group_sources": "Quellen",
+    "palette_group_authorities": "Behörden",
+    "palette_no_matches": "Keine Treffer für",
+    "palette_navigate": "navigieren",
+    "palette_open": "öffnen",
+    "palette_results_count_one": "Treffer",
+    "palette_results_count_other": "Treffer"
   }
 }

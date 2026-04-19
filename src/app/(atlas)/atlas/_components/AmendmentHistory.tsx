@@ -13,7 +13,17 @@ export function AmendmentHistory({
   dateEnacted: string | undefined;
 }) {
   if (!amendments || amendments.length === 0) return null;
-  const sorted = [...amendments].sort((a, b) => b.date.localeCompare(a.date));
+  // M13: localeCompare only sorts correctly when every entry is ISO-8601.
+  // Fall back to Date.parse() so a year-only string like "2024" stays in
+  // order relative to full ISO dates. Invalid dates sink to the end.
+  const sorted = [...amendments].sort((a, b) => {
+    const ta = Date.parse(a.date);
+    const tb = Date.parse(b.date);
+    if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+    if (Number.isNaN(ta)) return 1;
+    if (Number.isNaN(tb)) return -1;
+    return tb - ta;
+  });
 
   return (
     <details className="mt-3 pt-3 border-t border-gray-100 group">

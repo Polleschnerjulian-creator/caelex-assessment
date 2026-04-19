@@ -202,8 +202,10 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "memberId required" }, { status: 400 });
   }
 
+  // L6: narrow the select to just the fields we actually need.
   const member = await prisma.organizationMember.findUnique({
     where: { id: memberId },
+    select: { organizationId: true, userId: true },
   });
 
   if (!member || member.organizationId !== atlas.organizationId) {
@@ -218,6 +220,11 @@ export async function DELETE(request: Request) {
   }
 
   await prisma.organizationMember.delete({ where: { id: memberId } });
+  logger.info("Atlas team member removed", {
+    organizationId: atlas.organizationId,
+    removedMemberId: memberId,
+    removedBy: atlas.userId,
+  });
 
   return NextResponse.json({ success: true });
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Search,
@@ -139,21 +140,28 @@ export default function AtlasShell({
             ${expanded ? "h-14 px-4 gap-3 bg-[#1a1a1a]" : "h-14 justify-center"}
           `}
         >
+          {/* L1: next/image for automatic srcset + lazy-loading + priority
+              for above-the-fold logo. priority=true so the logo doesn't
+              LCP-shift. */}
           {!expanded ? (
             <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/caelex-logo-white.png"
                 alt="Caelex"
+                width={20}
+                height={20}
+                priority
                 className="h-5 w-5 object-contain"
               />
             </div>
           ) : (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/caelex-logo-white.png"
                 alt="Caelex"
+                width={28}
+                height={28}
+                priority
                 className="h-7 w-7 object-contain flex-shrink-0"
               />
               <div className="flex flex-col overflow-hidden">

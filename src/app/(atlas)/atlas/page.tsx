@@ -125,12 +125,15 @@ function getTypeLabels(
   };
 }
 
+// M15: medium/low levels were bg-gray-300 / bg-gray-200 — both below
+// WCAG 2.1 AA non-text contrast (~1.3–2.1:1) on white. Upgraded to
+// bg-gray-500 / bg-gray-400 which sit at 4.6:1 / 3.5:1 respectively.
 const RELEVANCE_DOT: Record<RelevanceLevel, string> = {
   fundamental: "bg-gray-900",
   critical: "bg-red-500",
   high: "bg-amber-500",
-  medium: "bg-gray-300",
-  low: "bg-gray-200",
+  medium: "bg-gray-500",
+  low: "bg-gray-400",
 };
 
 // ─── Greeting ───────────────────────────────────────────────────────

@@ -822,6 +822,14 @@ const POLICY_DE: LegalSource[] = [
     ],
     scope_description:
       "Cabinet-approved key points (September 2024). The full draft law was NEVER introduced to the Bundestag — the Ampel coalition collapsed in December 2024 before a legislative text was finalized. The Eckpunkte remain the most detailed public document on Germany's planned space law architecture.",
+    /**
+     * M2: status is "superseded" but no concrete successor instrument exists
+     * yet — the CDU/SPD coalition (2025) announced its own Weltraumgesetz
+     * effort but no draft has been published as of April 2026. Pointing
+     * `superseded_by` at the coalition agreement preserves the supersession
+     * chain at the political level until a formal successor appears.
+     */
+    superseded_by: "DE-KOALITIONSVERTRAG-2025",
     related_sources: [
       "DE-RAUMFAHRTSTRATEGIE-2023",
       "DE-KOALITIONSVERTRAG-2025",

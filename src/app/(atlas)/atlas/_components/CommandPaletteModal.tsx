@@ -9,6 +9,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   Search,
   Globe2,
@@ -258,7 +259,22 @@ export default function CommandPaletteModal({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
+  const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // M12: translate the four group identifiers once per render.
+  const groupLabel = (g: ItemGroup): string => {
+    switch (g) {
+      case "Navigation":
+        return t("atlas.palette_group_navigation");
+      case "Countries":
+        return t("atlas.palette_group_countries");
+      case "Sources":
+        return t("atlas.palette_group_sources");
+      case "Authorities":
+        return t("atlas.palette_group_authorities");
+    }
+  };
 
   // ESC closes. Cmd+K toggle is handled by the lightweight wrapper.
   useEffect(() => {
@@ -314,15 +330,19 @@ export default function CommandPaletteModal({
     }
   };
 
-  // Flat index mapping for keyboard highlighting
-  const flatIndex = new Map<string, number>();
-  let idx = 0;
-  for (const g of grouped) {
-    for (const it of g.items) {
-      flatIndex.set(it.id, idx);
-      idx++;
+  // L11: flat index mapping for keyboard highlighting — memoised so
+  // hover-to-activate updates don't rebuild the map on every render.
+  const flatIndex = useMemo(() => {
+    const m = new Map<string, number>();
+    let idx = 0;
+    for (const g of grouped) {
+      for (const it of g.items) {
+        m.set(it.id, idx);
+        idx++;
+      }
     }
-  }
+    return m;
+  }, [grouped]);
 
   return (
     <div
@@ -362,7 +382,7 @@ export default function CommandPaletteModal({
               setActiveIndex(0);
             }}
             onKeyDown={onInputKey}
-            placeholder="Search laws, treaties, authorities, countries…"
+            placeholder={t("atlas.palette_placeholder")}
             className="flex-1 bg-transparent outline-none text-[14px] text-gray-900 placeholder:text-gray-400"
           />
           <kbd className="text-[10px] font-mono text-gray-400 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5">
@@ -379,13 +399,18 @@ export default function CommandPaletteModal({
         >
           {grouped.length === 0 ? (
             <div className="px-4 py-10 text-center text-[12px] text-gray-500">
-              No matches for &ldquo;{query}&rdquo;.
+              {t("atlas.palette_no_matches")} &ldquo;{query}&rdquo;.
             </div>
           ) : (
             grouped.map(({ group, items }) => (
-              <div key={group} className="mb-2" role="group" aria-label={group}>
+              <div
+                key={group}
+                className="mb-2"
+                role="group"
+                aria-label={groupLabel(group)}
+              >
                 <div className="px-4 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-400">
-                  {group}
+                  {groupLabel(group)}
                 </div>
                 {items.map((item) => {
                   const isActive = flatIndex.get(item.id) === activeIndex;
@@ -430,14 +455,17 @@ export default function CommandPaletteModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-4 h-8 border-t border-gray-100 bg-gray-50 text-[10px] text-gray-400">
           <span>
-            {results.length} result{results.length === 1 ? "" : "s"}
+            {results.length}{" "}
+            {results.length === 1
+              ? t("atlas.palette_results_count_one")
+              : t("atlas.palette_results_count_other")}
           </span>
           <span className="flex items-center gap-3">
             <span>
-              <kbd className="font-mono">↑↓</kbd> navigate
+              <kbd className="font-mono">↑↓</kbd> {t("atlas.palette_navigate")}
             </span>
             <span>
-              <kbd className="font-mono">↵</kbd> open
+              <kbd className="font-mono">↵</kbd> {t("atlas.palette_open")}
             </span>
           </span>
         </div>

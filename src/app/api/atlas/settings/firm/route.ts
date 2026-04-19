@@ -1,6 +1,28 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getAtlasAuth, isOwner } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+
+export const runtime = "nodejs";
+
+/** M7: tight Zod schema replaces the prior "accept any string" logic.
+ *  Blocks unbounded names, javascript:/data: logo URLs and typo fields. */
+const FirmPatchSchema = z
+  .object({
+    name: z.string().min(1).max(120).optional(),
+    /** null clears the logo, or an https URL up to 2048 chars */
+    logoUrl: z
+      .string()
+      .url()
+      .max(2048)
+      .refine((v) => /^https:\/\//.test(v), {
+        message: "logoUrl must be https",
+      })
+      .nullable()
+      .optional(),
+  })
+  .strict();
 
 // GET /api/atlas/settings/firm
 export async function GET() {
@@ -31,25 +53,39 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const updates: Record<string, string | null> = {};
+  const rawBody = await request.json().catch(() => null);
+  const parsed = FirmPatchSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid payload", details: parsed.error.format() },
+      { status: 400 },
+    );
+  }
 
-  if (typeof body.name === "string" && body.name.trim()) {
-    updates.name = body.name.trim();
-  }
-  if (body.logoUrl !== undefined) {
-    updates.logoUrl = body.logoUrl; // null to remove
-  }
+  const updates: { name?: string; logoUrl?: string | null } = {};
+  if (parsed.data.name !== undefined) updates.name = parsed.data.name.trim();
+  if (parsed.data.logoUrl !== undefined) updates.logoUrl = parsed.data.logoUrl;
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "No valid fields" }, { status: 400 });
   }
 
-  const org = await prisma.organization.update({
-    where: { id: atlas.organizationId },
-    data: updates,
-    select: { name: true, logoUrl: true },
-  });
+  try {
+    const org = await prisma.organization.update({
+      where: { id: atlas.organizationId },
+      data: updates,
+      select: { name: true, logoUrl: true },
+    });
 
-  return NextResponse.json(org);
+    logger.info("Atlas firm settings updated", {
+      organizationId: atlas.organizationId,
+      updatedBy: atlas.userId,
+      fields: Object.keys(updates),
+    });
+
+    return NextResponse.json(org);
+  } catch (err) {
+    logger.error("Atlas firm settings update failed", { error: err });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 }
