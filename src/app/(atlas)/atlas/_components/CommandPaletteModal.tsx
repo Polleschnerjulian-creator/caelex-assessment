@@ -336,12 +336,26 @@ export default function CommandPaletteModal({
         className="w-[640px] max-w-[92vw] max-h-[70vh] rounded-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search input */}
+        {/* Search input — combobox pattern for screen-reader support (M14) */}
         <div className="flex items-center gap-3 px-4 h-12 border-b border-gray-100">
-          <Search size={16} className="text-gray-400 flex-shrink-0" />
+          <Search
+            size={16}
+            className="text-gray-400 flex-shrink-0"
+            aria-hidden="true"
+          />
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="atlas-cmd-listbox"
+            aria-autocomplete="list"
+            aria-activedescendant={
+              results[activeIndex]
+                ? `atlas-cmd-option-${results[activeIndex].id}`
+                : undefined
+            }
+            aria-label="Search laws, treaties, authorities, countries"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -356,15 +370,20 @@ export default function CommandPaletteModal({
           </kbd>
         </div>
 
-        {/* Results */}
-        <div className="flex-1 overflow-y-auto py-2">
+        {/* Results — listbox role lets AT announce item count + selection */}
+        <div
+          id="atlas-cmd-listbox"
+          role="listbox"
+          aria-label="Search results"
+          className="flex-1 overflow-y-auto py-2"
+        >
           {grouped.length === 0 ? (
             <div className="px-4 py-10 text-center text-[12px] text-gray-500">
               No matches for &ldquo;{query}&rdquo;.
             </div>
           ) : (
             grouped.map(({ group, items }) => (
-              <div key={group} className="mb-2">
+              <div key={group} className="mb-2" role="group" aria-label={group}>
                 <div className="px-4 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-400">
                   {group}
                 </div>
@@ -374,6 +393,9 @@ export default function CommandPaletteModal({
                   return (
                     <button
                       key={item.id}
+                      id={`atlas-cmd-option-${item.id}`}
+                      role="option"
+                      aria-selected={isActive}
                       onClick={() => go(item)}
                       onMouseEnter={() =>
                         setActiveIndex(flatIndex.get(item.id) ?? 0)

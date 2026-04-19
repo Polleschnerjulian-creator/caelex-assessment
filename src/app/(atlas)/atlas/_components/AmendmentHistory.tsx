@@ -32,7 +32,10 @@ export function AmendmentHistory({
       <ol className="mt-3 relative border-l border-gray-200 ml-1.5">
         {sorted.map((a, i) => (
           <li key={`${a.date}-${i}`} className="ml-4 mb-3 last:mb-0">
-            <span className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500" />
+            <span
+              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500"
+              aria-hidden="true"
+            />
             <div className="flex flex-wrap items-baseline gap-2 mb-0.5">
               <span className="text-[11px] font-semibold text-gray-900 tabular-nums">
                 {a.date}
@@ -45,9 +48,10 @@ export function AmendmentHistory({
                   href={a.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Official text of amendment ${a.reference}`}
                   className="inline-flex items-center gap-0.5 text-[10px] text-gray-500 hover:text-emerald-700"
                 >
-                  text <ExternalLink size={9} />
+                  text <ExternalLink size={9} aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -70,7 +74,10 @@ export function AmendmentHistory({
         ))}
         {dateEnacted && (
           <li className="ml-4 mt-2">
-            <span className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-gray-200 border-2 border-white" />
+            <span
+              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-gray-200 border-2 border-white"
+              aria-hidden="true"
+            />
             <div className="flex items-baseline gap-2">
               <span className="text-[11px] font-semibold text-gray-500 tabular-nums">
                 {dateEnacted}

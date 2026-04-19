@@ -391,25 +391,34 @@ export default function JurisdictionsPage() {
                     </span>
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.ost} />
+                    <Dot active={j.ost} label="Outer Space Treaty" />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.liability_conv} />
+                    <Dot
+                      active={j.liability_conv}
+                      label="Liability Convention"
+                    />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.registration_conv} />
+                    <Dot
+                      active={j.registration_conv}
+                      label="Registration Convention"
+                    />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.moon} color="amber" />
+                    <Dot active={j.moon} color="amber" label="Moon Agreement" />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.artemis} />
+                    <Dot active={j.artemis} label="Artemis Accords" />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.hasSpaceAct} />
+                    <Dot active={j.hasSpaceAct} label="National space act" />
                   </td>
                   <td className="text-center px-2 py-2">
-                    <Dot active={j.mandatoryInsurance} />
+                    <Dot
+                      active={j.mandatoryInsurance}
+                      label="Mandatory insurance"
+                    />
                   </td>
                 </tr>
               ))}
