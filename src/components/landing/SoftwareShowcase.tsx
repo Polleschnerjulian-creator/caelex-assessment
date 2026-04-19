@@ -5,42 +5,53 @@ import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 
 /**
- * SoftwareShowcase — mirrors the Palantir homepage "Platforms" section 1:1.
+ * SoftwareShowcase — mirrors the Palantir homepage "Our Software" section 1:1.
  *
- * Verified structure (from palantir.com CMS, April 2026):
- *  - Section eyebrow: "Platforms"
- *  - Section headline: a single big statement under the eyebrow
- *  - Each product row has exactly three things:
- *      1. heading = "↳ [Name]"  (arrow is part of the heading text)
- *      2. subheading = one-line tagline, Title Case
- *      3. CTA = "Explore [Name]" inline link
- *  - No description paragraph. No images. No body copy.
+ * Verified visual structure (palantir.com homepage, april 2026):
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │ Our Software                                                 │
+ *   ├──────────────┬──────────────┬───────────────────────────────┤
+ *   │ tagline      │ visual block │ HUGE WORDMARK                 │
+ *   │ multi-line,  │ (silhouette  │ (product name as display      │
+ *   │ /0.X index   │  default,    │  type, dark, ~12vw)           │
+ *   │              │  screenshot  │                               │
+ *   │              │  on hover)   │                               │
+ *   ├──────────────┴──────────────┴───────────────────────────────┤
+ *   │ entire row is a clickable link with grey-tint hover bg      │
+ *   └─────────────────────────────────────────────────────────────┘
+ *
+ * Differences from palantir we accept (lack of brand assets):
+ *   - we don't have product screenshots, so the middle column
+ *     uses an abstract emerald gradient placeholder revealed on
+ *     hover. swap for real screenshots when available.
+ *   - we don't have a custom display typeface for the wordmarks,
+ *     so we use the body font at the heaviest available weight.
  */
 
 const PRODUCTS = [
   {
     name: "Comply",
-    tagline: "Operating System for Regulatory Compliance",
+    tagline: "Navigate regulation, from authorization to audit.",
     href: "/platform",
   },
   {
     name: "Sentinel",
-    tagline: "Operating System for Compliance Evidence",
+    tagline: "Collect compliance evidence, from orbit to ground.",
     href: "/sentinel",
   },
   {
     name: "Ephemeris",
-    tagline: "Operating System for Compliance Forecasting",
+    tagline: "Predict compliance risk, from today to end-of-life.",
     href: "/systems/ephemeris",
   },
   {
     name: "Atlas",
-    tagline: "Operating System for Regulatory Intelligence",
+    tagline: "Map the regulatory landscape, jurisdiction by jurisdiction.",
     href: "/atlas",
   },
 ];
 
-function AnimatedRow({
+function AnimatedBlock({
   children,
   className = "",
   delay = 0,
@@ -72,68 +83,81 @@ export default function SoftwareShowcase() {
   return (
     <section className="bg-white py-32 md:py-44">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-        {/* Eyebrow */}
-        <AnimatedRow>
-          <p className="text-micro uppercase tracking-[0.2em] text-[#6B7280] mb-5">
-            Platforms
-          </p>
-        </AnimatedRow>
-
-        {/* Headline */}
-        <AnimatedRow delay={0.1}>
-          <h2 className="text-[clamp(1.875rem,4.5vw,3.75rem)] font-medium tracking-[-0.03em] text-[#111827] leading-[1.05] max-w-[900px]">
-            Foundational software for the new space economy.
+        {/* Section heading */}
+        <AnimatedBlock>
+          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.025em] text-[#111827] mb-20 md:mb-28">
+            Our Software
           </h2>
-        </AnimatedRow>
+        </AnimatedBlock>
 
         {/* Product rows */}
-        <div className="mt-24 md:mt-32">
-          {PRODUCTS.map((product, i) => (
-            <AnimatedRow key={product.name} delay={0.2 + i * 0.08}>
-              <ProductRow product={product} />
-            </AnimatedRow>
-          ))}
-          {/* Closing divider below last row */}
-          <div className="border-t border-[#E5E7EB]" />
-        </div>
+        {PRODUCTS.map((product, i) => (
+          <AnimatedBlock key={product.name} delay={0.1 + i * 0.1}>
+            <ProductRow product={product} index={i + 1} />
+          </AnimatedBlock>
+        ))}
       </div>
     </section>
   );
 }
 
-function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
+function ProductRow({
+  product,
+  index,
+}: {
+  product: (typeof PRODUCTS)[number];
+  index: number;
+}) {
   return (
     <Link
       href={product.href}
-      className="group block border-t border-[#E5E7EB] transition-colors duration-500 hover:border-[#9CA3AF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2 rounded-sm"
+      className="group block transition-colors duration-500 hover:bg-[#F5F5F7] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2 -mx-6 md:-mx-12 px-6 md:px-12"
     >
-      <div className="py-16 md:py-20 lg:py-24">
-        {/* Heading: ↳ Product Name */}
-        <h3 className="text-[clamp(2.5rem,7vw,6rem)] font-normal leading-[0.95] tracking-[-0.04em] text-[#111827] select-none mb-5 md:mb-6">
-          <span
-            aria-hidden="true"
-            className="inline-block mr-3 md:mr-5 text-[#9CA3AF] font-light transition-all duration-500 group-hover:text-[#111827] group-hover:translate-x-1"
-          >
-            ↳
-          </span>
-          {product.name}
-        </h3>
+      <div className="grid grid-cols-12 gap-6 md:gap-8 py-16 md:py-20 lg:py-24 items-center">
+        {/* Column 1: tagline + numeric index (cols 1–3) */}
+        <div className="col-span-12 md:col-span-3 flex flex-col justify-between min-h-[180px] md:min-h-[260px]">
+          <p className="text-[clamp(1rem,1.4vw,1.25rem)] font-normal text-[#111827] leading-[1.35] tracking-[-0.01em] max-w-[260px]">
+            {product.tagline}
+          </p>
+          <p className="text-small font-normal text-[#9CA3AF] tracking-wide mt-6 md:mt-0 font-mono">
+            /0.{index}
+          </p>
+        </div>
 
-        {/* Tagline (subheading) */}
-        <p className="text-[clamp(1.125rem,2vw,1.5rem)] font-normal text-[#4B5563] leading-[1.3] tracking-[-0.015em] mb-8 md:mb-10 max-w-[720px]">
-          {product.tagline}
-        </p>
-
-        {/* Inline CTA: Explore [Name] */}
-        <span className="inline-flex items-center gap-2 text-body font-medium text-[#111827]">
-          Explore {product.name}
-          <span
+        {/* Column 2: visual block (cols 4–6) — silhouette default, gradient on hover */}
+        <div className="col-span-12 md:col-span-3 relative aspect-[4/3] md:aspect-[16/10] overflow-hidden rounded-sm">
+          {/* default silhouette layer: faded initial letter */}
+          <div
             aria-hidden="true"
-            className="inline-block transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:translate-x-2"
+            className="absolute inset-0 flex items-center justify-center bg-[#FAFAFA] transition-opacity duration-700 group-hover:opacity-0"
           >
-            →
-          </span>
-        </span>
+            <span className="text-[clamp(4rem,10vw,8rem)] font-bold text-[#E5E7EB] leading-none tracking-[-0.04em] select-none">
+              {product.name.charAt(0)}
+            </span>
+          </div>
+          {/* hover layer: tinted gradient placeholder for future screenshot */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+            style={{
+              background:
+                "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%)",
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[clamp(4rem,10vw,8rem)] font-bold text-emerald-600/30 leading-none tracking-[-0.04em] select-none">
+                {product.name.charAt(0)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: huge product wordmark (cols 7–12) */}
+        <div className="col-span-12 md:col-span-6 flex items-center justify-start md:justify-end overflow-hidden">
+          <h3 className="text-[clamp(4rem,12vw,11rem)] font-bold tracking-[-0.045em] text-[#111827] leading-[0.85] select-none whitespace-nowrap">
+            {product.name}
+          </h3>
+        </div>
       </div>
     </Link>
   );
