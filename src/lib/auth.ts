@@ -234,29 +234,84 @@ const authResult = isAuthConfigured
           return session;
         },
 
-        async signIn({ user, account }) {
-          // For OAuth providers, check if user is active
-          // Skip for credentials-based providers (email/password + passkey-token)
-          // as they already verify isActive in their authorize callbacks.
+        async signIn({ user, account, profile }) {
+          // C1 fix: oauth account-takeover hardening. previously any oauth
+          // provider returning an email matching an existing credentials
+          // user's email could mint a session for that user. now:
+          //   1. require email_verified=true in the provider profile.
+          //   2. if a caelex user with that email exists via credentials
+          //      only, refuse the oauth sign-in (prevents apple/google
+          //      alias-shadowing attacks).
+          //   3. still verify isActive.
           if (
             account?.provider !== "credentials" &&
-            account?.provider !== "passkey-token" &&
-            user.id
+            account?.provider !== "passkey-token"
           ) {
             try {
               const prisma = await getPrisma();
-              if (!prisma) return true; // Allow sign in if DB not configured
-              const dbUser = await prisma.user.findUnique({
-                where: { id: user.id },
-                select: { isActive: true },
+              if (!prisma) return true;
+
+              // 1. email_verified check (google sets this explicitly)
+              const p = profile as
+                | {
+                    email?: string;
+                    email_verified?: boolean;
+                    verified_email?: boolean; // legacy google field
+                  }
+                | undefined;
+              const email = p?.email ?? user.email ?? null;
+              const emailVerified =
+                p?.email_verified === true ||
+                p?.verified_email === true ||
+                account?.provider === "apple"; // apple mandates verification
+              if (!email || !emailVerified) {
+                logger.warn(
+                  "[auth] OAuth sign-in rejected: email not verified",
+                  { provider: account?.provider, email },
+                );
+                return false;
+              }
+
+              // 2. block oauth sign-in when a credentials user exists
+              // unless the oauth provider id has been explicitly linked
+              // (there's no Account table without the adapter, so we
+              // rely on a dedicated flag on the user record).
+              const existing = await prisma.user.findUnique({
+                where: { email },
+                select: {
+                  id: true,
+                  isActive: true,
+                  password: true,
+                  // oauthProviderIds is a json array of "provider:sub"
+                  // strings. if present, the user has explicitly linked
+                  // this provider.
+                },
               });
 
-              if (dbUser && !dbUser.isActive) {
-                return false; // Block sign in
+              if (existing) {
+                if (!existing.isActive) return false;
+                // If the user has a password, only permit oauth login
+                // when that specific provider account has been linked.
+                // The link is handled out-of-band (dedicated /api/user/
+                // link-oauth-account endpoint) to force explicit consent.
+                if (existing.password) {
+                  // heuristic: forbid first-time oauth for credentials
+                  // users. the explicit link flow should set a flag
+                  // we can read here; until that flow exists, reject.
+                  logger.warn(
+                    "[auth] OAuth sign-in rejected: credentials user must link first",
+                    { provider: account?.provider, email },
+                  );
+                  return false;
+                }
               }
+
+              // user.id is the provider-sub for a fresh oauth sign-in.
+              // only re-check isActive when we matched a real db row.
+              if (existing && !existing.isActive) return false;
             } catch (error) {
               logger.error("Failed to check user status", error);
-              return false; // Fail closed: block sign in if DB is unreachable
+              return false; // fail closed
             }
           }
           return true;
