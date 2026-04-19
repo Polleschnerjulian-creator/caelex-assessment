@@ -9,15 +9,52 @@ import {
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
-const SupplierSubmissionSchema = z.object({
-  componentType: z.string().max(200).optional(),
-  lcaData: z
-    .record(z.string(), z.unknown())
-    .refine((val) => Object.keys(val).length > 0, {
-      message: "LCA data must not be empty",
-    }),
-  submittedAt: z.string().datetime().optional(),
-});
+// H-API1 fix: lcaData used to accept z.record(z.string(), z.unknown())
+// with no size/depth/type constraints. Any supplier holding a leaked
+// token could push multi-megabyte json blobs into SupplierDataRequest.
+// responseData, causing db bloat + second-order xss in the operator
+// dashboard (the blob was rendered as-is).
+//
+// Schema below captures the LCA fields we actually need + allows an
+// "additionalFields" escape hatch with bounded string values.
+
+const LcaNumber = z.number().finite().min(0).max(1e12);
+const LcaString = z.string().max(1000);
+
+const SupplierSubmissionSchema = z
+  .object({
+    componentType: z.string().max(200).optional(),
+    lcaData: z
+      .object({
+        // ─── core lifecycle-assessment fields ─────────────────
+        materialName: LcaString.optional(),
+        massKg: LcaNumber.optional(),
+        gwpKgCo2e: LcaNumber.optional(), // global warming potential
+        embodiedEnergyMj: LcaNumber.optional(),
+        recycledContentPct: z.number().min(0).max(100).optional(),
+        manufacturingLocation: LcaString.optional(),
+        supplierCountry: z.string().length(2).toUpperCase().optional(),
+        standard: LcaString.optional(), // e.g. "ISO 14040"
+        certificationUrl: z.string().url().max(2048).optional(),
+        dataSource: LcaString.optional(),
+        assumptions: LcaString.optional(),
+        validThroughDate: z.string().datetime().optional(),
+        // ─── freeform escape hatch (bounded) ──────────────────
+        notes: z.string().max(5000).optional(),
+        additionalFields: z
+          .record(z.string(), z.union([LcaNumber, LcaString, z.boolean()]))
+          .refine((val) => Object.keys(val).length <= 50, {
+            message: "additionalFields limited to 50 entries",
+          })
+          .optional(),
+      })
+      .strict()
+      .refine((val) => Object.keys(val).length > 0, {
+        message: "LCA data must not be empty",
+      }),
+    submittedAt: z.string().datetime().optional(),
+  })
+  .strict();
 
 /**
  * GET /api/supplier/[token]

@@ -49,12 +49,34 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
 
+  // H-API6: reflect the caller's origin on error responses only when it
+  // appears in at least ONE widget's allowed domain list. Previously we
+  // returned Access-Control-Allow-Origin: * on every error path, which
+  // let any site read error responses (info disclosure + fingerprinting).
+  // The helper takes "null" for no-CORS when origin is unknown.
+  const safeErrorCors = async (): Promise<string[] | null> => {
+    if (!origin) return null;
+    try {
+      const anyMatch = await prisma.widgetConfig.findFirst({
+        where: {
+          allowedDomains: {
+            hasSome: [origin.replace(/^https?:\/\//, "")],
+          },
+        },
+        select: { id: true },
+      });
+      return anyMatch ? [origin] : null;
+    } catch {
+      return null;
+    }
+  };
+
   // Rate limiting (widget tier: 30/hour)
   const identifier = getIdentifier(request);
   const rateLimitResult = await checkRateLimit("widget", identifier);
   if (!rateLimitResult.success) {
     const response = createRateLimitResponse(rateLimitResult);
-    return applyCorsHeaders(response, origin, "*");
+    return applyCorsHeaders(response, origin, (await safeErrorCors()) ?? []);
   }
 
   // Parse body
@@ -66,7 +88,7 @@ export async function POST(request: NextRequest) {
       { error: "Invalid JSON body" },
       { status: 400 },
     );
-    return applyCorsHeaders(response, origin, "*");
+    return applyCorsHeaders(response, origin, (await safeErrorCors()) ?? []);
   }
 
   const parsed = WidgetTrackSchema.safeParse(body);
@@ -75,7 +97,7 @@ export async function POST(request: NextRequest) {
       { error: "Validation failed" },
       { status: 400 },
     );
-    return applyCorsHeaders(response, origin, "*");
+    return applyCorsHeaders(response, origin, (await safeErrorCors()) ?? []);
   }
 
   const { event, widgetId } = parsed.data;
