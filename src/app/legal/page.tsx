@@ -115,12 +115,18 @@ export default function LegalHubPage() {
                           t.id.startsWith(item.id) &&
                           t.id.endsWith("-en"),
                       );
+                      // Fix: previously this nested a second <Link> inside
+                      // the outer <Link> (invalid html AND triggered
+                      // next.js server-component build error because the
+                      // stopPropagation onClick crossed the server/client
+                      // boundary). Now the EN pill lives OUTSIDE the main
+                      // link as a sibling.
                       return (
                         <article
                           key={item.id}
-                          className="group rounded-xl bg-white border border-[#E5E7EB] hover:border-[#9CA3AF] hover:shadow-sm transition p-5"
+                          className="group relative rounded-xl bg-white border border-[#E5E7EB] hover:border-[#9CA3AF] hover:shadow-sm transition"
                         >
-                          <Link href={item.href} className="block">
+                          <Link href={item.href} className="block p-5 pb-12">
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <h3 className="text-title font-semibold text-[#111827] group-hover:text-emerald-700 transition-colors">
                                 {item.label}
@@ -135,24 +141,21 @@ export default function LegalHubPage() {
                                 {item.description}
                               </p>
                             )}
-                            <div className="mt-3 flex items-center gap-3 text-[10px] text-[#6B7280]">
-                              {item.critical && (
-                                <span className="inline-flex items-center gap-1 text-emerald-700">
-                                  <CheckCircle2 size={10} strokeWidth={2.5} />
-                                  Pflichtdokument
-                                </span>
-                              )}
-                              {translation && (
-                                <Link
-                                  href={translation.href}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="hover:text-[#111827]"
-                                >
-                                  EN →
-                                </Link>
-                              )}
-                            </div>
+                            {item.critical && (
+                              <span className="mt-3 inline-flex items-center gap-1 text-[10px] text-emerald-700">
+                                <CheckCircle2 size={10} strokeWidth={2.5} />
+                                Pflichtdokument
+                              </span>
+                            )}
                           </Link>
+                          {translation && (
+                            <Link
+                              href={translation.href}
+                              className="absolute bottom-3 right-4 text-[10px] text-[#6B7280] hover:text-[#111827]"
+                            >
+                              EN →
+                            </Link>
+                          )}
                         </article>
                       );
                     })}
