@@ -13,6 +13,8 @@ import {
   Newspaper,
   Settings,
   Bookmark,
+  Menu,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
@@ -54,11 +56,20 @@ export default function AtlasShell({
   const { t } = useLanguage();
   const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // H13: mobile-only slide-over state. On lg+ the hover-expand behaviour
+  // stays; below lg we show a hamburger + off-canvas drawer.
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
-  const expanded = hovered;
-  const sidebarWidth = expanded ? EXPANDED_W : COLLAPSED_W;
+  // Close the mobile drawer when the route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const expanded = hovered || mobileOpen;
+  // On mobile the drawer always shows the full width so labels are legible.
+  const sidebarWidth = mobileOpen || hovered ? EXPANDED_W : COLLAPSED_W;
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -74,14 +85,41 @@ export default function AtlasShell({
       className="landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
+      {/* ─── Mobile: hamburger toggle (<lg only) ─── */}
+      <button
+        type="button"
+        aria-label={mobileOpen ? "Close menu" : "Open menu"}
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((v) => !v)}
+        className="lg:hidden fixed top-3 left-3 z-[60] h-10 w-10 inline-flex items-center justify-center rounded-xl bg-[#1a1a1a] text-white shadow-lg"
+      >
+        {mobileOpen ? (
+          <X className="h-5 w-5" strokeWidth={2} />
+        ) : (
+          <Menu className="h-5 w-5" strokeWidth={2} />
+        )}
+      </button>
+
+      {/* ─── Mobile: backdrop ─── */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ─── Sidebar zone ─── */}
+      {/* Desktop (>=lg): fixed hover-expanded rail.
+          Mobile (<lg): off-canvas slide-over driven by mobileOpen. */}
       <div
         className={`
-          fixed z-40 top-0 left-0 bottom-0
+          fixed z-50 top-0 bottom-0
           bg-white border-r border-gray-200
           flex flex-col
-          transition-opacity duration-300
+          transition-all duration-300 ease-out
           ${!mounted ? "opacity-0" : "opacity-100"}
+          ${mobileOpen ? "left-0" : "-left-[260px] lg:left-0"}
         `}
         style={{
           width: sidebarWidth,
@@ -266,13 +304,19 @@ export default function AtlasShell({
       </div>
 
       {/* ─── Main Content (reacts to sidebar) ─── */}
+      {/* On mobile (<lg) the sidebar is an overlay drawer, so no margin.
+          On desktop the sidebar is a fixed rail and the content reserves
+          its width via the --atlas-sidebar-w custom property + lg: breakpoint.
+          pt-14 on mobile reserves space for the hamburger button. */}
       <main
-        className="h-full overflow-y-auto overflow-x-hidden"
-        style={{
-          marginLeft: sidebarWidth,
-          transition: widthTransition,
-          willChange: "margin-left",
-        }}
+        className="h-full overflow-y-auto overflow-x-hidden pt-14 lg:pt-0 lg:ml-[var(--atlas-sidebar-w,58px)]"
+        style={
+          {
+            "--atlas-sidebar-w": `${sidebarWidth}px`,
+            transition: widthTransition,
+            willChange: "margin-left",
+          } as React.CSSProperties
+        }
       >
         <div className="min-h-full">{children}</div>
       </main>

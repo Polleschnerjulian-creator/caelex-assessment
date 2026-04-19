@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   getLegalSourcesByJurisdiction,
@@ -107,7 +107,6 @@ type FilterKey = "all" | "hasAct" | "noAct" | "mandatory" | "moon";
 // ─── Page ──────────────────────────────────────────────────────────
 
 export default function JurisdictionsPage() {
-  const router = useRouter();
   const { t } = useLanguage();
   const JURISDICTION_NAMES = getJurisdictionNames(t);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -239,96 +238,108 @@ export default function JurisdictionsPage() {
       </div>
 
       {/* ─── Jurisdiction Cards ─── */}
+      {/*
+        H11 fix: outer card is now a <Link> (produces a real href for
+          crawlers + supports right-click open-in-new-tab + prefetching).
+        H12 fix: the PDF download lives in a sibling element outside the
+          Link so we no longer nest <a>-in-<button>-in-<a> (invalid HTML).
+        */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 mb-16">
         {filtered.map((j) => (
-          <button
+          <article
             key={j.code}
-            onClick={() =>
-              router.push(`/atlas/jurisdictions/${j.code.toLowerCase()}`)
-            }
-            className="text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-md px-5 py-4 transition-all duration-200 group"
+            className="relative rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all duration-200 group"
           >
-            {/* Top row: code + country + arrow */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-[20px] font-bold text-gray-300 group-hover:text-gray-500 transition-colors">
-                  {j.code}
-                </span>
-                <span className="text-[15px] font-semibold text-gray-900">
-                  {JURISDICTION_NAMES[j.code] || j.country}
-                </span>
-              </div>
-              <ArrowRight
-                size={14}
-                className="text-gray-300 group-hover:text-gray-900 transition-colors"
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Legislation line */}
-            <p className="text-[11px] text-gray-500 truncate mb-3">
-              {j.hasSpaceAct
-                ? `${j.actName} (${j.actYear})`
-                : j.actName || t("atlas.no_comprehensive_law")}
-            </p>
-
-            {/* Compliance indicators */}
-            <div className="grid grid-cols-5 gap-1.5 mb-3">
-              <Indicator
-                active={j.hasSpaceAct}
-                label={t("atlas.indicator_act")}
-              />
-              <Indicator
-                active={j.mandatoryInsurance}
-                label={t("atlas.indicator_insurance")}
-              />
-              <Indicator
-                active={j.hasRegistry}
-                label={t("atlas.indicator_registry")}
-              />
-              <Indicator
-                active={j.hasDebrisRules}
-                label={t("atlas.debris_indicator")}
-              />
-              <Indicator
-                active={j.sourceCount > 0}
-                label={t("atlas.indicator_sources")}
-              />
-            </div>
-
-            {/* Bottom row: insurance + liability + sources count */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {j.mandatoryInsurance && (
-                  <span className="text-[10px] font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded px-2 py-0.5">
-                    {j.insurance}
+            <Link
+              href={`/atlas/jurisdictions/${j.code.toLowerCase()}`}
+              className="block px-5 py-4"
+            >
+              {/* Top row: code + country + arrow */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-[20px] font-bold text-gray-300 group-hover:text-gray-500 transition-colors">
+                    {j.code}
                   </span>
-                )}
-                <span className="text-[10px] text-gray-400 capitalize">
-                  {j.liability}
-                </span>
+                  <span className="text-[15px] font-semibold text-gray-900">
+                    {JURISDICTION_NAMES[j.code] || j.country}
+                  </span>
+                </div>
+                <ArrowRight
+                  size={14}
+                  className="text-gray-300 group-hover:text-gray-900 transition-colors"
+                  aria-hidden="true"
+                />
               </div>
-              {j.sourceCount > 0 && (
-                <span className="flex items-center gap-2">
-                  <a
-                    href={`/api/atlas/country-memo/${j.code}`}
-                    onClick={(e) => e.stopPropagation()}
-                    title="Download PDF country memo"
-                    className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-600 hover:text-emerald-700 bg-white border border-gray-200 hover:border-emerald-300 rounded-full px-2 py-0.5 transition-colors"
-                  >
-                    <FileDown size={10} strokeWidth={2} />
-                    PDF
-                  </a>
+
+              {/* Legislation line */}
+              <p className="text-[11px] text-gray-500 truncate mb-3">
+                {j.hasSpaceAct
+                  ? `${j.actName} (${j.actYear})`
+                  : j.actName || t("atlas.no_comprehensive_law")}
+              </p>
+
+              {/* Compliance indicators */}
+              <div className="grid grid-cols-5 gap-1.5 mb-3">
+                <Indicator
+                  active={j.hasSpaceAct}
+                  label={t("atlas.indicator_act")}
+                />
+                <Indicator
+                  active={j.mandatoryInsurance}
+                  label={t("atlas.indicator_insurance")}
+                />
+                <Indicator
+                  active={j.hasRegistry}
+                  label={t("atlas.indicator_registry")}
+                />
+                <Indicator
+                  active={j.hasDebrisRules}
+                  label={t("atlas.debris_indicator")}
+                />
+                <Indicator
+                  active={j.sourceCount > 0}
+                  label={t("atlas.indicator_sources")}
+                />
+              </div>
+
+              {/* Bottom row: insurance + liability + sources count */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {j.mandatoryInsurance && (
+                    <span className="text-[10px] font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded px-2 py-0.5">
+                      {j.insurance}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-gray-400 capitalize">
+                    {j.liability}
+                  </span>
+                </div>
+                {j.sourceCount > 0 && (
                   <span className="text-[10px] font-medium text-gray-500">
                     {t("atlas.sources_auth", {
                       sources: j.sourceCount,
                       auth: j.authorityCount,
                     })}
                   </span>
-                </span>
-              )}
-            </div>
-          </button>
+                )}
+              </div>
+            </Link>
+
+            {j.sourceCount > 0 && (
+              // Absolutely-positioned so it overlays the card's top-right
+              // without nesting inside the outer <Link>. This keeps HTML
+              // valid while preserving the single-card UX.
+              <a
+                href={`/api/atlas/country-memo/${j.code}`}
+                download
+                title="Download PDF country memo"
+                className="absolute top-3 right-10 z-10 inline-flex items-center gap-1 text-[10px] font-medium text-gray-600 hover:text-emerald-700 bg-white border border-gray-200 hover:border-emerald-300 rounded-full px-2 py-0.5 transition-colors"
+              >
+                <FileDown size={10} strokeWidth={2} aria-hidden="true" />
+                PDF
+              </a>
+            )}
+          </article>
         ))}
       </div>
 
