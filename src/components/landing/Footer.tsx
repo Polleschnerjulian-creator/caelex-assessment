@@ -141,7 +141,6 @@ const capabilityLinks = [
   },
   { label: "Scenario Simulation", href: "/capabilities/scenario-simulation" },
   { label: "Multi-Tenant Encryption", href: "/security" },
-  { label: "Webhook & API Integration", href: "/docs/api" },
 ];
 
 const documentLinks = [
