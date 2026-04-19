@@ -40,7 +40,7 @@ export default function CtaBanner() {
             href="/assessment"
             className="dark-section group relative flex flex-col justify-between bg-[#111827] rounded-2xl p-10 md:p-14 min-h-[200px] md:min-h-[260px] transition-colors duration-300 hover:bg-[#1E293B] focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2"
           >
-            <h3 className="text-[clamp(1.75rem,4vw,2.75rem)] font-normal tracking-[-0.03em] leading-[1.1] text-white">
+            <h3 className="text-[clamp(1.75rem,4vw,2.75rem)] font-normal tracking-[-0.03em] leading-[1.1] !text-white">
               Start Assessment
             </h3>
             <div className="flex justify-end mt-8">
