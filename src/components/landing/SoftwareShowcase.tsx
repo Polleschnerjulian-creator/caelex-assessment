@@ -4,54 +4,38 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 
-/**
- * SoftwareShowcase — mirrors the Palantir homepage "Our Software" section 1:1.
- *
- * Verified visual structure (palantir.com homepage, april 2026):
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │ Our Software                                                 │
- *   ├──────────────┬──────────────┬───────────────────────────────┤
- *   │ tagline      │ visual block │ HUGE WORDMARK                 │
- *   │ multi-line,  │ (silhouette  │ (product name as display      │
- *   │ /0.X index   │  default,    │  type, dark, ~12vw)           │
- *   │              │  screenshot  │                               │
- *   │              │  on hover)   │                               │
- *   ├──────────────┴──────────────┴───────────────────────────────┤
- *   │ entire row is a clickable link with grey-tint hover bg      │
- *   └─────────────────────────────────────────────────────────────┘
- *
- * Differences from palantir we accept (lack of brand assets):
- *   - we don't have product screenshots, so the middle column
- *     uses an abstract emerald gradient placeholder revealed on
- *     hover. swap for real screenshots when available.
- *   - we don't have a custom display typeface for the wordmarks,
- *     so we use the body font at the heaviest available weight.
- */
-
 const PRODUCTS = [
   {
     name: "Comply",
-    tagline: "Navigate regulation, from authorization to audit.",
+    tagline: "Navigate regulation,\nfrom authorization to audit.",
+    description:
+      "The regulatory command center. Real-time compliance posture across space law, cybersecurity directives, and national regulations — for every operator type, every jurisdiction, every mission phase.",
     href: "/platform",
   },
   {
     name: "Sentinel",
-    tagline: "Collect compliance evidence, from orbit to ground.",
+    tagline: "Collect compliance evidence,\nfrom orbit to ground.",
+    description:
+      "Autonomous evidence agents deployed at operator premises. Cryptographically signed hash chains, tamper-evident audit trails, and cross-verification against public orbital data.",
     href: "/sentinel",
   },
   {
     name: "Ephemeris",
-    tagline: "Predict compliance risk, from today to end-of-life.",
+    tagline: "Predict compliance risk,\nfrom today to end-of-life.",
+    description:
+      "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
     href: "/systems/ephemeris",
   },
   {
-    name: "Atlas",
-    tagline: "Map the regulatory landscape, jurisdiction by jurisdiction.",
-    href: "/atlas",
+    name: "Verity",
+    tagline: "Prove compliance without\nrevealing what you know.",
+    description:
+      "Zero-knowledge compliance attestation. Cryptographic proofs that demonstrate regulatory adherence to auditors without exposing proprietary operational data.",
+    href: "/verity",
   },
 ];
 
-function AnimatedBlock({
+function AnimatedRow({
   children,
   className = "",
   delay = 0,
@@ -65,8 +49,8 @@ function AnimatedBlock({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{
         duration: 0.7,
         delay,
@@ -83,82 +67,68 @@ export default function SoftwareShowcase() {
   return (
     <section className="bg-white py-32 md:py-44">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-        {/* Section heading */}
-        <AnimatedBlock>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.025em] text-[#111827] mb-20 md:mb-28">
+        {/* Header */}
+        <AnimatedRow>
+          <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827]">
             Our Software
           </h2>
-        </AnimatedBlock>
+        </AnimatedRow>
 
         {/* Product rows */}
-        {PRODUCTS.map((product, i) => (
-          <AnimatedBlock key={product.name} delay={0.1 + i * 0.1}>
-            <ProductRow product={product} index={i + 1} />
-          </AnimatedBlock>
-        ))}
+        <div className="mt-20">
+          {PRODUCTS.map((product, i) => (
+            <AnimatedRow key={product.name} delay={i * 0.06}>
+              <ProductRow product={product} />
+            </AnimatedRow>
+          ))}
+          {/* Bottom border */}
+          <div className="border-t border-[#E5E7EB]" />
+        </div>
       </div>
     </section>
   );
 }
 
-function ProductRow({
-  product,
-  index,
-}: {
-  product: (typeof PRODUCTS)[number];
-  index: number;
-}) {
-  return (
-    <Link
-      href={product.href}
-      className="group block transition-colors duration-500 hover:bg-[#F5F5F7] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2 -mx-6 md:-mx-12 px-6 md:px-12"
-    >
-      <div className="grid grid-cols-12 gap-6 md:gap-8 py-16 md:py-20 lg:py-24 items-center">
-        {/* Column 1: tagline + numeric index (cols 1–3) */}
-        <div className="col-span-12 md:col-span-3 flex flex-col justify-between min-h-[180px] md:min-h-[260px]">
-          <p className="text-[clamp(1rem,1.4vw,1.25rem)] font-normal text-[#111827] leading-[1.35] tracking-[-0.01em] max-w-[260px]">
-            {product.tagline}
-          </p>
-          <p className="text-small font-normal text-[#9CA3AF] tracking-wide mt-6 md:mt-0 font-mono">
-            /0.{index}
-          </p>
-        </div>
+function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
+  const isClickable = product.href !== "#";
 
-        {/* Column 2: visual block (cols 4–6) — silhouette default, gradient on hover */}
-        <div className="col-span-12 md:col-span-3 relative aspect-[4/3] md:aspect-[16/10] overflow-hidden rounded-sm">
-          {/* default silhouette layer: faded initial letter */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-[#FAFAFA] transition-opacity duration-700 group-hover:opacity-0"
-          >
-            <span className="text-[clamp(4rem,10vw,8rem)] font-bold text-[#E5E7EB] leading-none tracking-[-0.04em] select-none">
-              {product.name.charAt(0)}
-            </span>
-          </div>
-          {/* hover layer: tinted gradient placeholder for future screenshot */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-            style={{
-              background:
-                "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%)",
-            }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[clamp(4rem,10vw,8rem)] font-bold text-emerald-600/30 leading-none tracking-[-0.04em] select-none">
-                {product.name.charAt(0)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: huge product wordmark (cols 7–12) */}
-        <div className="col-span-12 md:col-span-6 flex items-center justify-start md:justify-end overflow-hidden">
-          <h3 className="text-[clamp(4rem,12vw,11rem)] font-bold tracking-[-0.045em] text-[#111827] leading-[0.85] select-none whitespace-nowrap">
-            {product.name}
-          </h3>
-        </div>
+  const inner = (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-12 py-12 md:py-16 lg:py-20 border-t border-[#E5E7EB] group-hover:border-[#D1D5DB] transition-colors">
+      {/* Left: product name + tagline */}
+      <div>
+        <motion.h3
+          className={`text-[clamp(2.5rem,7vw,6rem)] font-normal leading-[0.9] tracking-[-0.04em] select-none transition-colors duration-500 mb-4 ${
+            isClickable ? "text-[#111827]" : "text-[#E5E7EB]"
+          }`}
+          whileHover={isClickable ? { x: 8 } : undefined}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          {product.name}
+        </motion.h3>
+        <p className="text-[clamp(0.875rem,1.5vw,1.125rem)] font-normal text-[#6B7280] leading-[1.4] whitespace-pre-line tracking-[-0.01em]">
+          {product.tagline}
+        </p>
       </div>
-    </Link>
+
+      {/* Right: description */}
+      <div className="flex items-end">
+        <p className="text-body-lg text-[#9CA3AF] leading-relaxed max-w-xl group-hover:text-[#4B5563] transition-colors duration-500">
+          {product.description}
+        </p>
+      </div>
+    </div>
   );
+
+  if (isClickable) {
+    return (
+      <Link
+        href={product.href}
+        className="group block focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2 rounded-lg"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return <div className="group block">{inner}</div>;
 }
