@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe/client";
+import { prisma } from "@/lib/prisma";
 import { serverAnalytics } from "@/lib/analytics";
 import {
   handleCheckoutComplete,
@@ -59,6 +60,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Webhook signature verification failed" },
       { status: 400 },
+    );
+  }
+
+  // H-I2: idempotency guard. Stripe retries events on 5xx / timeouts,
+  // so without this table `handleCheckoutComplete` / `handleInvoicePaid`
+  // would double-fire analytics + double-activate subscriptions.
+  try {
+    await prisma.processedStripeEvent.create({
+      data: { stripeEventId: event.id, eventType: event.type },
+    });
+  } catch (err) {
+    // Unique-constraint violation = replay; return 200 so Stripe stops.
+    // Any other error is a real DB issue and we let it 500 so Stripe
+    // retries (correct behaviour).
+    const code = (err as { code?: string } | null)?.code;
+    if (code === "P2002") {
+      logger.info("Stripe webhook replay ignored", {
+        stripeEventId: event.id,
+        eventType: event.type,
+      });
+      return NextResponse.json({ received: true, replayed: true });
+    }
+    logger.error("Failed to persist Stripe event-id dedup row", {
+      error: err,
+      stripeEventId: event.id,
+    });
+    return NextResponse.json(
+      { error: "Internal error" },
+      { status: 500 }, // H-I2: real 500 so Stripe retries
     );
   }
 
@@ -129,8 +159,18 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     logger.error(`Error handling webhook event ${event.type}`, error);
-    // Return 200 to acknowledge receipt (prevent retries for non-critical errors)
-    return NextResponse.json({ received: true, error: "Handler error" });
+    // H-I2: roll back the dedup row so Stripe's next retry actually
+    // re-processes this event. Previously we returned 200 on handler
+    // errors, which silently swallowed real failures and left Stripe
+    // thinking the event was handled.
+    try {
+      await prisma.processedStripeEvent.delete({
+        where: { stripeEventId: event.id },
+      });
+    } catch {
+      // best effort
+    }
+    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
