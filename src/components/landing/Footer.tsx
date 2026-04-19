@@ -32,8 +32,6 @@ const solutionLinks = [
   { label: "Compliance Monitoring", href: "/solutions/compliance-monitoring" },
   { label: "NCA Submissions", href: "/solutions/nca-submissions" },
   { label: "Audit & Evidence", href: "/solutions/audit-evidence" },
-  { label: "Due Diligence", href: "/assure/dashboard" },
-  { label: "Investor Readiness", href: "/assure/dashboard" },
   { label: "Stakeholder Network", href: "/solutions/stakeholder-network" },
   { label: "Mission Timeline Planning", href: "/solutions/mission-timeline" },
   { label: "Incident Management", href: "/solutions/incident-management" },
@@ -52,7 +50,6 @@ const solutionLinks = [
   { label: "Supply Chain Security", href: "/solutions/supply-chain-security" },
   { label: "Satellite Tracking", href: "/solutions/satellite-tracking" },
   { label: "Training & Certification", href: "/academy/dashboard" },
-  { label: "Data Room Management", href: "/assure/dashboard" },
   { label: "Regulatory Arbitrage", href: "/solutions/regulatory-arbitrage" },
 ];
 
@@ -82,7 +79,6 @@ const industryLinks = [
   },
   { label: "Space Hardware Manufacturers", href: "/cra/classify" },
   { label: "Defense & Security", href: "/industries/defense-security" },
-  { label: "Insurance & Finance", href: "/assure/dashboard" },
   { label: "Legal & Consulting", href: "/industries/legal-consulting" },
   { label: "Space Startups", href: "/assessment" },
 ];
