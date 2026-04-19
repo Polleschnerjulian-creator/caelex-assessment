@@ -27,15 +27,28 @@ export async function POST(
       );
     }
 
-    // Resolve organisation
+    // Resolve organisation + role.
+    // C3 fix: role gate added. Previously any MEMBER/VIEWER could revoke
+    // certificates; now only OWNER/ADMIN/MANAGER can.
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: { organizationId: true },
+      select: { organizationId: true, role: true },
     });
 
     if (!membership) {
       return NextResponse.json(
         { error: "No organisation found for this user" },
+        { status: 403 },
+      );
+    }
+
+    if (
+      membership.role !== "OWNER" &&
+      membership.role !== "ADMIN" &&
+      membership.role !== "MANAGER"
+    ) {
+      return NextResponse.json(
+        { error: "Insufficient role to revoke certificates" },
         { status: 403 },
       );
     }

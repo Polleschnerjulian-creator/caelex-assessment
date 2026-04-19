@@ -32,14 +32,24 @@ export async function GET(
       return NextResponse.json({ certificate: cert.certificate });
     }
 
-    // Private certificates require auth
+    // Private certificates require auth.
+    // C3 fix: operatorId semantics unified to organizationId across all
+    // verity routes (issue/list/revoke/visibility). Access is granted
+    // when the calling user is a member of the owning organisation.
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verify the user owns this certificate
-    if (cert.operatorId !== session.user.id) {
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        userId: session.user.id,
+        organizationId: cert.operatorId,
+      },
+      select: { role: true },
+    });
+
+    if (!membership) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

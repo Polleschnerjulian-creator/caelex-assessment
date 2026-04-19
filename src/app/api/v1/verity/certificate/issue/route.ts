@@ -122,7 +122,11 @@ export async function POST(request: NextRequest) {
     await prisma.verityCertificate.create({
       data: {
         certificateId: certificate.certificate_id,
-        operatorId: session.user.id,
+        // C3 fix: operatorId is the organisation, not the individual
+        // user — aligned with list/revoke/visibility which filter by
+        // membership.organizationId. Previously wrote user.id which
+        // broke IDOR checks on revoke (cert not found in the queries).
+        operatorId: membership.organizationId,
         satelliteNorad: satellite_norad_id ?? null,
         certificate: structuredClone(certificate),
         claimsCount: certificate.claims.length,

@@ -36,15 +36,28 @@ export async function PATCH(
       );
     }
 
-    // Resolve organisation
+    // C3 fix: role gate added. Visibility (public vs private) changes
+    // the external trust surface of a certificate and is therefore
+    // restricted to OWNER/ADMIN/MANAGER.
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: { organizationId: true },
+      select: { organizationId: true, role: true },
     });
 
     if (!membership) {
       return NextResponse.json(
         { error: "No organisation found for this user" },
+        { status: 403 },
+      );
+    }
+
+    if (
+      membership.role !== "OWNER" &&
+      membership.role !== "ADMIN" &&
+      membership.role !== "MANAGER"
+    ) {
+      return NextResponse.json(
+        { error: "Insufficient role to change certificate visibility" },
         { status: 403 },
       );
     }
