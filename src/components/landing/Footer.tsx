@@ -178,7 +178,6 @@ const legalOtherLinks = [
   { label: "Impressum", href: "/legal/impressum" },
   { label: "Acceptable Use", href: "/legal/content-policy" },
   { label: "Security Policy", href: "/legal/security" },
-  { label: "security.txt", href: "/.well-known/security.txt" },
   { label: "Accessibility", href: "/legal/barrierefreiheit" },
 ];
 
