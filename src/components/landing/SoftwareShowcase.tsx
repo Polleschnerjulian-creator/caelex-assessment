@@ -4,33 +4,38 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 
+/**
+ * SoftwareShowcase — mirrors the Palantir homepage "Platforms" section 1:1.
+ *
+ * Verified structure (from palantir.com CMS, April 2026):
+ *  - Section eyebrow: "Platforms"
+ *  - Section headline: a single big statement under the eyebrow
+ *  - Each product row has exactly three things:
+ *      1. heading = "↳ [Name]"  (arrow is part of the heading text)
+ *      2. subheading = one-line tagline, Title Case
+ *      3. CTA = "Explore [Name]" inline link
+ *  - No description paragraph. No images. No body copy.
+ */
+
 const PRODUCTS = [
   {
     name: "Comply",
-    tagline: "Navigate regulation, from authorization to audit.",
-    description:
-      "The regulatory command center. Real-time compliance posture across space law, cybersecurity directives, and national regulations — for every operator type, every jurisdiction, every mission phase.",
+    tagline: "Operating System for Regulatory Compliance",
     href: "/platform",
   },
   {
     name: "Sentinel",
-    tagline: "Collect compliance evidence, from orbit to ground.",
-    description:
-      "Autonomous evidence agents deployed at operator premises. Cryptographically signed hash chains, tamper-evident audit trails, and cross-verification against public orbital data.",
+    tagline: "Operating System for Compliance Evidence",
     href: "/sentinel",
   },
   {
     name: "Ephemeris",
-    tagline: "Predict compliance risk, from today to end-of-life.",
-    description:
-      "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
+    tagline: "Operating System for Compliance Forecasting",
     href: "/systems/ephemeris",
   },
   {
     name: "Atlas",
-    tagline: "Map the regulatory landscape, jurisdiction by jurisdiction.",
-    description:
-      "Regulatory intelligence layer. Side-by-side jurisdiction comparator, landing rights database, and live regulatory updates feed — for every operator evaluating where to license, launch, or operate next.",
+    tagline: "Operating System for Regulatory Intelligence",
     href: "/atlas",
   },
 ];
@@ -67,15 +72,17 @@ export default function SoftwareShowcase() {
   return (
     <section className="bg-white py-32 md:py-44">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-        {/* Eyebrow + Headline */}
+        {/* Eyebrow */}
         <AnimatedRow>
           <p className="text-micro uppercase tracking-[0.2em] text-[#6B7280] mb-5">
-            Our Software
+            Platforms
           </p>
         </AnimatedRow>
+
+        {/* Headline */}
         <AnimatedRow delay={0.1}>
           <h2 className="text-[clamp(1.875rem,4.5vw,3.75rem)] font-medium tracking-[-0.03em] text-[#111827] leading-[1.05] max-w-[900px]">
-            The operating system for space regulatory compliance.
+            Foundational software for the new space economy.
           </h2>
         </AnimatedRow>
 
@@ -100,31 +107,24 @@ function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
       href={product.href}
       className="group block border-t border-[#E5E7EB] transition-colors duration-500 hover:border-[#9CA3AF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] focus-visible:ring-offset-2 rounded-sm"
     >
-      <div className="py-12 md:py-16 lg:py-20 max-w-[900px]">
-        {/* Arrow + Product name */}
-        <div className="flex items-baseline gap-4 md:gap-6 mb-5">
+      <div className="py-16 md:py-20 lg:py-24">
+        {/* Heading: ↳ Product Name */}
+        <h3 className="text-[clamp(2.5rem,7vw,6rem)] font-normal leading-[0.95] tracking-[-0.04em] text-[#111827] select-none mb-5 md:mb-6">
           <span
             aria-hidden="true"
-            className="text-[clamp(1.5rem,3vw,2.5rem)] font-light text-[#9CA3AF] leading-none transition-all duration-500 group-hover:text-[#111827] group-hover:translate-x-1"
+            className="inline-block mr-3 md:mr-5 text-[#9CA3AF] font-light transition-all duration-500 group-hover:text-[#111827] group-hover:translate-x-1"
           >
             ↳
           </span>
-          <h3 className="text-[clamp(2.5rem,7vw,6rem)] font-normal leading-[0.9] tracking-[-0.04em] text-[#111827] select-none">
-            {product.name}
-          </h3>
-        </div>
+          {product.name}
+        </h3>
 
-        {/* Tagline */}
-        <p className="text-[clamp(1rem,1.75vw,1.375rem)] font-normal text-[#4B5563] leading-[1.35] tracking-[-0.015em] mb-6 md:mb-8">
+        {/* Tagline (subheading) */}
+        <p className="text-[clamp(1.125rem,2vw,1.5rem)] font-normal text-[#4B5563] leading-[1.3] tracking-[-0.015em] mb-8 md:mb-10 max-w-[720px]">
           {product.tagline}
         </p>
 
-        {/* Description */}
-        <p className="text-body-lg text-[#9CA3AF] leading-relaxed max-w-[640px] transition-colors duration-500 group-hover:text-[#4B5563] mb-7 md:mb-9">
-          {product.description}
-        </p>
-
-        {/* Explore CTA */}
+        {/* Inline CTA: Explore [Name] */}
         <span className="inline-flex items-center gap-2 text-body font-medium text-[#111827]">
           Explore {product.name}
           <span
