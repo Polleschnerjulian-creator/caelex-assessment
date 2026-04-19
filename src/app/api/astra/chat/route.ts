@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { AstraEngine } from "@/lib/astra/engine";
 import { MAX_MESSAGE_LENGTH } from "@/lib/astra/conversation-manager";
@@ -84,8 +84,10 @@ export async function POST(request: NextRequest) {
     const organizationName = membership.organization.name;
 
     // ─── Rate Limiting ───
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+    // H-API4: previously used leftmost x-forwarded-for (spoofable).
+    // The shared getIdentifier() helper applies the 4-layer trust chain
+    // (cf-connecting-ip → x-real-ip → rightmost xff → "unknown").
+    const ip = getIdentifier(request, userId);
     const rateLimitResult = await checkRateLimit(
       ASTRA_RATE_LIMIT_TIER,
       `astra:${userId}`,

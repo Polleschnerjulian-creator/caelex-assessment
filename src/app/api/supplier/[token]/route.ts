@@ -194,15 +194,20 @@ export async function POST(
       },
     });
 
-    // Mark token as completed
+    // Mark token as completed.
+    // H-API4: previously used leftmost x-forwarded-for (spoofable). The
+    // shared getIdentifier() helper returns "ip:<x>" / "user:<id>" — we
+    // strip the prefix to store the raw IP, then fall back to the
+    // already-recorded token IP on unknown.
+    const idString = getIdentifier(request);
+    const supplierIp = idString.startsWith("ip:")
+      ? idString.slice(3)
+      : portalToken.ipAddress;
     await prisma.supplierPortalToken.update({
       where: { id: portalToken.id },
       data: {
         completedAt: new Date(),
-        ipAddress:
-          request.headers.get("x-forwarded-for")?.split(",")[0] ||
-          request.headers.get("x-real-ip") ||
-          portalToken.ipAddress,
+        ipAddress: supplierIp,
         userAgent: request.headers.get("user-agent") || portalToken.userAgent,
       },
     });

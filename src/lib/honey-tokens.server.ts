@@ -143,14 +143,20 @@ async function recordHoneyTokenTrigger(
     },
   });
 
+  // H-D6: sanitize attacker-controlled strings before persisting. IP
+  // and UA flow into HTML alerts (escaped at render, but we also bound
+  // length here) and into security dashboards.
+  const safeIp = context.ipAddress?.slice(0, 64);
+  const safeUa = context.userAgent?.slice(0, 500);
+
   // Update honey token statistics
   const honeyToken = await prisma.honeyToken.update({
     where: { id: honeyTokenId },
     data: {
       triggerCount: { increment: 1 },
       lastTriggeredAt: new Date(),
-      lastTriggeredIp: context.ipAddress,
-      lastTriggeredUa: context.userAgent,
+      lastTriggeredIp: safeIp,
+      lastTriggeredUa: safeUa,
     },
   });
 
@@ -207,10 +213,26 @@ async function sendHoneyTokenAlerts(
     },
   };
 
+  // H-D5: escape every interpolated value before embedding in the HTML
+  // alert. Attacker-controlled strings (UA, IP, requestPath) would
+  // otherwise be stored-XSS'd into the security team's inbox when the
+  // mail client renders HTML (Gmail/Outlook do).
+  const escHtml = (s: string | null | undefined): string =>
+    (s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   // Send email alert if configured
   if (honeyToken.alertEmail) {
     try {
       const { sendEmail } = await import("@/lib/email");
+      const location =
+        context.city && context.country
+          ? `${context.city}, ${context.country}`
+          : "Unknown";
       await sendEmail({
         to: honeyToken.alertEmail,
         subject: `SECURITY ALERT: Honey Token "${honeyToken.name}" Triggered`,
@@ -218,12 +240,13 @@ async function sendHoneyTokenAlerts(
           <h2 style="color: #dc2626;">Security Alert: Honey Token Triggered</h2>
           <p>A honey token was accessed, indicating potential unauthorized access:</p>
           <ul>
-            <li><strong>Token Name:</strong> ${honeyToken.name}</li>
-            <li><strong>Token Type:</strong> ${honeyToken.tokenType}</li>
-            <li><strong>Time:</strong> ${new Date().toISOString()}</li>
-            <li><strong>IP Address:</strong> ${context.ipAddress || "Unknown"}</li>
-            <li><strong>Location:</strong> ${context.city && context.country ? `${context.city}, ${context.country}` : "Unknown"}</li>
-            <li><strong>Request Path:</strong> ${context.requestPath || "N/A"}</li>
+            <li><strong>Token Name:</strong> ${escHtml(honeyToken.name)}</li>
+            <li><strong>Token Type:</strong> ${escHtml(honeyToken.tokenType)}</li>
+            <li><strong>Time:</strong> ${escHtml(new Date().toISOString())}</li>
+            <li><strong>IP Address:</strong> ${escHtml(context.ipAddress || "Unknown")}</li>
+            <li><strong>Location:</strong> ${escHtml(location)}</li>
+            <li><strong>Request Path:</strong> ${escHtml(context.requestPath || "N/A")}</li>
+            <li><strong>User-Agent:</strong> ${escHtml(context.userAgent?.slice(0, 500) || "Unknown")}</li>
           </ul>
           <p><strong>Immediate Action Required:</strong> Review your security logs and consider this a potential breach indicator.</p>
         `,

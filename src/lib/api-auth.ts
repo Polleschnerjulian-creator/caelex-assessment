@@ -15,6 +15,7 @@ import {
 } from "./services/api-key-service";
 import { verifySignature, extractRequestDetails } from "./hmac-signing.server";
 import { decrypt } from "@/lib/encryption";
+import { getIdentifier } from "@/lib/ratelimit";
 
 // ─── Types ───
 
@@ -224,10 +225,13 @@ export async function logRequest(
     path: new URL(request.url).pathname,
     statusCode,
     responseTimeMs,
-    ipAddress:
-      request.headers.get("x-forwarded-for")?.split(",")[0] ||
-      request.headers.get("x-real-ip") ||
-      undefined,
+    // H-API4: use the shared 4-layer IP resolver. Strip the "ip:" prefix
+    // for the DB column; "user:*" / "unknown" are not meaningful here so
+    // we coerce them to undefined.
+    ipAddress: (() => {
+      const id = getIdentifier(request);
+      return id.startsWith("ip:") ? id.slice(3) : undefined;
+    })(),
     userAgent: request.headers.get("user-agent") || undefined,
     errorCode: error ? statusCode.toString() : undefined,
     errorMessage: error,

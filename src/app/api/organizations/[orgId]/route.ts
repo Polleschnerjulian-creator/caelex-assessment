@@ -127,16 +127,44 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
-    const updateOrgSchema = z.object({
-      name: z.string().min(2).optional(),
-      logoUrl: z.string().url().optional(),
-      primaryColor: z.string().optional(),
-      timezone: z.string().optional(),
-      defaultLanguage: z.string().optional(),
-      billingEmail: z.string().email().optional(),
-      vatNumber: z.string().optional(),
-      billingAddress: z.record(z.string(), z.unknown()).optional(),
-    });
+    // C6 fix: billingAddress was z.record(z.string(), z.unknown()) which
+    // accepted arbitrary JSON — protected-field override if the service
+    // layer spreads it, stored-XSS if any downstream renderer inlines it.
+    // Now a strict object with bounded string fields only.
+    const billingAddressSchema = z
+      .object({
+        street: z.string().max(200).optional(),
+        street2: z.string().max(200).optional(),
+        city: z.string().max(120).optional(),
+        state: z.string().max(120).optional(),
+        postalCode: z.string().max(20).optional(),
+        country: z.string().length(2).toUpperCase().optional(), // ISO-3166-1 alpha-2
+      })
+      .strict()
+      .nullable();
+
+    const updateOrgSchema = z
+      .object({
+        name: z.string().min(2).max(120).optional(),
+        logoUrl: z
+          .string()
+          .url()
+          .max(2048)
+          .refine((v) => /^https:\/\//.test(v), {
+            message: "logoUrl must be https",
+          })
+          .optional(),
+        primaryColor: z
+          .string()
+          .regex(/^#[0-9a-fA-F]{6}$/, "must be #RRGGBB")
+          .optional(),
+        timezone: z.string().max(64).optional(), // e.g. "Europe/Berlin"
+        defaultLanguage: z.enum(["en", "de", "fr", "es"]).optional(),
+        billingEmail: z.string().email().max(254).optional(),
+        vatNumber: z.string().max(32).optional(),
+        billingAddress: billingAddressSchema.optional(),
+      })
+      .strict();
 
     const body = await request.json();
     const parsed = updateOrgSchema.safeParse(body);
