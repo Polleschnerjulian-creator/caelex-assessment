@@ -14,13 +14,29 @@ import { ShareLinkCopier } from "../_components/ShareLinkCopier";
 
 export const dynamic = "force-dynamic";
 
+/** C7: searchParams values can be string | string[] | undefined when the
+ *  same key appears multiple times (`?country=DE&country=FR`). The prior
+ *  typing as `string` crashed with TypeError on split(). */
 interface Props {
   searchParams: Promise<{
-    country?: string;
-    area?: string;
-    ids?: string;
-    title?: string;
+    country?: string | string[];
+    area?: string | string[];
+    ids?: string | string[];
+    title?: string | string[];
   }>;
+}
+
+/** Flatten string | string[] | undefined and split each entry on commas. */
+function parseCsvParam(v: string | string[] | undefined): string[] {
+  if (v === undefined) return [];
+  const arr = Array.isArray(v) ? v : [v];
+  return arr.flatMap((x) => x.split(",")).filter(Boolean);
+}
+
+/** Take the first string value from a potentially-repeated param. */
+function firstString(v: string | string[] | undefined): string | undefined {
+  if (v === undefined) return undefined;
+  return Array.isArray(v) ? v[0] : v;
 }
 
 const VALID_AREAS: ComplianceArea[] = [
@@ -69,24 +85,19 @@ function resolveSources(
 
 export default async function SharePage({ searchParams }: Props) {
   const params = await searchParams;
-  const countries =
-    params.country
-      ?.split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean) ?? [];
-  const areas = (
-    params.area
-      ?.split(",")
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean) ?? []
-  ).filter((a): a is ComplianceArea =>
-    VALID_AREAS.includes(a as ComplianceArea),
-  );
-  const ids =
-    params.ids
-      ?.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean) ?? [];
+  const countries = parseCsvParam(params.country)
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+  const areas = parseCsvParam(params.area)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .filter((a): a is ComplianceArea =>
+      VALID_AREAS.includes(a as ComplianceArea),
+    );
+  const ids = parseCsvParam(params.ids)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const titleParam = firstString(params.title);
 
   // Guard against unknown country codes
   const knownJurisdictions = new Set(getAvailableJurisdictions());
@@ -96,7 +107,7 @@ export default async function SharePage({ searchParams }: Props) {
   const linkStatus = await getLinkStatusMap(sources.map((s) => s.id));
 
   const title =
-    params.title?.trim() ||
+    titleParam?.trim() ||
     (validCountries.length > 0
       ? `Regulatory stack — ${validCountries.join(", ")}`
       : "Shared Atlas selection");

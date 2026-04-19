@@ -162,25 +162,33 @@ export function useBookmarks(): {
 
   const toggle = useCallback(
     (item: BookmarkRef) => {
-      const isSaved = all.some((b) => b.id === item.id);
-      const next = isSaved
-        ? all.filter((b) => b.id !== item.id)
-        : [...all, item];
-
-      // Optimistic UI
-      setAll(next);
+      let isSaved = false;
+      // H10: compute next state from the live state snapshot via a functional
+      // updater. Capturing `all` in the closure meant two rapid toggles would
+      // roll back each other on failure.
+      setAll((prev) => {
+        isSaved = prev.some((b) => b.id === item.id);
+        return isSaved ? prev.filter((b) => b.id !== item.id) : [...prev, item];
+      });
 
       if (isAuthed) {
-        if (isSaved) {
-          deleteOnApi(item.id).catch(() => setAll(all));
-        } else {
-          createOnApi(item).catch(() => setAll(all));
-        }
+        const op = isSaved ? deleteOnApi(item.id) : createOnApi(item);
+        op.catch(() => {
+          // Roll back THIS toggle only — leave any other concurrent toggle alone.
+          setAll((prev) =>
+            isSaved ? [...prev, item] : prev.filter((b) => b.id !== item.id),
+          );
+        });
       } else {
+        // localStorage: fetch the freshest state after the functional update
+        // and persist that.
+        const next = isSaved
+          ? readLocal().filter((b) => b.id !== item.id)
+          : [...readLocal(), item];
         writeLocal(next);
       }
     },
-    [all, isAuthed],
+    [isAuthed],
   );
 
   const remove = useCallback(

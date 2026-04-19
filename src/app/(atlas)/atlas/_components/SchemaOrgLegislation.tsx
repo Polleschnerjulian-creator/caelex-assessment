@@ -56,11 +56,21 @@ export function SchemaOrgLegislation({
     })),
   ];
 
+  // H9: JSON.stringify does NOT escape "</script>"; if any curator-supplied
+  // field (e.g. scope_description with embedded markup) contains that
+  // substring, the <script> tag is closed early and arbitrary HTML follows.
+  // Neutralise by replacing "<" with its Unicode escape and covering the
+  // LINE SEPARATOR / PARAGRAPH SEPARATOR characters that break JSON parsers.
+  const safeJson = JSON.stringify(items)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+
   return (
     <script
       type="application/ld+json"
       // eslint-disable-next-line react/no-danger
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(items) }}
+      dangerouslySetInnerHTML={{ __html: safeJson }}
     />
   );
 }
