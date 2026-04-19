@@ -1,8 +1,31 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
-// GET /api/atlas/annotations?sourceId=xxx
+export const runtime = "nodejs";
+
+/** H5: validate sourceId shape to prevent arbitrary garbage in the table. */
+const SourceIdSchema = z
+  .string()
+  .min(1)
+  .max(200)
+  .regex(/^[A-Za-z0-9_.-]+$/, {
+    message: "sourceId must be alphanumeric with -_. only",
+  });
+
+const UpsertSchema = z.object({
+  sourceId: SourceIdSchema,
+  text: z.string().max(10_000),
+});
+
+/** GET /api/atlas/annotations?sourceId=xxx */
 export async function GET(request: Request) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
@@ -10,61 +33,72 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const sourceId = searchParams.get("sourceId");
-
-  if (!sourceId) {
-    return NextResponse.json({ error: "sourceId required" }, { status: 400 });
+  const rawSourceId = searchParams.get("sourceId");
+  const parsed = SourceIdSchema.safeParse(rawSourceId);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid sourceId" }, { status: 400 });
   }
 
-  const annotation = await prisma.atlasAnnotation.findUnique({
+  // H5: scope by organisation so annotations don't follow a user across orgs
+  const annotation = await prisma.atlasAnnotation.findFirst({
     where: {
-      userId_sourceId: {
-        userId: atlas.userId,
-        sourceId,
-      },
+      userId: atlas.userId,
+      sourceId: parsed.data,
+      organizationId: atlas.organizationId,
     },
   });
 
   return NextResponse.json({ annotation });
 }
 
-// POST /api/atlas/annotations — upsert
+/** POST /api/atlas/annotations — upsert */
 export async function POST(request: Request) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { sourceId, text } = body;
+  // H1: user-keyed rate limit on writes
+  const rl = await checkRateLimit("api", getIdentifier(request, atlas.userId));
+  if (!rl.success) return createRateLimitResponse(rl);
 
-  if (!sourceId || typeof text !== "string") {
+  const rawBody = await request.json().catch(() => null);
+  const parsed = UpsertSchema.safeParse(rawBody);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "sourceId and text required" },
+      { error: "Invalid payload", details: parsed.error.format() },
       { status: 400 },
     );
   }
 
-  const annotation = await prisma.atlasAnnotation.upsert({
-    where: {
-      userId_sourceId: {
-        userId: atlas.userId,
-        sourceId,
+  try {
+    const annotation = await prisma.atlasAnnotation.upsert({
+      where: {
+        userId_sourceId: {
+          userId: atlas.userId,
+          sourceId: parsed.data.sourceId,
+        },
       },
-    },
-    update: { text },
-    create: {
-      userId: atlas.userId,
-      organizationId: atlas.organizationId,
-      sourceId,
-      text,
-    },
-  });
+      update: {
+        text: parsed.data.text,
+        organizationId: atlas.organizationId,
+      },
+      create: {
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
+        sourceId: parsed.data.sourceId,
+        text: parsed.data.text,
+      },
+    });
 
-  return NextResponse.json({ annotation });
+    return NextResponse.json({ annotation });
+  } catch (err) {
+    logger.error("Atlas annotation upsert failed", { error: err });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 }
 
-// DELETE /api/atlas/annotations?sourceId=xxx
+/** DELETE /api/atlas/annotations?sourceId=xxx */
 export async function DELETE(request: Request) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
@@ -72,16 +106,16 @@ export async function DELETE(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const sourceId = searchParams.get("sourceId");
-
-  if (!sourceId) {
-    return NextResponse.json({ error: "sourceId required" }, { status: 400 });
+  const parsed = SourceIdSchema.safeParse(searchParams.get("sourceId"));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid sourceId" }, { status: 400 });
   }
 
   await prisma.atlasAnnotation.deleteMany({
     where: {
       userId: atlas.userId,
-      sourceId,
+      sourceId: parsed.data,
+      organizationId: atlas.organizationId,
     },
   });
 

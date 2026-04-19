@@ -2,23 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** H4: restrict href to http(s) only — blocks javascript:/data: URIs. */
+const SafeHrefSchema = z
+  .string()
+  .min(1)
+  .max(500)
+  .refine((v) => /^(https?:)?\/\//.test(v) || v.startsWith("/"), {
+    message: "href must be http(s) or a site-relative path",
+  });
 
 const BookmarkSchema = z.object({
   itemId: z.string().min(1).max(200),
   itemType: z.enum(["source", "jurisdiction", "authority"]),
   title: z.string().min(1).max(500),
   subtitle: z.string().max(500).nullish(),
-  href: z.string().min(1).max(500),
+  href: SafeHrefSchema,
   note: z.string().max(2000).nullish(),
 });
 
 const BulkImportSchema = z.object({
   items: z.array(BookmarkSchema).max(500),
 });
+
+/** M10: hard cap per user — prevents DB bloat from abusive clients. */
+const MAX_BOOKMARKS_PER_USER = 1000;
 
 // ─── GET /api/atlas/bookmarks ─────────────────────────────────────────
 
@@ -71,11 +88,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // H1: user-keyed rate-limit on writes
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await req.json().catch(() => ({}));
+
+    // Pre-fetch current count once for quota enforcement
+    const currentCount = await prisma.atlasBookmark.count({
+      where: { userId: session.user.id },
+    });
 
     // Support both single and bulk import
     const bulk = BulkImportSchema.safeParse(body);
     if (bulk.success) {
+      // M10: cap total rows per user
+      if (currentCount + bulk.data.items.length > MAX_BOOKMARKS_PER_USER) {
+        return NextResponse.json(
+          {
+            error: "Bookmark quota exceeded",
+            limit: MAX_BOOKMARKS_PER_USER,
+            current: currentCount,
+          },
+          { status: 409 },
+        );
+      }
       const result = await prisma.$transaction(
         bulk.data.items.map((it) =>
           prisma.atlasBookmark.upsert({
@@ -111,6 +148,30 @@ export async function POST(req: NextRequest) {
         { error: "Invalid payload", details: single.error.format() },
         { status: 400 },
       );
+    }
+
+    // M10: per-user quota check (count here is approximate — upsert may
+    // replace an existing row, in which case count doesn't grow)
+    if (currentCount >= MAX_BOOKMARKS_PER_USER) {
+      const existing = await prisma.atlasBookmark.findUnique({
+        where: {
+          userId_itemId: {
+            userId: session.user.id,
+            itemId: single.data.itemId,
+          },
+        },
+        select: { id: true },
+      });
+      if (!existing) {
+        return NextResponse.json(
+          {
+            error: "Bookmark quota exceeded",
+            limit: MAX_BOOKMARKS_PER_USER,
+            current: currentCount,
+          },
+          { status: 409 },
+        );
+      }
     }
 
     const row = await prisma.atlasBookmark.upsert({

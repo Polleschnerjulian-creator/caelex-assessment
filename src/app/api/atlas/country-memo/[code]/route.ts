@@ -6,33 +6,86 @@ import {
 } from "@/data/legal-sources";
 import { generateDocumentPDF } from "@/lib/pdf/jspdf-generator";
 import type { ReportSection } from "@/lib/pdf/types";
+import { auth } from "@/lib/auth";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** Allowed jurisdiction codes. Kept in sync with JURISDICTION_DATA keys. */
+const VALID_CODES = new Set([
+  "AT",
+  "BE",
+  "CH",
+  "CZ",
+  "DE",
+  "DK",
+  "ES",
+  "FI",
+  "FR",
+  "GR",
+  "IE",
+  "IT",
+  "LU",
+  "NL",
+  "NO",
+  "PL",
+  "PT",
+  "SE",
+  "UK",
+]);
+
 /**
  * GET /api/atlas/country-memo/[code]
  *
- * Returns a PDF regulatory memo for a single country, built from the
- * already-verified Atlas data. Zero external calls — purely a rendering
- * of structured data through the existing jsPDF generator.
- *
- * Intended for lawyers / compliance officers who want a printable
- * briefing of a jurisdiction's space-law stack.
+ * Returns a PDF regulatory memo for a single country. Auth-gated
+ * (H2 fix) and rate-limited (document_generation tier, 5/hr) to
+ * prevent anonymous DoS via CPU-heavy jsPDF generation.
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
+  // H2: require authenticated session
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // H1: rate-limit by user (falls back to IP on anonymous, but we already
+  //     require auth above so this is user-keyed in practice)
+  const identifier = getIdentifier(req, session.user.id);
+  const rl = await checkRateLimit("document_generation", identifier);
+  if (!rl.success) {
+    logger.warn("Atlas country-memo rate-limited", {
+      userId: session.user.id,
+      identifier,
+    });
+    return createRateLimitResponse(rl);
+  }
+
   const { code: rawCode } = await params;
   const code = rawCode.toUpperCase();
+
+  // L2: strict allowlist instead of verbatim echo in Content-Disposition
+  if (!VALID_CODES.has(code)) {
+    return NextResponse.json(
+      { error: "Unknown jurisdiction" },
+      { status: 404 },
+    );
+  }
 
   const data = JURISDICTION_DATA.get(
     code as Parameters<(typeof JURISDICTION_DATA)["get"]>[0],
   );
   if (!data) {
     return NextResponse.json(
-      { error: `Unknown jurisdiction: ${code}` },
+      { error: "Unknown jurisdiction" },
       { status: 404 },
     );
   }
@@ -60,7 +113,9 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="atlas-memo-${code.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf"`,
-      "Cache-Control": "public, max-age=3600, s-maxage=86400",
+      // Private: memos can differ per user once auth-based scoping grows
+      "Cache-Control": "private, max-age=3600",
+      "X-RateLimit-Remaining": rl.remaining.toString(),
     },
   });
 }
