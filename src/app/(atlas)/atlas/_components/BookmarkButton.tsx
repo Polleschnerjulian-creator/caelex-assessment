@@ -65,11 +65,18 @@ async function createOnApi(item: BookmarkRef): Promise<boolean> {
 }
 
 async function deleteOnApi(itemId: string): Promise<boolean> {
-  const res = await fetch(
-    `/api/atlas/bookmarks?itemId=${encodeURIComponent(itemId)}`,
-    { method: "DELETE" },
-  );
-  return res.ok;
+  try {
+    const res = await fetch(
+      `/api/atlas/bookmarks?itemId=${encodeURIComponent(itemId)}`,
+      { method: "DELETE" },
+    );
+    return res.ok;
+  } catch (err) {
+    // L5: surface network failures to the caller instead of swallowing.
+    // eslint-disable-next-line no-console
+    console.warn("Atlas bookmark delete failed", err);
+    return false;
+  }
 }
 
 async function bulkImport(items: BookmarkRef[]): Promise<boolean> {
