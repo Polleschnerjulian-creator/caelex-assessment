@@ -98,13 +98,18 @@ const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
-  // Skip type-checking and linting during Vercel builds to avoid OOM on 8GB containers.
-  // These checks run locally via pre-commit hooks (Husky + lint-staged).
+  // H-I3: on CI (github actions) run strict type + lint gates. On the
+  // Vercel build container we still skip to avoid 8GB-OOM during the
+  // giant production bundle — but github actions ci.yml runs the same
+  // `npm run typecheck` + `npm run lint` as separate jobs, so a type
+  // error can no longer sneak past via vercel direct-push.
+  //
+  // Pre-commit hooks (Husky + lint-staged) are the local safety net.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.CI !== "true",
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.CI !== "true",
   },
 
   // Image optimization configuration
