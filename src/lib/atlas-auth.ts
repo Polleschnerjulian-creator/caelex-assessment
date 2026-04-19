@@ -101,14 +101,25 @@ export async function getAtlasAuth(
  * Require the caller to be a platform-level administrator (user.role === "admin").
  * Returns the userId on success, null otherwise — route handlers should
  * respond with 401/403 on null.
+ *
+ * C5 fix: re-fetches role + isActive from the DB instead of trusting the
+ * JWT. A demoted or deactivated admin loses admin access immediately on
+ * the next request instead of the 5-minute JWT refresh window.
  */
 export async function requirePlatformAdmin(): Promise<{
   userId: string;
 } | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
-  if ((session.user as { role?: string }).role !== "admin") return null;
-  return { userId: session.user.id };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true, isActive: true },
+  });
+
+  if (!user || !user.isActive) return null;
+  if (user.role !== "admin") return null;
+  return { userId: user.id };
 }
 
 /**

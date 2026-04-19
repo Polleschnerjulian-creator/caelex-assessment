@@ -224,9 +224,9 @@ export async function GET(req: Request) {
 }
 
 /**
- * Health check / manual trigger endpoint
- * POST is used for manual testing
+ * C4 fix: POST alias removed. Previously this re-invoked GET(req), which
+ * meant anyone holding CRON_SECRET could trigger expensive deleteMany
+ * transactions via POST with no additional guard. Vercel Cron only calls
+ * GET; manual tests should use `curl -H "Authorization: Bearer $CRON_SECRET"`
+ * against the GET endpoint.
  */
-export async function POST(req: Request) {
-  return GET(req);
-}

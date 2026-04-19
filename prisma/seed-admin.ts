@@ -9,11 +9,23 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS
-  ? process.env.ADMIN_EMAILS.split(",")
-      .map((e) => e.trim())
-      .filter(Boolean)
-  : ["julian@caelex.eu", "cs@ahrensandco.de"];
+// C9 fix: no hardcoded defaults. A staging / fork env restored from a
+// prod DB would otherwise silently elevate anyone who registered one of
+// those emails. ADMIN_EMAILS must be explicitly set as an env var
+// (comma-separated) — otherwise the script refuses to run.
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim())
+  .filter(Boolean);
+
+if (ADMIN_EMAILS.length === 0) {
+  console.error(
+    "\n❌ ADMIN_EMAILS environment variable is empty or unset.\n" +
+      "   Set it explicitly before running this script, e.g.:\n" +
+      '   ADMIN_EMAILS="you@example.com,ops@example.com" npx tsx prisma/seed-admin.ts\n',
+  );
+  process.exit(1);
+}
 
 async function main() {
   console.log(`\n🔐 Setting admin accounts...\n`);

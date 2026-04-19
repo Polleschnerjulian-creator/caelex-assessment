@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { isSafeInternalUrl } from "@/lib/safe-url";
 import {
   AlertTriangle,
   Clock,
@@ -332,7 +333,15 @@ export default function AstraMissionBriefing({
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 onClick={() => {
-                  if (insight.actionUrl) {
+                  // H-F1: Astra-generated insight.actionUrl is untrusted
+                  // (LLM output). Reject anything other than a safe
+                  // internal path — a poisoned string like
+                  // `javascript:fetch('/api/...')` would otherwise run
+                  // in the user's authenticated session.
+                  if (
+                    insight.actionUrl &&
+                    isSafeInternalUrl(insight.actionUrl)
+                  ) {
                     window.location.href = insight.actionUrl;
                   } else {
                     onSendMessage(

@@ -101,52 +101,49 @@ export async function POST(request: Request) {
     }
 
     if (!mfaConfig || !mfaConfig.enabled) {
-      // MFA config was deleted or disabled, but the JWT still has mfaRequired=true.
-      // Auto-heal: update the JWT to clear mfaRequired and let the user through.
-      logger.warn(
-        "[MFA] No active MFA config found but session has mfaRequired. Auto-healing JWT.",
-      );
-      const healResponse = NextResponse.json({
-        success: true,
-        mfaVerified: true,
-        message: "MFA no longer required — session updated.",
+      // C2 fix: previously this branch MINTED a new JWT with
+      // mfaVerified=true without any challenge — an attacker with stolen
+      // credentials + a race condition on MfaConfig.delete could bypass
+      // MFA entirely. Now we:
+      //   1. refuse the request,
+      //   2. force a full re-login (clear the session cookie),
+      //   3. emit a security-audit event so the abuse is visible.
+      logger.error("[MFA] mfaRequired=true but no active MfaConfig found", {
+        userId: session.user.id,
+        action: "mfa_autoheal_blocked",
       });
 
       try {
-        const authSecret = process.env.AUTH_SECRET;
-        if (authSecret) {
-          const token = await getToken({
-            req: request,
-            secret: authSecret,
-            salt: SESSION_COOKIE_NAME,
-            cookieName: SESSION_COOKIE_NAME,
-          });
-          if (token) {
-            const updatedToken = {
-              ...token,
-              mfaRequired: false,
-              mfaVerified: true,
-            };
-            const newJwt = await encode({
-              token: updatedToken,
-              secret: authSecret,
-              salt: SESSION_COOKIE_NAME,
-              maxAge: 24 * 60 * 60,
-            });
-            healResponse.cookies.set(SESSION_COOKIE_NAME, newJwt, {
-              httpOnly: true,
-              secure: isProduction,
-              sameSite: "lax",
-              path: "/",
-              maxAge: 24 * 60 * 60,
-            });
-          }
-        }
-      } catch (jwtErr) {
-        logger.error("[MFA] JWT heal failed", jwtErr);
+        await prisma.auditLog.create({
+          data: {
+            userId: session.user.id,
+            action: "MFA_AUTOHEAL_BLOCKED",
+            resource: "MfaConfig",
+            description:
+              "Login attempt with mfaRequired=true but no active MfaConfig — forced re-login.",
+          },
+        });
+      } catch {
+        // audit log best-effort
       }
 
-      return healResponse;
+      const blocked = NextResponse.json(
+        {
+          error: "Your MFA setup has been reset. Please sign in again.",
+          requireReauth: true,
+        },
+        { status: 403 },
+      );
+
+      // Clear the session cookie so the client is forced back to login.
+      blocked.cookies.set(SESSION_COOKIE_NAME, "", {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+      return blocked;
     }
 
     // ── Step 5: Validate code ──
@@ -271,8 +268,41 @@ export async function POST(request: Request) {
         "PASSWORD",
       ).catch((e) => logger.error("[MFA] Login event log failed", e));
 
+      // H-A2 fix: increment per-user failed-attempt counter and lock the
+      // account after the same 5-attempt threshold used for the primary
+      // login. Without this, an attacker with a stolen password session
+      // could brute-force the 6-digit TOTP space at ~7200 attempts/day/IP.
+      try {
+        const updated = await prisma.user.update({
+          where: { id: userId },
+          data: { failedLoginAttempts: { increment: 1 } },
+          select: { failedLoginAttempts: true },
+        });
+        if (updated.failedLoginAttempts >= 5) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              lockedUntil: new Date(Date.now() + 15 * 60 * 1000), // 15 min
+            },
+          });
+          logger.warn("[MFA] Account locked after 5 failed MFA attempts", {
+            userId,
+          });
+        }
+      } catch (lockErr) {
+        logger.error("[MFA] fail-counter update failed", lockErr);
+      }
+
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
+
+    // H-A2: reset the per-user failed-attempt counter on success.
+    prisma.user
+      .update({
+        where: { id: userId },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      })
+      .catch((e) => logger.error("[MFA] fail-counter reset failed", e));
 
     // ── Step 7: Success — audit logging (non-blocking) ──
     if (isBackupCode) {

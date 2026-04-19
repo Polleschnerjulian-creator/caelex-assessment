@@ -9,13 +9,18 @@ updates:
     labels:
       - "dependencies"
     groups:
+      # Group dev-only patch/minor bumps so the weekly PR noise stays low.
       dev-dependencies:
         dependency-type: "development"
-      production-dependencies:
+        update-types: ["patch", "minor"]
+      # Group production patch bumps — these are overwhelmingly security
+      # fixes. Minors stay separate for human review.
+      production-patches:
         dependency-type: "production"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: ["patch"]
+    # H-I1 fix: removed the global patch-ignore rule. Security advisories
+    # arrive as patch-level bumps (e.g. next 15.5.12 → 15.5.15); ignoring
+    # them globally blocked exactly the fixes we need.
 
   - package-ecosystem: "github-actions"
     directory: "/"
