@@ -370,6 +370,14 @@ export const ENCRYPTED_FIELDS: Record<string, string[]> = {
   NIS2RequirementStatus: ["notes", "evidenceNotes"],
   SupervisionReport: ["content", "rejectionReason"],
   LegalReviewComment: ["content"],
+  // H-D1: compliance documents contain pii (operator names, addresses,
+  // incident descriptions). previously stored plaintext.
+  GeneratedDocument: ["rawContent"],
+  // H-D2: astra conversations accumulate pii through user prompts
+  // (mission names, orbital parameters, incidents, employee info).
+  // `content` is the message body; `toolCalls` / `toolResults` are
+  // json but contain the same material.
+  AstraMessage: ["content"],
 };
 
 /**

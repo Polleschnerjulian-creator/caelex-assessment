@@ -109,6 +109,10 @@
     {
       "path": "/api/cron/atlas-source-check",
       "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/astra-cleanup",
+      "schedule": "15 3 * * *"
     }
   ]
 }
