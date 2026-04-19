@@ -49,8 +49,13 @@ const solutionLinks = [
   },
   { label: "Supply Chain Security", href: "/solutions/supply-chain-security" },
   { label: "Satellite Tracking", href: "/solutions/satellite-tracking" },
-  { label: "Training & Certification", href: "/academy/dashboard" },
   { label: "Regulatory Arbitrage", href: "/solutions/regulatory-arbitrage" },
+  // Atlas — regulatory intelligence layer
+  { label: "Regulatory Atlas", href: "/atlas" },
+  { label: "Jurisdiction Comparator", href: "/atlas/comparator" },
+  { label: "Regulatory Updates Feed", href: "/atlas/updates" },
+  { label: "Landing Rights Database", href: "/atlas/landing-rights" },
+  { label: "Regulatory Map", href: "/atlas/map" },
 ];
 
 const industryLinks = [
