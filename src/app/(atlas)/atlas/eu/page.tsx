@@ -11,7 +11,9 @@ import { AmendmentHistory } from "../_components/AmendmentHistory";
 import { SchemaOrgLegislation } from "../_components/SchemaOrgLegislation";
 import { BookmarkButton } from "../_components/BookmarkButton";
 
-export const dynamic = "force-dynamic";
+// H14: Incremental Static Regeneration (30 min). See /atlas/international
+// for rationale — this page has the same characteristics.
+export const revalidate = 1800;
 
 export const metadata = {
   title: "European Union Instruments — Atlas",

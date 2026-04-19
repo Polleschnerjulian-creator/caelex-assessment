@@ -11,7 +11,12 @@ import { AmendmentHistory } from "../_components/AmendmentHistory";
 import { SchemaOrgLegislation } from "../_components/SchemaOrgLegislation";
 import { BookmarkButton } from "../_components/BookmarkButton";
 
-export const dynamic = "force-dynamic";
+// H14: Incremental Static Regeneration (30 min). The legal-source data
+// is static at build-time; the only dynamic input is the per-source
+// link-status from Prisma, which updates at most once per day via the
+// atlas-source-check cron. 30-minute cache saves ~99 % of Neon queries
+// without serving stale data beyond the cron cadence.
+export const revalidate = 1800;
 
 export const metadata = {
   title: "International Treaties — Atlas",
