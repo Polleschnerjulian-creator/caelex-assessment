@@ -49,6 +49,52 @@ export async function GET(
       );
     }
 
+    // H-API2 fix: enforce Document.accessLevel. Previously the route
+    // allowed any MEMBER/VIEWER in the owning org to download every
+    // file regardless of its classification. Now:
+    //   PUBLIC         — anyone in the org
+    //   INTERNAL       — anyone in the org (default)
+    //   CONFIDENTIAL   — owner (userId match) OR role ∈ {OWNER, ADMIN, MANAGER}
+    //   RESTRICTED     — owner OR role ∈ {OWNER, ADMIN}
+    //   TOP_SECRET     — owner ONLY
+    const isOwner = document.userId === session.user.id;
+    if (
+      !isOwner &&
+      document.accessLevel !== "PUBLIC" &&
+      document.accessLevel !== "INTERNAL"
+    ) {
+      // Need role lookup for CONFIDENTIAL / RESTRICTED / TOP_SECRET
+      const membership = orgContext?.organizationId
+        ? await prisma.organizationMember.findFirst({
+            where: {
+              userId: session.user.id,
+              organizationId: orgContext.organizationId,
+            },
+            select: { role: true },
+          })
+        : null;
+
+      const role = membership?.role;
+      const allowedRoles: Record<string, string[]> = {
+        CONFIDENTIAL: ["OWNER", "ADMIN", "MANAGER"],
+        RESTRICTED: ["OWNER", "ADMIN"],
+        TOP_SECRET: [], // owner only, never role-based
+      };
+      const allowed = allowedRoles[document.accessLevel] ?? [];
+
+      if (!role || !allowed.includes(role)) {
+        // Log the refusal for forensic visibility — this is the signal
+        // an attacker is probing a document they shouldn't see.
+        logger.warn("Document download forbidden by accessLevel", {
+          documentId: document.id,
+          accessLevel: document.accessLevel,
+          userId: session.user.id,
+          role,
+        });
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
     // Check if document is stored in R2
     if (!document.storagePath) {
       return NextResponse.json(
@@ -65,10 +111,13 @@ export async function GET(
       );
     }
 
-    // Generate presigned download URL
+    // H-D4 fix: TTL reduced from 3600 s to 300 s. A leaked URL
+    // (browser history, referrer, sentry breadcrumbs, email forward)
+    // is now only valid for 5 minutes instead of a full hour.
+    const PRESIGN_TTL_SECONDS = 300;
     const result = await generatePresignedDownloadUrl(
       document.storagePath,
-      3600, // 1 hour expiration
+      PRESIGN_TTL_SECONDS,
       document.fileName || document.name,
     );
 

@@ -100,8 +100,38 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // H-API3 fix: if documentId is supplied, verify ownership BEFORE
+    // issuing the presigned PUT. Otherwise a user could overwrite any
+    // document's R2 blob by naming its id in the body.
+    if (documentId) {
+      const existing = await prisma.document.findFirst({
+        where: {
+          id: documentId,
+          OR: [
+            { userId: session.user.id },
+            ...(organizationId ? [{ organizationId }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (!existing) {
+        logger.warn("Upload-URL requested for foreign documentId", {
+          documentId,
+          userId: session.user.id,
+        });
+        return NextResponse.json(
+          { error: "Document not found or access denied" },
+          { status: 404 },
+        );
+      }
+    }
+
     // Use user ID or organization ID for file organization
     const ownerId = organizationId || session.user.id;
+
+    // H-D4: shorter TTL for presigned URLs — 300s instead of 1h.
+    // A leaked URL is only valid for 5 minutes instead of a full hour.
+    const PRESIGN_TTL_SECONDS = 300;
 
     // Generate presigned upload URL
     const result = await generatePresignedUploadUrl(
@@ -111,7 +141,7 @@ export async function POST(request: NextRequest) {
       mimeType,
       fileSize,
       documentId,
-      3600, // 1 hour expiration
+      PRESIGN_TTL_SECONDS,
     );
 
     return NextResponse.json({
