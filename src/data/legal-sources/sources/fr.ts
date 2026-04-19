@@ -202,7 +202,15 @@ export const AUTHORITIES_FR: Authority[] = [
   },
 ];
 
-// ─── International Treaties ratified by FR (6 — FR-specific entries only) ──
+// ─── International Treaties ratified by FR (FR-specific entries only) ──
+//
+// TODO(H6 data consolidation): INT-ISS-1998 and INT-CTBT-1996 below carry
+// `jurisdiction: "INT"` but live in this country file. They are reachable
+// via getLegalSourceById() but are NOT part of JURISDICTION_DATA.get("INT")
+// in src/data/legal-sources/index.ts, which breaks the single-source-of-
+// truth contract. Before migrating them into sources/intl.ts, the full
+// ratifier list (applies_to_jurisdictions) needs to be researched from
+// UN Treaty Collection — do not guess.
 
 const TREATIES_FR: LegalSource[] = [
   {
@@ -286,47 +294,12 @@ const TREATIES_FR: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
-  {
-    id: "FR-INT-MOON-1979",
-    jurisdiction: "INT",
-    type: "international_treaty",
-    status: "not_ratified",
-    title_en:
-      "Agreement Governing the Activities of States on the Moon and Other Celestial Bodies",
-    title_local:
-      "Accord régissant les activités des États sur la Lune et les autres corps célestes",
-    date_enacted: "1979-12-18",
-    date_in_force: "1984-07-11",
-    source_url:
-      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/intromoon-agreement.html",
-    issuing_body: "United Nations General Assembly",
-    competent_authorities: [],
-    relevance_level: "low",
-    applicable_to: ["space_resource_operator"],
-    compliance_areas: ["licensing"],
-    key_provisions: [
-      {
-        section: "Art. 11",
-        title: "Common heritage of mankind",
-        summary:
-          "The Moon and its natural resources are the common heritage of mankind. An international regime shall govern exploitation of resources.",
-      },
-      {
-        section: "Art. 6",
-        title: "Scientific investigation",
-        summary:
-          "States Parties have the right to collect and remove samples from the Moon during scientific investigations.",
-      },
-    ],
-    scope_description:
-      "France SIGNED the Moon Agreement on 29 January 1980 but has NOT ratified it. The common heritage principle is noted but creates no binding obligations for French entities. France signed the Artemis Accords in 2022, which take a different approach to resource utilization.",
-    related_sources: ["FR-INT-OST-RATIFICATION"],
-    notes: [
-      "France signed 29 January 1980 but never ratified — status is 'signed, not ratified'.",
-      "France signed the Artemis Accords on 7 June 2022, which establish a different framework for space resource utilization than the Moon Agreement's common heritage approach.",
-    ],
-    last_verified: "2026-04-13",
-  },
+  // H6 fix: FR-INT-MOON-1979 removed as a duplicate of the canonical
+  // INT-MOON-1979 in sources/intl.ts, which already lists France under
+  // signed_by_jurisdictions (signed 1980, never ratified). Keeping two
+  // records for the same instrument caused a jurisdiction mismatch
+  // ("jurisdiction: INT" inside fr.ts) and a conflicting narrative on
+  // ratification status.
   {
     id: "FR-INT-OST-RATIFICATION",
     jurisdiction: "FR",

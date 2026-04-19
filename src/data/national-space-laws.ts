@@ -3,6 +3,32 @@
  * Each jurisdiction now has its own file with enacted law, NCA knowledge, and requirements.
  */
 
+/*
+ * TODO(H7 + H8 audit drift, 2026-04-19):
+ *
+ * H7 — licensingAuthority entries below that do NOT yet have a matching
+ *      record in src/data/legal-sources/sources/<code>.ts AUTHORITIES_*:
+ *        FR: CNES (website mismatch with FR-CNES in fr.ts)
+ *        UK: UK Civil Aviation Authority (Space)
+ *        LU: Luxembourg Space Agency
+ *        NL: Ministry of Economic Affairs / Agentschap Telecom
+ *        ES: AEE (aee.gob.es)
+ *        PT: Portugal Space (ptspace.pt)
+ *        CZ: Ministry of Transport — Space Activities Department
+ *
+ * H8 — `legislation` primary-law entries that do NOT yet map to a
+ *      legal-source record by year/URL/title:
+ *        NL: Space Activities Act 2007
+ *        ES: Royal Decree 278/2024
+ *        GR: Law 4903/2022
+ *        CZ: Act 77/2024 on Space Activities
+ *        CH: Federal Ordinance on Space Objects 2019
+ *        IE: no dedicated national law (informational)
+ *
+ * Reconciliation is additive: adds missing records to legal-sources/sources/*.ts;
+ * no changes to this file needed. Tracked for next quarterly data review.
+ */
+
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *

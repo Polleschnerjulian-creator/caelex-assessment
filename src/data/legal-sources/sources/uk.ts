@@ -192,7 +192,15 @@ export const AUTHORITIES_UK: Authority[] = [
   },
 ];
 
-// ─── International Treaties (UK-specific entries, 6) ────────────────
+// ─── International Treaties (UK-specific entries) ─────────────────────
+//
+// TODO(H6 data consolidation): INT-ARTEMIS-ACCORDS-2020 and INT-HCOC-2002
+// below carry `jurisdiction: "INT"` but live in this country file. They
+// are reachable via getLegalSourceById() but are NOT part of
+// JURISDICTION_DATA.get("INT") in src/data/legal-sources/index.ts, which
+// breaks the single-source-of-truth contract. Before migrating them into
+// sources/intl.ts the full signatory list (applies_to_jurisdictions +
+// signed_by_jurisdictions) needs to be researched — do not guess.
 
 const TREATIES_UK: LegalSource[] = [
   {
