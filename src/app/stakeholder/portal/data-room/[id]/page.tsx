@@ -115,11 +115,20 @@ export default function DataRoomViewPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // H-F3 fix: localStorage fallback removed. Tokens persist across
+  // browser sessions and are XSS-exfiltrable. sessionStorage clears on
+  // tab close, which matches the stakeholder-portal's intended session
+  // lifetime. Also cleans any stray localStorage value that may have
+  // been written by earlier builds.
   const getToken = () => {
-    return (
-      localStorage.getItem("stakeholder_token") ||
-      sessionStorage.getItem("stakeholder_token")
-    );
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("stakeholder_token");
+      }
+    } catch {
+      /* ignore */
+    }
+    return sessionStorage.getItem("stakeholder_token");
   };
 
   const fetchRoom = useCallback(async () => {

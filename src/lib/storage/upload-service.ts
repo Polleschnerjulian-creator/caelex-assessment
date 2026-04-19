@@ -16,6 +16,7 @@ import {
   MAX_FILE_SIZE,
 } from "./r2-client";
 import { v4 as uuidv4 } from "uuid";
+import { createHash } from "crypto";
 
 // Document categories for file organization
 export type DocumentCategory =
@@ -288,15 +289,27 @@ export async function uploadFileServerSide(
     documentId,
   );
 
+  // H-D7: hash the organizationId before stamping it as S3 metadata.
+  // `HeadObject` exposes metadata; if the bucket were ever misconfigured
+  // to public, a plaintext org id would leak tenant mapping. The hash
+  // is still indexable for ops and matches what the key prefix already
+  // encodes, but doesn't yield the raw org id.
+  // `original-filename` is also truncated to prevent excess metadata
+  // bytes (S3 limit is 2 KB total).
+  const orgIdHash = createHash("sha256")
+    .update(organizationId)
+    .digest("hex")
+    .slice(0, 16);
+
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: fileKey,
     ContentType: mimeType,
     Body: fileBuffer,
     Metadata: {
-      "organization-id": organizationId,
+      "organization-id-hash": orgIdHash,
       category,
-      "original-filename": filename,
+      "original-filename": filename.slice(0, 120),
     },
   });
 

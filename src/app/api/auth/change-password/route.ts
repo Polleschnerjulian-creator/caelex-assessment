@@ -46,13 +46,10 @@ export async function POST(request: Request) {
 
     const { currentPassword, newPassword } = parsed.data;
 
-    // Prevent reuse of the same password
-    if (currentPassword === newPassword) {
-      return NextResponse.json(
-        { error: "New password must be different from the current password" },
-        { status: 400 },
-      );
-    }
+    // H-A5 fix: verify the *current* password BEFORE checking same-as-new.
+    // The prior flow leaked a timing oracle (400 "must be different" vs
+    // 400 "incorrect") to attackers with a stolen session cookie but no
+    // password — they could probe password candidates.
 
     // Fetch user's current password hash
     const user = await prisma.user.findUnique({
@@ -69,11 +66,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify current password
+    // Verify current password FIRST
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) {
       return NextResponse.json(
         { error: "Current password is incorrect" },
+        { status: 400 },
+      );
+    }
+
+    // H-A5 cont.: now that the current password was verified, reject
+    // same-as-new (clean UX, no timing oracle).
+    if (currentPassword === newPassword) {
+      return NextResponse.json(
+        { error: "New password must be different from the current password" },
         { status: 400 },
       );
     }

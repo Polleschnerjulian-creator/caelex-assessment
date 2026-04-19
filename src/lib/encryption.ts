@@ -214,16 +214,32 @@ export async function decrypt(encryptedText: string): Promise<string> {
 
 /**
  * Check if a string is encrypted (has the expected format).
+ *
+ * H-D8: strict hex-character check on every part and an exact auth-tag
+ * length requirement. Prevents a crafted "encrypted-looking" string
+ * from forcing decrypt() into a throw-path (downgrade DoS) by matching
+ * only the structural shape.
  */
 export function isEncrypted(text: string): boolean {
-  if (!text) return false;
+  if (!text || typeof text !== "string") return false;
   const parts = text.split(":");
-  // Support both new 12-byte and legacy 16-byte IV lengths (hex-encoded = 2x byte length)
-  return (
-    parts.length === 3 &&
-    (parts[0].length === IV_LENGTH * 2 ||
-      parts[0].length === LEGACY_IV_LENGTH * 2)
-  );
+  if (parts.length !== 3) return false;
+
+  const [iv, authTag, ciphertext] = parts;
+  const hex = /^[0-9a-f]+$/i;
+
+  // IV: 12-byte current or 16-byte legacy (hex = 2× byte length)
+  const ivLenOk =
+    iv.length === IV_LENGTH * 2 || iv.length === LEGACY_IV_LENGTH * 2;
+  if (!ivLenOk || !hex.test(iv)) return false;
+
+  // Auth tag: 16 bytes = 32 hex chars (GCM standard)
+  if (authTag.length !== 32 || !hex.test(authTag)) return false;
+
+  // Ciphertext: must be non-empty hex (can be any length > 0)
+  if (ciphertext.length === 0 || !hex.test(ciphertext)) return false;
+
+  return true;
 }
 
 /**
