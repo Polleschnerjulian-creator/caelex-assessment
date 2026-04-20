@@ -398,17 +398,17 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 isLight
                   ? scrolled
-                    ? // Palantir-style frosted glass: the trick is LIGHT blur
-                      // with LOW opacity — text behind stays structurally
-                      // recognisable (you can still read word shapes through
-                      // the glass) instead of turning into a smeared mush.
-                      // Too much blur (>12px) or too much opacity (>50%) kills
-                      // the effect. Numbers tuned to match Palantir:
-                      //   bg-white/30 (~70% bleed-through)
-                      //   backdrop-blur-md = 12px (preserves text structure)
-                      //   saturate-150 so colours behind stay vivid
-                      "bg-white/30 backdrop-blur-md backdrop-saturate-150 border border-white/40 shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.4)]"
-                    : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
+                    ? // Palantir-style near-invisible glass: the bar itself
+                      // almost disappears, so the logo + buttons read as
+                      // floating over the content instead of living inside
+                      // a framed container. No visible border, no shadow,
+                      // minimal blur, very low opacity — just enough to
+                      // tint the pixels behind the floating elements.
+                      //   bg-white/20 (~80% bleed-through, nearly see-through)
+                      //   backdrop-blur-sm = 4px (softens but doesn't smear)
+                      //   no border, no shadow, no inset highlight
+                      "bg-white/20 backdrop-blur-sm backdrop-saturate-150"
+                    : "bg-transparent"
                   : scrolled
                     ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
                     : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
