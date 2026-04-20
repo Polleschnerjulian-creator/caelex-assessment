@@ -152,17 +152,22 @@ function AuthorizationPageContent() {
     try {
       const res = await fetch("/api/authorization");
       if (res.ok) {
-        const data = await res.json();
-        setWorkflows(data.workflows);
-        setUserProfile(data.user);
+        // API uses createSuccessResponse which wraps the payload as
+        // { data: { workflows, user } }. Unwrap once here so the rest
+        // of the component can treat the inner object as flat.
+        const envelope = await res.json();
+        const data = envelope?.data ?? envelope;
+        const workflows = Array.isArray(data?.workflows) ? data.workflows : [];
+        setWorkflows(workflows);
+        setUserProfile(data?.user ?? null);
 
         // Auto-select if only one workflow
-        if (data.workflows.length === 1) {
-          setSelectedWorkflow(data.workflows[0]);
+        if (workflows.length === 1) {
+          setSelectedWorkflow(workflows[0]);
         }
 
         // Pre-fill form with user profile if available
-        if (data.user) {
+        if (data?.user) {
           setFormOperatorType(data.user.operatorType || "");
           setFormCountry(data.user.establishmentCountry || "");
           setFormIsThirdCountry(data.user.isThirdCountry || false);
@@ -206,7 +211,13 @@ function AuthorizationPageContent() {
         setCreateError(errData?.error || `Request failed (${res.status})`);
         return;
       }
-      const data = await res.json();
+      // Unwrap the createSuccessResponse envelope (see fetchData note).
+      const envelope = await res.json();
+      const data = envelope?.data ?? envelope;
+      if (!data?.workflow) {
+        setCreateError("Unexpected response shape from the server");
+        return;
+      }
       setWorkflows((prev) => [data.workflow, ...prev]);
       setSelectedWorkflow(data.workflow);
       setShowNewWorkflowForm(false);
