@@ -1,6 +1,11 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+// ⚠️  TEMPORARY: /atlas is publicly accessible without login.
+// Reason: emailed external reviewer — they won't go through login setup.
+// Revert by uncommenting the auth guard below. Do not leave this open.
+// Opened: 2026-04-20 — close again within a few days.
+
+// import { redirect } from "next/navigation";
+// import { auth } from "@/lib/auth";
+// import { prisma } from "@/lib/prisma";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 
@@ -15,25 +20,27 @@ export default async function AtlasLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  // Check organization membership
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId: session.user.id },
-    include: {
-      organization: {
-        select: { isActive: true },
-      },
-    },
-  });
-
-  if (!membership || !membership.organization.isActive) {
-    redirect("/atlas-no-access");
-  }
+  // ⚠️  TEMPORARY — auth guard disabled. Restore this block to re-lock /atlas.
+  //
+  // const session = await auth();
+  //
+  // if (!session?.user) {
+  //   redirect("/login");
+  // }
+  //
+  // // Check organization membership
+  // const membership = await prisma.organizationMember.findFirst({
+  //   where: { userId: session.user.id },
+  //   include: {
+  //     organization: {
+  //       select: { isActive: true },
+  //     },
+  //   },
+  // });
+  //
+  // if (!membership || !membership.organization.isActive) {
+  //   redirect("/atlas-no-access");
+  // }
 
   return (
     <LanguageProvider>
