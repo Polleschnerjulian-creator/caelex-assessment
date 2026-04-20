@@ -18,12 +18,14 @@ import {
   backfillMissingLeaves,
   signNewSTH,
   getInclusionForAttestation,
+  getConsistencyFromStore,
   attestationLeafBytes,
   attestationLeafHashHex,
 } from "@/lib/verity/transparency/log-store";
 import {
   hashLeaf,
   verifyInclusionProof,
+  verifyConsistencyProof,
   sthSigningBytes,
 } from "@/lib/verity/transparency/merkle-tree";
 import { generateAttestation } from "@/lib/verity/core/attestation";
@@ -188,6 +190,8 @@ function makePrisma() {
     verityLogSTH: {
       findFirst: async (opts?: { orderBy?: Record<string, "asc" | "desc"> }) =>
         findFirst(sths, opts),
+      findUnique: async ({ where }: { where: { treeSize: number } }) =>
+        sths.find((s) => s.treeSize === where.treeSize) ?? null,
       create: async ({ data }: { data: Omit<STHRow, "id"> }) => {
         const row: STHRow = { id: nextId(), ...data };
         sths.push(row);
@@ -575,3 +579,132 @@ describe("log-store — tamper evidence", () => {
 
 // Convert to unused import tolerance for hexToBytes (used transitively)
 void hexToBytes;
+
+describe("log-store — getConsistencyFromStore", () => {
+  let env: ReturnType<typeof makePrisma>;
+
+  beforeEach(() => {
+    env = makePrisma();
+    seedActiveKey(env);
+  });
+
+  it("returns null when the oldSize STH does not exist", async () => {
+    for (let i = 0; i < 3; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma); // STH at treeSize=3 only
+    const res = await getConsistencyFromStore(env.prisma, 2, 3);
+    expect(res).toBeNull();
+  });
+
+  it("returns null when the newSize STH does not exist", async () => {
+    for (let i = 0; i < 3; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma); // STH at treeSize=3
+    for (let i = 0; i < 2; i++) seedAttestationRow(env);
+    // NOT signing a new STH — treeSize=5 has no STH row
+    await appendToLog(
+      env.prisma,
+      env._atts[3]!.fullAttestation as Record<string, unknown>,
+    );
+    await appendToLog(
+      env.prisma,
+      env._atts[4]!.fullAttestation as Record<string, unknown>,
+    );
+    const res = await getConsistencyFromStore(env.prisma, 3, 5);
+    expect(res).toBeNull();
+  });
+
+  it("returns null when oldSize > newSize", async () => {
+    for (let i = 0; i < 3; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma);
+    const res = await getConsistencyFromStore(env.prisma, 5, 3);
+    expect(res).toBeNull();
+  });
+
+  it("produces a proof that verifies end-to-end", async () => {
+    // Seed 5 attestations and sign STH #1.
+    for (let i = 0; i < 5; i++) seedAttestationRow(env);
+    const oldSTH = await signNewSTH(env.prisma);
+    expect(oldSTH!.treeSize).toBe(5);
+
+    // Append 3 more attestations, append each to the log, sign STH #2.
+    for (let i = 0; i < 3; i++) {
+      const a = seedAttestationRow(env);
+      await appendToLog(env.prisma, a as unknown as Record<string, unknown>);
+    }
+    const newSTH = await signNewSTH(env.prisma);
+    expect(newSTH!.treeSize).toBe(8);
+
+    const bundle = await getConsistencyFromStore(env.prisma, 5, 8);
+    expect(bundle).not.toBeNull();
+    expect(bundle!.oldRoot).toBe(oldSTH!.rootHash);
+    expect(bundle!.newRoot).toBe(newSTH!.rootHash);
+
+    const ok = verifyConsistencyProof(
+      bundle!.proof,
+      bundle!.oldSize,
+      bundle!.newSize,
+      bundle!.oldRoot,
+      bundle!.newRoot,
+    );
+    expect(ok).toBe(true);
+  });
+
+  it("the returned bundle contains both signed tree heads for offline verification", async () => {
+    for (let i = 0; i < 4; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma);
+    for (let i = 0; i < 2; i++) {
+      const a = seedAttestationRow(env);
+      await appendToLog(env.prisma, a as unknown as Record<string, unknown>);
+    }
+    await signNewSTH(env.prisma);
+
+    const bundle = await getConsistencyFromStore(env.prisma, 4, 6);
+    expect(bundle!.oldSTH.signature).toMatch(/^[a-f0-9]+$/);
+    expect(bundle!.newSTH.signature).toMatch(/^[a-f0-9]+$/);
+    expect(bundle!.oldSTH.treeSize).toBe(4);
+    expect(bundle!.newSTH.treeSize).toBe(6);
+  });
+
+  it("oldSize == 0 returns an empty proof that verifies against any new STH", async () => {
+    for (let i = 0; i < 3; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma);
+    // Seed a fake STH row at treeSize=0 so the lookup succeeds.
+    // (In reality, treeSize=0 is never signed — this test probes the
+    // verifier logic, not realistic cron output.)
+    env._sths.push({
+      id: "fake-zero-sth",
+      treeSize: 0,
+      rootHash: "00".repeat(32),
+      issuerKeyId: "k1",
+      signature: "00".repeat(64),
+      timestamp: new Date(),
+      version: "v1",
+    });
+    const bundle = await getConsistencyFromStore(env.prisma, 0, 3);
+    expect(bundle!.proof).toEqual([]);
+    const ok = verifyConsistencyProof(
+      bundle!.proof,
+      0,
+      3,
+      bundle!.oldRoot,
+      bundle!.newRoot,
+    );
+    expect(ok).toBe(true);
+  });
+
+  it("detects internal log inconsistency (stored oldSTH root doesn't match recomputation)", async () => {
+    for (let i = 0; i < 4; i++) seedAttestationRow(env);
+    await signNewSTH(env.prisma);
+    for (let i = 0; i < 2; i++) {
+      const a = seedAttestationRow(env);
+      await appendToLog(env.prisma, a as unknown as Record<string, unknown>);
+    }
+    await signNewSTH(env.prisma);
+
+    // Corrupt the oldSTH row — simulating DB tampering.
+    const corrupted = env._sths.find((s) => s.treeSize === 4)!;
+    corrupted.rootHash = "ff".repeat(32);
+
+    const bundle = await getConsistencyFromStore(env.prisma, 4, 6);
+    expect(bundle).toBeNull();
+  });
+});

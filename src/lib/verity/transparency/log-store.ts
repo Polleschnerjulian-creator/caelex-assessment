@@ -19,7 +19,8 @@ import {
 } from "../utils/serialize-for-signing";
 import { safeLog } from "../utils/redaction";
 import {
-  buildTree,
+  buildTreeFromHashes,
+  getConsistencyProof,
   getInclusionProof,
   hashLeaf,
   sthSigningBytes,
@@ -196,15 +197,14 @@ export async function signNewSTH(
   }
 
   // We stored each leaf's RFC 6962 hash directly in `leafHash`
-  // (i.e. SHA-256(0x00 || attestation_bytes) via hashLeaf). To
-  // rebuild the tree without double-hashing, we feed those
-  // pre-computed hashes in as the already-hashed leaf layer.
+  // (i.e. SHA-256(0x00 || attestation_bytes) via hashLeaf). Feed them
+  // in as already-hashed leaves so the tree builder doesn't re-hash.
   const leaves = await prisma.verityLogLeaf.findMany({
     orderBy: { leafIndex: "asc" },
     select: { leafHash: true },
   });
   const leafBytes = leaves.map((l) => hexToBytes(l.leafHash));
-  const tree = buildTreeFromLeafHashes(leafBytes);
+  const tree = buildTreeFromHashes(leafBytes);
 
   // Pin timestamp once — keeps STH signing bytes deterministic for the run.
   const timestamp = new Date().toISOString();
@@ -294,7 +294,7 @@ export async function getInclusionForAttestation(
     select: { leafHash: true },
   });
   const leafBytes = leaves.map((l) => hexToBytes(l.leafHash));
-  const tree = buildTreeFromLeafHashes(leafBytes);
+  const tree = buildTreeFromHashes(leafBytes);
   const proof = getInclusionProof(tree, leaf.leafIndex);
 
   // Sanity check: the root we just derived must match the STH.
@@ -319,42 +319,106 @@ export async function getInclusionForAttestation(
   };
 }
 
-// ─── Internal: build a tree where inputs ARE the leaf hashes ────────
+// ─── Consistency proofs ─────────────────────────────────────────────
 
-import type { MerkleTree } from "./merkle-tree";
-import { sha256 } from "@noble/hashes/sha2.js";
-
-const INNER_DOMAIN = new Uint8Array([0x01]);
+export interface ConsistencyBundle {
+  oldSize: number;
+  newSize: number;
+  oldRoot: string;
+  newRoot: string;
+  oldSTH: SignedTreeHead;
+  newSTH: SignedTreeHead;
+  proof: string[];
+}
 
 /**
- * Variant of buildTree that treats each input as an already-computed
- * leaf hash (the layers[0] of an RFC 6962 tree). Needed because our
- * DB stores `hashLeaf(attestation_bytes)` directly, and calling
- * buildTree again would apply `hashLeaf` a second time.
- *
- * Internal helper — not exported from the module.
+ * Build a consistency proof between two previously-signed tree heads.
+ * Returns null if either STH does not exist, or if the log has become
+ * internally inconsistent (recomputed oldRoot does not match the
+ * stored STH — that's a loud signal of DB corruption).
  */
-function buildTreeFromLeafHashes(leafHashes: Uint8Array[]): MerkleTree {
-  if (leafHashes.length === 0) {
-    throw new Error("buildTreeFromLeafHashes: empty input");
+export async function getConsistencyFromStore(
+  prisma: PrismaClient,
+  oldSize: number,
+  newSize: number,
+): Promise<ConsistencyBundle | null> {
+  if (!Number.isInteger(oldSize) || !Number.isInteger(newSize)) return null;
+  if (oldSize < 0 || newSize < 0 || oldSize > newSize) return null;
+
+  const oldRow = await prisma.verityLogSTH.findUnique({
+    where: { treeSize: oldSize },
+  });
+  const newRow = await prisma.verityLogSTH.findUnique({
+    where: { treeSize: newSize },
+  });
+  if (!oldRow || !newRow) return null;
+
+  const leaves = await prisma.verityLogLeaf.findMany({
+    where: { leafIndex: { lt: newSize } },
+    orderBy: { leafIndex: "asc" },
+    select: { leafHash: true },
+  });
+  if (leaves.length !== newSize) {
+    safeLog("Consistency proof: leaf count mismatch vs newSize", {
+      expected: String(newSize),
+      got: String(leaves.length),
+    });
+    return null;
   }
-  const layers: Uint8Array[][] = [leafHashes];
-  let current = leafHashes;
-  while (current.length > 1) {
-    const next: Uint8Array[] = [];
-    for (let i = 0; i < current.length; i += 2) {
-      const left = current[i]!;
-      const right = i + 1 < current.length ? current[i + 1]! : left;
-      const concatenated = new Uint8Array(
-        INNER_DOMAIN.length + left.length + right.length,
+
+  const leafBytes = leaves.map((l) => hexToBytes(l.leafHash));
+  const tree = buildTreeFromHashes(leafBytes);
+  const derivedNewRoot = bytesToHex(tree.root);
+  if (derivedNewRoot !== newRow.rootHash) {
+    safeLog("Consistency proof: derived newRoot != stored newSTH root", {
+      derived: derivedNewRoot,
+      sth: newRow.rootHash,
+    });
+    return null;
+  }
+
+  // Defensive: recompute the old root from the first oldSize leaves
+  // and make sure it matches the stored old STH.
+  if (oldSize > 0) {
+    const oldTree = buildTreeFromHashes(leafBytes.slice(0, oldSize));
+    if (bytesToHex(oldTree.root) !== oldRow.rootHash) {
+      safeLog(
+        "Consistency proof: derived oldRoot != stored oldSTH root (log inconsistent)",
+        {
+          derived: bytesToHex(oldTree.root),
+          sth: oldRow.rootHash,
+        },
       );
-      concatenated.set(INNER_DOMAIN, 0);
-      concatenated.set(left, INNER_DOMAIN.length);
-      concatenated.set(right, INNER_DOMAIN.length + left.length);
-      next.push(sha256(concatenated));
+      return null;
     }
-    layers.push(next);
-    current = next;
   }
-  return { leaves: leafHashes, layers, root: current[0]! };
+
+  const proof = getConsistencyProof(tree, oldSize);
+
+  const oldSTH: SignedTreeHead = {
+    timestamp: oldRow.timestamp.toISOString(),
+    treeSize: oldRow.treeSize,
+    rootHash: oldRow.rootHash,
+    issuerKeyId: oldRow.issuerKeyId,
+    signature: oldRow.signature,
+    version: "v1",
+  };
+  const newSTH: SignedTreeHead = {
+    timestamp: newRow.timestamp.toISOString(),
+    treeSize: newRow.treeSize,
+    rootHash: newRow.rootHash,
+    issuerKeyId: newRow.issuerKeyId,
+    signature: newRow.signature,
+    version: "v1",
+  };
+
+  return {
+    oldSize,
+    newSize,
+    oldRoot: oldRow.rootHash,
+    newRoot: newRow.rootHash,
+    oldSTH,
+    newSTH,
+    proof,
+  };
 }

@@ -5,6 +5,8 @@ import {
   buildTree,
   getInclusionProof,
   verifyInclusionProof,
+  getConsistencyProof,
+  verifyConsistencyProof,
   hashLeaf,
   hashInner,
   sthSigningBytes,
@@ -19,30 +21,39 @@ describe("Merkle — tree construction", () => {
   it("builds a tree over 1 leaf (root == leaf hash)", () => {
     const tree = buildTree([toBytes("only")]);
     expect(tree.leaves.length).toBe(1);
-    expect(tree.layers.length).toBe(1);
     expect(bytesToHex(tree.root)).toBe(bytesToHex(tree.leaves[0]!));
   });
 
-  it("builds a balanced tree over 4 leaves (2 layers above leaves)", () => {
+  it("builds a balanced tree over 4 leaves (root is full binary combine)", () => {
     const tree = buildTree([
       toBytes("a"),
       toBytes("b"),
       toBytes("c"),
       toBytes("d"),
     ]);
-    // leaves + 2 layers = 3 total
-    expect(tree.layers.length).toBe(3);
-    expect(tree.layers[0]!.length).toBe(4);
-    expect(tree.layers[1]!.length).toBe(2);
-    expect(tree.layers[2]!.length).toBe(1);
+    expect(tree.leaves.length).toBe(4);
+    // RFC 6962 MTH for balanced 4 leaves:
+    //   root = hashInner(hashInner(h0,h1), hashInner(h2,h3))
+    const expected = hashInner(
+      hashInner(tree.leaves[0]!, tree.leaves[1]!),
+      hashInner(tree.leaves[2]!, tree.leaves[3]!),
+    );
+    expect(bytesToHex(tree.root)).toBe(bytesToHex(expected));
   });
 
-  it("handles an odd number of leaves by duplicating the last (RFC 6962)", () => {
+  it("handles 3 leaves using the RFC 6962 split-at-k structure", () => {
+    // RFC 6962 §2.1: for n=3, k=2, so
+    //   root = hashInner(MTH([h0,h1]), MTH([h2]))
+    //        = hashInner(hashInner(h0,h1), h2)
+    // NB: earlier "duplicate-odd" implementations would instead produce
+    //   hashInner(hashInner(h0,h1), hashInner(h2,h2))
+    // which is NOT RFC 6962 compliant and would break consistency proofs.
     const tree = buildTree([toBytes("a"), toBytes("b"), toBytes("c")]);
-    expect(tree.layers[1]!.length).toBe(2);
-    // The second-to-last inner node hashes c twice (domain-separated).
-    const expectedSecond = hashInner(tree.leaves[2]!, tree.leaves[2]!);
-    expect(bytesToHex(tree.layers[1]![1]!)).toBe(bytesToHex(expectedSecond));
+    const expected = hashInner(
+      hashInner(tree.leaves[0]!, tree.leaves[1]!),
+      tree.leaves[2]!,
+    );
+    expect(bytesToHex(tree.root)).toBe(bytesToHex(expected));
   });
 
   it("throws on empty input", () => {
@@ -140,8 +151,212 @@ describe("Merkle — unbalanced trees", () => {
     for (const i of [0, 1, 99, 500, 999]) {
       const proof = getInclusionProof(tree, i);
       expect(verifyInclusionProof(leaves[i]!, proof, rootHex)).toBe(true);
-      // log2(1000) ≈ 10 levels
-      expect(proof.path.length).toBe(10);
+      // RFC 6962 proof length depends on the leaf's position in the
+      // ragged right edge; always ≤ ceil(log2(n)).
+      expect(proof.path.length).toBeGreaterThanOrEqual(1);
+      expect(proof.path.length).toBeLessThanOrEqual(10);
+    }
+  });
+});
+
+describe("Merkle — consistency proofs (RFC 6962 §2.1.4)", () => {
+  function mkLeaves(n: number): Uint8Array[] {
+    return Array.from({ length: n }, (_, i) => toBytes(`leaf_${i}`));
+  }
+
+  it("returns [] when oldSize == 0 and verifies as trivially consistent", () => {
+    const newT = buildTree(mkLeaves(5));
+    const proof = getConsistencyProof(newT, 0);
+    expect(proof).toEqual([]);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        0,
+        5,
+        "00".repeat(32),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(true);
+  });
+
+  it("returns [] when oldSize == newSize; verifier requires roots to match", () => {
+    const t = buildTree(mkLeaves(5));
+    const rootHex = bytesToHex(t.root);
+    const proof = getConsistencyProof(t, 5);
+    expect(proof).toEqual([]);
+    expect(verifyConsistencyProof(proof, 5, 5, rootHex, rootHex)).toBe(true);
+    // Same empty proof with different roots must NOT verify.
+    expect(verifyConsistencyProof(proof, 5, 5, "00".repeat(32), rootHex)).toBe(
+      false,
+    );
+  });
+
+  it("throws when oldSize > newSize", () => {
+    const t = buildTree(mkLeaves(5));
+    expect(() => getConsistencyProof(t, 6)).toThrow(/oldSize > newSize/);
+  });
+
+  it("roundtrips for (1, 2)", () => {
+    const leaves = mkLeaves(2);
+    const oldT = buildTree(leaves.slice(0, 1));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 1);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        1,
+        2,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(true);
+  });
+
+  it("roundtrips for (2, 4) — subtree-aligned power-of-2 boundary", () => {
+    const leaves = mkLeaves(4);
+    const oldT = buildTree(leaves.slice(0, 2));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 2);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        2,
+        4,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(true);
+  });
+
+  it("roundtrips for (3, 7) — both unbalanced", () => {
+    const leaves = mkLeaves(7);
+    const oldT = buildTree(leaves.slice(0, 3));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 3);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        3,
+        7,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(true);
+  });
+
+  it("roundtrips for (5, 13) — irregular", () => {
+    const leaves = mkLeaves(13);
+    const oldT = buildTree(leaves.slice(0, 5));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 5);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        5,
+        13,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a tampered proof hash", () => {
+    const leaves = mkLeaves(7);
+    const oldT = buildTree(leaves.slice(0, 3));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 3);
+    // Flip one hex character in the first proof element
+    const tampered = [
+      (proof[0]![0] === "f" ? "0" : "f") + proof[0]!.slice(1),
+      ...proof.slice(1),
+    ];
+    expect(
+      verifyConsistencyProof(
+        tampered,
+        3,
+        7,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a wrong oldRoot", () => {
+    const leaves = mkLeaves(7);
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 3);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        3,
+        7,
+        "00".repeat(32),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a wrong newRoot", () => {
+    const leaves = mkLeaves(7);
+    const oldT = buildTree(leaves.slice(0, 3));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 3);
+    expect(
+      verifyConsistencyProof(
+        proof,
+        3,
+        7,
+        bytesToHex(oldT.root),
+        "ff".repeat(32),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a proof of the wrong length", () => {
+    const leaves = mkLeaves(7);
+    const oldT = buildTree(leaves.slice(0, 3));
+    const newT = buildTree(leaves);
+    const proof = getConsistencyProof(newT, 3);
+    const truncated = proof.slice(0, -1);
+    expect(
+      verifyConsistencyProof(
+        truncated,
+        3,
+        7,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(false);
+    const extended = [...proof, "aa".repeat(32)];
+    expect(
+      verifyConsistencyProof(
+        extended,
+        3,
+        7,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      ),
+    ).toBe(false);
+  });
+
+  it("fuzz: 20 random (oldSize, newSize) pairs all roundtrip", () => {
+    for (let t = 0; t < 20; t++) {
+      const newSize = 2 + Math.floor(Math.random() * 99);
+      const oldSize = 1 + Math.floor(Math.random() * newSize);
+      const leaves = mkLeaves(newSize);
+      const oldT = buildTree(leaves.slice(0, oldSize));
+      const newT = buildTree(leaves);
+      const proof = getConsistencyProof(newT, oldSize);
+      const ok = verifyConsistencyProof(
+        proof,
+        oldSize,
+        newSize,
+        bytesToHex(oldT.root),
+        bytesToHex(newT.root),
+      );
+      expect(ok, `fuzz failed for oldSize=${oldSize}, newSize=${newSize}`).toBe(
+        true,
+      );
     }
   });
 });
