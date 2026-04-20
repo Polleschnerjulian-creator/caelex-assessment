@@ -259,24 +259,24 @@ const NON_EU_EUROPEAN: JurisdictionRow[] = [
     code: "IS",
     name: "Iceland",
     flag: "🇮🇸",
-    status: "none",
-    note: "EEA member, minimal space activity",
+    status: "full",
+    note: "EEA member (1994); thin coverage — no domestic space industry",
     spaceActivityTier: "low",
   },
   {
     code: "LI",
     name: "Liechtenstein",
     flag: "🇱🇮",
-    status: "none",
-    note: "EEA member, no space industry",
+    status: "full",
+    note: "EEA member (1995); tracked for SPV/trust exposure only",
     spaceActivityTier: "low",
   },
   {
     code: "TR",
     name: "Turkey",
     flag: "🇹🇷",
-    status: "none",
-    note: "TUA Space Agency, expanding — under review",
+    status: "full",
+    note: "TUA Space Agency (2018), Artemis Accords signatory (2024, 36th)",
     spaceActivityTier: "medium",
   },
 ];
@@ -579,7 +579,7 @@ export default function CoveragePage() {
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
         <p className="text-[12px] text-gray-700 leading-relaxed max-w-3xl">
           Atlas does not cover every European jurisdiction. It covers{" "}
-          <strong>every space-active European jurisdiction</strong>: all 24
+          <strong>every space-active European jurisdiction</strong>: all 27
           countries with a meaningful satellite industry, ESA membership, or
           space-sector regulatory activity. We document what&rsquo;s in,
           what&rsquo;s in flight, and what we consider low priority — because
@@ -593,14 +593,14 @@ export default function CoveragePage() {
           />
           <Stat
             label="Non-EU European"
-            value="UK, CH, NO"
-            note="3 of 3 ESA key players"
+            value="6 jurisdictions"
+            note="UK · CH · NO · TR · IS · LI"
           />
           <Stat label="EU regulations" value="4 live" note="+4 on roadmap" />
           <Stat
             label="International treaties"
-            value="3 deep, 5 more planned"
-            note="OST, Liability, Registration"
+            value="13 indexed"
+            note="5 core UN + 6 guidelines + 2 related"
           />
         </div>
       </div>
@@ -656,7 +656,7 @@ export default function CoveragePage() {
               when its legal sources, competent authorities, and treaty
               ratifications have been verified against official gazettes and
               UNOOSA. Shallow coverage of 27 EU states is less useful than deep
-              coverage of the 24 that matter.
+              coverage of the 27 that matter.
             </span>
           </li>
           <li className="flex items-start gap-2">

@@ -3886,6 +3886,317 @@ const HR: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── Turkey (TR) ───
+
+const TR: JurisdictionLaw = {
+  countryCode: "TR",
+  countryName: "Turkey",
+  flagEmoji: "\u{1F1F9}\u{1F1F7}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 TUA coordination via Presidential Decree",
+    nameLocal:
+      "(Özel bir uzay kanunu yok; TUA Cumhurbaşkanlığı Kararnamesi ile)",
+    yearEnacted: 2018,
+    status: "draft",
+    keyArticles: "Presidential Decree 23 (2018); 170 (2024)",
+  },
+
+  licensingAuthority: {
+    name: "Turkish Space Agency",
+    nameLocal: "T\u00fcrkiye Uzay Ajans\u0131 (TUA)",
+    website: "https://tua.gov.tr",
+    parentMinistry: "Presidency of the Republic of Turkey",
+  },
+
+  licensingRequirements: [
+    {
+      id: "tr-tua",
+      category: "operational_plan",
+      title:
+        "TUA coordination + sectoral authorisations (Turkey has no dedicated space act)",
+      description:
+        "Turkish space operators coordinate with the Turkish Space Agency (TUA) under its Presidential Decree mandate, and comply with sectoral regulators: BTK for radio spectrum, SSB / Ministry of Trade for export control, USOM/BTK for cybersecurity, KVKK for data protection. No unified authorization regime exists; each activity triggers its own sector-specific licence.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Presidential Decree 23/2018 (TUA); 5809 Electronic Communications Law (2008); 6698 Personal Data Protection Law (2016)",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "tr-rule-turkish-entity",
+      description: "TUA coordination applies to Turkish space activities",
+      condition: "Entity registered in Turkey",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 8, max: 20 },
+    applicationFee: "Varies by authority (TUA/BTK/SSB)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: true,
+    registryName: "TUA National Space Object Registry (via decree)",
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Turkey is NOT an EU or EEA member; the EU Space Act will not apply directly. Turkish operators serving EU markets will be subject to EU Space Act third-country operator (TCO) provisions. A dedicated Turkish space law is under discussion but not enacted as of 2026; TUA's Presidential Decree mandate is the current quasi-regulatory framework.",
+    keyArticles: [
+      "Art. 105-110 EU Space Act (Third Country Operator obligations for Turkish operators serving EU customers)",
+    ],
+    transitionNotes:
+      "Turkish operators entering EU markets should prepare for TCO obligations under the EU Space Act. A draft national space law has been circulated but not introduced in the Grand National Assembly as of 2026.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 TUA operates under Presidential Decree",
+    "TUA (Turkish Space Agency) established 13 December 2018 (Decree 23), reorganised 2024 (Decree 170)",
+    "10-Year National Space Programme announced 9 February 2021",
+    "Alper Gezeravcı first Turkish astronaut \u2014 Axiom Mission 3 to ISS (18 January 2024)",
+    "İMECE Earth observation satellite launched April 2023 (SpaceX Transporter-7)",
+    "Artemis Accords signatory since 13 April 2024 (36th signatory)",
+    "Not an ESA member; cooperation via framework agreements",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Iceland (IS) ───
+
+const IS: JurisdictionLaw = {
+  countryCode: "IS",
+  countryName: "Iceland",
+  flagEmoji: "\u{1F1EE}\u{1F1F8}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 EEA-transposed EU framework",
+    nameLocal: "(Engin sérstök geimlög)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Higher Education, Science and Innovation",
+    nameLocal:
+      "H\u00e1sk\u00f3la-, i\u00f0na\u00f0ar- og n\u00fdsk\u00f6punarr\u00e1\u00f0uneyti\u00f0 (HVIN)",
+    website: "https://stjr.is/hvin",
+    parentMinistry: "Ministry of Higher Education, Science and Innovation",
+  },
+
+  licensingRequirements: [
+    {
+      id: "is-interim",
+      category: "operational_plan",
+      title: "No domestic framework \u2014 sectoral authorities only",
+      description:
+        "Iceland has no national space agency and no commercial space industry. Any future Icelandic operator would rely on Fjarskiptastofa (spectrum), Persónuvernd (data protection under GDPR via EEA), and the Ministry of Foreign Affairs (UN treaty coordination). EU Space Act reaches Iceland via EEA Joint Committee mechanism with typical 6–18 month transposition lag.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act 70/2022; Data Protection Act 90/2018",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "is-rule-icelandic-entity",
+      description: "Sectoral framework applies if Icelandic entity exists",
+      condition: "Entity registered in Iceland",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (no domestic space regime)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "complementary",
+    description:
+      "Iceland is an EEA member since 1 January 1994. The EU Space Act will apply via EEA Joint Committee Decision with typical 6–18 month transposition lag. Given Iceland has no commercial space industry, the practical impact is minimal — primarily relevant if a future Icelandic ground-station operator or EO entity emerges.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 will apply via EEA)",
+      "Art. 26-35 EU Space Act (Registration \u2014 will apply via EEA)",
+    ],
+    transitionNotes:
+      "EEA Joint Committee typically takes 6–18 months to adopt EU instruments. Operators should verify the EEA incorporation status before assuming equivalence.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 EEA-transposed EU framework",
+    "EEA member since 1 January 1994 (via EFTA)",
+    "Not an ESA member",
+    "No national space agency, no commercial space industry",
+    "Arctic position relevant for polar-orbit ground stations and reentry observation",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Liechtenstein (LI) ───
+
+const LI: JurisdictionLaw = {
+  countryCode: "LI",
+  countryName: "Liechtenstein",
+  flagEmoji: "\u{1F1F1}\u{1F1EE}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 EEA-transposed EU framework",
+    nameLocal: "(Kein eigenes Weltraumgesetz)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Government of the Principality of Liechtenstein",
+    nameLocal: "Regierung des F\u00fcrstentums Liechtenstein",
+    website: "https://regierung.li",
+    parentMinistry: "Ministry of Foreign Affairs, Justice and Culture",
+  },
+
+  licensingRequirements: [
+    {
+      id: "li-interim",
+      category: "operational_plan",
+      title: "No space activity — theoretical exposure only",
+      description:
+        "Liechtenstein has no domestic space activity, no national space agency, and no operational satellites. Theoretical exposure exists if a Liechtenstein SPV or foundation holds space assets or procures a launch, triggering State-responsibility under OST Art. VI. In practice the Amt für Kommunikation handles any electronic-communications authorisation; the Financial Market Authority (FMA) supervises asset-holding structures including space-sector SPVs.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "Kommunikationsgesetz (KomG); Datenschutzgesetz (DSG 2018)",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "li-rule-liechtenstein-entity",
+      description: "Sectoral framework applies if Liechtenstein entity exists",
+      condition: "Entity registered in Liechtenstein",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: ["No formal requirements"],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (no domestic space regime)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "complementary",
+    description:
+      "Liechtenstein is an EEA member since 1 May 1995. The EU Space Act will apply via EEA Joint Committee Decision with typical 6–24 month transposition lag. Given no commercial space industry, the practical relevance is limited to space-asset SPVs and trust/foundation structures that hold space collateral — triggering compliance via the Trust Enterprise Act (Treuunternehmen) and FMA supervision.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 via EEA, applies to SPV-held operations)",
+      "Art. 56-70 EU Space Act (Insurance & Liability \u2014 particularly relevant for asset-holding structures)",
+    ],
+    transitionNotes:
+      "EEA Joint Committee transposition lag is typically 12–24 months for Liechtenstein due to smaller administrative capacity. Asset-holding structures should consult specialist counsel before assuming EU-equivalent operating reality.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 EEA-transposed EU framework",
+    "EEA member since 1 May 1995 (via EFTA)",
+    "Not an ESA member",
+    "No domestic space activity \u2014 tracked primarily for SPV/trust exposure",
+    "Customs and monetary union with Switzerland overlays electronic-communications regulation",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -3924,4 +4235,8 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["LT", LT],
   ["SK", SK],
   ["HR", HR],
+  // Non-EU
+  ["TR", TR],
+  ["IS", IS],
+  ["LI", LI],
 ]);

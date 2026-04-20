@@ -70,6 +70,9 @@ import { LEGAL_SOURCES_LV, AUTHORITIES_LV } from "./sources/lv";
 import { LEGAL_SOURCES_LT, AUTHORITIES_LT } from "./sources/lt";
 import { LEGAL_SOURCES_SK, AUTHORITIES_SK } from "./sources/sk";
 import { LEGAL_SOURCES_HR, AUTHORITIES_HR } from "./sources/hr";
+import { LEGAL_SOURCES_TR, AUTHORITIES_TR } from "./sources/tr";
+import { LEGAL_SOURCES_IS, AUTHORITIES_IS } from "./sources/is";
+import { LEGAL_SOURCES_LI, AUTHORITIES_LI } from "./sources/li";
 import { LEGAL_SOURCES_INT, AUTHORITIES_INT } from "./sources/intl";
 import { LEGAL_SOURCES_EU, AUTHORITIES_EU } from "./sources/eu";
 
@@ -105,6 +108,9 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_LT,
   ...LEGAL_SOURCES_SK,
   ...LEGAL_SOURCES_HR,
+  ...LEGAL_SOURCES_TR,
+  ...LEGAL_SOURCES_IS,
+  ...LEGAL_SOURCES_LI,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -137,6 +143,9 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_LT,
   ...AUTHORITIES_SK,
   ...AUTHORITIES_HR,
+  ...AUTHORITIES_TR,
+  ...AUTHORITIES_IS,
+  ...AUTHORITIES_LI,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -372,6 +381,30 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       authorities: AUTHORITIES_HR,
     },
   ],
+  [
+    "TR",
+    {
+      jurisdiction: "TR",
+      sources: LEGAL_SOURCES_TR,
+      authorities: AUTHORITIES_TR,
+    },
+  ],
+  [
+    "IS",
+    {
+      jurisdiction: "IS",
+      sources: LEGAL_SOURCES_IS,
+      authorities: AUTHORITIES_IS,
+    },
+  ],
+  [
+    "LI",
+    {
+      jurisdiction: "LI",
+      sources: LEGAL_SOURCES_LI,
+      authorities: AUTHORITIES_LI,
+    },
+  ],
 ]);
 
 // ─── Lookup functions ────────────────────────────────────────────────
@@ -605,3 +638,6 @@ export { LEGAL_SOURCES_LV, AUTHORITIES_LV };
 export { LEGAL_SOURCES_LT, AUTHORITIES_LT };
 export { LEGAL_SOURCES_SK, AUTHORITIES_SK };
 export { LEGAL_SOURCES_HR, AUTHORITIES_HR };
+export { LEGAL_SOURCES_TR, AUTHORITIES_TR };
+export { LEGAL_SOURCES_IS, AUTHORITIES_IS };
+export { LEGAL_SOURCES_LI, AUTHORITIES_LI };

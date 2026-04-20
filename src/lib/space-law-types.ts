@@ -52,7 +52,10 @@ export type SpaceLawCountryCode =
   | "LV" // Latvia — no dedicated space law, IZM/ESA Associate + sectoral framework
   | "LT" // Lithuania — no dedicated space law, EIM/ESA Associate + sectoral framework
   | "SK" // Slovakia — no dedicated space law, MŠVVaM/ESA Associate + sectoral framework
-  | "HR"; // Croatia — no dedicated space law, MZO/ESA PECS + sectoral framework
+  | "HR" // Croatia — no dedicated space law, MZO/ESA PECS + sectoral framework
+  | "TR" // Turkey — no dedicated space law; TUA (2018) coordinates via Presidential Decree
+  | "IS" // Iceland — EEA member, no domestic space activity or agency
+  | "LI"; // Liechtenstein — EEA member, no space activity, SPV jurisdiction
 
 export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "FR",
@@ -82,6 +85,9 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "LT",
   "SK",
   "HR",
+  "TR",
+  "IS",
+  "LI",
 ];
 
 // ─── Activity Types ───
