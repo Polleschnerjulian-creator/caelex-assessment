@@ -44,10 +44,10 @@ import { utf8ToBytes, bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 
 // ─── Curve + generator setup ─────────────────────────────────────────
 
-type RPoint = InstanceType<typeof ristretto255.Point>;
+export type RPoint = InstanceType<typeof ristretto255.Point>;
 
 /** Curve order q for Ristretto255 (prime subgroup order). */
-const CURVE_ORDER = ristretto255.Point.Fn.ORDER;
+export const CURVE_ORDER = ristretto255.Point.Fn.ORDER;
 
 /**
  * The second generator H for the Pedersen commitment.
@@ -61,7 +61,7 @@ const CURVE_ORDER = ristretto255.Point.Fn.ORDER;
 const H_DOMAIN = "Verity.Pedersen.H.v2";
 
 let cachedH: RPoint | null = null;
-function getH(): RPoint {
+export function getH(): RPoint {
   if (cachedH) return cachedH;
   cachedH = ristretto255_hasher.hashToCurve(utf8ToBytes(H_DOMAIN));
   return cachedH;
@@ -69,7 +69,7 @@ function getH(): RPoint {
 
 // ─── Scalar helpers ─────────────────────────────────────────────────
 
-function reduceToScalar(bytes: Uint8Array): bigint {
+export function reduceToScalar(bytes: Uint8Array): bigint {
   return bytesToNumberBE(bytes) % CURVE_ORDER;
 }
 
@@ -86,26 +86,26 @@ function valueToScalar(value: number): bigint {
 }
 
 /** Random scalar in [0, q). */
-function randomScalar(): bigint {
+export function randomScalar(): bigint {
   const buf = new Uint8Array(64);
   crypto.getRandomValues(buf);
   return reduceToScalar(buf);
 }
 
-function scalarToHex(s: bigint): string {
+export function scalarToHex(s: bigint): string {
   // 32 bytes = 256 bits is enough for any scalar mod the ~253-bit order.
   return bytesToHex(numberToBytesBE(s, 32));
 }
 
-function hexToScalar(hex: string): bigint {
+export function hexToScalar(hex: string): bigint {
   return bytesToNumberBE(hexToBytes(hex)) % CURVE_ORDER;
 }
 
-function pointToHex(p: RPoint): string {
+export function pointToHex(p: RPoint): string {
   return bytesToHex(p.toBytes());
 }
 
-function hexToPoint(hex: string): RPoint {
+export function hexToPoint(hex: string): RPoint {
   return ristretto255.Point.fromBytes(hexToBytes(hex));
 }
 
@@ -274,7 +274,7 @@ export function verifyOpeningProof(
 
 // ─── Utilities ──────────────────────────────────────────────────────
 
-function concat(...chunks: Uint8Array[]): Uint8Array {
+export function concat(...chunks: Uint8Array[]): Uint8Array {
   const total = chunks.reduce((n, c) => n + c.length, 0);
   const out = new Uint8Array(total);
   let offset = 0;
