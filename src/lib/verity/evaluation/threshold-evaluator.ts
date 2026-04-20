@@ -6,6 +6,7 @@ import { resolveEvidence } from "./evidence-resolver";
 import { safeLog } from "../utils/redaction";
 import type { ThresholdAttestation } from "../core/types";
 import { appendToChain } from "../audit-chain/chain-writer.server";
+import { appendToLog } from "../transparency/log-store";
 
 /**
  * Server-side threshold evaluation.
@@ -112,6 +113,19 @@ export async function evaluateAndAttest(
     attestationId: attestation.attestation_id,
     regulationRef: threshold.regulation_ref,
   });
+
+  // Append to Merkle transparency log (idempotent; covers retroactive-delete detection).
+  try {
+    await appendToLog(
+      prisma,
+      attestation as unknown as Record<string, unknown>,
+    );
+  } catch (err) {
+    safeLog("Transparency log append failed — will be retried by backfill", {
+      attestationId: attestation.attestation_id,
+      error: String(err),
+    });
+  }
 
   // Append to compliance audit chain (non-blocking)
   appendToChain({

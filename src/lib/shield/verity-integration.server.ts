@@ -3,6 +3,7 @@ import type { PrismaClient, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { getActiveIssuerKey } from "@/lib/verity/keys/issuer-keys";
 import { generateAttestation } from "@/lib/verity/core/attestation";
+import { appendToLog } from "@/lib/verity/transparency/log-store";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -242,6 +243,19 @@ export async function createCAAttestation(
       where: { id: event.id },
       data: { verityAttestationId: attestation.id },
     });
+
+    // Append to Merkle transparency log (idempotent).
+    try {
+      await appendToLog(prisma, signed as unknown as Record<string, unknown>);
+    } catch (err) {
+      logger.warn(
+        "Transparency log append failed — will be retried by backfill",
+        {
+          attestationId: signed.attestation_id,
+          error: String(err),
+        },
+      );
+    }
 
     logger.info("Created CA Verity attestation (signed)", {
       attestationId: attestation.id,

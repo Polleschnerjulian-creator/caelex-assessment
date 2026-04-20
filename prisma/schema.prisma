@@ -7068,6 +7068,37 @@ model VerityIssuerKey {
   @@index([keyId])
 }
 
+// ─── Verity Merkle Transparency Log (Phase 2 — pillar 4.5) ────────────────
+//
+// Append-only log of every VerityAttestation, surfaced to third parties via
+// signed tree heads (STHs) so retroactive deletion is detectable without
+// trusting Caelex. See src/lib/verity/transparency/log-store.ts for writers
+// and src/app/api/v1/verity/transparency/* for the public read surface.
+
+model VerityLogLeaf {
+  id            String   @id @default(cuid())
+  leafIndex     Int      @unique // 0-based position in the append-only log
+  attestationId String   @unique // FK-by-value to VerityAttestation.attestationId
+  leafHash      String // hex SHA-256 per RFC 6962 hashLeaf(serialized attestation)
+  appendedAt    DateTime @default(now())
+
+  @@index([attestationId])
+  @@index([appendedAt])
+}
+
+model VerityLogSTH {
+  id          String   @id @default(cuid())
+  treeSize    Int      @unique // number of leaves covered
+  rootHash    String // hex SHA-256 root
+  issuerKeyId String // Verity Ed25519 key that signed this STH
+  signature   String // hex Ed25519 signature over canonical STH signing bytes
+  timestamp   DateTime @default(now())
+  version     String   @default("v1")
+
+  @@index([treeSize])
+  @@index([timestamp])
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // EPHEMERIS — Predictive Compliance Intelligence
 // ═══════════════════════════════════════════════════════════════════════════════

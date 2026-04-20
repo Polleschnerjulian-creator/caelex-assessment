@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateAttestation } from "@/lib/verity/core/attestation";
 import { getActiveIssuerKey } from "@/lib/verity/keys/issuer-keys";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import { appendToLog } from "@/lib/verity/transparency/log-store";
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 
@@ -153,6 +154,19 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       regulationRef: regulation_ref,
     });
+
+    // Append to Merkle transparency log (idempotent).
+    try {
+      await appendToLog(
+        prisma,
+        attestation as unknown as Record<string, unknown>,
+      );
+    } catch (err) {
+      safeLog("Transparency log append failed — will be retried by backfill", {
+        attestationId: attestation.attestation_id,
+        error: String(err),
+      });
+    }
 
     return NextResponse.json({
       attestation,
