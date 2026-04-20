@@ -39,12 +39,18 @@ const MAX_BOOKMARKS_PER_USER = 1000;
 
 // ─── GET /api/atlas/bookmarks ─────────────────────────────────────────
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ bookmarks: [] });
     }
+
+    // Audit L4: rate-limit the read path too. Without this, an authed
+    // user (or leaked token) can enumerate bookmarks in a tight loop
+    // for DB-load DoS or for exfiltration of the full item-id namespace.
+    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const rows = await prisma.atlasBookmark.findMany({
       where: { userId: session.user.id },

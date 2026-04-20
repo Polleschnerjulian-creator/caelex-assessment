@@ -65,8 +65,18 @@ export async function POST(request: Request) {
   const rawBody = await request.json().catch(() => null);
   const parsed = UpsertSchema.safeParse(rawBody);
   if (!parsed.success) {
+    // Audit L5: don't leak internal Zod schema shape to unauthenticated
+    // probers. The server log has the full error, the client just gets
+    // the field list (no types, no internal paths).
+    logger.warn("Atlas annotation payload rejected", {
+      issues: parsed.error.issues,
+      userId: atlas.userId,
+    });
+    const fields = parsed.error.issues
+      .map((i) => i.path.join("."))
+      .filter(Boolean);
     return NextResponse.json(
-      { error: "Invalid payload", details: parsed.error.format() },
+      { error: "Invalid payload", fields },
       { status: 400 },
     );
   }

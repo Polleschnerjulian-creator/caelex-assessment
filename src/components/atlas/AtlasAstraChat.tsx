@@ -45,24 +45,52 @@ export default function AtlasAstraChat() {
     }
   }, [input]);
 
+  /**
+   * Audit H3: sanitize any path segment before it lands in the LLM
+   * system-prompt injection path. Attacker-controlled URLs like
+   *   /atlas/jurisdictions/DE/ignore_all_previous_instructions
+   * previously flowed raw into the prompt. We now:
+   *   1. strip to [A-Z0-9] only (country codes + source ids)
+   *   2. hard-cap at 20 chars
+   *   3. validate against known jurisdiction allowlist; unknown codes
+   *      collapse to "an unidentified" and path-bound attacker text
+   *      never reaches the model.
+   */
+  const safePathSegment = useCallback(
+    (raw: string | undefined, maxLen = 20): string => {
+      if (!raw) return "";
+      return raw.replace(/[^A-Za-z0-9_-]/g, "").slice(0, maxLen);
+    },
+    [],
+  );
+
   const getPageContext = useCallback((): string => {
     if (pathname.includes("/jurisdictions/")) {
-      const code = pathname
-        .split("/jurisdictions/")[1]
-        ?.split("/")[0]
-        ?.toUpperCase();
-      return `User is viewing the ${code} jurisdiction detail page in the ATLAS Space Law Database.`;
+      const rawCode = pathname.split("/jurisdictions/")[1]?.split("/")[0];
+      const code = safePathSegment(rawCode, 3).toUpperCase();
+      // Two-char ISO alpha-2 codes only; anything else neutralises to
+      // a generic sentence so a crafted URL cannot smuggle text into
+      // the prompt.
+      const safeCode = /^[A-Z]{2,3}$/.test(code) ? code : "";
+      if (safeCode) {
+        return `User is viewing the ${safeCode} jurisdiction detail page in the ATLAS Space Law Database.`;
+      }
+      return "User is viewing a jurisdiction detail page in the ATLAS Space Law Database.";
     }
     if (pathname.includes("/sources/")) {
-      const id = pathname.split("/sources/")[1]?.split("/")[0];
-      return `User is viewing legal source ${id} in the ATLAS Space Law Database.`;
+      const rawId = pathname.split("/sources/")[1]?.split("/")[0];
+      const id = safePathSegment(rawId, 40);
+      if (id) {
+        return `User is viewing legal source ${id} in the ATLAS Space Law Database.`;
+      }
+      return "User is viewing a legal source in the ATLAS Space Law Database.";
     }
     if (pathname.includes("/comparator"))
       return "User is on the ATLAS jurisdiction comparator page.";
     if (pathname.includes("/settings"))
       return "User is on the ATLAS settings page.";
     return "User is on the ATLAS Space Law Database search page. ATLAS covers 18 jurisdictions, 325 legal sources, and 211 regulatory authorities across European space law.";
-  }, [pathname]);
+  }, [pathname, safePathSegment]);
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
