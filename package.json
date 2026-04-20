@@ -49,6 +49,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@neondatabase/serverless": "^1.0.2",
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
     "@prisma/client": "^5.22.0",
     "@react-email/components": "^1.0.6",
     "@react-email/render": "^2.0.4",
