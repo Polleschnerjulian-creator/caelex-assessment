@@ -63,6 +63,9 @@ import { LEGAL_SOURCES_GR, AUTHORITIES_GR } from "./sources/gr";
 import { LEGAL_SOURCES_CZ, AUTHORITIES_CZ } from "./sources/cz";
 import { LEGAL_SOURCES_PL, AUTHORITIES_PL } from "./sources/pl";
 import { LEGAL_SOURCES_EE, AUTHORITIES_EE } from "./sources/ee";
+import { LEGAL_SOURCES_RO, AUTHORITIES_RO } from "./sources/ro";
+import { LEGAL_SOURCES_HU, AUTHORITIES_HU } from "./sources/hu";
+import { LEGAL_SOURCES_SI, AUTHORITIES_SI } from "./sources/si";
 import { LEGAL_SOURCES_INT, AUTHORITIES_INT } from "./sources/intl";
 import { LEGAL_SOURCES_EU, AUTHORITIES_EU } from "./sources/eu";
 
@@ -91,6 +94,9 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_CZ,
   ...LEGAL_SOURCES_PL,
   ...LEGAL_SOURCES_EE,
+  ...LEGAL_SOURCES_RO,
+  ...LEGAL_SOURCES_HU,
+  ...LEGAL_SOURCES_SI,
 ];
 
 const ALL_AUTHORITIES: Authority[] = [
@@ -116,6 +122,9 @@ const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_CZ,
   ...AUTHORITIES_PL,
   ...AUTHORITIES_EE,
+  ...AUTHORITIES_RO,
+  ...AUTHORITIES_HU,
+  ...AUTHORITIES_SI,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -293,6 +302,30 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       jurisdiction: "EE",
       sources: LEGAL_SOURCES_EE,
       authorities: AUTHORITIES_EE,
+    },
+  ],
+  [
+    "RO",
+    {
+      jurisdiction: "RO",
+      sources: LEGAL_SOURCES_RO,
+      authorities: AUTHORITIES_RO,
+    },
+  ],
+  [
+    "HU",
+    {
+      jurisdiction: "HU",
+      sources: LEGAL_SOURCES_HU,
+      authorities: AUTHORITIES_HU,
+    },
+  ],
+  [
+    "SI",
+    {
+      jurisdiction: "SI",
+      sources: LEGAL_SOURCES_SI,
+      authorities: AUTHORITIES_SI,
     },
   ],
 ]);
@@ -521,3 +554,6 @@ export { LEGAL_SOURCES_GR, AUTHORITIES_GR };
 export { LEGAL_SOURCES_CZ, AUTHORITIES_CZ };
 export { LEGAL_SOURCES_PL, AUTHORITIES_PL };
 export { LEGAL_SOURCES_EE, AUTHORITIES_EE };
+export { LEGAL_SOURCES_RO, AUTHORITIES_RO };
+export { LEGAL_SOURCES_HU, AUTHORITIES_HU };
+export { LEGAL_SOURCES_SI, AUTHORITIES_SI };

@@ -45,7 +45,10 @@ export type SpaceLawCountryCode =
   | "CZ" // Czech Republic — Act 77/2024 on Space Activities
   | "IE" // Ireland — no dedicated law yet, interim framework via ESA / EIA
   | "CH" // Switzerland — Federal Ordinance on Space Objects (2019), non-EU/EEA
-  | "EE"; // Estonia — no dedicated space law, interim framework via MKM / sectoral laws
+  | "EE" // Estonia — no dedicated space law, interim framework via MKM / sectoral laws
+  | "RO" // Romania — no dedicated space law, ROSA coordination + sectoral framework
+  | "HU" // Hungary — no dedicated space law, Hungarian Space Office + sectoral framework
+  | "SI"; // Slovenia — no dedicated space law, MGTS coordination + sectoral framework
 
 export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "FR",
@@ -68,6 +71,9 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "IE",
   "CH",
   "EE",
+  "RO",
+  "HU",
+  "SI",
 ];
 
 // ─── Activity Types ───

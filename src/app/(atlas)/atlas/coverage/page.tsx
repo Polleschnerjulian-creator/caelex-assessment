@@ -151,29 +151,29 @@ const EU_JURISDICTIONS: JurisdictionRow[] = [
     note: "Preliminary coverage — treaty accession dates pending UNOOSA verification",
     spaceActivityTier: "medium",
   },
-  // Planned — high priority
+  // Added in this coverage batch — ESA members, active space industry
   {
     code: "RO",
     name: "Romania",
     flag: "🇷🇴",
-    status: "planned",
-    note: "ROSA agency, ESA member — next priority",
+    status: "full",
+    note: "ROSA agency (since 1991), ESA full member since 22 Dec 2011",
     spaceActivityTier: "medium",
   },
   {
     code: "HU",
     name: "Hungary",
     flag: "🇭🇺",
-    status: "planned",
-    note: "Hungarian Space Office (HSO), ESA since 2015",
+    status: "full",
+    note: "Hungarian Space Office (KKM), ESA full member since 24 Feb 2015",
     spaceActivityTier: "medium",
   },
   {
     code: "SI",
     name: "Slovenia",
     flag: "🇸🇮",
-    status: "planned",
-    note: "SpaceSI, ESA member, SkyLabs",
+    status: "full",
+    note: "MGTS coordination, ESA full member since 5 Jul 2022",
     spaceActivityTier: "medium",
   },
   // Planned — medium priority
@@ -579,7 +579,7 @@ export default function CoveragePage() {
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
         <p className="text-[12px] text-gray-700 leading-relaxed max-w-3xl">
           Atlas does not cover every European jurisdiction. It covers{" "}
-          <strong>every space-active European jurisdiction</strong>: all 17
+          <strong>every space-active European jurisdiction</strong>: all 20
           countries with a meaningful satellite industry, ESA membership, or
           space-sector regulatory activity. We document what&rsquo;s in,
           what&rsquo;s in flight, and what we consider low priority — because
@@ -656,7 +656,7 @@ export default function CoveragePage() {
               when its legal sources, competent authorities, and treaty
               ratifications have been verified against official gazettes and
               UNOOSA. Shallow coverage of 27 EU states is less useful than deep
-              coverage of the 17 that matter.
+              coverage of the 20 that matter.
             </span>
           </li>
           <li className="flex items-start gap-2">

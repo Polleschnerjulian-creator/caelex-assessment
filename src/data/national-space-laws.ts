@@ -3160,6 +3160,318 @@ const EE: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── Romania (RO) ───
+
+const RO: JurisdictionLaw = {
+  countryCode: "RO",
+  countryName: "Romania",
+  flagEmoji: "\u{1F1F7}\u{1F1F4}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 ROSA coordination + sectoral framework",
+    nameLocal: "(Nu exist\u0103 o lege spa\u021bial\u0103 dedicat\u0103)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Romanian Space Agency",
+    nameLocal: "Agen\u021bia Spa\u021bial\u0103 Rom\u00e2n\u0103 (ROSA)",
+    website: "https://rosa.ro",
+    contactEmail: "office@rosa.ro",
+    parentMinistry: "Ministry of Research, Innovation and Digitalisation",
+  },
+
+  licensingRequirements: [
+    {
+      id: "ro-interim",
+      category: "operational_plan",
+      title: "Interim coordination via ROSA + sectoral regulators",
+      description:
+        "Romania has no dedicated national space act. Operators coordinate with ROSA for ESA participation and policy alignment, and comply with sectoral regulators: ANCOM for radio spectrum, ANCEX (within MFA) for dual-use export control, DNSC for cybersecurity. UN Registration Convention obligations are handled via the MFA.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Code (Legea 140/2023); Strategic Goods Act (Legea 227/2018); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "ro-rule-romanian-entity",
+      description: "Interim framework applies to Romanian space activities",
+      condition: "Entity registered in Romania",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Romania lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Romanian operators. ROSA (established 1991) is expected to be designated the national competent authority.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration \u2014 formalises MFA/ROSA practice)",
+    ],
+    transitionNotes:
+      "Romania has discussed a dedicated space law repeatedly since ~2018 but no draft has advanced to parliament. The EU Space Act will likely supersede any such national effort.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA full member since 22 December 2011",
+    "ROSA (Romanian Space Agency) established 1991, re-confirmed by GD 923/1995",
+    "Hermann Oberth (born Sibiu, Transylvania) \u2014 founding father of astronautics",
+    "Active companies include Deimos Space, GMV Innovating Solutions",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Hungary (HU) ───
+
+const HU: JurisdictionLaw = {
+  countryCode: "HU",
+  countryName: "Hungary",
+  flagEmoji: "\u{1F1ED}\u{1F1FA}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 Hungarian Space Office + sectoral framework",
+    nameLocal: "(Nincs k\u00fcl\u00f6n \u0171rt\u00f6rv\u00e9ny)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Hungarian Space Office (Űrügyi Főosztály)",
+    nameLocal: "\u0170r\u00fcgyi F\u0151oszt\u00e1ly",
+    website: "https://kormany.hu",
+    parentMinistry: "Ministry of Foreign Affairs and Trade (KKM)",
+  },
+
+  licensingRequirements: [
+    {
+      id: "hu-interim",
+      category: "operational_plan",
+      title:
+        "Interim coordination via Hungarian Space Office + sectoral regulators",
+      description:
+        "Hungary has no dedicated national space act. Operators coordinate with the Hungarian Space Office (within KKM) for ESA and COPUOS matters, and comply with sectoral regulators: NMHH for radio spectrum, SZTNH Trade Control Department for dual-use export control, SZTFH for cybersecurity. UN Registration Convention obligations are handled via KKM.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act (2003. évi C. törvény); Export Control Act (2011. évi CLVII. törvény); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "hu-rule-hungarian-entity",
+      description: "Interim framework applies to Hungarian space activities",
+      condition: "Entity registered in Hungary",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Hungary lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework. The Hungarian Space Office (within KKM) is the most likely national competent authority candidate.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+    ],
+    transitionNotes:
+      "Hungary's HUNOR astronaut programme and increasing ESA contribution suggest national space policy attention but a dedicated space act has not been drafted.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA full member since 24 February 2015",
+    "Bertalan Farkas (1980) was the first Hungarian cosmonaut (Soyuz-36)",
+    "Tibor Kapu flew to the ISS on Axiom Mission 4 in 2025 (HUNOR programme)",
+    "Active companies include C3S, 4iG, Puli Space Technologies",
+    "Artemis Accords signatory since 18 December 2024 (53rd signatory)",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Slovenia (SI) ───
+
+const SI: JurisdictionLaw = {
+  countryCode: "SI",
+  countryName: "Slovenia",
+  flagEmoji: "\u{1F1F8}\u{1F1EE}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 MGTS coordination + sectoral framework",
+    nameLocal: "(Ni namenskega vesoljskega zakona)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of the Economy, Tourism and Sport",
+    nameLocal: "Ministrstvo za gospodarstvo, turizem in \u0161port (MGTS)",
+    website: "https://gov.si/mgts",
+    parentMinistry: "Ministry of the Economy, Tourism and Sport",
+  },
+
+  licensingRequirements: [
+    {
+      id: "si-interim",
+      category: "operational_plan",
+      title: "Interim coordination via MGTS + sectoral regulators",
+      description:
+        "Slovenia has no dedicated national space act. Operators coordinate with MGTS for ESA participation and comply with sectoral regulators: AKOS for radio spectrum, the Interministerial Commission on Export Control (MKNIB) for dual-use items, URSIV for cybersecurity. UN Registration Convention obligations are handled via the Ministry of Foreign and European Affairs.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act (ZEKom-2, 2023); Strategic Goods Regime Act (ZNIBD, 2018); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "si-rule-slovenian-entity",
+      description: "Interim framework applies to Slovenian space activities",
+      condition: "Entity registered in Slovenia",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Slovenia lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework. MGTS (Ministry of Economy, Tourism and Sport) is the most likely national competent authority candidate given its ESA delegation role.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+    ],
+    transitionNotes:
+      "Slovenia's recent ESA full membership (July 2022) and growing commercial sector suggest policy attention but no dedicated space act is currently drafted.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA full member since 5 July 2022 (European Cooperating State since 2010, Associate 2016)",
+    "Sinergise (Sentinel Hub) acquired by Planet Labs in 2023 \u2014 major EO platform",
+    "Active companies include Skylabs, Dewesoft, Sinergise",
+    "Artemis Accords signatory since 19 April 2024 (39th signatory)",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -3191,4 +3503,7 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["CH", CH],
   // Interim framework (no dedicated national space law)
   ["EE", EE],
+  ["RO", RO],
+  ["HU", HU],
+  ["SI", SI],
 ]);
