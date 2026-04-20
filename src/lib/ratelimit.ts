@@ -250,6 +250,17 @@ export const rateLimiters = redis
         prefix: "ratelimit:verity_public",
       }),
 
+      // Verity regulator-ready bundle export: 5 per hour per user.
+      // Bundles are heavy (full leaf scan + tree rebuild) so the limit
+      // is deliberately conservative — a legitimate operator needs at
+      // most a handful per hour.
+      verity_bundle: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:verity_bundle",
+      }),
+
       nexus: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(30, "1 h"),
@@ -368,6 +379,7 @@ const fallbackLimiters = {
   sentinel_read: new InMemoryRateLimiter(30, 60000),
   sentinel_expensive: new InMemoryRateLimiter(3, 3600000),
   verity_public: new InMemoryRateLimiter(10, 3600000),
+  verity_bundle: new InMemoryRateLimiter(3, 3600000), // 3/hr dev vs 5/hr prod
   nexus: new InMemoryRateLimiter(15, 3600000),
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
@@ -400,6 +412,7 @@ export type RateLimitType =
   | "sentinel_read"
   | "sentinel_expensive"
   | "verity_public"
+  | "verity_bundle"
   | "nexus"
   | "hub"
   | "astra_chat";
