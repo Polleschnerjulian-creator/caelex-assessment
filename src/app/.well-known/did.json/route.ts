@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { buildDidDocument } from "@/lib/verity/vc/verifiable-credential";
 
 export const runtime = "nodejs";
-
-// Let this document update when the active issuer key rotates;
-// Vercel/Next caches by default, so we mark it revalidatable.
+// Read from DB at request time (no build-time prerender — DATABASE_URL
+// is not always available during Vercel static generation).
+export const dynamic = "force-dynamic";
+// Let the edge cache this for a minute so key rotation propagates
+// quickly but resolvers aren't hammering Neon on every request.
 export const revalidate = 60;
 
 /**

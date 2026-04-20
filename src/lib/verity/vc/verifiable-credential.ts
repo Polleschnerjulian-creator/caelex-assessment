@@ -180,13 +180,38 @@ export function attestationToVC(
  *
  * Tiny pure-JS base58btc encoder so we avoid another dependency.
  */
-function encodeMultibaseEd25519(publicKeyHex: string): string {
-  const raw = hexToBytes(publicKeyHex);
-  if (raw.length !== 32) {
-    throw new Error(
-      `encodeMultibaseEd25519: expected 32-byte key, got ${raw.length}`,
-    );
+/**
+ * Ed25519 SPKI-DER public keys are always 44 bytes: a fixed 12-byte
+ * SubjectPublicKeyInfo header followed by the 32 raw key bytes. The
+ * Verity key store persists the SPKI-DER form (see issuer-keys.ts),
+ * so we strip the header here. A bare 32-byte raw key is also
+ * accepted for forward-compat.
+ */
+const ED25519_SPKI_PREFIX = new Uint8Array([
+  0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00,
+]);
+
+function extractRawEd25519PublicKey(keyHex: string): Uint8Array {
+  const bytes = hexToBytes(keyHex);
+  if (bytes.length === 32) return bytes;
+  if (bytes.length === 44) {
+    // Validate the SPKI-DER header to avoid stripping junk silently.
+    for (let i = 0; i < ED25519_SPKI_PREFIX.length; i++) {
+      if (bytes[i] !== ED25519_SPKI_PREFIX[i]) {
+        throw new Error(
+          "extractRawEd25519PublicKey: 44-byte input has unexpected SPKI header",
+        );
+      }
+    }
+    return bytes.subarray(12);
   }
+  throw new Error(
+    `extractRawEd25519PublicKey: expected 32-byte raw or 44-byte SPKI DER key, got ${bytes.length}`,
+  );
+}
+
+function encodeMultibaseEd25519(publicKeyHex: string): string {
+  const raw = extractRawEd25519PublicKey(publicKeyHex);
   // Multicodec prefix for ed25519-pub: varint(0xed) = 0xed 0x01
   const prefixed = new Uint8Array(raw.length + 2);
   prefixed[0] = 0xed;

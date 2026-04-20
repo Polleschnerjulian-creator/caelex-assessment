@@ -153,7 +153,33 @@ describe("VC — buildDidDocument", () => {
     expect(doc.authentication).toContain(vmId);
   });
 
-  it("rejects public keys that aren't 32 bytes", () => {
+  it("accepts a 44-byte Ed25519 SPKI-DER public key (the production format)", () => {
+    // Verity stores Ed25519 keys in SPKI-DER form: fixed 12-byte header
+    // + 32-byte raw key. Both 32 and 44 must work — this is the regression
+    // guard for the 2026-04-20 deployment failure.
+    // 12-byte Ed25519 SPKI DER prefix.
+    const ED25519_SPKI_PREFIX_HEX = "302a300506032b6570032100";
+    const spkiHex = ED25519_SPKI_PREFIX_HEX + publicKeyHex;
+    expect(spkiHex.length / 2).toBe(44);
+
+    const docFromSpki = buildDidDocument(spkiHex, keyId);
+    const docFromRaw = buildDidDocument(publicKeyHex, keyId);
+    // Same raw bytes → identical multibase
+    expect(docFromSpki.verificationMethod[0]!.publicKeyMultibase).toBe(
+      docFromRaw.verificationMethod[0]!.publicKeyMultibase,
+    );
+  });
+
+  it("rejects a 44-byte input with an invalid SPKI header", () => {
+    // Length right, prefix wrong → must throw, not silently strip junk.
+    const badPrefix = "ff".repeat(12) + publicKeyHex;
+    expect(() => buildDidDocument(badPrefix, keyId)).toThrow(
+      /unexpected SPKI header/,
+    );
+  });
+
+  it("rejects public keys that aren't 32 or 44 bytes", () => {
     expect(() => buildDidDocument("abcd", keyId)).toThrow();
+    expect(() => buildDidDocument("ab".repeat(33), keyId)).toThrow();
   });
 });
