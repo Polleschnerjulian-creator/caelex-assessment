@@ -320,5 +320,211 @@ describe("verifyAttestation — v2 (Pedersen)", () => {
     expect(result.valid).toBe(true);
     // v1 path reports commitment_proof_valid=true unconditionally (nothing to check).
     expect(result.checks.commitment_proof_valid).toBe(true);
+    expect(result.checks.range_proof_valid).toBe(true);
+  });
+});
+
+// ─── v3 — Pedersen + zero-knowledge range proof ────────────────────────────
+
+describe("generateAttestation — v3 (range proof)", () => {
+  it("emits version 3.0 with pedersen: prefix and a range_proof", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    expect(att.version).toBe("3.0");
+    expect(att.evidence.value_commitment).toMatch(/^pedersen:[a-f0-9]{64}$/);
+    expect(att.evidence.commitment_scheme).toBe("v3-pedersen-range");
+    expect(att.evidence.commitment_proof).toBeUndefined();
+    expect(att.evidence.range_proof?.algorithm).toBe("threshold-range-v1");
+    expect(att.evidence.range_proof?.range_proof.algorithm).toBe(
+      "bit-range-v1",
+    );
+    // Default encoding is scale=1000 bits=32.
+    expect(att.evidence.range_proof?.encoding).toEqual({
+      scale: 1000,
+      bits: 32,
+    });
+  });
+
+  it("still hides actual_value", () => {
+    const att = generateAttestation(
+      makeParams({ commitment_scheme: "v3", actual_value: 57.66 }),
+    );
+    const json = JSON.stringify(att);
+    expect(json).not.toContain("57.66");
+    expect(json).not.toContain("actual_value");
+  });
+
+  it("respects a custom range_encoding", () => {
+    const att = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        range_encoding: { scale: 100, bits: 16 },
+        actual_value: 57.66,
+        threshold_value: 15,
+        threshold_type: "ABOVE",
+      }),
+    );
+    expect(att.evidence.range_proof?.encoding).toEqual({
+      scale: 100,
+      bits: 16,
+    });
+  });
+
+  it("throws when the ABOVE claim is actually false", () => {
+    expect(() =>
+      generateAttestation(
+        makeParams({
+          commitment_scheme: "v3",
+          actual_value: 10,
+          threshold_type: "ABOVE",
+          threshold_value: 15,
+        }),
+      ),
+    ).toThrow(/false/);
+  });
+
+  it("throws when the BELOW claim is actually false", () => {
+    expect(() =>
+      generateAttestation(
+        makeParams({
+          commitment_scheme: "v3",
+          actual_value: 30,
+          threshold_type: "BELOW",
+          threshold_value: 25,
+        }),
+      ),
+    ).toThrow(/false/);
+  });
+});
+
+describe("verifyAttestation — v3 (range proof)", () => {
+  it("verifies a valid v3 attestation end-to-end", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.checks.range_proof_valid).toBe(true);
+    expect(result.checks.commitment_proof_valid).toBe(true); // unconditional in v3
+  });
+
+  it("rejects a v3 attestation with range_proof stripped", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    delete (att.evidence as { range_proof?: unknown }).range_proof;
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("rejects a v3 attestation that smuggles a commitment_proof field", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    (att.evidence as { commitment_proof: unknown }).commitment_proof = {
+      A: "00".repeat(32),
+      z_r: "00".repeat(32),
+      z_v: "00".repeat(32),
+      algorithm: "schnorr-pok-v1",
+    };
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("rejects a v3 attestation with tampered threshold_value_scaled", () => {
+    const att = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        actual_value: 57.66,
+        threshold_value: 15,
+        threshold_type: "ABOVE",
+      }),
+    );
+    // Lower the stored threshold to pretend the commitment clears an
+    // even weaker bar. Because range_proof lives in signed evidence,
+    // the Ed25519 signature catches this first.
+    att.evidence.range_proof!.threshold_value_scaled = "10000";
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.signature_valid).toBe(false);
+  });
+
+  it("rejects when range_proof.threshold_type disagrees with claim.threshold_type", () => {
+    // Manually construct an unsigned attestation where the claim says ABOVE
+    // but the range_proof.threshold_type was swapped. Since the sig covers
+    // both, we expect sig failure — and even if sig were bypassed, the
+    // dedicated consistency check in verifyAttestation catches it.
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    att.evidence.range_proof!.threshold_type =
+      att.claim.threshold_type === "ABOVE" ? "BELOW" : "ABOVE";
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+  });
+
+  it("rejects a v3 attestation with a tampered OR-proof bit", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    const bp = att.evidence.range_proof!.range_proof.bit_proofs[0]!;
+    bp.z_0 = (bp.z_0[0] === "f" ? "0" : "f") + bp.z_0.slice(1);
+    const result = verifyAttestation(att, pubKeyHex, true);
+    // Ed25519 catches it (evidence is signed as a whole).
+    expect(result.valid).toBe(false);
+    expect(result.checks.signature_valid).toBe(false);
+  });
+
+  it("rejects an unknown commitment_scheme combo (v3 version + v2 commitment_scheme tag)", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v3" }));
+    (att.evidence as { commitment_scheme: string }).commitment_scheme =
+      "v2-pedersen-ristretto255";
+    const result = verifyAttestation(att, pubKeyHex, true);
+    // commitment_scheme is in signed evidence → signature check catches it.
+    expect(result.valid).toBe(false);
+  });
+
+  it("v3 range proof is bound to the attestation identity (proof swap rejected)", () => {
+    const attA = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        actual_value: 50,
+        threshold_value: 15,
+        threshold_type: "ABOVE",
+      }),
+    );
+    const attB = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        actual_value: 60,
+        threshold_value: 15,
+        threshold_type: "ABOVE",
+      }),
+    );
+    // Move A's range proof onto B. Ed25519 catches it.
+    attB.evidence.range_proof = attA.evidence.range_proof;
+    const result = verifyAttestation(attB, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+  });
+
+  it("BELOW threshold roundtrip works for v3", () => {
+    const att = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        actual_value: 5,
+        threshold_value: 25,
+        threshold_type: "BELOW",
+      }),
+    );
+    expect(att.claim.result).toBe(true);
+    expect(att.evidence.range_proof?.threshold_type).toBe("BELOW");
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(true);
+    expect(result.checks.range_proof_valid).toBe(true);
+  });
+
+  it("boundary v == T verifies for v3 ABOVE", () => {
+    const att = generateAttestation(
+      makeParams({
+        commitment_scheme: "v3",
+        actual_value: 15,
+        threshold_value: 15,
+        threshold_type: "ABOVE",
+      }),
+    );
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(true);
   });
 });

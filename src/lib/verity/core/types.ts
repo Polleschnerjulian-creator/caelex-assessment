@@ -1,4 +1,5 @@
 import type { TrustLevel } from "../utils/trust-level";
+import type { ThresholdRangeProof } from "../core/range-proof";
 
 // ─── Commitment Types ──────────────────────────────────────────────────────
 
@@ -46,9 +47,11 @@ export interface ThresholdAttestation {
   attestation_id: string; // va_{timestamp}_{random}
   /**
    * v1.0 — SHA-256 hash commitment (binding only).
-   * v2.0 — Pedersen commitment on Ristretto255 + Schnorr PoK (binding + hiding).
+   * v2.0 — Pedersen commitment on Ristretto255 + Schnorr PoK of opening.
+   * v3.0 — Pedersen commitment + bit-decomposition range proof of the
+   *        threshold claim (binding + hiding + "v satisfies the claim").
    */
-  version: "1.0" | "2.0";
+  version: "1.0" | "2.0" | "3.0";
 
   claim: {
     regulation_ref: string;
@@ -68,13 +71,18 @@ export interface ThresholdAttestation {
   evidence: {
     /**
      * v1: "sha256:{hex}"
-     * v2: "pedersen:{hex}" — hex-encoded Ristretto255 point
+     * v2/v3: "pedersen:{hex}" — hex-encoded Ristretto255 point
      */
     value_commitment: string;
     /** Explicit scheme tag for external verifiers. Absent = v1 (legacy). */
-    commitment_scheme?: "v1-sha256" | "v2-pedersen-ristretto255";
+    commitment_scheme?:
+      | "v1-sha256"
+      | "v2-pedersen-ristretto255"
+      | "v3-pedersen-range";
     /** Schnorr proof-of-knowledge of the opening. Present only when version = "2.0". */
     commitment_proof?: CommitmentPoKProof;
+    /** Zero-knowledge range proof of the threshold claim. Present only when version = "3.0". */
+    range_proof?: ThresholdRangeProof;
     source: "sentinel" | "assessment" | "evidence_record" | "manual";
     trust_level: TrustLevel; // HIGH / MEDIUM / LOW (NOT the float!)
     trust_range: string;
@@ -131,10 +139,15 @@ export interface VerificationChecks {
   signature_valid: boolean;
   /**
    * v2 only — verifies the Schnorr proof-of-knowledge of the Pedersen opening.
-   * For v1 attestations this is set to `true` unconditionally (nothing to check,
-   * the SHA-256 commitment is just a fingerprint and carries no zero-knowledge proof).
+   * v1/v3: `true` unconditionally (v1 has no PoK; v3's range proof subsumes
+   * proof-of-knowledge of the opening).
    */
   commitment_proof_valid: boolean;
+  /**
+   * v3 only — verifies the zero-knowledge range proof of the threshold claim.
+   * v1/v2: `true` unconditionally (neither scheme produces a range proof).
+   */
+  range_proof_valid: boolean;
 }
 
 // ─── Certificate Types ─────────────────────────────────────────────────────
@@ -243,10 +256,19 @@ export interface GenerateAttestationParams {
   expires_in_days: number;
   /**
    * Which commitment scheme to use. Default "v1" for backwards
-   * compatibility — every existing caller stays on SHA-256. Opt in
-   * to "v2" for Pedersen + Schnorr PoK ("actual" zero-knowledge).
+   * compatibility — every existing caller stays on SHA-256.
+   *   "v2" → Pedersen + Schnorr proof-of-knowledge of the opening.
+   *   "v3" → Pedersen + zero-knowledge range proof of the threshold
+   *          claim (strongest; the verifier needs no trust in Caelex's
+   *          threshold evaluation).
    */
-  commitment_scheme?: "v1" | "v2";
+  commitment_scheme?: "v1" | "v2" | "v3";
+  /**
+   * Only used when commitment_scheme === "v3". Controls the fixed-point
+   * encoding and proof bit-width for the range proof. Defaults to
+   * { scale: 1000, bits: 32 } — three decimal places, values up to ~4.3M.
+   */
+  range_encoding?: { scale: number; bits: number };
 }
 
 // ─── Evidence Types ────────────────────────────────────────────────────────

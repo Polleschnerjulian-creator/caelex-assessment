@@ -18,6 +18,12 @@ import {
   verifyOpeningProof,
   type PedersenCommitment,
 } from "./pedersen-provider";
+import {
+  commitScaledValue,
+  proveThreshold,
+  verifyThreshold,
+  type ThresholdRangeProof,
+} from "./range-proof";
 import type {
   CommitmentContext,
   CommitmentPoKProof,
@@ -76,15 +82,51 @@ export function generateAttestation(
 
   // 2. Pick the commitment scheme (default: v1 SHA-256 for backwards compat)
   const scheme = params.commitment_scheme ?? "v1";
-  const version = scheme === "v2" ? ("2.0" as const) : ("1.0" as const);
+  const version =
+    scheme === "v3"
+      ? ("3.0" as const)
+      : scheme === "v2"
+        ? ("2.0" as const)
+        : ("1.0" as const);
   const attestation_id = `va_${Date.now()}_${randomBytes(8).toString("hex")}`;
 
   // 3. Create commitment (binds Caelex to the real value)
   let value_commitment: string;
-  let commitment_scheme_tag: "v1-sha256" | "v2-pedersen-ristretto255";
+  let commitment_scheme_tag:
+    | "v1-sha256"
+    | "v2-pedersen-ristretto255"
+    | "v3-pedersen-range";
   let commitment_proof: CommitmentPoKProof | undefined;
+  let range_proof: ThresholdRangeProof | undefined;
 
-  if (scheme === "v2") {
+  if (scheme === "v3") {
+    // Pedersen commitment + zero-knowledge RANGE proof of the threshold claim.
+    // Verifier no longer needs to trust Caelex's threshold evaluation —
+    // the proof cryptographically demonstrates that the committed value
+    // satisfies the ABOVE/BELOW claim.
+    const encoding = params.range_encoding ?? { scale: 1000, bits: 32 };
+    const { commitment_hex, blinding } = commitScaledValue(
+      params.actual_value,
+      encoding,
+    );
+    const pokContext = buildPoKContext(
+      attestation_id,
+      params.regulation_ref,
+      params.threshold_type,
+      params.threshold_value,
+    );
+    range_proof = proveThreshold({
+      actual_value: params.actual_value,
+      threshold_value: params.threshold_value,
+      threshold_type: params.threshold_type,
+      commitment_blinding: blinding,
+      encoding,
+      context: pokContext,
+    });
+    value_commitment = `pedersen:${commitment_hex}`;
+    commitment_scheme_tag = "v3-pedersen-range";
+    // blinding is NOT stored, NOT logged, NOT returned
+  } else if (scheme === "v2") {
     // Pedersen commitment (binding + hiding) + Schnorr PoK
     const { commitment: pc, opening } = pedersenCommit(params.actual_value);
     const pokContext = buildPoKContext(
@@ -146,6 +188,7 @@ export function generateAttestation(
       value_commitment,
       commitment_scheme: commitment_scheme_tag,
       ...(commitment_proof ? { commitment_proof } : {}),
+      ...(range_proof ? { range_proof } : {}),
       source: params.evidence_source,
       trust_level: trust_info.level,
       trust_range: trust_info.range,
@@ -227,20 +270,25 @@ export function verifyAttestation(
     issuer_known,
     not_expired: false,
     signature_valid: false,
-    // Default true for v1 (no PoK to check). v2 path re-computes below.
+    // Defaults: true on v1 (nothing to check). v2 re-computes PoK below;
+    // v3 re-computes range proof below.
     commitment_proof_valid: true,
+    range_proof_valid: true,
   };
 
   // Check 1: Structure (only check signed fields)
   const isV1 = attestation.version === "1.0";
   const isV2 = attestation.version === "2.0";
-  const versionKnown = isV1 || isV2;
+  const isV3 = attestation.version === "3.0";
+  const versionKnown = isV1 || isV2 || isV3;
 
-  // v1: value_commitment must start with "sha256:", no commitment_proof.
-  // v2: value_commitment must start with "pedersen:", commitment_proof required.
+  // v1: value_commitment must start with "sha256:", no commitment/range proofs.
+  // v2: value_commitment must start with "pedersen:", commitment_proof required, no range_proof.
+  // v3: value_commitment must start with "pedersen:", range_proof required, no commitment_proof.
   const commitmentPrefixOk =
     (isV1 && attestation.evidence?.value_commitment?.startsWith("sha256:")) ||
-    (isV2 && attestation.evidence?.value_commitment?.startsWith("pedersen:"));
+    ((isV2 || isV3) &&
+      attestation.evidence?.value_commitment?.startsWith("pedersen:"));
 
   const proofShapeOk = isV2
     ? !!(
@@ -248,8 +296,22 @@ export function verifyAttestation(
         attestation.evidence?.commitment_proof?.z_r &&
         attestation.evidence?.commitment_proof?.z_v &&
         attestation.evidence?.commitment_proof?.algorithm === "schnorr-pok-v1"
-      )
-    : !attestation.evidence?.commitment_proof; // v1 must NOT carry a proof
+      ) && !attestation.evidence?.range_proof
+    : isV3
+      ? !!(
+          attestation.evidence?.range_proof?.algorithm ===
+            "threshold-range-v1" &&
+          attestation.evidence?.range_proof?.range_proof?.algorithm ===
+            "bit-range-v1" &&
+          (attestation.evidence.range_proof.threshold_type === "ABOVE" ||
+            attestation.evidence.range_proof.threshold_type === "BELOW") &&
+          typeof attestation.evidence.range_proof.threshold_value_scaled ===
+            "string" &&
+          attestation.evidence.range_proof.encoding
+        ) && !attestation.evidence?.commitment_proof
+      : // v1: neither proof permitted
+        !attestation.evidence?.commitment_proof &&
+        !attestation.evidence?.range_proof;
 
   checks.structure_valid = !!(
     attestation.attestation_id &&
@@ -337,6 +399,39 @@ export function verifyAttestation(
     }
     if (!checks.commitment_proof_valid)
       errors.push("Pedersen commitment proof-of-knowledge verification failed");
+  }
+
+  // Check 7: v3 only — zero-knowledge range proof of the threshold claim.
+  // Subsumes proof-of-knowledge of the opening, so commitment_proof_valid
+  // stays at its default `true` for v3.
+  if (isV3 && checks.structure_valid) {
+    try {
+      const pcHex = attestation.evidence.value_commitment.slice(
+        "pedersen:".length,
+      );
+      const rangeProof = attestation.evidence.range_proof!;
+      const pokContext = buildPoKContext(
+        attestation.attestation_id,
+        attestation.claim.regulation_ref,
+        attestation.claim.threshold_type,
+        attestation.claim.threshold_value,
+      );
+      // Also bind to the claim's threshold_type so a prover can't swap
+      // ABOVE/BELOW semantics between the claim block and the range proof.
+      if (rangeProof.threshold_type !== attestation.claim.threshold_type) {
+        checks.range_proof_valid = false;
+      } else {
+        checks.range_proof_valid = verifyThreshold(
+          pcHex,
+          rangeProof,
+          pokContext,
+        );
+      }
+    } catch {
+      checks.range_proof_valid = false;
+    }
+    if (!checks.range_proof_valid)
+      errors.push("Zero-knowledge range proof verification failed");
   }
 
   const valid = Object.values(checks).every((c) => c === true);
