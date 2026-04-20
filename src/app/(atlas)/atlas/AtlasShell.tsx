@@ -10,6 +10,7 @@ import {
   Map,
   Globe2,
   Landmark,
+  ScrollText,
   Ticket,
   Newspaper,
   Settings,
@@ -36,6 +37,7 @@ const MAIN_NAV = [
     href: "/atlas/international",
     icon: Globe2,
   },
+  { labelKey: "atlas.treaties", href: "/atlas/treaties", icon: ScrollText },
   { labelKey: "atlas.eu", href: "/atlas/eu", icon: Landmark },
   {
     labelKey: "atlas.landing_rights",
