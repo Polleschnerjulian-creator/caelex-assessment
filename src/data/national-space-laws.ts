@@ -3472,6 +3472,212 @@ const SI: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── Latvia (LV) ───
+
+const LV: JurisdictionLaw = {
+  countryCode: "LV",
+  countryName: "Latvia",
+  flagEmoji: "\u{1F1F1}\u{1F1FB}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 IZM coordination + sectoral framework",
+    nameLocal: "(Nav īpaša kosmosa likuma)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Education and Science",
+    nameLocal: "Izgl\u012bt\u012bbas un zin\u0101tnes ministrija (IZM)",
+    website: "https://izm.gov.lv",
+    parentMinistry: "Ministry of Education and Science",
+  },
+
+  licensingRequirements: [
+    {
+      id: "lv-interim",
+      category: "operational_plan",
+      title: "Interim coordination via IZM + sectoral regulators",
+      description:
+        "Latvia has no dedicated national space act. Operators coordinate with IZM for ESA matters and comply with sectoral regulators: VAS ESD for radio spectrum, SPKK (within MFA) for dual-use export control, CERT.LV for cybersecurity. UN Registration Convention obligations are handled via the MFA.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Law (2004); Strategic Goods Act (2007); Cybersecurity Law (2024); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "lv-rule-latvian-entity",
+      description: "Interim framework applies to Latvian space activities",
+      condition: "Entity registered in Latvia",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Latvia lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Latvian operators. IZM is the most likely national competent authority candidate given its ESA delegation role.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+    ],
+    transitionNotes:
+      "Latvia's ESA Associate membership (2020) and growing radio-astronomy + ground-segment sector suggest future policy attention but no dedicated space act is currently drafted.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA European Cooperating State since 25 July 2013; Associate Member since 27 July 2020",
+    "VIRAC (Ventspils 32m RT-32 radio telescope) \u2014 major space science asset",
+    "Active companies include Eventech (satellite laser ranging), ARMS, Tet",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Lithuania (LT) ───
+
+const LT: JurisdictionLaw = {
+  countryCode: "LT",
+  countryName: "Lithuania",
+  flagEmoji: "\u{1F1F1}\u{1F1F9}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 EIM coordination + sectoral framework",
+    nameLocal: "(Nėra specialaus kosmoso įstatymo)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Economy and Innovation — Space Affairs Division",
+    nameLocal: "Ekonomikos ir inovacij\u0173 ministerija",
+    website: "https://eimin.lrv.lt",
+    parentMinistry: "Ministry of Economy and Innovation",
+  },
+
+  licensingRequirements: [
+    {
+      id: "lt-interim",
+      category: "operational_plan",
+      title:
+        "Interim coordination via EIM Space Affairs Division + sectoral regulators",
+      description:
+        "Lithuania has no dedicated national space act. Operators coordinate with the EIM Space Affairs Division for ESA matters and comply with sectoral regulators: RRT for radio spectrum, KAM (Ministry of National Defence) for dual-use export control, NKSC for cybersecurity. UN Registration Convention obligations are handled via URM (MFA).",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Law on Electronic Communications (2004); Law on Control of Strategic Goods; Cybersecurity Law (2014, amended 2024 for NIS2); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "lt-rule-lithuanian-entity",
+      description: "Interim framework applies to Lithuanian space activities",
+      condition: "Entity registered in Lithuania",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Lithuania lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Lithuanian operators. Given Lithuania's concentrated nanosatellite industry (NanoAvionics flies >100 satellites globally), the liability and registration provisions of the EU Space Act will be particularly consequential. EIM Space Affairs Division is the most likely competent authority candidate.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+      "Art. 56-70 EU Space Act (Insurance & Liability \u2014 critical for nanosat export operators)",
+    ],
+    transitionNotes:
+      "Lithuania's Associate ESA Membership (2021) and nanosat export industry pressure are likely to accelerate national space law drafting once the EU Space Act passes trilogue.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA European Cooperating State since 7 October 2014; Associate Member since 21 May 2021",
+    "Nanosat cluster: NanoAvionics (acquired by Kongsberg 2022), Astrolight, Blackswan Space, Brolis Semiconductors",
+    "Artemis Accords signatory since 13 May 2024 (40th signatory)",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -3506,4 +3712,6 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["RO", RO],
   ["HU", HU],
   ["SI", SI],
+  ["LV", LV],
+  ["LT", LT],
 ]);

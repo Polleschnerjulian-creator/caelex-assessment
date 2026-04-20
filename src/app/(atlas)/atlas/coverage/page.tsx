@@ -176,22 +176,22 @@ const EU_JURISDICTIONS: JurisdictionRow[] = [
     note: "MGTS coordination, ESA full member since 5 Jul 2022",
     spaceActivityTier: "medium",
   },
-  // Planned — medium priority
+  // Added in Baltic coverage batch — ESA Associate Members
   {
     code: "LV",
     name: "Latvia",
     flag: "🇱🇻",
-    status: "planned",
-    note: "ESA Associate, ground-station activity",
+    status: "full",
+    note: "ESA Associate since 27 Jul 2020, VIRAC radio-astronomy centre",
     spaceActivityTier: "low",
   },
   {
     code: "LT",
     name: "Lithuania",
     flag: "🇱🇹",
-    status: "planned",
-    note: "ESA Associate, NanoAvionics (nanosats)",
-    spaceActivityTier: "low",
+    status: "full",
+    note: "ESA Associate since 21 May 2021, NanoAvionics nanosat cluster",
+    spaceActivityTier: "medium",
   },
   {
     code: "SK",
@@ -579,7 +579,7 @@ export default function CoveragePage() {
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
         <p className="text-[12px] text-gray-700 leading-relaxed max-w-3xl">
           Atlas does not cover every European jurisdiction. It covers{" "}
-          <strong>every space-active European jurisdiction</strong>: all 20
+          <strong>every space-active European jurisdiction</strong>: all 22
           countries with a meaningful satellite industry, ESA membership, or
           space-sector regulatory activity. We document what&rsquo;s in,
           what&rsquo;s in flight, and what we consider low priority — because
@@ -656,7 +656,7 @@ export default function CoveragePage() {
               when its legal sources, competent authorities, and treaty
               ratifications have been verified against official gazettes and
               UNOOSA. Shallow coverage of 27 EU states is less useful than deep
-              coverage of the 20 that matter.
+              coverage of the 22 that matter.
             </span>
           </li>
           <li className="flex items-start gap-2">

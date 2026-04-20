@@ -48,7 +48,9 @@ export type SpaceLawCountryCode =
   | "EE" // Estonia — no dedicated space law, interim framework via MKM / sectoral laws
   | "RO" // Romania — no dedicated space law, ROSA coordination + sectoral framework
   | "HU" // Hungary — no dedicated space law, Hungarian Space Office + sectoral framework
-  | "SI"; // Slovenia — no dedicated space law, MGTS coordination + sectoral framework
+  | "SI" // Slovenia — no dedicated space law, MGTS coordination + sectoral framework
+  | "LV" // Latvia — no dedicated space law, IZM/ESA Associate + sectoral framework
+  | "LT"; // Lithuania — no dedicated space law, EIM/ESA Associate + sectoral framework
 
 export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "FR",
@@ -74,6 +76,8 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "RO",
   "HU",
   "SI",
+  "LV",
+  "LT",
 ];
 
 // ─── Activity Types ───
