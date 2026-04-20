@@ -180,7 +180,7 @@ export default function VerityPage() {
             {[
               { value: "Ed25519", label: "Digital Signatures" },
               { value: "SHA-256", label: "Hash Commitments" },
-              { value: "Zero-Knowledge", label: "Attestation Model" },
+              { value: "Signed Commitment", label: "Attestation Model" },
             ].map((stat, i) => (
               <div
                 key={stat.label}

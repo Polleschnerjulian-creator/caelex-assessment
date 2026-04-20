@@ -1,6 +1,8 @@
 import "server-only";
 import type { PrismaClient, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { getActiveIssuerKey } from "@/lib/verity/keys/issuer-keys";
+import { generateAttestation } from "@/lib/verity/core/attestation";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -119,10 +121,25 @@ export function buildAttestationPayload(
  * and links it back to the ConjunctionEvent. Returns the attestation
  * ID on success, or null if no attestation should be created.
  *
- * The VerityAttestation model requires cryptographic fields (issuerKeyId,
- * issuerPublicKey, signature, etc.) that would normally come from the
- * Verity signing pipeline. This function creates a "pending" attestation
- * with placeholder values that the Verity subsystem can later finalize.
+ * B6 fix (2026-04-20): this function now uses the real Verity signing
+ * pipeline (getActiveIssuerKey + generateAttestation) instead of writing
+ * placeholder values ("shield_system" / "pending_verity_signing"). The
+ * resulting attestation is cryptographically verifiable via the public
+ * verify endpoint and will round-trip correctly through the certificate
+ * bundler + audit chain.
+ *
+ * Attestation model used:
+ *   data_point       "ca_decision_documented"
+ *   threshold_type   "ABOVE"
+ *   threshold_value  0
+ *   actual_value     1  (signals "decision documented + event closed")
+ *   result           true → COMPLIANT
+ *
+ * The actual_value of 1 is what flows into the commitment; peakPc,
+ * miss distance, decision rationale all live in the embedded evidence
+ * object for audit purposes. The commitment binds Caelex to the claim
+ * that *a* decision was documented, not to the specific physics values
+ * (those can be fetched separately from the event record).
  */
 export async function createCAAttestation(
   prisma: PrismaClient,
@@ -159,30 +176,60 @@ export async function createCAAttestation(
   expiresAt.setDate(expiresAt.getDate() + payload.expires_in_days);
 
   try {
+    // B6: load the real Verity issuer key and sign the attestation.
+    const issuerKey = await getActiveIssuerKey(prisma);
+
+    const collectedAt = (event.closedAt ?? now).toISOString();
+
+    const signed = generateAttestation({
+      regulation_ref: payload.regulation_ref,
+      regulation_name: "Collision Avoidance Compliance",
+      threshold_type: "ABOVE",
+      threshold_value: 0,
+      actual_value: 1, // decision documented → value 1 > threshold 0 → COMPLIANT
+      data_point: payload.data_point,
+      claim_statement: `CA compliance verified: ${event.decision} decision documented for conjunction ${event.conjunctionId}`,
+      subject: {
+        operator_id: organizationId,
+        satellite_norad_id: event.noradId,
+      },
+      evidence_source: "shield_ca_workflow",
+      trust_score: 1.0,
+      collected_at: collectedAt,
+      sentinel_anchor: null,
+      cross_verification: null,
+      issuer_key_id: issuerKey.keyId,
+      issuer_private_key_der: issuerKey.privateKeyDer,
+      issuer_public_key_hex: issuerKey.publicKeyHex,
+      expires_in_days: payload.expires_in_days,
+    });
+
     const attestation = await prisma.verityAttestation.create({
       data: {
-        attestationId: `ca_${event.id}_${Date.now()}`,
+        attestationId: signed.attestation_id,
         operatorId: organizationId,
         organizationId,
         satelliteNorad: event.noradId,
         regulationRef: payload.regulation_ref,
         dataPoint: payload.data_point,
-        thresholdType: "decision_documented",
-        thresholdValue: 1,
-        result: true, // COMPLIANT = true
-        claimStatement: `CA compliance verified: ${event.decision} decision documented for conjunction ${event.conjunctionId}`,
-        valueCommitment: "ca_decision_recorded",
-        evidenceSource: "shield_ca_workflow",
+        thresholdType: "ABOVE",
+        thresholdValue: 0,
+        result: signed.claim.result,
+        claimStatement: signed.claim.claim_statement,
+        valueCommitment: signed.evidence.value_commitment,
+        evidenceSource: signed.evidence.source,
         trustScore: 1.0,
-        trustLevel: "VERIFIED",
+        trustLevel: signed.evidence.trust_level,
         collectedAt: event.closedAt ?? now,
-        issuerKeyId: "shield_system",
-        issuerPublicKey: "shield_system_key",
-        signature: "pending_verity_signing",
+        issuerKeyId: signed.issuer.key_id,
+        issuerPublicKey: signed.issuer.public_key,
+        signature: signed.signature,
         fullAttestation: {
-          ...payload,
-          createdBy: "shield_verity_integration",
-          createdAt: now.toISOString(),
+          ...signed,
+          // Attach the full CA event evidence object alongside the signed
+          // attestation. This is NOT part of the signed payload but is
+          // preserved for audit / investigator reference.
+          ca_event_evidence: payload.evidence,
         } as unknown as Prisma.InputJsonValue,
         description: `Collision avoidance attestation for conjunction ${event.conjunctionId} (${event.decision})`,
         entityId: event.id,
@@ -196,8 +243,10 @@ export async function createCAAttestation(
       data: { verityAttestationId: attestation.id },
     });
 
-    logger.info("Created CA Verity attestation", {
+    logger.info("Created CA Verity attestation (signed)", {
       attestationId: attestation.id,
+      verityAttestationId: signed.attestation_id,
+      issuerKeyId: signed.issuer.key_id,
       eventId: event.id,
       conjunctionId: event.conjunctionId,
       decision: event.decision,

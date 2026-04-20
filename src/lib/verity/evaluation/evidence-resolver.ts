@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import { safeLog } from "../utils/redaction";
 import type { ResolvedEvidence } from "../core/types";
 
@@ -113,9 +113,79 @@ export async function resolveEvidence(
     safeLog("Sentinel evidence lookup failed", { dataPoint });
   }
 
-  // 2. ComplianceEvidence does not store numeric values per data point.
-  // In Phase 2, a dedicated evidence_values table may be added.
-  // For now, Sentinel packets are the primary evidence source.
+  // 2. ComplianceEvidence (B2 fix, 2026-04-20):
+  //
+  // The model does not have a dedicated numeric-value column, but it
+  // does have a `metadata Json?` field that is designed for exactly
+  // this purpose ("Additional structured metadata (scan job ID,
+  // source URL, etc.)"). Callers can store a numeric measurement as:
+  //
+  //   metadata = { value: 42, dataPoint: "remaining_fuel_pct", unit: "%" }
+  //
+  // If an ACCEPTED ComplianceEvidence record exists for this operator
+  // whose metadata matches the requested dataPoint and has a usable
+  // numeric `value`, use it as fallback evidence. Trust is derived
+  // from the record's `confidence` field, capped at 0.90 (still
+  // strictly below Sentinel's 0.92/0.98 trust).
+  try {
+    const org = await prisma.organizationMember.findFirst({
+      where: { userId: operatorId },
+      select: { organizationId: true },
+    });
+    if (org) {
+      const now = new Date();
+      // Pull recent ACCEPTED evidence with non-null metadata. Cap the
+      // lookup at 50 records so we can filter in memory without
+      // materialising every evidence row for the org.
+      const candidates = await prisma.complianceEvidence.findMany({
+        where: {
+          organizationId: org.organizationId,
+          status: "ACCEPTED",
+          metadata: {
+            not: Prisma.JsonNull,
+          } as unknown as Prisma.InputJsonValue,
+          OR: [{ validUntil: null }, { validUntil: { gte: now } }],
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          metadata: true,
+          confidence: true,
+          createdAt: true,
+          validUntil: true,
+        },
+      });
+      for (const row of candidates) {
+        const meta = row.metadata as unknown;
+        if (!meta || typeof meta !== "object") continue;
+        const m = meta as Record<string, unknown>;
+        const metaPoint = typeof m.dataPoint === "string" ? m.dataPoint : null;
+        const metaValue = typeof m.value === "number" ? m.value : null;
+        if (!metaValue || Number.isNaN(metaValue)) continue;
+        if (metaPoint && metaPoint !== dataPoint) continue;
+        // Clamp trust to [0.50, 0.90] so evidence_record never outranks
+        // Sentinel (0.92) even if confidence is reported as 1.0.
+        const trust = Math.min(0.9, Math.max(0.5, row.confidence ?? 0.75));
+        safeLog("ComplianceEvidence match", {
+          evidenceId: row.id,
+          dataPoint,
+          trust,
+        });
+        return {
+          actual_value: metaValue,
+          data_point: dataPoint,
+          source: "evidence_record",
+          trust_score: trust,
+          collected_at: row.createdAt.toISOString(),
+          sentinel_anchor: null,
+          cross_verification: null,
+        };
+      }
+    }
+  } catch {
+    safeLog("ComplianceEvidence lookup failed", { dataPoint });
+  }
 
   // 3. No evidence found
   safeLog("No evidence available for dataPoint", { dataPoint });
