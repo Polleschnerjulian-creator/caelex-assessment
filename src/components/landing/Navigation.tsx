@@ -398,12 +398,16 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 isLight
                   ? scrolled
-                    ? // Palantir-style frosted glass: translucent enough to let
-                      // text behind the bar bleed through with a soft blur,
-                      // saturated + backdrop-blur carry readability. The key
-                      // numbers: bg-white/40 (not /80) + backdrop-blur-2xl +
-                      // backdrop-saturate-150 so colours behind stay vivid.
-                      "bg-white/40 backdrop-blur-2xl backdrop-saturate-150 border border-white/60 shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.6)]"
+                    ? // Palantir-style frosted glass: the trick is LIGHT blur
+                      // with LOW opacity — text behind stays structurally
+                      // recognisable (you can still read word shapes through
+                      // the glass) instead of turning into a smeared mush.
+                      // Too much blur (>12px) or too much opacity (>50%) kills
+                      // the effect. Numbers tuned to match Palantir:
+                      //   bg-white/30 (~70% bleed-through)
+                      //   backdrop-blur-md = 12px (preserves text structure)
+                      //   saturate-150 so colours behind stay vivid
+                      "bg-white/30 backdrop-blur-md backdrop-saturate-150 border border-white/40 shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.4)]"
                     : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
                   : scrolled
                     ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
