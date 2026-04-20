@@ -3678,6 +3678,214 @@ const LT: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── Slovakia (SK) ───
+
+const SK: JurisdictionLaw = {
+  countryCode: "SK",
+  countryName: "Slovakia",
+  flagEmoji: "\u{1F1F8}\u{1F1F0}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 MŠVVaM coordination + sectoral framework",
+    nameLocal: "(Osobitn\u00fd kozmick\u00fd z\u00e1kon neexistuje)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Education, Research, Development and Youth",
+    nameLocal:
+      "Ministerstvo \u0161kolstva, v\u00fdskumu, v\u00fdvoja a ml\u00e1de\u017ee SR (M\u0160VVaM)",
+    website: "https://minedu.sk",
+    parentMinistry: "Ministry of Education, Research, Development and Youth",
+  },
+
+  licensingRequirements: [
+    {
+      id: "sk-interim",
+      category: "operational_plan",
+      title: "Interim coordination via MŠVVaM + sectoral regulators",
+      description:
+        "Slovakia has no dedicated national space act. Operators coordinate with MŠVVaM for ESA matters and comply with sectoral regulators: RÚ for radio spectrum, MH SR for dual-use export control, NBÚ for cybersecurity. UN Registration Convention obligations are handled via MZVEZ (MFA).",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act (452/2021 Z.z.); Foreign Trade Act (39/2011 Z.z.); Cybersecurity Act (69/2018 Z.z., NIS2 amendment 2024); UN Registration Convention (Czechoslovak succession)",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "sk-rule-slovak-entity",
+      description: "Interim framework applies to Slovak space activities",
+      condition: "Entity registered in Slovakia",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Slovakia lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Slovak operators. MŠVVaM is the most likely national competent authority candidate given its ESA delegation role.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+    ],
+    transitionNotes:
+      "Slovakia's ESA Associate membership (2022) and growing nanosat sector (Needronix, Spacemanic, SOSA) suggest future policy attention but no dedicated space act is currently drafted.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA European Cooperating State since 16 February 2010; Associate Member since 30 September 2022",
+    "skCUBE (first Slovak satellite) launched 23 June 2017 on PSLV-C38",
+    "Slovak Organisation for Space Activities (SOSA) leads community development",
+    "Active companies include Needronix, Spacemanic, GA Drilling",
+    "Treaty obligations inherited via Czechoslovak succession (1 January 1993)",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
+// ─── Croatia (HR) ───
+
+const HR: JurisdictionLaw = {
+  countryCode: "HR",
+  countryName: "Croatia",
+  flagEmoji: "\u{1F1ED}\u{1F1F7}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 MZO coordination + sectoral framework",
+    nameLocal: "(Nema posebnog zakona o svemiru)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Science, Education and Youth",
+    nameLocal: "Ministarstvo znanosti, obrazovanja i mladih (MZO)",
+    website: "https://mzo.gov.hr",
+    parentMinistry: "Ministry of Science, Education and Youth",
+  },
+
+  licensingRequirements: [
+    {
+      id: "hr-interim",
+      category: "operational_plan",
+      title: "Interim coordination via MZO + sectoral regulators",
+      description:
+        "Croatia has no dedicated national space act. Operators coordinate with MZO for ESA matters and comply with sectoral regulators: HAKOM for radio spectrum, MINGO for dual-use export control, ZSIS for cybersecurity. UN Registration Convention obligations are handled via MVEP (MFA).",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act (NN 76/22); Dual-Use Goods Act (NN 118/18); Cybersecurity Act (NN 14/24); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "hr-rule-croatian-entity",
+      description: "Interim framework applies to Croatian space activities",
+      condition: "Entity registered in Croatia",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Croatia lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Croatian operators. MZO is the most likely national competent authority candidate given its ESA delegation role.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration)",
+    ],
+    transitionNotes:
+      "Croatia's ESA PECS status (since December 2022) and Amphinicy's ground-segment success signal a maturing ecosystem but no dedicated space act is currently drafted.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA European Cooperating State since 19 February 2018; PECS since 7 December 2022",
+    "University of Zagreb FER laboratory is the main ESA academic partner",
+    "Active companies include Amphinicy Technologies (ground-segment SW), RT-RK",
+    "Treaty obligations inherited via Yugoslav succession (independence 1991, recognised 1992)",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -3714,4 +3922,6 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["SI", SI],
   ["LV", LV],
   ["LT", LT],
+  ["SK", SK],
+  ["HR", HR],
 ]);
