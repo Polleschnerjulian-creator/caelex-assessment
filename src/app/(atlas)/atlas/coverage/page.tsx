@@ -281,6 +281,21 @@ const NON_EU_EUROPEAN: JurisdictionRow[] = [
   },
 ];
 
+// ─── Global (non-European) jurisdictions ─────────────────────────────
+// Proof-of-concept stage — USA only. Further countries (CN, JP, IN, RU,
+// CA, AU, UAE, etc.) are on the global-expansion roadmap.
+
+const GLOBAL_JURISDICTIONS: JurisdictionRow[] = [
+  {
+    code: "US",
+    name: "United States",
+    flag: "🇺🇸",
+    status: "full",
+    note: "Multi-agency regime — FAA/FCC/NOAA/ITAR/EAR/NASA (CSLA 1984, CSLCA 2015)",
+    spaceActivityTier: "high",
+  },
+];
+
 interface RegulationRow {
   title: string;
   reference: string;
@@ -581,9 +596,12 @@ export default function CoveragePage() {
           Atlas does not cover every European jurisdiction. It covers{" "}
           <strong>every space-active European jurisdiction</strong>: all 27
           countries with a meaningful satellite industry, ESA membership, or
-          space-sector regulatory activity. We document what&rsquo;s in,
-          what&rsquo;s in flight, and what we consider low priority — because
-          informed users make better decisions than marketing copy enables.
+          space-sector regulatory activity — plus{" "}
+          <strong>pilot global coverage</strong> (United States, as
+          proof-of-concept for worldwide expansion). We document what&rsquo;s
+          in, what&rsquo;s in flight, and what we consider low priority —
+          because informed users make better decisions than marketing copy
+          enables.
         </p>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
           <Stat
@@ -612,6 +630,12 @@ export default function CoveragePage() {
       <JurisdictionTable
         title="Non-EU European (ESA / EEA)"
         rows={NON_EU_EUROPEAN}
+      />
+
+      {/* Global (non-European) */}
+      <JurisdictionTable
+        title="Global (non-European) — pilot coverage"
+        rows={GLOBAL_JURISDICTIONS}
       />
 
       {/* Supranational regulations */}

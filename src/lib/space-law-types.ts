@@ -55,7 +55,8 @@ export type SpaceLawCountryCode =
   | "HR" // Croatia — no dedicated space law, MZO/ESA PECS + sectoral framework
   | "TR" // Turkey — no dedicated space law; TUA (2018) coordinates via Presidential Decree
   | "IS" // Iceland — EEA member, no domestic space activity or agency
-  | "LI"; // Liechtenstein — EEA member, no space activity, SPV jurisdiction
+  | "LI" // Liechtenstein — EEA member, no space activity, SPV jurisdiction
+  | "US"; // United States — Multi-agency regime (FAA/FCC/NOAA/ITAR/EAR/NASA)
 
 export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "FR",
@@ -88,6 +89,7 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "TR",
   "IS",
   "LI",
+  "US",
 ];
 
 // ─── Activity Types ───

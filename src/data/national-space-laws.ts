@@ -4197,6 +4197,173 @@ const LI: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── United States (US) ───
+
+const US: JurisdictionLaw = {
+  countryCode: "US",
+  countryName: "United States",
+  flagEmoji: "\u{1F1FA}\u{1F1F8}",
+
+  legislation: {
+    name: "Commercial Space Launch Act (CSLA) — 51 USC Ch. 509",
+    nameLocal: "Commercial Space Launch Act",
+    yearEnacted: 1984,
+    yearAmended: 2023,
+    status: "enacted",
+    officialUrl:
+      "https://www.law.cornell.edu/uscode/text/51/subtitle-V/chapter-509",
+    keyArticles: "51 USC §§50901-50923; 14 CFR Parts 400-450",
+  },
+
+  licensingAuthority: {
+    name: "Federal Aviation Administration — Office of Commercial Space Transportation (FAA/AST)",
+    nameLocal: "FAA/AST",
+    website: "https://faa.gov/space",
+    parentMinistry: "Department of Transportation",
+  },
+
+  licensingRequirements: [
+    {
+      id: "us-faa-launch",
+      category: "operational_plan",
+      title: "FAA/AST launch or reentry licence (14 CFR Part 450)",
+      description:
+        "Commercial launch and reentry operations require an FAA/AST licence under 51 USC §50904. 14 CFR Part 450 (consolidated 2020, effective 2021) sets performance-based public-safety criteria (Ec ≤ 1×10⁻⁴, Pc ≤ 1×10⁻⁶). Licence is operator-specific; mission-specific for certain profiles.",
+      mandatory: true,
+      applicableTo: ["launch_vehicle", "launch_site"],
+      articleRef: "14 CFR §§ 450.1-450.245",
+    },
+    {
+      id: "us-fcc-spectrum",
+      category: "technical_assessment",
+      title: "FCC space-station + earth-station licences (47 CFR Part 25)",
+      description:
+        "Satellite operators require FCC authorisation for space-station and earth-station operation. Non-US operators need market-access grant under 47 CFR §25.137. Orbital debris plan mandatory (47 CFR §25.114) including 5-year post-mission disposal for LEO (adopted 2022, effective 2023).",
+      mandatory: true,
+      applicableTo: ["spacecraft_operation", "satellite_communications"],
+      articleRef: "47 CFR Part 25; FCC 22-74 (debris rule)",
+    },
+    {
+      id: "us-noaa-remote-sensing",
+      category: "technical_assessment",
+      title: "NOAA remote-sensing licence (15 CFR Part 960)",
+      description:
+        "Private Earth remote-sensing operators require a NOAA licence under 51 USC §60121. 2020 rulemaking established Tier 1 (unrestricted), Tier 2 (conditions possible), Tier 3 (extraordinary national-security conditions). Most modern EO missions are Tier 1.",
+      mandatory: true,
+      applicableTo: ["earth_observation"],
+      articleRef: "15 CFR Part 960 (2020 rulemaking)",
+    },
+    {
+      id: "us-ddtc-itar",
+      category: "technical_assessment",
+      title: "DDTC ITAR licence (USML Category IV & XV)",
+      description:
+        "Defence-article exports require DDTC licence under 22 CFR 120-130. USML Category IV covers launch vehicles and propulsion; Category XV covers defence-specific spacecraft. 2014 Export Control Reform migrated most commercial spacecraft to EAR 9E515/9A515. Technical Assistance Agreements required for foreign-person technical-data disclosure.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "22 USC 2751; 22 CFR 120-130",
+    },
+    {
+      id: "us-bis-ear",
+      category: "technical_assessment",
+      title: "BIS EAR licence (CCL Category 9)",
+      description:
+        "Commercial dual-use space items require BIS classification and, where applicable, licence. ECCN 9A515 (hardware) and 9E515 (technology) cover most commercial spacecraft. Licence requirements depend on destination country group, end-user screening (Entity List), and applicable reasons for control (NS, AT, RS, MT).",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef: "50 USC Ch. 58 (ECRA); 15 CFR 730-774",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "us-rule-person",
+      description:
+        "CSLA applies to US persons, domestic operations, and market access",
+      condition:
+        "US person OR operating from US territory OR serving US customers",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "foreign"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: true,
+    minimumCoverage:
+      "Maximum Probable Loss determined per FAA licence ($100M–$500M typical)",
+    governmentIndemnification: true,
+    indemnificationCap:
+      "Government indemnification MPL → $3.1B (2023 cap; authorised through 30 Sep 2025)",
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: true,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: true,
+    deorbitTimeline:
+      "LEO: 5 years post-mission (FCC 47 CFR §25.114, 2022 rule; applies to apps after 29 Sep 2022)",
+    passivationRequired: true,
+    debrisMitigationPlan: true,
+    collisionAvoidance: true,
+    standards: [
+      "FCC 47 CFR §25.114",
+      "NASA-STD-8719.14 (reference for USG missions)",
+      "IADC Guidelines (voluntary)",
+      "Space Debris Mitigation Standard Practices (ODMSP, 2019)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: true,
+    dataDistributionRestrictions: true,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 16, max: 52 },
+    applicationFee:
+      "FAA launch licence fee per 14 CFR; FCC satellite filings $10K–$100K; NOAA licence fees modest",
+    otherCosts: [
+      "Environmental review (NEPA) costs",
+      "DDTC registration fee ($2,250+)",
+      "BIS licence processing",
+      "Insurance premium (MPL-dependent)",
+    ],
+  },
+
+  registration: {
+    nationalRegistryExists: true,
+    registryName: "US Registry of Space Objects (Department of State)",
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "The USA is NOT an EU or EEA member; the EU Space Act will not apply domestically. US operators serving EU markets will be subject to EU Space Act third-country operator (TCO) provisions (Art. 105-110), which require equivalence assessment and compliance with key EU requirements even outside EU territory.",
+    keyArticles: [
+      "EU Space Act Art. 105-110 (Third Country Operator regime applicable to US operators)",
+    ],
+    transitionNotes:
+      "US operators (SpaceX, Blue Origin, Viasat, Iridium, etc.) should prepare TCO compliance plans. US national security payloads may invoke DFAR/ITAR carve-outs; dual-use commercial payloads will need full TCO review.",
+  },
+
+  notes: [
+    "Multi-agency regime \u2014 no single 'US space law'",
+    "FAA/AST licences launch+reentry (CSLA 1984, 14 CFR Part 450 from 2020)",
+    "FCC licenses spectrum + orbital debris rules (47 CFR Part 25)",
+    "NOAA licenses remote sensing (LRSPA 1992, 15 CFR Part 960)",
+    "DDTC administers ITAR (22 CFR 120-130) \u2014 launch vehicles + defence spacecraft",
+    "BIS administers EAR (15 CFR 730-774) \u2014 commercial spacecraft post-2014 ECR",
+    "CSLCA 2015 \u00a751303 recognises space-resource property rights",
+    "USA is NOT a party to the 1979 Moon Agreement (deliberate policy)",
+    "USA originated + 1st signed Artemis Accords (13 October 2020)",
+    "Indemnification regime (CSLA \u00a750914) scheduled to sunset 30 Sep 2025",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -4239,4 +4406,6 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["TR", TR],
   ["IS", IS],
   ["LI", LI],
+  // Americas
+  ["US", US],
 ]);
