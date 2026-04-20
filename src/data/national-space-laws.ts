@@ -3053,6 +3053,113 @@ const CH: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ─── Estonia (EE) ───
+
+const EE: JurisdictionLaw = {
+  countryCode: "EE",
+  countryName: "Estonia",
+  flagEmoji: "\u{1F1EA}\u{1F1EA}",
+
+  legislation: {
+    name: "No dedicated national space law \u2014 interim framework via MKM Space Office + sectoral laws",
+    nameLocal: "(Eraldi kosmoseseadust ei ole)",
+    yearEnacted: 0,
+    status: "none",
+    keyArticles: "N/A",
+  },
+
+  licensingAuthority: {
+    name: "Ministry of Economic Affairs and Communications \u2014 Estonian Space Office",
+    nameLocal:
+      "Majandus- ja Kommunikatsiooniministeerium \u2014 Eesti Kosmoseb\u00fcroo",
+    website: "https://mkm.ee",
+    contactEmail: "info@mkm.ee",
+    parentMinistry: "Ministry of Economic Affairs and Communications",
+  },
+
+  licensingRequirements: [
+    {
+      id: "ee-interim",
+      category: "operational_plan",
+      title:
+        "Interim Authorization via MKM Space Office and sectoral regulators",
+      description:
+        "In the absence of a dedicated national space law, Estonian operators coordinate with the MKM Space Office and comply with sectoral regulators: TTJA for radio spectrum authorisations, Strategic Goods Commission for dual-use export control, RIA for cybersecurity. UN Registration Convention obligations are handled via the Ministry of Foreign Affairs.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Electronic Communications Act (RT I 2004, 87, 593); Strategic Goods Act (RT I, 29.12.2011, 2); UN Registration Convention",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "ee-rule-estonian-entity",
+      description: "Interim framework applies to Estonian space activities",
+      condition: "Entity registered in Estonia (incl. via E-Residency)",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: false,
+    governmentIndemnification: false,
+    liabilityRegime: "unlimited",
+    thirdPartyRequired: false,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: false,
+    passivationRequired: false,
+    debrisMitigationPlan: false,
+    collisionAvoidance: false,
+    standards: [
+      "No formal requirements (voluntary adherence to IADC/ISO 24113)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 4, max: 12 },
+    applicationFee: "N/A (interim framework)",
+    otherCosts: [],
+  },
+
+  registration: {
+    nationalRegistryExists: false,
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "Estonia lacks a dedicated national space law. The EU Space Act will apply directly upon entry into force and will provide the first comprehensive authorization framework for Estonian operators. Estonia's digital-first governance (E-Residency) makes it an attractive SPV incorporation jurisdiction for international space ventures, which amplifies the need for a clear authorization regime.",
+    keyArticles: [
+      "Art. 6-16 EU Space Act (Authorization \u2014 fills the gap)",
+      "Art. 26-35 EU Space Act (Registration \u2014 formalises MKM/MFA practice)",
+    ],
+    transitionNotes:
+      "Estonia will need to designate a national competent authority under the EU Space Act. MKM (Ministry of Economic Affairs and Communications) is the most likely candidate given its current role as ESA delegation and Space Office host.",
+  },
+
+  notes: [
+    "No dedicated national space law \u2014 sectoral framework only",
+    "ESA full member since 2 February 2015",
+    "ESTCube-1 (first Estonian satellite, 1U CubeSat, University of Tartu) launched 7 May 2013",
+    "ESTCube-2 launched 9 October 2023 (Vega VV23), deorbited 3 January 2024",
+    "Tartu Observatory is the primary space research institution",
+    "E-Residency programme enables non-Estonians to register space SPVs remotely",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
 // 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
@@ -3082,4 +3189,6 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["CZ", CZ],
   ["IE", IE],
   ["CH", CH],
+  // Interim framework (no dedicated national space law)
+  ["EE", EE],
 ]);
