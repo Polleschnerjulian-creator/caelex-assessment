@@ -398,10 +398,15 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 isLight
                   ? scrolled
-                    ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                    ? // Palantir-style frosted glass: translucent enough to let
+                      // text behind the bar bleed through with a soft blur,
+                      // saturated + backdrop-blur carry readability. The key
+                      // numbers: bg-white/40 (not /80) + backdrop-blur-2xl +
+                      // backdrop-saturate-150 so colours behind stay vivid.
+                      "bg-white/40 backdrop-blur-2xl backdrop-saturate-150 border border-white/60 shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.6)]"
                     : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
                   : scrolled
-                    ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
                     : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
             >
