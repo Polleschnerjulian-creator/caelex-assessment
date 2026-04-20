@@ -30,10 +30,25 @@ export interface CommitmentResult {
 
 // ─── Attestation Types ─────────────────────────────────────────────────────
 
+/**
+ * Proof-of-knowledge of the Pedersen commitment opening.
+ * Present only on v2 attestations.
+ */
+export interface CommitmentPoKProof {
+  A: string;
+  z_r: string;
+  z_v: string;
+  algorithm: "schnorr-pok-v1";
+}
+
 export interface ThresholdAttestation {
   // --- SIGNED FIELDS ---
   attestation_id: string; // va_{timestamp}_{random}
-  version: "1.0";
+  /**
+   * v1.0 — SHA-256 hash commitment (binding only).
+   * v2.0 — Pedersen commitment on Ristretto255 + Schnorr PoK (binding + hiding).
+   */
+  version: "1.0" | "2.0";
 
   claim: {
     regulation_ref: string;
@@ -51,7 +66,15 @@ export interface ThresholdAttestation {
   };
 
   evidence: {
-    value_commitment: string; // SHA-256 commitment hash
+    /**
+     * v1: "sha256:{hex}"
+     * v2: "pedersen:{hex}" — hex-encoded Ristretto255 point
+     */
+    value_commitment: string;
+    /** Explicit scheme tag for external verifiers. Absent = v1 (legacy). */
+    commitment_scheme?: "v1-sha256" | "v2-pedersen-ristretto255";
+    /** Schnorr proof-of-knowledge of the opening. Present only when version = "2.0". */
+    commitment_proof?: CommitmentPoKProof;
     source: "sentinel" | "assessment" | "evidence_record" | "manual";
     trust_level: TrustLevel; // HIGH / MEDIUM / LOW (NOT the float!)
     trust_range: string;
@@ -106,6 +129,12 @@ export interface VerificationChecks {
   issuer_known: boolean; // Key ID exists in Caelex's keyset
   not_expired: boolean;
   signature_valid: boolean;
+  /**
+   * v2 only — verifies the Schnorr proof-of-knowledge of the Pedersen opening.
+   * For v1 attestations this is set to `true` unconditionally (nothing to check,
+   * the SHA-256 commitment is just a fingerprint and carries no zero-knowledge proof).
+   */
+  commitment_proof_valid: boolean;
 }
 
 // ─── Certificate Types ─────────────────────────────────────────────────────
@@ -212,6 +241,12 @@ export interface GenerateAttestationParams {
   issuer_private_key_der: Buffer;
   issuer_public_key_hex: string;
   expires_in_days: number;
+  /**
+   * Which commitment scheme to use. Default "v1" for backwards
+   * compatibility — every existing caller stays on SHA-256. Opt in
+   * to "v2" for Pedersen + Schnorr PoK ("actual" zero-knowledge).
+   */
+  commitment_scheme?: "v1" | "v2";
 }
 
 // ─── Evidence Types ────────────────────────────────────────────────────────

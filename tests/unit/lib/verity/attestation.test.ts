@@ -190,3 +190,135 @@ describe("verifyAttestation", () => {
     expect(result.errors.length).toBeGreaterThan(1);
   });
 });
+
+// ─── v2 — Pedersen commitment + Schnorr PoK ────────────────────────────────
+
+describe("generateAttestation — v2 (Pedersen)", () => {
+  it("emits version 2.0 with pedersen: prefix and a PoK proof", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    expect(att.version).toBe("2.0");
+    expect(att.evidence.value_commitment).toMatch(/^pedersen:[a-f0-9]{64}$/);
+    expect(att.evidence.commitment_scheme).toBe("v2-pedersen-ristretto255");
+    expect(att.evidence.commitment_proof?.algorithm).toBe("schnorr-pok-v1");
+    expect(att.evidence.commitment_proof?.A).toMatch(/^[a-f0-9]{64}$/);
+    expect(att.evidence.commitment_proof?.z_r).toMatch(/^[a-f0-9]+$/);
+    expect(att.evidence.commitment_proof?.z_v).toMatch(/^[a-f0-9]+$/);
+  });
+
+  it("still hides actual_value", () => {
+    const att = generateAttestation(
+      makeParams({ commitment_scheme: "v2", actual_value: 57.66 }),
+    );
+    const json = JSON.stringify(att);
+    expect(json).not.toContain("57.66");
+    expect(json).not.toContain("actual_value");
+  });
+
+  it("produces different commitments for the same value (hiding via blinding)", () => {
+    const a = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    const b = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    expect(a.evidence.value_commitment).not.toBe(b.evidence.value_commitment);
+  });
+
+  it("defaults to v1 when commitment_scheme is omitted (backwards-compat)", () => {
+    const att = generateAttestation(makeParams());
+    expect(att.version).toBe("1.0");
+    expect(att.evidence.value_commitment.startsWith("sha256:")).toBe(true);
+    expect(att.evidence.commitment_proof).toBeUndefined();
+  });
+});
+
+describe("verifyAttestation — v2 (Pedersen)", () => {
+  it("verifies a valid v2 attestation end-to-end", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.checks.commitment_proof_valid).toBe(true);
+  });
+
+  it("rejects a v2 attestation with a tampered commitment point", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    // Flip the first hex byte of the commitment point.
+    const prefix = "pedersen:";
+    const hex = att.evidence.value_commitment.slice(prefix.length);
+    const tampered = prefix + (hex[0] === "f" ? "0" : "f") + hex.slice(1);
+    (att.evidence as { value_commitment: string }).value_commitment = tampered;
+    const result = verifyAttestation(att, pubKeyHex, true);
+    // Signature check catches this first (evidence is signed).
+    expect(result.valid).toBe(false);
+  });
+
+  it("rejects a v2 attestation with a tampered PoK (A component)", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    const proof = att.evidence.commitment_proof!;
+    proof.A = (proof.A[0] === "f" ? "0" : "f") + proof.A.slice(1);
+    const result = verifyAttestation(att, pubKeyHex, true);
+    // Signature fails first because commitment_proof is signed.
+    expect(result.valid).toBe(false);
+    expect(result.checks.signature_valid).toBe(false);
+  });
+
+  it("rejects a v2 attestation with the commitment_proof stripped", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    delete (att.evidence as { commitment_proof?: unknown }).commitment_proof;
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("rejects a v1-prefixed commitment claimed as v2", () => {
+    const att = generateAttestation(makeParams({ commitment_scheme: "v2" }));
+    // Spoof: keep v2 version + proof, but switch the prefix to sha256:
+    att.evidence.value_commitment = "sha256:" + "00".repeat(32);
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("rejects a v1 attestation that smuggles a commitment_proof field", () => {
+    const att = generateAttestation(makeParams()); // v1
+    (att.evidence as { commitment_proof: unknown }).commitment_proof = {
+      A: "00".repeat(32),
+      z_r: "00".repeat(32),
+      z_v: "00".repeat(32),
+      algorithm: "schnorr-pok-v1",
+    };
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("rejects an unknown version", () => {
+    const att = generateAttestation(makeParams());
+    (att as { version: string }).version = "9.9";
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+    expect(result.checks.structure_valid).toBe(false);
+  });
+
+  it("PoK is bound to the attestation — swapping proofs between attestations fails", () => {
+    // Two v2 attestations with different claims.
+    const attA = generateAttestation(
+      makeParams({ commitment_scheme: "v2", threshold_value: 15 }),
+    );
+    const attB = generateAttestation(
+      makeParams({ commitment_scheme: "v2", threshold_value: 99 }),
+    );
+    // Move attA's proof onto attB (but keep B's commitment).
+    attB.evidence.commitment_proof = attA.evidence.commitment_proof;
+    // Signature catches this (proof is part of signed evidence).
+    const result = verifyAttestation(attB, pubKeyHex, true);
+    expect(result.valid).toBe(false);
+  });
+
+  it("v1 attestations still verify after the type widen (regression)", () => {
+    // Simulate a v1 attestation that was signed before the upgrade landed.
+    const att = generateAttestation(makeParams());
+    expect(att.version).toBe("1.0");
+    const result = verifyAttestation(att, pubKeyHex, true);
+    expect(result.valid).toBe(true);
+    // v1 path reports commitment_proof_valid=true unconditionally (nothing to check).
+    expect(result.checks.commitment_proof_valid).toBe(true);
+  });
+});
