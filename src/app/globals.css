@@ -1970,7 +1970,29 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   background-size: 200% 100%;
 }
 
-/* ===== ATLAS COMPARATOR — PRINT / PDF EXPORT ===== */
+/* ===== ATLAS BRIEFING — PRINT / PDF EXPORT ===== */
+/*
+ * Design direction: Linear / Palantir — pure monochrome, generous
+ * whitespace, strong typographic hierarchy, no color accents.
+ *
+ * Page architecture:
+ *   Page 1      COVER — hero title top-left, metadata bottom-left
+ *   Page 2      AT A GLANCE — executive summary with key findings
+ *   Pages 3+    DATA SECTIONS — one per dimension
+ *   Last page   SOURCES + METHODOLOGY + LEGAL DISCLAIMER
+ *
+ * Typography scale (three jumps, Palantir-style):
+ *   48pt / 18pt / 10pt — cover, section, body
+ *   Auxiliary: 8pt caption, 24pt exec-summary value, 64pt cover-hero
+ *
+ * Palette (no accent color — black as the only emphasis):
+ *   #000  primary, emphasis, rules
+ *   #111  body text
+ *   #6B7280  secondary text, captions
+ *   #94A3B8  meta, disabled
+ *   #E5E7EB  dividers
+ *   #FAFAFA  zebra row shade
+ */
 
 /* Hidden on screen, visible only when printing */
 .print-export-container {
@@ -1978,7 +2000,7 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 }
 
 @media print {
-  /* ─── Reset everything ─── */
+  /* ─── Reset ─── */
   *,
   *::before,
   *::after {
@@ -1990,8 +2012,8 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   body {
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
-    color: black !important;
+    background: #fff !important;
+    color: #111 !important;
     font-family:
       "Inter",
       -apple-system,
@@ -1999,151 +2021,345 @@ html:not(.dark) .caelex-v2 .glass-card::after {
       "Segoe UI",
       Roboto,
       sans-serif !important;
-    font-size: 11pt !important;
-    line-height: 1.5 !important;
+    font-size: 10pt !important;
+    line-height: 1.55 !important;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
   }
 
-  /* ─── Hide screen-only content ─── */
+  /* Hide screen-only content */
   .print-screen-content {
     display: none !important;
   }
 
-  /* ─── Kill the sidebar and any fixed/sticky overlays ─── */
+  /* Kill sidebars and fixed overlays */
   .fixed {
     display: none !important;
   }
 
-  /* ─── Zero out main wrapper layout ─── */
+  /* Zero out wrapper layout */
   main {
     margin: 0 !important;
     margin-left: 0 !important;
     padding: 0 !important;
   }
 
-  /* ─── Show the print briefing ─── */
+  /* Show the briefing */
   .print-export-container {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
+    background: #fff !important;
   }
 
   /* ─── Page setup ─── */
   @page {
     size: A4;
-    margin: 18mm 15mm 22mm 15mm;
+    margin: 20mm 18mm 22mm 18mm;
+    @top-left {
+      content: "ATLAS";
+      font-family: "Inter", sans-serif;
+      font-size: 8pt;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #6b7280;
+    }
+    @top-right {
+      content: "Regulatory Briefing";
+      font-family: "Inter", sans-serif;
+      font-size: 8pt;
+      font-weight: 400;
+      color: #6b7280;
+    }
+    @bottom-left {
+      content: "Caelex · Confidential";
+      font-family: "Inter", sans-serif;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: "Inter", sans-serif;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
   }
 
+  /* Cover page has no running header */
   @page :first {
-    margin-top: 12mm;
+    margin: 18mm 18mm 22mm 18mm;
+    @top-left {
+      content: "";
+    }
+    @top-right {
+      content: "";
+    }
   }
 
-  /* Landscape override for comparator tables */
+  /* Landscape page for wide comparator tables */
   .print-landscape {
     page: landscape;
   }
 
   @page landscape {
     size: A4 landscape;
+    margin: 16mm 18mm 18mm 18mm;
   }
 
-  /* ─── Header ─── */
-  .print-header {
-    padding-bottom: 16pt;
+  /* ─── Global helpers ─── */
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     COVER PAGE — Linear-style top-left block, otherwise empty
+     ════════════════════════════════════════════════════════════════ */
+
+  .print-cover {
+    height: calc(100vh - 40mm);
+    min-height: 230mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+
+  .print-cover-top {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .print-cover-mark {
+    font-size: 10pt;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: #000;
+    text-transform: uppercase;
+    margin-bottom: 4pt;
+  }
+
+  .print-cover-mark-rule {
+    width: 24pt;
+    height: 1.5pt;
+    background: #000;
+    margin-bottom: 28pt;
+  }
+
+  .print-cover-kicker {
+    font-size: 10pt;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    text-transform: uppercase;
     margin-bottom: 12pt;
   }
 
-  .print-header-brand {
+  .print-cover-title {
+    font-size: 48pt;
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: #000;
+    margin: 0;
+    max-width: 88%;
+  }
+
+  .print-cover-subtitle {
+    font-size: 14pt;
+    font-weight: 400;
+    color: #6b7280;
+    letter-spacing: -0.01em;
+    margin-top: 18pt;
+    max-width: 75%;
+    line-height: 1.35;
+  }
+
+  .print-cover-bottom {
     display: flex;
-    align-items: baseline;
-    gap: 8pt;
+    flex-direction: column;
+  }
+
+  .print-cover-rule {
+    width: 100%;
+    height: 0.75pt;
+    background: #000;
+    margin-bottom: 14pt;
+  }
+
+  .print-cover-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4pt 24pt;
+    font-size: 8.5pt;
+    color: #111;
+    margin-bottom: 16pt;
+  }
+
+  .print-cover-meta-label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+
+  .print-cover-meta-value {
+    font-size: 9pt;
+    color: #111;
+  }
+
+  .print-cover-confidential {
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     EXECUTIVE SUMMARY — "At a Glance"
+     ════════════════════════════════════════════════════════════════ */
+
+  .print-glance {
+    page-break-after: always;
+  }
+
+  .print-glance-header {
+    margin-bottom: 20pt;
+  }
+
+  .print-glance-kicker {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #94a3b8;
     margin-bottom: 6pt;
   }
 
-  .print-header-logo {
-    font-size: 20pt;
+  .print-glance-title {
+    font-size: 26pt;
     font-weight: 700;
-    letter-spacing: 0.15em;
+    letter-spacing: -0.025em;
     color: #000;
+    margin: 0;
   }
 
-  .print-header-subtitle {
-    font-size: 9pt;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #666;
-  }
-
-  .print-header-divider {
-    width: 100%;
-    height: 2px;
+  .print-glance-rule {
+    width: 24pt;
+    height: 1.5pt;
     background: #000;
-    margin: 8pt 0 14pt 0;
+    margin-top: 14pt;
   }
 
-  .print-header-title {
-    font-size: 16pt;
+  .print-glance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16pt 20pt;
+    margin-top: 20pt;
+  }
+
+  .print-glance-card {
+    padding: 10pt 0;
+    border-top: 0.5pt solid #e5e7eb;
+  }
+
+  .print-glance-card-num {
+    font-size: 7pt;
     font-weight: 600;
-    letter-spacing: -0.01em;
-    color: #000;
-    margin: 0 0 12pt 0;
+    letter-spacing: 0.2em;
+    color: #94a3b8;
+    margin-bottom: 2pt;
   }
 
-  .print-header-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 3pt;
-    font-size: 9.5pt;
-    color: #333;
-  }
-
-  .print-header-meta-row {
-    display: flex;
-    gap: 6pt;
-  }
-
-  .print-header-meta-label {
-    font-weight: 600;
-    color: #000;
-    min-width: 90pt;
-  }
-
-  .print-header-confidential {
-    margin-top: 10pt;
+  .print-glance-card-label {
     font-size: 8pt;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #888;
+    color: #6b7280;
+    margin-bottom: 10pt;
   }
 
-  /* ─── Section titles ─── */
-  .print-section-break {
+  .print-glance-card-value {
+    font-size: 18pt;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #000;
+    letter-spacing: -0.015em;
+    margin-bottom: 6pt;
+  }
+
+  .print-glance-card-detail {
+    font-size: 8.5pt;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     DATA SECTIONS
+     ════════════════════════════════════════════════════════════════ */
+
+  .print-section {
+    page-break-before: always;
+    margin-bottom: 24pt;
+  }
+
+  .print-section:first-child {
     page-break-before: auto;
-    margin-top: 18pt;
+  }
+
+  .print-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14pt;
+    margin-bottom: 6pt;
+  }
+
+  .print-section-num {
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #94a3b8;
+    min-width: 36pt;
   }
 
   .print-section-title {
-    font-size: 12pt;
+    font-size: 18pt;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
     color: #000;
-    margin: 0 0 8pt 0;
-    padding-bottom: 4pt;
-    border-bottom: 1px solid #ccc;
+    margin: 0;
   }
 
-  /* ─── Table ─── */
+  .print-section-rule {
+    width: 100%;
+    height: 0.5pt;
+    background: #000;
+    margin: 6pt 0 14pt 0;
+  }
+
+  .print-section-lede {
+    font-size: 9.5pt;
+    color: #374151;
+    max-width: 80%;
+    line-height: 1.55;
+    margin: 0 0 16pt 0;
+  }
+
+  /* ─── Data table (refined) ─── */
   .print-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 9pt;
+    font-size: 8.5pt;
     line-height: 1.4;
-    margin-bottom: 14pt;
+    margin-bottom: 12pt;
     page-break-inside: auto;
   }
 
@@ -2156,83 +2372,179 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     page-break-after: auto;
   }
 
-  .print-table th,
-  .print-table td {
-    border: 0.5pt solid #999;
-    padding: 5pt 7pt;
+  .print-table th {
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b7280;
     text-align: left;
+    vertical-align: bottom;
+    padding: 4pt 8pt 10pt 8pt;
+    border-bottom: 1pt solid #000;
+    background: transparent !important;
+  }
+
+  .print-table td {
+    padding: 8pt;
     vertical-align: top;
+    border-bottom: 0.25pt solid #e5e7eb;
+    color: #111;
   }
 
   .print-table-provision {
-    font-size: 8pt;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #444;
-    background: #f2f2f2 !important;
-    width: 140pt;
-    min-width: 120pt;
+    width: 120pt;
+    min-width: 110pt;
   }
 
   .print-table-country {
-    font-size: 9pt;
-    font-weight: 600;
-    color: #000;
-    background: #f2f2f2 !important;
     min-width: 100pt;
   }
 
   .print-table-code {
     font-weight: 400;
-    color: #666;
-    font-size: 8pt;
+    color: #94a3b8;
+    font-size: 7.5pt;
+    margin-left: 4pt;
   }
 
   .print-table-label {
     font-weight: 500;
-    color: #333;
-    background: #fafafa !important;
+    color: #374151;
+    font-size: 8pt;
   }
 
   .print-table-cell {
     color: #111;
   }
 
-  /* Alternate row shading for readability */
+  /* Subtle zebra shading */
   .print-table tbody tr:nth-child(even) td {
-    background: #f8f8f8 !important;
+    background: #fafafa !important;
   }
 
-  .print-table tbody tr:nth-child(even) .print-table-label {
-    background: #f4f4f4 !important;
+  /* Emphasis row — thin black left edge */
+  .print-table tr.print-row-emphasis td:first-child {
+    border-left: 2pt solid #000;
+    padding-left: 10pt;
   }
 
-  /* ─── Footer disclaimer block ─── */
-  .print-footer-block {
-    margin-top: 24pt;
+  /* ─── Status pills (monochrome) ─── */
+  .print-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5pt;
+    font-size: 8pt;
+    font-weight: 500;
+    color: #111;
+    letter-spacing: -0.005em;
+  }
+
+  .print-pill::before {
+    display: inline-block;
+    width: 7pt;
+    height: 7pt;
+    border-radius: 50%;
+    content: "";
+  }
+
+  .print-pill-yes::before {
+    background: #000;
+  }
+
+  .print-pill-no::before {
+    background: transparent;
+    border: 0.75pt solid #94a3b8;
+  }
+
+  .print-pill-na {
+    color: #94a3b8;
+  }
+
+  .print-pill-na::before {
+    background: transparent;
+    border: 0.75pt dashed #94a3b8;
+  }
+
+  /* ─── Analysis callout ─── */
+  .print-callout {
+    margin-top: 14pt;
+    padding: 12pt 14pt;
+    border-left: 2pt solid #000;
+    background: #fafafa !important;
     page-break-inside: avoid;
   }
 
-  .print-footer-divider {
-    width: 100%;
-    height: 1px;
-    background: #ccc;
-    margin-bottom: 10pt;
-  }
-
-  .print-footer-brand {
-    font-size: 8.5pt;
+  .print-callout-label {
+    font-size: 7pt;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    color: #444;
-    margin: 0 0 4pt 0;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 6pt;
   }
 
-  .print-footer-disclaimer {
-    font-size: 7.5pt;
-    color: #666;
-    line-height: 1.5;
+  .print-callout-body {
+    font-size: 9pt;
+    color: #111;
+    line-height: 1.55;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     SOURCES & DISCLAIMER (last page)
+     ════════════════════════════════════════════════════════════════ */
+
+  .print-appendix {
+    page-break-before: always;
+  }
+
+  .print-appendix-section {
+    margin-bottom: 22pt;
+  }
+
+  .print-appendix-title {
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #000;
+    margin: 0 0 10pt 0;
+    padding-bottom: 6pt;
+    border-bottom: 0.5pt solid #000;
+  }
+
+  .print-appendix-body {
+    font-size: 8.5pt;
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  .print-appendix-list {
+    list-style: none;
+    padding: 0;
     margin: 0;
+  }
+
+  .print-appendix-list li {
+    padding: 4pt 0;
+    font-size: 8pt;
+    color: #374151;
+    border-bottom: 0.25pt solid #e5e7eb;
+  }
+
+  .print-appendix-list li:last-child {
+    border-bottom: none;
+  }
+
+  .print-appendix-ref {
+    font-weight: 600;
+    color: #000;
+  }
+
+  .print-disclaimer {
+    font-size: 7.5pt;
+    color: #6b7280;
+    line-height: 1.6;
+    max-width: 95%;
   }
 }
