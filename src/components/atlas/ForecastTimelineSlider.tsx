@@ -80,12 +80,23 @@ export default function ForecastTimelineSlider({
   const isToday = index === 0;
   const selectedLabel = formatQuarterLabel(valueQuarter);
 
+  // Progress percentage (0–100) for the filled portion behind the
+  // thumb. We paint the filled range as a gradient stop so the track
+  // renders like an Apple / iOS slider — dark-fill left of the thumb,
+  // translucent track to the right.
+  const progressPct = ((index / Math.max(1, range.length - 1)) * 100).toFixed(
+    2,
+  );
+  const trackStyle: React.CSSProperties = {
+    background: `linear-gradient(to right, #111827 0%, #111827 ${progressPct}%, rgba(229,231,235,0.7) ${progressPct}%, rgba(229,231,235,0.7) 100%)`,
+  };
+
   return (
     <div className="w-full flex items-center gap-3">
       <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-gray-500">
         {t("atlas.forecast_target_date")}
       </span>
-      <div className="flex-1 min-w-[140px] relative">
+      <div className="flex-1 min-w-[140px] px-1 relative pb-4">
         <input
           type="range"
           min={0}
@@ -94,10 +105,11 @@ export default function ForecastTimelineSlider({
           step={1}
           onChange={handleChange}
           aria-label={t("atlas.forecast_target_date")}
-          className="w-full h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          style={trackStyle}
+          className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         />
-        {/* Year tick marks — tiny, beneath the track */}
-        <div className="absolute inset-x-0 top-full mt-1 flex justify-between text-[8px] tabular-nums text-gray-400 pointer-events-none select-none">
+        {/* Year tick marks — inset from the track edges so they breathe. */}
+        <div className="absolute left-1 right-1 top-full mt-2 flex justify-between text-[8px] tabular-nums text-gray-400 pointer-events-none select-none">
           {Array.from({ length: 7 }, (_, i) => 2026 + i).map((year) => (
             <span key={year}>{year}</span>
           ))}
