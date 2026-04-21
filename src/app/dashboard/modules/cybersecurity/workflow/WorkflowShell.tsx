@@ -141,33 +141,29 @@ export function WorkflowShell({
       </header>
 
       {/* ─── Two-pane body ─── */}
-      <div className="flex-1 max-w-[1200px] w-full mx-auto px-6 pb-16">
-        <div className="grid grid-cols-[240px_1fr] gap-8 items-start">
-          <aside className="sticky top-4">
+      {/* Nav list flows naturally inside the page width; the panel is a
+          fixed-right inspector (self-widthed via usePanelWidth). */}
+      <div className="flex-1 flex w-full min-h-0">
+        <nav className="flex-1 max-w-[900px] mx-auto px-6 pb-16 min-w-0">
+          <div className="sticky top-4">
             <ControlNavList
               items={queue.all}
               selectedId={selectedId}
               onSelect={selectControl}
             />
-          </aside>
-          <main className="min-w-0">
-            {selectedItem ? (
-              <ControlDetailPanel
-                item={selectedItem}
-                profile={profile}
-                isSimplified={isSimplified}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onStatusChange={onStatusChange}
-                saving={savingId === selectedItem.req.id}
-              />
-            ) : (
-              <div className="rounded-2xl border border-[var(--border-default)] p-12 text-center text-sm text-[var(--text-tertiary)]">
-                No controls to display.
-              </div>
-            )}
-          </main>
-        </div>
+          </div>
+        </nav>
+        {selectedItem ? (
+          <ControlDetailPanel
+            item={selectedItem}
+            profile={profile}
+            isSimplified={isSimplified}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onStatusChange={onStatusChange}
+            saving={savingId === selectedItem.req.id}
+          />
+        ) : null}
       </div>
 
       {/* ─── Keyboard shortcuts (minimal footer) ─── */}
