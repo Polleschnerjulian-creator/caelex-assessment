@@ -319,7 +319,7 @@ export default function OperatorProfileCard() {
                     )}
                   </button>
                   <a
-                    href={`/api/v1/verity/profile-snapshot/${lastSnapshot.id}`}
+                    href={`/verity/profile-snapshot/${lastSnapshot.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-auto text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline"

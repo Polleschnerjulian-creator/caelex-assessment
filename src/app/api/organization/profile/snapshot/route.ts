@@ -96,9 +96,12 @@ export async function POST(request: NextRequest) {
       snapshotHash: snapshot.snapshotHash,
       frozenAt: snapshot.frozenAt.toISOString(),
       issuerKeyId: snapshot.issuerKeyId,
-      // Permanent URL a regulator can paste into curl/browser to verify
-      // offline. Public, unauthenticated endpoint — see route below.
-      verifyUrl: `${origin}/api/v1/verity/profile-snapshot/${snapshot.id}`,
+      // Human-facing verification page — what an operator links to
+      // when sharing proof with a regulator or auditor.
+      verifyUrl: `${origin}/verity/profile-snapshot/${snapshot.id}`,
+      // Machine-facing JSON endpoint — returns the same snapshot + a
+      // structured verification report. Use this for scripts / bots.
+      verifyApiUrl: `${origin}/api/v1/verity/profile-snapshot/${snapshot.id}`,
     });
   } catch (err) {
     logger.error("Error freezing profile snapshot", err);
