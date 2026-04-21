@@ -1,19 +1,25 @@
 /**
- * Feature flags — tiny env-backed toggle system for Context-Omnipresence
- * rollout. Deliberately minimal: a map of `key → NEXT_PUBLIC_*` env var,
- * read once at module load, exposed via a pure function.
+ * Feature flags — "on by default, off if explicitly disabled".
  *
- * Keeping this minimal (no DB, no provider, no hook) because:
- *   1. Provenance v1 rolls out by git branch / Vercel env — not per-user.
- *   2. A per-user flag table can be added later without changing this API.
- *   3. Using `NEXT_PUBLIC_*` means both client and server read the same value.
+ * Philosophy: features that ship are ON for everyone the moment the
+ * commit lands. The env var is a KILL SWITCH, not an opt-in. If a
+ * production issue surfaces, set the var to "0"/"false" and redeploy
+ * to turn the feature off without reverting code.
  *
- * Usage:
- *   import { isFeatureEnabled } from "@/lib/feature-flags";
- *   if (isFeatureEnabled("provenance_v1")) { ... }
+ * Recognised values (case-insensitive):
+ *   - "0" | "false" | "no" | "off"   → feature DISABLED
+ *   - anything else (incl. unset)    → feature ENABLED
+ *
+ * Why this default polarity (not the usual "off unless on"):
+ *   - This repo is a solo build, not a 100-person product org needing
+ *     staged rollout. Ship = live.
+ *   - Preview deploys still match prod behaviour without extra env
+ *     setup — no more "works in preview but not prod" confusion.
+ *   - Rollback is still possible: set one env var + redeploy.
  *
  * Env vars recognised:
- *   NEXT_PUBLIC_FEAT_PROVENANCE_V1 = "1" | "true" → enables Phase 4 UI.
+ *   NEXT_PUBLIC_FEAT_PROVENANCE_V1   — provenance chips, snapshots, side-peek
+ *   NEXT_PUBLIC_FEAT_WORKFLOW_V2     — Tier-C workflow route
  */
 
 export type FeatureFlag = "provenance_v1" | "workflow_v2";
@@ -22,21 +28,38 @@ const FLAG_ENV_MAP: Record<FeatureFlag, string | undefined> = {
   // Read at module-eval time. Vercel injects NEXT_PUBLIC_* into the
   // client bundle at build time, so this is safe on both sides.
   provenance_v1: process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1,
-  // Tier-C workflow redesign: two-pane + keyboard + today's focus.
-  // Lives on its own route at /dashboard/modules/cybersecurity/workflow.
   workflow_v2: process.env.NEXT_PUBLIC_FEAT_WORKFLOW_V2,
 };
 
-function truthy(v: string | undefined): boolean {
-  if (!v) return false;
-  const lower = v.toLowerCase();
-  return lower === "1" || lower === "true" || lower === "yes" || lower === "on";
+/**
+ * Explicit-falsy check. Everything not in the disabled set resolves
+ * to true. Accepts common English + numeric disabled tokens.
+ */
+function isExplicitlyDisabled(v: string | undefined): boolean {
+  if (v === undefined) return false;
+  const lower = v.trim().toLowerCase();
+  if (lower === "") return false; // empty string treated as "not set"
+  return (
+    lower === "0" ||
+    lower === "false" ||
+    lower === "no" ||
+    lower === "off" ||
+    lower === "disabled"
+  );
 }
 
 /**
- * True if the flag's env var is a truthy value.
- * Any unrecognised flag returns false.
+ * Returns true unless the flag has been explicitly disabled via its
+ * env var. Unknown flag keys resolve to true (fail-open).
  */
 export function isFeatureEnabled(flag: FeatureFlag): boolean {
-  return truthy(FLAG_ENV_MAP[flag]);
+  return !isExplicitlyDisabled(FLAG_ENV_MAP[flag]);
+}
+
+/**
+ * Explicit opposite — handy when a caller wants to express "only if
+ * explicitly disabled" without inverting the polarity at the call site.
+ */
+export function isFeatureDisabled(flag: FeatureFlag): boolean {
+  return isExplicitlyDisabled(FLAG_ENV_MAP[flag]);
 }

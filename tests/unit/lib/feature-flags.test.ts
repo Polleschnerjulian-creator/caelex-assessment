@@ -1,5 +1,5 @@
 /**
- * Feature-flags — tests for the truthy-env parser.
+ * Feature-flags — tests for the "on unless explicitly off" kill-switch.
  *
  * Module-level env-reads make this tricky: process.env is snapshotted at
  * module eval time. We dynamically re-import with vi.resetModules() to
@@ -11,44 +11,76 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 const originalEnv = { ...process.env };
 
 afterEach(() => {
-  // Restore env + clear module cache so the next test's import re-reads env.
   process.env = { ...originalEnv };
   vi.resetModules();
 });
 
-async function freshlyLoadIsFeatureEnabled() {
+async function freshlyLoad() {
   const mod = await import("@/lib/feature-flags");
-  return mod.isFeatureEnabled;
+  return {
+    isFeatureEnabled: mod.isFeatureEnabled,
+    isFeatureDisabled: mod.isFeatureDisabled,
+  };
 }
 
-describe("isFeatureEnabled", () => {
-  it("returns false when env var is unset", async () => {
+describe("isFeatureEnabled — new polarity (on by default)", () => {
+  it("returns true when env var is unset", async () => {
     delete process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1;
-    const isFeatureEnabled = await freshlyLoadIsFeatureEnabled();
-    expect(isFeatureEnabled("provenance_v1")).toBe(false);
+    const { isFeatureEnabled } = await freshlyLoad();
+    expect(isFeatureEnabled("provenance_v1")).toBe(true);
   });
 
-  it("returns false when env var is empty string", async () => {
+  it("returns true when env var is empty string", async () => {
     process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1 = "";
-    const isFeatureEnabled = await freshlyLoadIsFeatureEnabled();
-    expect(isFeatureEnabled("provenance_v1")).toBe(false);
+    const { isFeatureEnabled } = await freshlyLoad();
+    expect(isFeatureEnabled("provenance_v1")).toBe(true);
   });
 
-  it.each(["1", "true", "TRUE", "True", "yes", "Yes", "on"])(
-    "returns true for truthy value %s",
+  it.each(["1", "true", "yes", "on", "random value"])(
+    "returns true for non-disabled value %s",
     async (val) => {
       process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1 = val;
-      const isFeatureEnabled = await freshlyLoadIsFeatureEnabled();
+      const { isFeatureEnabled } = await freshlyLoad();
       expect(isFeatureEnabled("provenance_v1")).toBe(true);
     },
   );
 
-  it.each(["0", "false", "no", "off", "foobar", "null"])(
-    "returns false for non-truthy value %s",
+  it.each(["0", "false", "FALSE", "False", "no", "off", "disabled"])(
+    "returns false for disabled value %s",
     async (val) => {
       process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1 = val;
-      const isFeatureEnabled = await freshlyLoadIsFeatureEnabled();
+      const { isFeatureEnabled } = await freshlyLoad();
       expect(isFeatureEnabled("provenance_v1")).toBe(false);
     },
   );
+
+  it("is case + whitespace insensitive for disabled values", async () => {
+    process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1 = "  OFF  ";
+    const { isFeatureEnabled } = await freshlyLoad();
+    expect(isFeatureEnabled("provenance_v1")).toBe(false);
+  });
+});
+
+describe("isFeatureDisabled — explicit inverse", () => {
+  it("returns false when env var is unset", async () => {
+    delete process.env.NEXT_PUBLIC_FEAT_WORKFLOW_V2;
+    const { isFeatureDisabled } = await freshlyLoad();
+    expect(isFeatureDisabled("workflow_v2")).toBe(false);
+  });
+
+  it("returns true when env var is 0", async () => {
+    process.env.NEXT_PUBLIC_FEAT_WORKFLOW_V2 = "0";
+    const { isFeatureDisabled } = await freshlyLoad();
+    expect(isFeatureDisabled("workflow_v2")).toBe(true);
+  });
+});
+
+describe("each flag is independent", () => {
+  it("disabling provenance_v1 does not disable workflow_v2", async () => {
+    process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1 = "0";
+    delete process.env.NEXT_PUBLIC_FEAT_WORKFLOW_V2;
+    const { isFeatureEnabled } = await freshlyLoad();
+    expect(isFeatureEnabled("provenance_v1")).toBe(false);
+    expect(isFeatureEnabled("workflow_v2")).toBe(true);
+  });
 });
