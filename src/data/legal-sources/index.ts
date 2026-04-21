@@ -80,7 +80,7 @@ import { LEGAL_SOURCES_EU, AUTHORITIES_EU } from "./sources/eu";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
-const ALL_SOURCES: LegalSource[] = [
+export const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_INT,
   ...LEGAL_SOURCES_EU,
   ...LEGAL_SOURCES_DE,
@@ -117,7 +117,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_NZ,
 ];
 
-const ALL_AUTHORITIES: Authority[] = [
+export const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_INT,
   ...AUTHORITIES_EU,
   ...AUTHORITIES_DE,

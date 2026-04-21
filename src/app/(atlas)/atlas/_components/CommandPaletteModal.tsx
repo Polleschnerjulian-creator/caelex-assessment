@@ -25,30 +25,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
-import type { LegalSource, Authority } from "@/data/legal-sources";
-import { LEGAL_SOURCES_INT } from "@/data/legal-sources/sources/intl";
-import { LEGAL_SOURCES_EU } from "@/data/legal-sources/sources/eu";
-import { LEGAL_SOURCES_DE } from "@/data/legal-sources/sources/de";
-import { LEGAL_SOURCES_FR } from "@/data/legal-sources/sources/fr";
-import { LEGAL_SOURCES_UK } from "@/data/legal-sources/sources/uk";
-import { LEGAL_SOURCES_IT } from "@/data/legal-sources/sources/it";
-import { LEGAL_SOURCES_LU } from "@/data/legal-sources/sources/lu";
-import { LEGAL_SOURCES_NL } from "@/data/legal-sources/sources/nl";
-import { LEGAL_SOURCES_BE } from "@/data/legal-sources/sources/be";
-import { LEGAL_SOURCES_ES } from "@/data/legal-sources/sources/es";
-import { LEGAL_SOURCES_NO } from "@/data/legal-sources/sources/no";
-import { LEGAL_SOURCES_SE } from "@/data/legal-sources/sources/se";
-import { LEGAL_SOURCES_FI } from "@/data/legal-sources/sources/fi";
-import { LEGAL_SOURCES_DK } from "@/data/legal-sources/sources/dk";
-import { LEGAL_SOURCES_AT } from "@/data/legal-sources/sources/at";
-import { LEGAL_SOURCES_CH } from "@/data/legal-sources/sources/ch";
-import { LEGAL_SOURCES_PT } from "@/data/legal-sources/sources/pt";
-import { LEGAL_SOURCES_IE } from "@/data/legal-sources/sources/ie";
-import { LEGAL_SOURCES_GR } from "@/data/legal-sources/sources/gr";
-import { LEGAL_SOURCES_CZ } from "@/data/legal-sources/sources/cz";
-import { LEGAL_SOURCES_PL } from "@/data/legal-sources/sources/pl";
-import { AUTHORITIES_INT } from "@/data/legal-sources/sources/intl";
-import { AUTHORITIES_EU } from "@/data/legal-sources/sources/eu";
+// Single source of truth — the barrel aggregates every jurisdiction
+// module, so new countries/items (US FCC, NZ OSHAA, EE/RO/HU/…)
+// automatically surface in search without having to touch this file.
+import { ALL_SOURCES, ALL_AUTHORITIES } from "@/data/legal-sources";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -65,32 +45,9 @@ interface Item {
 }
 
 // ─── Build the static index once per module load ──────────────────────
-
-const ALL_SOURCES: LegalSource[] = [
-  ...LEGAL_SOURCES_INT,
-  ...LEGAL_SOURCES_EU,
-  ...LEGAL_SOURCES_DE,
-  ...LEGAL_SOURCES_FR,
-  ...LEGAL_SOURCES_UK,
-  ...LEGAL_SOURCES_IT,
-  ...LEGAL_SOURCES_LU,
-  ...LEGAL_SOURCES_NL,
-  ...LEGAL_SOURCES_BE,
-  ...LEGAL_SOURCES_ES,
-  ...LEGAL_SOURCES_NO,
-  ...LEGAL_SOURCES_SE,
-  ...LEGAL_SOURCES_FI,
-  ...LEGAL_SOURCES_DK,
-  ...LEGAL_SOURCES_AT,
-  ...LEGAL_SOURCES_CH,
-  ...LEGAL_SOURCES_PT,
-  ...LEGAL_SOURCES_IE,
-  ...LEGAL_SOURCES_GR,
-  ...LEGAL_SOURCES_CZ,
-  ...LEGAL_SOURCES_PL,
-];
-
-const ALL_AUTHORITIES: Authority[] = [...AUTHORITIES_INT, ...AUTHORITIES_EU];
+// ALL_SOURCES / ALL_AUTHORITIES come from the legal-sources barrel so
+// any jurisdiction added there (most recently NZ + US debris rules) is
+// instantly searchable — no per-country import list to maintain here.
 
 const NAV_ITEMS: Item[] = [
   {
