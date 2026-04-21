@@ -15,3 +15,6 @@ export { CausalBreadcrumb } from "./CausalBreadcrumb";
 
 export { SidePeek } from "./SidePeek";
 export type { TraceDTO } from "./SidePeek";
+
+export { ModuleWhySidebar } from "./ModuleWhySidebar";
+export type { ModuleScope } from "./ModuleWhySidebar";

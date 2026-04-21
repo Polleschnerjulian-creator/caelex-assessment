@@ -29,6 +29,16 @@ import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
 import AssessmentFieldForm from "@/components/shared/AssessmentFieldForm";
 import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
+import {
+  ProvenanceChip,
+  CausalBreadcrumb,
+  ModuleWhySidebar,
+} from "@/components/provenance";
+import {
+  describeApplicabilityReason,
+  describeModuleScope,
+} from "@/lib/provenance/cybersecurity-provenance";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AstraBulkButton from "@/components/astra/AstraBulkButton";
 import {
@@ -1556,6 +1566,50 @@ function CybersecurityPageContent() {
                   </div>
                 )}
 
+                {/* Provenance: Why-Sidebar — one-line scope summary,
+                    expandable to show the dimensions that scoped it.
+                    Only rendered behind the provenance feature flag to
+                    keep the default dashboard visually unchanged. */}
+                {isFeatureEnabled("provenance_v1") &&
+                  (() => {
+                    const profile: CybersecurityProfile = {
+                      organizationSize:
+                        selectedAssessment.organizationSize as OrganizationSize,
+                      spaceSegmentComplexity:
+                        selectedAssessment.spaceSegmentComplexity as SpaceSegmentComplexity,
+                      dataSensitivityLevel:
+                        selectedAssessment.dataSensitivityLevel as DataSensitivityLevel,
+                      hasGroundSegment:
+                        selectedAssessment.hasGroundSegment ?? true,
+                      processesPersonalData:
+                        selectedAssessment.processesPersonalData ?? false,
+                      handlesGovData:
+                        selectedAssessment.handlesGovData ?? false,
+                      existingCertifications: [],
+                      hasSecurityTeam:
+                        selectedAssessment.hasSecurityTeam ?? false,
+                      hasIncidentResponsePlan:
+                        selectedAssessment.hasIncidentResponsePlan ?? false,
+                      hasBCP: selectedAssessment.hasBCP ?? false,
+                      supplierSecurityAssessed:
+                        selectedAssessment.supplierSecurityAssessed ?? false,
+                      satelliteCount:
+                        selectedAssessment.satelliteCount ?? undefined,
+                    };
+                    const scope = describeModuleScope({
+                      profile,
+                      isSimplified: selectedAssessment.isSimplifiedRegime,
+                      applicableCount: requirements.length,
+                      totalCount: requirements.length, // pre-filtered
+                    });
+                    return (
+                      <ModuleWhySidebar
+                        scope={scope}
+                        editHref="/dashboard/settings?tab=profile"
+                      />
+                    );
+                  })()}
+
                 {/* Requirements list */}
                 <div className="space-y-3">
                   {(activeCategory
@@ -1575,6 +1629,43 @@ function CybersecurityPageContent() {
                       responses,
                       { supportPartial: true },
                     );
+
+                    // Provenance: compute why this control is applicable
+                    // from the currently-selected assessment profile.
+                    // Pure computation, no DB hit.
+                    const provenanceEnabled = isFeatureEnabled("provenance_v1");
+                    const applicabilityReason = provenanceEnabled
+                      ? describeApplicabilityReason(
+                          req,
+                          {
+                            organizationSize:
+                              selectedAssessment.organizationSize as OrganizationSize,
+                            spaceSegmentComplexity:
+                              selectedAssessment.spaceSegmentComplexity as SpaceSegmentComplexity,
+                            dataSensitivityLevel:
+                              selectedAssessment.dataSensitivityLevel as DataSensitivityLevel,
+                            hasGroundSegment:
+                              selectedAssessment.hasGroundSegment ?? true,
+                            processesPersonalData:
+                              selectedAssessment.processesPersonalData ?? false,
+                            handlesGovData:
+                              selectedAssessment.handlesGovData ?? false,
+                            existingCertifications: [],
+                            hasSecurityTeam:
+                              selectedAssessment.hasSecurityTeam ?? false,
+                            hasIncidentResponsePlan:
+                              selectedAssessment.hasIncidentResponsePlan ??
+                              false,
+                            hasBCP: selectedAssessment.hasBCP ?? false,
+                            supplierSecurityAssessed:
+                              selectedAssessment.supplierSecurityAssessed ??
+                              false,
+                            satelliteCount:
+                              selectedAssessment.satelliteCount ?? undefined,
+                          },
+                          selectedAssessment.isSimplifiedRegime,
+                        )
+                      : null;
 
                     return (
                       <div
@@ -1622,6 +1713,12 @@ function CybersecurityPageContent() {
                                     >
                                       {req.severity}
                                     </span>
+                                    {applicabilityReason && (
+                                      <ProvenanceChip
+                                        origin={applicabilityReason.origin}
+                                        density="icon"
+                                      />
+                                    )}
                                     {selectedAssessment.isSimplifiedRegime &&
                                       req.simplifiedAlternative && (
                                         <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent-success)]/10 text-[var(--accent-success)]">
@@ -1629,6 +1726,18 @@ function CybersecurityPageContent() {
                                         </span>
                                       )}
                                   </div>
+                                  {/* Provenance: causal breadcrumb shows
+                                      WHY this control is applicable to
+                                      the operator. Pure computation from
+                                      profile + requirement metadata. */}
+                                  {applicabilityReason && (
+                                    <div className="mt-1">
+                                      <CausalBreadcrumb
+                                        origin={applicabilityReason.origin}
+                                        reason={applicabilityReason.summary}
+                                      />
+                                    </div>
+                                  )}
                                   {!isExpanded && fields.length > 0 && (
                                     <p className="text-caption text-[var(--text-secondary)] mt-1">
                                       {completedFields}/{fields.length} fields
@@ -1736,6 +1845,16 @@ function CybersecurityPageContent() {
                                         ]?.label || suggested}
                                       </span>
                                     </span>
+                                    {/* Trust chip — makes it explicit
+                                        that this is an AI inference, not
+                                        a regulatory fact. */}
+                                    {provenanceEnabled && (
+                                      <ProvenanceChip
+                                        origin="ai-inferred"
+                                        density="compact"
+                                        confidence={0.8}
+                                      />
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() =>
