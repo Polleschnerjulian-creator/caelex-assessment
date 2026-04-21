@@ -9,6 +9,9 @@ import {
   Orbit,
   Loader2,
   ArrowRight,
+  ShieldCheck,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
@@ -72,12 +75,22 @@ const ORBIT_LABELS: Record<string, string> = {
   NGSO: "NGSO",
 };
 
+interface LastSnapshot {
+  id: string;
+  snapshotHash: string;
+  frozenAt: string; // ISO
+}
+
 export default function OperatorProfileCard() {
   const [profile, setProfile] = useState<OperatorProfileData | null>(null);
   const [traces, setTraces] = useState<Record<string, FieldTrace>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [peekTraceId, setPeekTraceId] = useState<string | null>(null);
+  const [lastSnapshot, setLastSnapshot] = useState<LastSnapshot | null>(null);
+  const [freezeBusy, setFreezeBusy] = useState(false);
+  const [freezeError, setFreezeError] = useState<string | null>(null);
+  const [copiedHash, setCopiedHash] = useState(false);
 
   // Resolved once at mount — the flag controls whether we fetch traces AND
   // whether we render chips. We never render partial trace UI without data.
@@ -109,6 +122,55 @@ export default function OperatorProfileCard() {
     }
     fetchProfile();
   }, [provenanceEnabled]);
+
+  // Fetch last snapshot — same flag gate as the chips.
+  useEffect(() => {
+    if (!provenanceEnabled) return;
+    fetch("/api/organization/profile/snapshot")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const newest = data?.snapshots?.[0];
+        if (newest) setLastSnapshot(newest);
+      })
+      .catch(() => {});
+  }, [provenanceEnabled]);
+
+  async function handleFreeze() {
+    setFreezeBusy(true);
+    setFreezeError(null);
+    try {
+      const res = await fetch("/api/organization/profile/snapshot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purpose: "voluntary" }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error ?? `HTTP ${res.status}`);
+      }
+      const created = await res.json();
+      setLastSnapshot({
+        id: created.id,
+        snapshotHash: created.snapshotHash,
+        frozenAt: created.frozenAt,
+      });
+    } catch (err) {
+      setFreezeError(err instanceof Error ? err.message : "Failed to freeze");
+    } finally {
+      setFreezeBusy(false);
+    }
+  }
+
+  async function handleCopyHash() {
+    if (!lastSnapshot) return;
+    try {
+      await navigator.clipboard.writeText(lastSnapshot.snapshotHash);
+      setCopiedHash(true);
+      setTimeout(() => setCopiedHash(false), 1500);
+    } catch {
+      // silent
+    }
+  }
 
   if (loading) {
     return (
@@ -214,6 +276,67 @@ export default function OperatorProfileCard() {
             Complete Your Profile
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        )}
+
+        {/* Freeze & Sign — only rendered when the provenance flag is on
+            and the profile is at least partially complete (hash isn't
+            meaningful for an empty profile). */}
+        {provenanceEnabled && completenessPercent > 0 && (
+          <div className="mt-4 pt-4 border-t border-[var(--divider-color)]">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+                  Signed Snapshot
+                </span>
+              </div>
+              <button
+                onClick={handleFreeze}
+                disabled={freezeBusy}
+                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded border border-emerald-500/30 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 disabled:opacity-50 transition-colors"
+              >
+                {freezeBusy ? "Signing…" : "Freeze & Sign"}
+              </button>
+            </div>
+            {lastSnapshot ? (
+              <div className="space-y-1 text-xs">
+                <div className="text-[var(--text-secondary)]">
+                  Last: {new Date(lastSnapshot.frozenAt).toLocaleString()}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <code className="font-mono text-[10px] text-[var(--text-tertiary)] truncate">
+                    {lastSnapshot.snapshotHash.slice(0, 16)}…
+                  </code>
+                  <button
+                    onClick={handleCopyHash}
+                    aria-label="Copy snapshot hash"
+                    className="p-0.5 rounded hover:bg-[var(--fill-soft)]"
+                  >
+                    {copiedHash ? (
+                      <Check className="w-3 h-3 text-emerald-500" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-[var(--text-tertiary)]" />
+                    )}
+                  </button>
+                  <a
+                    href={`/api/v1/verity/profile-snapshot/${lastSnapshot.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-auto text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    Verify →
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-[var(--text-tertiary)]">
+                Sign your profile state to produce a verifiable snapshot.
+              </p>
+            )}
+            {freezeError && (
+              <p className="mt-2 text-xs text-red-500">{freezeError}</p>
+            )}
+          </div>
         )}
       </GlassCard>
 
