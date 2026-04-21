@@ -173,6 +173,26 @@ const GROUP_ORDER: ItemGroup[] = [
 
 // ─── Search helper ────────────────────────────────────────────────────
 
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Scoring tiers (descending priority):
+ *
+ *   Title starts with the token as a whole word      → 1000
+ *   Token is a whole word inside the title           →  500
+ *   Token is a substring inside the title            →  100 − position
+ *   Token is a whole word anywhere in the haystack   →   50
+ *   Token is a substring anywhere in the haystack    →   10 − position/10
+ *
+ * The whole-word boundary test (\bTOKEN\b, Unicode-aware) is what
+ * keeps short tokens like "ISO" from matching mid-word ("authorISOn",
+ * "provISO", "supervISOr") and pulling irrelevant items to the top.
+ * Items that ONLY match mid-word still appear (we don't filter them
+ * out — the user might want broad results) but they land at the
+ * bottom of the list where they belong.
+ */
 function search(query: string, limit = 40): Item[] {
   const q = query.trim().toLowerCase();
   if (!q) return NAV_ITEMS; // empty state = show nav
@@ -183,16 +203,31 @@ function search(query: string, limit = 40): Item[] {
   for (const item of ALL_ITEMS) {
     let score = 0;
     let allMatch = true;
+    const lowerTitle = item.title.toLowerCase();
+
     for (const token of tokens) {
-      const idx = item.haystack.indexOf(token);
-      if (idx === -1) {
+      const haystackIdx = item.haystack.indexOf(token);
+      if (haystackIdx === -1) {
         allMatch = false;
         break;
       }
-      // Earlier match = higher score; exact title-start = bonus
-      score += 100 - Math.min(idx, 100);
-      if (item.title.toLowerCase().startsWith(token)) score += 50;
+      const wordRe = new RegExp(`\\b${escapeRegex(token)}\\b`, "i");
+      const titleIdx = lowerTitle.indexOf(token);
+      const titleWholeWord = wordRe.test(item.title);
+
+      if (titleWholeWord && titleIdx === 0) {
+        score += 1000;
+      } else if (titleWholeWord) {
+        score += 500;
+      } else if (titleIdx !== -1) {
+        score += 100 - Math.min(titleIdx, 100);
+      } else if (wordRe.test(item.haystack)) {
+        score += 50;
+      } else {
+        score += Math.max(0, 10 - Math.floor(haystackIdx / 10));
+      }
     }
+
     if (allMatch) scored.push({ item, score });
   }
 
