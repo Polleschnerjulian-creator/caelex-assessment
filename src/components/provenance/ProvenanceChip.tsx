@@ -128,7 +128,7 @@ export function ProvenanceChip({
       {displayLabel && <span className="leading-none">{displayLabel}</span>}
       {confidencePct !== null && density !== "icon" && (
         <span
-          className={`leading-none tabular-nums opacity-70 ${density === "compact" ? "hidden" : ""}`}
+          className={`leading-none opacity-70 ${density === "compact" ? "hidden" : ""}`}
         >
           {confidencePct}
         </span>

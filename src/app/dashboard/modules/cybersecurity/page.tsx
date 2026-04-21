@@ -33,10 +33,12 @@ import {
   ProvenanceChip,
   CausalBreadcrumb,
   ModuleWhySidebar,
+  ControlContextWindow,
 } from "@/components/provenance";
 import {
   describeApplicabilityReason,
   describeModuleScope,
+  buildControlContext,
 } from "@/lib/provenance/cybersecurity-provenance";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -1700,7 +1702,7 @@ function CybersecurityPageContent() {
                               <div className="flex items-start justify-between gap-4 mb-2">
                                 <div>
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-mono text-caption text-[var(--text-secondary)]">
+                                    <span className="text-caption text-[var(--text-secondary)] tracking-wide">
                                       {req.articleRef}
                                     </span>
                                     <h3 className="text-body-lg font-medium text-white">
@@ -1814,6 +1816,25 @@ function CybersecurityPageContent() {
                                 className="p-5 pt-4 space-y-4"
                                 onClick={(e) => e.stopPropagation()}
                               >
+                                {/* Provenance context window — three-beat
+                                    animated explainer that answers
+                                    wieso / weshalb / warum. First thing
+                                    the operator sees on expand. Only when
+                                    the provenance flag is on. */}
+                                {provenanceEnabled &&
+                                  (() => {
+                                    const ctx = buildControlContext({
+                                      req,
+                                      reason: applicabilityReason,
+                                    });
+                                    return (
+                                      <ControlContextWindow
+                                        context={ctx}
+                                        hideTopRule
+                                      />
+                                    );
+                                  })()}
+
                                 {/* Sub-question form */}
                                 {fields.length > 0 && (
                                   <div className="p-4 bg-[var(--surface-sunken)][0.02] rounded-lg border border-[var(--border-subtle)][0.05]">

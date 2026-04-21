@@ -199,6 +199,133 @@ function buildSummaryPhrase(
   return `${head} · ${values.join(" · ")}`;
 }
 
+// ─── Per-control context window ────────────────────────────────────────
+
+/**
+ * Three-beat context for a single control — feeds the animated
+ * ControlContextWindow. Every beat is a short human sentence designed to
+ * be read on first expand of the card:
+ *
+ *   wieso   — WHY does this regulation exist?
+ *   weshalb — WHAT does it protect against?
+ *   warum   — WHY does it apply to you specifically?
+ *
+ * Deterministic: template-driven from the requirement's own data fields
+ * plus the operator's profile. No LLM call, no data-file change.
+ */
+export interface ControlContext {
+  wieso: string;
+  weshalb: string;
+  warum: string;
+}
+
+/**
+ * Category-keyed short descriptions of the threat the control guards
+ * against. Kept opinionated but factual — each line matches the
+ * corresponding ENISA / NIS2 objective. When the category is unknown
+ * we fall back to a generic line.
+ */
+const CATEGORY_THREAT: Record<string, string> = {
+  governance:
+    "gaps in accountability — nobody owns security outcomes, nobody signs off the budget, and audits fail to show board-level oversight.",
+  risk_assessment:
+    "unknown exposure — threats are not catalogued, impact is not quantified, and the operator cannot prioritise mitigations rationally.",
+  infosec:
+    "data exposure and system compromise — without enforced controls, confidentiality, integrity, and availability guarantees cannot be demonstrated.",
+  cryptography:
+    "interception and tampering — unencrypted data in transit or at rest makes every communication a leak vector.",
+  detection_monitoring:
+    "silent intrusions — an attacker who is not observed cannot be stopped, and regulatory incident windows start from the moment of detection.",
+  business_continuity:
+    "extended outages — after an incident, operations stay down longer than the regulatory maximum downtime, triggering reporting and fines.",
+  incident_reporting:
+    "late or missing notifications — the NIS2 24h early-warning window is binding; missing it is itself a breach.",
+  eusrn:
+    "fragmented national reporting — without a single EU channel, the operator repeats notifications across MS and risks contradictory statements.",
+};
+
+function threatForCategory(category: string): string {
+  return (
+    CATEGORY_THREAT[category] ??
+    "non-conformance — the operator cannot demonstrate the control, which is itself a finding under audit."
+  );
+}
+
+/**
+ * Build the three animated beats. Inputs are the requirement + the
+ * caller's profile-derived applicability reason (reused from
+ * describeApplicabilityReason so the "why you?" sentence stays
+ * consistent with the per-card CausalBreadcrumb).
+ */
+export function buildControlContext(args: {
+  req: CybersecurityRequirement;
+  reason: ApplicabilityReason | null;
+}): ControlContext {
+  const { req, reason } = args;
+
+  // ── Wieso: regulatory origin ──────────────────────────────────────
+  const wieso = buildWiesoSentence(req);
+
+  // ── Weshalb: threat model ─────────────────────────────────────────
+  const weshalb = buildWeshalbSentence(req);
+
+  // ── Warum: applicability for THIS operator ────────────────────────
+  const warum = buildWarumSentence(req, reason);
+
+  return { wieso, weshalb, warum };
+}
+
+function buildWiesoSentence(req: CybersecurityRequirement): string {
+  const source = req.articleRef || "This requirement";
+  const aligned: string[] = [];
+  if (req.nis2Reference) aligned.push(`NIS2 (${req.nis2Reference})`);
+  if (req.isoReference) aligned.push(`ISO 27001 (${req.isoReference})`);
+  const alignment =
+    aligned.length > 0 ? ` and aligns with ${aligned.join(" and ")}` : "";
+  // req.description is usually 1 sentence already — if empty, skip.
+  const tail = req.description
+    ? ` — ${ensureSentenceEnd(req.description.trim())}`
+    : ".";
+  return `${source} establishes this control${alignment}${tail}`;
+}
+
+function buildWeshalbSentence(req: CybersecurityRequirement): string {
+  const threat = threatForCategory(req.category);
+  return `Without it, the operator is exposed to ${threat}`;
+}
+
+function buildWarumSentence(
+  req: CybersecurityRequirement,
+  reason: ApplicabilityReason | null,
+): string {
+  if (!reason) {
+    return "Applies to your profile under the current scope.";
+  }
+  if (reason.matched.length === 0) {
+    return "Applies to every operator in scope regardless of size or segment.";
+  }
+  // Stitch a natural sentence from the matched dimensions.
+  const parts = reason.matched
+    .filter((m) => m.dimension !== "regime")
+    .map((m) => m.value);
+  if (parts.length === 0) {
+    return "Applies to you under the standard (non-simplified) regime.";
+  }
+  return `Applies to you because your profile matches ${joinNaturally(parts)}.`;
+}
+
+function joinNaturally(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function ensureSentenceEnd(s: string): string {
+  if (/[.!?]$/.test(s)) return s;
+  return `${s}.`;
+}
+
 /**
  * Build a top-level summary for the whole module — powers the
  * Why-Sidebar header. Explains "why N controls out of M".

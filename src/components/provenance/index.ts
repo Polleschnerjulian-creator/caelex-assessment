@@ -18,3 +18,8 @@ export type { TraceDTO } from "./SidePeek";
 
 export { ModuleWhySidebar } from "./ModuleWhySidebar";
 export type { ModuleScope } from "./ModuleWhySidebar";
+
+export { AnimatedReveal } from "./AnimatedReveal";
+
+export { ControlContextWindow } from "./ControlContextWindow";
+export type { ControlContext } from "./ControlContextWindow";

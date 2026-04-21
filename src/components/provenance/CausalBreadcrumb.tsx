@@ -122,7 +122,7 @@ export function CausalBreadcrumb({
           >
             ·
           </span>
-          <span className="tabular-nums">{citation}</span>
+          <span>{citation}</span>
         </>
       )}
       {/* Optional trailing date. */}
@@ -134,7 +134,7 @@ export function CausalBreadcrumb({
           >
             ·
           </span>
-          <span className="tabular-nums opacity-80">
+          <span className="opacity-80">
             {verifiedOn} {dateStr}
           </span>
         </>
