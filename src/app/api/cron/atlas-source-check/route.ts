@@ -24,6 +24,7 @@ import {
   LEGAL_SOURCES_GR,
   LEGAL_SOURCES_CZ,
   LEGAL_SOURCES_PL,
+  LEGAL_SOURCES_NZ,
 } from "@/data/legal-sources";
 import { LEGAL_SOURCES_INT } from "@/data/legal-sources/sources/intl";
 import { LEGAL_SOURCES_EU } from "@/data/legal-sources/sources/eu";
@@ -54,6 +55,7 @@ const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_GR,
   ...LEGAL_SOURCES_CZ,
   ...LEGAL_SOURCES_PL,
+  ...LEGAL_SOURCES_NZ,
 ];
 
 // Check ~50 sources per run (full cycle in ~7 days for 325 sources)

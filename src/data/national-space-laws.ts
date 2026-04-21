@@ -4364,11 +4364,206 @@ const US: JurisdictionLaw = {
   lastUpdated: "2026-04",
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// ASIA-PACIFIC
+// ═══════════════════════════════════════════════════════════════════
+
+const NZ: JurisdictionLaw = {
+  countryCode: "NZ",
+  countryName: "New Zealand",
+  flagEmoji: "\u{1F1F3}\u{1F1FF}",
+
+  legislation: {
+    name: "Outer Space and High-altitude Activities Act 2017 (OSHAA)",
+    nameLocal: "Outer Space and High-altitude Activities Act 2017",
+    yearEnacted: 2017,
+    status: "enacted",
+    officialUrl:
+      "https://www.legislation.govt.nz/act/public/2017/0029/latest/whole.html",
+    keyArticles:
+      "Public Act 2017 No. 29; OSHAA (Authorisations) Regulations 2017 (LI 2017/295)",
+  },
+
+  licensingAuthority: {
+    name: "New Zealand Space Agency (within Ministry of Business, Innovation and Employment)",
+    nameLocal: "New Zealand Space Agency — MBIE",
+    website: "https://www.mbie.govt.nz/business-and-employment/space",
+    parentMinistry: "Ministry of Business, Innovation and Employment (MBIE)",
+  },
+
+  licensingRequirements: [
+    {
+      id: "nz-payload-permit",
+      category: "operational_plan",
+      title: "OSHAA Payload Permit",
+      description:
+        "Any spacecraft payload launched by an NZ operator, or from NZ territory, requires a Payload Permit from MBIE's NZSA. Requires payload technical specification, orbital parameters, spectrum coordination status, end-of-life disposal plan, and debris-mitigation analysis aligned with COPUOS Guidelines + LTS-21.",
+      mandatory: true,
+      applicableTo: [
+        "spacecraft_operation",
+        "satellite_communications",
+        "earth_observation",
+        "in_orbit_services",
+      ],
+      articleRef: "OSHAA 2017 s. 8-11; Regs 2017 reg. 9",
+    },
+    {
+      id: "nz-launch-licence",
+      category: "operational_plan",
+      title: "OSHAA Launch Licence",
+      description:
+        "A Launch Licence is required for each launch from NZ territory. Requires mission-risk analysis, failure-mode and effects analysis (FMEA), casualty-risk computation (target ≤ 1 × 10⁻⁴), range-safety coordination with NZDF where applicable, and indemnity + insurance arrangements (typically NZD 100M third-party minimum).",
+      mandatory: true,
+      applicableTo: ["launch_vehicle", "launch_site"],
+      articleRef: "OSHAA 2017 s. 12-15; Regs 2017 reg. 14",
+    },
+    {
+      id: "nz-overseas-launch",
+      category: "operational_plan",
+      title: "OSHAA Overseas Launch Licence",
+      description:
+        "NZ nationals launching from foreign territory must hold an Overseas Launch Licence. Aligns NZ state responsibility under OST Art. VI with extraterritorial NZ commercial activity, particularly relevant for NZ-domiciled satellite operators procuring launches from US, EU, or other jurisdictions.",
+      mandatory: true,
+      applicableTo: ["launch_vehicle", "spacecraft_operation"],
+      articleRef: "OSHAA 2017 s. 16-19",
+    },
+    {
+      id: "nz-facility-licence",
+      category: "operational_plan",
+      title: "OSHAA Facility Licence",
+      description:
+        "Launch facilities (spaceports) operating from NZ territory require a Facility Licence. Current licensed facility: Rocket Lab Launch Complex 1 (Mahia Peninsula). Facility licensing covers site-level safety, environmental impact, iwi consultation, and airspace coordination with CAA.",
+      mandatory: true,
+      applicableTo: ["launch_site"],
+      articleRef: "OSHAA 2017 s. 20-24",
+    },
+    {
+      id: "nz-return-licence",
+      category: "operational_plan",
+      title: "OSHAA Return Licence",
+      description:
+        "Controlled returns (re-entry) of NZ space objects, or of any object returning to NZ territory, require a Return Licence. Increasingly relevant for capsule recovery and in-orbit servicing missions that return hardware. Covers re-entry corridor planning, debris-risk assessment, and recovery-site coordination.",
+      mandatory: false,
+      applicableTo: ["spacecraft_operation", "in_orbit_services"],
+      articleRef: "OSHAA 2017 s. 25-29",
+    },
+    {
+      id: "nz-adr-ios-auth",
+      category: "technical_assessment",
+      title:
+        "ADR / IOS authorisation (under OSHAA + 2023 NZSA Policy Statement)",
+      description:
+        "Active debris removal and in-orbit servicing missions require additional documentation under the 2023 NZSA Policy Statement on ADR/IOS. Requires documented client-state consent for non-cooperative rendezvous, abort-trajectory safety analysis, and servicer post-mission-disposal plan. Cross-recognition with FAA Part 450, UK CAA, and ESA Clean Space approvals reduces duplication.",
+      mandatory: true,
+      applicableTo: ["in_orbit_services"],
+      articleRef: "OSHAA 2017 + NZSA Policy Statement on ADR/IOS (July 2023)",
+    },
+    {
+      id: "nz-mfat-export",
+      category: "technical_assessment",
+      title: "MFAT strategic-goods export permit (dual-use space technology)",
+      description:
+        "Export of dual-use space technology from NZ requires an MFAT Export Controls Office permit under the Customs Export Prohibition Order 2017. NZ is a Wassenaar, MTCR, NSG, and Australia Group member. ITAR-controlled content is covered in parallel via the 2016 NZ-US Technology Safeguards Agreement for Rocket Lab operations.",
+      mandatory: true,
+      applicableTo: ALL_GENERAL_ACTIVITIES,
+      articleRef:
+        "Customs and Excise Act 2018; NZ-US Technology Safeguards Agreement (2016)",
+    },
+  ],
+
+  applicabilityRules: [
+    {
+      id: "nz-rule-person",
+      description:
+        "OSHAA 2017 applies to NZ persons and to any launch from NZ territory, plus cross-border operations triggering state responsibility under OST Art. VI",
+      condition:
+        "NZ-incorporated entity OR NZ national OR launch from NZ territory OR NZ-flagged space object",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "foreign"],
+    },
+  ],
+
+  insuranceLiability: {
+    mandatoryInsurance: true,
+    minimumCoverage:
+      "Determined per licence — typically NZD 100M third-party liability for orbital launches; case-by-case for ADR/IOS",
+    governmentIndemnification: true,
+    indemnificationCap:
+      "Crown pays Convention claims above insurance floor with right of recourse against operator up to the licence-defined ceiling (OSHAA s. 15)",
+    liabilityRegime: "capped",
+    thirdPartyRequired: true,
+  },
+
+  debrisMitigation: {
+    deorbitRequirement: true,
+    deorbitTimeline:
+      "Alignment with COPUOS Guidelines (2007) + LTS-21 (2019); NZSA following international PMD tightening trend (US FCC 5-year, ESA Zero Debris Std). Each licence specifies disposal commitments.",
+    passivationRequired: true,
+    debrisMitigationPlan: true,
+    collisionAvoidance: true,
+    standards: [
+      "COPUOS Space Debris Mitigation Guidelines (2007)",
+      "UN COPUOS LTS-21 (2019)",
+      "ISO 24113 (Space systems — Space debris mitigation requirements)",
+      "NZSA ADR/IOS Policy Statement (2023)",
+    ],
+  },
+
+  dataSensing: {
+    remoteSensingLicense: false,
+    dataDistributionRestrictions: false,
+  },
+
+  timeline: {
+    typicalProcessingWeeks: { min: 12, max: 26 },
+    applicationFee:
+      "OSHAA authorisation fees per Regs Schedule (NZD-scaled by mission complexity); MFAT export permits separate",
+    otherCosts: [
+      "Insurance premium (NZD 100M third-party baseline)",
+      "MFAT export-control permit fees",
+      "NZDF range-safety coordination (launches only)",
+      "Iwi and local-authority consultation (spaceports)",
+    ],
+  },
+
+  registration: {
+    nationalRegistryExists: true,
+    registryName:
+      "New Zealand Registry of Space Objects (maintained by NZSA, submitted to UNOOSA via MFAT)",
+    unRegistrationRequired: true,
+  },
+
+  euSpaceActCrossRef: {
+    relationship: "gap",
+    description:
+      "New Zealand is not an EU or EEA member — the EU Space Act will not apply domestically. NZ operators serving EU markets will be subject to the EU Space Act third-country operator (TCO) provisions (Art. 105-110), requiring equivalence assessment and compliance with key EU requirements even outside EU territory.",
+    keyArticles: [
+      "EU Space Act Art. 105-110 (TCO regime applicable to NZ operators)",
+    ],
+    transitionNotes:
+      "NZ operators exporting satellite services into the EU should prepare a TCO compliance workstream in parallel with OSHAA licensing. Particularly relevant for NZ-based EO data providers and satellite communications operators.",
+  },
+
+  notes: [
+    "Trigger event for OSHAA: Rocket Lab's commercial launches from Mahia, Launch Complex 1 (first orbital attempt 'It's a Test' 25 May 2017).",
+    "First Southern-Hemisphere dedicated national space act.",
+    "OSHAA gives MBIE/NZSA a five-licence structure: Payload Permit + Launch Licence + Overseas Launch Licence + Facility Licence + Return Licence.",
+    "2023 NZSA Policy Statement on ADR/IOS makes NZ an early permissive-but-guardrailed jurisdiction for active debris removal missions.",
+    "2016 NZ-US Technology Safeguards Agreement (TSA) enables ITAR-controlled US space technology to operate from NZ soil without constituting a US export.",
+    "Co-regulation with CAA for airspace integration + high-altitude sub-orbital activities.",
+  ],
+
+  lastUpdated: "2026-04",
+};
+
 // ─── Export: Jurisdiction Data Map ───
 //
-// 2026-04 regulatory refresh: expanded from 10 to 19 jurisdictions to cover
+// 2026-04 regulatory refresh: expanded from 10 to 19 European jurisdictions to cover
 // every European country with an enacted national space activities law or
-// an interim framework. Alphabetized by country code within region groups.
+// an interim framework. 2026-04-21: added NZ (OSHAA 2017) — first non-EU/non-US
+// jurisdiction with a dedicated national space act. Alphabetized by country
+// code within region groups.
 
 export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   // Core EU with dedicated space law
@@ -4408,4 +4603,6 @@ export const JURISDICTION_DATA = new Map<SpaceLawCountryCode, JurisdictionLaw>([
   ["LI", LI],
   // Americas
   ["US", US],
+  // Asia-Pacific
+  ["NZ", NZ],
 ]);
