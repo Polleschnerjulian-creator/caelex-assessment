@@ -6,77 +6,16 @@ import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
-  LEGAL_SOURCES_DE,
-  LEGAL_SOURCES_FR,
-  LEGAL_SOURCES_UK,
-  LEGAL_SOURCES_IT,
-  LEGAL_SOURCES_LU,
-  LEGAL_SOURCES_NL,
-  LEGAL_SOURCES_BE,
-  LEGAL_SOURCES_ES,
-  LEGAL_SOURCES_NO,
-  LEGAL_SOURCES_SE,
-  LEGAL_SOURCES_FI,
-  LEGAL_SOURCES_DK,
-  LEGAL_SOURCES_AT,
-  LEGAL_SOURCES_CH,
-  LEGAL_SOURCES_PT,
-  LEGAL_SOURCES_IE,
-  LEGAL_SOURCES_GR,
-  AUTHORITIES_DE,
-  AUTHORITIES_FR,
-  AUTHORITIES_UK,
-  AUTHORITIES_IT,
-  AUTHORITIES_LU,
-  AUTHORITIES_NL,
-  AUTHORITIES_BE,
-  AUTHORITIES_ES,
-  AUTHORITIES_NO,
-  AUTHORITIES_SE,
-  AUTHORITIES_FI,
-  AUTHORITIES_DK,
-  AUTHORITIES_AT,
-  AUTHORITIES_CH,
-  AUTHORITIES_PT,
-  AUTHORITIES_IE,
-  AUTHORITIES_GR,
-  LEGAL_SOURCES_CZ,
-  AUTHORITIES_CZ,
-  LEGAL_SOURCES_PL,
-  AUTHORITIES_PL,
-  LEGAL_SOURCES_EE,
-  AUTHORITIES_EE,
-  LEGAL_SOURCES_RO,
-  AUTHORITIES_RO,
-  LEGAL_SOURCES_HU,
-  AUTHORITIES_HU,
-  LEGAL_SOURCES_SI,
-  AUTHORITIES_SI,
-  LEGAL_SOURCES_LV,
-  AUTHORITIES_LV,
-  LEGAL_SOURCES_LT,
-  AUTHORITIES_LT,
-  LEGAL_SOURCES_SK,
-  AUTHORITIES_SK,
-  LEGAL_SOURCES_HR,
-  AUTHORITIES_HR,
-  LEGAL_SOURCES_TR,
-  AUTHORITIES_TR,
-  LEGAL_SOURCES_IS,
-  AUTHORITIES_IS,
-  LEGAL_SOURCES_LI,
-  AUTHORITIES_LI,
-  LEGAL_SOURCES_US,
-  AUTHORITIES_US,
+  // Single source of truth — barrel aggregates every jurisdiction
+  // (including INT, EU, NZ, US) so any new country or instrument
+  // auto-surfaces in Atlas landing-page search without touching
+  // this import list.
+  ALL_SOURCES,
+  ALL_AUTHORITIES,
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
-import type {
-  LegalSource,
-  Authority,
-  LegalSourceType,
-  RelevanceLevel,
-} from "@/data/legal-sources";
+import type { LegalSourceType, RelevanceLevel } from "@/data/legal-sources";
 import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
@@ -88,73 +27,29 @@ import {
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
-const ALL_SOURCES: LegalSource[] = [
-  ...LEGAL_SOURCES_DE,
-  ...LEGAL_SOURCES_FR,
-  ...LEGAL_SOURCES_UK,
-  ...LEGAL_SOURCES_IT,
-  ...LEGAL_SOURCES_LU,
-  ...LEGAL_SOURCES_NL,
-  ...LEGAL_SOURCES_BE,
-  ...LEGAL_SOURCES_ES,
-  ...LEGAL_SOURCES_NO,
-  ...LEGAL_SOURCES_SE,
-  ...LEGAL_SOURCES_FI,
-  ...LEGAL_SOURCES_DK,
-  ...LEGAL_SOURCES_AT,
-  ...LEGAL_SOURCES_CH,
-  ...LEGAL_SOURCES_PT,
-  ...LEGAL_SOURCES_IE,
-  ...LEGAL_SOURCES_GR,
-  ...LEGAL_SOURCES_CZ,
-  ...LEGAL_SOURCES_PL,
-  ...LEGAL_SOURCES_EE,
-  ...LEGAL_SOURCES_RO,
-  ...LEGAL_SOURCES_HU,
-  ...LEGAL_SOURCES_SI,
-  ...LEGAL_SOURCES_LV,
-  ...LEGAL_SOURCES_LT,
-  ...LEGAL_SOURCES_SK,
-  ...LEGAL_SOURCES_HR,
-  ...LEGAL_SOURCES_TR,
-  ...LEGAL_SOURCES_IS,
-  ...LEGAL_SOURCES_LI,
-  ...LEGAL_SOURCES_US,
-];
+// ─── Search ranking ─────────────────────────────────────────────────
+//
+// Whole-word-aware scoring so 3–4 letter queries like "ISO", "FCC",
+// "FAA", "OSHAA" don't drown in substring matches (auth/ISO/ation,
+// supervISOr, provISO, etc.). Higher-tier matches always beat any
+// number of lower-tier ones thanks to the wide score gaps.
 
-const ALL_AUTHORITIES: Authority[] = [
-  ...AUTHORITIES_DE,
-  ...AUTHORITIES_FR,
-  ...AUTHORITIES_UK,
-  ...AUTHORITIES_IT,
-  ...AUTHORITIES_LU,
-  ...AUTHORITIES_NL,
-  ...AUTHORITIES_BE,
-  ...AUTHORITIES_ES,
-  ...AUTHORITIES_NO,
-  ...AUTHORITIES_SE,
-  ...AUTHORITIES_FI,
-  ...AUTHORITIES_DK,
-  ...AUTHORITIES_AT,
-  ...AUTHORITIES_CH,
-  ...AUTHORITIES_PT,
-  ...AUTHORITIES_IE,
-  ...AUTHORITIES_GR,
-  ...AUTHORITIES_CZ,
-  ...AUTHORITIES_PL,
-  ...AUTHORITIES_EE,
-  ...AUTHORITIES_RO,
-  ...AUTHORITIES_HU,
-  ...AUTHORITIES_SI,
-  ...AUTHORITIES_LV,
-  ...AUTHORITIES_LT,
-  ...AUTHORITIES_SK,
-  ...AUTHORITIES_HR,
-  ...AUTHORITIES_TR,
-  ...AUTHORITIES_IS,
-  ...AUTHORITIES_LI,
-  ...AUTHORITIES_US,
-];
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function scoreMatch(title: string, haystack: string, token: string): number {
+  const lowerTitle = title.toLowerCase();
+  const wordRe = new RegExp(`\\b${escapeRegex(token)}\\b`, "i");
+  const titleIdx = lowerTitle.indexOf(token);
+  const titleWholeWord = wordRe.test(title);
+  if (titleWholeWord && titleIdx === 0) return 1000;
+  if (titleWholeWord) return 500;
+  if (titleIdx !== -1) return 100 - Math.min(titleIdx, 100);
+  if (wordRe.test(haystack)) return 50;
+  const hIdx = haystack.indexOf(token);
+  return hIdx >= 0 ? Math.max(0, 10 - Math.floor(hIdx / 10)) : -Infinity;
+}
 
 // ─── Style maps ─────────────────────────────────────────────────────
 
@@ -230,27 +125,23 @@ function performSearch(query: string): SearchResults | null {
       data.licensingAuthority.name.toLowerCase().includes(q),
   );
 
-  const sources = ALL_SOURCES.filter(
-    (s) =>
-      s.title_en.toLowerCase().includes(q) ||
-      s.title_local?.toLowerCase().includes(q) ||
-      s.id.toLowerCase().includes(q) ||
-      s.official_reference?.toLowerCase().includes(q) ||
-      s.compliance_areas.some((a) => a.toLowerCase().includes(q)) ||
-      s.key_provisions.some(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.summary.toLowerCase().includes(q),
-      ),
-  );
+  const scoredSources = ALL_SOURCES.map((s) => {
+    const haystack =
+      `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions.map((p) => `${p.title} ${p.summary}`).join(" ")}`.toLowerCase();
+    return { source: s, score: scoreMatch(s.title_en, haystack, q) };
+  })
+    .filter(({ score }) => score > -Infinity)
+    .sort((a, b) => b.score - a.score);
+  const sources = scoredSources.map(({ source }) => source);
 
-  const authorities = ALL_AUTHORITIES.filter(
-    (a) =>
-      a.name_en.toLowerCase().includes(q) ||
-      a.name_local.toLowerCase().includes(q) ||
-      a.abbreviation.toLowerCase().includes(q) ||
-      a.space_mandate.toLowerCase().includes(q),
-  );
+  const scoredAuthorities = ALL_AUTHORITIES.map((a) => {
+    const haystack =
+      `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`.toLowerCase();
+    return { authority: a, score: scoreMatch(a.name_en, haystack, q) };
+  })
+    .filter(({ score }) => score > -Infinity)
+    .sort((a, b) => b.score - a.score);
+  const authorities = scoredAuthorities.map(({ authority }) => authority);
 
   const landingRightsProfiles = ALL_LANDING_RIGHTS_PROFILES.filter(
     (p) =>
