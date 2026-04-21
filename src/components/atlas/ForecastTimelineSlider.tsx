@@ -96,7 +96,7 @@ export default function ForecastTimelineSlider({
       <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-gray-500">
         {t("atlas.forecast_target_date")}
       </span>
-      <div className="flex-1 min-w-[140px] px-1 relative pb-4">
+      <div className="flex-1 min-w-[140px] px-1">
         <input
           type="range"
           min={0}
@@ -108,8 +108,8 @@ export default function ForecastTimelineSlider({
           style={trackStyle}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         />
-        {/* Year tick marks — inset from the track edges so they breathe. */}
-        <div className="absolute left-1 right-1 top-full mt-2 flex justify-between text-[8px] tabular-nums text-gray-400 pointer-events-none select-none">
+        {/* Year tick row — normal flow, directly below the bar. */}
+        <div className="mt-1.5 flex justify-between text-[8px] tabular-nums text-gray-400 select-none">
           {Array.from({ length: 7 }, (_, i) => 2026 + i).map((year) => (
             <span key={year}>{year}</span>
           ))}
