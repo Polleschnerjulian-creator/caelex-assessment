@@ -10,6 +10,12 @@ import {
   CANONICAL_TO_EU,
   type CanonicalOperatorType,
 } from "@/lib/compliance/operator-types";
+import {
+  writeTrace,
+  type DerivationOrigin,
+  type SourceRef,
+} from "@/lib/services/derivation-trace-service";
+import { logger } from "@/lib/logger";
 
 // ─── Types ───
 
@@ -58,6 +64,41 @@ export interface OperatorProfileInput {
   operatingJurisdictions: string[];
   offersEUServices: boolean;
 }
+
+/**
+ * Optional provenance attached to a profile update. When present, each
+ * field actually changed by the update gets a DerivationTrace row written
+ * alongside the profile write. When absent, no traces are written — keeps
+ * existing callers backward-compatible until they're migrated explicitly.
+ *
+ * The shape matches the Phase 1 trace origins 1:1:
+ *   - { kind: "user-edit" }            → origin "user-asserted"
+ *   - { kind: "assessment", ... }      → origin "assessment"
+ *   - { kind: "ai-inference", ... }    → origin "ai-inferred"
+ */
+export type ProvenanceContext =
+  | {
+      via: "user-edit";
+      userId: string;
+    }
+  | {
+      via: "assessment";
+      userId?: string;
+      assessmentId: string;
+      /** Per-field question-id mapping. If a field's questionId is missing,
+       *  the trace is written with a generic `"profile-fields"` questionId
+       *  so it's still queryable, just less specific. */
+      questionMapping?: Partial<Record<keyof OperatorProfileInput, string>>;
+      answeredAt?: Date;
+    }
+  | {
+      via: "ai-inference";
+      userId?: string;
+      confidence: number;
+      modelVersion: string;
+      astraConversationId?: string;
+      prompt?: string;
+    };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const operatorProfile = (prisma as any).operatorProfile;
@@ -122,10 +163,17 @@ export async function getOrCreateProfile(
 
 /**
  * Partially update the operator profile. Recalculates completeness after update.
+ *
+ * When `provenance` is provided, each field actually changed by this call
+ * gets a DerivationTrace row written with the matching origin/sourceRef.
+ * Trace writes are best-effort: if the trace store fails, the profile
+ * update still succeeds and the failure is logged. This is intentional —
+ * provenance is an observability layer, not a correctness gate.
  */
 export async function updateProfile(
   organizationId: string,
   data: Partial<OperatorProfileInput>,
+  provenance?: ProvenanceContext,
 ): Promise<OperatorProfile> {
   // Ensure profile exists
   await getOrCreateProfile(organizationId);
@@ -174,14 +222,119 @@ export async function updateProfile(
   // Recalculate completeness
   const completeness = calculateCompleteness(updated);
 
-  if (completeness !== updated.completeness) {
-    return operatorProfile.update({
-      where: { organizationId },
-      data: { completeness },
-    }) as Promise<OperatorProfile>;
+  const finalProfile =
+    completeness !== updated.completeness
+      ? ((await operatorProfile.update({
+          where: { organizationId },
+          data: { completeness },
+        })) as OperatorProfile)
+      : updated;
+
+  // Write provenance traces (best-effort — never blocks the update).
+  if (provenance) {
+    await writeProfileFieldTraces({
+      profile: finalProfile,
+      changedFields: updateData,
+      provenance,
+    });
   }
 
-  return updated;
+  return finalProfile;
+}
+
+// ─── Provenance Helpers ───
+
+/**
+ * For each field in `changedFields`, emit a DerivationTrace with the
+ * origin/sourceRef derived from `provenance`. Best-effort: a single
+ * trace failure is logged and skipped; the whole helper never throws.
+ */
+async function writeProfileFieldTraces(args: {
+  profile: OperatorProfile;
+  changedFields: Record<string, unknown>;
+  provenance: ProvenanceContext;
+}): Promise<void> {
+  const { profile, changedFields, provenance } = args;
+
+  const origin = deriveOriginFromProvenance(provenance);
+  const nowIso = new Date().toISOString();
+
+  for (const [fieldName, value] of Object.entries(changedFields)) {
+    // Skip the completeness recalculation field — it's metadata, not user input.
+    if (fieldName === "completeness") continue;
+
+    const sourceRef = buildSourceRefForField(
+      provenance,
+      fieldName as keyof OperatorProfileInput,
+      nowIso,
+    );
+
+    try {
+      await writeTrace({
+        organizationId: profile.organizationId,
+        entityType: "operator_profile",
+        entityId: profile.id,
+        fieldName,
+        value,
+        origin,
+        sourceRef,
+        confidence:
+          provenance.via === "ai-inference" ? provenance.confidence : undefined,
+        modelVersion:
+          provenance.via === "ai-inference"
+            ? provenance.modelVersion
+            : undefined,
+      });
+    } catch (err) {
+      // Log + continue. Provenance is an observability layer; a failure
+      // here must NEVER break the profile update path.
+      logger.error(
+        `Failed to write DerivationTrace for operator_profile.${fieldName}`,
+        err,
+      );
+    }
+  }
+}
+
+function deriveOriginFromProvenance(p: ProvenanceContext): DerivationOrigin {
+  switch (p.via) {
+    case "user-edit":
+      return "user-asserted";
+    case "assessment":
+      return "assessment";
+    case "ai-inference":
+      return "ai-inferred";
+  }
+}
+
+function buildSourceRefForField(
+  p: ProvenanceContext,
+  fieldName: keyof OperatorProfileInput,
+  nowIso: string,
+): SourceRef {
+  switch (p.via) {
+    case "user-edit":
+      return {
+        kind: "user-edit",
+        userId: p.userId,
+        editedAt: nowIso,
+      };
+    case "assessment": {
+      const questionId = p.questionMapping?.[fieldName] ?? "profile-fields";
+      return {
+        kind: "assessment",
+        assessmentId: p.assessmentId,
+        questionId,
+        answeredAt: (p.answeredAt ?? new Date()).toISOString(),
+      };
+    }
+    case "ai-inference":
+      return {
+        kind: "ai-inference",
+        astraConversationId: p.astraConversationId,
+        prompt: p.prompt,
+      };
+  }
 }
 
 /**

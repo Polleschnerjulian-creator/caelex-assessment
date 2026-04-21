@@ -134,7 +134,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const profile = await updateProfile(result.organizationId, parsed.data);
+    const profile = await updateProfile(result.organizationId, parsed.data, {
+      via: "user-edit",
+      userId: result.userId,
+    });
 
     return NextResponse.json({ profile });
   } catch (error) {
