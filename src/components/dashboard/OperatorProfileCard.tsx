@@ -14,7 +14,7 @@ import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import { Progress } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
-import { ProvenanceChip } from "@/components/provenance";
+import { ProvenanceChip, SidePeek } from "@/components/provenance";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { isTraceStale } from "@/lib/design/trust-tokens";
 
@@ -77,6 +77,7 @@ export default function OperatorProfileCard() {
   const [traces, setTraces] = useState<Record<string, FieldTrace>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [peekTraceId, setPeekTraceId] = useState<string | null>(null);
 
   // Resolved once at mount — the flag controls whether we fetch traces AND
   // whether we render chips. We never render partial trace UI without data.
@@ -169,6 +170,7 @@ export default function OperatorProfileCard() {
                 : null
             }
             trace={provenanceEnabled ? traces["operatorType"] : undefined}
+            onPeek={setPeekTraceId}
           />
           <ProfileField
             icon={Orbit}
@@ -179,6 +181,7 @@ export default function OperatorProfileCard() {
                 : null
             }
             trace={provenanceEnabled ? traces["primaryOrbit"] : undefined}
+            onPeek={setPeekTraceId}
           />
           <ProfileField
             icon={Building2}
@@ -189,6 +192,7 @@ export default function OperatorProfileCard() {
                 : null
             }
             trace={provenanceEnabled ? traces["entitySize"] : undefined}
+            onPeek={setPeekTraceId}
           />
           <ProfileField
             icon={Globe}
@@ -197,6 +201,7 @@ export default function OperatorProfileCard() {
               profile.establishment ? profile.establishment.toUpperCase() : null
             }
             trace={provenanceEnabled ? traces["establishment"] : undefined}
+            onPeek={setPeekTraceId}
           />
         </div>
 
@@ -211,6 +216,16 @@ export default function OperatorProfileCard() {
           </Link>
         )}
       </GlassCard>
+
+      {/* Provenance side-peek — only rendered when flag is on. Managed
+          at the card level so the panel state survives re-fetches. */}
+      {provenanceEnabled && (
+        <SidePeek
+          traceId={peekTraceId}
+          onClose={() => setPeekTraceId(null)}
+          onNavigate={(id) => setPeekTraceId(id)}
+        />
+      )}
     </motion.div>
   );
 }
@@ -220,17 +235,22 @@ export default function OperatorProfileCard() {
  * ProvenanceChip rendered inline next to the label. When the trace is
  * undefined (feature flag off or no trace yet) the field renders exactly
  * like before — this is the backward-compatible overlay path.
+ *
+ * When `onPeek` is provided, clicking the chip triggers the SidePeek with
+ * this trace's id.
  */
 function ProfileField({
   icon: Icon,
   label,
   value,
   trace,
+  onPeek,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | null;
   trace?: FieldTrace;
+  onPeek?: (traceId: string) => void;
 }) {
   return (
     <div className="flex items-start gap-2.5">
@@ -246,6 +266,7 @@ function ProfileField({
               density="icon"
               confidence={trace.confidence}
               stale={isTraceStale(trace.expiresAt)}
+              onClick={onPeek ? () => onPeek(trace.id) : undefined}
             />
           )}
         </div>

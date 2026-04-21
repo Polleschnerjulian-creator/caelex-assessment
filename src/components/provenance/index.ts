@@ -12,3 +12,6 @@ export { ProvenanceChip } from "./ProvenanceChip";
 export type { ChipDensity } from "./ProvenanceChip";
 
 export { CausalBreadcrumb } from "./CausalBreadcrumb";
+
+export { SidePeek } from "./SidePeek";
+export type { TraceDTO } from "./SidePeek";

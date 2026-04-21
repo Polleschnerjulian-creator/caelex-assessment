@@ -15,16 +15,62 @@ import { useState } from "react";
 import {
   ProvenanceChip,
   CausalBreadcrumb,
+  SidePeek,
   type ChipDensity,
+  type TraceDTO,
 } from "@/components/provenance";
 import { ALL_TRUST_ORIGINS } from "@/lib/design/trust-tokens";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+
+// Mock data for the SidePeek demo — no API roundtrip needed.
+const MOCK_TRACE: TraceDTO = {
+  id: "trace_mock_1",
+  entityType: "operator_profile",
+  entityId: "op_demo",
+  fieldName: "operatorType",
+  value: "satellite_operator",
+  origin: "assessment",
+  sourceRef: {
+    kind: "assessment",
+    assessmentId: "assess_2026_01_15",
+    questionId: "q_operator_type",
+    answeredAt: "2026-01-15T12:43:00Z",
+  },
+  confidence: null,
+  modelVersion: null,
+  derivedAt: "2026-01-15T12:43:00Z",
+  expiresAt: "2027-01-15T12:43:00Z",
+  upstreamTraceIds: ["trace_mock_parent"],
+};
+
+const MOCK_UPSTREAM: TraceDTO[] = [
+  MOCK_TRACE,
+  {
+    id: "trace_mock_parent",
+    entityType: "assessment",
+    entityId: "assess_2026_01_15",
+    fieldName: "q_operator_type",
+    value: "satellite_operator",
+    origin: "user-asserted",
+    sourceRef: {
+      kind: "user-edit",
+      userId: "u_demo",
+      editedAt: "2026-01-15T12:40:00Z",
+    },
+    confidence: null,
+    modelVersion: null,
+    derivedAt: "2026-01-15T12:40:00Z",
+    expiresAt: null,
+    upstreamTraceIds: [],
+  },
+];
 
 export default function ProvenancePreviewPage() {
   const { language, setLanguage } = useLanguage();
   const [density, setDensity] = useState<ChipDensity>("full");
   const [stale, setStale] = useState(false);
   const [dark, setDark] = useState(false);
+  const [peekOpen, setPeekOpen] = useState(false);
 
   return (
     <div className={dark ? "dark" : ""}>
@@ -184,6 +230,26 @@ export default function ProvenancePreviewPage() {
                 }
               />
             </div>
+          </section>
+
+          {/* SidePeek demo — click-through trace detail panel */}
+          <section>
+            <h2 className="text-lg font-semibold mb-3">SidePeek</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              Click to open the trace-detail panel with mock data (no API).
+              Demonstrates the upstream chain navigation + metadata view.
+            </p>
+            <button
+              onClick={() => setPeekOpen(true)}
+              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-sm"
+            >
+              Open SidePeek
+            </button>
+            <SidePeek
+              traceId={peekOpen ? MOCK_TRACE.id : null}
+              onClose={() => setPeekOpen(false)}
+              initialData={{ trace: MOCK_TRACE, upstream: MOCK_UPSTREAM }}
+            />
           </section>
 
           {/* Composition demo — chip + breadcrumb together */}
