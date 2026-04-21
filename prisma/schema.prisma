@@ -2633,6 +2633,10 @@ model Organization {
   attestations           ComplianceAttestation[] // Network: compliance attestations
   operatorProfile        OperatorProfile? // Unified operator profile
 
+  // Context Omnipresence: provenance & signed snapshots
+  derivationTraces DerivationTrace[] // Per-field provenance chain (append-only)
+  profileSnapshots ProfileSnapshot[] // Frozen + signed operator-profile snapshots
+
   // Assure: Regulatory Readiness Intelligence
   rrsScores        RegulatoryReadinessScore? // Latest RRS
   rrsSnapshots     RRSSnapshot[] // Historical RRS snapshots
@@ -5664,6 +5668,85 @@ model OperatorProfile {
   createdAt    DateTime @default(now())
 
   @@index([organizationId])
+}
+
+// ─── Context Omnipresence (Phase 1) ──────────────────────────────────────
+//
+// DerivationTrace captures WHY a value exists — the provenance chain from
+// an assessment answer or AI inference to a concrete field on any entity
+// (OperatorProfile, workflow steps, module requirements).
+//
+// Append-only: rows are never updated or deleted. Mirror of the audit-log
+// pattern. Supersession is implicit via derivedAt DESC — the newest trace
+// for (entityType, entityId, fieldName) wins.
+//
+// See docs/CONTEXT-OMNIPRESENCE-INTEGRATION.md for the full design.
+
+model DerivationTrace {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // What was derived
+  entityType String // "operator_profile" | "workflow_step" | "module_requirement" | "nis2_classification" | ...
+  entityId   String // e.g. OperatorProfile.id, WorkflowStep.id, or a synthetic key like "cs.controls.A1.3"
+  fieldName  String // e.g. "operatorType", "classification", "status"
+  value      String @db.Text // serialized value (JSON string if complex)
+
+  // Where it came from
+  origin    String // "assessment" | "ai-inferred" | "source-backed" | "user-asserted" | "deterministic"
+  sourceRef Json? // structured pointer: { assessmentId, questionId, ... } OR { legalSourceId, articleRef } OR ...
+
+  // Trust metadata — required when origin = "ai-inferred"
+  confidence   Float? // 0-1
+  modelVersion String? // e.g. "claude-sonnet-4-6"
+
+  // Temporal
+  derivedAt DateTime  @default(now())
+  expiresAt DateTime? // TTL — stale after this, needs re-verification
+
+  // Upstream dependencies — IDs of traces that caused this one
+  upstreamTraceIds String[] @default([])
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+  @@index([fieldName])
+  @@index([derivedAt])
+  @@index([origin])
+}
+
+// ProfileSnapshot — a frozen, signed snapshot of an OperatorProfile plus
+// its derivation traces at a point in time. Enables:
+//   1. Audit: regulator verifies "this is what was true on 2026-04-21"
+//   2. Diff: show operator what changed between two snapshots
+//   3. Cite: share a permanent URL resolving to a deterministic state
+//
+// Signed with the same Ed25519 issuer key used for Verity attestations
+// (VerityIssuerKey). See src/lib/verity/keys/issuer-keys.ts.
+
+model ProfileSnapshot {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Canonical payload (canonical JSON: sorted keys, no whitespace, UTF-8)
+  canonicalJson String @db.Text
+  snapshotHash  String // hex SHA-256 of canonicalJson — stable identifier
+
+  // Signature (Ed25519 over snapshotHash)
+  issuerKeyId String // FK-by-value to VerityIssuerKey.keyId (matches VerityAttestation pattern)
+  signature   String // hex Ed25519 signature
+
+  // Metadata
+  frozenAt       DateTime @default(now())
+  frozenBy       String // User.id of whoever clicked "Freeze & Sign"
+  purpose        String? // "audit" | "dd" | "nca" | "voluntary" — optional categorization
+  supersededById String? // if a newer snapshot replaces this one's intent
+
+  @@index([organizationId])
+  @@index([snapshotHash])
+  @@index([frozenAt])
+  @@index([issuerKeyId])
 }
 
 // ============================================
