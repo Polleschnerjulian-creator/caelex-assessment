@@ -52,6 +52,7 @@ import {
   spaceSegmentConfig,
   dataSensitivityConfig,
   certificationOptions,
+  cybersecurityRequirements,
   type CybersecurityProfile,
   type CybersecurityRequirement,
   type OrganizationSize,
@@ -1600,7 +1601,10 @@ function CybersecurityPageContent() {
                       profile,
                       isSimplified: selectedAssessment.isSimplifiedRegime,
                       applicableCount: requirements.length,
-                      totalCount: requirements.length, // pre-filtered
+                      // totalCount = full requirement catalogue size —
+                      // shows "15 of 47 apply" so the operator sees how
+                      // many were filtered out by their profile scope.
+                      totalCount: cybersecurityRequirements.length,
                     });
                     return (
                       <ModuleWhySidebar
