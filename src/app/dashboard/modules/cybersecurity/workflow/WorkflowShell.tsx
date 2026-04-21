@@ -18,18 +18,12 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import type {
   CybersecurityProfile,
   RequirementStatus,
 } from "@/data/cybersecurity-requirements";
 import type { WorkflowQueue } from "@/lib/provenance/workflow-queue";
 import { describeQueueState } from "@/lib/provenance/workflow-queue";
-import { ModuleWhySidebar } from "@/components/provenance";
-import { describeModuleScope } from "@/lib/provenance/cybersecurity-provenance";
-import { ProgressStrip } from "./components/ProgressStrip";
-import { TodaysFocus } from "./components/TodaysFocus";
 import { ControlNavList } from "./components/ControlNavList";
 import { ControlDetailPanel } from "./components/ControlDetailPanel";
 import { ShortcutsBar } from "./components/ShortcutsBar";
@@ -39,6 +33,7 @@ interface WorkflowShellProps {
   queue: WorkflowQueue;
   profile: CybersecurityProfile;
   isSimplified: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   totalCatalogueSize: number;
   onStatusChange: (
     requirementId: string,
@@ -51,7 +46,6 @@ export function WorkflowShell({
   queue,
   profile,
   isSimplified,
-  totalCatalogueSize,
   onStatusChange,
   savingId,
 }: WorkflowShellProps) {
@@ -134,65 +128,21 @@ export function WorkflowShell({
     return () => window.removeEventListener("keydown", onKey);
   }, [move]);
 
-  const scope = describeModuleScope({
-    profile,
-    isSimplified,
-    applicableCount: queue.counts.total,
-    totalCount: totalCatalogueSize,
-  });
-
   return (
     <div className="flex flex-col min-h-screen bg-[var(--surface-base)]">
-      {/* ─── Top strip ─── */}
-      <div className="border-b border-[var(--border-default)] bg-[var(--surface-raised)]">
-        <div className="max-w-[1400px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Link
-                href="/dashboard"
-                className="p-1.5 rounded hover:bg-[var(--fill-soft)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                aria-label="Back to dashboard"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Link>
-              <h1 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">
-                Cybersecurity
-              </h1>
-              <span className="text-xs text-[var(--text-tertiary)]">
-                {describeQueueState(queue)}
-              </span>
-            </div>
-          </div>
-
-          <ProgressStrip counts={queue.counts} />
-        </div>
-      </div>
-
-      {/* ─── Today's Focus (only if there's work to do) ─── */}
-      {queue.focus.length > 0 && (
-        <div className="border-b border-[var(--border-default)] bg-[var(--surface-sunken)]">
-          <div className="max-w-[1400px] mx-auto px-6 py-5">
-            <TodaysFocus
-              focus={queue.focus}
-              blockedCount={queue.blocked.length}
-              hours={queue.estimatedHoursToday}
-              onSelect={selectControl}
-              selectedId={selectedId}
-            />
-          </div>
-        </div>
-      )}
+      {/* ─── Quiet editorial header ─── */}
+      <header className="max-w-[1200px] w-full mx-auto px-6 pt-8 pb-5">
+        <h1 className="text-[28px] font-semibold tracking-tight text-[var(--text-primary)]">
+          Cybersecurity
+        </h1>
+        <p className="mt-1 text-[14px] text-[var(--text-tertiary)]">
+          {describeQueueState(queue)}
+        </p>
+      </header>
 
       {/* ─── Two-pane body ─── */}
-      <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 py-6">
-        <div className="mb-4">
-          <ModuleWhySidebar
-            scope={scope}
-            editHref="/dashboard/settings?tab=profile"
-          />
-        </div>
-
-        <div className="grid grid-cols-[280px_1fr] gap-6 items-start">
+      <div className="flex-1 max-w-[1200px] w-full mx-auto px-6 pb-16">
+        <div className="grid grid-cols-[240px_1fr] gap-8 items-start">
           <aside className="sticky top-4">
             <ControlNavList
               items={queue.all}
@@ -220,7 +170,7 @@ export function WorkflowShell({
         </div>
       </div>
 
-      {/* ─── Shortcuts footer ─── */}
+      {/* ─── Keyboard shortcuts (minimal footer) ─── */}
       <ShortcutsBar
         expanded={showShortcutsHelp}
         onToggle={() => setShowShortcutsHelp((v) => !v)}

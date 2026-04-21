@@ -39,10 +39,10 @@ const WESHALB_START_DELAY = 1.25;
 const WARUM_START_DELAY = 2.45;
 
 const LABEL_STYLE =
-  "inline-block text-[10px] font-semibold tracking-[0.24em] uppercase mb-2 text-[var(--text-tertiary)]";
+  "block text-[11px] tracking-wide text-[var(--text-tertiary)] mb-1.5";
 
 const BODY_STYLE =
-  "text-[15px] md:text-base leading-relaxed text-[var(--text-primary)] font-normal";
+  "text-[15px] leading-[1.6] text-[var(--text-secondary)] font-normal";
 
 export function ControlContextWindow({
   context,
@@ -53,23 +53,19 @@ export function ControlContextWindow({
 
   return (
     <motion.section
-      initial={reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+      initial={reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
-        reduced ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }
+        reduced ? { duration: 0 } : { duration: 0.35, ease: "easeOut" }
       }
-      className={[
-        "px-5 py-6 md:px-6 md:py-7 rounded-2xl",
-        "bg-[var(--surface-sunken)] border border-[var(--border-default)]",
-        hideTopRule ? "" : "mt-1",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      // No boxed background, no border — pure editorial text flow.
+      // Matches Doc-Generator body aesthetic.
+      className={hideTopRule ? "" : "mt-2"}
       aria-label="Control context"
     >
-      {originBadge && <div className="mb-4">{originBadge}</div>}
+      {originBadge && <div className="mb-5">{originBadge}</div>}
 
-      <div className="space-y-5 md:space-y-6">
+      <div className="space-y-7">
         {/* Beat 1 — WIESO */}
         <div>
           <span className={LABEL_STYLE}>Why does this exist</span>

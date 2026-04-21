@@ -70,21 +70,15 @@ export function ControlNavList({
   }, [items]);
 
   return (
-    <nav
-      aria-label="Controls"
-      className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-raised)] overflow-hidden"
-    >
-      <div className="px-4 pt-4 pb-2">
-        <span className="text-[10px] font-semibold tracking-[0.24em] uppercase text-[var(--text-tertiary)]">
-          Controls
-        </span>
-      </div>
-      <ul className="pb-2 max-h-[70vh] overflow-y-auto">
-        {groups.map((group) => (
-          <li key={group.key} className="mb-1">
-            <div className="px-4 py-2 flex items-center justify-between text-[11px] text-[var(--text-tertiary)] sticky top-0 bg-[var(--surface-raised)] z-10">
-              <span className="font-medium">{group.label}</span>
-              <span>
+    <nav aria-label="Controls" className="max-h-[75vh] overflow-y-auto -mx-2">
+      <ul>
+        {groups.map((group, gi) => (
+          <li key={group.key} className={gi === 0 ? "" : "mt-5"}>
+            <div className="px-2 pb-2 flex items-center justify-between">
+              <span className="text-[11px] tracking-wide text-[var(--text-tertiary)]">
+                {group.label}
+              </span>
+              <span className="text-[11px] text-[var(--text-tertiary)]">
                 {group.compliantCount}/{group.items.length}
               </span>
             </div>
@@ -96,33 +90,20 @@ export function ControlNavList({
                     <button
                       onClick={() => onSelect(item.req.id)}
                       className={[
-                        "w-full text-left flex items-start gap-2.5 px-4 py-2 transition-colors",
+                        "w-full text-left flex items-start gap-2.5 px-2 py-1.5 rounded-md transition-colors",
                         isSelected
-                          ? "bg-emerald-500/10"
-                          : "hover:bg-[var(--fill-soft)]",
+                          ? "bg-[var(--fill-soft)]"
+                          : "hover:bg-[var(--fill-soft)]/60",
                       ].join(" ")}
                     >
-                      {/* Status dot */}
                       <span
                         className={[
-                          "mt-1.5 w-2 h-2 rounded-full flex-shrink-0",
+                          "mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0",
                           STATUS_DOT[item.status] ?? "bg-slate-400",
                         ].join(" ")}
                         aria-hidden
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[var(--text-tertiary)]">
-                            {item.req.articleRef}
-                          </span>
-                          {item.req.severity === "critical" && (
-                            <span
-                              className={`text-[9px] uppercase tracking-wider ${SEVERITY_TINT[item.req.severity]}`}
-                            >
-                              Critical
-                            </span>
-                          )}
-                        </span>
                         <span
                           className={[
                             "block text-[13px] leading-snug truncate",
@@ -132,6 +113,16 @@ export function ControlNavList({
                           ].join(" ")}
                         >
                           {item.req.title}
+                        </span>
+                        <span className="block text-[10px] text-[var(--text-tertiary)] mt-0.5">
+                          {item.req.articleRef}
+                          {item.req.severity === "critical" && (
+                            <span
+                              className={`ml-2 uppercase tracking-wider ${SEVERITY_TINT[item.req.severity]}`}
+                            >
+                              Critical
+                            </span>
+                          )}
                         </span>
                       </span>
                     </button>

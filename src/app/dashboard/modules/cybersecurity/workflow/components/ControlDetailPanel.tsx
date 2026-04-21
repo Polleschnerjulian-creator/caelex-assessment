@@ -84,26 +84,30 @@ export function ControlDetailPanel({
   return (
     <section
       key={req.id /* remount on selection change → re-trigger animations */}
-      className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-raised)] overflow-hidden"
+      className="pb-16"
     >
-      {/* ── Header ── */}
-      <header className="px-6 pt-6 pb-4 border-b border-[var(--border-default)]">
+      {/* ── Header — no boxed card, pure text flow ── */}
+      <header className="pb-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] tracking-wide text-[var(--text-tertiary)]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[12px] tracking-wide text-[var(--text-tertiary)]">
                 {req.articleRef}
               </span>
               <span
                 className={[
-                  "text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border",
-                  SEVERITY_PILL[req.severity] ?? SEVERITY_PILL.minor,
+                  "text-[10px] uppercase tracking-[0.14em]",
+                  req.severity === "critical"
+                    ? "text-red-500"
+                    : req.severity === "major"
+                      ? "text-amber-500"
+                      : "text-[var(--text-tertiary)]",
                 ].join(" ")}
               >
                 {req.severity}
               </span>
             </div>
-            <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[var(--text-primary)] leading-tight">
+            <h2 className="mt-1 text-[26px] font-semibold tracking-tight text-[var(--text-primary)] leading-tight">
               {req.title}
             </h2>
             {reason && (
@@ -125,11 +129,11 @@ export function ControlDetailPanel({
         </div>
       </header>
 
-      {/* ── Tabs ── */}
+      {/* ── Tabs — underline only ── */}
       <div
         role="tablist"
         aria-label="Control sections"
-        className="px-6 pt-3 flex gap-1 border-b border-[var(--border-default)]"
+        className="flex border-b border-[var(--border-default)]"
       >
         {TABS.map((t) => {
           const active = activeTab === t.key;
@@ -140,23 +144,20 @@ export function ControlDetailPanel({
               aria-selected={active}
               onClick={() => onTabChange(t.key)}
               className={[
-                "relative px-3 py-2 text-sm font-medium transition-colors -mb-px border-b-2",
+                "relative py-2.5 mr-6 text-[13px] font-medium transition-colors -mb-px border-b-2",
                 active
                   ? "text-[var(--text-primary)] border-emerald-500"
                   : "text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]",
               ].join(" ")}
             >
               {t.label}
-              <span className="ml-1.5 text-[10px] opacity-50">
-                {t.shortcut}
-              </span>
             </button>
           );
         })}
       </div>
 
       {/* ── Tab body ── */}
-      <div className="px-6 py-6">
+      <div className="pt-7">
         {activeTab === "why" && (
           <ControlContextWindow context={context} hideTopRule />
         )}
