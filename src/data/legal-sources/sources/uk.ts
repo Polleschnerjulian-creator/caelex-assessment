@@ -1540,6 +1540,137 @@ const SPACEPORTS_UK: LegalSource[] = [
   },
 ];
 
+// ─── Sustainability + Orbital-Liability Instruments (2) ───────────
+// Graphic reference: ClearSpace "Recent developments in the
+// regulatory framework", October 2023 — UK Space Sustainability
+// Standard (enacted) + UK Consultation on Orbital Liabilities,
+// Insurance, Charging and Space Sustainability (in development).
+
+const SUSTAINABILITY_UK: LegalSource[] = [
+  {
+    id: "UK-SPACE-SUSTAINABILITY-STD-2024",
+    jurisdiction: "UK",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "UK Space Sustainability Standard — voluntary sustainability-rating scheme for satellite operators",
+    date_enacted: "2024-07-01",
+    date_in_force: "2024-07-01",
+    source_url:
+      "https://www.gov.uk/government/publications/plan-for-space-sustainability",
+    issuing_body:
+      "UK Space Agency (UKSA) together with the Civil Aviation Authority (CAA) and the Earth & Space Sustainability Initiative (ESSI)",
+    competent_authorities: ["UK-UKSA", "UK-CAA"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "in_orbit_services",
+    ],
+    compliance_areas: [
+      "debris_mitigation",
+      "environmental",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "UK-led voluntary sustainability rating scheme launched as part of the 2022 Plan for Space Sustainability. Assesses operators across collision avoidance, debris mitigation, active debris removal readiness, data sharing, and end-of-life disposal planning. CAA uses the scheme as a soft factor in licensing assessments under the Outer Space Act 1986 and Space Industry Act 2018.",
+    key_provisions: [
+      {
+        section: "Pillar 1",
+        title: "Collision avoidance and data sharing",
+        summary:
+          "Operators demonstrate participation in conjunction-screening services and publish collision-avoidance manoeuvre statistics.",
+      },
+      {
+        section: "Pillar 3",
+        title: "Post-mission disposal plan",
+        summary:
+          "Rated operators document their PMD strategy with probabilistic success analysis — aligned toward the <5-year LEO benchmark.",
+      },
+      {
+        section: "Pillar 5",
+        title: "Active debris removal contribution",
+        summary:
+          "Rated operators contribute financially or technically to active debris removal missions for legacy debris.",
+      },
+    ],
+    related_sources: [
+      "UK-SIA-2018",
+      "INT-ESA-ZERO-DEBRIS-CHARTER",
+      "INT-ESSI-MEMORANDUM",
+      "INT-LTS-2019",
+    ],
+    notes: [
+      "Voluntary — but a high rating is increasingly referenced in CAA licensing decisions and by UK Space Agency grant funding criteria.",
+      "Development co-led by industry partners (ESSI) to align with insurance underwriting and investor ESG disclosure.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "UK-ORBITAL-LIABILITY-CONSULT-2023",
+    jurisdiction: "UK",
+    type: "draft_legislation",
+    status: "proposed",
+    title_en:
+      "UK Consultation on Orbital Liabilities, Insurance, Charging and Space Sustainability",
+    date_enacted: "2023-04-01",
+    date_published: "2023-04-01",
+    official_reference:
+      "Department for Science, Innovation and Technology (DSIT) consultation paper; closed 21 June 2023",
+    source_url:
+      "https://www.gov.uk/government/consultations/orbital-liabilities-insurance-charging-and-space-sustainability",
+    issuing_body:
+      "Department for Science, Innovation and Technology (DSIT) / UK Space Agency",
+    competent_authorities: ["UK-UKSA", "UK-CAA", "UK-DSIT"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: [
+      "liability",
+      "insurance",
+      "debris_mitigation",
+      "licensing",
+    ],
+    scope_description:
+      "UK government consultation on reforms to the Outer Space Act 1986 and Space Industry Act 2018 liability regimes. Four reform pillars: (1) variable liability caps tied to mission risk, (2) modulated insurance requirements by orbit class and mission profile, (3) licensing charges reflective of debris-generation potential, (4) binding sustainability licensing criteria replacing today's guidance-only CAA recommendations. Response published 2024; follow-on legislative proposal expected 2026.",
+    key_provisions: [
+      {
+        section: "Pillar 1",
+        title: "Variable liability caps",
+        summary:
+          "Replacing the current flat £60M third-party liability cap with variable caps calibrated to mission risk profile (orbit altitude, constellation size, IOS vs. passive).",
+      },
+      {
+        section: "Pillar 2",
+        title: "Risk-based insurance requirements",
+        summary:
+          "Insurance requirements graduated by collision probability, PMD reliability, and active-debris-removal commitment.",
+      },
+      {
+        section: "Pillar 4",
+        title: "Binding sustainability licensing criteria",
+        summary:
+          "Operational sustainability metrics (manoeuvre data sharing, PMD timeline, ADR readiness) move from CAA guidance to binding licence conditions.",
+      },
+    ],
+    related_sources: [
+      "UK-SIA-2018",
+      "UK-SPACE-SUSTAINABILITY-STD-2024",
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+    ],
+    notes: [
+      "Consultation closed 21 June 2023. Government response published 2024.",
+      "Follow-on primary legislation expected 2026–2027 to amend the Outer Space Act 1986 and Space Industry Act 2018.",
+    ],
+    last_verified: "2026-04-21",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_UK: LegalSource[] = [
@@ -1556,4 +1687,5 @@ export const LEGAL_SOURCES_UK: LegalSource[] = [
   ...POLICY_UK,
   ...POSTBREXIT_UK,
   ...SPACEPORTS_UK,
+  ...SUSTAINABILITY_UK,
 ];

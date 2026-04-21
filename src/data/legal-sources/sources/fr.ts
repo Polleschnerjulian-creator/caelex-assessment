@@ -1547,6 +1547,86 @@ const POLICY_FR: LegalSource[] = [
   },
 ];
 
+// ─── Pending Technical-Regulation Update (1) ────────────────────────
+// Graphic reference: ClearSpace "Recent developments in the
+// regulatory framework", October 2023 — French consultation on
+// new technical regulation (in development).
+
+const PENDING_TECHNICAL_FR: LegalSource[] = [
+  {
+    id: "FR-TECHREG-CONSULT-2024",
+    jurisdiction: "FR",
+    type: "draft_legislation",
+    status: "proposed",
+    title_en:
+      "French Consultation on Updated Space Technical Regulation (RTF — Réglementation Technique Française)",
+    title_local:
+      "Consultation publique sur la mise à jour de la Réglementation Technique Française (RTF) pour les opérations spatiales",
+    date_enacted: "2024-03-01",
+    date_published: "2024-03-01",
+    official_reference:
+      "Consultation publique CNES/DGAC sur la refonte de l'Arrêté du 31 mars 2011 relatif à la réglementation technique (LOS 2008 art. 5)",
+    source_url:
+      "https://cnes.fr/fr/reglementation-technique-operations-spatiales",
+    issuing_body:
+      "Centre National d'Études Spatiales (CNES) / Direction Générale de l'Aviation Civile (DGAC) / Ministère de l'Enseignement supérieur et de la Recherche",
+    competent_authorities: ["FR-CNES", "FR-DGAC", "FR-MINARMES"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: [
+      "debris_mitigation",
+      "licensing",
+      "space_traffic_management",
+      "environmental",
+    ],
+    scope_description:
+      "French public consultation on a comprehensive update to the 2011 Arrêté Technique implementing the 2008 Loi sur les Opérations Spatiales (LOS). Proposed reforms align French technical requirements with the ESA Zero Debris Standard, introduce a reduced post-mission disposal window (5 years for LEO), strengthen casualty-risk thresholds for uncontrolled re-entry, and introduce new rules for mega-constellations and in-orbit servicing. Final revised arrêté expected 2026.",
+    key_provisions: [
+      {
+        section: "Section PMD",
+        title: "5-year post-mission disposal for LEO",
+        summary:
+          "Proposed reduction of the LEO post-mission disposal window from 25 years (2011 arrêté) to 5 years, aligned with FCC 2022 and the ESA Zero Debris Standard.",
+      },
+      {
+        section: "Section Constellations",
+        title: "Constellation-specific obligations",
+        summary:
+          "New licensing thresholds and reliability requirements for constellations above 100 satellites; per-satellite failure-rate disclosure required.",
+      },
+      {
+        section: "Section IOS",
+        title: "In-orbit servicing authorisation regime",
+        summary:
+          "Introduces a dedicated technical framework for IOS operations: safety distance requirements, abort-protocol demonstration, client-consent documentation.",
+      },
+      {
+        section: "Section Ré-entrée",
+        title: "On-ground casualty risk ≤ 1×10⁻⁴",
+        summary:
+          "Alignment with COPUOS and ESA thresholds: casualty risk from uncontrolled re-entry must not exceed 1 in 10 000 per event.",
+      },
+    ],
+    related_sources: [
+      "FR-LOS-2008",
+      "FR-RTF-2011",
+      "INT-ESA-ZERO-DEBRIS-STD",
+      "INT-LTS-2019",
+      "US-FCC-5YR-PMD-2022",
+    ],
+    notes: [
+      "Consultation launched March 2024 by CNES in coordination with DGAC and the Ministry of Armed Forces (space-defense overlap).",
+      "Final revised arrêté expected during 2026 — target application date 2027 for new missions, with transition regime for legacy licensees.",
+      "Represents the first major overhaul of French technical space regulation since 2011.",
+    ],
+    last_verified: "2026-04-21",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_FR: LegalSource[] = [
@@ -1561,4 +1641,5 @@ export const LEGAL_SOURCES_FR: LegalSource[] = [
   ...NIS2_FR,
   ...ENVIRONMENTAL_FR,
   ...POLICY_FR,
+  ...PENDING_TECHNICAL_FR,
 ];

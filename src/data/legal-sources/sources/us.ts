@@ -632,6 +632,121 @@ const POLICY_US: LegalSource[] = [
   },
 ];
 
+// ─── Orbital Debris Rules (2) ─────────────────
+// Graphic reference: ClearSpace "Recent developments in the
+// regulatory framework", October 2023 — US National Policies
+// (FCC 5-year PMD, enacted) and Licensing (FAA NPRM Upper Stages,
+// in development).
+
+const DEBRIS_RULES_US: LegalSource[] = [
+  {
+    id: "US-FCC-5YR-PMD-2022",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "FCC Second Report and Order — Mitigation of Orbital Debris in the New Space Age (5-year post-mission disposal rule)",
+    date_enacted: "2022-09-29",
+    date_in_force: "2024-09-29",
+    official_reference: "FCC 22-74; 47 CFR § 25.114(d)(14)(ii)",
+    source_url:
+      "https://www.fcc.gov/document/fcc-adopts-new-5-year-rule-deorbiting-satellites",
+    issuing_body: "Federal Communications Commission (FCC)",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "critical",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Landmark 2022 FCC rule reducing the post-mission disposal window from the prior 25-year IADC guideline to 5 years for satellites deployed into orbits below 2000 km. Applies to FCC-licensed space stations and to non-US operators seeking US market access under 47 CFR Part 25. Takes full effect 29 September 2024 for new licence applications.",
+    key_provisions: [
+      {
+        section: "47 CFR § 25.114(d)(14)(ii)",
+        title: "5-year LEO post-mission disposal",
+        summary:
+          "Satellites operating below 2000 km altitude must be de-orbited within 5 years after end of mission — a 20-year reduction from the prior 25-year guideline.",
+        complianceImplication:
+          "Operators must demonstrate fuel budget, manoeuvring capability, and failure-mode analysis consistent with the 5-year disposal deadline at licence application time.",
+      },
+      {
+        section: "Waiver regime",
+        title: "Case-by-case waiver path",
+        summary:
+          "FCC may grant waivers for missions that demonstrate superior overall debris-mitigation profile (e.g. very low orbits with rapid natural decay).",
+      },
+    ],
+    related_sources: [
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+      "US-FAA-NPRM-UPPER-STAGES-2023",
+    ],
+    amendments: [
+      {
+        date: "2024-09-29",
+        reference: "47 CFR § 25.114(d)(14)(ii) — effective date",
+        summary:
+          "Rule takes effect for all new FCC space-station licence applications filed on or after this date.",
+      },
+    ],
+    notes: [
+      "First major departure from the 25-year IADC guideline by a G7 regulator. Catalysed similar tightening at UK CAA and in the ESA Zero Debris Standard.",
+      "Applies to both US-domiciled operators and non-US operators seeking US market access.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "US-FAA-NPRM-UPPER-STAGES-2023",
+    jurisdiction: "US",
+    type: "draft_legislation",
+    status: "proposed",
+    title_en:
+      "FAA Notice of Proposed Rulemaking — Mitigation of Orbital Debris from Launch Vehicle Upper Stages",
+    date_enacted: "2023-09-20",
+    date_published: "2023-09-20",
+    official_reference:
+      "88 FR 64672 (Sept 20, 2023); FAA-2023-1837; RIN 2120-AL77",
+    source_url:
+      "https://www.federalregister.gov/documents/2023/09/20/2023-20275/mitigation-of-orbital-debris-in-the-new-space-age",
+    issuing_body:
+      "Federal Aviation Administration (FAA), Office of Commercial Space Transportation (AST)",
+    competent_authorities: ["US-FAA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: [
+      "debris_mitigation",
+      "licensing",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "FAA proposed rulemaking extending debris-mitigation requirements specifically to launch vehicle upper stages — the largest single source of long-lived LEO debris mass. Proposes five compliance pathways: (1) controlled re-entry, (2) direct retrieval, (3) active removal within 5 years, (4) transfer to disposal orbit, (5) controlled atmospheric disposal within 30 years. Comment period closed 21 Nov 2023; final rule pending as of 2026 Q2.",
+    key_provisions: [
+      {
+        section: "§ 450.139(b) proposed",
+        title: "Five disposal pathways for upper stages",
+        summary:
+          "Launch providers must select one of five proposed disposal pathways for each upper stage and demonstrate its viability in the launch licence application.",
+      },
+      {
+        section: "§ 450.139(c) proposed",
+        title: "Retrospective coverage",
+        summary:
+          "Existing active licences must be amended within 24 months to comply with the new upper-stage rules.",
+      },
+    ],
+    related_sources: [
+      "US-FCC-5YR-PMD-2022",
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+      "INT-ESA-ZERO-DEBRIS-STD",
+    ],
+    notes: [
+      "Targets the ~50% of tracked debris mass that comes from launch vehicle upper stages — a gap not addressed by the FCC 5-year PMD rule which covers satellites only.",
+      "Status as of 2026-04: comment period closed, final rule not yet published; interim guidance issued to licensees via FAA Advisory Circulars.",
+    ],
+    last_verified: "2026-04-21",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -639,4 +754,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...FEDERAL_LAWS_US,
   ...EXPORT_CONTROL_US,
   ...POLICY_US,
+  ...DEBRIS_RULES_US,
 ];

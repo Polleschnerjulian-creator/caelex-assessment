@@ -1726,4 +1726,319 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-04-18",
   },
+
+  // ─────────────────────────────────────────────────────────────────
+  //  Technical standards + industry best-practice instruments
+  //  (graphic: ClearSpace "Recent developments in the regulatory
+  //  framework", October 2023 — UN/International Standards and
+  //  Industry Best Practices tiers)
+  // ─────────────────────────────────────────────────────────────────
+
+  {
+    id: "INT-ISO-24330-2022",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ISO 24330:2022 — Space systems — Programmatic principles and practices for rendezvous and proximity operations (RPO) and on-orbit servicing (OOS) missions",
+    date_enacted: "2022-12-01",
+    date_in_force: "2022-12-01",
+    official_reference: "ISO 24330:2022",
+    source_url: "https://www.iso.org/standard/78432.html",
+    issuing_body:
+      "International Organization for Standardization (ISO/TC 20/SC 14 Space systems and operations)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services", "satellite_operator"],
+    compliance_areas: [
+      "space_traffic_management",
+      "debris_mitigation",
+      "liability",
+    ],
+    scope_description:
+      "Voluntary international standard setting programmatic principles for rendezvous, proximity operations, and on-orbit servicing missions. Covers risk management, communication protocols, passivation handover, and interface compatibility between servicer and client spacecraft. Referenced by CONFERS recommended practices and increasingly by national authorization regimes for IOS missions.",
+    key_provisions: [
+      {
+        section: "Clause 4",
+        title: "Mission phases for RPO/OOS",
+        summary:
+          "Defines six standardised mission phases (planning, launch, commissioning, pre-RPO, RPO-active, post-mission) and the artefacts each phase must produce.",
+      },
+      {
+        section: "Clause 6",
+        title: "Safety-by-design principles",
+        summary:
+          "Servicer spacecraft must be designed with passive safety at every abort point; no single failure may cause collision with the client.",
+      },
+    ],
+    related_sources: ["INT-COPUOS-DEBRIS-2007", "INT-LTS-2019"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Voluntary industry standard — not binding under international law, but referenced by UK CAA and US FCC licensing guidance for IOS missions.",
+      "Forms the programmatic baseline for CONFERS (Consortium for Execution of Rendezvous and Servicing Operations) recommended practices.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "INT-AIAA-IOS-STDS",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "AIAA Standards for In-Orbit Servicing (IOS) — including S-143 Servicing Satellite Interface Standard",
+    date_enacted: "2018-08-01",
+    date_in_force: "2018-08-01",
+    official_reference: "AIAA S-143-2018",
+    source_url: "https://www.aiaa.org/publications/standards/space-standards",
+    issuing_body: "American Institute of Aeronautics and Astronautics (AIAA)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services", "satellite_operator"],
+    compliance_areas: ["space_traffic_management", "debris_mitigation"],
+    scope_description:
+      "AIAA's suite of in-orbit servicing standards, centred on S-143 which specifies the mechanical, power, and data interface standard for servicing satellite payloads and their clients. Sister documents cover proximity operations communication protocols and servicer-client capture interface compatibility.",
+    key_provisions: [
+      {
+        section: "S-143 §4",
+        title: "Grapple fixture geometry",
+        summary:
+          "Standardised mechanical grapple fixture dimensions and tolerances for client satellites designed to be serviced later.",
+      },
+      {
+        section: "S-143 §7",
+        title: "Fluid-transfer interface",
+        summary:
+          "Standard couplings, pressures, and safety interlocks for propellant-transfer IOS missions.",
+      },
+    ],
+    related_sources: ["INT-ISO-24330-2022", "INT-COPUOS-DEBRIS-2007"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Voluntary industry standard; adoption driven by client-satellite designers wanting to preserve future servicing optionality.",
+      "Complements ISO 24330 on the programmatic side with a concrete hardware/protocol interface specification.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "INT-ESA-ZERO-DEBRIS-STD",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "draft",
+    title_en:
+      "ESA Zero Debris Standard and Policy (ESSB-ST-U-006) — requirements for ESA-procured space missions launched after 2030",
+    date_enacted: "2023-11-01",
+    date_in_force: "2030-01-01",
+    source_url:
+      "https://technology.esa.int/upload/media/ESSB-ST-U-006-Issue1-Zero-Debris-technical-requirements.pdf",
+    issuing_body:
+      "European Space Agency (ESA) — Technology, Engineering & Quality Directorate, Clean Space Office",
+    competent_authorities: [],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: [
+      "debris_mitigation",
+      "space_traffic_management",
+      "environmental",
+    ],
+    scope_description:
+      "ESA's institutional zero-debris standard, mandatory for ESA-procured missions launched in or after 2030. Requires <1/1000 failure probability for post-mission disposal, active debris-removal provisioning for non-compliant legacy assets, and demisability analysis for all re-entering elements. Coupled with the ESA Zero Debris Policy which commits ESA to not generate long-lived debris in protected orbital regions.",
+    key_provisions: [
+      {
+        section: "§4 PMD Success",
+        title: "Probability of successful post-mission disposal",
+        summary:
+          "Missions must demonstrate ≥99.9% probability of successful post-mission disposal — an order of magnitude stricter than the IADC 90% baseline.",
+      },
+      {
+        section: "§5 Protected Regions",
+        title: "No long-lived debris in LEO or GEO protected regions",
+        summary:
+          "Operational fragments, explosion debris, and released hardware must be below a specified time-in-orbit threshold for the LEO (< 5 years) and GEO protected regions.",
+      },
+      {
+        section: "§6 Casualty Risk",
+        title: "On-ground casualty risk ≤ 1×10⁻⁴ per re-entry event",
+        summary:
+          "Aggregated casualty risk from uncontrolled and controlled re-entry must not exceed the 1-in-10000 COPUOS baseline.",
+      },
+    ],
+    related_sources: [
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+      "INT-ISO-24330-2022",
+    ],
+    applies_to_jurisdictions: [
+      "AT",
+      "BE",
+      "DE",
+      "ES",
+      "FR",
+      "IE",
+      "IT",
+      "LU",
+      "NL",
+      "NO",
+      "PL",
+      "PT",
+      "SE",
+      "UK",
+      "CH",
+      "GR",
+      "FI",
+      "DK",
+      "CZ",
+    ],
+    notes: [
+      "Mandatory only for ESA-procured missions, but functions as the de-facto European sustainability baseline — national regulators (CNES, UK CAA, BNetzA) are aligning their own licensing thresholds to it.",
+      "Companion instrument to the ESA Zero Debris Charter (INT-ESA-ZERO-DEBRIS-CHARTER).",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "INT-ESA-CPO-GUIDELINES",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "ESA Clean Space Programme — Clean Production Office Guidelines (environmental impact and life-cycle assessment for space missions)",
+    date_enacted: "2019-01-01",
+    date_in_force: "2019-01-01",
+    source_url: "https://technology.esa.int/programme/clean-space",
+    issuing_body:
+      "European Space Agency (ESA) — Clean Space Programme, Clean Production Office",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["environmental", "debris_mitigation"],
+    scope_description:
+      "ESA Clean Production Office (CPO) guidelines for eco-design, life-cycle assessment (LCA), and green procurement in ESA-funded space missions. Covers material selection, propellant environmental footprint, end-of-life demisability targets, and industrial-process impact reporting. Voluntary for commercial missions but binding on ESA procurement.",
+    key_provisions: [
+      {
+        section: "CPO-LCA-01",
+        title: "Mandatory life-cycle assessment",
+        summary:
+          "All ESA-procured missions must submit a cradle-to-grave LCA covering raw-material extraction, manufacturing, launch, operations, and end-of-life.",
+      },
+      {
+        section: "CPO-MAT-03",
+        title: "Green procurement of materials",
+        summary:
+          "ESA primes must demonstrate substitution of REACH-restricted substances and preference for recyclable or demisable materials in mission design.",
+      },
+    ],
+    related_sources: ["INT-ESA-ZERO-DEBRIS-STD", "INT-ESA-ZERO-DEBRIS-CHARTER"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Applies directly to ESA procurement contracts; commercial operators adopt voluntarily to pre-qualify for ESA subcontracts or Copernicus/Galileo payloads.",
+      "Complements the Zero Debris Standard on the environmental/materials axis.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "INT-ESA-ZERO-DEBRIS-CHARTER",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Zero Debris Charter — industry-led commitment to zero-debris space operations by 2030",
+    date_enacted: "2023-11-06",
+    date_in_force: "2023-11-06",
+    source_url:
+      "https://www.esa.int/Space_Safety/Space_Debris/ESA_s_Zero_Debris_approach",
+    issuing_body:
+      "European Space Agency (ESA) — initiated; signatories include ~110 commercial operators, agencies, and organisations (as of 2024)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+      "in_orbit_services",
+    ],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "A voluntary industry commitment launched at the 2023 ESA Space Summit in Seville. Signatories pledge to adopt zero-debris practices — including improved post-mission disposal, failure-rate targets, and active debris-removal contributions — by 2030. Functions as an industry self-governance layer that anticipates regulatory requirements.",
+    key_provisions: [
+      {
+        section: "Commitment 1",
+        title: "No long-lived debris generation by 2030",
+        summary:
+          "Signatories commit to operate so that their missions do not leave long-lived debris in the LEO or GEO protected regions after 2030.",
+      },
+      {
+        section: "Commitment 3",
+        title: "Transparency and verification",
+        summary:
+          "Operators will publish annual progress reports against the charter commitments and submit to independent verification.",
+      },
+    ],
+    related_sources: [
+      "INT-ESA-ZERO-DEBRIS-STD",
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Not legally binding, but signatory status is increasingly treated as a soft-law reputational commitment in regulatory interactions.",
+      "Signatories include ArianeGroup, Airbus, OHB, Thales Alenia Space, several constellation operators, and multiple national space agencies.",
+    ],
+    last_verified: "2026-04-21",
+  },
+
+  {
+    id: "INT-ESSI-MEMORANDUM",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "ESSI Memorandum of Principles — Earth & Space Sustainability Initiative industry commitment on orbital sustainability and ESG disclosures",
+    date_enacted: "2024-01-01",
+    date_in_force: "2024-01-01",
+    source_url: "https://www.earthspacesustainability.org/",
+    issuing_body:
+      "Earth & Space Sustainability Initiative (ESSI) — multi-stakeholder consortium of satellite operators, insurers, financiers, and space agencies",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: [
+      "debris_mitigation",
+      "environmental",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "Industry-led Memorandum of Principles on space sustainability, covering debris mitigation, ESG disclosure, insurance-linked sustainability incentives, and investor transparency. Signatories commit to a set of measurable practices that align with the emerging sustainability rating systems (Space Sustainability Rating, Orbital Sustainability Index) and insurance underwriting criteria.",
+    key_provisions: [
+      {
+        section: "Principle 1",
+        title: "Transparent orbital sustainability disclosures",
+        summary:
+          "Signatories publish sustainability metrics (debris-generation events, collision-avoidance manoeuvres, PMD success) in their annual reporting.",
+      },
+      {
+        section: "Principle 3",
+        title: "Insurance-linked sustainability incentives",
+        summary:
+          "Signatories support and adopt insurance policies that differentiate premiums based on sustainability scoring.",
+      },
+    ],
+    related_sources: ["INT-ESA-ZERO-DEBRIS-CHARTER", "INT-LTS-2019"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Voluntary industry framework; adoption is growing among operators seeking better insurance terms and ESG-aligned investor relations.",
+      "Complements the UK Space Sustainability Standard and ESA Zero Debris Charter on the disclosure/investor-transparency axis.",
+    ],
+    last_verified: "2026-04-21",
+  },
 ];
