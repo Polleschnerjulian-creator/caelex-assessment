@@ -776,144 +776,198 @@ function CybersecurityPageContent() {
     );
   }
 
+  // Tiny helper — percentage segments for the new summary bar.
+  const metricSegments = metrics.total
+    ? [
+        {
+          label: "Compliant",
+          count: metrics.compliant,
+          color: "bg-emerald-500",
+        },
+        {
+          label: "Partial",
+          count: metrics.partial ?? 0,
+          color: "bg-amber-400",
+        },
+        {
+          label: "Non-compliant",
+          count: metrics.nonCompliant ?? 0,
+          color: "bg-red-500",
+        },
+      ].filter((s) => s.count > 0)
+    : [];
+
   return (
-    <div className="max-w-[1360px]">
-      {/* Header */}
-      <div className="mb-8">
-        <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3">
-          MODULE 04
+    <div className="max-w-[1024px] mx-auto px-2">
+      {/* ─── Editorial header — Doc-Generator feel ─── */}
+      <header className="pt-2 pb-10">
+        <p className="text-[10px] font-semibold tracking-[0.28em] uppercase text-[var(--text-tertiary)] mb-3">
+          Module 04
         </p>
-        <h1 className="text-display-sm font-medium text-[var(--text-primary)] mb-1">
+        <h1 className="text-[32px] md:text-[40px] font-semibold tracking-tight text-[var(--text-primary)] leading-tight">
           Cybersecurity & Resilience
         </h1>
-        <p className="text-body-lg text-[var(--text-secondary)]">
-          NIS2-aligned cybersecurity assessment (Art. 74-95)
+        <p className="mt-2 text-[15px] text-[var(--text-secondary)] max-w-2xl">
+          NIS2-aligned cybersecurity assessment · Art. 74&ndash;95
         </p>
-      </div>
+      </header>
 
-      {/* Maturity Metrics (when assessment selected) */}
+      {/* ─── Summary card (replaces 4 tiles + stepper + maturity band) ─── */}
       {selectedAssessment && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
-            <p className="text-display font-semibold text-[var(--text-primary)]">
-              {selectedAssessment.maturityScore || 0}%
-            </p>
-            <p className="text-caption text-[var(--text-secondary)] mt-1">
-              maturity score
-            </p>
-          </div>
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
-            <p
-              className={`text-heading font-medium ${
-                maturityInfo.color === "red"
-                  ? "text-[var(--accent-danger)]"
-                  : maturityInfo.color === "orange"
-                    ? "text-orange-600"
-                    : maturityInfo.color === "yellow"
-                      ? "text-yellow-600"
-                      : maturityInfo.color === "blue"
-                        ? "text-[var(--accent-success)]"
-                        : "text-[var(--accent-success)]"
-              }`}
-            >
-              {maturityInfo.label.split(" ")[0]}
-            </p>
-            <p className="text-caption text-[var(--text-secondary)] mt-1">
-              maturity level
-            </p>
-          </div>
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
-            <p className="text-display font-semibold text-[var(--accent-success)]">
-              {metrics.compliant}/{metrics.total}
-            </p>
-            <p className="text-caption text-[var(--text-secondary)] mt-1">
-              requirements compliant
-            </p>
-          </div>
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
-            <div className="flex items-center gap-2">
-              {selectedAssessment.isSimplifiedRegime ? (
-                <CheckCircle2
-                  size={20}
-                  className="text-[var(--accent-success)]"
-                />
-              ) : (
-                <Shield size={20} className="text-[var(--accent-success)]" />
-              )}
-              <p className="text-body-lg font-medium text-[var(--text-primary)]">
-                {selectedAssessment.isSimplifiedRegime
-                  ? "Simplified"
-                  : "Standard"}
+        <section className="mb-8 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-raised)] overflow-hidden">
+          <div className="px-6 py-5 flex items-start justify-between gap-6 flex-wrap">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold tracking-[0.24em] uppercase text-[var(--text-tertiary)] mb-1.5">
+                Assessment
+              </p>
+              <p className="text-[15px] text-[var(--text-primary)] font-medium">
+                {selectedAssessment.assessmentName || "Unnamed"}
+                <span className="ml-2 text-[var(--text-tertiary)] font-normal">
+                  ·{" "}
+                  {organizationSizeConfig[
+                    selectedAssessment.organizationSize as OrganizationSize
+                  ]?.label ?? selectedAssessment.organizationSize}
+                  {" · "}
+                  {selectedAssessment.isSimplifiedRegime
+                    ? "Simplified regime"
+                    : "Standard regime"}
+                </span>
               </p>
             </div>
-            <p className="text-caption text-[var(--text-secondary)] mt-1">
-              compliance regime
-            </p>
+
+            <div className="text-right">
+              <p className="text-[10px] font-semibold tracking-[0.24em] uppercase text-[var(--text-tertiary)] mb-1.5">
+                Maturity
+              </p>
+              <p className="text-[15px] text-[var(--text-primary)] font-medium">
+                {selectedAssessment.maturityScore || 0}%
+                <span className="ml-2 text-[var(--text-tertiary)] font-normal">
+                  · {maturityInfo.label}
+                </span>
+              </p>
+            </div>
           </div>
-        </div>
+
+          {/* Thin progress bar + legend */}
+          <div className="px-6 pb-5">
+            <div className="flex h-1.5 w-full rounded-full overflow-hidden bg-[var(--surface-sunken)]">
+              {metricSegments.map((s) => (
+                <div
+                  key={s.label}
+                  className={s.color}
+                  style={{
+                    width: `${Math.round((s.count / metrics.total) * 100)}%`,
+                  }}
+                  aria-label={`${s.label} ${s.count}`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-[var(--text-secondary)]">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Compliant{" "}
+                <span className="text-[var(--text-tertiary)]">
+                  {metrics.compliant}
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Partial{" "}
+                <span className="text-[var(--text-tertiary)]">
+                  {metrics.partial ?? 0}
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Non-compliant{" "}
+                <span className="text-[var(--text-tertiary)]">
+                  {metrics.nonCompliant ?? 0}
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)]/50" />
+                Not assessed{" "}
+                <span className="text-[var(--text-tertiary)]">
+                  {metrics.total -
+                    metrics.compliant -
+                    (metrics.partial ?? 0) -
+                    (metrics.nonCompliant ?? 0)}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          {/* Minimal step tabs — Doc-Gen subtle, no stepper circles */}
+          <div
+            role="tablist"
+            aria-label="Cybersecurity assessment steps"
+            className="border-t border-[var(--border-default)] px-6 flex gap-1 overflow-x-auto"
+          >
+            {STEPS.map((step, index) => {
+              const disabled = index > 0 && !selectedAssessment;
+              const active = activeStep === index;
+              return (
+                <button
+                  key={step.id}
+                  role="tab"
+                  aria-selected={active}
+                  aria-controls={`tabpanel-${step.id}`}
+                  id={`tab-${step.id}`}
+                  onClick={() => !disabled && setActiveStep(index)}
+                  disabled={disabled}
+                  className={[
+                    "relative px-3 py-2.5 text-[13px] font-medium transition-colors -mb-px border-b-2 whitespace-nowrap",
+                    active
+                      ? "text-[var(--text-primary)] border-emerald-500"
+                      : disabled
+                        ? "text-[var(--text-tertiary)]/50 border-transparent cursor-not-allowed"
+                        : "text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]",
+                  ].join(" ")}
+                >
+                  <span className="text-[var(--text-tertiary)] mr-1.5">
+                    {index + 1}
+                  </span>
+                  {step.label}
+                </button>
+              );
+            })}
+          </div>
+        </section>
       )}
 
-      {/* Stepper */}
-      <div className="mb-8">
+      {/* Minimal step tabs when no assessment yet (Profile-only view) */}
+      {!selectedAssessment && (
         <div
-          className="flex items-center gap-2"
           role="tablist"
           aria-label="Cybersecurity assessment steps"
+          className="mb-8 border-b border-[var(--border-default)] flex gap-1"
         >
-          {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center">
+          {STEPS.map((step, index) => {
+            const disabled = index > 0;
+            const active = activeStep === index;
+            return (
               <button
+                key={step.id}
                 role="tab"
-                aria-selected={activeStep === index}
-                aria-controls={`tabpanel-${step.id}`}
-                id={`tab-${step.id}`}
-                onClick={() => setActiveStep(index)}
-                disabled={index > 0 && !selectedAssessment}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  activeStep === index
-                    ? "bg-[var(--surface-sunken)] border border-[var(--border-default)]"
-                    : index > 0 && !selectedAssessment
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-[var(--surface-sunken)]"
-                }`}
+                aria-selected={active}
+                onClick={() => !disabled && setActiveStep(index)}
+                disabled={disabled}
+                className={[
+                  "px-3 py-2.5 text-[13px] font-medium -mb-px border-b-2 whitespace-nowrap",
+                  active
+                    ? "text-[var(--text-primary)] border-emerald-500"
+                    : "text-[var(--text-tertiary)]/60 border-transparent cursor-not-allowed",
+                ].join(" ")}
               >
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-caption ${
-                    activeStep === index
-                      ? "bg-[var(--surface-raised)] text-black"
-                      : activeStep > index
-                        ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
-                        : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
-                  }`}
-                >
-                  {activeStep > index ? (
-                    <CheckCircle2 size={12} aria-hidden="true" />
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                <div className="text-left hidden lg:block">
-                  <p
-                    className={`text-body font-medium ${activeStep === index ? "text-white" : "text-[var(--text-tertiary)]"}`}
-                  >
-                    {step.label}
-                  </p>
-                  <p className="text-caption text-[var(--text-tertiary)]">
-                    {step.description}
-                  </p>
-                </div>
+                <span className="text-[var(--text-tertiary)] mr-1.5">
+                  {index + 1}
+                </span>
+                {step.label}
               </button>
-              {index < STEPS.length - 1 && (
-                <ChevronRight
-                  size={16}
-                  className="text-[var(--text-tertiary)] mx-1"
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <AnimatePresence mode="wait">
@@ -1515,35 +1569,43 @@ function CybersecurityPageContent() {
                   </div>
                 </div>
 
-                {/* Category Tabs */}
-                <div className="flex flex-wrap gap-2">
+                {/* Category tabs — underline style, Doc-Gen typography */}
+                <div className="border-b border-[var(--border-default)] flex gap-1 overflow-x-auto -mx-1 px-1">
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className={`px-3 py-2 rounded-lg text-small transition-all ${
+                    className={[
+                      "relative px-3 py-2.5 text-[13px] font-medium transition-colors -mb-px border-b-2 whitespace-nowrap",
                       activeCategory === null
-                        ? "bg-[var(--surface-sunken)] text-white"
-                        : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)] hover:bg-[var(--surface-sunken)]"
-                    }`}
+                        ? "text-[var(--text-primary)] border-emerald-500"
+                        : "text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]",
+                    ].join(" ")}
                   >
-                    All ({requirements.length})
+                    All
+                    <span className="ml-1.5 text-[11px] opacity-60">
+                      {requirements.length}
+                    </span>
                   </button>
                   {(Object.keys(categoryConfig) as RequirementCategory[]).map(
                     (cat) => {
                       const count = groupedRequirements[cat]?.length || 0;
                       if (count === 0) return null;
                       const config = categoryConfig[cat];
+                      const active = activeCategory === cat;
                       return (
                         <button
                           key={cat}
                           onClick={() => setActiveCategory(cat)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-small transition-all ${
-                            activeCategory === cat
-                              ? "bg-[var(--surface-sunken)] text-white"
-                              : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)] hover:bg-[var(--surface-sunken)]"
-                          }`}
+                          className={[
+                            "relative px-3 py-2.5 text-[13px] font-medium transition-colors -mb-px border-b-2 whitespace-nowrap",
+                            active
+                              ? "text-[var(--text-primary)] border-emerald-500"
+                              : "text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]",
+                          ].join(" ")}
                         >
-                          {categoryIcons[cat]}
-                          {config.label} ({count})
+                          {config.label}
+                          <span className="ml-1.5 text-[11px] opacity-60">
+                            {count}
+                          </span>
                         </button>
                       );
                     },
@@ -1673,49 +1735,63 @@ function CybersecurityPageContent() {
                         )
                       : null;
 
+                    // Status dot color (replaces loud coloured severity pills)
+                    const STATUS_DOT: Record<string, string> = {
+                      compliant: "bg-emerald-500",
+                      partial: "bg-amber-400",
+                      non_compliant: "bg-red-500",
+                      not_assessed: "bg-[var(--text-tertiary)]/40",
+                      not_applicable: "bg-[var(--text-tertiary)]/20",
+                    };
+                    // Severity as muted text accent — no more filled pills
+                    const SEVERITY_TEXT: Record<string, string> = {
+                      critical: "text-red-500",
+                      major: "text-amber-500",
+                      minor: "text-[var(--text-tertiary)]",
+                    };
+
                     return (
-                      <div
+                      <article
                         key={req.id}
-                        className={`rounded-xl overflow-hidden transition-all cursor-pointer ${
+                        className={[
+                          "rounded-2xl border transition-colors overflow-hidden",
                           isExpanded
-                            ? "bg-[var(--surface-sunken)] border border-[var(--border-default)] ring-1 ring-white/[0.05]"
-                            : "bg-[var(--surface-sunken)] border border-[var(--border-default)] hover:border-[var(--border-default)] hover:bg-[var(--surface-sunken)]"
-                        }`}
-                        onClick={() => toggleExpanded(req.id)}
+                            ? "border-[var(--border-default)] bg-[var(--surface-raised)]"
+                            : "border-[var(--border-default)] bg-[var(--surface-raised)] hover:border-[var(--text-tertiary)]/30",
+                        ].join(" ")}
                       >
-                        {/* Main row */}
-                        <div className="p-5">
+                        {/* Main row — editorial header */}
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(req.id)}
+                          aria-expanded={isExpanded}
+                          className="w-full text-left px-6 py-5"
+                        >
                           <div className="flex items-start gap-4">
-                            <div
-                              className={`p-2.5 rounded-lg ${
-                                req.severity === "critical"
-                                  ? "bg-[var(--accent-danger)]/10"
-                                  : req.severity === "major"
-                                    ? "bg-orange-500/10"
-                                    : "bg-[var(--accent-primary-soft)]"
-                              }`}
-                            >
-                              {categoryIcons[req.category]}
-                            </div>
+                            {/* Status dot — replaces category-icon block */}
+                            <span
+                              className={[
+                                "mt-2 w-2 h-2 rounded-full flex-shrink-0",
+                                STATUS_DOT[req.status] ??
+                                  "bg-[var(--text-tertiary)]/40",
+                              ].join(" ")}
+                              aria-hidden
+                            />
 
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-4 mb-2">
-                                <div>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-caption text-[var(--text-secondary)] tracking-wide">
+                              {/* Article ref · title · severity + chip */}
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2.5 flex-wrap">
+                                    <span className="text-[11px] tracking-wide text-[var(--text-tertiary)]">
                                       {req.articleRef}
                                     </span>
-                                    <h3 className="text-body-lg font-medium text-white">
-                                      {req.title}
-                                    </h3>
                                     <span
-                                      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                                        req.severity === "critical"
-                                          ? "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]"
-                                          : req.severity === "major"
-                                            ? "bg-orange-500/10 text-orange-400"
-                                            : "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-                                      }`}
+                                      className={[
+                                        "text-[10px] uppercase tracking-[0.14em]",
+                                        SEVERITY_TEXT[req.severity] ??
+                                          "text-[var(--text-tertiary)]",
+                                      ].join(" ")}
                                     >
                                       {req.severity}
                                     </span>
@@ -1727,81 +1803,89 @@ function CybersecurityPageContent() {
                                     )}
                                     {selectedAssessment.isSimplifiedRegime &&
                                       req.simplifiedAlternative && (
-                                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent-success)]/10 text-[var(--accent-success)]">
+                                        <span className="text-[10px] uppercase tracking-[0.14em] text-emerald-500">
                                           Simplified
                                         </span>
                                       )}
                                   </div>
-                                  {/* Provenance: causal breadcrumb shows
-                                      WHY this control is applicable to
-                                      the operator. Pure computation from
-                                      profile + requirement metadata. */}
+
+                                  <h3 className="mt-1 text-[17px] font-medium tracking-tight text-[var(--text-primary)] leading-snug">
+                                    {req.title}
+                                  </h3>
+
+                                  {/* Causal breadcrumb — ⟵ weil … */}
                                   {applicabilityReason && (
-                                    <div className="mt-1">
+                                    <div className="mt-1.5">
                                       <CausalBreadcrumb
                                         origin={applicabilityReason.origin}
                                         reason={applicabilityReason.summary}
                                       />
                                     </div>
                                   )}
+
+                                  {/* Field completion counter */}
                                   {!isExpanded && fields.length > 0 && (
-                                    <p className="text-caption text-[var(--text-secondary)] mt-1">
+                                    <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">
                                       {completedFields}/{fields.length} fields
                                       completed
                                     </p>
                                   )}
                                 </div>
 
-                                {/* Status selector */}
-                                <select
-                                  value={req.status}
-                                  onChange={(e) =>
-                                    updateRequirementStatus(
-                                      req.id,
-                                      e.target.value as RequirementStatus,
-                                    )
-                                  }
+                                {/* Status picker — native select kept, but
+                                    subtler visual. Click stopPropagation
+                                    so the row doesn't expand on pick. */}
+                                <div
+                                  className="flex-shrink-0"
                                   onClick={(e) => e.stopPropagation()}
-                                  aria-label={`Compliance status for ${req.title}`}
-                                  className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--surface-sunken)] focus:outline-none ${statConfig.color === "green" ? "text-[var(--accent-success)]" : statConfig.color === "yellow" ? "text-yellow-400" : statConfig.color === "red" ? "text-[var(--accent-danger)]" : "text-[var(--text-tertiary)]"}`}
                                 >
-                                  <option value="not_assessed">
-                                    Not Assessed
-                                  </option>
-                                  <option value="compliant">Compliant</option>
-                                  <option value="partial">Partial</option>
-                                  <option value="non_compliant">
-                                    Non-Compliant
-                                  </option>
-                                  <option value="not_applicable">N/A</option>
-                                </select>
-                              </div>
-
-                              {/* Question */}
-                              <p className="text-body text-[var(--text-secondary)] mb-2">
-                                {req.complianceQuestion}
-                              </p>
-
-                              {/* Simplified alternative notice */}
-                              {selectedAssessment.isSimplifiedRegime &&
-                                req.simplifiedAlternative && (
-                                  <p className="text-small text-[var(--accent-success)]/60 italic mb-2">
-                                    Simplified: {req.simplifiedAlternative}
-                                  </p>
-                                )}
-
-                              {/* Expand/collapse indicator */}
-                              <div className="flex items-center gap-1 text-caption text-[var(--text-tertiary)]">
-                                {isExpanded ? (
-                                  <ChevronUp size={14} aria-hidden="true" />
-                                ) : (
-                                  <ChevronDown size={14} aria-hidden="true" />
-                                )}
-                                {isExpanded ? "Hide details" : "Show details"}
+                                  <select
+                                    value={req.status}
+                                    onChange={(e) =>
+                                      updateRequirementStatus(
+                                        req.id,
+                                        e.target.value as RequirementStatus,
+                                      )
+                                    }
+                                    aria-label={`Compliance status for ${req.title}`}
+                                    className={[
+                                      "text-[11px] uppercase tracking-[0.14em] px-3 py-1.5 rounded-lg border border-[var(--border-default)] bg-transparent cursor-pointer focus:outline-none focus:border-emerald-500",
+                                      statConfig.color === "green"
+                                        ? "text-emerald-500"
+                                        : statConfig.color === "yellow"
+                                          ? "text-amber-500"
+                                          : statConfig.color === "red"
+                                            ? "text-red-500"
+                                            : "text-[var(--text-tertiary)]",
+                                    ].join(" ")}
+                                  >
+                                    <option value="not_assessed">
+                                      Not Assessed
+                                    </option>
+                                    <option value="compliant">Compliant</option>
+                                    <option value="partial">Partial</option>
+                                    <option value="non_compliant">
+                                      Non-Compliant
+                                    </option>
+                                    <option value="not_applicable">N/A</option>
+                                  </select>
+                                </div>
                               </div>
                             </div>
+
+                            {/* Expand chevron — minimalist */}
+                            <span
+                              className="mt-1 text-[var(--text-tertiary)] flex-shrink-0"
+                              aria-hidden
+                            >
+                              {isExpanded ? (
+                                <ChevronUp size={16} />
+                              ) : (
+                                <ChevronDown size={16} />
+                              )}
+                            </span>
                           </div>
-                        </div>
+                        </button>
 
                         {/* Expanded content */}
                         <AnimatePresence>
@@ -2022,7 +2106,7 @@ function CybersecurityPageContent() {
                             </motion.div>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </article>
                     );
                   })}
                 </div>
