@@ -187,6 +187,12 @@ const config: Config = {
         "dn-in-out": "var(--ease-in-out)",
         "dn-spring": "var(--ease-spring)",
         "dn-smooth": "var(--ease-smooth)",
+        // Transparency-Panel motion curves (Linear / Apple)
+        "tp-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "tp-emphasized": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "tp-apple": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+        "tp-in": "cubic-bezier(0.4, 0, 1, 1)",
+        "tp-hover": "cubic-bezier(0.4, 0, 0.2, 1)",
       },
       transitionDuration: {
         "dn-fast": "var(--duration-fast)",
@@ -194,6 +200,20 @@ const config: Config = {
         "dn-medium": "var(--duration-medium)",
         "dn-slow": "var(--duration-slow)",
         "dn-glacial": "var(--duration-glacial)",
+        // Transparency-Panel durations (sub-200ms guideline)
+        "tp-instant": "50ms",
+        "tp-fast": "120ms",
+        "tp-quick": "160ms",
+        "tp-base": "200ms",
+        "tp-medium": "280ms",
+        "tp-slow": "400ms",
+      },
+      borderWidth: {
+        "tp-hairline": "0.5px",
+      },
+      boxShadow: {
+        "tp-popover":
+          "0 0 0 0.5px rgba(0,0,0,0.12), 0 10px 30px rgba(0,0,0,0.12), 0 20px 60px rgba(0,0,0,0.18)",
       },
       borderRadius: {
         "dn-xs": "var(--radius-xs)",

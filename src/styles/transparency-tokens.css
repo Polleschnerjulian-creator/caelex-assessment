@@ -1,0 +1,250 @@
+/**
+ * Transparency Panel design tokens.
+ *
+ * Scoped to `.caelex-transparency` — only applies inside the workflow
+ * module shell, so the rest of the Caelex app (navy palette, legacy
+ * tokens) stays untouched.
+ *
+ * Source: the "Caelex Transparency Panel — Implementation Design Brief",
+ * Part 2. Copy-paste-reference for anyone tweaking.
+ *
+ * Principles:
+ *   - Near-monochrome cool-slate neutrals in OKLCH
+ *   - Single accent: Regulatory Indigo (--trust-9)
+ *   - Hairline borders in-plane, shadows only for floating surfaces
+ *   - Two-tier dark hierarchy (--n-2 panel > --n-1 page)
+ *   - Aggressive radii discipline (2 / 4 / 6 / 8 / 12)
+ */
+
+.caelex-transparency {
+  /* ─── Neutrals (cool-slate, OKLCH, 12-step) — LIGHT ─────────────── */
+  --n-1: oklch(0.992 0.002 247);
+  --n-2: oklch(0.982 0.003 247);
+  --n-3: oklch(0.968 0.004 247);
+  --n-4: oklch(0.951 0.005 247);
+  --n-5: oklch(0.929 0.006 248);
+  --n-6: oklch(0.898 0.007 248);
+  --n-7: oklch(0.852 0.008 248);
+  --n-8: oklch(0.768 0.01 249);
+  --n-9: oklch(0.551 0.012 251);
+  --n-10: oklch(0.49 0.013 252);
+  --n-11: oklch(0.398 0.014 253);
+  --n-12: oklch(0.178 0.012 255);
+
+  /* ─── Regulatory Indigo accent ───────────────────────────────────── */
+  --trust-3: oklch(0.948 0.03 248);
+  --trust-6: oklch(0.78 0.088 250);
+  --trust-8: oklch(0.585 0.14 252);
+  --trust-9: oklch(0.485 0.178 254);
+  --trust-10: oklch(0.438 0.172 254);
+  --trust-11: oklch(0.498 0.165 254);
+  --trust-12: oklch(0.255 0.09 254);
+
+  /* ─── Semantic colors ────────────────────────────────────────────── */
+  --success-9: oklch(0.615 0.16 148);
+  --warning-9: oklch(
+    0.76 0.165 78
+  ); /* amber, not yellow — aerospace convention */
+  --danger-9: oklch(0.595 0.225 27);
+  --info-9: oklch(0.615 0.145 225);
+  --ai-9: oklch(0.59 0.18 295); /* violet, RESERVED for AI-generated marker */
+
+  /* ─── Spacing (4px base, Linear-tight) ───────────────────────────── */
+  --tp-space-0-5: 2px;
+  --tp-space-1: 4px;
+  --tp-space-1-5: 6px;
+  --tp-space-2: 8px;
+  --tp-space-3: 12px;
+  --tp-space-4: 16px;
+  --tp-space-5: 20px;
+  --tp-space-6: 24px;
+  --tp-space-8: 32px;
+  --tp-space-10: 40px;
+  --tp-space-12: 48px;
+  --tp-space-16: 64px;
+
+  /* ─── Radii (sharp) ──────────────────────────────────────────────── */
+  --tp-radius-xs: 2px;
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 6px;
+  --tp-radius-lg: 8px;
+  --tp-radius-xl: 12px;
+
+  /* ─── Hairline borders ───────────────────────────────────────────── */
+  --tp-border-hairline: 0.5px solid rgba(0, 0, 0, 0.08);
+
+  /* ─── Shadows (light — mostly hairline) ──────────────────────────── */
+  --tp-shadow-xs: 0 1px 1px 0 rgba(17, 20, 26, 0.04);
+  --tp-shadow-sm:
+    0 1px 2px 0 rgba(17, 20, 26, 0.05), 0 1px 1px 0 rgba(17, 20, 26, 0.03);
+  --tp-shadow-md:
+    0 4px 8px -2px rgba(17, 20, 26, 0.06), 0 2px 4px -2px rgba(17, 20, 26, 0.04);
+  --tp-shadow-lg:
+    0 12px 24px -6px rgba(17, 20, 26, 0.08),
+    0 4px 8px -2px rgba(17, 20, 26, 0.04);
+  --tp-shadow-popover:
+    0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 10px 30px rgba(0, 0, 0, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.18);
+
+  /* ─── Focus ring ─────────────────────────────────────────────────── */
+  --tp-ring-focus: 0 0 0 2px var(--n-1), 0 0 0 4px var(--trust-8);
+
+  /* ─── Motion ─────────────────────────────────────────────────────── */
+  --tp-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --tp-ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1);
+  --tp-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --tp-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --tp-ease-hover: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --tp-dur-instant: 50ms;
+  --tp-dur-fast: 120ms;
+  --tp-dur-quick: 160ms;
+  --tp-dur-base: 200ms;
+  --tp-dur-medium: 280ms;
+  --tp-dur-slow: 400ms;
+
+  /* ─── Fonts ──────────────────────────────────────────────────────── */
+  --tp-font-sans:
+    "Inter", "Inter Variable", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --tp-font-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+    Consolas, "Liberation Mono", monospace;
+  --tp-font-serif:
+    "Source Serif 4", "Charter", "Iowan Old Style", Georgia, serif;
+
+  /* Apply the font feature set locally */
+  font-feature-settings: "cv11", "ss01", "ss03", "cv02", "tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color: var(--n-12);
+  background-color: var(--n-1);
+  font-family: var(--tp-font-sans);
+}
+
+/* ─── Dark mode (wrapper has [data-theme="dark"] or global .dark) ─── */
+.caelex-transparency[data-theme="dark"],
+.dark .caelex-transparency {
+  --n-1: oklch(0.145 0.01 255);
+  --n-2: oklch(0.172 0.011 255);
+  --n-3: oklch(0.205 0.012 254);
+  --n-4: oklch(0.235 0.013 253);
+  --n-5: oklch(0.268 0.014 252);
+  --n-6: oklch(0.312 0.014 251);
+  --n-7: oklch(0.37 0.014 251);
+  --n-8: oklch(0.47 0.014 250);
+  --n-9: oklch(0.62 0.012 250);
+  --n-10: oklch(0.69 0.011 250);
+  --n-11: oklch(0.81 0.008 249);
+  --n-12: oklch(0.975 0.003 247);
+
+  --tp-border-hairline: 1px solid rgba(255, 255, 255, 0.08);
+
+  --tp-shadow-md:
+    0 0 0 1px rgba(255, 255, 255, 0.05), 0 6px 12px -4px rgba(0, 0, 0, 0.5);
+  --tp-shadow-lg:
+    0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 32px -8px rgba(0, 0, 0, 0.6);
+
+  color: var(--n-12);
+  background-color: var(--n-1);
+}
+
+/* ─── Typography utility classes (matching Part 2.1 scale) ─────────── */
+
+.caelex-transparency .tp-text-xs {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.005em;
+  font-weight: 500;
+}
+.caelex-transparency .tp-text-sm {
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0.003em;
+  font-weight: 500;
+}
+.caelex-transparency .tp-text-base {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+.caelex-transparency .tp-text-md {
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+.caelex-transparency .tp-text-lg {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.003em;
+  font-weight: 500;
+}
+.caelex-transparency .tp-text-xl {
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+.caelex-transparency .tp-text-2xl {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+}
+.caelex-transparency .tp-text-3xl {
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.018em;
+  font-weight: 600;
+}
+.caelex-transparency .tp-text-4xl {
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+}
+
+.caelex-transparency .tp-mono-xs {
+  font-family: var(--tp-font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 450;
+}
+.caelex-transparency .tp-mono-sm {
+  font-family: var(--tp-font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 450;
+}
+.caelex-transparency .tp-mono-base {
+  font-family: var(--tp-font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 450;
+}
+
+/* Quoted legal text block — Harvey / Westlaw pattern */
+.caelex-transparency .tp-quote {
+  font-family: var(--tp-font-serif);
+  font-size: 15px;
+  line-height: 22px;
+  padding-left: 12px;
+  border-left: 2px solid var(--trust-8);
+  color: var(--n-11);
+  background: var(--n-2);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 12px;
+}
+
+/* Respect reduced motion — snap rather than slide */
+@media (prefers-reduced-motion: reduce) {
+  .caelex-transparency * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
