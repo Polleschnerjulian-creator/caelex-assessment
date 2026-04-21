@@ -6,6 +6,8 @@ import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
 import ComparatorExport from "@/components/atlas/ComparatorExport";
+import ForecastTimelineSlider from "@/components/atlas/ForecastTimelineSlider";
+import ForecastTimelineRibbon from "@/components/atlas/ForecastTimelineRibbon";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
@@ -14,6 +16,10 @@ export default function ComparatorPage() {
   const [selected, setSelected] =
     useState<SpaceLawCountryCode[]>(DEFAULT_COUNTRIES);
   const [dimension, setDimension] = useState<string>("all");
+  // Forecast target date — defaults to today. The comparator shows
+  // forecast badges only when the slider moves into the future, so
+  // default users see no change from the pre-feature experience.
+  const [targetDate, setTargetDate] = useState<Date>(() => new Date());
   const { t } = useLanguage();
 
   // ─── Dimension tabs (translated) ───
@@ -89,6 +95,15 @@ export default function ComparatorPage() {
           <CountrySelector selected={selected} onChange={setSelected} />
         </div>
 
+        {/* ─── Forecast Time-Travel Slider ─── */}
+        <ForecastTimelineSlider value={targetDate} onChange={setTargetDate} />
+
+        {/* ─── Forecast Timeline Ribbon ─── */}
+        <ForecastTimelineRibbon
+          jurisdictions={selected}
+          onEventClick={setTargetDate}
+        />
+
         {/* ─── Dimension Tabs ─── */}
         <div
           role="tablist"
@@ -117,7 +132,11 @@ export default function ComparatorPage() {
 
         {/* ─── Comparison Table ─── */}
         <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <ComparisonTable countries={selected} dimension={dimension} />
+          <ComparisonTable
+            countries={selected}
+            dimension={dimension}
+            targetDate={targetDate}
+          />
         </div>
       </div>
 

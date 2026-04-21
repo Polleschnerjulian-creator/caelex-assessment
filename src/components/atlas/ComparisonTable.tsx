@@ -8,20 +8,84 @@ import type {
 } from "@/lib/space-law-types";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getJurisdictionNames } from "@/app/(atlas)/atlas/i18n-labels";
+import ForecastBadge from "./ForecastBadge";
+import {
+  getEffectiveEventsAt,
+  type ForecastEvent,
+} from "@/lib/atlas/forecast-engine";
 
 // ─── Types ───
 
 interface ComparisonTableProps {
   countries: SpaceLawCountryCode[];
   dimension: string;
+  /**
+   * Target date for the time-travel forecast view. When > today,
+   * cells whose concept is affected by a forthcoming regulatory
+   * change render a ForecastBadge. Defaults to today (no badges).
+   */
+  targetDate?: Date;
 }
 
 interface RowDef {
   label: string;
+  /** Stable concept identifier used to cross-reference ForecastEvent.affectedConcepts. */
+  conceptKey?: string;
   accessor: (law: JurisdictionLaw) => string;
   highlightDifferences?: boolean;
   monospace?: boolean;
 }
+
+/**
+ * Given a jurisdiction code + concept key + target date, find the
+ * most-relevant upcoming ForecastEvent. Returns null when nothing
+ * qualifies (concept not affected, or target is today).
+ */
+function findForecastForConcept(
+  events: ForecastEvent[],
+  jurisdiction: string,
+  conceptKey: string | undefined,
+): ForecastEvent | null {
+  if (!conceptKey) return null;
+  for (const e of events) {
+    if (!e.affectedConcepts.includes(conceptKey)) continue;
+    if (
+      e.jurisdictions.includes(jurisdiction) ||
+      e.jurisdictions.includes("INT") ||
+      (e.jurisdictions.includes("EU") && EU_MEMBER_CODES.has(jurisdiction))
+    ) {
+      return e;
+    }
+  }
+  return null;
+}
+
+const EU_MEMBER_CODES = new Set([
+  "FR",
+  "DE",
+  "IT",
+  "LU",
+  "NL",
+  "BE",
+  "ES",
+  "AT",
+  "PL",
+  "DK",
+  "SE",
+  "FI",
+  "PT",
+  "GR",
+  "CZ",
+  "IE",
+  "EE",
+  "RO",
+  "HU",
+  "SI",
+  "LV",
+  "LT",
+  "SK",
+  "HR",
+]);
 
 // ─── Helpers ───
 
@@ -350,9 +414,24 @@ function getCellRender(conceptKey: string, value: string): CellRender {
 export default function ComparisonTable({
   countries,
   dimension,
+  targetDate,
 }: ComparisonTableProps) {
   const { t } = useLanguage();
   const jurisdictionNames = useMemo(() => getJurisdictionNames(t), [t]);
+
+  // Resolve forecast events once per targetDate change. Empty when
+  // targetDate is today (default) — the comparator remains identical
+  // to the pre-forecast experience for users who don't touch the
+  // slider.
+  const forecastEvents = useMemo<ForecastEvent[]>(() => {
+    if (!targetDate) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+    if (target.getTime() <= today.getTime()) return [];
+    return getEffectiveEventsAt(target);
+  }, [targetDate]);
 
   // Build translated row definitions
   const authRows = useMemo(
@@ -550,6 +629,7 @@ export default function ComparisonTable({
               rows={section.rows as RowDefInternal[]}
               jurisdictions={jurisdictions}
               showSectionHeader={dimension === "all"}
+              forecastEvents={forecastEvents}
             />
           ))}
         </tbody>
@@ -574,11 +654,13 @@ function SectionBlock({
   rows,
   jurisdictions,
   showSectionHeader,
+  forecastEvents,
 }: {
   label: string;
   rows: RowDefInternal[];
   jurisdictions: { code: SpaceLawCountryCode; data: JurisdictionLaw }[];
   showSectionHeader: boolean;
+  forecastEvents: ForecastEvent[];
 }) {
   return (
     <>
@@ -610,6 +692,11 @@ function SectionBlock({
             {jurisdictions.map(({ code, data }, colIdx) => {
               const value = row.accessor(data);
               const render = getCellRender(row.conceptKey || "", value);
+              const forecast = findForecastForConcept(
+                forecastEvents,
+                code,
+                row.conceptKey,
+              );
 
               return (
                 <td
@@ -632,6 +719,7 @@ function SectionBlock({
                       {value}
                     </span>
                   )}
+                  {forecast && <ForecastBadge event={forecast} />}
                 </td>
               );
             })}
