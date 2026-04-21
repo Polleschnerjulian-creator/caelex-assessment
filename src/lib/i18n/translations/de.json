@@ -1,4 +1,25 @@
 {
+  "provenance": {
+    "origin_deterministic": "Regulatorisch",
+    "origin_source_backed": "Quellen-belegt",
+    "origin_assessment": "Aus Assessment",
+    "origin_user_asserted": "Selbst angegeben",
+    "origin_ai_inferred": "KI-abgeleitet",
+    "origin_deterministic_desc": "Direkt aus Gesetz oder Spezifikation. Unveränderlich.",
+    "origin_source_backed_desc": "Explizite Quelle. Nachverifizierbar.",
+    "origin_assessment_desc": "Antwort aus Compliance-Assessment.",
+    "origin_user_asserted_desc": "Operator hat manuell eingegeben ohne Quelle.",
+    "origin_ai_inferred_desc": "Von Astra abgeleitet. Bestätigung erforderlich.",
+    "causal_because": "weil",
+    "verified_on": "verifiziert",
+    "derived_on": "abgeleitet",
+    "confidence": "Konfidenz",
+    "stale": "veraltet",
+    "source": "Quelle",
+    "trace_id": "Trace-ID",
+    "view_trace": "Trace ansehen",
+    "model": "Modell"
+  },
   "common": {
     "loading": "Laden...",
     "save": "Speichern",

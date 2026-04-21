@@ -1,4 +1,25 @@
 {
+  "provenance": {
+    "origin_deterministic": "Deterministic",
+    "origin_source_backed": "Source-backed",
+    "origin_assessment": "From assessment",
+    "origin_user_asserted": "User-asserted",
+    "origin_ai_inferred": "AI-inferred",
+    "origin_deterministic_desc": "Directly from law or specification. Immutable.",
+    "origin_source_backed_desc": "Explicit source document. Re-verifiable.",
+    "origin_assessment_desc": "Answer from a compliance assessment.",
+    "origin_user_asserted_desc": "Operator entered manually without source.",
+    "origin_ai_inferred_desc": "Inferred by Astra. Requires confirmation.",
+    "causal_because": "because",
+    "verified_on": "verified",
+    "derived_on": "derived",
+    "confidence": "confidence",
+    "stale": "stale",
+    "source": "Source",
+    "trace_id": "Trace ID",
+    "view_trace": "View trace",
+    "model": "Model"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",

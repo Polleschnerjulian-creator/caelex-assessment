@@ -1,4 +1,25 @@
 {
+  "provenance": {
+    "origin_deterministic": "Réglementaire",
+    "origin_source_backed": "Source vérifiable",
+    "origin_assessment": "Depuis l'évaluation",
+    "origin_user_asserted": "Déclaré par l'utilisateur",
+    "origin_ai_inferred": "Inféré par IA",
+    "origin_deterministic_desc": "Directement issu d'une loi ou spécification. Immuable.",
+    "origin_source_backed_desc": "Document source explicite. Revérifiable.",
+    "origin_assessment_desc": "Réponse d'une évaluation de conformité.",
+    "origin_user_asserted_desc": "Saisie manuelle sans source.",
+    "origin_ai_inferred_desc": "Inféré par Astra. Confirmation requise.",
+    "causal_because": "parce que",
+    "verified_on": "vérifié",
+    "derived_on": "dérivé",
+    "confidence": "confiance",
+    "stale": "obsolète",
+    "source": "Source",
+    "trace_id": "ID de trace",
+    "view_trace": "Voir la trace",
+    "model": "Modèle"
+  },
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",

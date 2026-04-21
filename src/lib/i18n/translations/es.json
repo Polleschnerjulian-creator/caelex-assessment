@@ -1,4 +1,25 @@
 {
+  "provenance": {
+    "origin_deterministic": "Regulatorio",
+    "origin_source_backed": "Respaldado por fuente",
+    "origin_assessment": "Desde la evaluación",
+    "origin_user_asserted": "Declarado por usuario",
+    "origin_ai_inferred": "Inferido por IA",
+    "origin_deterministic_desc": "Directo de ley o especificación. Inmutable.",
+    "origin_source_backed_desc": "Documento fuente explícito. Reverificable.",
+    "origin_assessment_desc": "Respuesta de evaluación de cumplimiento.",
+    "origin_user_asserted_desc": "Ingresado manualmente sin fuente.",
+    "origin_ai_inferred_desc": "Inferido por Astra. Requiere confirmación.",
+    "causal_because": "porque",
+    "verified_on": "verificado",
+    "derived_on": "derivado",
+    "confidence": "confianza",
+    "stale": "obsoleto",
+    "source": "Fuente",
+    "trace_id": "ID de traza",
+    "view_trace": "Ver traza",
+    "model": "Modelo"
+  },
   "common": {
     "loading": "Cargando...",
     "save": "Guardar",
