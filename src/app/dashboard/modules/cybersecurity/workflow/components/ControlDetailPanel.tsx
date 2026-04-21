@@ -6,12 +6,14 @@
  */
 
 import { useMemo } from "react";
+import Link from "next/link";
 import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
   FileText,
   MessageSquare,
+  ArrowUpRight,
 } from "lucide-react";
 import type {
   CybersecurityProfile,
@@ -201,10 +203,7 @@ function AssessPlaceholder({ req }: { req: QueueItem["req"] }) {
           </ul>
         </div>
       )}
-      <p className="text-xs text-[var(--text-tertiary)] italic">
-        Assessment-field inputs coming next — use the classic view to record
-        detailed answers for now.
-      </p>
+      <ClassicFallback label="Answer assessment fields" />
     </div>
   );
 }
@@ -234,26 +233,42 @@ function EvidencePlaceholder({ req }: { req: QueueItem["req"] }) {
           </p>
         )}
       </div>
-      <p className="text-xs text-[var(--text-tertiary)] italic">
-        Upload + manage evidence in the classic view (coming inline next).
-      </p>
+      <ClassicFallback label="Upload evidence" />
     </div>
   );
 }
 
 function DiscussPlaceholder() {
   return (
-    <div className="flex flex-col items-start gap-3 py-4">
-      <div className="inline-flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
-        <MessageSquare className="w-3.5 h-3.5" />
-        Discussion + ASTRA suggestions land here
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-[10px] font-semibold tracking-[0.24em] uppercase text-[var(--text-tertiary)] mb-2">
+          Discuss
+        </h3>
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg">
+          ASTRA suggestion, change-log per control, and inline comments will
+          live here.
+        </p>
       </div>
-      <p className="text-sm text-[var(--text-secondary)] max-w-lg">
-        ASTRA's status suggestion, change-log per control, and inline comments
-        will live in this tab. Use the classic view's ASTRA bulk button in the
-        meantime.
-      </p>
+      <ClassicFallback label="Use ASTRA suggestions" />
     </div>
+  );
+}
+
+/**
+ * Inline link to the classic view when a tab body hasn't been fully
+ * ported yet. Unobtrusive — looks like a ghosted button at the bottom
+ * of the tab content.
+ */
+function ClassicFallback({ label }: { label: string }) {
+  return (
+    <Link
+      href="/dashboard/modules/cybersecurity/classic"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--text-tertiary)]/40 rounded-lg transition-colors"
+    >
+      {label} in classic view
+      <ArrowUpRight className="w-3 h-3" />
+    </Link>
   );
 }
 

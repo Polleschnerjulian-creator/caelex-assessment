@@ -149,9 +149,9 @@ export function WorkflowShell({
           <div className="flex items-center justify-between gap-4 mb-3">
             <div className="flex items-center gap-3 min-w-0">
               <Link
-                href="/dashboard/modules/cybersecurity"
+                href="/dashboard"
                 className="p-1.5 rounded hover:bg-[var(--fill-soft)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                aria-label="Back to classic view"
+                aria-label="Back to dashboard"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
