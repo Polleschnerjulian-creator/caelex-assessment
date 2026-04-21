@@ -20,6 +20,10 @@ import {
   getOrCreateProfile,
   updateProfile,
 } from "@/lib/services/operator-profile-service";
+import {
+  getCurrentTracesForEntity,
+  readTraceValue,
+} from "@/lib/services/derivation-trace-service";
 
 // ─── Zod schema for PATCH body ───
 
@@ -96,7 +100,51 @@ export async function GET(request: NextRequest) {
 
     const profile = await getOrCreateProfile(result.organizationId);
 
-    return NextResponse.json({ profile });
+    // Opt-in trace inclusion. Query param keeps the default payload
+    // unchanged for existing callers. See docs/CONTEXT-OMNIPRESENCE-INTEGRATION.md.
+    const includeTraces =
+      request.nextUrl.searchParams.get("includeTraces") === "true";
+
+    if (!includeTraces) {
+      return NextResponse.json({ profile });
+    }
+
+    // Fetch current traces for this profile (latest-per-field) and shape
+    // the payload into a field-indexed object so the client can look up
+    // `traces.operatorType` directly without a linear scan.
+    const rawTraces = await getCurrentTracesForEntity(
+      "operator_profile",
+      profile.id,
+    );
+
+    const traces: Record<
+      string,
+      {
+        id: string;
+        origin: string;
+        sourceRef: unknown;
+        confidence: number | null;
+        modelVersion: string | null;
+        derivedAt: string;
+        expiresAt: string | null;
+        value: unknown;
+      }
+    > = {};
+
+    for (const t of rawTraces) {
+      traces[t.fieldName] = {
+        id: t.id,
+        origin: t.origin,
+        sourceRef: t.sourceRef,
+        confidence: t.confidence,
+        modelVersion: t.modelVersion,
+        derivedAt: t.derivedAt.toISOString(),
+        expiresAt: t.expiresAt ? t.expiresAt.toISOString() : null,
+        value: readTraceValue(t.value),
+      };
+    }
+
+    return NextResponse.json({ profile, traces });
   } catch (error) {
     logger.error("Error fetching operator profile", error);
     return NextResponse.json(

@@ -14,6 +14,9 @@ import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import { Progress } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
+import { ProvenanceChip } from "@/components/provenance";
+import { isFeatureEnabled } from "@/lib/feature-flags";
+import { isTraceStale } from "@/lib/design/trust-tokens";
 
 interface OperatorProfileData {
   id: string;
@@ -22,6 +25,18 @@ interface OperatorProfileData {
   primaryOrbit: string | null;
   establishment: string | null;
   completeness: number;
+}
+
+/**
+ * One per-field summary derived from the DerivationTrace. Client only needs
+ * the origin + maybe confidence + stale-flag to render a chip — full trace
+ * details are fetched on-demand when the user clicks through.
+ */
+interface FieldTrace {
+  id: string;
+  origin: string;
+  confidence: number | null;
+  expiresAt: string | null;
 }
 
 const OPERATOR_TYPE_LABELS: Record<string, string> = {
@@ -59,16 +74,29 @@ const ORBIT_LABELS: Record<string, string> = {
 
 export default function OperatorProfileCard() {
   const [profile, setProfile] = useState<OperatorProfileData | null>(null);
+  const [traces, setTraces] = useState<Record<string, FieldTrace>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Resolved once at mount — the flag controls whether we fetch traces AND
+  // whether we render chips. We never render partial trace UI without data.
+  const provenanceEnabled = isFeatureEnabled("provenance_v1");
 
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch("/api/organization/profile");
+        // When the flag is on, ask the API to include traces in the payload
+        // so we get provenance + profile in one round-trip.
+        const url = provenanceEnabled
+          ? "/api/organization/profile?includeTraces=true"
+          : "/api/organization/profile";
+        const res = await fetch(url);
         if (res.ok) {
           const json = await res.json();
           setProfile(json.profile);
+          if (provenanceEnabled && json.traces) {
+            setTraces(json.traces as Record<string, FieldTrace>);
+          }
         } else {
           setError(true);
         }
@@ -79,7 +107,7 @@ export default function OperatorProfileCard() {
       }
     }
     fetchProfile();
-  }, []);
+  }, [provenanceEnabled]);
 
   if (loading) {
     return (
@@ -131,66 +159,45 @@ export default function OperatorProfileCard() {
 
         {/* Profile Fields */}
         <div className="grid grid-cols-2 gap-4 mb-5">
-          {/* Operator Type */}
-          <div className="flex items-start gap-2.5">
-            <Satellite className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                Operator Type
-              </p>
-              <p className="text-body text-[var(--text-secondary)] truncate">
-                {profile.operatorType
-                  ? OPERATOR_TYPE_LABELS[profile.operatorType] ||
-                    profile.operatorType
-                  : "--"}
-              </p>
-            </div>
-          </div>
-
-          {/* Primary Orbit */}
-          <div className="flex items-start gap-2.5">
-            <Orbit className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                Primary Orbit
-              </p>
-              <p className="text-body text-[var(--text-secondary)] truncate">
-                {profile.primaryOrbit
-                  ? ORBIT_LABELS[profile.primaryOrbit] || profile.primaryOrbit
-                  : "--"}
-              </p>
-            </div>
-          </div>
-
-          {/* Entity Size */}
-          <div className="flex items-start gap-2.5">
-            <Building2 className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                Entity Size
-              </p>
-              <p className="text-body text-[var(--text-secondary)] truncate">
-                {profile.entitySize
-                  ? ENTITY_SIZE_LABELS[profile.entitySize] || profile.entitySize
-                  : "--"}
-              </p>
-            </div>
-          </div>
-
-          {/* Establishment */}
-          <div className="flex items-start gap-2.5">
-            <Globe className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
-                Establishment
-              </p>
-              <p className="text-body text-[var(--text-secondary)] truncate">
-                {profile.establishment
-                  ? profile.establishment.toUpperCase()
-                  : "--"}
-              </p>
-            </div>
-          </div>
+          <ProfileField
+            icon={Satellite}
+            label="Operator Type"
+            value={
+              profile.operatorType
+                ? OPERATOR_TYPE_LABELS[profile.operatorType] ||
+                  profile.operatorType
+                : null
+            }
+            trace={provenanceEnabled ? traces["operatorType"] : undefined}
+          />
+          <ProfileField
+            icon={Orbit}
+            label="Primary Orbit"
+            value={
+              profile.primaryOrbit
+                ? ORBIT_LABELS[profile.primaryOrbit] || profile.primaryOrbit
+                : null
+            }
+            trace={provenanceEnabled ? traces["primaryOrbit"] : undefined}
+          />
+          <ProfileField
+            icon={Building2}
+            label="Entity Size"
+            value={
+              profile.entitySize
+                ? ENTITY_SIZE_LABELS[profile.entitySize] || profile.entitySize
+                : null
+            }
+            trace={provenanceEnabled ? traces["entitySize"] : undefined}
+          />
+          <ProfileField
+            icon={Globe}
+            label="Establishment"
+            value={
+              profile.establishment ? profile.establishment.toUpperCase() : null
+            }
+            trace={provenanceEnabled ? traces["establishment"] : undefined}
+          />
         </div>
 
         {/* CTA */}
@@ -205,5 +212,47 @@ export default function OperatorProfileCard() {
         )}
       </GlassCard>
     </motion.div>
+  );
+}
+
+/**
+ * Single profile-field row. Optional `trace` prop drives the
+ * ProvenanceChip rendered inline next to the label. When the trace is
+ * undefined (feature flag off or no trace yet) the field renders exactly
+ * like before — this is the backward-compatible overlay path.
+ */
+function ProfileField({
+  icon: Icon,
+  label,
+  value,
+  trace,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string | null;
+  trace?: FieldTrace;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <Icon className="w-3.5 h-3.5 text-[var(--text-tertiary)] mt-0.5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <p className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+            {label}
+          </p>
+          {trace && (
+            <ProvenanceChip
+              origin={trace.origin}
+              density="icon"
+              confidence={trace.confidence}
+              stale={isTraceStale(trace.expiresAt)}
+            />
+          )}
+        </div>
+        <p className="text-body text-[var(--text-secondary)] truncate">
+          {value ?? "--"}
+        </p>
+      </div>
+    </div>
   );
 }
