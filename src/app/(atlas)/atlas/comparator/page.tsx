@@ -7,8 +7,24 @@ import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
 import ComparatorExport from "@/components/atlas/ComparatorExport";
 import ForecastTimelineSlider from "@/components/atlas/ForecastTimelineSlider";
-import ForecastTimelineRibbon from "@/components/atlas/ForecastTimelineRibbon";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+
+/**
+ * Shared Apple-like glass style used for the sticky control bar.
+ * Matches the Generate2 document generator's inline-glass aesthetic:
+ *   rgba(255,255,255,0.55) + backdrop-blur(24px) saturate(1.4) +
+ *   0.45 inset highlight + layered 0_8px_40px shadow.
+ * Surface feels like frosted sapphire over the content below.
+ */
+const stickyGlass: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.72)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid rgba(255, 255, 255, 0.45)",
+  borderRadius: 16,
+  boxShadow:
+    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+};
 
 const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
 
@@ -85,24 +101,38 @@ export default function ComparatorPage() {
           </div>
         </header>
 
-        {/* ─── Country Selector Bar ─── */}
-        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
+        {/* ─── Sticky Floating Controls — Apple-like glass panel ─── */}
+        {/*
+          Consolidates the two most-used interactions (pick jurisdictions,
+          move the forecast date) into a single frosted panel that stays
+          pinned while the table scrolls. The `sticky top-3 z-30` keeps
+          it reachable without blocking; the glass background (see
+          `stickyGlass`) reads through content underneath so the table
+          is never fully occluded.
+        */}
+        <div
+          style={stickyGlass}
+          className="sticky top-3 z-30 px-4 py-3 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-5"
+        >
+          <div className="flex-1 min-w-0 flex items-center gap-3">
+            <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase flex-shrink-0">
               {t("atlas.jurisdictions")}
             </span>
+            <div className="flex-1 min-w-0">
+              <CountrySelector selected={selected} onChange={setSelected} />
+            </div>
           </div>
-          <CountrySelector selected={selected} onChange={setSelected} />
+          <div
+            className="hidden lg:block h-8 w-px bg-gray-200/80"
+            aria-hidden="true"
+          />
+          <div className="flex-1 min-w-0">
+            <ForecastTimelineSlider
+              value={targetDate}
+              onChange={setTargetDate}
+            />
+          </div>
         </div>
-
-        {/* ─── Forecast Time-Travel Slider ─── */}
-        <ForecastTimelineSlider value={targetDate} onChange={setTargetDate} />
-
-        {/* ─── Forecast Timeline Ribbon ─── */}
-        <ForecastTimelineRibbon
-          jurisdictions={selected}
-          onEventClick={setTargetDate}
-        />
 
         {/* ─── Dimension Tabs ─── */}
         <div

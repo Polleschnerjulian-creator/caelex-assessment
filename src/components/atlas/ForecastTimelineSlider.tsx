@@ -81,11 +81,11 @@ export default function ForecastTimelineSlider({
   const selectedLabel = formatQuarterLabel(valueQuarter);
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-center gap-4">
-      <div className="flex-shrink-0 text-[11px] font-medium tracking-wide uppercase text-gray-500">
+    <div className="w-full flex items-center gap-3">
+      <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-gray-500">
         {t("atlas.forecast_target_date")}
-      </div>
-      <div className="flex-1 relative">
+      </span>
+      <div className="flex-1 min-w-[140px] relative">
         <input
           type="range"
           min={0}
@@ -94,23 +94,25 @@ export default function ForecastTimelineSlider({
           step={1}
           onChange={handleChange}
           aria-label={t("atlas.forecast_target_date")}
-          className="w-full h-2 bg-gray-100 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          className="w-full h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         />
-        {/* Year tick marks */}
-        <div className="absolute inset-x-0 top-full mt-1 flex justify-between text-[9px] text-gray-400 pointer-events-none select-none">
+        {/* Year tick marks — tiny, beneath the track */}
+        <div className="absolute inset-x-0 top-full mt-1 flex justify-between text-[8px] tabular-nums text-gray-400 pointer-events-none select-none">
           {Array.from({ length: 7 }, (_, i) => 2026 + i).map((year) => (
             <span key={year}>{year}</span>
           ))}
         </div>
       </div>
-      <div className="flex-shrink-0 flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-900 tabular-nums min-w-[5ch] text-right">
+      <div className="flex-shrink-0 flex items-center gap-2">
+        <span
+          className={`text-[12px] font-medium tabular-nums min-w-[4ch] text-right ${isToday ? "text-gray-500" : "text-gray-900"}`}
+        >
           {isToday ? t("atlas.forecast_today") : selectedLabel}
         </span>
         {!isToday && (
           <button
             onClick={handleReset}
-            className="text-[11px] tracking-wide uppercase text-gray-500 hover:text-gray-900 transition-colors"
+            className="text-[10px] tracking-wide uppercase text-gray-400 hover:text-gray-900 transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100/70"
             aria-label="Reset to today"
           >
             {t("atlas.forecast_reset")}
