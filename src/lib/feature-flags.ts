@@ -16,12 +16,15 @@
  *   NEXT_PUBLIC_FEAT_PROVENANCE_V1 = "1" | "true" → enables Phase 4 UI.
  */
 
-export type FeatureFlag = "provenance_v1";
+export type FeatureFlag = "provenance_v1" | "workflow_v2";
 
 const FLAG_ENV_MAP: Record<FeatureFlag, string | undefined> = {
   // Read at module-eval time. Vercel injects NEXT_PUBLIC_* into the
   // client bundle at build time, so this is safe on both sides.
   provenance_v1: process.env.NEXT_PUBLIC_FEAT_PROVENANCE_V1,
+  // Tier-C workflow redesign: two-pane + keyboard + today's focus.
+  // Lives on its own route at /dashboard/modules/cybersecurity/workflow.
+  workflow_v2: process.env.NEXT_PUBLIC_FEAT_WORKFLOW_V2,
 };
 
 function truthy(v: string | undefined): boolean {
