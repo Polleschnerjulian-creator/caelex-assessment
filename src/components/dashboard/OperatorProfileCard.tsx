@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import Link from "next/link";
+// Link is already imported; GlassCard next.
 import GlassCard from "@/components/ui/GlassCard";
 import { Progress } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
@@ -81,6 +82,35 @@ interface LastSnapshot {
   frozenAt: string; // ISO
 }
 
+type SnapshotPurpose = "voluntary" | "audit" | "dd" | "nca";
+
+const PURPOSE_OPTIONS: {
+  value: SnapshotPurpose;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "voluntary",
+    label: "Voluntary",
+    hint: "Internal record of current state",
+  },
+  {
+    value: "audit",
+    label: "Audit",
+    hint: "Annual compliance audit evidence",
+  },
+  {
+    value: "dd",
+    label: "Due Diligence",
+    hint: "Investor / M&A data room",
+  },
+  {
+    value: "nca",
+    label: "NCA Submission",
+    hint: "Regulatory authority filing",
+  },
+];
+
 export default function OperatorProfileCard() {
   const [profile, setProfile] = useState<OperatorProfileData | null>(null);
   const [traces, setTraces] = useState<Record<string, FieldTrace>>({});
@@ -91,6 +121,8 @@ export default function OperatorProfileCard() {
   const [freezeBusy, setFreezeBusy] = useState(false);
   const [freezeError, setFreezeError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState(false);
+  const [freezePurpose, setFreezePurpose] =
+    useState<SnapshotPurpose>("voluntary");
 
   // Resolved once at mount — the flag controls whether we fetch traces AND
   // whether we render chips. We never render partial trace UI without data.
@@ -142,7 +174,7 @@ export default function OperatorProfileCard() {
       const res = await fetch("/api/organization/profile/snapshot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purpose: "voluntary" }),
+        body: JSON.stringify({ purpose: freezePurpose }),
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
@@ -290,10 +322,39 @@ export default function OperatorProfileCard() {
                   Signed Snapshot
                 </span>
               </div>
+              <Link
+                href="/dashboard/verity/snapshots"
+                className="text-[10px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+              >
+                View all →
+              </Link>
+            </div>
+
+            {/* Purpose selector — inline, tight. Keeps the flow to a
+                single click. The selector remembers the choice locally,
+                so repeated signs for the same purpose don't re-select. */}
+            <div className="mb-2 flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">
+                Purpose
+              </span>
+              <select
+                value={freezePurpose}
+                onChange={(e) =>
+                  setFreezePurpose(e.target.value as SnapshotPurpose)
+                }
+                aria-label="Snapshot purpose"
+                className="text-[11px] bg-[var(--surface-soft)] border border-[var(--divider-color)] rounded px-1.5 py-0.5 focus:outline-none focus:border-emerald-500"
+              >
+                {PURPOSE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value} title={o.hint}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={handleFreeze}
                 disabled={freezeBusy}
-                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded border border-emerald-500/30 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 disabled:opacity-50 transition-colors"
+                className="ml-auto inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded border border-emerald-500/30 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 disabled:opacity-50 transition-colors"
               >
                 {freezeBusy ? "Signing…" : "Freeze & Sign"}
               </button>
