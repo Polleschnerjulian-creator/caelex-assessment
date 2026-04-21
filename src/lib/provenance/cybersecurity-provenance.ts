@@ -40,18 +40,27 @@ const ORG_SIZE_LABEL: Record<OrganizationSize, string> = {
 };
 
 const SEGMENT_LABEL: Record<SpaceSegmentComplexity, string> = {
-  simple: "simple space segment",
-  moderate: "moderate space segment",
-  complex: "complex space segment",
+  single_satellite: "single satellite",
+  small_constellation: "small constellation",
+  large_constellation: "large constellation",
+  ground_only: "ground segment only",
 };
 
 const DATA_LABEL: Record<DataSensitivityLevel, string> = {
   public: "public data only",
   internal: "internal data",
   confidential: "confidential data",
-  regulated: "regulated data",
-  classified: "classified data",
+  restricted: "restricted data",
 };
+
+/**
+ * Defensive lookup — returns the raw value string if a key isn't in the
+ * label map. Protects against requirements that carry enum values the
+ * UI doesn't know yet (e.g. after a data-file extension). No throws.
+ */
+function safeLabel(map: Record<string, string>, key: string): string {
+  return map[key] ?? key;
+}
 
 // ─── Public API ────────────────────────────────────────────────────────
 
@@ -99,9 +108,9 @@ export function describeApplicabilityReason(
     }
     matched.push({
       dimension: "organizationSize",
-      value: ORG_SIZE_LABEL[profile.organizationSize],
+      value: safeLabel(ORG_SIZE_LABEL, profile.organizationSize),
       requirementGate: `applies to ${req.applicableTo.organizationSizes
-        .map((s) => ORG_SIZE_LABEL[s].split(" ")[0])
+        .map((s) => safeLabel(ORG_SIZE_LABEL, s).split(" ")[0])
         .join("/")}`,
     });
   }
@@ -117,9 +126,9 @@ export function describeApplicabilityReason(
     }
     matched.push({
       dimension: "spaceSegmentComplexity",
-      value: SEGMENT_LABEL[profile.spaceSegmentComplexity],
+      value: safeLabel(SEGMENT_LABEL, profile.spaceSegmentComplexity),
       requirementGate: `applies to ${req.applicableTo.spaceSegmentComplexities
-        .map((s) => SEGMENT_LABEL[s].split(" ")[0])
+        .map((s) => safeLabel(SEGMENT_LABEL, s).split(" ")[0])
         .join("/")} segments`,
     });
   }
@@ -133,9 +142,9 @@ export function describeApplicabilityReason(
     }
     matched.push({
       dimension: "dataSensitivity",
-      value: DATA_LABEL[profile.dataSensitivityLevel],
+      value: safeLabel(DATA_LABEL, profile.dataSensitivityLevel),
       requirementGate: `applies to ${req.applicableTo.dataSensitivities
-        .map((s) => DATA_LABEL[s].split(" ")[0])
+        .map((s) => safeLabel(DATA_LABEL, s).split(" ")[0])
         .join("/")} data`,
     });
   }
@@ -208,9 +217,9 @@ export function describeModuleScope(args: {
 
   const bullets = [
     `Regime: ${regime}${isSimplified ? " (eligible due to size)" : ""}`,
-    `Organization size: ${ORG_SIZE_LABEL[profile.organizationSize]}`,
-    `Space segment: ${SEGMENT_LABEL[profile.spaceSegmentComplexity]}`,
-    `Data sensitivity: ${DATA_LABEL[profile.dataSensitivityLevel]}`,
+    `Organization size: ${safeLabel(ORG_SIZE_LABEL, profile.organizationSize)}`,
+    `Space segment: ${safeLabel(SEGMENT_LABEL, profile.spaceSegmentComplexity)}`,
+    `Data sensitivity: ${safeLabel(DATA_LABEL, profile.dataSensitivityLevel)}`,
   ];
 
   return {

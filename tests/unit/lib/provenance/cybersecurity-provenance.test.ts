@@ -22,7 +22,7 @@ function baseProfile(
 ): CybersecurityProfile {
   return {
     organizationSize: "medium",
-    spaceSegmentComplexity: "moderate",
+    spaceSegmentComplexity: "small_constellation",
     dataSensitivityLevel: "confidential",
     hasGroundSegment: true,
     processesPersonalData: false,
@@ -72,11 +72,11 @@ describe("describeApplicabilityReason", () => {
 
   it("returns null when spaceSegmentComplexity doesn't match", () => {
     const req = baseRequirement({
-      applicableTo: { spaceSegmentComplexities: ["complex"] },
+      applicableTo: { spaceSegmentComplexities: ["large_constellation"] },
     });
     const reason = describeApplicabilityReason(
       req,
-      baseProfile({ spaceSegmentComplexity: "simple" }),
+      baseProfile({ spaceSegmentComplexity: "single_satellite" }),
       false,
     );
     expect(reason).toBeNull();
@@ -84,7 +84,7 @@ describe("describeApplicabilityReason", () => {
 
   it("returns null when data sensitivity doesn't match", () => {
     const req = baseRequirement({
-      applicableTo: { dataSensitivities: ["classified"] },
+      applicableTo: { dataSensitivities: ["restricted"] },
     });
     const reason = describeApplicabilityReason(
       req,
@@ -121,19 +121,22 @@ describe("describeApplicabilityReason", () => {
     const req = baseRequirement({
       applicableTo: {
         organizationSizes: ["medium", "large"],
-        spaceSegmentComplexities: ["moderate", "complex"],
+        spaceSegmentComplexities: [
+          "small_constellation",
+          "large_constellation",
+        ],
       },
     });
     const reason = describeApplicabilityReason(req, baseProfile(), false);
     expect(reason?.summary).toContain("medium");
-    expect(reason?.summary).toContain("moderate");
+    expect(reason?.summary).toContain("small");
   });
 
   it("matched array records each applicable dimension", () => {
     const req = baseRequirement({
       applicableTo: {
         organizationSizes: ["medium"],
-        spaceSegmentComplexities: ["moderate"],
+        spaceSegmentComplexities: ["small_constellation"],
         dataSensitivities: ["confidential"],
       },
     });
@@ -143,6 +146,22 @@ describe("describeApplicabilityReason", () => {
       "organizationSize",
       "spaceSegmentComplexity",
     ]);
+  });
+
+  it("falls back to raw enum value when the label map doesn't know it (no crash)", () => {
+    // Simulates a future-added enum value the UI hasn't learned yet.
+    const req = baseRequirement({
+      applicableTo: {
+        organizationSizes: ["xlarge" as unknown as "large"],
+      },
+    });
+    const profile = baseProfile({
+      organizationSize: "xlarge" as unknown as "large",
+    });
+    // Must NOT throw; must produce some summary.
+    const reason = describeApplicabilityReason(req, profile, false);
+    expect(reason).not.toBeNull();
+    expect(typeof reason?.summary).toBe("string");
   });
 
   it("falls back to 'applies to all operators' when no gate is set", () => {
