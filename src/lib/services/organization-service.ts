@@ -718,6 +718,12 @@ export async function resendInvitation(
   invitationId: string,
   actingUserId: string,
   organizationId: string,
+  // Caller can override the fresh-invite expiry window. Defaults to 7
+  // days for backwards-compat with the generic /api/organizations
+  // flow; the ATLAS /api/atlas/team flow passes 14 to match its
+  // createInvitation expiry so a resent invite isn't artificially
+  // shorter than a new one.
+  expiresInDays: number = 7,
 ): Promise<OrganizationInvitation> {
   const invitation = await prisma.organizationInvitation.findUnique({
     where: { id: invitationId },
@@ -731,10 +737,11 @@ export async function resendInvitation(
     throw new Error("Invitation has already been accepted");
   }
 
-  // Generate new token and extend expiration
+  // Generate new token and extend expiration. New token rotation means
+  // the old invite URL (if it leaked) is no longer usable — desirable.
   const newToken = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
   const updated = await prisma.organizationInvitation.update({
     where: { id: invitationId },

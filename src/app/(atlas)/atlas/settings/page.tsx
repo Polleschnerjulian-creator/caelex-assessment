@@ -18,6 +18,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  RotateCcw,
+  XCircle,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Language } from "@/lib/i18n";
@@ -209,6 +211,16 @@ export default function SettingsPage() {
   // Remove member state
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+
+  // Invitation row action state. resendingId + revokingId track which
+  // row's icon-button is currently spinning; confirmRevokeId puts a row
+  // into confirmation mode so an errant double-click can't silently
+  // destroy a pending invite. resentId flashes a green check on the
+  // row for 2s after a successful resend.
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
+  const [resentId, setResentId] = useState<string | null>(null);
 
   /* ──── Fetch profile + firm on mount ──── */
   useEffect(() => {
@@ -418,6 +430,89 @@ export default function SettingsPage() {
     } finally {
       setRemovingId(null);
       setConfirmRemoveId(null);
+    }
+  }, []);
+
+  /* ──── Resend invitation handler ──── */
+  // Rotates the token + triggers a fresh ATLAS-branded email via the
+  // /api/atlas/team/invitations/[id]/resend endpoint. On success the
+  // local invitation row's expiresAt is updated to match the server's
+  // new value, and a 2-second success flash indicates the send.
+  const handleResendInvitation = useCallback(async (invId: string) => {
+    setResendingId(invId);
+    try {
+      const res = await fetch(
+        `/api/atlas/team/invitations/${encodeURIComponent(invId)}/resend`,
+        { method: "POST" },
+      );
+      if (res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          invitation?: { expiresAt?: string };
+        } | null;
+        const newExpiresAt = data?.invitation?.expiresAt;
+        setTeam((prev) =>
+          prev
+            ? {
+                ...prev,
+                invitations: prev.invitations.map((inv) =>
+                  inv.id === invId && newExpiresAt
+                    ? { ...inv, expiresAt: newExpiresAt }
+                    : inv,
+                ),
+              }
+            : prev,
+        );
+        setResentId(invId);
+        // Clear the success flash after 2s — long enough to notice,
+        // short enough that a second resend feels responsive.
+        setTimeout(() => {
+          setResentId((curr) => (curr === invId ? null : curr));
+        }, 2000);
+      } else if (res.status === 409) {
+        // Already accepted — drop the row from the local state since
+        // it no longer belongs in "pending".
+        setTeam((prev) =>
+          prev
+            ? {
+                ...prev,
+                invitations: prev.invitations.filter((inv) => inv.id !== invId),
+              }
+            : prev,
+        );
+      }
+    } catch {
+      // Silently fail — caller retries via the button.
+    } finally {
+      setResendingId(null);
+    }
+  }, []);
+
+  /* ──── Revoke invitation handler ──── */
+  // DELETE via /api/atlas/team/invitations/[id]. Owner confirms by
+  // clicking the red "X" once (arms the confirm state) then again
+  // (actually revokes) — same two-click pattern as remove member.
+  const handleRevokeInvitation = useCallback(async (invId: string) => {
+    setRevokingId(invId);
+    try {
+      const res = await fetch(
+        `/api/atlas/team/invitations/${encodeURIComponent(invId)}`,
+        { method: "DELETE" },
+      );
+      if (res.ok || res.status === 404) {
+        setTeam((prev) =>
+          prev
+            ? {
+                ...prev,
+                invitations: prev.invitations.filter((inv) => inv.id !== invId),
+              }
+            : prev,
+        );
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setRevokingId(null);
+      setConfirmRevokeId(null);
     }
   }, []);
 
@@ -1116,39 +1211,145 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
-                  {team.invitations.map((inv) => (
-                    <div
-                      key={inv.id}
-                      className="flex items-center gap-3 px-5 py-3.5"
-                    >
-                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-400">
-                        <Mail size={14} strokeWidth={1.5} aria-hidden="true" />
-                      </div>
+                  {team.invitations.map((inv) => {
+                    const isResending = resendingId === inv.id;
+                    const isRevoking = revokingId === inv.id;
+                    const justResent = resentId === inv.id;
+                    const armedForRevoke = confirmRevokeId === inv.id;
+                    const busy = isResending || isRevoking;
 
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] text-[var(--atlas-text-secondary)] truncate">
-                          {inv.email}
+                    return (
+                      <div
+                        key={inv.id}
+                        className="flex items-center gap-3 px-5 py-3.5"
+                      >
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-400 shrink-0">
+                          <Mail
+                            size={14}
+                            strokeWidth={1.5}
+                            aria-hidden="true"
+                          />
                         </div>
-                        <div className="text-[11px] text-[var(--atlas-text-faint)]">
-                          {t("atlas.settings_team_invited")}{" "}
-                          {formatDate(inv.createdAt)}
-                          {inv.expiresAt && (
+
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[13px] text-[var(--atlas-text-secondary)] truncate">
+                            {inv.email}
+                          </div>
+                          <div className="text-[11px] text-[var(--atlas-text-faint)]">
+                            {t("atlas.settings_team_invited")}{" "}
+                            {formatDate(inv.createdAt)}
+                            {inv.expiresAt && (
+                              <>
+                                {" "}
+                                &middot;{" "}
+                                {t("atlas.settings_team_expires", {
+                                  date: formatDate(inv.expiresAt),
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Status + actions cluster. Owners see the full
+                            resend/revoke controls inline — non-owners
+                            see only the pending badge. */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {justResent ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 px-2 py-0.5">
+                              <Check
+                                size={12}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                              />
+                              {t("atlas.settings_team_resent")}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
+                              {t("atlas.settings_team_badge_pending")}
+                            </span>
+                          )}
+
+                          {team.isOwner && (
                             <>
-                              {" "}
-                              &middot;{" "}
-                              {t("atlas.settings_team_expires", {
-                                date: formatDate(inv.expiresAt),
-                              })}
+                              {/* Resend — rotates token + re-emails. */}
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => handleResendInvitation(inv.id)}
+                                aria-label={t("atlas.settings_team_resend")}
+                                title={t("atlas.settings_team_resend")}
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-md text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] hover:bg-[var(--atlas-bg-hover)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                              >
+                                {isResending ? (
+                                  <Loader2
+                                    size={14}
+                                    className="animate-spin"
+                                    strokeWidth={1.75}
+                                    aria-hidden="true"
+                                  />
+                                ) : (
+                                  <RotateCcw
+                                    size={14}
+                                    strokeWidth={1.75}
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </button>
+
+                              {/* Revoke — two-click confirm pattern
+                                  mirroring the remove-member flow
+                                  above. First click arms, second
+                                  click deletes. */}
+                              {armedForRevoke ? (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      handleRevokeInvitation(inv.id)
+                                    }
+                                    className="inline-flex items-center h-7 px-2 rounded-md text-[11px] font-medium bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                                  >
+                                    {isRevoking ? (
+                                      <Loader2
+                                        size={12}
+                                        className="animate-spin mr-1"
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                      />
+                                    ) : null}
+                                    {t("atlas.settings_team_revoke_confirm")}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmRevokeId(null)}
+                                    className="inline-flex items-center h-7 px-2 rounded-md text-[11px] text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] hover:bg-[var(--atlas-bg-hover)] transition-colors"
+                                  >
+                                    {t("atlas.settings_team_revoke_cancel")}
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => setConfirmRevokeId(inv.id)}
+                                  aria-label={t("atlas.settings_team_revoke")}
+                                  title={t("atlas.settings_team_revoke")}
+                                  className="inline-flex items-center justify-center h-7 w-7 rounded-md text-[var(--atlas-text-faint)] hover:text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                                >
+                                  <XCircle
+                                    size={14}
+                                    strokeWidth={1.75}
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
                       </div>
-
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
-                        {t("atlas.settings_team_badge_pending")}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
