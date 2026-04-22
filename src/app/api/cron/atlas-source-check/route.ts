@@ -312,6 +312,14 @@ export async function GET(request: Request) {
                     contentHash: newHash,
                     previousHash,
                     httpStatus,
+                    // H4: snapshot both states on the history row so the
+                    // redline viewer can render a self-contained diff
+                    // without depending on the AtlasSourceCheck's
+                    // currentContent (which gets overwritten on the next
+                    // check) or re-fetching the URL (may have changed or
+                    // be offline by review time).
+                    newContent: newSnapshot,
+                    previousContent: previousContent ?? null,
                   },
                 }),
               ]

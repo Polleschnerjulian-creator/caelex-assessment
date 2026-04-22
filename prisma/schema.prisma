@@ -8266,6 +8266,16 @@ model AtlasSourceCheckHistory {
   httpStatus   Int?
   detectedAt   DateTime @default(now())
 
+  /// Text snapshot at the NEW hash (truncated ~200 KB). Retained so that
+  /// the admin-review and public-history redline viewers can render the
+  /// before/after diff without re-fetching the source URL — important
+  /// when the URL has since been amended again or gone 404.
+  newContent     String?
+  /// Text snapshot at the PREVIOUS hash. Paired with newContent so each
+  /// history row is self-contained for diffing. null on the first-ever
+  /// detection for that sourceId (no prior state existed).
+  previousContent String?
+
   /// Claude-generated 1-2 sentence summary of what changed. Written
   /// asynchronously after the check; null until the summariser runs.
   /// "COSMETIC_ONLY" signals no substantive legal change.

@@ -16,6 +16,7 @@ import {
   Cpu,
 } from "lucide-react";
 import SourceNotes from "@/components/atlas/SourceNotes";
+import { SourceHistoryPanel } from "@/components/atlas/SourceHistoryPanel";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import {
   getLegalSourceById,
@@ -791,6 +792,9 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           </div>
         </section>
       )}
+
+      {/* ─── Detected amendment history (redlines) ─── */}
+      <SourceHistoryPanel sourceId={source.id} />
 
       {/* ─── Private Annotations ─── */}
       <SourceNotes sourceId={source.id} />

@@ -8,7 +8,10 @@ import {
   X,
   CheckSquare,
   Sparkles,
+  GitCompare,
 } from "lucide-react";
+import { RedlineView } from "@/components/atlas/RedlineView";
+import type { DiffSegment } from "@/lib/atlas/redline";
 
 /**
  * /dashboard/admin/atlas-amendments — Phase 1 auto-update review queue.
@@ -62,6 +65,11 @@ export default function AtlasAmendmentsPage() {
     "PENDING" | "APPROVED" | "REJECTED" | "ALL"
   >("PENDING");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  /** Cached redline segments per amendment id. Lazy-loaded on 'Show diff'
+   *  to keep the list response small (snapshots are up to 200 KB each). */
+  const [segmentsById, setSegmentsById] = useState<
+    Record<string, DiffSegment[] | "loading" | "error">
+  >({});
 
   const fetchAll = useCallback(async (status: typeof filter) => {
     setLoading(true);
@@ -83,6 +91,30 @@ export default function AtlasAmendmentsPage() {
   useEffect(() => {
     fetchAll(filter);
   }, [fetchAll, filter]);
+
+  const toggleDiff = useCallback(async (id: string) => {
+    setSegmentsById((prev) => {
+      if (prev[id] && prev[id] !== "error") {
+        // Already loaded / loading — clicking again closes the panel.
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: "loading" };
+    });
+    try {
+      const res = await fetch(`/api/admin/atlas-amendments/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const segs = data.amendment?.segments as DiffSegment[] | undefined;
+        setSegmentsById((prev) => ({ ...prev, [id]: segs ?? [] }));
+      } else {
+        setSegmentsById((prev) => ({ ...prev, [id]: "error" }));
+      }
+    } catch {
+      setSegmentsById((prev) => ({ ...prev, [id]: "error" }));
+    }
+  }, []);
 
   const handleAction = useCallback(
     async (id: string, action: "approve" | "reject" | "mark_integrated") => {
@@ -247,8 +279,36 @@ export default function AtlasAmendmentsPage() {
                   </div>
                 )}
 
+                {/* Redline diff — lazy-loaded on demand */}
+                {segmentsById[a.id] !== undefined && (
+                  <div className="mb-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                    {segmentsById[a.id] === "loading" ? (
+                      <p className="text-[11px] text-gray-400 italic">
+                        Loading redline…
+                      </p>
+                    ) : segmentsById[a.id] === "error" ? (
+                      <p className="text-[11px] text-red-500 italic">
+                        Failed to load diff.
+                      </p>
+                    ) : (
+                      <RedlineView
+                        segments={segmentsById[a.id] as DiffSegment[]}
+                      />
+                    )}
+                  </div>
+                )}
+
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => toggleDiff(a.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-gray-200 text-[11px] font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  >
+                    <GitCompare size={12} />
+                    {segmentsById[a.id] !== undefined
+                      ? "Hide diff"
+                      : "Show diff"}
+                  </button>
                   {a.reviewStatus === "PENDING" && (
                     <>
                       <button
