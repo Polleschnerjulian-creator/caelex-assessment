@@ -13,6 +13,13 @@ const PRODUCTS = [
     href: "/platform",
   },
   {
+    name: "Atlas",
+    tagline: "Search space law,\nfrom UN treaty to national code.",
+    description:
+      "The searchable space-law database built for law firms. Instant access to UN treaties, EU instruments, and national legislation across 10 jurisdictions — deep-linked to official sources, with shared annotations and AI-assisted research.",
+    href: "/atlas-access",
+  },
+  {
     name: "Sentinel",
     tagline: "Collect compliance evidence,\nfrom orbit to ground.",
     description:
