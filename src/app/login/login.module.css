@@ -250,23 +250,23 @@
 .brandLockup {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
   color: var(--text);
   text-decoration: none;
   justify-self: start;
-  opacity: 0.98;
+  /* Pin the lockup's line-box to the wordmark height so the <Link>
+     doesn't inherit stray ascender/descender space — the wordmark
+     then sits on a clean baseline inside the header row. */
+  line-height: 1;
+  opacity: 0.92;
   transition: opacity 0.15s ease;
 }
 .brandLockup:hover {
   opacity: 1;
 }
-.caelexMarkLarge {
-  flex-shrink: 0;
-  /* next/image sets width/height via the `size` prop; we lock
-     aspect-ratio here so browsers can reserve layout space before
-     the raster loads — kills the brand-lockup shift on first paint. */
-  aspect-ratio: 1 / 1;
-  object-fit: contain;
+.brandLockup img {
+  /* Render the wordmark as a true block so vertical-align quirks
+     from the surrounding flex/inline context can't creep in. */
+  display: block;
 }
 
 .center {

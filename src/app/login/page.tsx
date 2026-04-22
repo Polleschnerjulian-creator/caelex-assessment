@@ -318,12 +318,11 @@ export default function LoginPage() {
           href="https://caelex.eu"
           aria-label="Caelex home"
         >
-          {/* Icon is the anchor — wordmark height is tuned so the
-              baseline of 'caelex' sits flush with the icon's visual
-              centre. 44 / 26 keeps the lockup feeling like a single
-              piece rather than two disconnected marks. */}
-          <CaelexMark size={44} className={styles.caelexMarkLarge} />
-          <CaelexWordmark height={26} />
+          {/* Wordmark carries the brand on its own — no icon in the
+              top-left lockup. Height 28 keeps a strong presence next
+              to the 104px 'Navigate' headline without competing with
+              it. */}
+          <CaelexWordmark height={28} />
         </Link>
 
         <div className={styles.center}>
