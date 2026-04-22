@@ -3,6 +3,7 @@ import { moduleMetadata, jurisdictionMetadata } from "@/lib/seo";
 import { getAllTerms } from "@/content/glossary/terms";
 import { getAllPosts } from "@/content/blog/posts";
 import { getAllGuides } from "@/content/guides/guides";
+import { PERSONAS } from "./for/[slug]/personas";
 
 // ============================================================================
 // SITEMAP CONFIGURATION
@@ -282,7 +283,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     },
+    // LLM-canonical declarative fact page — high priority, intended
+    // to be surfaced in AI answer boxes for "what is Caelex" queries.
+    {
+      url: `${baseUrl}/what-is-caelex`,
+      lastModified: new Date("2026-04-22"),
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
   ];
+
+  // ─── Persona landing pages — /for/[slug] ───────────────────────────
+
+  const personaPages: MetadataRoute.Sitemap = PERSONAS.map((persona) => ({
+    url: `${baseUrl}/for/${persona.slug}`,
+    lastModified: new Date("2026-04-22"),
+    changeFrequency: "monthly" as const,
+    priority: 0.85,
+  }));
 
   return [
     ...staticPages,
@@ -296,5 +314,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...legalPages,
     ...assessmentPages,
     ...additionalPages,
+    ...personaPages,
   ];
 }

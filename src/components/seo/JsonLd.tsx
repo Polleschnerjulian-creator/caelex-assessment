@@ -27,21 +27,93 @@ interface JsonLdBaseProps {
 // ============================================================================
 
 export function OrganizationJsonLd() {
+  // Structured data enriched for LLM + search-engine discovery. Schema.org
+  // @type lists (Organization, SoftwareCompany) let LLMs infer the right
+  // category; knowsAbout + areaServed give concrete semantic hooks for
+  // queries like "company that does EU Space Act compliance in Europe".
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "SoftwareCompany"],
+    "@id": `${siteConfig.url}/#organization`,
     name: siteConfig.name,
+    legalName: "Caelex GmbH",
+    alternateName: ["Caelex GmbH", "caelex.eu"],
+    slogan: siteConfig.tagline,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/logo.png`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteConfig.url}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${siteConfig.url}/og-image.png`,
     description: siteConfig.description,
     email: siteConfig.email,
-    sameAs: [siteConfig.linkedIn, "https://x.com/caboracaelex"],
-    contactPoint: {
-      "@type": "ContactPoint",
-      email: siteConfig.email,
-      contactType: "customer service",
-      availableLanguage: ["English", "German"],
+    foundingDate: "2025",
+    foundingLocation: {
+      "@type": "Place",
+      name: "Berlin, Germany",
     },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Berlin",
+      addressCountry: "DE",
+    },
+    sameAs: [
+      siteConfig.linkedIn,
+      "https://x.com/caboracaelex",
+      `${siteConfig.url}/about`,
+    ],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        email: siteConfig.email,
+        contactType: "customer service",
+        availableLanguage: ["English", "German"],
+      },
+      {
+        "@type": "ContactPoint",
+        email: "hi@caelex.eu",
+        contactType: "sales",
+        availableLanguage: ["English", "German"],
+      },
+    ],
+    knowsAbout: [
+      "EU Space Act",
+      "NIS2 Directive",
+      "space regulation",
+      "satellite compliance",
+      "space law",
+      "Outer Space Treaty",
+      "Registration Convention",
+      "Liability Convention",
+      "spectrum coordination",
+      "ITU filings",
+      "orbital debris mitigation",
+      "COPUOS guidelines",
+      "IADC guidelines",
+      "export control",
+      "ITAR",
+      "EAR",
+      "EU Dual-Use Regulation",
+      "Satellitendatensicherheitsgesetz",
+      "Loi sur les opérations spatiales",
+      "Luxembourg Space Resources Act",
+      "UK Space Industry Act 2018",
+      "FCC satellite licensing",
+      "FAA launch licensing",
+    ],
+    areaServed: [
+      { "@type": "Country", name: "European Union" },
+      { "@type": "Country", name: "Germany" },
+      { "@type": "Country", name: "France" },
+      { "@type": "Country", name: "Luxembourg" },
+      { "@type": "Country", name: "United Kingdom" },
+      { "@type": "Country", name: "Italy" },
+      { "@type": "Country", name: "Netherlands" },
+      { "@type": "Country", name: "Spain" },
+      { "@type": "Country", name: "Belgium" },
+    ],
   };
 
   return (
@@ -78,30 +150,195 @@ export function WebSiteJsonLd() {
 // ============================================================================
 
 export function SoftwareApplicationJsonLd() {
+  // Enriched 2026-04-22 for LLM / search-engine discovery. Expanded
+  // featureList covers the full 15-module scope. The offer is kept
+  // explicit (free assessment tier) rather than a price range, so
+  // LLMs quoting "starting at" claims have a deterministic anchor.
   const schema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": `${siteConfig.url}/#softwareapplication`,
     name: siteConfig.name,
+    alternateName: "Caelex Comply",
     applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
+    applicationSubCategory: "Regulatory Compliance Software",
+    operatingSystem: "Web (any modern browser)",
+    url: `${siteConfig.url}/platform`,
     description:
-      "Space compliance platform covering 12 regulatory modules across 10+ jurisdictions including EU Space Act, NIS2, and national space laws.",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "EUR",
-      description: "Free tier available",
+      "The regulatory operating system for the orbital economy. Caelex Comply is a web-based compliance platform covering 15+ regulatory modules across 10+ European jurisdictions — EU Space Act, NIS2 Directive, national space laws, export control, debris mitigation, spectrum coordination, and more — with AI-assisted document generation and continuous monitoring.",
+    provider: {
+      "@id": `${siteConfig.url}/#organization`,
     },
-    featureList: [
-      "EU Space Act Compliance",
-      "NIS2 Directive Compliance",
-      "12 Compliance Modules",
-      "10+ Jurisdictions",
-      "AI-Powered Guidance",
-      "Auto-Generated Documents",
+    audience: {
+      "@type": "Audience",
+      audienceType:
+        "Satellite operators, launch providers, ground-segment operators, constellation operators, in-orbit service providers, space data providers, space resource operators, space-sector law firms and in-house counsel",
+    },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Free compliance assessment",
+        price: "0",
+        priceCurrency: "EUR",
+        description:
+          "Free regulatory profile across EU Space Act, NIS2, and 10+ national jurisdictions — no credit card required.",
+        url: `${siteConfig.url}/assessment`,
+      },
+      {
+        "@type": "Offer",
+        name: "Subscription tiers",
+        priceCurrency: "EUR",
+        description:
+          "Multiple subscription tiers for operators and enterprises. Per-organization seat-based and feature-based pricing.",
+        url: `${siteConfig.url}/pricing`,
+      },
     ],
+    featureList: [
+      "EU Space Act compliance (119 articles)",
+      "NIS2 Directive compliance",
+      "National space law coverage (10+ jurisdictions)",
+      "Authorization workflow management",
+      "Registration (national + UN)",
+      "Cybersecurity (BSI TR-03184, ENISA guidelines)",
+      "Orbital debris mitigation (COPUOS, IADC, ISO 24113)",
+      "Environmental impact assessment",
+      "Third-party liability insurance tracking",
+      "Export control (ITAR, EAR, EU Dual-Use, national lists)",
+      "Spectrum and ITU frequency coordination",
+      "UK Space Industry Act 2018 compliance",
+      "US regulatory compliance (FCC, FAA)",
+      "Digital twin compliance forecasting",
+      "Evidence and audit trail management",
+      "Astra AI copilot (Claude-powered)",
+      "AI-assisted document generation",
+      "Multi-tenant organizations with RBAC",
+      "Stakeholder network (insurers, auditors, regulators)",
+      "NCA submission pipeline",
+      "Continuous compliance monitoring",
+      "Incident management (NIS2 3-phase reporting)",
+      "Regulatory change feed",
+      "Public API v1",
+      "Stripe-native billing",
+    ],
+    softwareRequirements: "Modern web browser",
+    url_: `${siteConfig.url}/platform`,
     screenshot: `${siteConfig.url}/screenshots/dashboard.png`,
     softwareVersion: "1.0",
+    datePublished: "2025",
+    inLanguage: ["en", "de"],
+    countriesSupported: [
+      "DE",
+      "FR",
+      "LU",
+      "UK",
+      "IT",
+      "NL",
+      "BE",
+      "ES",
+      "NO",
+      "SE",
+      "DK",
+      "AT",
+      "CH",
+      "PT",
+      "IE",
+      "FI",
+      "GR",
+      "CZ",
+      "PL",
+      "EE",
+      "RO",
+      "HU",
+      "SI",
+      "LV",
+      "LT",
+      "SK",
+      "HR",
+      "TR",
+      "IS",
+      "LI",
+      "US",
+      "NZ",
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+// ============================================================================
+// PRODUCT CATALOG SCHEMA — the five Caelex products
+// ============================================================================
+
+/**
+ * Renders the five public Caelex products (Comply, Atlas, Sentinel,
+ * Ephemeris, Verity) as an ItemList of Product/Service records.
+ * Gives LLMs a clean way to answer "what products does Caelex offer"
+ * and to route a query to the right product URL.
+ */
+export function ProductCatalogJsonLd() {
+  const products = [
+    {
+      name: "Caelex Comply",
+      description:
+        "Regulatory command center. Real-time compliance posture across EU Space Act, NIS2, and national space laws. 15+ compliance modules, AI-assisted document generation.",
+      url: `${siteConfig.url}/platform`,
+      category: "Compliance Workspace",
+    },
+    {
+      name: "Caelex Atlas",
+      description:
+        "Searchable space-law database for law firms. UN treaties, EU instruments, national legislation across 10+ jurisdictions with deep-links to primary sources, firm-wide shared annotations, and AI-assisted research.",
+      url: `${siteConfig.url}/atlas-access`,
+      category: "Legal Research",
+    },
+    {
+      name: "Caelex Sentinel",
+      description:
+        "Autonomous compliance-evidence agents deployed at operator premises. Cryptographically signed hash chains, cross-verification against public orbital data.",
+      url: `${siteConfig.url}/sentinel`,
+      category: "Evidence Automation",
+    },
+    {
+      name: "Caelex Ephemeris",
+      description:
+        "Forward-looking compliance risk engine. Models every satellite as a digital twin and forecasts compliance trajectories across the mission lifecycle.",
+      url: `${siteConfig.url}/systems/ephemeris`,
+      category: "Predictive Compliance",
+    },
+    {
+      name: "Caelex Verity",
+      description:
+        "Zero-knowledge compliance attestation. Cryptographic proofs demonstrating regulatory adherence without exposing operational data.",
+      url: `${siteConfig.url}/verity`,
+      category: "Cryptographic Attestation",
+    },
+  ];
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Caelex product catalog",
+    description:
+      "The five products in the Caelex family for space-sector regulatory compliance and legal research.",
+    numberOfItems: products.length,
+    itemListElement: products.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "SoftwareApplication",
+        name: p.name,
+        description: p.description,
+        url: p.url,
+        applicationCategory: p.category,
+        operatingSystem: "Web",
+        provider: { "@id": `${siteConfig.url}/#organization` },
+      },
+    })),
   };
 
   return (

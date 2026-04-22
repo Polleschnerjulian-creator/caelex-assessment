@@ -5,6 +5,7 @@ import SoftwareShowcase from "@/components/landing/SoftwareShowcase";
 import CtaBanner from "@/components/landing/CtaBanner";
 import {
   SoftwareApplicationJsonLd,
+  ProductCatalogJsonLd,
   VideoObjectJsonLd,
 } from "@/components/seo/JsonLd";
 
@@ -12,6 +13,7 @@ export default function Home() {
   return (
     <>
       <SoftwareApplicationJsonLd />
+      <ProductCatalogJsonLd />
       <VideoObjectJsonLd
         name="Caelex — Regulatory OS for the orbital economy"
         description="The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws."
