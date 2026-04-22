@@ -89,8 +89,9 @@ export default function AtlasShell({
 
   return (
     <div
-      className={`atlas-themed ${resolvedTheme === "light" ? "landing-light" : ""} h-screen w-screen overflow-hidden bg-[var(--atlas-bg-page)]`}
+      className="atlas-themed h-screen w-screen overflow-hidden bg-[var(--atlas-bg-page)]"
       data-atlas-theme={resolvedTheme}
+      suppressHydrationWarning
     >
       {/* ─── Mobile: hamburger toggle (<lg only) ─── */}
       <button

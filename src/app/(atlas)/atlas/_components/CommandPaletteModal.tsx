@@ -22,6 +22,7 @@ import {
   FileText,
   Building2,
   ArrowRight,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
@@ -29,10 +30,18 @@ import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
 // module, so new countries/items (US FCC, NZ OSHAA, EE/RO/HU/…)
 // automatically surface in search without having to touch this file.
 import { ALL_SOURCES, ALL_AUTHORITIES } from "@/data/legal-sources";
+import { slugForTreatyId } from "@/data/treaties";
+import { ALL_LANDING_RIGHTS_PROFILES } from "@/data/landing-rights";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
-type ItemGroup = "Navigation" | "Sources" | "Authorities" | "Countries";
+type ItemGroup =
+  | "Navigation"
+  | "Treaties"
+  | "Sources"
+  | "Authorities"
+  | "Countries"
+  | "Landing Rights";
 
 interface Item {
   id: string;
@@ -135,12 +144,35 @@ const COUNTRY_ITEMS: Item[] = Array.from(NATIONAL_DATA, ([code, data]) => ({
     `${code} ${data.countryName} ${data.legislation.name}`.toLowerCase(),
 }));
 
+// Treaties with dedicated deep-dive pages at /atlas/treaties/[slug].
+// Surfaced as their own group so searching "OST" or "liability" jumps
+// to the curated hub page, not the generic source-detail view.
+const TREATY_ITEMS: Item[] = ALL_SOURCES.flatMap((s) => {
+  const slug = slugForTreatyId(s.id);
+  if (!slug) return [];
+  return [
+    {
+      id: `treaty-${slug}`,
+      group: "Treaties" as const,
+      title: s.title_en,
+      subtitle: `Deep-dive · ${s.un_reference ?? s.id}`,
+      href: `/atlas/treaties/${slug}`,
+      icon: ScrollText,
+      haystack:
+        `${slug} ${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.un_reference ?? ""} treaty deep-dive`.toLowerCase(),
+    },
+  ];
+});
+
 const SOURCE_ITEMS: Item[] = ALL_SOURCES.map((s) => ({
   id: `source-${s.id}`,
   group: "Sources" as const,
   title: s.title_en,
   subtitle: `${s.id} · ${s.jurisdiction}${s.official_reference ? ` · ${s.official_reference}` : ""}`,
-  href: `/atlas/jurisdictions/${s.jurisdiction.toLowerCase()}`,
+  // H15: route to the source-detail page, not the jurisdiction page.
+  // Every source in Atlas has its own /atlas/sources/[id] deep-dive
+  // with provisions, competent authorities, and related sources.
+  href: `/atlas/sources/${s.id}`,
   icon: FileText,
   haystack:
     `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.un_reference ?? ""} ${s.scope_description ?? ""}`.toLowerCase(),
@@ -157,18 +189,33 @@ const AUTHORITY_ITEMS: Item[] = ALL_AUTHORITIES.map((a) => ({
     `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`.toLowerCase(),
 }));
 
+const LANDING_RIGHTS_ITEMS: Item[] = ALL_LANDING_RIGHTS_PROFILES.map((p) => ({
+  id: `lr-${p.jurisdiction}`,
+  group: "Landing Rights" as const,
+  title: `${p.jurisdiction} — Landing Rights`,
+  subtitle: `${p.overview.regime_type.replace("_", " ")} regime · ${p.depth} coverage`,
+  href: `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
+  icon: Ticket,
+  haystack:
+    `${p.jurisdiction} landing rights market access ${p.overview.regime_type} ${p.overview.summary}`.toLowerCase(),
+}));
+
 const ALL_ITEMS: Item[] = [
   ...NAV_ITEMS,
+  ...TREATY_ITEMS,
   ...COUNTRY_ITEMS,
   ...SOURCE_ITEMS,
   ...AUTHORITY_ITEMS,
+  ...LANDING_RIGHTS_ITEMS,
 ];
 
 const GROUP_ORDER: ItemGroup[] = [
   "Navigation",
+  "Treaties",
   "Countries",
   "Sources",
   "Authorities",
+  "Landing Rights",
 ];
 
 // ─── Search helper ────────────────────────────────────────────────────
@@ -254,7 +301,9 @@ export default function CommandPaletteModal({
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // M12: translate the four group identifiers once per render.
+  // M12: translate the group identifiers once per render.
+  // Treaties + Landing Rights are new — fall back to the English label
+  // if a translation key isn't registered yet, so they still render.
   const groupLabel = (g: ItemGroup): string => {
     switch (g) {
       case "Navigation":
@@ -265,6 +314,10 @@ export default function CommandPaletteModal({
         return t("atlas.palette_group_sources");
       case "Authorities":
         return t("atlas.palette_group_authorities");
+      case "Treaties":
+        return "Treaties";
+      case "Landing Rights":
+        return "Landing Rights";
     }
   };
 

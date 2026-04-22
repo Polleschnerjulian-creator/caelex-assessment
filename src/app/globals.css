@@ -322,9 +322,15 @@ body {
   color-scheme: light;
 }
 
-.atlas-themed[data-atlas-theme="dark"] {
+.atlas-themed[data-atlas-theme="dark"],
+html[data-atlas-preload="dark"] .atlas-themed {
   /* Dark — inspired by Apple/Linear: soft off-black surfaces, not pure black.
-     AA/AAA contrast on all text tiers against --atlas-bg-surface. */
+     AA/AAA contrast on all text tiers against --atlas-bg-surface.
+
+     Second selector (html[data-atlas-preload="dark"]) is driven by the
+     pre-hydration flash-guard script in (atlas)/layout.tsx — it activates
+     the dark palette before React renders AtlasShell, so the user never
+     sees a light-mode flash while the theme provider mounts. */
   --atlas-bg-page: #0a0d12;
   --atlas-bg-surface: #131821;
   --atlas-bg-surface-muted: #1a2029;

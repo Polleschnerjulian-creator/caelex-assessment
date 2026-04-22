@@ -10,6 +10,18 @@ import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
 
+/**
+ * Pre-hydration theme script — runs synchronously before React paints
+ * the atlas shell. Reads the user's stored atlas-theme preference from
+ * localStorage (falls back to OS preference), then sets a data attribute
+ * on <html> that CSS uses to apply the correct token palette BEFORE the
+ * atlas-themed div even exists in the DOM. Kills the light-mode flash
+ * that happens otherwise while React hydrates.
+ *
+ * Matches what next-themes does for its own theme switching.
+ */
+const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var r=(t==='dark'||(t!=='light'&&d))?'dark':'light';document.documentElement.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
+
 export const metadata = {
   title: "ATLAS — Space Law Database",
   description:
@@ -46,6 +58,7 @@ export default async function AtlasLayout({
   return (
     <LanguageProvider>
       <AtlasThemeProvider>
+        <script dangerouslySetInnerHTML={{ __html: flashGuardScript }} />
         <AtlasShell>{children}</AtlasShell>
       </AtlasThemeProvider>
     </LanguageProvider>
