@@ -174,8 +174,17 @@ const SOURCE_ITEMS: Item[] = ALL_SOURCES.map((s) => ({
   // with provisions, competent authorities, and related sources.
   href: `/atlas/sources/${s.id}`,
   icon: FileText,
+  // Haystack spans metadata + scope + every key provision's section
+  // label, title, summary, and compliance-implication text. This turns
+  // Cmd+K from 'title search' into 'full legal-text search' while
+  // staying on the existing substring ranking — no new infra required.
   haystack:
-    `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.un_reference ?? ""} ${s.scope_description ?? ""}`.toLowerCase(),
+    `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.un_reference ?? ""} ${s.scope_description ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions
+      .map(
+        (p) =>
+          `${p.section} ${p.title} ${p.summary} ${p.complianceImplication ?? ""}`,
+      )
+      .join(" ")}`.toLowerCase(),
 }));
 
 const AUTHORITY_ITEMS: Item[] = ALL_AUTHORITIES.map((a) => ({
@@ -222,6 +231,33 @@ const GROUP_ORDER: ItemGroup[] = [
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * When a search matched somewhere in an item's body text (not its
+ * title), pull a short snippet centred on the first match so the user
+ * sees WHY the item surfaced. Returns null when the match is in the
+ * title itself (where the title already makes it obvious).
+ */
+function extractMatchSnippet(
+  item: Item,
+  query: string,
+  radius = 60,
+): string | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const titleLower = item.title.toLowerCase();
+  // First token is the primary search term — enough for snippet anchor.
+  const token = q.split(/\s+/)[0];
+  if (!token) return null;
+  if (titleLower.includes(token)) return null; // match is in title, no snippet needed
+  const idx = item.haystack.indexOf(token);
+  if (idx === -1) return null;
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(item.haystack.length, idx + token.length + radius);
+  const prefix = start > 0 ? "…" : "";
+  const suffix = end < item.haystack.length ? "…" : "";
+  return `${prefix}${item.haystack.slice(start, end).trim()}${suffix}`;
 }
 
 /**
@@ -460,6 +496,7 @@ export default function CommandPaletteModal({
                 {items.map((item) => {
                   const isActive = flatIndex.get(item.id) === activeIndex;
                   const Icon = item.icon;
+                  const snippet = extractMatchSnippet(item, query);
                   return (
                     <button
                       key={item.id}
@@ -470,7 +507,7 @@ export default function CommandPaletteModal({
                       onMouseEnter={() =>
                         setActiveIndex(flatIndex.get(item.id) ?? 0)
                       }
-                      className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
+                      className={`w-full flex items-start gap-3 px-4 py-2 text-left transition-colors ${
                         isActive
                           ? "bg-[var(--atlas-bg-surface-muted)]"
                           : "hover:bg-[var(--atlas-bg-surface-muted)]"
@@ -478,11 +515,11 @@ export default function CommandPaletteModal({
                     >
                       <Icon
                         size={14}
-                        className={
+                        className={`mt-0.5 flex-shrink-0 ${
                           isActive
                             ? "text-[var(--atlas-text-primary)]"
                             : "text-[var(--atlas-text-faint)]"
-                        }
+                        }`}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="text-[13px] text-[var(--atlas-text-primary)] truncate">
@@ -491,11 +528,16 @@ export default function CommandPaletteModal({
                         <div className="text-[10px] text-[var(--atlas-text-muted)] truncate">
                           {item.subtitle}
                         </div>
+                        {snippet && (
+                          <div className="text-[10px] text-[var(--atlas-text-faint)] mt-0.5 italic line-clamp-2 leading-snug">
+                            {snippet}
+                          </div>
+                        )}
                       </div>
                       {isActive && (
                         <ArrowRight
                           size={12}
-                          className="text-[var(--atlas-text-faint)]"
+                          className="text-[var(--atlas-text-faint)] mt-1 flex-shrink-0"
                         />
                       )}
                     </button>

@@ -15,7 +15,12 @@ import {
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
-import type { LegalSourceType, RelevanceLevel } from "@/data/legal-sources";
+import type {
+  LegalSource,
+  LegalSourceType,
+  RelevanceLevel,
+  KeyProvision,
+} from "@/data/legal-sources";
 import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
@@ -36,6 +41,39 @@ import {
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Builds the same haystack used by performSearch for a given source.
+ * Kept colocated so the snippet helper and the ranker see identical
+ * text — no risk of the snippet pointing at a token the ranker didn't
+ * actually score.
+ */
+function buildSourceHaystack(s: LegalSource): string {
+  return `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions.map((p: KeyProvision) => `${p.title} ${p.summary}`).join(" ")}`.toLowerCase();
+}
+
+/**
+ * Extract a short snippet around the first match when it's outside the
+ * source title. Returns null when the match is in the title or missing —
+ * the row already makes those cases visually obvious.
+ */
+function sourceMatchSnippet(
+  source: LegalSource,
+  query: string,
+  radius = 70,
+): string | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const token = q.split(/\s+/)[0];
+  if (!token) return null;
+  if (source.title_en.toLowerCase().includes(token)) return null;
+  const haystack = buildSourceHaystack(source);
+  const idx = haystack.indexOf(token);
+  if (idx === -1) return null;
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(haystack.length, idx + token.length + radius);
+  return `${start > 0 ? "…" : ""}${haystack.slice(start, end).trim()}${end < haystack.length ? "…" : ""}`;
 }
 
 function scoreMatch(title: string, haystack: string, token: string): number {
@@ -126,8 +164,7 @@ function performSearch(query: string): SearchResults | null {
   );
 
   const scoredSources = ALL_SOURCES.map((s) => {
-    const haystack =
-      `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions.map((p) => `${p.title} ${p.summary}`).join(" ")}`.toLowerCase();
+    const haystack = buildSourceHaystack(s);
     return { source: s, score: scoreMatch(s.title_en, haystack, q) };
   })
     .filter(({ score }) => score > -Infinity)
@@ -445,40 +482,48 @@ export default function CommandCenterPage() {
                 {(showAllSources
                   ? results.sources
                   : results.sources.slice(0, 10)
-                ).map((source) => (
-                  <button
-                    key={source.id}
-                    onClick={() => router.push(`/atlas/sources/${source.id}`)}
-                    className="w-full flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
-                  >
-                    {/* Relevance dot */}
-                    <span
-                      className={`h-2 w-2 rounded-full flex-shrink-0 ${RELEVANCE_DOT[source.relevance_level]}`}
-                    />
+                ).map((source) => {
+                  const snippet = sourceMatchSnippet(source, debouncedQuery);
+                  return (
+                    <button
+                      key={source.id}
+                      onClick={() => router.push(`/atlas/sources/${source.id}`)}
+                      className="w-full flex items-start gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
+                    >
+                      {/* Relevance dot */}
+                      <span
+                        className={`h-2 w-2 mt-2 rounded-full flex-shrink-0 ${RELEVANCE_DOT[source.relevance_level]}`}
+                      />
 
-                    {/* Type */}
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--atlas-text-faint)] w-12 flex-shrink-0 ">
-                      {TYPE_LABELS[source.type]}
-                    </span>
-
-                    {/* Title */}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-medium text-[var(--atlas-text-primary)] truncate block group-hover:text-black transition-colors">
-                        {getTranslatedSource(source, language).title}
+                      {/* Type */}
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--atlas-text-faint)] w-12 flex-shrink-0 mt-1">
+                        {TYPE_LABELS[source.type]}
                       </span>
-                      {source.official_reference && (
-                        <span className="text-[10px] text-[var(--atlas-text-faint)] ">
-                          {source.official_reference}
-                        </span>
-                      )}
-                    </div>
 
-                    {/* Jurisdiction */}
-                    <span className="text-[11px]  font-bold text-[var(--atlas-text-muted)] flex-shrink-0">
-                      {source.jurisdiction}
-                    </span>
-                  </button>
-                ))}
+                      {/* Title + optional match snippet */}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[14px] font-medium text-[var(--atlas-text-primary)] truncate block group-hover:text-black transition-colors">
+                          {getTranslatedSource(source, language).title}
+                        </span>
+                        {source.official_reference && (
+                          <span className="text-[10px] text-[var(--atlas-text-faint)] ">
+                            {source.official_reference}
+                          </span>
+                        )}
+                        {snippet && (
+                          <span className="block mt-0.5 text-[10px] italic text-[var(--atlas-text-faint)] line-clamp-2 leading-snug">
+                            {snippet}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Jurisdiction */}
+                      <span className="text-[11px]  font-bold text-[var(--atlas-text-muted)] flex-shrink-0 mt-1">
+                        {source.jurisdiction}
+                      </span>
+                    </button>
+                  );
+                })}
                 {!showAllSources && results.sources.length > 10 && (
                   <button
                     onClick={() => setShowAllSources(true)}
