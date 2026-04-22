@@ -15,7 +15,6 @@ import {
   Newspaper,
   Settings,
   Bookmark,
-  ListChecks,
   Menu,
   X,
 } from "lucide-react";
@@ -46,7 +45,6 @@ const MAIN_NAV = [
     icon: Ticket,
   },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
-  { labelKey: "atlas.coverage", href: "/atlas/coverage", icon: ListChecks },
   { labelKey: "atlas.bookmarks", href: "/atlas/bookmarks", icon: Bookmark },
 ] as const;
 
