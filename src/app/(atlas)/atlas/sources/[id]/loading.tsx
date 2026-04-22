@@ -1,6 +1,6 @@
 export default function SourceDetailLoading() {
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12 animate-pulse">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-12 animate-pulse">
       <div className="h-4 w-56 bg-gray-100 rounded mb-6" />
       <div className="h-8 w-96 bg-gray-100 rounded-lg mb-4" />
       <div className="h-5 w-32 bg-gray-100 rounded mb-8" />

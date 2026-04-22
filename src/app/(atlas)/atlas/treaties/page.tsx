@@ -52,7 +52,7 @@ function partiesCount(source: LegalSource): number {
 
 export default function TreatiesHubPage() {
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">

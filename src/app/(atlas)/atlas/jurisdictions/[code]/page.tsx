@@ -397,7 +397,7 @@ export default function JurisdictionDetailPage({
 
   if (!jurisdiction) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
+      <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 py-8 lg:px-12">
         <nav aria-label="Breadcrumb">
           <Link
             href="/atlas"
@@ -427,7 +427,7 @@ export default function JurisdictionDetailPage({
     jurisdiction.legislation.status;
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)]">
       {/* ─── Screen content (hidden during print) ─── */}
       <div className="print-screen-content px-6 py-8 lg:px-12">
         {/* ─── Header ─── */}

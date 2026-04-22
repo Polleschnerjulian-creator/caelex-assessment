@@ -8,6 +8,7 @@
 // import { prisma } from "@/lib/prisma";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
+import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
 
 export const metadata = {
   title: "ATLAS — Space Law Database",
@@ -44,7 +45,9 @@ export default async function AtlasLayout({
 
   return (
     <LanguageProvider>
-      <AtlasShell>{children}</AtlasShell>
+      <AtlasThemeProvider>
+        <AtlasShell>{children}</AtlasShell>
+      </AtlasThemeProvider>
     </LanguageProvider>
   );
 }

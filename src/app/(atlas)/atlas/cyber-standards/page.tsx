@@ -21,7 +21,7 @@ const ICON_MAP = {
 
 export default function CyberStandardsPage() {
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
       <header className="flex items-center gap-3">
         <Shield className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
         <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">

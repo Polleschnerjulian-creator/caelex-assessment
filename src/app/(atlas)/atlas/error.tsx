@@ -29,7 +29,7 @@ export default function AtlasError({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] px-6">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--atlas-bg-page)] px-6">
       <div className="max-w-[520px] w-full rounded-2xl bg-white border border-[#E5E7EB] p-8 text-center">
         <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-amber-50 border border-amber-100 mb-4">
           <AlertTriangle size={22} className="text-amber-600" />

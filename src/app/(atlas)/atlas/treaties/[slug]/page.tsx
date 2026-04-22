@@ -247,7 +247,7 @@ export default async function TreatyDetailPage({ params }: PageProps) {
       : treaty.status.replace(/_/g, " ").toUpperCase();
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-[11px] text-gray-500">
         <Link

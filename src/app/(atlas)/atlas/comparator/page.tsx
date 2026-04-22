@@ -58,7 +58,7 @@ export default function ComparatorPage() {
 
   return (
     <>
-      <div className="flex flex-col h-full min-h-screen bg-[#F7F8FA] p-4 gap-3 print:hidden">
+      <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3 print:hidden">
         {/* ─── Header ─── */}
         <header className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">

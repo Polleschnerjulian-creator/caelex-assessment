@@ -113,7 +113,7 @@ export default async function SharePage({ searchParams }: Props) {
       : "Shared Atlas selection");
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-10">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-10">
       <header className="mb-8 max-w-3xl">
         <div className="inline-flex items-center gap-2 mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-gray-100 border border-gray-200 rounded-md px-2 py-1">
           <Share2 size={12} />

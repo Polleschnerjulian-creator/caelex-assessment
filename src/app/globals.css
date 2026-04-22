@@ -294,6 +294,71 @@ body {
   color: #111827;
 }
 
+/* ===== ATLAS THEME TOKENS =====
+   Scoped to the Atlas sub-app. Uses [data-atlas-theme] on the shell root
+   to switch between light and dark. Pages consume these via Tailwind's
+   arbitrary-value syntax: bg-[var(--atlas-bg-page)], etc.
+   Keeps the rest of the app unaffected — Atlas owns its own palette. */
+
+.atlas-themed {
+  /* Light (default) */
+  --atlas-bg-page: #f7f8fa;
+  --atlas-bg-surface: #ffffff;
+  --atlas-bg-surface-muted: #fafbfc;
+  --atlas-bg-inset: #f3f4f6;
+  --atlas-text-primary: #111827;
+  --atlas-text-secondary: #4b5563;
+  --atlas-text-muted: #6b7280;
+  --atlas-text-faint: #9ca3af;
+  --atlas-border: #e5e7eb;
+  --atlas-border-strong: #d1d5db;
+  --atlas-accent: #059669;
+  --atlas-accent-soft: #ecfdf5;
+  --atlas-scrollbar-thumb: #d1d5db;
+  --atlas-scrollbar-thumb-hover: #9ca3af;
+  --atlas-selection-bg: rgba(107, 114, 128, 0.15);
+  color-scheme: light;
+}
+
+.atlas-themed[data-atlas-theme="dark"] {
+  --atlas-bg-page: #0a0f1a;
+  --atlas-bg-surface: #111827;
+  --atlas-bg-surface-muted: #1f2937;
+  --atlas-bg-inset: #0f1520;
+  --atlas-text-primary: #f1f5f9;
+  --atlas-text-secondary: #cbd5e1;
+  --atlas-text-muted: #94a3b8;
+  --atlas-text-faint: #64748b;
+  --atlas-border: #1f2937;
+  --atlas-border-strong: #334155;
+  --atlas-accent: #10b981;
+  --atlas-accent-soft: rgba(16, 185, 129, 0.12);
+  --atlas-scrollbar-thumb: #334155;
+  --atlas-scrollbar-thumb-hover: #475569;
+  --atlas-selection-bg: rgba(16, 185, 129, 0.25);
+  color-scheme: dark;
+}
+
+.atlas-themed ::selection {
+  background: var(--atlas-selection-bg);
+  color: var(--atlas-text-primary);
+}
+
+.atlas-themed ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.atlas-themed ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.atlas-themed ::-webkit-scrollbar-thumb {
+  background: var(--atlas-scrollbar-thumb);
+  border-radius: 2px;
+}
+.atlas-themed ::-webkit-scrollbar-thumb:hover {
+  background: var(--atlas-scrollbar-thumb-hover);
+}
+
 /* Landing light focus-visible — gray ring on light bg */
 .landing-light *:focus-visible {
   outline-color: #4b5563;

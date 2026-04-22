@@ -30,7 +30,7 @@ export default async function InternationalPage() {
   const linkStatus = await getLinkStatusMap(sources.map((s) => s.id));
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-10">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-10">
       <SchemaOrgLegislation
         sources={sources}
         authorities={authorities}

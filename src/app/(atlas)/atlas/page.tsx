@@ -278,7 +278,7 @@ export default function CommandCenterPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16">
       {/* ─── Centered search area ─── */}
       <div
         className={`transition-all duration-700 ease-out ${hasResults ? "pt-10" : "pt-[22vh]"}`}

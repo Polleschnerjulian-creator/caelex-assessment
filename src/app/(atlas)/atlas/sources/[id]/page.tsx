@@ -164,7 +164,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
   // ── Not found ──
   if (!source) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-12">
+      <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 py-8 lg:px-12">
         <Link
           href="/atlas"
           className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
@@ -239,7 +239,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
     (supersededBySource ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 py-6 lg:px-12">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 py-6 lg:px-12">
       {/* ─── Breadcrumb line ─── */}
       <nav
         aria-label="Breadcrumb"

@@ -15,9 +15,16 @@ import {
   UserPlus,
   Trash2,
   Clock,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Language } from "@/lib/i18n";
+import {
+  useAtlasTheme,
+  type AtlasTheme,
+} from "../_components/AtlasThemeProvider";
 
 /* ────────────────────────────────────────────
    Types
@@ -154,6 +161,7 @@ function SaveIndicator({
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
+  const { theme, resolvedTheme, setTheme } = useAtlasTheme();
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Tab state
@@ -434,7 +442,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-12">
       {/* ─── Header ─── */}
       <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
         {t("atlas.settings")}
@@ -585,6 +593,79 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
+            </section>
+
+            {/* Appearance */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Sun
+                  className="h-4 w-4 text-gray-400"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                  Appearance
+                </h2>
+                <span className="ml-auto text-[11px] text-gray-400">
+                  Currently:{" "}
+                  <span className="font-medium text-gray-600">
+                    {resolvedTheme === "dark" ? "Dark" : "Light"}
+                  </span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {(
+                  [
+                    { value: "light", label: "Light", icon: Sun },
+                    { value: "dark", label: "Dark", icon: Moon },
+                    { value: "system", label: "System", icon: Monitor },
+                  ] as const
+                ).map((opt) => {
+                  const Icon = opt.icon;
+                  const isActive = theme === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setTheme(opt.value as AtlasTheme)}
+                      aria-pressed={isActive}
+                      className={`
+                        relative flex flex-col items-start gap-2
+                        px-4 py-4 rounded-xl border-2 transition-all duration-200
+                        ${
+                          isActive
+                            ? "border-gray-900 bg-white shadow-sm"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        }
+                      `}
+                    >
+                      <Icon
+                        className={`h-4 w-4 ${isActive ? "text-gray-900" : "text-gray-400"}`}
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
+                      <span
+                        className={`text-[13px] font-medium ${isActive ? "text-gray-900" : "text-gray-600"}`}
+                      >
+                        {opt.label}
+                      </span>
+                      {isActive && (
+                        <div className="absolute top-2 right-2 flex items-center justify-center h-4 w-4 rounded-full bg-gray-900">
+                          <Check
+                            className="h-2.5 w-2.5 text-white"
+                            strokeWidth={3}
+                            aria-hidden="true"
+                          />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-3">
+                Applies to Atlas only — your dashboard theme is unchanged.
+                Stored in this browser.
+              </p>
             </section>
           </div>
         )}
@@ -768,7 +849,10 @@ export default function SettingsPage() {
                     label: t("atlas.settings_authorities"),
                     value: "132",
                   },
-                  { label: t("atlas.settings_theme"), value: "Light" },
+                  {
+                    label: t("atlas.settings_theme"),
+                    value: resolvedTheme === "dark" ? "Dark" : "Light",
+                  },
                   {
                     label: t("atlas.settings_data"),
                     value: t("atlas.settings_data_value"),

@@ -22,6 +22,7 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
 import { CommandPalette } from "./_components/CommandPalette";
+import { useAtlasTheme } from "./_components/AtlasThemeProvider";
 
 const MAIN_NAV = [
   {
@@ -59,6 +60,7 @@ export default function AtlasShell({
 }) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { resolvedTheme } = useAtlasTheme();
   const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
   // H13: mobile-only slide-over state. On lg+ the hover-expand behaviour
@@ -87,8 +89,8 @@ export default function AtlasShell({
 
   return (
     <div
-      className="landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
-      style={{ colorScheme: "light" }}
+      className={`atlas-themed ${resolvedTheme === "light" ? "landing-light" : ""} h-screen w-screen overflow-hidden bg-[var(--atlas-bg-page)]`}
+      data-atlas-theme={resolvedTheme}
     >
       {/* ─── Mobile: hamburger toggle (<lg only) ─── */}
       <button

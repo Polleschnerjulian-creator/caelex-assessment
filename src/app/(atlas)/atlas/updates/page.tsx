@@ -80,7 +80,7 @@ export default function UpdatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-12 py-10">
+    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 lg:px-12 py-10">
       <div className="max-w-3xl">
         {/* Header */}
         <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
