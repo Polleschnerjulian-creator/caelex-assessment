@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
 import { serverAnalytics } from "@/lib/analytics";
-import { generateUniqueSlug } from "@/lib/services/organization-service";
+import {
+  generateUniqueSlug,
+  getDefaultPermissionsForRole,
+} from "@/lib/services/organization-service";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { RegisterSchema, formatZodErrors } from "@/lib/validations";
@@ -34,8 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password, organization, acceptAnalytics } =
-      validation.data;
+    const {
+      name,
+      email,
+      password,
+      organization,
+      acceptAnalytics,
+      inviteToken,
+    } = validation.data;
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
@@ -49,11 +58,45 @@ export async function POST(request: Request) {
       );
     }
 
-    const hashed = await bcrypt.hash(password, 12);
+    // If signup was launched from an invitation link, validate the token
+    // BEFORE hashing the password / starting the transaction. Reject any
+    // mismatch early so we don't create a stranded user without org.
+    let invitation: Awaited<
+      ReturnType<typeof prisma.organizationInvitation.findUnique>
+    > = null;
+    if (inviteToken) {
+      invitation = await prisma.organizationInvitation.findUnique({
+        where: { token: inviteToken },
+      });
+      if (!invitation) {
+        return NextResponse.json(
+          { error: "Invitation not found" },
+          { status: 400 },
+        );
+      }
+      if (invitation.acceptedAt) {
+        return NextResponse.json(
+          { error: "Invitation has already been accepted" },
+          { status: 400 },
+        );
+      }
+      if (invitation.expiresAt < new Date()) {
+        return NextResponse.json(
+          { error: "Invitation has expired" },
+          { status: 400 },
+        );
+      }
+      if (invitation.email.toLowerCase() !== email.toLowerCase()) {
+        return NextResponse.json(
+          {
+            error: `This invitation is addressed to ${invitation.email}. Use that email address to accept it.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
 
-    // Determine organization name
-    const orgName = organization || `${name}'s Organization`;
-    const orgSlug = await generateUniqueSlug(orgName);
+    const hashed = await bcrypt.hash(password, 12);
 
     // Create User + Organization + Membership + Subscription in a single transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -63,7 +106,9 @@ export async function POST(request: Request) {
           name,
           email,
           password: hashed,
-          organization: orgName,
+          organization: invitation
+            ? undefined
+            : organization || `${name}'s Organization`,
         },
         select: {
           id: true,
@@ -72,37 +117,63 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. Create organization with FREE plan defaults
-      const org = await tx.organization.create({
-        data: {
-          name: orgName,
-          slug: orgSlug,
-          plan: "FREE",
-          maxUsers: 1,
-          maxSpacecraft: 1,
-        },
-      });
+      let orgId: string;
+      if (invitation) {
+        // Invitation flow — don't create a new org. Join the inviter's
+        // org as the role the invitation specifies, and mark the
+        // invitation itself accepted in the same transaction.
+        await tx.organizationInvitation.update({
+          where: { id: invitation.id },
+          data: { acceptedAt: new Date() },
+        });
+        await tx.organizationMember.create({
+          data: {
+            organizationId: invitation.organizationId,
+            userId: user.id,
+            role: invitation.role,
+            invitedBy: invitation.invitedBy,
+            permissions: getDefaultPermissionsForRole(invitation.role),
+          },
+        });
+        orgId = invitation.organizationId;
+      } else {
+        // Regular new-org signup path.
+        const orgName = organization || `${name}'s Organization`;
+        const orgSlug = await generateUniqueSlug(orgName);
 
-      // 3. Add user as organization owner
-      await tx.organizationMember.create({
-        data: {
-          organizationId: org.id,
-          userId: user.id,
-          role: "OWNER",
-          permissions: ["*"],
-        },
-      });
+        // 2. Create organization with FREE plan defaults
+        const org = await tx.organization.create({
+          data: {
+            name: orgName,
+            slug: orgSlug,
+            plan: "FREE",
+            maxUsers: 1,
+            maxSpacecraft: 1,
+          },
+        });
+        orgId = org.id;
 
-      // 4. Create FREE subscription (no Stripe customer needed)
-      await tx.subscription.create({
-        data: {
-          organizationId: org.id,
-          plan: "FREE",
-          status: "ACTIVE",
-          stripeCustomerId: null,
-          currentPeriodStart: new Date(),
-        },
-      });
+        // 3. Add user as organization owner
+        await tx.organizationMember.create({
+          data: {
+            organizationId: org.id,
+            userId: user.id,
+            role: "OWNER",
+            permissions: ["*"],
+          },
+        });
+
+        // 4. Create FREE subscription (no Stripe customer needed)
+        await tx.subscription.create({
+          data: {
+            organizationId: org.id,
+            plan: "FREE",
+            status: "ACTIVE",
+            stripeCustomerId: null,
+            currentPeriodStart: new Date(),
+          },
+        });
+      }
 
       // 5. Record consent (GDPR Art. 7)
       const ipAddress =
@@ -144,7 +215,7 @@ export async function POST(request: Request) {
         ],
       });
 
-      return { user, org };
+      return { user, orgId };
     });
 
     // Track signup event
@@ -160,10 +231,11 @@ export async function POST(request: Request) {
       {
         provider: "credentials",
         plan: "FREE",
+        invitation: invitation ? true : false,
       },
       {
         userId: result.user.id,
-        organizationId: result.org.id,
+        organizationId: result.orgId,
         category: "conversion",
       },
     );

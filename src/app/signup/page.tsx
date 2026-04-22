@@ -1,23 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, Check, X } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Check, X, Mail } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
-export default function SignupPage() {
+interface InviteContext {
+  organizationName: string;
+  inviterName: string;
+}
+
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("inviteToken") ?? "";
+  const prefilledEmail = searchParams.get("email") ?? "";
+  const isInvite = Boolean(inviteToken);
+
   const [name, setName] = useState("");
   const [organization, setOrganization] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptAnalytics, setAcceptAnalytics] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [inviteCtx, setInviteCtx] = useState<InviteContext | null>(null);
+
+  // Fetch invitation metadata so we can render a banner + confirm the
+  // token is still valid before the user fills in the form. If the
+  // token is invalid/expired, route them straight to the invite error
+  // screen instead of letting them fill out a useless form.
+  useEffect(() => {
+    if (!inviteToken) return;
+    let cancelled = false;
+    fetch(
+      `/api/atlas/team/invite-info?token=${encodeURIComponent(inviteToken)}`,
+    )
+      .then(async (res) => {
+        if (!res.ok) {
+          if (!cancelled) router.replace(`/atlas-invite/${inviteToken}`);
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setInviteCtx({
+            organizationName: data.organizationName,
+            inviterName: data.inviterName,
+          });
+          // Refuse edits to email when invite-bound — the server checks
+          // this too, but we don't want the user typing a mismatched
+          // address and hitting the error.
+          if (data.email) setEmail(data.email);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) router.replace(`/atlas-invite/${inviteToken}`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteToken, router]);
 
   const passwordChecks = [
     { label: "12+ characters", met: password.length >= 12 },
@@ -48,9 +94,11 @@ export default function SignupPage() {
           name,
           email,
           password,
-          organization,
+          // Invite-flow joins the inviter's org; send no org of our own.
+          organization: isInvite ? undefined : organization,
           acceptTerms,
           acceptAnalytics,
+          inviteToken: isInvite ? inviteToken : undefined,
         }),
       });
 
@@ -77,7 +125,11 @@ export default function SignupPage() {
         setError("Account created but could not sign in");
         setLoading(false);
       } else {
-        router.push("/onboarding");
+        // Invite-flow users should land inside Atlas right away — the
+        // invitation already wired them into the org server-side, so
+        // /onboarding (which creates the first org + wizard) would be
+        // off-topic.
+        router.push(isInvite ? "/atlas" : "/onboarding");
       }
     } catch {
       setError("Something went wrong");
@@ -86,7 +138,9 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/onboarding" });
+    // Google OAuth can't carry our inviteToken through; send users via
+    // the regular onboarding path if they pick that option.
+    signIn("google", { callbackUrl: isInvite ? "/atlas" : "/onboarding" });
   };
 
   return (
@@ -149,12 +203,30 @@ export default function SignupPage() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-medium text-[#111827] mb-2">
-              Create your account
+              {isInvite ? "Konto erstellen" : "Create your account"}
             </h1>
             <p className="text-[#4B5563] text-body-lg">
-              Get started with space compliance in minutes
+              {isInvite
+                ? "Erstellen Sie Ihr Konto, um der Organisation beizutreten."
+                : "Get started with space compliance in minutes"}
             </p>
           </div>
+
+          {/* Invite banner */}
+          {isInvite && inviteCtx && (
+            <div className="mb-6 flex items-start gap-3 p-4 rounded-lg bg-[#F1F3F5] border border-[#E5E7EB]">
+              <Mail className="w-4 h-4 text-[#111827] mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-body text-[#111827]">
+                  Eingeladen von <strong>{inviteCtx.inviterName}</strong> zu{" "}
+                  <strong>{inviteCtx.organizationName}</strong>
+                </p>
+                <p className="text-caption text-[#4B5563] mt-0.5">
+                  Ihr Konto wird dieser Organisation automatisch hinzugefügt.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* OAuth buttons */}
           <div className="mb-6">
@@ -195,8 +267,12 @@ export default function SignupPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name + Organization row */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Name + optional Organization row (org hidden on invite flow) */}
+            <div
+              className={
+                isInvite ? "grid grid-cols-1" : "grid grid-cols-2 gap-3"
+              }
+            >
               <div>
                 <label className="block text-small font-medium text-[#4B5563] mb-2">
                   Full Name
@@ -211,19 +287,21 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-small font-medium text-[#4B5563] mb-2">
-                  Organization
-                </label>
-                <input
-                  type="text"
-                  autoComplete="organization"
-                  value={organization}
-                  onChange={(e) => setOrganization(e.target.value)}
-                  placeholder="Optional"
-                  className="w-full bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] rounded-lg px-4 py-3 text-subtitle focus:border-[#111827] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 transition-all"
-                />
-              </div>
+              {!isInvite && (
+                <div>
+                  <label className="block text-small font-medium text-[#4B5563] mb-2">
+                    Organization
+                  </label>
+                  <input
+                    type="text"
+                    autoComplete="organization"
+                    value={organization}
+                    onChange={(e) => setOrganization(e.target.value)}
+                    placeholder="Optional"
+                    className="w-full bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] rounded-lg px-4 py-3 text-subtitle focus:border-[#111827] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 transition-all"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -234,11 +312,23 @@ export default function SignupPage() {
                 type="email"
                 autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  isInvite ? undefined : setEmail(e.target.value)
+                }
+                readOnly={isInvite}
                 placeholder="you@company.com"
-                className="w-full bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] rounded-lg px-4 py-3 text-subtitle focus:border-[#111827] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 transition-all"
+                className={`w-full border rounded-lg px-4 py-3 text-subtitle focus:outline-none transition-all ${
+                  isInvite
+                    ? "bg-[#F1F3F5] border-[#E5E7EB] text-[#4B5563] cursor-not-allowed"
+                    : "bg-white border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] focus:border-[#111827] focus:ring-1 focus:ring-[#111827]/10"
+                }`}
                 required
               />
+              {isInvite && (
+                <p className="text-caption text-[#9CA3AF] mt-1.5">
+                  Diese Adresse ist an die Einladung gebunden.
+                </p>
+              )}
             </div>
 
             <div>
@@ -378,7 +468,11 @@ export default function SignupPage() {
           <p className="text-center mt-8 text-body text-[#4B5563]">
             Already have an account?{" "}
             <Link
-              href="/login"
+              href={
+                isInvite
+                  ? `/login?callbackUrl=${encodeURIComponent(`/atlas-invite/${inviteToken}`)}&email=${encodeURIComponent(email)}`
+                  : "/login"
+              }
               className="text-[#111827] hover:text-[#374151] underline transition-colors"
             >
               Sign in
@@ -387,5 +481,22 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// useSearchParams() requires a Suspense boundary under the Next 15 app
+// router — the outer default-export wraps the client form so the page
+// renders cleanly on first paint even before the search params resolve.
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center text-[#9CA3AF]">
+          Loading…
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

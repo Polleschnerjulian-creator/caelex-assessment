@@ -103,6 +103,12 @@ export const RegisterSchema = z.object({
     message: "You must accept the terms and privacy policy",
   }),
   acceptAnalytics: z.boolean().optional().default(false),
+
+  /// Optional invitation token — when present, signup joins the
+  /// inviter's organisation instead of creating a new one. The server
+  /// validates the token server-side and rejects the signup if the
+  /// email doesn't match the invitation.
+  inviteToken: z.string().min(1).max(500).optional(),
 });
 
 /**

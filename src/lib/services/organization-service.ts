@@ -632,6 +632,22 @@ export async function acceptInvitation(
     throw new Error("Invitation has expired");
   }
 
+  // Security gate: the accepting user's email must match the invitation's
+  // email. Without this check, a token leak (or a forwarded invite email)
+  // would let anyone join the org. Case-insensitive compare per RFC 5321.
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  if (
+    !user?.email ||
+    user.email.toLowerCase() !== invitation.email.toLowerCase()
+  ) {
+    throw new Error(
+      `This invitation is addressed to ${invitation.email}. Please sign in with that account to accept it.`,
+    );
+  }
+
   // Use transaction to accept invitation and add member
   const result = await prisma.$transaction(async (tx) => {
     // Mark invitation as accepted
