@@ -15,6 +15,7 @@ import {
   Newspaper,
   Settings,
   Bookmark,
+  Bell,
   Menu,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
 import { CommandPalette } from "./_components/CommandPalette";
 import { useAtlasTheme } from "./_components/AtlasThemeProvider";
+import { useAtlasUnreadCount } from "@/hooks/useAtlasUnreadCount";
 
 const MAIN_NAV = [
   {
@@ -46,6 +48,10 @@ const MAIN_NAV = [
   },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
   { labelKey: "atlas.bookmarks", href: "/atlas/bookmarks", icon: Bookmark },
+  // Alerts — user-level notifications feed. The unread-count badge
+  // (rendered inline below) is what makes this item more than
+  // decorative: without it, users wouldn't know new alerts had landed.
+  { labelKey: "atlas.alerts", href: "/atlas/alerts", icon: Bell },
 ] as const;
 
 const COLLAPSED_W = 58;
@@ -61,6 +67,10 @@ export default function AtlasShell({
   const { resolvedTheme } = useAtlasTheme();
   const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Unread-count badge next to the Alerts nav item. Polls every 60s
+  // while the tab is visible; see src/hooks/useAtlasUnreadCount.ts
+  // for the visibility-aware interval behaviour.
+  const unreadCount = useAtlasUnreadCount();
   // H13: mobile-only slide-over state. On lg+ the hover-expand behaviour
   // stays; below lg we show a hamburger + off-canvas drawer.
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -201,12 +211,22 @@ export default function AtlasShell({
                   item.href,
                   "exact" in item ? item.exact : undefined,
                 );
+                const showUnreadBadge =
+                  item.href === "/atlas/alerts" && unreadCount > 0;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={t(item.labelKey)}
-                    aria-label={t(item.labelKey)}
+                    title={
+                      showUnreadBadge
+                        ? `${t(item.labelKey)} (${unreadCount} unread)`
+                        : t(item.labelKey)
+                    }
+                    aria-label={
+                      showUnreadBadge
+                        ? `${t(item.labelKey)}, ${unreadCount} unread`
+                        : t(item.labelKey)
+                    }
                     className={`
                       group relative flex items-center justify-center
                       h-8 w-8 rounded-lg mb-0.5
@@ -219,8 +239,24 @@ export default function AtlasShell({
                       strokeWidth={active ? 2 : 1.5}
                       aria-hidden="true"
                     />
+                    {showUnreadBadge && (
+                      // Collapsed sidebar: compact dot in the top-right
+                      // of the icon. A full numeric badge wouldn't fit
+                      // cleanly in 8x8 — the dot signals "check here"
+                      // and the full count is available on the tooltip
+                      // plus on expand.
+                      <span
+                        aria-hidden="true"
+                        className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-red-500 ring-1 ring-[#1a1a1a]"
+                      />
+                    )}
                     <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
                       {t(item.labelKey)}
+                      {showUnreadBadge && (
+                        <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500/20 text-red-300 text-[10px] font-semibold tabular-nums px-1.5 py-0.5 ring-1 ring-red-500/30">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
                     </span>
                   </Link>
                 );
@@ -235,6 +271,8 @@ export default function AtlasShell({
                   item.href,
                   "exact" in item ? item.exact : undefined,
                 );
+                const showUnreadBadge =
+                  item.href === "/atlas/alerts" && unreadCount > 0;
                 return (
                   <li key={item.href}>
                     <Link
@@ -250,9 +288,17 @@ export default function AtlasShell({
                         strokeWidth={active ? 2 : 1.5}
                         aria-hidden="true"
                       />
-                      <span className="text-[12px] tracking-wide">
+                      <span className="text-[12px] tracking-wide flex-1">
                         {t(item.labelKey)}
                       </span>
+                      {showUnreadBadge && (
+                        // Expanded sidebar: full numeric badge. 99+
+                        // cap keeps long-absent users from getting a
+                        // visually-disruptive triple-digit pill.
+                        <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-red-500 text-[10px] font-semibold text-white tabular-nums">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
