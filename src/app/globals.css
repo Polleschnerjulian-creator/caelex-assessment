@@ -346,15 +346,31 @@ body {
 }
 
 /* Give inputs/textareas inside Atlas the themed surface so the
-   browser's default white doesn't leak through in dark mode. */
-.atlas-themed input,
-.atlas-themed textarea,
-.atlas-themed select {
-  background-color: var(--atlas-bg-input);
+   browser's default white doesn't leak through in dark mode.
+
+   IMPORTANT: globals.css defines html:not(.dark) h1/p/input rules
+   (lines ~586-673) that force dark-navy text + white inputs whenever
+   the global theme is light. Those rules have specificity 0,1,1 —
+   same as a plain .atlas-themed element selector. To reliably win we
+   use the .atlas-themed[data-atlas-theme] attribute selector which
+   bumps us to 0,2,1 and beats the global rules regardless of whether
+   the global theme is light, dark, or unset. */
+
+/* Default text color inside Atlas — any element without an explicit
+   Tailwind color class inherits the theme's primary text token. */
+.atlas-themed[data-atlas-theme] {
   color: var(--atlas-text-primary);
 }
-.atlas-themed input::placeholder,
-.atlas-themed textarea::placeholder {
+
+.atlas-themed[data-atlas-theme] input,
+.atlas-themed[data-atlas-theme] textarea,
+.atlas-themed[data-atlas-theme] select {
+  background-color: var(--atlas-bg-input);
+  color: var(--atlas-text-primary);
+  border-color: var(--atlas-border);
+}
+.atlas-themed[data-atlas-theme] input::placeholder,
+.atlas-themed[data-atlas-theme] textarea::placeholder {
   color: var(--atlas-text-faint);
 }
 
@@ -581,29 +597,21 @@ body {
   width: 100%;
 }
 
-/* ===== LIGHT MODE OVERRIDES ===== */
-.light,
-html:not(.dark) {
+/* ===== LIGHT MODE DEFAULTS =====
+   Wrapped in :where() so they act as low-specificity defaults. Any
+   explicit Tailwind utility class (or an atlas-scoped token rule)
+   wins over them. This stops the light-mode heading color from
+   leaking into scoped contexts like Atlas dark mode where the global
+   html class doesn't flip. */
+:where(.light, html:not(.dark)) {
   color: #0f172a;
 }
 
-.light h1,
-.light h2,
-.light h3,
-.light h4,
-.light h5,
-.light h6,
-html:not(.dark) h1,
-html:not(.dark) h2,
-html:not(.dark) h3,
-html:not(.dark) h4,
-html:not(.dark) h5,
-html:not(.dark) h6 {
+:where(.light, html:not(.dark)) :where(h1, h2, h3, h4, h5, h6) {
   color: #0f172a;
 }
 
-.light p,
-html:not(.dark) p {
+:where(.light, html:not(.dark)) :where(p) {
   color: #1e293b;
 }
 
@@ -649,26 +657,17 @@ html:not(.dark) .dark-section p,
   color-scheme: dark;
 }
 
-.light input,
-.light select,
-.light textarea,
-html:not(.dark) input,
-html:not(.dark) select,
-html:not(.dark) textarea {
+:where(.light, html:not(.dark)) :where(input, select, textarea) {
   color: #0f172a;
   background-color: #ffffff;
   border-color: #e2e8f0;
 }
 
-.light input::placeholder,
-html:not(.dark) input::placeholder,
-.light textarea::placeholder,
-html:not(.dark) textarea::placeholder {
+:where(.light, html:not(.dark)) :where(input, textarea)::placeholder {
   color: #94a3b8;
 }
 
-.light label,
-html:not(.dark) label {
+:where(.light, html:not(.dark)) :where(label) {
   color: #374151;
 }
 
