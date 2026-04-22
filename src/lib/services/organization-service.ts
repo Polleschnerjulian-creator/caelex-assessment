@@ -683,11 +683,25 @@ export async function acceptInvitation(
   return result;
 }
 
+/**
+ * Data returned by cancelInvitation — enables callers to dispatch a
+ * "your invitation was revoked" notification email after the row has
+ * been deleted. Minimal shape: only fields an email template needs.
+ * Return value was added 2026-04-22; the existing void-ignoring
+ * caller at /api/organizations/[orgId]/invitations/[id] stays
+ * backward-compatible because TypeScript permits discarding values.
+ */
+export interface CancelledInvitation {
+  email: string;
+  role: OrganizationRole;
+  organizationName: string;
+}
+
 export async function cancelInvitation(
   invitationId: string,
   actingUserId: string,
   organizationId: string,
-): Promise<void> {
+): Promise<CancelledInvitation> {
   const invitation = await prisma.organizationInvitation.findUnique({
     where: { id: invitationId },
     include: {
@@ -712,6 +726,12 @@ export async function cancelInvitation(
     description: `Cancelled invitation for ${invitation.email}`,
     previousValue: { email: invitation.email, role: invitation.role },
   });
+
+  return {
+    email: invitation.email,
+    role: invitation.role,
+    organizationName: invitation.organization.name,
+  };
 }
 
 export async function resendInvitation(
