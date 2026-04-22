@@ -69,8 +69,8 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
     text: "text-violet-700",
   },
   policy_document: {
-    bg: "bg-gray-50 border-gray-200",
-    text: "text-gray-600",
+    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+    text: "text-[var(--atlas-text-secondary)]",
   },
   draft_legislation: {
     bg: "bg-orange-50 border-orange-200",
@@ -79,11 +79,13 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
 };
 
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
-  fundamental: "text-gray-900 bg-gray-100 border-gray-300",
+  fundamental:
+    "text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] border-[var(--atlas-border-strong)]",
   critical: "text-red-700 bg-red-50 border-red-200",
   high: "text-amber-700 bg-amber-50 border-amber-200",
-  medium: "text-gray-500 bg-gray-50 border-gray-200",
-  low: "text-gray-500 bg-gray-50 border-gray-100",
+  medium:
+    "text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+  low: "text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border-subtle)]",
 };
 
 const STATUS_COLORS: Record<LegalSourceStatus, { bg: string; text: string }> = {
@@ -93,7 +95,10 @@ const STATUS_COLORS: Record<LegalSourceStatus, { bg: string; text: string }> = {
   },
   draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
   proposed: { bg: "bg-blue-50 border-blue-200", text: "text-blue-700" },
-  superseded: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
+  superseded: {
+    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+    text: "text-[var(--atlas-text-muted)]",
+  },
   planned: {
     bg: "bg-violet-50 border-violet-200",
     text: "text-violet-700",
@@ -113,7 +118,10 @@ const LEGISLATION_STATUS_COLORS: Record<string, { bg: string; text: string }> =
     },
     draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
     pending: { bg: "bg-blue-50 border-blue-200", text: "text-blue-700" },
-    none: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
+    none: {
+      bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+      text: "text-[var(--atlas-text-muted)]",
+    },
   };
 
 // ─── Source group definitions ───────────────────────────────────────
@@ -176,7 +184,7 @@ function KeyProvisionsToggle({
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-600 transition-colors duration-150"
+        className="flex items-center gap-1.5 text-[11px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors duration-150"
       >
         <ChevronDown
           size={12}
@@ -194,16 +202,19 @@ function KeyProvisionsToggle({
           {provisions.map((p, i) => {
             const tp = translatedSource.getProvisionTranslation(p.section);
             return (
-              <div key={i} className="border-l-2 border-gray-200 pl-3">
+              <div
+                key={i}
+                className="border-l-2 border-[var(--atlas-border)] pl-3"
+              >
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[10px]  text-gray-500 flex-shrink-0">
+                  <span className="text-[10px]  text-[var(--atlas-text-muted)] flex-shrink-0">
                     {p.section}
                   </span>
-                  <span className="text-[12px] font-medium text-gray-700">
+                  <span className="text-[12px] font-medium text-[var(--atlas-text-secondary)]">
                     {tp?.title ?? p.title}
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">
+                <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed mt-0.5">
                   {tp?.summary ?? p.summary}
                 </p>
                 {(tp?.complianceImplication ?? p.complianceImplication) && (
@@ -232,7 +243,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
   const statusLabels = getStatusLabels(t);
 
   return (
-    <div className="rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm px-5 py-4 transition-all duration-200 group">
+    <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border)] hover:shadow-sm px-5 py-4 transition-all duration-200 group">
       <div className="flex items-center gap-2 mb-2">
         <span
           className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${typeStyle.bg} ${typeStyle.text}`}
@@ -245,30 +256,34 @@ function SourceEntry({ source }: { source: LegalSource }) {
           {statusLabels[source.status] || source.status}
         </span>
         {source.official_reference && (
-          <span className="text-[10px] text-gray-400 ml-auto">
+          <span className="text-[10px] text-[var(--atlas-text-faint)] ml-auto">
             {source.official_reference}
           </span>
         )}
       </div>
 
       <Link href={`/atlas/sources/${source.id}`} className="block">
-        <h4 className="text-[14px] font-semibold text-gray-900 leading-snug group-hover:text-gray-700 transition-colors">
+        <h4 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] leading-snug group-hover:text-[var(--atlas-text-secondary)] transition-colors">
           {translated.title}
         </h4>
       </Link>
 
       {language === "en" && source.title_local && (
-        <p className="text-[11px] text-gray-400 mt-0.5">{source.title_local}</p>
+        <p className="text-[11px] text-[var(--atlas-text-faint)] mt-0.5">
+          {source.title_local}
+        </p>
       )}
       {language !== "en" && source.title_en !== translated.title && (
-        <p className="text-[11px] text-gray-400 mt-0.5">{source.title_en}</p>
+        <p className="text-[11px] text-[var(--atlas-text-faint)] mt-0.5">
+          {source.title_en}
+        </p>
       )}
 
       <div className="flex items-center gap-3 mt-2">
         {(source.date_enacted ||
           source.date_in_force ||
           source.date_published) && (
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-[var(--atlas-text-faint)]">
             {source.date_enacted ||
               source.date_in_force ||
               source.date_published}
@@ -279,7 +294,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
             href={source.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-gray-400 hover:text-gray-700 transition-colors"
+            className="text-[10px] text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors"
           >
             {t("atlas.view_source")}{" "}
             <span className="sr-only">(opens in new window)</span>
@@ -288,7 +303,7 @@ function SourceEntry({ source }: { source: LegalSource }) {
       </div>
 
       {source.scope_description && (
-        <p className="text-[11px] text-gray-500 leading-relaxed mt-2 line-clamp-3">
+        <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed mt-2 line-clamp-3">
           {translated.scopeDescription ?? source.scope_description}
         </p>
       )}
@@ -305,22 +320,22 @@ function AuthorityCard({ authority }: { authority: Authority }) {
   const translated = getTranslatedAuthority(authority, language);
   const AREA_LABELS = getAreaLabels(t);
   return (
-    <div className="py-5 px-5 rounded-xl bg-white border border-gray-100">
+    <div className="py-5 px-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className="text-[18px] font-bold text-gray-900  tracking-tight">
+          <span className="text-[18px] font-bold text-[var(--atlas-text-primary)]  tracking-tight">
             {authority.abbreviation}
           </span>
-          <h4 className="text-[13px] font-medium text-gray-700 mt-1">
+          <h4 className="text-[13px] font-medium text-[var(--atlas-text-secondary)] mt-1">
             {translated.name}
           </h4>
           {language === "en" && authority.name_local !== authority.name_en && (
-            <p className="text-[11px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-[var(--atlas-text-muted)] mt-0.5">
               {authority.name_local}
             </p>
           )}
           {language !== "en" && authority.name_en !== translated.name && (
-            <p className="text-[11px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-[var(--atlas-text-muted)] mt-0.5">
               {authority.name_en}
             </p>
           )}
@@ -330,7 +345,7 @@ function AuthorityCard({ authority }: { authority: Authority }) {
             href={authority.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 mt-1"
+            className="flex items-center gap-1 text-[10px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors flex-shrink-0 mt-1"
           >
             <ExternalLink size={10} strokeWidth={1.5} aria-hidden="true" />
             <span className="sr-only">
@@ -340,7 +355,7 @@ function AuthorityCard({ authority }: { authority: Authority }) {
         )}
       </div>
 
-      <p className="text-[11px] text-gray-500 leading-relaxed mt-3">
+      <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed mt-3">
         {translated.mandate}
       </p>
 
@@ -349,7 +364,7 @@ function AuthorityCard({ authority }: { authority: Authority }) {
           {authority.applicable_areas.map((area) => (
             <span
               key={area}
-              className="text-[9px] font-medium uppercase tracking-wider text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5"
+              className="text-[9px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded px-1.5 py-0.5"
             >
               {AREA_LABELS[area] ?? area}
             </span>
@@ -401,7 +416,7 @@ export default function JurisdictionDetailPage({
         <nav aria-label="Breadcrumb">
           <Link
             href="/atlas"
-            className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
+            className="inline-flex items-center gap-2 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
           >
             <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
             {t("atlas.back_to_atlas")}
@@ -411,7 +426,7 @@ export default function JurisdictionDetailPage({
           <span className="text-[72px]  font-bold text-gray-100">
             {displayCode}
           </span>
-          <p className="text-[13px] text-gray-500 mt-4">
+          <p className="text-[13px] text-[var(--atlas-text-muted)] mt-4">
             {t("atlas.jurisdiction_not_found")}
           </p>
         </div>
@@ -435,7 +450,7 @@ export default function JurisdictionDetailPage({
           <nav aria-label="Breadcrumb">
             <Link
               href="/atlas"
-              className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center gap-2 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
             >
               <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
               {t("atlas.back_to_atlas")}
@@ -446,7 +461,7 @@ export default function JurisdictionDetailPage({
             <span className="text-[36px]  font-bold text-gray-200 leading-none tracking-tight">
               {displayCode}
             </span>
-            <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight leading-none">
+            <h1 className="text-[28px] font-semibold text-[var(--atlas-text-primary)] tracking-tight leading-none">
               {jurisdiction.countryName}
             </h1>
             <span
@@ -457,7 +472,7 @@ export default function JurisdictionDetailPage({
           </div>
 
           <div className="flex items-center justify-between mt-2">
-            <p className="text-[14px] text-gray-500">
+            <p className="text-[14px] text-[var(--atlas-text-muted)]">
               {jurisdiction.legislation.name}
               {jurisdiction.legislation.yearEnacted
                 ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, ${t("atlas.amended", { year: String(jurisdiction.legislation.yearAmended) })}` : ""})`
@@ -476,7 +491,7 @@ export default function JurisdictionDetailPage({
               {hasDetailedSources && (
                 <button
                   onClick={handleExportBriefing}
-                  className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
+                  className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[12px] font-medium text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)] hover:text-[var(--atlas-text-primary)] transition-all duration-150"
                 >
                   <Download size={14} strokeWidth={1.5} aria-hidden="true" />
                   {t("atlas.briefing_export")}
@@ -488,52 +503,52 @@ export default function JurisdictionDetailPage({
 
         {/* ─── Key Facts Grid ─── */}
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
-            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
+            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_authority")}
             </span>
-            <span className="text-[13px] font-semibold text-gray-900 block leading-snug">
+            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block leading-snug">
               {jurisdiction.licensingAuthority.name}
             </span>
           </div>
-          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
-            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
+            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_liability")}
             </span>
-            <span className="text-[13px] font-semibold text-gray-900 block">
+            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block">
               {jurisdiction.insuranceLiability.liabilityRegime
                 .charAt(0)
                 .toUpperCase() +
                 jurisdiction.insuranceLiability.liabilityRegime.slice(1)}
             </span>
           </div>
-          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
-            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
+            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_processing")}
             </span>
-            <span className="text-[13px] font-semibold text-gray-900 block">
+            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block">
               {t("atlas.processing_weeks", {
                 min: String(jurisdiction.timeline.typicalProcessingWeeks.min),
                 max: String(jurisdiction.timeline.typicalProcessingWeeks.max),
               })}
             </span>
           </div>
-          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
-            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
+            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_insurance")}
             </span>
-            <span className="text-[13px] font-semibold text-gray-900 block">
+            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block">
               {jurisdiction.insuranceLiability.mandatoryInsurance
                 ? jurisdiction.insuranceLiability.minimumCoverage ||
                   t("atlas.required")
                 : t("atlas.not_required")}
             </span>
           </div>
-          <div className="rounded-xl bg-white border border-gray-100 px-4 py-3.5">
-            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider block mb-1">
+          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
+            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_status")}
             </span>
-            <span className="text-[13px] font-semibold text-gray-900 block">
+            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block">
               {legStatusLabel}
               {jurisdiction.legislation.yearEnacted
                 ? ` (${jurisdiction.legislation.yearEnacted})`
@@ -548,14 +563,14 @@ export default function JurisdictionDetailPage({
             <div className="flex items-center gap-2 mb-6">
               <Scale
                 size={16}
-                className="text-gray-500"
+                className="text-[var(--atlas-text-muted)]"
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
+              <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase">
                 {t("atlas.legal_sources")}
               </h2>
-              <span className="text-[12px] text-gray-500">
+              <span className="text-[12px] text-[var(--atlas-text-muted)]">
                 {legalSources.length}
               </span>
             </div>
@@ -568,14 +583,14 @@ export default function JurisdictionDetailPage({
                     <div className="flex items-center gap-2 mb-1">
                       <Icon
                         size={14}
-                        className="text-gray-500"
+                        className="text-[var(--atlas-text-muted)]"
                         strokeWidth={1.5}
                         aria-hidden="true"
                       />
-                      <h3 className="text-[11px] font-semibold text-gray-500 tracking-[0.12em] uppercase">
+                      <h3 className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.12em] uppercase">
                         {group.title}
                       </h3>
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-[var(--atlas-text-muted)]">
                         {group.sources.length}
                       </span>
                     </div>
@@ -595,17 +610,17 @@ export default function JurisdictionDetailPage({
             <div className="flex items-center gap-2 mb-4">
               <Scale
                 size={16}
-                className="text-gray-500"
+                className="text-[var(--atlas-text-muted)]"
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
+              <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase">
                 {t("atlas.legal_sources")}
               </h2>
             </div>
 
             {/* Fallback: show national-space-laws data */}
-            <div className="rounded-xl bg-white border border-gray-100 p-6">
+            <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
               <p className="text-[11px] text-amber-600 font-medium mb-4">
                 {t("atlas.detailed_sources_coming_soon")}
               </p>
@@ -621,14 +636,14 @@ export default function JurisdictionDetailPage({
                 />
                 {jurisdiction.legislation.officialUrl && (
                   <div className="flex items-start gap-4">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
+                    <span className="text-[10px] font-medium text-[var(--atlas-text-muted)] uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
                       {t("atlas.label_official_url")}
                     </span>
                     <a
                       href={jurisdiction.legislation.officialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
+                      className="text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors underline underline-offset-2"
                     >
                       {jurisdiction.legislation.officialUrl}
                       <span className="sr-only">(opens in new window)</span>
@@ -666,14 +681,14 @@ export default function JurisdictionDetailPage({
             <div className="flex items-center gap-2 mb-5">
               <Building2
                 size={16}
-                className="text-gray-500"
+                className="text-[var(--atlas-text-muted)]"
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.15em] uppercase">
+              <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase">
                 {t("atlas.competent_authorities")}
               </h2>
-              <span className="text-[12px] text-gray-500">
+              <span className="text-[12px] text-[var(--atlas-text-muted)]">
                 {authorities.length}
               </span>
             </div>
@@ -688,15 +703,15 @@ export default function JurisdictionDetailPage({
 
         {/* ─── Notes ─── */}
         {jurisdiction.notes && jurisdiction.notes.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <h2 className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
+          <div className="mt-12 pt-8 border-t border-[var(--atlas-border)]">
+            <h2 className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase mb-3">
               {t("atlas.notes")}
             </h2>
             <ul className="space-y-2">
               {jurisdiction.notes.map((note, i) => (
                 <li
                   key={i}
-                  className="text-[12px] text-gray-500 leading-relaxed pl-4 border-l-2 border-gray-200"
+                  className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed pl-4 border-l-2 border-[var(--atlas-border)]"
                 >
                   {note}
                 </li>
@@ -709,9 +724,9 @@ export default function JurisdictionDetailPage({
           const lrProfile = getProfile(displayCode as JurisdictionCode);
           if (!lrProfile) return null;
           return (
-            <section className="mt-10 pt-8 border-t border-gray-100">
+            <section className="mt-10 pt-8 border-t border-[var(--atlas-border-subtle)]">
               <div className="flex items-baseline justify-between mb-4">
-                <h2 className="text-[18px] font-semibold text-gray-900">
+                <h2 className="text-[18px] font-semibold text-[var(--atlas-text-primary)]">
                   Landing Rights
                 </h2>
                 <Link
@@ -727,8 +742,8 @@ export default function JurisdictionDetailPage({
         })()}
 
         {/* ─── Footer ─── */}
-        <footer className="mt-20 pt-6 border-t border-gray-200">
-          <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
+        <footer className="mt-20 pt-6 border-t border-[var(--atlas-border)]">
+          <p className="text-[10px] text-[var(--atlas-text-muted)] leading-relaxed max-w-3xl">
             {t("atlas.data_disclaimer_footer", {
               date: jurisdiction.lastUpdated,
             })}
@@ -755,10 +770,12 @@ export default function JurisdictionDetailPage({
 function FallbackRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-4">
-      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
+      <span className="text-[10px] font-medium text-[var(--atlas-text-muted)] uppercase tracking-wider w-28 flex-shrink-0 pt-0.5">
         {label}
       </span>
-      <span className="text-[12px] text-gray-700">{value}</span>
+      <span className="text-[12px] text-[var(--atlas-text-secondary)]">
+        {value}
+      </span>
     </div>
   );
 }

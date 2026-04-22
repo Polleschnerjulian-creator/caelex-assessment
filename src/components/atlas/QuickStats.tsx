@@ -66,7 +66,7 @@ export default function QuickStats() {
         label: "NO LEGISLATION",
         value: noLaw,
         subLabel: "regulatory gap",
-        color: "text-gray-500",
+        color: "text-[var(--atlas-text-muted)]",
       },
       {
         label: "TOTAL TRACKED",
@@ -78,21 +78,21 @@ export default function QuickStats() {
         label: "LAST UPDATE",
         value: formattedDate,
         subLabel: "data refresh",
-        color: "text-gray-700",
+        color: "text-[var(--atlas-text-secondary)]",
       },
     ];
   }, []);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="flex items-stretch divide-x divide-gray-200 overflow-x-auto">
+    <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm">
+      <div className="flex items-stretch divide-x divide-[var(--atlas-border)] overflow-x-auto">
         {stats.map((stat) => (
           <div
             key={stat.label}
             className="flex-1 min-w-[120px] px-4 py-3 flex flex-col items-center justify-center text-center"
           >
             {/* Label */}
-            <span className="text-[9px]  font-semibold text-gray-400 tracking-[0.1em] uppercase">
+            <span className="text-[9px]  font-semibold text-[var(--atlas-text-faint)] tracking-[0.1em] uppercase">
               {stat.label}
             </span>
 
@@ -103,7 +103,7 @@ export default function QuickStats() {
 
             {/* Sub-label */}
             {stat.subLabel && (
-              <span className="text-[9px]  text-gray-400 mt-0.5">
+              <span className="text-[9px]  text-[var(--atlas-text-faint)] mt-0.5">
                 {stat.subLabel}
               </span>
             )}

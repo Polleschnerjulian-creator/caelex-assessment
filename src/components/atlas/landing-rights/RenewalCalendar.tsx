@@ -25,7 +25,8 @@ const TYPE_COLOR: Record<CalendarEvent["type"], string> = {
   milestone: "bg-blue-50 text-blue-700 border-blue-200",
   wrc: "bg-purple-50 text-purple-700 border-purple-200",
   biu_deadline: "bg-amber-50 text-amber-700 border-amber-200",
-  regulatory_change: "bg-gray-50 text-gray-700 border-gray-200",
+  regulatory_change:
+    "bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] border-[var(--atlas-border)]",
   enforcement: "bg-red-50 text-red-700 border-red-200",
 };
 
@@ -66,7 +67,7 @@ export function RenewalCalendar({ events }: { events: CalendarEvent[] }) {
       {[...grouped.entries()].map(([month, monthEvents]) => (
         <section key={month} className="relative">
           <div className="sticky top-0 z-10 bg-[#F7F8FA] py-2 -my-2 mb-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-muted)]">
               {formatMonth(month)}
             </h3>
           </div>
@@ -74,13 +75,13 @@ export function RenewalCalendar({ events }: { events: CalendarEvent[] }) {
             {monthEvents.map((event) => (
               <li
                 key={event.id}
-                className={`flex items-start gap-4 p-4 rounded-xl bg-white border ${event.status === "past" ? "border-gray-100 opacity-70" : "border-gray-100 hover:border-gray-300 hover:shadow-sm"} transition-all`}
+                className={`flex items-start gap-4 p-4 rounded-xl bg-[var(--atlas-bg-surface)] border ${event.status === "past" ? "border-[var(--atlas-border-subtle)] opacity-70" : "border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-sm"} transition-all`}
               >
                 <div className="flex flex-col items-center w-16 flex-shrink-0 pt-0.5">
-                  <span className="text-[11px] font-bold text-gray-900">
+                  <span className="text-[11px] font-bold text-[var(--atlas-text-primary)]">
                     {event.date.split("-")[2] ?? "—"}
                   </span>
-                  <span className="text-[9px] uppercase text-gray-400 mt-0.5">
+                  <span className="text-[9px] uppercase text-[var(--atlas-text-faint)] mt-0.5">
                     {formatDaysUntil(event.date)}
                   </span>
                 </div>
@@ -93,24 +94,24 @@ export function RenewalCalendar({ events }: { events: CalendarEvent[] }) {
                       {TYPE_LABEL[event.type]}
                     </span>
                     {event.status === "past" && (
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-gray-400">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--atlas-text-faint)]">
                         ✓ Past
                       </span>
                     )}
                   </div>
-                  <p className="text-[13px] font-semibold text-gray-900 leading-snug">
+                  <p className="text-[13px] font-semibold text-[var(--atlas-text-primary)] leading-snug">
                     {event.title}
                   </p>
                   {event.description && (
-                    <p className="text-[12px] text-gray-600 mt-1 leading-relaxed">
+                    <p className="text-[12px] text-[var(--atlas-text-secondary)] mt-1 leading-relaxed">
                       {event.description}
                     </p>
                   )}
-                  <div className="mt-2 flex items-center gap-3 text-[10px] text-gray-500">
+                  <div className="mt-2 flex items-center gap-3 text-[10px] text-[var(--atlas-text-muted)]">
                     {event.jurisdiction && (
                       <Link
                         href={`/atlas/landing-rights/${event.jurisdiction.toLowerCase()}`}
-                        className="font-semibold hover:text-gray-900"
+                        className="font-semibold hover:text-[var(--atlas-text-primary)]"
                       >
                         {event.jurisdiction}
                       </Link>

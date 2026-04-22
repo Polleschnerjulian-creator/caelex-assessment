@@ -6,41 +6,41 @@ export function CategoryDeepDiveView({ entry }: { entry: CategoryDeepDive }) {
     <div className="flex flex-col gap-6 max-w-3xl">
       <header>
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)]">
             {entry.category.replace("_", " ")}
           </span>
-          <span className="text-[22px] font-bold text-gray-900">
+          <span className="text-[22px] font-bold text-[var(--atlas-text-primary)]">
             {entry.jurisdiction}
           </span>
         </div>
-        <h1 className="text-[28px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[28px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           {entry.title}
         </h1>
         <div className="mt-2">
           <LastVerifiedStamp date={entry.last_verified} />
         </div>
       </header>
-      <p className="text-[15px] leading-relaxed text-gray-800">
+      <p className="text-[15px] leading-relaxed text-[var(--atlas-text-primary)]">
         {entry.summary}
       </p>
       <section>
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Key provisions
         </h2>
         <div className="space-y-4">
           {entry.key_provisions.map((p, i) => (
             <div
               key={i}
-              className="rounded-xl bg-white border border-gray-100 p-5"
+              className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-5"
             >
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-1">
+              <h3 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] mb-1">
                 {p.title}
               </h3>
-              <p className="text-[13px] text-gray-700 leading-relaxed">
+              <p className="text-[13px] text-[var(--atlas-text-secondary)] leading-relaxed">
                 {p.body}
               </p>
               {p.citation && (
-                <p className="mt-2 text-[11px] font-medium text-gray-500">
+                <p className="mt-2 text-[11px] font-medium text-[var(--atlas-text-muted)]">
                   {p.citation}
                 </p>
               )}

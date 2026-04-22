@@ -6,18 +6,20 @@ export function CaseStudyView({ cs }: { cs: CaseStudy }) {
     <article className="flex flex-col gap-6 max-w-3xl">
       <header>
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-[12px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1">
+          <span className="text-[12px] font-bold text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] rounded-md px-2 py-1">
             {cs.jurisdiction}
           </span>
-          <span className="text-[13px] text-gray-600">{cs.operator}</span>
-          <span className="text-[11px] uppercase tracking-wider text-gray-400">
+          <span className="text-[13px] text-[var(--atlas-text-secondary)]">
+            {cs.operator}
+          </span>
+          <span className="text-[11px] uppercase tracking-wider text-[var(--atlas-text-faint)]">
             {cs.outcome}
           </span>
         </div>
-        <h1 className="text-[32px] font-light tracking-tight text-gray-900 leading-tight">
+        <h1 className="text-[32px] font-light tracking-tight text-[var(--atlas-text-primary)] leading-tight">
           {cs.title}
         </h1>
-        <p className="mt-2 text-[12px] text-gray-500">
+        <p className="mt-2 text-[12px] text-[var(--atlas-text-muted)]">
           {cs.date_range.from} → {cs.date_range.to ?? "ongoing"}
         </p>
         <div className="mt-2">
@@ -25,7 +27,7 @@ export function CaseStudyView({ cs }: { cs: CaseStudy }) {
         </div>
       </header>
 
-      <div className="text-[15px] leading-relaxed text-gray-800 whitespace-pre-line">
+      <div className="text-[15px] leading-relaxed text-[var(--atlas-text-primary)] whitespace-pre-line">
         {cs.narrative}
       </div>
 

@@ -62,19 +62,19 @@ export default function ComparatorPage() {
         {/* ─── Header ─── */}
         <header className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+            <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
               {t("atlas.comparator")}
             </h1>
-            <span className="text-[10px]  text-gray-500 tracking-wide">
+            <span className="text-[10px]  text-[var(--atlas-text-muted)] tracking-wide">
               {t("atlas.jurisdictions_count", { count: 19 })}
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-[10px] text-gray-500 ">
+            <div className="flex items-center gap-2 text-[10px] text-[var(--atlas-text-muted)] ">
               <span>
                 {selected.length} {t("atlas.selected")}
               </span>
-              <span className="text-gray-300">|</span>
+              <span className="text-[var(--atlas-text-faint)]">|</span>
               <span>
                 {dimensions.find((d) => d.key === dimension)?.label ||
                   t("atlas.all_dimensions")}
@@ -85,8 +85,8 @@ export default function ComparatorPage() {
                 onClick={handleExport}
                 className="
                   flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                  text-[11px] font-medium text-gray-500
-                  hover:text-gray-900 hover:bg-gray-100
+                  text-[11px] font-medium text-[var(--atlas-text-muted)]
+                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
                   transition-colors duration-150
                 "
               >
@@ -115,7 +115,7 @@ export default function ComparatorPage() {
           className="sticky top-3 z-30 px-4 py-3 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-5"
         >
           <div className="flex-1 min-w-0 flex items-center gap-3">
-            <span className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase flex-shrink-0">
+            <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-muted)] uppercase flex-shrink-0">
               {t("atlas.jurisdictions")}
             </span>
             <div className="flex-1 min-w-0">
@@ -137,7 +137,7 @@ export default function ComparatorPage() {
         {/* ─── Dimension Tabs ─── */}
         <div
           role="tablist"
-          className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-gray-200"
+          className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-[var(--atlas-border)]"
         >
           {dimensions.map((dim) => (
             <button
@@ -150,8 +150,8 @@ export default function ComparatorPage() {
                 transition-all duration-150 border-b-2 -mb-[1px]
                 ${
                   dimension === dim.key
-                    ? "border-gray-900 text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-600"
+                    ? "border-gray-900 text-[var(--atlas-text-primary)]"
+                    : "border-transparent text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)]"
                 }
               `}
             >
@@ -161,7 +161,7 @@ export default function ComparatorPage() {
         </div>
 
         {/* ─── Comparison Table ─── */}
-        <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="flex-1 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
           <ComparisonTable
             countries={selected}
             dimension={dimension}

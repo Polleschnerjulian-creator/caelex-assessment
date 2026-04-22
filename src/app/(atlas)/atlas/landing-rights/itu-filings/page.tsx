@@ -11,10 +11,10 @@ export default function ITUFilingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-[32px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[32px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           ITU Filings
         </h1>
-        <p className="mt-1 text-[13px] text-gray-600 max-w-2xl">
+        <p className="mt-1 text-[13px] text-[var(--atlas-text-secondary)] max-w-2xl">
           ITU Radio Regulations filings for the major operators tracked in
           Atlas. BIU status and Resolution 35 milestone progress where publicly
           verified. Deep-links point to the ITU Space Network Systems (SRS)
@@ -23,7 +23,7 @@ export default function ITUFilingsPage() {
       </header>
 
       {ITU_FILINGS.length === 0 ? (
-        <div className="rounded-xl bg-white border border-gray-100 p-12 text-center text-gray-500">
+        <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-12 text-center text-[var(--atlas-text-muted)]">
           No filings seeded yet.
         </div>
       ) : (

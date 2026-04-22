@@ -25,14 +25,14 @@ export function JurisdictionCard({
   return (
     <Link
       href={`/atlas/landing-rights/${profile.jurisdiction.toLowerCase()}`}
-      className="group flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all duration-200"
+      className="group flex flex-col gap-3 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-md transition-all duration-200"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-baseline gap-3">
-          <span className="text-[26px] font-bold text-gray-900 leading-none">
+          <span className="text-[26px] font-bold text-[var(--atlas-text-primary)] leading-none">
             {profile.jurisdiction}
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-faint)]">
             {REGIME_LABELS[profile.overview.regime_type] ??
               profile.overview.regime_type}
           </span>
@@ -40,13 +40,13 @@ export function JurisdictionCard({
         <DepthBadge depth={profile.depth} />
       </div>
 
-      <p className="text-[12px] text-gray-600 line-clamp-3 leading-relaxed">
+      <p className="text-[12px] text-[var(--atlas-text-secondary)] line-clamp-3 leading-relaxed">
         {profile.overview.summary}
       </p>
 
-      <div className="flex flex-wrap gap-3 text-[10px] text-gray-500">
+      <div className="flex flex-wrap gap-3 text-[10px] text-[var(--atlas-text-muted)]">
         <span className="inline-flex items-center gap-1">
-          <Clock size={10} className="text-gray-400" />
+          <Clock size={10} className="text-[var(--atlas-text-faint)]" />
           {tMin}–{tMax} mo
         </span>
         {profile.security_review.required && (
@@ -62,8 +62,8 @@ export function JurisdictionCard({
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <span className="text-[11px] font-semibold text-gray-700">
+      <div className="flex items-center justify-between pt-3 border-t border-[var(--atlas-border-subtle)]">
+        <span className="text-[11px] font-semibold text-[var(--atlas-text-secondary)]">
           {primary?.abbreviation ?? "—"}
         </span>
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function JurisdictionCard({
           />
           <ArrowRight
             size={14}
-            className="text-gray-400 group-hover:text-gray-900 group-hover:translate-x-0.5 transition-all"
+            className="text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-primary)] group-hover:translate-x-0.5 transition-all"
           />
         </div>
       </div>
@@ -106,9 +106,9 @@ function OperatorDot({
   return (
     <span
       title={title}
-      className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600"
+      className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--atlas-text-secondary)]"
     >
-      <span className="text-[9px] text-gray-400">{label}</span>
+      <span className="text-[9px] text-[var(--atlas-text-faint)]">{label}</span>
       <LandingRightsStatusBadge status={(status ?? "not_entered") as never} />
     </span>
   );

@@ -20,19 +20,20 @@ const BIU_COLOR: Record<ITUFiling["biu_status"], string> = {
   pre_biu: "bg-amber-50 text-amber-700 border-amber-200",
   biu_achieved: "bg-emerald-50 text-emerald-700 border-emerald-200",
   biu_failed: "bg-red-50 text-red-700 border-red-200",
-  unknown: "bg-gray-50 text-gray-600 border-gray-200",
+  unknown:
+    "bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] border-[var(--atlas-border)]",
 };
 
 export function ITUFilingCard({ filing }: { filing: ITUFiling }) {
   const pct = filing.resolution_35_milestones?.current_progress_pct;
   return (
-    <div className="flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-3 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-sm transition-all">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-gray-900">
+          <p className="text-[13px] font-semibold text-[var(--atlas-text-primary)]">
             {filing.operator}
           </p>
-          <p className="text-[11px] font-mono text-gray-500 truncate">
+          <p className="text-[11px] font-mono text-[var(--atlas-text-muted)] truncate">
             {filing.satellite_network_id}
           </p>
         </div>
@@ -43,52 +44,58 @@ export function ITUFilingCard({ filing }: { filing: ITUFiling }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-3 text-[10px] text-gray-500">
+      <div className="flex items-center gap-3 text-[10px] text-[var(--atlas-text-muted)]">
         <span>{filing.system_type}</span>
         {filing.biu_date && <span>BIU {filing.biu_date}</span>}
       </div>
 
       {filing.resolution_35_milestones && (
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-2 border-t border-[var(--atlas-border-subtle)]">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
               Resolution 35 progress
             </span>
             {pct !== undefined && (
-              <span className="text-[11px] font-bold text-gray-900">
+              <span className="text-[11px] font-bold text-[var(--atlas-text-primary)]">
                 {pct}%
               </span>
             )}
           </div>
           {pct !== undefined && (
-            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-[var(--atlas-bg-inset)] rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 transition-all"
                 style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
               />
             </div>
           )}
-          <div className="mt-2 grid grid-cols-3 gap-1 text-[9px] text-gray-500">
+          <div className="mt-2 grid grid-cols-3 gap-1 text-[9px] text-[var(--atlas-text-muted)]">
             {filing.resolution_35_milestones.milestone_10_pct && (
               <div>
-                <p className="uppercase tracking-wider text-gray-400">10%</p>
-                <p className="text-gray-700">
+                <p className="uppercase tracking-wider text-[var(--atlas-text-faint)]">
+                  10%
+                </p>
+                <p className="text-[var(--atlas-text-secondary)]">
                   {filing.resolution_35_milestones.milestone_10_pct}
                 </p>
               </div>
             )}
             {filing.resolution_35_milestones.milestone_50_pct && (
               <div>
-                <p className="uppercase tracking-wider text-gray-400">50%</p>
-                <p className="text-gray-700">
+                <p className="uppercase tracking-wider text-[var(--atlas-text-faint)]">
+                  50%
+                </p>
+                <p className="text-[var(--atlas-text-secondary)]">
                   {filing.resolution_35_milestones.milestone_50_pct}
                 </p>
               </div>
             )}
             {filing.resolution_35_milestones.milestone_100_pct && (
               <div>
-                <p className="uppercase tracking-wider text-gray-400">100%</p>
-                <p className="text-gray-700">
+                <p className="uppercase tracking-wider text-[var(--atlas-text-faint)]">
+                  100%
+                </p>
+                <p className="text-[var(--atlas-text-secondary)]">
                   {filing.resolution_35_milestones.milestone_100_pct}
                 </p>
               </div>
@@ -98,7 +105,7 @@ export function ITUFilingCard({ filing }: { filing: ITUFiling }) {
       )}
 
       {filing.notes && (
-        <p className="text-[11px] text-gray-600 leading-relaxed">
+        <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed">
           {filing.notes}
         </p>
       )}

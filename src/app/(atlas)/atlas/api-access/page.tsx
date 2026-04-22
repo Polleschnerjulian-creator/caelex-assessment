@@ -6,7 +6,7 @@ export default function ApiAccessPage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Key className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             API Access
           </h1>
           <span className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-medium tracking-wider text-emerald-700 uppercase">
@@ -20,34 +20,38 @@ export default function ApiAccessPage() {
       </header>
 
       {/* API Keys section */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm">
+        <div className="px-4 py-3 border-b border-[var(--atlas-border)]">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             API Keys
           </span>
         </div>
         <div className="p-4">
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div className="rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] p-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[12px] text-gray-900 font-medium">
+                <span className="text-[12px] text-[var(--atlas-text-primary)] font-medium">
                   Production Key
                 </span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="text-[11px] text-gray-400 ">
+                  <code className="text-[11px] text-[var(--atlas-text-faint)] ">
                     atlas_pk_••••••••••••••••••••
                   </code>
-                  <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <button className="text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors">
                     <Eye className="h-3 w-3" strokeWidth={1.5} />
                   </button>
-                  <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <button className="text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors">
                     <Copy className="h-3 w-3" strokeWidth={1.5} />
                   </button>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-gray-400">Created</span>
-                <p className="text-[11px] text-gray-500 ">&mdash;</p>
+                <span className="text-[10px] text-[var(--atlas-text-faint)]">
+                  Created
+                </span>
+                <p className="text-[11px] text-[var(--atlas-text-muted)] ">
+                  &mdash;
+                </p>
               </div>
             </div>
           </div>
@@ -55,9 +59,9 @@ export default function ApiAccessPage() {
       </div>
 
       {/* Endpoints documentation */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm flex-1">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm flex-1">
+        <div className="px-4 py-3 border-b border-[var(--atlas-border)]">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Available Endpoints
           </span>
         </div>
@@ -96,7 +100,7 @@ export default function ApiAccessPage() {
           ].map((endpoint) => (
             <div
               key={endpoint.path}
-              className="flex items-center h-9 rounded-lg bg-gray-50 border border-gray-100 px-3 gap-3 group hover:bg-gray-100 transition-colors cursor-pointer"
+              className="flex items-center h-9 rounded-lg bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] px-3 gap-3 group hover:bg-[var(--atlas-bg-inset)] transition-colors cursor-pointer"
             >
               <span
                 className={`text-[10px]  font-bold tracking-wider w-10 flex-shrink-0 ${
@@ -107,10 +111,10 @@ export default function ApiAccessPage() {
               >
                 {endpoint.method}
               </span>
-              <code className="text-[11px] text-gray-700  flex-shrink-0">
+              <code className="text-[11px] text-[var(--atlas-text-secondary)]  flex-shrink-0">
                 {endpoint.path}
               </code>
-              <span className="text-[10px] text-gray-400 ml-auto">
+              <span className="text-[10px] text-[var(--atlas-text-faint)] ml-auto">
                 {endpoint.desc}
               </span>
             </div>
@@ -127,12 +131,12 @@ export default function ApiAccessPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5"
+            className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm px-3 py-2.5"
           >
-            <span className="text-[10px] font-medium tracking-wider text-gray-400 uppercase">
+            <span className="text-[10px] font-medium tracking-wider text-[var(--atlas-text-faint)] uppercase">
               {stat.label}
             </span>
-            <div className="mt-1 text-[16px] font-semibold text-gray-900 ">
+            <div className="mt-1 text-[16px] font-semibold text-[var(--atlas-text-primary)] ">
               {stat.value}
             </div>
           </div>

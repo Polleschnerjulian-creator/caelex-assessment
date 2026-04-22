@@ -57,22 +57,27 @@ export default function TreatiesHubPage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Globe2 className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             International Treaties
           </h1>
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[11px] text-[var(--atlas-text-faint)]">
             UN cornerstone treaties · COPUOS guidelines · related instruments
           </span>
         </div>
-        <div className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 shadow-sm">
-          <Search className="h-3 w-3 text-gray-400" strokeWidth={1.5} />
-          <span className="text-[11px] text-gray-400">Search treaties…</span>
+        <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm">
+          <Search
+            className="h-3 w-3 text-[var(--atlas-text-faint)]"
+            strokeWidth={1.5}
+          />
+          <span className="text-[11px] text-[var(--atlas-text-faint)]">
+            Search treaties…
+          </span>
         </div>
       </header>
 
       {/* Intro */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
-        <p className="text-[12px] text-gray-600 leading-relaxed max-w-3xl">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
+        <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
           International space law is anchored by five UN treaties from 1967–1979
           and surrounded by COPUOS soft-law instruments that fill in the
           technical gaps (debris, sustainability, remote sensing). Every
@@ -98,18 +103,18 @@ export default function TreatiesHubPage() {
           <section key={group.key} className="mt-3">
             <div className="mb-3 flex items-baseline justify-between">
               <div>
-                <div className="text-[10px] font-semibold tracking-wider uppercase text-gray-500 mb-1">
+                <div className="text-[10px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)] mb-1">
                   {group.kicker}
                 </div>
-                <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">
+                <h2 className="text-[15px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
                   {group.title}
                 </h2>
               </div>
-              <span className="text-[11px] text-gray-400">
+              <span className="text-[11px] text-[var(--atlas-text-faint)]">
                 {cards.length} instrument{cards.length === 1 ? "" : "s"}
               </span>
             </div>
-            <p className="text-[11px] text-gray-500 leading-relaxed max-w-3xl mb-4">
+            <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed max-w-3xl mb-4">
               {group.lede}
             </p>
 
@@ -139,8 +144,8 @@ export default function TreatiesHubPage() {
                     href={`/atlas/treaties/${slug}`}
                     className="
                       group relative flex flex-col justify-between overflow-hidden
-                      rounded-xl border border-gray-200 bg-white p-5 shadow-sm
-                      hover:border-emerald-300 hover:shadow-md
+                      rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 shadow-sm
+                      hover:border-emerald-500 hover:shadow-md
                       transition-all duration-200
                       min-h-[180px]
                     "
@@ -163,25 +168,25 @@ export default function TreatiesHubPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-[13px] font-semibold text-gray-900 leading-snug mb-2 line-clamp-3">
+                      <h3 className="text-[13px] font-semibold text-[var(--atlas-text-primary)] leading-snug mb-2 line-clamp-3">
                         {source.title_en}
                       </h3>
 
                       {source.un_reference ? (
-                        <p className="text-[10px] text-gray-400 font-mono mb-3">
+                        <p className="text-[10px] text-[var(--atlas-text-faint)] font-mono mb-3">
                           {source.un_reference}
                         </p>
                       ) : null}
 
                       {source.key_provisions[0]?.summary ? (
-                        <p className="text-[11px] text-gray-600 leading-relaxed line-clamp-3">
+                        <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed line-clamp-3">
                           {source.key_provisions[0].summary}
                         </p>
                       ) : null}
                     </div>
 
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-[10px] text-[var(--atlas-text-muted)]">
                         {isTreaty
                           ? `${parties} State Part${parties === 1 ? "y" : "ies"} indexed`
                           : `Applies to ${parties} jurisdictions`}
@@ -203,11 +208,11 @@ export default function TreatiesHubPage() {
       })}
 
       {/* Footer reference */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 mt-3">
-        <h3 className="text-[11px] font-semibold tracking-wider uppercase text-gray-500 mb-2">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4 mt-3">
+        <h3 className="text-[11px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)] mb-2">
           Primary depositary
         </h3>
-        <p className="text-[11px] text-gray-600 leading-relaxed max-w-2xl">
+        <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-2xl">
           The UN Office for Outer Space Affairs (UNOOSA) is the depositary for
           the five core UN space treaties and publishes the authoritative list
           of States Parties. Atlas cross-references UNOOSA ratification data

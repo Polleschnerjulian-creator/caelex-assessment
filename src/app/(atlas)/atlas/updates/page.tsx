@@ -22,7 +22,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   INSTITUTIONAL: "bg-teal-50 text-teal-700 border-teal-200",
   NIS2: "bg-red-50 text-red-700 border-red-200",
   EU_SPACE_ACT: "bg-violet-50 text-violet-700 border-violet-200",
-  DATA_UPDATE: "bg-gray-50 text-gray-600 border-gray-200",
+  DATA_UPDATE:
+    "bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] border-[var(--atlas-border)]",
 };
 
 function getCategoryLabels(t: (key: string) => string): Record<string, string> {
@@ -83,10 +84,10 @@ export default function UpdatesPage() {
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 lg:px-12 py-10">
       <div className="max-w-3xl">
         {/* Header */}
-        <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
+        <h1 className="text-[24px] font-semibold tracking-tight text-[var(--atlas-text-primary)] mb-1">
           {t("atlas.regulatory_updates")}
         </h1>
-        <p className="text-[13px] text-gray-500 mb-10">
+        <p className="text-[13px] text-[var(--atlas-text-muted)] mb-10">
           {t("atlas.regulatory_updates_desc")}
         </p>
 
@@ -96,28 +97,30 @@ export default function UpdatesPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-24 bg-gray-100 rounded-xl animate-pulse"
+                className="h-24 bg-[var(--atlas-bg-inset)] rounded-xl animate-pulse"
               />
             ))}
           </div>
         ) : updates.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-[14px] text-gray-400">{t("atlas.no_updates")}</p>
-            <p className="text-[12px] text-gray-300 mt-1">
+            <p className="text-[14px] text-[var(--atlas-text-faint)]">
+              {t("atlas.no_updates")}
+            </p>
+            <p className="text-[12px] text-[var(--atlas-text-faint)] mt-1">
               {t("atlas.no_updates_detail")}
             </p>
           </div>
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gray-200" />
+            <div className="absolute left-[11px] top-2 bottom-2 w-px bg-[var(--atlas-bg-inset)]" />
 
             {Object.entries(grouped).map(([monthKey, monthUpdates]) => (
               <div key={monthKey} className="mb-8">
                 {/* Month label */}
                 <div className="flex items-center gap-3 mb-4 relative">
                   <div className="h-[7px] w-[7px] rounded-full bg-gray-400 ring-4 ring-[#F7F8FA] z-10 flex-shrink-0 ml-[8px]" />
-                  <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <span className="text-[11px] font-semibold text-[var(--atlas-text-muted)] uppercase tracking-wider">
                     {monthLabel(monthKey)}
                   </span>
                 </div>
@@ -134,7 +137,7 @@ export default function UpdatesPage() {
                     return (
                       <div
                         key={update.id}
-                        className="rounded-xl bg-white border border-gray-100 px-5 py-4 hover:border-gray-200 hover:shadow-sm transition-all duration-200"
+                        className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-5 py-4 hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200"
                       >
                         {/* Top: category + jurisdiction + date */}
                         <div className="flex items-center gap-2 mb-2">
@@ -146,23 +149,23 @@ export default function UpdatesPage() {
                           {update.jurisdiction && (
                             <Link
                               href={`/atlas/jurisdictions/${update.jurisdiction.toLowerCase()}`}
-                              className="text-[10px] font-bold text-gray-400 hover:text-gray-700 transition-colors"
+                              className="text-[10px] font-bold text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors"
                             >
                               {update.jurisdiction}
                             </Link>
                           )}
-                          <span className="text-[10px] text-gray-400 ml-auto">
+                          <span className="text-[10px] text-[var(--atlas-text-faint)] ml-auto">
                             {formatDate(update.publishedAt)}
                           </span>
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-[14px] font-semibold text-gray-900 leading-snug">
+                        <h3 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] leading-snug">
                           {update.title}
                         </h3>
 
                         {/* Description */}
-                        <p className="text-[12px] text-gray-500 leading-relaxed mt-1.5">
+                        <p className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed mt-1.5">
                           {update.description}
                         </p>
 
@@ -170,7 +173,7 @@ export default function UpdatesPage() {
                         {update.sourceId && (
                           <Link
                             href={`/atlas/sources/${update.sourceId}`}
-                            className="inline-block text-[11px] text-gray-400 hover:text-gray-700 mt-2 transition-colors"
+                            className="inline-block text-[11px] text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] mt-2 transition-colors"
                           >
                             {t("atlas.view_source")}
                           </Link>

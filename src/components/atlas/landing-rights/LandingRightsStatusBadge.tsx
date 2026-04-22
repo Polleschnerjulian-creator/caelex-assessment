@@ -9,7 +9,7 @@ const STATUS_COLORS: Record<OperatorStatus, string> = {
   denied: "bg-red-500",
   sector_limited: "bg-blue-500",
   not_entered: "bg-gray-300",
-  unknown: "bg-gray-200",
+  unknown: "bg-[var(--atlas-bg-inset)]",
 };
 
 export function LandingRightsStatusBadge({
@@ -28,7 +28,7 @@ export function LandingRightsStatusBadge({
         aria-label={t(`atlas.landing_rights_status_${status}`)}
       />
       {label && (
-        <span className="text-[11px] text-gray-600">
+        <span className="text-[11px] text-[var(--atlas-text-secondary)]">
           {t(`atlas.landing_rights_status_${status}`)}
         </span>
       )}

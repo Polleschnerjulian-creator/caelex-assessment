@@ -343,14 +343,14 @@ function getCellRender(conceptKey: string, value: string): CellRender {
   // Liability regime -- only UNLIMITED is worth calling out
   if (conceptKey === "liability_regime") {
     if (upper === "UNLIMITED") return { className: "text-red-600 font-medium" };
-    return { className: "text-gray-900" };
+    return { className: "text-[var(--atlas-text-primary)]" };
   }
 
   // Liability cap -- highlight unlimited
   if (conceptKey === "liability_cap") {
     if (upper === "UNLIMITED" || upper.includes("UNLIMITED"))
       return { className: "text-red-600 font-medium" };
-    return { className: "text-gray-900" };
+    return { className: "text-[var(--atlas-text-primary)]" };
   }
 
   // Status -- badge style
@@ -360,17 +360,18 @@ function getCellRender(conceptKey: string, value: string): CellRender {
         className: "",
         badge: true,
         badgeClassName:
-          "text-[10px] font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded inline-block",
+          "text-[10px] font-medium text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] px-2 py-0.5 rounded inline-block",
       };
     if (upper === "DRAFT" || upper === "PENDING")
       return {
         className: "",
         badge: true,
         badgeClassName:
-          "text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded inline-block",
+          "text-[10px] font-medium text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] px-2 py-0.5 rounded inline-block",
       };
-    if (upper === "NONE") return { className: "text-gray-400" };
-    return { className: "text-gray-900" };
+    if (upper === "NONE")
+      return { className: "text-[var(--atlas-text-faint)]" };
+    return { className: "text-[var(--atlas-text-primary)]" };
   }
 
   // Relationship -- subtle differentiation, no heavy color
@@ -380,22 +381,24 @@ function getCellRender(conceptKey: string, value: string): CellRender {
         className: "",
         badge: true,
         badgeClassName:
-          "text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded inline-block",
+          "text-[10px] font-medium text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] px-2 py-0.5 rounded inline-block",
       };
     return {
       className: "",
       badge: true,
       badgeClassName:
-        "text-[10px] font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded inline-block",
+        "text-[10px] font-medium text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] px-2 py-0.5 rounded inline-block",
     };
   }
 
   // Boolean Yes/No -- check both English and German values
   const yesValues = ["YES", "JA"];
   const noValues = ["NO", "NEIN"];
-  if (yesValues.includes(upper)) return { className: "text-gray-900" };
-  if (noValues.includes(upper)) return { className: "text-gray-400" };
-  if (value === "N/A") return { className: "text-gray-300" };
+  if (yesValues.includes(upper))
+    return { className: "text-[var(--atlas-text-primary)]" };
+  if (noValues.includes(upper))
+    return { className: "text-[var(--atlas-text-faint)]" };
+  if (value === "N/A") return { className: "text-[var(--atlas-text-faint)]" };
 
   // Yes/Ja with detail (e.g. "Yes — €60M" / "Ja — €60M")
   if (
@@ -404,9 +407,9 @@ function getCellRender(conceptKey: string, value: string): CellRender {
     value.startsWith("Ja —") ||
     value.startsWith("Ja —")
   )
-    return { className: "text-gray-900" };
+    return { className: "text-[var(--atlas-text-primary)]" };
 
-  return { className: "text-gray-900" };
+  return { className: "text-[var(--atlas-text-primary)]" };
 }
 
 // ─── Component ───
@@ -573,10 +576,10 @@ export default function ComparisonTable({
     return (
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <p className="text-[13px] text-gray-500">
+          <p className="text-[13px] text-[var(--atlas-text-muted)]">
             {t("atlas.comp_select_country")}
           </p>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1">
             {t("atlas.comp_select_hint")}
           </p>
         </div>
@@ -600,21 +603,23 @@ export default function ComparisonTable({
         {/* Sticky header */}
         <thead className="sticky top-0 z-20">
           <tr>
-            <th className="text-left py-3 px-4 bg-gray-50 border-b border-gray-200 w-[200px] min-w-[180px]">
-              <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
+            <th className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] w-[200px] min-w-[180px]">
+              <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-faint)] uppercase">
                 {t("atlas.provision")}
               </span>
             </th>
             {jurisdictions.map(({ code, data }) => (
               <th
                 key={code}
-                className="text-left py-3 px-4 bg-gray-50 border-b border-gray-200 min-w-[180px]"
+                className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] min-w-[180px]"
               >
                 <div>
-                  <span className="text-[12px] font-medium text-gray-900 block">
+                  <span className="text-[12px] font-medium text-[var(--atlas-text-primary)] block">
                     {jurisdictionNames[code] || data.countryName}
                   </span>
-                  <span className="text-[10px]  text-gray-400">{code}</span>
+                  <span className="text-[10px]  text-[var(--atlas-text-faint)]">
+                    {code}
+                  </span>
                 </div>
               </th>
             ))}
@@ -668,9 +673,9 @@ function SectionBlock({
         <tr>
           <td
             colSpan={jurisdictions.length + 1}
-            className="pt-5 pb-2 px-4 bg-white border-b border-gray-100"
+            className="pt-5 pb-2 px-4 bg-[var(--atlas-bg-surface)] border-b border-[var(--atlas-border-subtle)]"
           >
-            <span className="text-[11px] font-semibold tracking-[0.1em] text-gray-900 uppercase">
+            <span className="text-[11px] font-semibold tracking-[0.1em] text-[var(--atlas-text-primary)] uppercase">
               {label}
             </span>
           </td>
@@ -680,12 +685,14 @@ function SectionBlock({
         return (
           <tr
             key={`${label}-${i}`}
-            className={`group hover:bg-gray-50/80 transition-colors duration-100 ${
-              i % 2 === 1 ? "bg-gray-50/50" : "bg-white"
+            className={`group hover:bg-[var(--atlas-bg-surface-muted)]/80 transition-colors duration-100 ${
+              i % 2 === 1
+                ? "bg-[var(--atlas-bg-surface-muted)]/50"
+                : "bg-[var(--atlas-bg-surface)]"
             }`}
           >
-            <td className="py-2.5 px-4 border-b border-gray-100 align-top">
-              <span className="text-[12px] font-medium text-gray-500 leading-tight">
+            <td className="py-2.5 px-4 border-b border-[var(--atlas-border-subtle)] align-top">
+              <span className="text-[12px] font-medium text-[var(--atlas-text-muted)] leading-tight">
                 {row.label}
               </span>
             </td>
@@ -702,8 +709,8 @@ function SectionBlock({
                 <td
                   key={code}
                   className={`
-                    py-2.5 px-4 border-b border-gray-100 align-top
-                    ${colIdx > 0 ? "border-l border-gray-100" : ""}
+                    py-2.5 px-4 border-b border-[var(--atlas-border-subtle)] align-top
+                    ${colIdx > 0 ? "border-l border-[var(--atlas-border-subtle)]" : ""}
                   `}
                 >
                   {render.badge ? (

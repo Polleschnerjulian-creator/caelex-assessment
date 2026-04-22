@@ -132,10 +132,10 @@ function RatificationBucket({
       text: "text-amber-800",
     },
     muted: {
-      bg: "bg-gray-50",
-      border: "border-gray-200",
+      bg: "bg-[var(--atlas-bg-surface-muted)]",
+      border: "border-[var(--atlas-border)]",
       dot: "bg-gray-400",
-      text: "text-gray-600",
+      text: "text-[var(--atlas-text-secondary)]",
     },
   }[tone];
 
@@ -150,12 +150,12 @@ function RatificationBucket({
         >
           {label}
         </span>
-        <span className="ml-auto text-[11px] font-mono text-gray-500">
+        <span className="ml-auto text-[11px] font-mono text-[var(--atlas-text-muted)]">
           {codes.length}
         </span>
       </div>
       {codes.length === 0 ? (
-        <p className="text-[11px] text-gray-400 italic">
+        <p className="text-[11px] text-[var(--atlas-text-faint)] italic">
           No tracked jurisdictions in this bucket.
         </p>
       ) : (
@@ -164,7 +164,7 @@ function RatificationBucket({
             <Link
               key={code}
               href={`/atlas/jurisdictions/${code.toLowerCase()}`}
-              className="inline-flex items-center gap-1 rounded bg-white border border-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:border-emerald-300 hover:text-emerald-800 transition-colors"
+              className="inline-flex items-center gap-1 rounded bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--atlas-text-secondary)] hover:border-emerald-500 hover:text-emerald-800 transition-colors"
               title={countryName(code)}
             >
               <span aria-hidden="true">{flagFor(code)}</span>
@@ -186,29 +186,29 @@ function ProvisionCard({
 }) {
   const num = String(index + 1).padStart(2, "0");
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all">
+    <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-4 shadow-sm hover:border-emerald-500 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-emerald-600 tracking-wider">
             {num}
           </span>
-          <span className="text-[11px] font-mono font-semibold text-gray-700">
+          <span className="text-[11px] font-mono font-semibold text-[var(--atlas-text-secondary)]">
             {provision.section}
           </span>
         </div>
       </div>
-      <h3 className="text-[13px] font-semibold text-gray-900 leading-snug mb-2">
+      <h3 className="text-[13px] font-semibold text-[var(--atlas-text-primary)] leading-snug mb-2">
         {provision.title}
       </h3>
-      <p className="text-[11px] text-gray-600 leading-relaxed mb-3">
+      <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed mb-3">
         {provision.summary}
       </p>
       {provision.complianceImplication ? (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-[var(--atlas-border-subtle)]">
           <div className="text-[9px] font-semibold tracking-wider uppercase text-emerald-700 mb-1">
             Compliance implication
           </div>
-          <p className="text-[10.5px] text-gray-700 leading-relaxed">
+          <p className="text-[10.5px] text-[var(--atlas-text-secondary)] leading-relaxed">
             {provision.complianceImplication}
           </p>
         </div>
@@ -249,7 +249,7 @@ export default async function TreatyDetailPage({ params }: PageProps) {
   return (
     <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-[11px] text-gray-500">
+      <div className="flex items-center gap-2 text-[11px] text-[var(--atlas-text-muted)]">
         <Link
           href="/atlas/treaties"
           className="inline-flex items-center gap-1 hover:text-emerald-700 transition-colors"
@@ -257,12 +257,14 @@ export default async function TreatyDetailPage({ params }: PageProps) {
           <ArrowLeft className="h-3 w-3" strokeWidth={2} />
           All treaties
         </Link>
-        <span className="text-gray-300">/</span>
-        <span className="font-mono text-gray-400">{typedSlug}</span>
+        <span className="text-[var(--atlas-text-faint)]">/</span>
+        <span className="font-mono text-[var(--atlas-text-faint)]">
+          {typedSlug}
+        </span>
       </div>
 
       {/* Hero */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-5">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="rounded-md bg-emerald-50 p-2">
@@ -275,7 +277,7 @@ export default async function TreatyDetailPage({ params }: PageProps) {
               <div className="text-[10px] font-semibold tracking-wider uppercase text-emerald-700">
                 {isTreaty ? "UN Space Treaty" : "International Instrument"}
               </div>
-              <div className="text-[10px] text-gray-400 font-mono">
+              <div className="text-[10px] text-[var(--atlas-text-faint)] font-mono">
                 {treaty.id}
                 {treaty.un_reference ? ` · ${treaty.un_reference}` : ""}
               </div>
@@ -298,23 +300,29 @@ export default async function TreatyDetailPage({ params }: PageProps) {
             />
           </div>
         </div>
-        <h1 className="text-[22px] font-semibold tracking-tight text-gray-900 leading-snug mb-3 max-w-4xl">
+        <h1 className="text-[22px] font-semibold tracking-tight text-[var(--atlas-text-primary)] leading-snug mb-3 max-w-4xl">
           {treaty.title_en}
         </h1>
         {treaty.scope_description ? (
-          <p className="text-[12px] text-gray-600 leading-relaxed max-w-3xl">
+          <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
             {treaty.scope_description}
           </p>
         ) : null}
-        <div className="mt-4 flex flex-wrap items-center gap-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
-            <Calendar className="h-3 w-3 text-gray-400" strokeWidth={1.5} />
+        <div className="mt-4 flex flex-wrap items-center gap-4 pt-4 border-t border-[var(--atlas-border-subtle)]">
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--atlas-text-secondary)]">
+            <Calendar
+              className="h-3 w-3 text-[var(--atlas-text-faint)]"
+              strokeWidth={1.5}
+            />
             <span className="font-medium">Adopted:</span>
             <span>{formatDate(treaty.date_enacted)}</span>
           </div>
           {treaty.date_in_force ? (
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
-              <Calendar className="h-3 w-3 text-gray-400" strokeWidth={1.5} />
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--atlas-text-secondary)]">
+              <Calendar
+                className="h-3 w-3 text-[var(--atlas-text-faint)]"
+                strokeWidth={1.5}
+              />
               <span className="font-medium">Entry into force:</span>
               <span>{formatDate(treaty.date_in_force)}</span>
             </div>
@@ -335,16 +343,16 @@ export default async function TreatyDetailPage({ params }: PageProps) {
 
       {/* Ratification buckets */}
       {isTreaty ? (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+        <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <Globe2
               className="h-3.5 w-3.5 text-emerald-600"
               strokeWidth={1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-500">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)]">
               Ratification status
             </span>
-            <span className="ml-auto text-[10px] text-gray-400">
+            <span className="ml-auto text-[10px] text-[var(--atlas-text-faint)]">
               across {SPACE_LAW_COUNTRY_CODES.length} Atlas-tracked European
               jurisdictions
             </span>
@@ -366,17 +374,17 @@ export default async function TreatyDetailPage({ params }: PageProps) {
               tone="muted"
             />
           </div>
-          <p className="mt-3 text-[10px] text-gray-400 leading-relaxed">
+          <p className="mt-3 text-[10px] text-[var(--atlas-text-faint)] leading-relaxed">
             Buckets reflect Atlas&apos;s indexed European jurisdictions only.
             Global ratification numbers (e.g. 114 Parties to the OST) include
             jurisdictions outside Atlas&apos;s European scope.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+        <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
           <div className="flex items-center gap-2 mb-2">
             <Scale className="h-3.5 w-3.5 text-emerald-600" strokeWidth={1.5} />
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-500">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)]">
               Applies to
             </span>
           </div>
@@ -385,7 +393,7 @@ export default async function TreatyDetailPage({ params }: PageProps) {
               <Link
                 key={code}
                 href={`/atlas/jurisdictions/${code.toLowerCase()}`}
-                className="inline-flex items-center gap-1 rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-700 hover:border-emerald-300 hover:text-emerald-800 transition-colors"
+                className="inline-flex items-center gap-1 rounded bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2 py-0.5 text-[10px] font-medium text-[var(--atlas-text-secondary)] hover:border-emerald-500 hover:text-emerald-800 transition-colors"
               >
                 <span aria-hidden="true">{flagFor(code)}</span>
                 <span className="font-mono">{code}</span>
@@ -399,13 +407,13 @@ export default async function TreatyDetailPage({ params }: PageProps) {
       {treaty.key_provisions.length > 0 ? (
         <section>
           <div className="mb-3 mt-2">
-            <div className="text-[10px] font-semibold tracking-wider uppercase text-gray-500 mb-1">
+            <div className="text-[10px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)] mb-1">
               Key Provisions
             </div>
-            <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">
+            <h2 className="text-[15px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
               Article-level breakdown
             </h2>
-            <p className="text-[11px] text-gray-500 mt-1 max-w-3xl">
+            <p className="text-[11px] text-[var(--atlas-text-muted)] mt-1 max-w-3xl">
               Editorial summaries of the provisions most relevant to
               authorization, registration, and liability under{" "}
               {yearEnacted || "this instrument"}. Compliance implications show
@@ -422,13 +430,13 @@ export default async function TreatyDetailPage({ params }: PageProps) {
 
       {/* Related treaties */}
       {related.length > 0 ? (
-        <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+        <section className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles
               className="h-3.5 w-3.5 text-emerald-600"
               strokeWidth={1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-500">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--atlas-text-muted)]">
               Related instruments
             </span>
           </div>
@@ -437,17 +445,17 @@ export default async function TreatyDetailPage({ params }: PageProps) {
               <Link
                 key={source.id}
                 href={`/atlas/treaties/${relatedSlug}`}
-                className="flex items-start gap-3 rounded-lg border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50/40 p-3 transition-colors"
+                className="flex items-start gap-3 rounded-lg border border-[var(--atlas-border-subtle)] hover:border-emerald-500 hover:bg-emerald-50/40 p-3 transition-colors"
               >
                 <ScrollText
                   className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0 mt-0.5"
                   strokeWidth={1.5}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-semibold text-gray-900 line-clamp-2 leading-snug">
+                  <div className="text-[11px] font-semibold text-[var(--atlas-text-primary)] line-clamp-2 leading-snug">
                     {source.title_en}
                   </div>
-                  <div className="text-[10px] text-gray-500 font-mono mt-0.5">
+                  <div className="text-[10px] text-[var(--atlas-text-muted)] font-mono mt-0.5">
                     {yearInForce || formatYear(source.date_enacted)}
                     {source.un_reference ? ` · ${source.un_reference}` : ""}
                   </div>
@@ -459,9 +467,11 @@ export default async function TreatyDetailPage({ params }: PageProps) {
       ) : null}
 
       {/* Footer */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 mt-2">
-        <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
-          <span className="font-semibold text-gray-700">Not legal advice.</span>{" "}
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4 mt-2">
+        <p className="text-[10px] text-[var(--atlas-text-muted)] leading-relaxed max-w-3xl">
+          <span className="font-semibold text-[var(--atlas-text-secondary)]">
+            Not legal advice.
+          </span>{" "}
           Editorial summaries on this page are non-authoritative and intended
           for regulatory-intelligence purposes only. Refer to the UNOOSA
           depositary (linked above) for the authoritative text, signatures, and

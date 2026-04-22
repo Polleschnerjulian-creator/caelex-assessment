@@ -26,31 +26,31 @@ export function AmendmentHistory({
   });
 
   return (
-    <details className="mt-3 pt-3 border-t border-gray-100 group">
-      <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] font-semibold text-gray-700 hover:text-gray-900">
+    <details className="mt-3 pt-3 border-t border-[var(--atlas-border-subtle)] group">
+      <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] font-semibold text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)]">
         <Clock
           size={11}
           strokeWidth={2}
-          className="text-gray-400 group-open:text-gray-700"
+          className="text-[var(--atlas-text-faint)] group-open:text-[var(--atlas-text-secondary)]"
         />
         Amendment history ({sorted.length})
-        <span className="text-[10px] font-normal text-gray-400 group-open:hidden">
+        <span className="text-[10px] font-normal text-[var(--atlas-text-faint)] group-open:hidden">
           — click to expand
         </span>
       </summary>
 
-      <ol className="mt-3 relative border-l border-gray-200 ml-1.5">
+      <ol className="mt-3 relative border-l border-[var(--atlas-border)] ml-1.5">
         {sorted.map((a, i) => (
           <li key={`${a.date}-${i}`} className="ml-4 mb-3 last:mb-0">
             <span
-              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500"
+              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-[var(--atlas-bg-surface)] border-2 border-emerald-500"
               aria-hidden="true"
             />
             <div className="flex flex-wrap items-baseline gap-2 mb-0.5">
-              <span className="text-[11px] font-semibold text-gray-900 tabular-nums">
+              <span className="text-[11px] font-semibold text-[var(--atlas-text-primary)] tabular-nums">
                 {a.date}
               </span>
-              <span className="text-[10px] font-mono text-gray-500">
+              <span className="text-[10px] font-mono text-[var(--atlas-text-muted)]">
                 {a.reference}
               </span>
               {a.source_url && (
@@ -59,13 +59,13 @@ export function AmendmentHistory({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Official text of amendment ${a.reference}`}
-                  className="inline-flex items-center gap-0.5 text-[10px] text-gray-500 hover:text-emerald-700"
+                  className="inline-flex items-center gap-0.5 text-[10px] text-[var(--atlas-text-muted)] hover:text-emerald-700"
                 >
                   text <ExternalLink size={9} aria-hidden="true" />
                 </a>
               )}
             </div>
-            <p className="text-[11px] text-gray-700 leading-relaxed">
+            <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed">
               {a.summary}
             </p>
             {a.affected_sections && a.affected_sections.length > 0 && (
@@ -73,7 +73,7 @@ export function AmendmentHistory({
                 {a.affected_sections.map((sec) => (
                   <span
                     key={sec}
-                    className="text-[9px] font-mono text-gray-600 bg-gray-50 border border-gray-100 rounded px-1.5 py-0.5"
+                    className="text-[9px] font-mono text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] rounded px-1.5 py-0.5"
                   >
                     {sec}
                   </span>
@@ -85,14 +85,14 @@ export function AmendmentHistory({
         {dateEnacted && (
           <li className="ml-4 mt-2">
             <span
-              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-gray-200 border-2 border-white"
+              className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-[var(--atlas-bg-inset)] border-2 border-white"
               aria-hidden="true"
             />
             <div className="flex items-baseline gap-2">
-              <span className="text-[11px] font-semibold text-gray-500 tabular-nums">
+              <span className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tabular-nums">
                 {dateEnacted}
               </span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-[var(--atlas-text-faint)]">
                 Original enactment
               </span>
             </div>

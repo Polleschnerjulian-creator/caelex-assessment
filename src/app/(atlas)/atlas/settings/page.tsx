@@ -88,15 +88,15 @@ const DEBOUNCE_MS = 500;
 function FieldSkeleton() {
   return (
     <div className="animate-pulse space-y-2">
-      <div className="h-3 w-20 bg-gray-200 rounded" />
-      <div className="h-10 w-full bg-gray-100 rounded-lg" />
+      <div className="h-3 w-20 bg-[var(--atlas-bg-inset)] rounded" />
+      <div className="h-10 w-full bg-[var(--atlas-bg-inset)] rounded-lg" />
     </div>
   );
 }
 
 function CardSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
+    <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 space-y-5">
       {Array.from({ length: rows }).map((_, i) => (
         <FieldSkeleton key={i} />
       ))}
@@ -107,12 +107,12 @@ function CardSkeleton({ rows = 3 }: { rows?: number }) {
 function MemberSkeleton() {
   return (
     <div className="animate-pulse flex items-center gap-3 px-5 py-3.5">
-      <div className="h-8 w-8 rounded-full bg-gray-200" />
+      <div className="h-8 w-8 rounded-full bg-[var(--atlas-bg-inset)]" />
       <div className="flex-1 space-y-1.5">
-        <div className="h-3 w-28 bg-gray-200 rounded" />
-        <div className="h-2.5 w-40 bg-gray-100 rounded" />
+        <div className="h-3 w-28 bg-[var(--atlas-bg-inset)] rounded" />
+        <div className="h-2.5 w-40 bg-[var(--atlas-bg-inset)] rounded" />
       </div>
-      <div className="h-5 w-14 bg-gray-100 rounded-full" />
+      <div className="h-5 w-14 bg-[var(--atlas-bg-inset)] rounded-full" />
     </div>
   );
 }
@@ -137,7 +137,7 @@ function SaveIndicator({
           ? "text-emerald-600"
           : status === "error"
             ? "text-red-500"
-            : "text-gray-400"
+            : "text-[var(--atlas-text-faint)]"
       }`}
     >
       {status === "saving" && (
@@ -444,15 +444,15 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-12">
       {/* ─── Header ─── */}
-      <h1 className="text-[24px] font-semibold tracking-tight text-gray-900 mb-1">
+      <h1 className="text-[24px] font-semibold tracking-tight text-[var(--atlas-text-primary)] mb-1">
         {t("atlas.settings")}
       </h1>
-      <p className="text-[13px] text-gray-500 mb-8">
+      <p className="text-[13px] text-[var(--atlas-text-muted)] mb-8">
         {t("atlas.settings_desc")}
       </p>
 
       {/* ─── Tab Bar ─── */}
-      <div className="flex items-center gap-1 mb-8 border-b border-gray-200">
+      <div className="flex items-center gap-1 mb-8 border-b border-[var(--atlas-border)]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -462,8 +462,8 @@ export default function SettingsPage() {
               border-b-2 transition-all duration-150 -mb-px
               ${
                 activeTab === tab.id
-                  ? "border-gray-900 text-gray-900"
-                  : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
+                  ? "border-gray-900 text-[var(--atlas-text-primary)]"
+                  : "border-transparent text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)]"
               }
             `}
           >
@@ -483,11 +483,11 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <User
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   {t("atlas.settings_tab_personal")}
                 </h2>
                 <div className="ml-auto">
@@ -498,10 +498,10 @@ export default function SettingsPage() {
               {profileLoading ? (
                 <CardSkeleton rows={3} />
               ) : (
-                <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 space-y-5">
                   {/* Name */}
                   <div>
-                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
                       {t("atlas.settings_your_name")}
                     </label>
                     <input
@@ -513,23 +513,23 @@ export default function SettingsPage() {
                         )
                       }
                       placeholder={t("atlas.settings_name_placeholder")}
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
+                      className="w-full px-3 py-2.5 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
                     />
-                    <p className="text-[11px] text-gray-400 mt-1.5">
+                    <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1.5">
                       {t("atlas.settings_name_hint")}
                     </p>
                   </div>
 
                   {/* Email (read-only) */}
                   <div>
-                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
                       {t("atlas.settings_email")}
                     </label>
-                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[14px] text-gray-400">
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)] text-[14px] text-[var(--atlas-text-faint)]">
                       <Mail
                         size={14}
                         strokeWidth={1.5}
-                        className="text-gray-300"
+                        className="text-[var(--atlas-text-faint)]"
                         aria-hidden="true"
                       />
                       {profile?.email ?? ""}
@@ -543,11 +543,11 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Globe
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   {t("atlas.settings_language")}
                 </h2>
               </div>
@@ -565,18 +565,18 @@ export default function SettingsPage() {
                         px-5 py-4 rounded-xl border-2 transition-all duration-200
                         ${
                           isActive
-                            ? "border-gray-900 bg-white shadow-sm"
-                            : "border-gray-200 bg-white hover:border-gray-300"
+                            ? "border-gray-900 bg-[var(--atlas-bg-surface)] shadow-sm"
+                            : "border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] hover:border-[var(--atlas-border-strong)]"
                         }
                       `}
                     >
                       <div className="flex flex-col items-start">
                         <span
-                          className={`text-[15px] font-medium ${isActive ? "text-gray-900" : "text-gray-600"}`}
+                          className={`text-[15px] font-medium ${isActive ? "text-[var(--atlas-text-primary)]" : "text-[var(--atlas-text-secondary)]"}`}
                         >
                           {opt.native}
                         </span>
-                        <span className="text-[11px] text-gray-400 mt-0.5">
+                        <span className="text-[11px] text-[var(--atlas-text-faint)] mt-0.5">
                           {opt.label}
                         </span>
                       </div>
@@ -599,16 +599,16 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Sun
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   Appearance
                 </h2>
-                <span className="ml-auto text-[11px] text-gray-400">
+                <span className="ml-auto text-[11px] text-[var(--atlas-text-faint)]">
                   Currently:{" "}
-                  <span className="font-medium text-gray-600">
+                  <span className="font-medium text-[var(--atlas-text-secondary)]">
                     {resolvedTheme === "dark" ? "Dark" : "Light"}
                   </span>
                 </span>
@@ -634,18 +634,18 @@ export default function SettingsPage() {
                         px-4 py-4 rounded-xl border-2 transition-all duration-200
                         ${
                           isActive
-                            ? "border-gray-900 bg-white shadow-sm"
-                            : "border-gray-200 bg-white hover:border-gray-300"
+                            ? "border-gray-900 bg-[var(--atlas-bg-surface)] shadow-sm"
+                            : "border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] hover:border-[var(--atlas-border-strong)]"
                         }
                       `}
                     >
                       <Icon
-                        className={`h-4 w-4 ${isActive ? "text-gray-900" : "text-gray-400"}`}
+                        className={`h-4 w-4 ${isActive ? "text-[var(--atlas-text-primary)]" : "text-[var(--atlas-text-faint)]"}`}
                         strokeWidth={1.5}
                         aria-hidden="true"
                       />
                       <span
-                        className={`text-[13px] font-medium ${isActive ? "text-gray-900" : "text-gray-600"}`}
+                        className={`text-[13px] font-medium ${isActive ? "text-[var(--atlas-text-primary)]" : "text-[var(--atlas-text-secondary)]"}`}
                       >
                         {opt.label}
                       </span>
@@ -662,7 +662,7 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
-              <p className="text-[11px] text-gray-400 mt-3">
+              <p className="text-[11px] text-[var(--atlas-text-faint)] mt-3">
                 Applies to Atlas only — your dashboard theme is unchanged.
                 Stored in this browser.
               </p>
@@ -679,11 +679,11 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Building2
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   {t("atlas.settings_firm_profile")}
                 </h2>
                 <div className="ml-auto">
@@ -693,14 +693,14 @@ export default function SettingsPage() {
 
               {/* Owner-only notice */}
               {firm && !firm.isOwner && (
-                <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-lg bg-gray-50 border border-gray-100">
+                <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-lg bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)]">
                   <Info
                     size={13}
-                    className="text-gray-400 shrink-0"
+                    className="text-[var(--atlas-text-faint)] shrink-0"
                     strokeWidth={1.5}
                     aria-hidden="true"
                   />
-                  <span className="text-[12px] text-gray-500">
+                  <span className="text-[12px] text-[var(--atlas-text-muted)]">
                     {t("atlas.settings_owner_only")}
                   </span>
                 </div>
@@ -709,10 +709,10 @@ export default function SettingsPage() {
               {firmLoading ? (
                 <CardSkeleton rows={3} />
               ) : (
-                <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 space-y-5">
                   {/* Firm name */}
                   <div>
-                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
                       {t("atlas.settings_firm_name")}
                     </label>
                     {firm?.isOwner ? (
@@ -725,27 +725,27 @@ export default function SettingsPage() {
                           )
                         }
                         placeholder={t("atlas.settings_firm_name_placeholder")}
-                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
+                        className="w-full px-3 py-2.5 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
                       />
                     ) : (
-                      <div className="px-3 py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[14px] text-gray-400">
+                      <div className="px-3 py-2.5 rounded-lg border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)] text-[14px] text-[var(--atlas-text-faint)]">
                         {firm?.name || "—"}
                       </div>
                     )}
-                    <p className="text-[11px] text-gray-400 mt-1.5">
+                    <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1.5">
                       {t("atlas.settings_logo_replaces_hint")}
                     </p>
                   </div>
 
                   {/* Logo */}
                   <div>
-                    <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
                       {t("atlas.settings_firm_logo")}
                     </label>
 
                     {firm?.logoUrl ? (
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center justify-center h-16 w-16 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={firm.logoUrl}
@@ -757,7 +757,7 @@ export default function SettingsPage() {
                           <div className="flex flex-col gap-1.5">
                             <button
                               onClick={() => fileRef.current?.click()}
-                              className="text-[12px] text-gray-500 hover:text-gray-900 transition-colors"
+                              className="text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
                             >
                               {t("atlas.settings_replace_logo")}
                             </button>
@@ -774,28 +774,28 @@ export default function SettingsPage() {
                     ) : firm?.isOwner ? (
                       <button
                         onClick={() => fileRef.current?.click()}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white transition-all w-full"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] hover:border-[var(--atlas-border-strong)] hover:bg-[var(--atlas-bg-surface)] transition-all w-full"
                       >
                         <Upload
                           size={18}
-                          className="text-gray-400"
+                          className="text-[var(--atlas-text-faint)]"
                           strokeWidth={1.5}
                           aria-hidden="true"
                         />
                         <div className="text-left">
-                          <span className="block text-[13px] text-gray-600">
+                          <span className="block text-[13px] text-[var(--atlas-text-secondary)]">
                             {t("atlas.settings_upload_logo")}
                           </span>
-                          <span className="block text-[11px] text-gray-400">
+                          <span className="block text-[11px] text-[var(--atlas-text-faint)]">
                             {t("atlas.settings_logo_formats_size")}
                           </span>
                         </div>
                       </button>
                     ) : (
-                      <div className="flex items-center justify-center h-16 w-16 rounded-lg border border-gray-100 bg-gray-50">
+                      <div className="flex items-center justify-center h-16 w-16 rounded-lg border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)]">
                         <Building2
                           size={20}
-                          className="text-gray-300"
+                          className="text-[var(--atlas-text-faint)]"
                           strokeWidth={1.5}
                           aria-hidden="true"
                         />
@@ -813,7 +813,7 @@ export default function SettingsPage() {
                       />
                     )}
 
-                    <p className="text-[11px] text-gray-400 mt-1.5">
+                    <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1.5">
                       {t("atlas.settings_logo_replaces_hint")}
                     </p>
                   </div>
@@ -825,16 +825,16 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Info
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   {t("atlas.settings_atlas_stats")}
                 </h2>
               </div>
 
-              <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
+              <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
                 {[
                   { label: t("atlas.settings_version"), value: "1.0" },
                   {
@@ -862,10 +862,10 @@ export default function SettingsPage() {
                     key={row.label}
                     className="flex items-center justify-between px-5 py-3"
                   >
-                    <span className="text-[13px] text-gray-600">
+                    <span className="text-[13px] text-[var(--atlas-text-secondary)]">
                       {row.label}
                     </span>
-                    <span className="text-[13px] text-gray-400">
+                    <span className="text-[13px] text-[var(--atlas-text-faint)]">
                       {row.value}
                     </span>
                   </div>
@@ -885,16 +885,16 @@ export default function SettingsPage() {
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <UserPlus
-                    className="h-4 w-4 text-gray-400"
+                    className="h-4 w-4 text-[var(--atlas-text-faint)]"
                     strokeWidth={1.5}
                     aria-hidden="true"
                   />
-                  <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                  <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                     {t("atlas.settings_team_invite")}
                   </h2>
                 </div>
 
-                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5">
                   <div className="flex items-center gap-3">
                     <input
                       type="email"
@@ -907,7 +907,7 @@ export default function SettingsPage() {
                         if (e.key === "Enter") handleInvite();
                       }}
                       placeholder={t("atlas.settings_team_invite_email")}
-                      className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none transition-colors"
+                      className="flex-1 px-3 py-2.5 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
                     />
                     <button
                       onClick={handleInvite}
@@ -947,28 +947,28 @@ export default function SettingsPage() {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Users
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                   {t("atlas.settings_team_members")}
                 </h2>
                 {team && (
-                  <span className="text-[11px] text-gray-400 ml-1">
+                  <span className="text-[11px] text-[var(--atlas-text-faint)] ml-1">
                     ({team.members.length})
                   </span>
                 )}
               </div>
 
               {teamLoading ? (
-                <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <MemberSkeleton key={i} />
                   ))}
                 </div>
               ) : team && team.members.length > 0 ? (
-                <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
                   {team.members.map((member) => (
                     <div
                       key={member.id}
@@ -983,7 +983,7 @@ export default function SettingsPage() {
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100 text-gray-400">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-faint)]">
                           <User
                             size={14}
                             strokeWidth={1.5}
@@ -994,10 +994,10 @@ export default function SettingsPage() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-medium text-gray-900 truncate">
+                        <div className="text-[13px] font-medium text-[var(--atlas-text-primary)] truncate">
                           {member.name || member.email}
                         </div>
-                        <div className="text-[11px] text-gray-400 truncate">
+                        <div className="text-[11px] text-[var(--atlas-text-faint)] truncate">
                           {member.email}
                           {member.joinedAt && (
                             <>
@@ -1014,7 +1014,7 @@ export default function SettingsPage() {
                         className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                           member.role === "OWNER"
                             ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-500"
+                            : "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-muted)]"
                         }`}
                       >
                         {member.role === "OWNER"
@@ -1044,7 +1044,7 @@ export default function SettingsPage() {
                               </button>
                               <button
                                 onClick={() => setConfirmRemoveId(null)}
-                                className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-[11px] text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors"
                               >
                                 <X
                                   size={12}
@@ -1056,7 +1056,7 @@ export default function SettingsPage() {
                           ) : (
                             <button
                               onClick={() => setConfirmRemoveId(member.id)}
-                              className="text-gray-300 hover:text-red-400 transition-colors"
+                              className="text-[var(--atlas-text-faint)] hover:text-red-400 transition-colors"
                               title={t("atlas.settings_team_remove")}
                             >
                               <Trash2
@@ -1072,14 +1072,14 @@ export default function SettingsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border border-gray-200 bg-white px-5 py-8 text-center">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] px-5 py-8 text-center">
                   <Users
                     size={24}
-                    className="mx-auto text-gray-300 mb-2"
+                    className="mx-auto text-[var(--atlas-text-faint)] mb-2"
                     strokeWidth={1.5}
                     aria-hidden="true"
                   />
-                  <p className="text-[13px] text-gray-400">
+                  <p className="text-[13px] text-[var(--atlas-text-faint)]">
                     {t("atlas.settings_team_no_members")}
                   </p>
                 </div>
@@ -1091,19 +1091,19 @@ export default function SettingsPage() {
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <Clock
-                    className="h-4 w-4 text-gray-400"
+                    className="h-4 w-4 text-[var(--atlas-text-faint)]"
                     strokeWidth={1.5}
                     aria-hidden="true"
                   />
-                  <h2 className="text-[12px] font-semibold text-gray-500 tracking-[0.1em] uppercase">
+                  <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
                     {t("atlas.settings_team_pending")}
                   </h2>
-                  <span className="text-[11px] text-gray-400 ml-1">
+                  <span className="text-[11px] text-[var(--atlas-text-faint)] ml-1">
                     ({team.invitations.length})
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
+                <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
                   {team.invitations.map((inv) => (
                     <div
                       key={inv.id}
@@ -1114,10 +1114,10 @@ export default function SettingsPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] text-gray-600 truncate">
+                        <div className="text-[13px] text-[var(--atlas-text-secondary)] truncate">
                           {inv.email}
                         </div>
-                        <div className="text-[11px] text-gray-400">
+                        <div className="text-[11px] text-[var(--atlas-text-faint)]">
                           {t("atlas.settings_team_invited")}{" "}
                           {formatDate(inv.createdAt)}
                           {inv.expiresAt && (

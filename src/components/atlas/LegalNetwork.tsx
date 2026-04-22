@@ -321,7 +321,7 @@ export default function LegalNetwork() {
     <div className="space-y-3">
       {/* Stats bar */}
       <div className="flex items-center gap-4">
-        <span className="text-[10px]  text-gray-400 tracking-wide">
+        <span className="text-[10px]  text-[var(--atlas-text-faint)] tracking-wide">
           {stats.sources} {language === "de" ? "Quellen" : "sources"}
           {" · "}
           {stats.connections}{" "}
@@ -333,7 +333,7 @@ export default function LegalNetwork() {
 
       {/* SVG network visualization */}
       <div
-        className="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-white/50"
+        className="relative w-full overflow-hidden rounded-xl border border-[var(--atlas-border)] bg-white/50"
         style={{ maxHeight: 400 }}
       >
         <svg

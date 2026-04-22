@@ -115,18 +115,18 @@ export default async function SharePage({ searchParams }: Props) {
   return (
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16 py-10">
       <header className="mb-8 max-w-3xl">
-        <div className="inline-flex items-center gap-2 mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-gray-100 border border-gray-200 rounded-md px-2 py-1">
+        <div className="inline-flex items-center gap-2 mb-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-inset)] border border-[var(--atlas-border)] rounded-md px-2 py-1">
           <Share2 size={12} />
           Shared selection
         </div>
-        <h1 className="text-[28px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[28px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           {title}
         </h1>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-[var(--atlas-text-muted)]">
           {validCountries.length > 0 && (
             <span>
               Countries:{" "}
-              <strong className="font-semibold text-gray-700">
+              <strong className="font-semibold text-[var(--atlas-text-secondary)]">
                 {validCountries.join(", ")}
               </strong>
             </span>
@@ -134,14 +134,14 @@ export default async function SharePage({ searchParams }: Props) {
           {areas.length > 0 && (
             <span>
               Compliance areas:{" "}
-              <strong className="font-semibold text-gray-700">
+              <strong className="font-semibold text-[var(--atlas-text-secondary)]">
                 {areas.join(", ")}
               </strong>
             </span>
           )}
           <span>•</span>
           <span>
-            <strong className="font-semibold text-gray-700">
+            <strong className="font-semibold text-[var(--atlas-text-secondary)]">
               {sources.length}
             </strong>{" "}
             source{sources.length === 1 ? "" : "s"}
@@ -154,18 +154,18 @@ export default async function SharePage({ searchParams }: Props) {
       </header>
 
       {sources.length === 0 ? (
-        <div className="max-w-xl rounded-xl bg-white border border-gray-100 p-8 text-center">
-          <p className="text-[13px] text-gray-600">
+        <div className="max-w-xl rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-8 text-center">
+          <p className="text-[13px] text-[var(--atlas-text-secondary)]">
             No sources match this selection. Adjust the{" "}
-            <code className="text-[11px] bg-gray-50 border border-gray-100 rounded px-1">
+            <code className="text-[11px] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] rounded px-1">
               country
             </code>
             ,{" "}
-            <code className="text-[11px] bg-gray-50 border border-gray-100 rounded px-1">
+            <code className="text-[11px] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] rounded px-1">
               area
             </code>
             , or{" "}
-            <code className="text-[11px] bg-gray-50 border border-gray-100 rounded px-1">
+            <code className="text-[11px] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] rounded px-1">
               ids
             </code>{" "}
             query parameters.
@@ -177,14 +177,14 @@ export default async function SharePage({ searchParams }: Props) {
             <article
               key={s.id}
               id={s.id}
-              className="flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 scroll-mt-8"
+              className="flex flex-col gap-3 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] scroll-mt-8"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">
+                  <h3 className="text-[15px] font-semibold text-[var(--atlas-text-primary)] leading-snug">
                     {s.title_en}
                   </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-[var(--atlas-text-muted)]">
                     <span className="font-mono">{s.id}</span>
                     <span>{s.jurisdiction}</span>
                     {s.date_in_force && (
@@ -206,7 +206,7 @@ export default async function SharePage({ searchParams }: Props) {
                       href={s.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-emerald-700"
+                      className="inline-flex items-center gap-1 text-[11px] text-[var(--atlas-text-muted)] hover:text-emerald-700"
                     >
                       Official text <ExternalLink size={10} />
                     </a>
@@ -214,7 +214,7 @@ export default async function SharePage({ searchParams }: Props) {
                 </div>
               </div>
               {s.scope_description && (
-                <p className="text-[12px] text-gray-700 leading-relaxed">
+                <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
                   {s.scope_description}
                 </p>
               )}
@@ -223,10 +223,10 @@ export default async function SharePage({ searchParams }: Props) {
         </section>
       )}
 
-      <footer className="mt-12 pt-6 border-t border-gray-200 max-w-3xl">
+      <footer className="mt-12 pt-6 border-t border-[var(--atlas-border)] max-w-3xl">
         <Link
           href="/atlas"
-          className="inline-flex items-center gap-2 text-[13px] text-gray-700 hover:text-gray-900 font-medium"
+          className="inline-flex items-center gap-2 text-[13px] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] font-medium"
         >
           <ArrowLeft size={14} /> Back to Atlas
         </Link>

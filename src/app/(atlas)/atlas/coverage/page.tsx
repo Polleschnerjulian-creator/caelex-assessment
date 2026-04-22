@@ -428,7 +428,7 @@ function StatusBadge({ status }: { status: CoverageStatus }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider bg-gray-50 border border-gray-200 text-gray-500">
+    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] text-[var(--atlas-text-muted)]">
       <Circle className="h-2.5 w-2.5" strokeWidth={1.5} />
       Not planned
     </span>
@@ -446,20 +446,20 @@ function JurisdictionTable({
     (r) => r.status === "full" || r.status === "in-progress",
   ).length;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <h2 className="text-[12px] font-semibold tracking-wider text-gray-700 uppercase">
+    <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--atlas-border-subtle)]">
+        <h2 className="text-[12px] font-semibold tracking-wider text-[var(--atlas-text-secondary)] uppercase">
           {title}
         </h2>
-        <span className="text-[11px] text-gray-500">
+        <span className="text-[11px] text-[var(--atlas-text-muted)]">
           {coveredCount} of {rows.length} covered
         </span>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-[var(--atlas-border-subtle)]">
         {rows.map((row) => (
           <div
             key={row.code}
-            className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <span className="text-base" aria-hidden="true">
@@ -467,21 +467,23 @@ function JurisdictionTable({
               </span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium text-gray-900">
+                  <span className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
                     {row.name}
                   </span>
-                  <span className="text-[10px] font-mono text-gray-400">
+                  <span className="text-[10px] font-mono text-[var(--atlas-text-faint)]">
                     {row.code}
                   </span>
                 </div>
                 {row.note && (
-                  <p className="text-[10px] text-gray-500 mt-0.5">{row.note}</p>
+                  <p className="text-[10px] text-[var(--atlas-text-muted)] mt-0.5">
+                    {row.note}
+                  </p>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {row.spaceActivityTier === "high" && (
-                <span className="text-[9px] font-medium uppercase tracking-wider text-gray-400">
+                <span className="text-[9px] font-medium uppercase tracking-wider text-[var(--atlas-text-faint)]">
                   High activity
                 </span>
               )}
@@ -489,7 +491,7 @@ function JurisdictionTable({
               {(row.status === "full" || row.status === "in-progress") && (
                 <Link
                   href={`/atlas/jurisdictions/${row.code.toLowerCase()}`}
-                  className="text-gray-400 hover:text-emerald-600 transition-colors"
+                  className="text-[var(--atlas-text-faint)] hover:text-emerald-600 transition-colors"
                   aria-label={`Open ${row.name} jurisdiction page`}
                 >
                   <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -511,34 +513,36 @@ function RegulationTable({
   rows: RegulationRow[];
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h2 className="text-[12px] font-semibold tracking-wider text-gray-700 uppercase">
+    <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
+      <div className="px-4 py-3 border-b border-[var(--atlas-border-subtle)]">
+        <h2 className="text-[12px] font-semibold tracking-wider text-[var(--atlas-text-secondary)] uppercase">
           {title}
         </h2>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-[var(--atlas-border-subtle)]">
         {rows.map((row) => {
           const content = (
-            <div className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-[var(--atlas-bg-surface-muted)] transition-colors">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium text-gray-900">
+                  <span className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
                     {row.title}
                   </span>
-                  <span className="text-[10px] font-mono text-gray-400">
+                  <span className="text-[10px] font-mono text-[var(--atlas-text-faint)]">
                     {row.reference}
                   </span>
                 </div>
                 {row.note && (
-                  <p className="text-[10px] text-gray-500 mt-0.5">{row.note}</p>
+                  <p className="text-[10px] text-[var(--atlas-text-muted)] mt-0.5">
+                    {row.note}
+                  </p>
                 )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <StatusBadge status={row.status} />
                 {row.href && (
                   <ArrowRight
-                    className="h-3.5 w-3.5 text-gray-400"
+                    className="h-3.5 w-3.5 text-[var(--atlas-text-faint)]"
                     strokeWidth={1.5}
                   />
                 )}
@@ -581,18 +585,18 @@ export default function CoveragePage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Map className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             Coverage
           </h1>
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[11px] text-[var(--atlas-text-faint)]">
             Transparent view of what Atlas indexes today
           </span>
         </div>
       </header>
 
       {/* Honest framing */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
-        <p className="text-[12px] text-gray-700 leading-relaxed max-w-3xl">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
+        <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
           Atlas does not cover every European jurisdiction. It covers{" "}
           <strong>every space-active European jurisdiction</strong>: all 27
           countries with a meaningful satellite industry, ESA membership, or
@@ -648,11 +652,11 @@ export default function CoveragePage() {
       </div>
 
       {/* Methodology */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
-        <h2 className="text-[12px] font-semibold tracking-wider text-gray-700 uppercase mb-2">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
+        <h2 className="text-[12px] font-semibold tracking-wider text-[var(--atlas-text-secondary)] uppercase mb-2">
           How we prioritise coverage
         </h2>
-        <ul className="space-y-2 text-[12px] text-gray-600">
+        <ul className="space-y-2 text-[12px] text-[var(--atlas-text-secondary)]">
           <li className="flex items-start gap-2">
             <span className="text-emerald-600 mt-0.5">1.</span>
             <span>
@@ -720,14 +724,18 @@ function Stat({
   note?: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-100 bg-[#FAFBFC] p-3">
-      <div className="text-[9px] font-semibold tracking-wider text-gray-500 uppercase mb-1">
+    <div className="rounded-lg border border-[var(--atlas-border-subtle)] bg-[#FAFBFC] p-3">
+      <div className="text-[9px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase mb-1">
         {label}
       </div>
-      <div className="text-[14px] font-semibold text-gray-900 leading-tight">
+      <div className="text-[14px] font-semibold text-[var(--atlas-text-primary)] leading-tight">
         {value}
       </div>
-      {note && <div className="text-[10px] text-gray-500 mt-0.5">{note}</div>}
+      {note && (
+        <div className="text-[10px] text-[var(--atlas-text-muted)] mt-0.5">
+          {note}
+        </div>
+      )}
     </div>
   );
 }

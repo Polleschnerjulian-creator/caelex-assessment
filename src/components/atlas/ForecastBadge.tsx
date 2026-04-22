@@ -44,7 +44,7 @@ export default function ForecastBadge({ event }: ForecastBadgeProps) {
   const tooltip = `${event.label} — ${event.effectiveDate} (${confidenceLabel[event.confidence]}) — ${event.summary}`;
   return (
     <span
-      className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium tracking-wider uppercase bg-gray-50 border border-gray-200 text-gray-700 select-none cursor-help align-middle"
+      className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium tracking-wider uppercase bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] select-none cursor-help align-middle"
       title={tooltip}
       aria-label={tooltip}
     >

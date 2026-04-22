@@ -25,10 +25,12 @@ export function SourceLink({
   if (!source) {
     // Graceful fallback — source not yet in registry
     return (
-      <span className="text-[13px] text-gray-700">
+      <span className="text-[13px] text-[var(--atlas-text-secondary)]">
         <span className="font-medium">{title}</span>
         {citation && (
-          <span className="ml-1 text-[11px] text-gray-500">({citation})</span>
+          <span className="ml-1 text-[11px] text-[var(--atlas-text-muted)]">
+            ({citation})
+          </span>
         )}
       </span>
     );
@@ -40,15 +42,15 @@ export function SourceLink({
       target="_blank"
       rel="noopener noreferrer"
       title={`Open official source — retrieved ${source.last_accessed}`}
-      className="group inline-flex items-center gap-1.5 text-[13px] text-gray-700 hover:text-emerald-700 transition-colors"
+      className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--atlas-text-secondary)] hover:text-emerald-700 transition-colors"
     >
       <span className="font-medium group-hover:underline">{title}</span>
       {citation && (
-        <span className="text-[11px] text-gray-500 group-hover:text-emerald-600">
+        <span className="text-[11px] text-[var(--atlas-text-muted)] group-hover:text-emerald-600">
           ({citation})
         </span>
       )}
-      <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-gray-400">
+      <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-[var(--atlas-text-faint)]">
         {source.language.toUpperCase()}
         <ExternalLink size={10} />
       </span>

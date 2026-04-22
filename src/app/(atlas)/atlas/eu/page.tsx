@@ -38,10 +38,10 @@ export default async function EUPage() {
           <Landmark size={12} />
           European Union
         </div>
-        <h1 className="text-[36px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[36px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           EU Regulations & Directives
         </h1>
-        <p className="mt-3 text-[14px] text-gray-600 leading-relaxed">
+        <p className="mt-3 text-[14px] text-[var(--atlas-text-secondary)] leading-relaxed">
           EU-level instruments directly applicable in Member States: EU Space
           Act proposal, NIS2 Directive, Cyber Resilience Act, DORA, Space
           Programme Regulation. Each entry lists the Member State coverage.
@@ -49,28 +49,28 @@ export default async function EUPage() {
       </header>
 
       <section className="space-y-3 max-w-4xl mb-10">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-muted)] mb-3">
           Instruments ({sources.length})
         </h2>
         {sources.map((s) => (
           <article
             key={s.id}
             id={s.id}
-            className="flex flex-col gap-3 p-5 rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition scroll-mt-8"
+            className="flex flex-col gap-3 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-sm transition scroll-mt-8"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <h3 className="text-[16px] font-semibold text-gray-900 leading-snug">
+                <h3 className="text-[16px] font-semibold text-[var(--atlas-text-primary)] leading-snug">
                   {s.title_en}
                 </h3>
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-[var(--atlas-text-muted)]">
                   {s.date_in_force && <span>In force: {s.date_in_force}</span>}
                   {s.date_published && !s.date_in_force && (
                     <span>Published: {s.date_published}</span>
                   )}
                   {s.official_reference && <span>{s.official_reference}</span>}
                   <span
-                    className={`px-1.5 py-0.5 rounded border text-[9px] font-semibold uppercase tracking-wider ${s.status === "in_force" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : s.status === "proposed" || s.status === "draft" ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-gray-50 border-gray-200 text-gray-600"}`}
+                    className={`px-1.5 py-0.5 rounded border text-[9px] font-semibold uppercase tracking-wider ${s.status === "in_force" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : s.status === "proposed" || s.status === "draft" ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)] text-[var(--atlas-text-secondary)]"}`}
                   >
                     {s.status.replace("_", " ")}
                   </span>
@@ -96,7 +96,7 @@ export default async function EUPage() {
                     href={s.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-emerald-700"
+                    className="inline-flex items-center gap-1 text-[11px] text-[var(--atlas-text-muted)] hover:text-emerald-700"
                   >
                     EUR-Lex <ExternalLink size={10} />
                   </a>
@@ -105,7 +105,7 @@ export default async function EUPage() {
             </div>
 
             {s.scope_description && (
-              <p className="text-[12px] text-gray-700 leading-relaxed line-clamp-2">
+              <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed line-clamp-2">
                 {s.scope_description}
               </p>
             )}
@@ -117,12 +117,12 @@ export default async function EUPage() {
 
             {s.applies_to_jurisdictions &&
               s.applies_to_jurisdictions.length > 0 && (
-                <div className="pt-3 border-t border-gray-100">
+                <div className="pt-3 border-t border-[var(--atlas-border-subtle)]">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
                       Member State coverage
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-[var(--atlas-text-faint)]">
                       ({s.applies_to_jurisdictions.length} tracked
                       jurisdictions)
                     </span>
@@ -132,7 +132,7 @@ export default async function EUPage() {
                       <Link
                         key={code}
                         href={`/atlas/jurisdictions/${code.toLowerCase()}`}
-                        className="text-[10px] font-bold text-gray-700 bg-gray-100 hover:bg-blue-100 hover:text-blue-800 rounded px-2 py-1 transition-colors"
+                        className="text-[10px] font-bold text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-inset)] hover:bg-blue-100 hover:text-blue-800 rounded px-2 py-1 transition-colors"
                       >
                         {code}
                       </Link>
@@ -146,24 +146,24 @@ export default async function EUPage() {
 
       {authorities.length > 0 && (
         <section className="max-w-4xl">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-muted)] mb-3">
             EU Institutions ({authorities.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {authorities.map((a) => (
               <div
                 key={a.id}
-                className="flex flex-col gap-2 p-5 rounded-xl bg-white border border-gray-100"
+                className="flex flex-col gap-2 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1">
+                  <span className="text-[11px] font-bold text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] rounded-md px-2 py-1">
                     {a.abbreviation}
                   </span>
-                  <span className="text-[13px] font-semibold text-gray-900">
+                  <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)]">
                     {a.name_en}
                   </span>
                 </div>
-                <p className="text-[12px] text-gray-700 leading-relaxed">
+                <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
                   {a.space_mandate}
                 </p>
                 {a.website && (
@@ -183,10 +183,10 @@ export default async function EUPage() {
         </section>
       )}
 
-      <footer className="mt-12 pt-6 border-t border-gray-200 max-w-3xl">
+      <footer className="mt-12 pt-6 border-t border-[var(--atlas-border)] max-w-3xl">
         <Link
           href="/atlas/international"
-          className="inline-flex items-center gap-2 text-[13px] text-gray-700 hover:text-gray-900 font-medium"
+          className="inline-flex items-center gap-2 text-[13px] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] font-medium"
         >
           <ArrowLeft size={14} />
           International Treaties

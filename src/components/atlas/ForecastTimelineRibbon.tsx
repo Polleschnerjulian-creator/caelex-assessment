@@ -70,7 +70,7 @@ export default function ForecastTimelineRibbon({
 
   if (!hasAnyEvents) {
     return (
-      <div className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-xs text-gray-400">
+      <div className="w-full bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] rounded-lg px-4 py-3 text-xs text-[var(--atlas-text-faint)]">
         {t("atlas.forecast_ribbon_empty_state")}
       </div>
     );
@@ -82,12 +82,12 @@ export default function ForecastTimelineRibbon({
   );
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3">
+    <div className="w-full bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] rounded-lg px-4 py-3">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-medium tracking-wide uppercase text-gray-500">
+        <div className="text-[11px] font-medium tracking-wide uppercase text-[var(--atlas-text-muted)]">
           {t("atlas.forecast_ribbon_title")}
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-gray-500">
+        <div className="flex items-center gap-3 text-[10px] text-[var(--atlas-text-muted)]">
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {t("atlas.forecast_confidence_high")}
@@ -103,11 +103,11 @@ export default function ForecastTimelineRibbon({
         </div>
       </div>
       {/* Axis */}
-      <div className="relative h-4 ml-16 mb-2 border-b border-gray-100">
+      <div className="relative h-4 ml-16 mb-2 border-b border-[var(--atlas-border-subtle)]">
         {years.map((year, i) => (
           <span
             key={year}
-            className="absolute top-0 text-[9px] text-gray-400 -translate-x-1/2"
+            className="absolute top-0 text-[9px] text-[var(--atlas-text-faint)] -translate-x-1/2"
             style={{ left: `${(i / (years.length - 1)) * 100}%` }}
           >
             {year}
@@ -118,10 +118,10 @@ export default function ForecastTimelineRibbon({
       <div className="space-y-2">
         {perJurisdiction.map(({ code, events }) => (
           <div key={code} className="flex items-center gap-3">
-            <div className="w-12 flex-shrink-0 text-[11px] font-medium text-gray-700 tabular-nums">
+            <div className="w-12 flex-shrink-0 text-[11px] font-medium text-[var(--atlas-text-secondary)] tabular-nums">
               {code}
             </div>
-            <div className="flex-1 relative h-5 bg-gray-50 rounded">
+            <div className="flex-1 relative h-5 bg-[var(--atlas-bg-surface-muted)] rounded">
               {events.map((event) => {
                 const left = positionOf(event.effectiveDate);
                 return (

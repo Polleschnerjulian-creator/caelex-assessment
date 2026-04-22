@@ -48,19 +48,24 @@ export default function EUSpaceActPage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ScrollText className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             EU Space Act
           </h1>
-          <span className="text-[11px] text-gray-400 ">COM(2025) 335</span>
+          <span className="text-[11px] text-[var(--atlas-text-faint)] ">
+            COM(2025) 335
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 shadow-sm">
-            <Search className="h-3 w-3 text-gray-400" strokeWidth={1.5} />
-            <span className="text-[11px] text-gray-400">
+          <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm">
+            <Search
+              className="h-3 w-3 text-[var(--atlas-text-faint)]"
+              strokeWidth={1.5}
+            />
+            <span className="text-[11px] text-[var(--atlas-text-faint)]">
               Search articles...
             </span>
           </div>
-          <button className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
+          <button className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors shadow-sm">
             <Filter className="h-3 w-3" strokeWidth={1.5} />
             <span className="text-[11px]">Filter</span>
           </button>
@@ -73,9 +78,9 @@ export default function EUSpaceActPage() {
           <div
             key={ch.num}
             className="
-              group relative overflow-hidden rounded-xl border border-gray-200
-              bg-white p-4 shadow-sm
-              hover:border-emerald-300 hover:shadow-md
+              group relative overflow-hidden rounded-xl border border-[var(--atlas-border)]
+              bg-[var(--atlas-bg-surface)] p-4 shadow-sm
+              hover:border-emerald-500 hover:shadow-md
               transition-all duration-200 cursor-pointer
             "
           >
@@ -93,10 +98,10 @@ export default function EUSpaceActPage() {
                 {ch.status}
               </span>
             </div>
-            <h3 className="text-[13px] font-medium text-gray-900 mb-1">
+            <h3 className="text-[13px] font-medium text-[var(--atlas-text-primary)] mb-1">
               {ch.title}
             </h3>
-            <span className="text-[10px] text-gray-400 ">
+            <span className="text-[10px] text-[var(--atlas-text-faint)] ">
               Articles {ch.articles}
             </span>
           </div>
@@ -104,9 +109,9 @@ export default function EUSpaceActPage() {
       </div>
 
       {/* Article browser skeleton */}
-      <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="flex-1 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Article Browser
           </span>
         </div>
@@ -116,10 +121,10 @@ export default function EUSpaceActPage() {
               className="h-8 w-8 text-emerald-200 mx-auto mb-3"
               strokeWidth={1}
             />
-            <p className="text-[12px] text-gray-500">
+            <p className="text-[12px] text-[var(--atlas-text-muted)]">
               Select a chapter to browse its articles.
             </p>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1">
               Full-text article viewer with compliance mapping and
               cross-references.
             </p>

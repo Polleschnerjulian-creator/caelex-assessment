@@ -30,7 +30,7 @@ export default function AtlasError({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--atlas-bg-page)] px-6">
-      <div className="max-w-[520px] w-full rounded-2xl bg-white border border-[#E5E7EB] p-8 text-center">
+      <div className="max-w-[520px] w-full rounded-2xl bg-[var(--atlas-bg-surface)] border border-[#E5E7EB] p-8 text-center">
         <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-amber-50 border border-amber-100 mb-4">
           <AlertTriangle size={22} className="text-amber-600" />
         </div>
@@ -60,7 +60,7 @@ export default function AtlasError({
           </button>
           <Link
             href="/atlas"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E7EB] text-[#111827] px-4 py-2 text-small font-medium hover:bg-[#F9FAFB] transition"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--atlas-bg-surface)] border border-[#E5E7EB] text-[#111827] px-4 py-2 text-small font-medium hover:bg-[#F9FAFB] transition"
           >
             <ArrowLeft size={14} />
             Zur Atlas-Startseite

@@ -62,7 +62,7 @@ function StatusBadge({ status }: { status: string }) {
       );
     default:
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--atlas-bg-inset)] border border-[var(--atlas-border)] px-2 py-0.5 text-[10px] font-semibold text-[var(--atlas-text-muted)] uppercase tracking-wide">
           <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
           None
         </span>
@@ -81,7 +81,7 @@ function LiabilityBadge({ regime }: { regime: string }) {
   };
   return (
     <span
-      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium capitalize ${styles[regime] || "text-gray-600 bg-gray-50"}`}
+      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium capitalize ${styles[regime] || "text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)]"}`}
     >
       {regime}
     </span>
@@ -109,14 +109,14 @@ function SortHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className={`flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors ${className}`}
+      className={`flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)] transition-colors ${className}`}
     >
       {label}
       {isActive ? (
         currentDirection === "asc" ? (
-          <ChevronUp className="h-3 w-3 text-gray-600" />
+          <ChevronUp className="h-3 w-3 text-[var(--atlas-text-secondary)]" />
         ) : (
-          <ChevronDown className="h-3 w-3 text-gray-600" />
+          <ChevronDown className="h-3 w-3 text-[var(--atlas-text-secondary)]" />
         )
       ) : (
         <ChevronDown className="h-3 w-3 opacity-0 group-hover:opacity-30" />
@@ -212,27 +212,33 @@ export default function JurisdictionTable({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--atlas-border-subtle)]">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+          <h3 className="text-xs font-semibold text-[var(--atlas-text-secondary)] uppercase tracking-wider">
             Jurisdiction Overview
           </h3>
-          <span className="text-[10px] text-gray-400 ">
+          <span className="text-[10px] text-[var(--atlas-text-faint)] ">
             {jurisdictions.length} tracked
           </span>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[10px] text-gray-400">Enacted</span>
+            <span className="text-[10px] text-[var(--atlas-text-faint)]">
+              Enacted
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span className="text-[10px] text-gray-400">Draft</span>
+            <span className="text-[10px] text-[var(--atlas-text-faint)]">
+              Draft
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            <span className="text-[10px] text-gray-400">None</span>
+            <span className="text-[10px] text-[var(--atlas-text-faint)]">
+              None
+            </span>
           </div>
         </div>
       </div>
@@ -240,8 +246,8 @@ export default function JurisdictionTable({
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-left">
-          <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10">
-            <tr className="border-b border-gray-100">
+          <thead className="sticky top-0 bg-[var(--atlas-bg-surface-muted)]/95 backdrop-blur-sm z-10">
+            <tr className="border-b border-[var(--atlas-border-subtle)]">
               <th className="px-4 py-2.5 w-[180px]">
                 <SortHeader
                   label="Jurisdiction"
@@ -313,7 +319,7 @@ export default function JurisdictionTable({
               <tr
                 key={law.countryCode}
                 onClick={() => onCountryClick(law.countryCode)}
-                className="border-b border-gray-50 hover:bg-gray-50/70 cursor-pointer transition-colors group"
+                className="border-b border-gray-50 hover:bg-[var(--atlas-bg-surface-muted)]/70 cursor-pointer transition-colors group"
               >
                 {/* Country */}
                 <td className="px-4 py-2.5">
@@ -322,10 +328,10 @@ export default function JurisdictionTable({
                       {law.flagEmoji}
                     </span>
                     <div>
-                      <div className="text-[13px] font-medium text-gray-900 leading-tight">
+                      <div className="text-[13px] font-medium text-[var(--atlas-text-primary)] leading-tight">
                         {law.countryName}
                       </div>
-                      <div className="text-[10px]  text-gray-400">
+                      <div className="text-[10px]  text-[var(--atlas-text-faint)]">
                         {law.countryCode}
                       </div>
                     </div>
@@ -334,14 +340,14 @@ export default function JurisdictionTable({
 
                 {/* Legislation */}
                 <td className="px-3 py-2.5">
-                  <span className="text-[12px] text-gray-700 leading-tight line-clamp-1">
+                  <span className="text-[12px] text-[var(--atlas-text-secondary)] leading-tight line-clamp-1">
                     {law.legislation.name}
                   </span>
                 </td>
 
                 {/* Year */}
                 <td className="px-3 py-2.5">
-                  <span className="text-[12px]  text-gray-500">
+                  <span className="text-[12px]  text-[var(--atlas-text-muted)]">
                     {law.legislation.yearEnacted > 0
                       ? law.legislation.yearEnacted
                       : "\u2014"}
@@ -355,7 +361,7 @@ export default function JurisdictionTable({
 
                 {/* Authority */}
                 <td className="px-3 py-2.5 hidden xl:table-cell">
-                  <span className="text-[11px] text-gray-500 leading-tight line-clamp-1">
+                  <span className="text-[11px] text-[var(--atlas-text-muted)] leading-tight line-clamp-1">
                     {law.licensingAuthority.name.length > 50
                       ? law.licensingAuthority.name.slice(0, 50) + "..."
                       : law.licensingAuthority.name}
@@ -371,7 +377,7 @@ export default function JurisdictionTable({
 
                 {/* Processing Time */}
                 <td className="px-3 py-2.5 hidden lg:table-cell">
-                  <span className="text-[11px]  text-gray-500">
+                  <span className="text-[11px]  text-[var(--atlas-text-muted)]">
                     {law.timeline.typicalProcessingWeeks.min}&ndash;
                     {law.timeline.typicalProcessingWeeks.max}w
                   </span>
@@ -379,7 +385,7 @@ export default function JurisdictionTable({
 
                 {/* Arrow */}
                 <td className="px-3 py-2.5">
-                  <ArrowRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+                  <ArrowRight className="h-3.5 w-3.5 text-[var(--atlas-text-faint)] group-hover:text-emerald-500 transition-colors" />
                 </td>
               </tr>
             ))}

@@ -6,10 +6,10 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-[28px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[28px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           Conduct Conditions
         </h1>
-        <p className="mt-1 text-[13px] text-gray-600">
+        <p className="mt-1 text-[13px] text-[var(--atlas-text-secondary)]">
           Regulatory obligations imposed beyond headline fees — data
           localisation, lawful intercept, geo-fencing, indigenisation,
           suspension capability.

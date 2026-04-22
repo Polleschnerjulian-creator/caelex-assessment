@@ -53,7 +53,7 @@ export function CitationButton({ source }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 hover:border-gray-300 rounded-full px-2 py-0.5 transition-colors"
+        className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] hover:border-[var(--atlas-border-strong)] rounded-full px-2 py-0.5 transition-colors"
         title="Copy a formatted citation"
       >
         <Quote size={10} strokeWidth={2} />
@@ -61,12 +61,12 @@ export function CitationButton({ source }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-1 z-20 w-52 rounded-lg bg-white border border-gray-200 shadow-lg py-1 text-[11px]">
+        <div className="absolute right-0 mt-1 z-20 w-52 rounded-lg bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] shadow-lg py-1 text-[11px]">
           {CITATION_FORMATS.map((f) => (
             <button
               key={f}
               onClick={() => copy(f)}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-left text-gray-700 hover:bg-gray-50"
+              className="w-full flex items-center justify-between px-3 py-1.5 text-left text-[var(--atlas-text-secondary)] hover:bg-[var(--atlas-bg-surface-muted)]"
             >
               <span>{citationFormatLabel(f)}</span>
               {copied === f ? (

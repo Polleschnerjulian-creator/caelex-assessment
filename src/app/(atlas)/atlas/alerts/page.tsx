@@ -65,9 +65,9 @@ const SEVERITY_CONFIG = {
     icon: Info,
   },
   low: {
-    color: "text-gray-500",
-    bg: "bg-gray-50",
-    border: "border-gray-200",
+    color: "text-[var(--atlas-text-muted)]",
+    bg: "bg-[var(--atlas-bg-surface-muted)]",
+    border: "border-[var(--atlas-border)]",
     icon: CheckCircle2,
   },
 } as const;
@@ -78,7 +78,7 @@ export default function AlertsPage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Bell className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             Alerts
           </h1>
           <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] font-medium text-red-600 tabular-nums">
@@ -86,10 +86,10 @@ export default function AlertsPage() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
+          <button className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[11px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors shadow-sm">
             Mark all read
           </button>
-          <button className="rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
+          <button className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[11px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors shadow-sm">
             Preferences
           </button>
         </div>
@@ -109,10 +109,10 @@ export default function AlertsPage() {
                 transition-all duration-200 cursor-pointer shadow-sm
                 ${
                   alert.read
-                    ? "border-gray-200 bg-white"
-                    : "border-gray-200 bg-white ring-1 ring-emerald-100"
+                    ? "border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)]"
+                    : "border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] ring-1 ring-emerald-100"
                 }
-                hover:bg-gray-50
+                hover:bg-[var(--atlas-bg-surface-muted)]
               `}
             >
               <div className="flex items-start gap-3">
@@ -136,15 +136,15 @@ export default function AlertsPage() {
                     )}
                   </div>
                   <p
-                    className={`text-[12px] leading-relaxed ${alert.read ? "text-gray-500" : "text-gray-900"}`}
+                    className={`text-[12px] leading-relaxed ${alert.read ? "text-[var(--atlas-text-muted)]" : "text-[var(--atlas-text-primary)]"}`}
                   >
                     {alert.title}
                   </p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-[var(--atlas-text-faint)]">
                       {alert.source}
                     </span>
-                    <span className="text-[10px] text-gray-400 ">
+                    <span className="text-[10px] text-[var(--atlas-text-faint)] ">
                       {alert.time}
                     </span>
                   </div>

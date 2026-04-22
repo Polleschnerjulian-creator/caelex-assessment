@@ -114,10 +114,10 @@ export default async function LandingRightsPage({
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
         <div>
-          <h1 className="text-[32px] font-light tracking-tight text-gray-900">
+          <h1 className="text-[32px] font-light tracking-tight text-[var(--atlas-text-primary)]">
             Landing Rights
           </h1>
-          <p className="mt-1 text-[13px] text-gray-600 max-w-2xl">
+          <p className="mt-1 text-[13px] text-[var(--atlas-text-secondary)] max-w-2xl">
             National authorisations for satellite market access across{" "}
             {ALL_LANDING_RIGHTS_PROFILES.length} jurisdictions × 4 regulatory
             categories (market access, ITU coordination, earth station,
@@ -168,12 +168,12 @@ export default async function LandingRightsPage({
               </div>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-[11px] text-gray-300">
+              <span className="text-[11px] text-[var(--atlas-text-faint)]">
                 {formatDaysUntil(nextDeadline.date)}
               </span>
               <ArrowRight
                 size={14}
-                className="text-gray-400 group-hover:translate-x-0.5 transition-transform"
+                className="text-[var(--atlas-text-faint)] group-hover:translate-x-0.5 transition-transform"
               />
             </div>
           </Link>
@@ -184,12 +184,12 @@ export default async function LandingRightsPage({
         <LandingRightsFilters />
         <div>
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-[14px] font-semibold text-gray-900">
+            <h2 className="text-[14px] font-semibold text-[var(--atlas-text-primary)]">
               {filtered.length === ALL_LANDING_RIGHTS_PROFILES.length
                 ? "All jurisdictions"
                 : "Filtered results"}
             </h2>
-            <span className="text-[11px] text-gray-500">
+            <span className="text-[11px] text-[var(--atlas-text-muted)]">
               {filtered.length} / {ALL_LANDING_RIGHTS_PROFILES.length}{" "}
               jurisdictions
             </span>
@@ -211,15 +211,17 @@ function StatCard({
   sublabel?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 p-4 rounded-xl bg-white border border-gray-100">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+    <div className="flex flex-col gap-1 p-4 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)]">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
         {label}
       </span>
-      <span className="text-[24px] font-bold text-gray-900 leading-none">
+      <span className="text-[24px] font-bold text-[var(--atlas-text-primary)] leading-none">
         {value}
       </span>
       {sublabel && (
-        <span className="text-[10px] text-gray-400 mt-0.5">{sublabel}</span>
+        <span className="text-[10px] text-[var(--atlas-text-faint)] mt-0.5">
+          {sublabel}
+        </span>
       )}
     </div>
   );

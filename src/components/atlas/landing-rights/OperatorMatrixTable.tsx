@@ -8,17 +8,17 @@ export function OperatorMatrixTable() {
   const jurisdictions = ALL_LANDING_RIGHTS_PROFILES.map((p) => p.jurisdiction);
 
   return (
-    <div className="overflow-x-auto rounded-xl bg-white border border-gray-100">
+    <div className="overflow-x-auto rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)]">
       <table className="min-w-full text-[12px]">
-        <thead className="bg-gray-50">
+        <thead className="bg-[var(--atlas-bg-surface-muted)]">
           <tr>
-            <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left font-semibold text-gray-700">
+            <th className="sticky left-0 bg-[var(--atlas-bg-surface-muted)] px-4 py-3 text-left font-semibold text-[var(--atlas-text-secondary)]">
               Operator
             </th>
             {jurisdictions.map((j) => (
               <th
                 key={j}
-                className="px-3 py-3 text-center font-semibold text-gray-600"
+                className="px-3 py-3 text-center font-semibold text-[var(--atlas-text-secondary)]"
               >
                 {j}
               </th>
@@ -27,8 +27,11 @@ export function OperatorMatrixTable() {
         </thead>
         <tbody>
           {OPERATOR_MATRIX.map((row) => (
-            <tr key={row.operator} className="border-t border-gray-100">
-              <td className="sticky left-0 bg-white px-4 py-3 font-medium text-gray-900">
+            <tr
+              key={row.operator}
+              className="border-t border-[var(--atlas-border-subtle)]"
+            >
+              <td className="sticky left-0 bg-[var(--atlas-bg-surface)] px-4 py-3 font-medium text-[var(--atlas-text-primary)]">
                 {row.operator}
               </td>
               {jurisdictions.map((j) => {
@@ -42,7 +45,7 @@ export function OperatorMatrixTable() {
                         <LandingRightsStatusBadge status={s.status} />
                       </span>
                     ) : (
-                      <span className="text-gray-300">—</span>
+                      <span className="text-[var(--atlas-text-faint)]">—</span>
                     )}
                   </td>
                 );

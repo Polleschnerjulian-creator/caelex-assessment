@@ -77,14 +77,14 @@ export default function CountrySelector({
               onClick={() => toggle(code)}
               className="
                 flex items-center gap-1.5 rounded px-2 py-1
-                bg-gray-100 border-0
-                text-[11px] font-medium text-gray-700
-                hover:bg-gray-200 transition-colors duration-150
+                bg-[var(--atlas-bg-inset)] border-0
+                text-[11px] font-medium text-[var(--atlas-text-secondary)]
+                hover:bg-[var(--atlas-bg-inset)] transition-colors duration-150
                 group
               "
             >
               <span className=" tracking-wide">{code}</span>
-              <X className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <X className="h-3 w-3 text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-secondary)] transition-colors" />
             </button>
           );
         })}
@@ -98,8 +98,8 @@ export default function CountrySelector({
             transition-colors duration-150
             ${
               selected.length >= MAX_SELECTIONS
-                ? "text-gray-300 cursor-not-allowed bg-gray-50"
-                : "text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                ? "text-[var(--atlas-text-faint)] cursor-not-allowed bg-[var(--atlas-bg-surface-muted)]"
+                : "text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] hover:bg-[var(--atlas-bg-inset)] cursor-pointer"
             }
           `}
         >
@@ -119,7 +119,7 @@ export default function CountrySelector({
             onClick={selectAllEU}
             className="
               px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-gray-400 hover:text-gray-700
+              text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]
               transition-colors duration-150
             "
           >
@@ -129,7 +129,7 @@ export default function CountrySelector({
             onClick={clearAll}
             className="
               px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-gray-400 hover:text-gray-700
+              text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]
               transition-colors duration-150
             "
           >
@@ -138,7 +138,7 @@ export default function CountrySelector({
         </div>
 
         {/* Count indicator */}
-        <span className="text-[10px] text-gray-400  ml-auto">
+        <span className="text-[10px] text-[var(--atlas-text-faint)]  ml-auto">
           {selected.length}/{MAX_SELECTIONS}
         </span>
       </div>
@@ -148,8 +148,8 @@ export default function CountrySelector({
         <div
           className="
             absolute z-50 top-full left-0 mt-1.5 w-full max-w-[640px] max-h-[320px]
-            overflow-y-auto rounded-xl border border-gray-200
-            bg-white backdrop-blur-xl shadow-xl
+            overflow-y-auto rounded-xl border border-[var(--atlas-border)]
+            bg-[var(--atlas-bg-surface)] backdrop-blur-xl shadow-xl
           "
         >
           <div className="p-2 grid grid-cols-2 sm:grid-cols-3 gap-0.5">
@@ -168,10 +168,10 @@ export default function CountrySelector({
                     transition-colors duration-100
                     ${
                       isSelected
-                        ? "bg-gray-100 text-gray-900"
+                        ? "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-primary)]"
                         : isDisabled
-                          ? "opacity-30 cursor-not-allowed text-gray-400"
-                          : "hover:bg-gray-50 text-gray-700"
+                          ? "opacity-30 cursor-not-allowed text-[var(--atlas-text-faint)]"
+                          : "hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)]"
                     }
                   `}
                 >
@@ -179,10 +179,12 @@ export default function CountrySelector({
                     <span className="text-[11px] font-medium truncate block">
                       {data.countryName}
                     </span>
-                    <span className="text-[9px]  text-gray-400">{code}</span>
+                    <span className="text-[9px]  text-[var(--atlas-text-faint)]">
+                      {code}
+                    </span>
                   </div>
                   {isSelected && (
-                    <Check className="h-3 w-3 text-gray-600 flex-shrink-0" />
+                    <Check className="h-3 w-3 text-[var(--atlas-text-secondary)] flex-shrink-0" />
                   )}
                 </button>
               );

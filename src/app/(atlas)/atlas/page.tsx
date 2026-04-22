@@ -68,7 +68,7 @@ function getTypeLabels(
   };
 }
 
-// M15: medium/low levels were bg-gray-300 / bg-gray-200 — both below
+// M15: medium/low levels were bg-gray-300 / bg-[var(--atlas-bg-inset)] — both below
 // WCAG 2.1 AA non-text contrast (~1.3–2.1:1) on white. Upgraded to
 // bg-gray-500 / bg-gray-400 which sit at 4.6:1 / 3.5:1 respectively.
 const RELEVANCE_DOT: Record<RelevanceLevel, string> = {
@@ -285,10 +285,12 @@ export default function CommandCenterPage() {
       >
         {/* Greeting */}
         <p
-          className={`font-normal text-gray-500 tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
+          className={`font-normal text-[var(--atlas-text-muted)] tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
         >
           {t(greetingKey)}
-          {userName && <span className="text-gray-400">, {userName}</span>}
+          {userName && (
+            <span className="text-[var(--atlas-text-faint)]">, {userName}</span>
+          )}
         </p>
 
         {/* Search Input */}
@@ -304,10 +306,10 @@ export default function CommandCenterPage() {
             autoComplete="off"
             className={`
               w-full bg-transparent
-              border-0 border-b-2 border-gray-200 rounded-none
+              border-0 border-b-2 border-[var(--atlas-border)] rounded-none
               outline-none ring-0 shadow-none
               focus:border-gray-900 focus:outline-none focus:ring-0 focus:shadow-none
-              text-gray-900 placeholder:text-gray-300
+              text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)]
               font-light tracking-[-0.02em] leading-none
               transition-all duration-500
               ${hasResults ? "text-[28px] lg:text-[36px] py-4" : "text-[40px] lg:text-[52px] py-5"}
@@ -320,19 +322,25 @@ export default function CommandCenterPage() {
         <div
           className={`flex items-center gap-4 transition-all duration-500 ${hasResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
         >
-          <span className="text-[11px] text-gray-500  tracking-wide">
+          <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
             {t("atlas.sources_count", { count: ALL_SOURCES.length })}
           </span>
-          <span className="text-[4px] text-gray-400" aria-hidden="true">
+          <span
+            className="text-[4px] text-[var(--atlas-text-faint)]"
+            aria-hidden="true"
+          >
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-500  tracking-wide">
+          <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
             {t("atlas.authorities_count", { count: ALL_AUTHORITIES.length })}
           </span>
-          <span className="text-[4px] text-gray-400" aria-hidden="true">
+          <span
+            className="text-[4px] text-[var(--atlas-text-faint)]"
+            aria-hidden="true"
+          >
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-500  tracking-wide">
+          <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
             {t("atlas.jurisdictions_count", { count: 19 })}
           </span>
         </div>
@@ -340,25 +348,25 @@ export default function CommandCenterPage() {
         {/* Result count */}
         {hasResults && (
           <div className="flex items-center gap-3 mt-1 mb-8">
-            <span className="text-[11px] text-gray-400 ">
+            <span className="text-[11px] text-[var(--atlas-text-faint)] ">
               {totalResults === 1
                 ? t("atlas.result_count_singular")
                 : t("atlas.result_count", { count: totalResults })}
             </span>
             {results.jurisdictions.length > 0 && (
-              <span className="text-[10px] text-gray-500">
+              <span className="text-[10px] text-[var(--atlas-text-muted)]">
                 {t("atlas.jurisdictions_count", {
                   count: results.jurisdictions.length,
                 })}
               </span>
             )}
             {results.sources.length > 0 && (
-              <span className="text-[10px] text-gray-500">
+              <span className="text-[10px] text-[var(--atlas-text-muted)]">
                 {t("atlas.sources_count", { count: results.sources.length })}
               </span>
             )}
             {results.authorities.length > 0 && (
-              <span className="text-[10px] text-gray-500">
+              <span className="text-[10px] text-[var(--atlas-text-muted)]">
                 {t("atlas.authorities_count", {
                   count: results.authorities.length,
                 })}
@@ -377,11 +385,11 @@ export default function CommandCenterPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Globe2
                   size={13}
-                  className="text-gray-300"
+                  className="text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   {t("atlas.jurisdictions")}
                 </h2>
               </div>
@@ -390,27 +398,27 @@ export default function CommandCenterPage() {
                   <button
                     key={code}
                     onClick={() => router.push(`/atlas/jurisdictions/${code}`)}
-                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
+                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-sm transition-all duration-200 group"
                   >
-                    <span className="text-[22px]  font-bold text-gray-400 w-10 group-hover:text-gray-500 transition-colors">
+                    <span className="text-[22px]  font-bold text-[var(--atlas-text-faint)] w-10 group-hover:text-[var(--atlas-text-muted)] transition-colors">
                       {code}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[15px] font-semibold text-gray-900 group-hover:text-black transition-colors">
+                      <span className="text-[15px] font-semibold text-[var(--atlas-text-primary)] group-hover:text-black transition-colors">
                         {JURISDICTION_NAMES[code] || data.countryName}
                       </span>
-                      <span className="block text-[11px] text-gray-400 truncate mt-0.5">
+                      <span className="block text-[11px] text-[var(--atlas-text-faint)] truncate mt-0.5">
                         {data.legislation.name}
                       </span>
                     </div>
                     <span
-                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${data.legislation.status === "enacted" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"}`}
+                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${data.legislation.status === "enacted" ? "bg-gray-900 text-white" : "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-muted)]"}`}
                     >
                       {t(`atlas.status_${data.legislation.status}`)}
                     </span>
                     <ArrowRight
                       size={14}
-                      className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                      className="text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-primary)] transition-colors"
                       aria-hidden="true"
                     />
                   </button>
@@ -425,11 +433,11 @@ export default function CommandCenterPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Scale
                   size={13}
-                  className="text-gray-300"
+                  className="text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   {t("atlas.legal_sources")}
                 </h2>
               </div>
@@ -441,7 +449,7 @@ export default function CommandCenterPage() {
                   <button
                     key={source.id}
                     onClick={() => router.push(`/atlas/sources/${source.id}`)}
-                    className="w-full flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm transition-all duration-200 group"
+                    className="w-full flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
                   >
                     {/* Relevance dot */}
                     <span
@@ -449,24 +457,24 @@ export default function CommandCenterPage() {
                     />
 
                     {/* Type */}
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 w-12 flex-shrink-0 ">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--atlas-text-faint)] w-12 flex-shrink-0 ">
                       {TYPE_LABELS[source.type]}
                     </span>
 
                     {/* Title */}
                     <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black transition-colors">
+                      <span className="text-[14px] font-medium text-[var(--atlas-text-primary)] truncate block group-hover:text-black transition-colors">
                         {getTranslatedSource(source, language).title}
                       </span>
                       {source.official_reference && (
-                        <span className="text-[10px] text-gray-400 ">
+                        <span className="text-[10px] text-[var(--atlas-text-faint)] ">
                           {source.official_reference}
                         </span>
                       )}
                     </div>
 
                     {/* Jurisdiction */}
-                    <span className="text-[11px]  font-bold text-gray-500 flex-shrink-0">
+                    <span className="text-[11px]  font-bold text-[var(--atlas-text-muted)] flex-shrink-0">
                       {source.jurisdiction}
                     </span>
                   </button>
@@ -475,7 +483,7 @@ export default function CommandCenterPage() {
                   <button
                     onClick={() => setShowAllSources(true)}
                     aria-expanded={showAllSources}
-                    className="w-full py-3 text-[12px] font-medium text-gray-400 hover:text-gray-900 transition-colors"
+                    className="w-full py-3 text-[12px] font-medium text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)] transition-colors"
                   >
                     {t("atlas.show_all", { count: results.sources.length })}
                   </button>
@@ -484,7 +492,7 @@ export default function CommandCenterPage() {
                   <button
                     onClick={() => setShowAllSources(false)}
                     aria-expanded={showAllSources}
-                    className="w-full py-3 text-[12px] font-medium text-gray-400 hover:text-gray-900 transition-colors"
+                    className="w-full py-3 text-[12px] font-medium text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)] transition-colors"
                   >
                     {t("atlas.show_less")}
                   </button>
@@ -499,11 +507,11 @@ export default function CommandCenterPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Building2
                   size={13}
-                  className="text-gray-300"
+                  className="text-[var(--atlas-text-faint)]"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   {t("atlas.authorities")}
                 </h2>
               </div>
@@ -514,16 +522,16 @@ export default function CommandCenterPage() {
                     onClick={() =>
                       router.push(`/atlas/jurisdictions/${auth.jurisdiction}`)
                     }
-                    className="flex items-start gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group"
+                    className="flex items-start gap-4 px-5 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-sm transition-all duration-200 group"
                   >
-                    <span className="text-[12px] font-bold text-gray-900 bg-gray-100 rounded-md px-2 py-1 flex-shrink-0  mt-0.5">
+                    <span className="text-[12px] font-bold text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] rounded-md px-2 py-1 flex-shrink-0  mt-0.5">
                       {auth.abbreviation}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-semibold text-gray-800 group-hover:text-black transition-colors block">
+                      <span className="text-[14px] font-semibold text-[var(--atlas-text-primary)] group-hover:text-black transition-colors block">
                         {getTranslatedAuthority(auth, language).name}
                       </span>
-                      <p className="text-[11px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1 line-clamp-2 leading-relaxed">
                         {(() => {
                           const m = getTranslatedAuthority(
                             auth,
@@ -535,7 +543,7 @@ export default function CommandCenterPage() {
                         })()}
                       </p>
                     </div>
-                    <span className="text-[10px]  font-bold text-gray-500 flex-shrink-0 mt-1">
+                    <span className="text-[10px]  font-bold text-[var(--atlas-text-muted)] flex-shrink-0 mt-1">
                       {auth.jurisdiction}
                     </span>
                   </button>
@@ -547,7 +555,7 @@ export default function CommandCenterPage() {
           {results.landingRightsProfiles.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Profiles
                 </h2>
               </div>
@@ -560,12 +568,12 @@ export default function CommandCenterPage() {
                         `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
                       )
                     }
-                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-white border border-gray-100 hover:border-gray-300 transition"
+                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] transition"
                   >
-                    <span className="text-[22px] font-bold text-gray-400 w-10">
+                    <span className="text-[22px] font-bold text-[var(--atlas-text-faint)] w-10">
                       {p.jurisdiction}
                     </span>
-                    <span className="text-[13px] text-gray-700 line-clamp-2 flex-1">
+                    <span className="text-[13px] text-[var(--atlas-text-secondary)] line-clamp-2 flex-1">
                       {p.overview.summary}
                     </span>
                   </button>
@@ -577,7 +585,7 @@ export default function CommandCenterPage() {
           {results.landingRightsCaseStudies.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Case Studies
                 </h2>
               </div>
@@ -588,12 +596,12 @@ export default function CommandCenterPage() {
                     onClick={() =>
                       router.push(`/atlas/landing-rights/case-studies/${cs.id}`)
                     }
-                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 transition"
+                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
                   >
-                    <span className="text-[11px] font-bold text-gray-500 w-10">
+                    <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
                       {cs.jurisdiction}
                     </span>
-                    <span className="text-[13px] font-medium text-gray-800 flex-1">
+                    <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] flex-1">
                       {cs.title}
                     </span>
                   </button>
@@ -605,7 +613,7 @@ export default function CommandCenterPage() {
           {results.landingRightsConduct.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Conduct Conditions
                 </h2>
               </div>
@@ -614,16 +622,16 @@ export default function CommandCenterPage() {
                   <button
                     key={c.id}
                     onClick={() => router.push(`/atlas/landing-rights/conduct`)}
-                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 transition"
+                    className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
                   >
-                    <span className="text-[11px] font-bold text-gray-500 w-10">
+                    <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
                       {c.jurisdiction}
                     </span>
                     <div className="flex-1">
-                      <span className="text-[13px] font-medium text-gray-800 block">
+                      <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] block">
                         {c.title}
                       </span>
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-[var(--atlas-text-muted)]">
                         {c.type.replace("_", " ")}
                       </span>
                     </div>
@@ -637,76 +645,76 @@ export default function CommandCenterPage() {
 
       {/* ─── Legal Footer ─── */}
       <footer
-        className={`transition-all duration-700 ${hasResults ? "mt-20" : "mt-40"} pt-8 border-t border-gray-100 pb-10`}
+        className={`transition-all duration-700 ${hasResults ? "mt-20" : "mt-40"} pt-8 border-t border-[var(--atlas-border-subtle)] pb-10`}
       >
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-400 tracking-wider">
+            <span className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-wider">
               ATLAS
             </span>
-            <span className="text-[9px] text-gray-500">
+            <span className="text-[9px] text-[var(--atlas-text-muted)]">
               {t("atlas.footer_by_caelex")}
             </span>
           </div>
 
-          <div className="space-y-3 text-[10px] text-gray-500 leading-[1.7]">
+          <div className="space-y-3 text-[10px] text-[var(--atlas-text-muted)] leading-[1.7]">
             <p>
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-[var(--atlas-text-muted)]">
                 {t("atlas.disclaimer_no_legal_advice")}.
               </span>{" "}
               {t("atlas.disclaimer_body_no_legal_advice")}
             </p>
 
             <p>
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-[var(--atlas-text-muted)]">
                 {t("atlas.disclaimer_no_guarantee")}.
               </span>{" "}
               {t("atlas.disclaimer_body_no_guarantee")}
             </p>
 
             <p>
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-[var(--atlas-text-muted)]">
                 {t("atlas.disclaimer_limitation")}.
               </span>{" "}
               {t("atlas.disclaimer_body_limitation")}
             </p>
 
             <p>
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-[var(--atlas-text-muted)]">
                 {t("atlas.disclaimer_data_sources")}.
               </span>{" "}
               {t("atlas.disclaimer_body_data_sources")}
             </p>
 
             <p>
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-[var(--atlas-text-muted)]">
                 {t("atlas.disclaimer_ip")}.
               </span>{" "}
               {t("atlas.disclaimer_body_ip")}
             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <span className="text-[9px] text-gray-500">
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--atlas-border-subtle)]">
+            <span className="text-[9px] text-[var(--atlas-text-muted)]">
               © {new Date().getFullYear()} Caelex —{" "}
               {t("atlas.footer_all_rights")}
             </span>
             <div className="flex items-center gap-4">
               <a
                 href="/legal/privacy"
-                className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
+                className="text-[9px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
               >
                 {t("atlas.footer_privacy")}
               </a>
               <a
                 href="/legal/terms"
-                className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
+                className="text-[9px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
               >
                 {t("atlas.footer_terms")}
               </a>
               <a
                 href="/legal/impressum"
-                className="text-[9px] text-gray-500 hover:text-gray-600 transition-colors"
+                className="text-[9px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
               >
                 {t("atlas.footer_impressum")}
               </a>

@@ -58,7 +58,7 @@ export function ShareLinkCopier() {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-gray-700 bg-white border border-gray-200 hover:border-gray-300 rounded-full px-3 py-1 transition-colors"
+      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] hover:border-[var(--atlas-border-strong)] rounded-full px-3 py-1 transition-colors"
     >
       {copied ? (
         <>

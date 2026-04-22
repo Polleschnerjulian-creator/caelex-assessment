@@ -93,7 +93,7 @@ export default function ForecastTimelineSlider({
 
   return (
     <div className="w-full flex items-center gap-3">
-      <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-gray-500">
+      <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-[var(--atlas-text-muted)]">
         {t("atlas.forecast_target_date")}
       </span>
       <div className="flex-1 min-w-[140px] px-1">
@@ -109,7 +109,7 @@ export default function ForecastTimelineSlider({
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         />
         {/* Year tick row — normal flow, directly below the bar. */}
-        <div className="mt-1.5 flex justify-between text-[8px] tabular-nums text-gray-400 select-none">
+        <div className="mt-1.5 flex justify-between text-[8px] tabular-nums text-[var(--atlas-text-faint)] select-none">
           {Array.from({ length: 7 }, (_, i) => 2026 + i).map((year) => (
             <span key={year}>{year}</span>
           ))}
@@ -117,14 +117,14 @@ export default function ForecastTimelineSlider({
       </div>
       <div className="flex-shrink-0 flex items-center gap-2">
         <span
-          className={`text-[12px] font-medium tabular-nums min-w-[4ch] text-right ${isToday ? "text-gray-500" : "text-gray-900"}`}
+          className={`text-[12px] font-medium tabular-nums min-w-[4ch] text-right ${isToday ? "text-[var(--atlas-text-muted)]" : "text-[var(--atlas-text-primary)]"}`}
         >
           {isToday ? t("atlas.forecast_today") : selectedLabel}
         </span>
         {!isToday && (
           <button
             onClick={handleReset}
-            className="text-[10px] tracking-wide uppercase text-gray-400 hover:text-gray-900 transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100/70"
+            className="text-[10px] tracking-wide uppercase text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)] transition-colors px-1.5 py-0.5 rounded hover:bg-[var(--atlas-bg-inset)]/70"
             aria-label="Reset to today"
           >
             {t("atlas.forecast_reset")}

@@ -345,14 +345,14 @@ export default function CommandPaletteModal({
       aria-modal="true"
     >
       <div
-        className="w-[640px] max-w-[92vw] max-h-[70vh] rounded-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
+        className="w-[640px] max-w-[92vw] max-h-[70vh] rounded-2xl bg-[var(--atlas-bg-surface)] shadow-2xl border border-[var(--atlas-border)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input — combobox pattern for screen-reader support (M14) */}
-        <div className="flex items-center gap-3 px-4 h-12 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-4 h-12 border-b border-[var(--atlas-border-subtle)]">
           <Search
             size={16}
-            className="text-gray-400 flex-shrink-0"
+            className="text-[var(--atlas-text-faint)] flex-shrink-0"
             aria-hidden="true"
           />
           <input
@@ -375,9 +375,9 @@ export default function CommandPaletteModal({
             }}
             onKeyDown={onInputKey}
             placeholder={t("atlas.palette_placeholder")}
-            className="flex-1 bg-transparent outline-none text-[14px] text-gray-900 placeholder:text-gray-400"
+            className="flex-1 bg-transparent outline-none text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)]"
           />
-          <kbd className="text-[10px] font-mono text-gray-400 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5">
+          <kbd className="text-[10px] font-mono text-[var(--atlas-text-faint)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded px-1.5 py-0.5">
             ESC
           </kbd>
         </div>
@@ -390,7 +390,7 @@ export default function CommandPaletteModal({
           className="flex-1 overflow-y-auto py-2"
         >
           {grouped.length === 0 ? (
-            <div className="px-4 py-10 text-center text-[12px] text-gray-500">
+            <div className="px-4 py-10 text-center text-[12px] text-[var(--atlas-text-muted)]">
               {t("atlas.palette_no_matches")} &ldquo;{query}&rdquo;.
             </div>
           ) : (
@@ -401,7 +401,7 @@ export default function CommandPaletteModal({
                 role="group"
                 aria-label={groupLabel(group)}
               >
-                <div className="px-4 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+                <div className="px-4 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--atlas-text-faint)]">
                   {groupLabel(group)}
                 </div>
                 {items.map((item) => {
@@ -418,23 +418,32 @@ export default function CommandPaletteModal({
                         setActiveIndex(flatIndex.get(item.id) ?? 0)
                       }
                       className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                        isActive ? "bg-gray-50" : "hover:bg-gray-50"
+                        isActive
+                          ? "bg-[var(--atlas-bg-surface-muted)]"
+                          : "hover:bg-[var(--atlas-bg-surface-muted)]"
                       }`}
                     >
                       <Icon
                         size={14}
-                        className={isActive ? "text-gray-900" : "text-gray-400"}
+                        className={
+                          isActive
+                            ? "text-[var(--atlas-text-primary)]"
+                            : "text-[var(--atlas-text-faint)]"
+                        }
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] text-gray-900 truncate">
+                        <div className="text-[13px] text-[var(--atlas-text-primary)] truncate">
                           {item.title}
                         </div>
-                        <div className="text-[10px] text-gray-500 truncate">
+                        <div className="text-[10px] text-[var(--atlas-text-muted)] truncate">
                           {item.subtitle}
                         </div>
                       </div>
                       {isActive && (
-                        <ArrowRight size={12} className="text-gray-400" />
+                        <ArrowRight
+                          size={12}
+                          className="text-[var(--atlas-text-faint)]"
+                        />
                       )}
                     </button>
                   );
@@ -445,7 +454,7 @@ export default function CommandPaletteModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 h-8 border-t border-gray-100 bg-gray-50 text-[10px] text-gray-400">
+        <div className="flex items-center justify-between px-4 h-8 border-t border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)] text-[10px] text-[var(--atlas-text-faint)]">
           <span>
             {results.length}{" "}
             {results.length === 1

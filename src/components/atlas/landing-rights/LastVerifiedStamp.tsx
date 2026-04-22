@@ -14,12 +14,12 @@ export function LastVerifiedStamp({ date }: { date: string }) {
   const age = daysSince(date);
   const color =
     age === null
-      ? "text-gray-400"
+      ? "text-[var(--atlas-text-faint)]"
       : age > 180
         ? "text-red-600"
         : age > 90
           ? "text-amber-600"
-          : "text-gray-500";
+          : "text-[var(--atlas-text-muted)]";
   return (
     <span className={`text-[10px] font-medium ${color}`}>
       {t("atlas.landing_rights_last_verified")}: {date}

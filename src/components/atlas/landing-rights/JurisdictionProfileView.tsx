@@ -45,7 +45,7 @@ export function JurisdictionProfileView({
     <div className="flex flex-col gap-6">
       {!embed && (
         <header className="flex items-baseline gap-4 flex-wrap">
-          <h1 className="text-[40px] font-light tracking-tight text-gray-900">
+          <h1 className="text-[40px] font-light tracking-tight text-[var(--atlas-text-primary)]">
             {profile.jurisdiction}
           </h1>
           <DepthBadge depth={profile.depth} />
@@ -64,14 +64,14 @@ export function JurisdictionProfileView({
         </header>
       )}
 
-      <section className="rounded-xl bg-white border border-gray-100 p-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+      <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Overview
         </h2>
-        <p className="text-[14px] leading-relaxed text-gray-800">
+        <p className="text-[14px] leading-relaxed text-[var(--atlas-text-primary)]">
           {profile.overview.summary}
         </p>
-        <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-gray-500">
+        <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-[var(--atlas-text-muted)]">
           <span>Regime: {profile.overview.regime_type.replace("_", " ")}</span>
           {profile.overview.in_force_date && (
             <span>In force: {profile.overview.in_force_date}</span>
@@ -82,18 +82,20 @@ export function JurisdictionProfileView({
         </div>
       </section>
 
-      <section className="rounded-xl bg-white border border-gray-100 p-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+      <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Regulators
         </h2>
         <ul className="space-y-2">
           {profile.regulators.map((r) => (
             <li key={r.abbreviation} className="flex items-center gap-3">
-              <span className="text-[12px] font-bold bg-gray-100 rounded-md px-2 py-1">
+              <span className="text-[12px] font-bold bg-[var(--atlas-bg-inset)] rounded-md px-2 py-1">
                 {r.abbreviation}
               </span>
-              <span className="text-[14px] text-gray-800">{r.name}</span>
-              <span className="text-[10px] uppercase tracking-wider text-gray-400">
+              <span className="text-[14px] text-[var(--atlas-text-primary)]">
+                {r.name}
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-[var(--atlas-text-faint)]">
                 {r.role.replace("_", " ")}
               </span>
             </li>
@@ -102,8 +104,8 @@ export function JurisdictionProfileView({
       </section>
 
       {profile.legal_basis.length > 0 && (
-        <section className="rounded-xl bg-white border border-gray-100 p-6">
-          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+        <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
             Legal basis
           </h2>
           <ul className="space-y-2">
@@ -120,8 +122,8 @@ export function JurisdictionProfileView({
         </section>
       )}
 
-      <section className="rounded-xl bg-white border border-gray-100 p-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+      <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Category deep-dives
         </h2>
         <div className="grid grid-cols-2 gap-2">
@@ -131,9 +133,9 @@ export function JurisdictionProfileView({
               <Link
                 key={cat}
                 href={`/atlas/landing-rights/${code}/${cat.replace("_", "-")}`}
-                className="flex items-center justify-between px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 transition"
+                className="flex items-center justify-between px-4 py-3 rounded-lg bg-[var(--atlas-bg-surface-muted)] hover:bg-[var(--atlas-bg-inset)] border border-[var(--atlas-border)] transition"
               >
-                <span className="text-[13px] font-medium text-gray-900">
+                <span className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
                   {CATEGORY_LABELS[cat]}
                 </span>
                 <span className="text-[11px] text-emerald-600">→</span>
@@ -141,12 +143,12 @@ export function JurisdictionProfileView({
             ) : (
               <div
                 key={cat}
-                className="flex items-center justify-between px-4 py-3 rounded-lg bg-gray-50/50 border border-gray-100 opacity-60"
+                className="flex items-center justify-between px-4 py-3 rounded-lg bg-[var(--atlas-bg-surface-muted)]/50 border border-[var(--atlas-border-subtle)] opacity-60"
               >
-                <span className="text-[13px] text-gray-500">
+                <span className="text-[13px] text-[var(--atlas-text-muted)]">
                   {CATEGORY_LABELS[cat]}
                 </span>
-                <span className="text-[10px] uppercase tracking-wider text-gray-400">
+                <span className="text-[10px] uppercase tracking-wider text-[var(--atlas-text-faint)]">
                   Coverage pending
                 </span>
               </div>
@@ -155,37 +157,45 @@ export function JurisdictionProfileView({
         </div>
       </section>
 
-      <section className="rounded-xl bg-white border border-gray-100 p-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+      <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Fees & Timeline
         </h2>
         <dl className="grid grid-cols-2 gap-4 text-[13px]">
           <div>
-            <dt className="text-gray-500 text-[11px]">Application fee</dt>
-            <dd className="text-gray-900">
+            <dt className="text-[var(--atlas-text-muted)] text-[11px]">
+              Application fee
+            </dt>
+            <dd className="text-[var(--atlas-text-primary)]">
               {profile.fees.application
                 ? `${profile.fees.application.min ?? "—"}–${profile.fees.application.max ?? "—"} ${profile.fees.application.currency}`
                 : "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-gray-500 text-[11px]">Typical timeline</dt>
-            <dd className="text-gray-900">
+            <dt className="text-[var(--atlas-text-muted)] text-[11px]">
+              Typical timeline
+            </dt>
+            <dd className="text-[var(--atlas-text-primary)]">
               {profile.timeline.typical_duration_months.min}–
               {profile.timeline.typical_duration_months.max} months
             </dd>
           </div>
           <div>
-            <dt className="text-gray-500 text-[11px]">Foreign ownership cap</dt>
-            <dd className="text-gray-900">
+            <dt className="text-[var(--atlas-text-muted)] text-[11px]">
+              Foreign ownership cap
+            </dt>
+            <dd className="text-[var(--atlas-text-primary)]">
               {profile.foreign_ownership.cap_percent == null
                 ? "No cap"
                 : `${profile.foreign_ownership.cap_percent}%`}
             </dd>
           </div>
           <div>
-            <dt className="text-gray-500 text-[11px]">Renewal term</dt>
-            <dd className="text-gray-900">
+            <dt className="text-[var(--atlas-text-muted)] text-[11px]">
+              Renewal term
+            </dt>
+            <dd className="text-[var(--atlas-text-primary)]">
               {profile.renewal.term_years
                 ? `${profile.renewal.term_years} years`
                 : "—"}
@@ -194,8 +204,8 @@ export function JurisdictionProfileView({
         </dl>
       </section>
 
-      <section className="rounded-xl bg-white border border-gray-100 p-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+      <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
           Operator status
         </h2>
         <ul className="space-y-2">
@@ -209,7 +219,7 @@ export function JurisdictionProfileView({
                 </span>
                 <LandingRightsStatusBadge status={snap.status} label />
                 {snap.since && (
-                  <span className="text-[11px] text-gray-500">
+                  <span className="text-[11px] text-[var(--atlas-text-muted)]">
                     since {snap.since}
                   </span>
                 )}
@@ -220,17 +230,17 @@ export function JurisdictionProfileView({
       </section>
 
       {conduct.length > 0 && (
-        <section className="rounded-xl bg-white border border-gray-100 p-6">
-          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+        <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
             Conduct conditions
           </h2>
           <ul className="space-y-3">
             {conduct.map((c) => (
               <li key={c.id} className="border-l-2 border-amber-200 pl-3">
-                <p className="text-[13px] font-semibold text-gray-900">
+                <p className="text-[13px] font-semibold text-[var(--atlas-text-primary)]">
                   {c.title}
                 </p>
-                <p className="text-[12px] text-gray-700 leading-relaxed">
+                <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
                   {c.requirement}
                 </p>
               </li>
@@ -252,8 +262,8 @@ export function JurisdictionProfileView({
         );
         if (filings.length === 0) return null;
         return (
-          <section className="rounded-xl bg-white border border-gray-100 p-6">
-            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+          <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
               ITU filings covering this market
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -266,8 +276,8 @@ export function JurisdictionProfileView({
       })()}
 
       {caseStudies.length > 0 && (
-        <section className="rounded-xl bg-white border border-gray-100 p-6">
-          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-3">
+        <section className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-6">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-faint)] mb-3">
             Related case studies
           </h2>
           <ul className="space-y-2">
@@ -275,7 +285,7 @@ export function JurisdictionProfileView({
               <li key={cs.id}>
                 <Link
                   href={`/atlas/landing-rights/case-studies/${cs.id}`}
-                  className="text-[13px] text-gray-800 hover:text-gray-900 hover:underline"
+                  className="text-[13px] text-[var(--atlas-text-primary)] hover:text-[var(--atlas-text-primary)] hover:underline"
                 >
                   {cs.title}
                 </Link>

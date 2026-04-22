@@ -24,10 +24,10 @@ export default function CyberStandardsPage() {
     <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
       <header className="flex items-center gap-3">
         <Shield className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-        <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+        <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
           Cyber Standards
         </h1>
-        <span className="rounded bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium tracking-wider text-gray-500 uppercase">
+        <span className="rounded bg-[var(--atlas-bg-inset)] border border-[var(--atlas-border)] px-2 py-0.5 text-[10px] font-medium tracking-wider text-[var(--atlas-text-muted)] uppercase">
           4 Frameworks
         </span>
       </header>
@@ -40,9 +40,9 @@ export default function CyberStandardsPage() {
             <div
               key={fw.name}
               className="
-                group relative overflow-hidden rounded-xl border border-gray-200
-                bg-white p-4 shadow-sm
-                hover:border-emerald-300 hover:shadow-md
+                group relative overflow-hidden rounded-xl border border-[var(--atlas-border)]
+                bg-[var(--atlas-bg-surface)] p-4 shadow-sm
+                hover:border-emerald-500 hover:shadow-md
                 transition-all duration-200 cursor-pointer
               "
             >
@@ -54,14 +54,14 @@ export default function CyberStandardsPage() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-[13px] font-medium text-gray-900">
+                  <h3 className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
                     {fw.name}
                   </h3>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-[var(--atlas-text-faint)]">
                       {fw.scope}
                     </span>
-                    <span className="text-[10px] text-gray-400 ">
+                    <span className="text-[10px] text-[var(--atlas-text-faint)] ">
                       {fw.controls} controls
                     </span>
                   </div>
@@ -73,12 +73,12 @@ export default function CyberStandardsPage() {
       </div>
 
       {/* Control matrix skeleton */}
-      <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="flex-1 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Control Mapping Matrix
           </span>
-          <span className="text-[10px] text-gray-400 ">
+          <span className="text-[10px] text-[var(--atlas-text-faint)] ">
             Cross-framework alignment
           </span>
         </div>
@@ -87,7 +87,7 @@ export default function CyberStandardsPage() {
           {["Identify", "Protect", "Detect", "Respond", "Recover"].map((fn) => (
             <div
               key={fn}
-              className="flex items-center h-9 rounded-lg bg-gray-50 border border-gray-100 px-3 gap-3"
+              className="flex items-center h-9 rounded-lg bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] px-3 gap-3"
             >
               <span className="text-[11px] text-emerald-600 font-medium w-20 flex-shrink-0">
                 {fn}

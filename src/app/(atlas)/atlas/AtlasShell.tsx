@@ -122,7 +122,7 @@ export default function AtlasShell({
       <div
         className={`
           fixed z-50 top-0 bottom-0
-          bg-white border-r border-gray-200
+          bg-[var(--atlas-bg-surface)] border-r border-[var(--atlas-border)]
           flex flex-col
           transition-all duration-300 ease-out
           ${!mounted ? "opacity-0" : "opacity-100"}
@@ -266,7 +266,7 @@ export default function AtlasShell({
         <div
           className={`
             flex flex-col flex-shrink-0 py-2
-            ${expanded ? "px-2 bg-[#1a1a1a] border-t border-white/[0.08]" : "px-1.5 border-t border-gray-200"}
+            ${expanded ? "px-2 bg-[#1a1a1a] border-t border-white/[0.08]" : "px-1.5 border-t border-[var(--atlas-border)]"}
           `}
         >
           {!expanded ? (
@@ -280,7 +280,7 @@ export default function AtlasShell({
                   flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-150
                   ${
                     isActive("/atlas/settings")
-                      ? "bg-white text-[#1a1a1a]"
+                      ? "bg-[var(--atlas-bg-surface)] text-[#1a1a1a]"
                       : "bg-[#1a1a1a] text-white/70 hover:text-white hover:bg-[#2a2a2a]"
                   }
                 `}

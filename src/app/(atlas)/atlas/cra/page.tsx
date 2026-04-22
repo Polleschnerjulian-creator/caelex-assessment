@@ -132,21 +132,24 @@ export default function CRAPage() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-gray-900">
+          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
             Cyber Resilience Act
           </h1>
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[11px] text-[var(--atlas-text-faint)]">
             Regulation (EU) 2024/2847
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 shadow-sm">
-            <Search className="h-3 w-3 text-gray-400" strokeWidth={1.5} />
-            <span className="text-[11px] text-gray-400">
+          <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm">
+            <Search
+              className="h-3 w-3 text-[var(--atlas-text-faint)]"
+              strokeWidth={1.5}
+            />
+            <span className="text-[11px] text-[var(--atlas-text-faint)]">
               Search articles...
             </span>
           </div>
-          <button className="flex items-center gap-1.5 rounded-md bg-white border border-gray-200 px-2.5 py-1.5 text-gray-500 hover:text-gray-700 transition-colors shadow-sm">
+          <button className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors shadow-sm">
             <Filter className="h-3 w-3" strokeWidth={1.5} />
             <span className="text-[11px]">Filter</span>
           </button>
@@ -154,13 +157,13 @@ export default function CRAPage() {
       </header>
 
       {/* Key dates timeline */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-3">
           <Calendar
             className="h-3.5 w-3.5 text-emerald-600"
             strokeWidth={1.5}
           />
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Key Dates
           </span>
         </div>
@@ -170,7 +173,7 @@ export default function CRAPage() {
               key={d.date}
               className={`rounded-lg border p-3 ${
                 d.status === "past"
-                  ? "border-gray-200 bg-gray-50"
+                  ? "border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)]"
                   : d.status === "critical"
                     ? "border-red-200 bg-red-50"
                     : "border-emerald-200 bg-emerald-50"
@@ -179,7 +182,7 @@ export default function CRAPage() {
               <div
                 className={`text-[11px] font-semibold tracking-wider uppercase mb-1 ${
                   d.status === "past"
-                    ? "text-gray-500"
+                    ? "text-[var(--atlas-text-muted)]"
                     : d.status === "critical"
                       ? "text-red-700"
                       : "text-emerald-700"
@@ -189,7 +192,9 @@ export default function CRAPage() {
               </div>
               <div
                 className={`text-[12px] ${
-                  d.status === "past" ? "text-gray-600" : "text-gray-900"
+                  d.status === "past"
+                    ? "text-[var(--atlas-text-secondary)]"
+                    : "text-[var(--atlas-text-primary)]"
                 }`}
               >
                 {d.label}
@@ -202,7 +207,7 @@ export default function CRAPage() {
       {/* Chapter grid */}
       <div>
         <div className="flex items-center gap-2 mb-2 px-1">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Structure
           </span>
         </div>
@@ -211,9 +216,9 @@ export default function CRAPage() {
             <div
               key={ch.num}
               className="
-                group relative overflow-hidden rounded-xl border border-gray-200
-                bg-white p-4 shadow-sm
-                hover:border-emerald-300 hover:shadow-md
+                group relative overflow-hidden rounded-xl border border-[var(--atlas-border)]
+                bg-[var(--atlas-bg-surface)] p-4 shadow-sm
+                hover:border-emerald-500 hover:shadow-md
                 transition-all duration-200 cursor-pointer
               "
             >
@@ -231,13 +236,13 @@ export default function CRAPage() {
                   {ch.status}
                 </span>
               </div>
-              <h3 className="text-[13px] font-medium text-gray-900 mb-1">
+              <h3 className="text-[13px] font-medium text-[var(--atlas-text-primary)] mb-1">
                 {ch.title}
               </h3>
-              <p className="text-[11px] text-gray-500 leading-snug mb-2">
+              <p className="text-[11px] text-[var(--atlas-text-muted)] leading-snug mb-2">
                 {ch.description}
               </p>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-[var(--atlas-text-faint)]">
                 Articles {ch.articles}
               </span>
             </div>
@@ -246,13 +251,13 @@ export default function CRAPage() {
       </div>
 
       {/* Space-sector relevance */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle
             className="h-3.5 w-3.5 text-amber-600"
             strokeWidth={1.5}
           />
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Why This Matters for Space Operators
           </span>
         </div>
@@ -260,12 +265,12 @@ export default function CRAPage() {
           {SPACE_RELEVANCE.map((item) => (
             <div
               key={item.title}
-              className="rounded-lg border border-gray-100 bg-[#FAFBFC] p-3"
+              className="rounded-lg border border-[var(--atlas-border-subtle)] bg-[#FAFBFC] p-3"
             >
-              <h3 className="text-[12px] font-medium text-gray-900 mb-1">
+              <h3 className="text-[12px] font-medium text-[var(--atlas-text-primary)] mb-1">
                 {item.title}
               </h3>
-              <p className="text-[11px] text-gray-600 leading-relaxed">
+              <p className="text-[11px] text-[var(--atlas-text-secondary)] leading-relaxed">
                 {item.body}
               </p>
             </div>
@@ -274,9 +279,9 @@ export default function CRAPage() {
       </div>
 
       {/* Official sources */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Official Sources
           </span>
         </div>
@@ -290,7 +295,10 @@ export default function CRAPage() {
             >
               Regulation (EU) 2024/2847 — EUR-Lex official text
             </a>
-            <span className="text-gray-400"> · consolidated version</span>
+            <span className="text-[var(--atlas-text-faint)]">
+              {" "}
+              · consolidated version
+            </span>
           </li>
           <li>
             <a
@@ -316,9 +324,9 @@ export default function CRAPage() {
       </div>
 
       {/* Article browser skeleton */}
-      <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="flex-1 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+          <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-muted)] uppercase">
             Article Browser
           </span>
         </div>
@@ -328,10 +336,10 @@ export default function CRAPage() {
               className="h-8 w-8 text-emerald-200 mx-auto mb-3"
               strokeWidth={1}
             />
-            <p className="text-[12px] text-gray-500">
+            <p className="text-[12px] text-[var(--atlas-text-muted)]">
               Select a chapter to browse its articles.
             </p>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1">
               Full-text article viewer with compliance mapping and
               cross-references to NIS2, ENISA standards, and space-sector
               implementations.

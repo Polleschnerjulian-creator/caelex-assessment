@@ -5,7 +5,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const DEPTH_STYLES: Record<CoverageDepth, string> = {
   deep: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  standard: "bg-gray-50 text-gray-700 border-gray-200",
+  standard:
+    "bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] border-[var(--atlas-border)]",
   stub: "bg-amber-50 text-amber-800 border-amber-200",
 };
 

@@ -239,7 +239,7 @@ export function BookmarkButton({ item }: { item: BookmarkRef }) {
       className={`inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 border transition-colors ${
         saved
           ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-          : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+          : "bg-[var(--atlas-bg-surface)] border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)] hover:text-[var(--atlas-text-primary)]"
       }`}
     >
       <Bookmark

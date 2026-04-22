@@ -8,7 +8,7 @@ export function LandingRightsList({
 }) {
   if (profiles.length === 0) {
     return (
-      <div className="rounded-xl bg-white border border-gray-100 p-12 text-center text-gray-500">
+      <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-12 text-center text-[var(--atlas-text-muted)]">
         No jurisdictions match the current filters.
       </div>
     );

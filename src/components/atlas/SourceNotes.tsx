@@ -273,7 +273,7 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
         className="flex items-center gap-2 group w-full text-left"
       >
         <StickyNote size={15} className="text-amber-500/70" strokeWidth={1.5} />
-        <h2 className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase group-hover:text-gray-600 transition-colors">
+        <h2 className="text-[11px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.15em] uppercase group-hover:text-[var(--atlas-text-secondary)] transition-colors">
           {t("atlas.annotations")}
         </h2>
 
@@ -281,7 +281,7 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80" />
         )}
 
-        <span className="text-gray-300 group-hover:text-gray-400 transition-colors ml-auto">
+        <span className="text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-faint)] transition-colors ml-auto">
           {isExpanded ? (
             <ChevronDown size={14} strokeWidth={1.5} />
           ) : (
@@ -305,7 +305,7 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
                 onChange={handleChange}
                 placeholder={t("atlas.annotations_placeholder")}
                 rows={4}
-                className="w-full resize-none rounded border border-amber-200/60 bg-white/80 px-3 py-2 text-[13px] text-gray-700 placeholder:text-gray-400/60 focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-200 transition-colors"
+                className="w-full resize-none rounded border border-amber-200/60 bg-white/80 px-3 py-2 text-[13px] text-[var(--atlas-text-secondary)] placeholder:text-[var(--atlas-text-faint)]/60 focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-200 transition-colors"
               />
 
               {/* ─── Footer: status + delete ─── */}
@@ -315,7 +315,7 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
                 {hasContent && (
                   <button
                     onClick={handleDelete}
-                    className="flex items-center gap-1 rounded px-2 py-1 text-[10px] text-gray-400 hover:text-red-400 hover:bg-red-50 transition-all duration-150"
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[10px] text-[var(--atlas-text-faint)] hover:text-red-400 hover:bg-red-50 transition-all duration-150"
                     title={t("atlas.annotations_delete")}
                   >
                     <Trash2 size={11} strokeWidth={1.5} />

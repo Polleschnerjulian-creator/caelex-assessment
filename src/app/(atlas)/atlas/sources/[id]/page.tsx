@@ -43,12 +43,12 @@ import {
 
 const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
   international_treaty: {
-    bg: "bg-gray-100 border-gray-300",
-    text: "text-gray-900",
+    bg: "bg-[var(--atlas-bg-inset)] border-[var(--atlas-border-strong)]",
+    text: "text-[var(--atlas-text-primary)]",
   },
   federal_law: {
     bg: "bg-emerald-50 border-emerald-200",
-    text: "text-gray-800",
+    text: "text-[var(--atlas-text-primary)]",
   },
   federal_regulation: {
     bg: "bg-teal-50 border-teal-200",
@@ -67,8 +67,8 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
     text: "text-violet-700",
   },
   policy_document: {
-    bg: "bg-gray-50 border-gray-200",
-    text: "text-gray-600",
+    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+    text: "text-[var(--atlas-text-secondary)]",
   },
   draft_legislation: {
     bg: "bg-orange-50 border-orange-200",
@@ -77,18 +77,29 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
 };
 
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
-  fundamental: "text-gray-900 bg-gray-100 border-gray-300",
+  fundamental:
+    "text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] border-[var(--atlas-border-strong)]",
   critical: "text-red-700 bg-red-50 border-red-200",
   high: "text-amber-700 bg-amber-50 border-amber-200",
-  medium: "text-gray-500 bg-gray-50 border-gray-200",
-  low: "text-gray-500 bg-gray-50 border-gray-100",
+  medium:
+    "text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+  low: "text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border-subtle)]",
 };
 
 const STATUS_COLORS: Record<LegalSourceStatus, { bg: string; text: string }> = {
-  in_force: { bg: "bg-emerald-50 border-emerald-200", text: "text-gray-800" },
+  in_force: {
+    bg: "bg-emerald-50 border-emerald-200",
+    text: "text-[var(--atlas-text-primary)]",
+  },
   draft: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700" },
-  proposed: { bg: "bg-gray-100 border-gray-300", text: "text-gray-900" },
-  superseded: { bg: "bg-gray-50 border-gray-200", text: "text-gray-500" },
+  proposed: {
+    bg: "bg-[var(--atlas-bg-inset)] border-[var(--atlas-border-strong)]",
+    text: "text-[var(--atlas-text-primary)]",
+  },
+  superseded: {
+    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
+    text: "text-[var(--atlas-text-muted)]",
+  },
   planned: { bg: "bg-violet-50 border-violet-200", text: "text-violet-700" },
   not_ratified: {
     bg: "bg-orange-50 border-orange-200",
@@ -124,10 +135,12 @@ function LinkedSource({
 
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <span className="text-gray-500 flex-shrink-0">{label}</span>
+      <span className="text-[var(--atlas-text-muted)] flex-shrink-0">
+        {label}
+      </span>
       <Link
         href={`/atlas/sources/${source.id}`}
-        className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors group"
+        className="flex items-center gap-2 text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors group"
       >
         <span
           className={`text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${typeStyle.bg} ${typeStyle.text}`}
@@ -167,7 +180,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 py-8 lg:px-12">
         <Link
           href="/atlas"
-          className="inline-flex items-center gap-2 text-[12px] text-gray-500 hover:text-gray-700 transition-colors"
+          className="inline-flex items-center gap-2 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors"
         >
           <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
           {t("atlas.back_to_atlas")}
@@ -179,13 +192,15 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             strokeWidth={1}
             aria-hidden="true"
           />
-          <p className="text-[20px] font-medium text-gray-500">
+          <p className="text-[20px] font-medium text-[var(--atlas-text-muted)]">
             {t("atlas.source_not_found")}
           </p>
-          <p className="text-[13px] text-gray-500 mt-2 ">{id}</p>
+          <p className="text-[13px] text-[var(--atlas-text-muted)] mt-2 ">
+            {id}
+          </p>
           <button
             onClick={() => router.back()}
-            className="mt-6 text-[12px] text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-4"
+            className="mt-6 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] transition-colors underline underline-offset-4"
           >
             {t("atlas.go_back")}
           </button>
@@ -243,22 +258,22 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {/* ─── Breadcrumb line ─── */}
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-2 text-[12px] text-gray-500"
+        className="flex items-center gap-2 text-[12px] text-[var(--atlas-text-muted)]"
       >
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+          className="inline-flex items-center gap-1.5 hover:text-[var(--atlas-text-secondary)] transition-colors"
         >
           <ArrowLeft size={13} strokeWidth={1.5} aria-hidden="true" />
           {t("atlas.back")}
         </button>
-        <span className="text-gray-500" aria-hidden="true">
+        <span className="text-[var(--atlas-text-muted)]" aria-hidden="true">
           ·
         </span>
         <span className={`font-medium ${typeStyle.text}`}>
           {TYPE_LABELS[source.type]}
         </span>
-        <span className="text-gray-500" aria-hidden="true">
+        <span className="text-[var(--atlas-text-muted)]" aria-hidden="true">
           ·
         </span>
         <span>{jurisdictionName}</span>
@@ -266,17 +281,17 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
       {/* ─── Title block ─── */}
       <header className="mt-4 max-w-4xl">
-        <h1 className="text-[24px] lg:text-[28px] font-semibold text-gray-900 tracking-tight leading-[1.25]">
+        <h1 className="text-[24px] lg:text-[28px] font-semibold text-[var(--atlas-text-primary)] tracking-tight leading-[1.25]">
           {getTranslatedSource(source, language).title}
         </h1>
         {language === "en" && source.title_local && (
-          <p className="text-[13px] text-gray-500 mt-1 leading-snug">
+          <p className="text-[13px] text-[var(--atlas-text-muted)] mt-1 leading-snug">
             {source.title_local}
           </p>
         )}
         {language !== "en" &&
           source.title_en !== getTranslatedSource(source, language).title && (
-            <p className="text-[13px] text-gray-500 mt-1 leading-snug">
+            <p className="text-[13px] text-[var(--atlas-text-muted)] mt-1 leading-snug">
               {source.title_en}
             </p>
           )}
@@ -297,7 +312,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               href={source.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--atlas-text-primary)] font-medium hover:text-[var(--atlas-text-primary)] transition-colors"
             >
               {t("atlas.view_official_text")}
               <span className="sr-only">(opens in new window)</span>
@@ -308,17 +323,21 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       </header>
 
       {/* ─── Metadata grid ─── */}
-      <div className="mt-5 py-4 border-y border-gray-200 max-w-2xl">
+      <div className="mt-5 py-4 border-y border-[var(--atlas-border)] max-w-2xl">
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
-          <dt className="text-gray-500">{t("atlas.jurisdiction_label")}</dt>
-          <dd className="text-gray-800">
-            <span className=" text-gray-500 text-[12px]">
+          <dt className="text-[var(--atlas-text-muted)]">
+            {t("atlas.jurisdiction_label")}
+          </dt>
+          <dd className="text-[var(--atlas-text-primary)]">
+            <span className=" text-[var(--atlas-text-muted)] text-[12px]">
               {jurisdictionFlag}
             </span>{" "}
             · {jurisdictionName}
           </dd>
 
-          <dt className="text-gray-500">{t("atlas.status_label")}</dt>
+          <dt className="text-[var(--atlas-text-muted)]">
+            {t("atlas.status_label")}
+          </dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${statusStyle.bg} ${statusStyle.text}`}
@@ -329,12 +348,12 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
           {(source.date_enacted || source.date_in_force) && (
             <>
-              <dt className="text-gray-500">
+              <dt className="text-[var(--atlas-text-muted)]">
                 {source.date_enacted
                   ? t("atlas.enacted_label")
                   : t("atlas.in_force_label")}
               </dt>
-              <dd className="text-gray-800">
+              <dd className="text-[var(--atlas-text-primary)]">
                 {source.date_enacted ?? source.date_in_force}
               </dd>
             </>
@@ -342,17 +361,25 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
           {source.official_reference && (
             <>
-              <dt className="text-gray-500">{t("atlas.reference_label")}</dt>
-              <dd className=" text-[12px] text-gray-600">
+              <dt className="text-[var(--atlas-text-muted)]">
+                {t("atlas.reference_label")}
+              </dt>
+              <dd className=" text-[12px] text-[var(--atlas-text-secondary)]">
                 {source.official_reference}
               </dd>
             </>
           )}
 
-          <dt className="text-gray-500">{t("atlas.issuing_body")}</dt>
-          <dd className="text-gray-800">{source.issuing_body}</dd>
+          <dt className="text-[var(--atlas-text-muted)]">
+            {t("atlas.issuing_body")}
+          </dt>
+          <dd className="text-[var(--atlas-text-primary)]">
+            {source.issuing_body}
+          </dd>
 
-          <dt className="text-gray-500">{t("atlas.relevance_label")}</dt>
+          <dt className="text-[var(--atlas-text-muted)]">
+            {t("atlas.relevance_label")}
+          </dt>
           <dd>
             <span
               className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${relevanceStyle}`}
@@ -367,12 +394,12 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       {(provisionCount > 0 || authorityCount > 0 || hasRelated) && (
         <nav
           aria-label="Table of contents"
-          className="mt-4 flex items-center gap-4 text-[12px] text-gray-500"
+          className="mt-4 flex items-center gap-4 text-[12px] text-[var(--atlas-text-muted)]"
         >
           {provisionCount > 0 && (
             <a
               href="#provisions"
-              className="hover:text-gray-700 transition-colors"
+              className="hover:text-[var(--atlas-text-secondary)] transition-colors"
             >
               {provisionCount !== 1
                 ? t("atlas.key_provisions_count_plural", {
@@ -382,14 +409,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </a>
           )}
           {provisionCount > 0 && authorityCount > 0 && (
-            <span className="text-gray-500" aria-hidden="true">
+            <span className="text-[var(--atlas-text-muted)]" aria-hidden="true">
               ·
             </span>
           )}
           {authorityCount > 0 && (
             <a
               href="#authorities"
-              className="hover:text-gray-700 transition-colors"
+              className="hover:text-[var(--atlas-text-secondary)] transition-colors"
             >
               {authorityCount !== 1
                 ? t("atlas.authorities_count_toc_plural", {
@@ -399,14 +426,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </a>
           )}
           {(provisionCount > 0 || authorityCount > 0) && hasRelated && (
-            <span className="text-gray-500" aria-hidden="true">
+            <span className="text-[var(--atlas-text-muted)]" aria-hidden="true">
               ·
             </span>
           )}
           {hasRelated && (
             <a
               href="#related"
-              className="hover:text-gray-700 transition-colors"
+              className="hover:text-[var(--atlas-text-secondary)] transition-colors"
             >
               {relatedCount !== 1
                 ? t("atlas.related_sources_count_plural", {
@@ -428,13 +455,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-4">
             <BookOpen
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="provisions-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.key_provisions")}
             </h2>
@@ -456,25 +483,25 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                   className={`py-4 pl-4 border-l-2 border-emerald-300 ${i !== source.key_provisions.length - 1 ? "border-b border-b-gray-100" : ""}`}
                 >
                   <div className="flex items-baseline gap-3">
-                    <span className="text-[11px] text-gray-500  flex-shrink-0">
+                    <span className="text-[11px] text-[var(--atlas-text-muted)]  flex-shrink-0">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="text-[15px]  font-bold text-gray-900 flex-shrink-0">
+                    <span className="text-[15px]  font-bold text-[var(--atlas-text-primary)] flex-shrink-0">
                       {provision.section}
                     </span>
-                    <h3 className="text-[14px] font-semibold text-gray-700">
+                    <h3 className="text-[14px] font-semibold text-[var(--atlas-text-secondary)]">
                       {displayTitle}
                     </h3>
                   </div>
 
-                  <p className="text-[13px] text-gray-600 leading-[1.75] mt-1.5 ml-[52px]">
+                  <p className="text-[13px] text-[var(--atlas-text-secondary)] leading-[1.75] mt-1.5 ml-[52px]">
                     {displaySummary}
                   </p>
 
                   {displayImplication && (
                     <div className="mt-2.5 ml-[52px] max-w-2xl border-l-2 border-emerald-400 bg-emerald-50/50 pl-4 py-2">
                       <p className="text-[12px] text-emerald-800 leading-[1.6]">
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-gray-900">
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-primary)]">
                           {t("atlas.compliance_implication")}
                         </span>
                         <br />
@@ -495,18 +522,18 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-3">
             <FileText
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="scope-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.scope")}
             </h2>
           </div>
-          <p className="text-[13px] text-gray-600 leading-[1.75] max-w-3xl">
+          <p className="text-[13px] text-[var(--atlas-text-secondary)] leading-[1.75] max-w-3xl">
             {getTranslatedSource(source, language).scopeDescription ??
               source.scope_description}
           </p>
@@ -523,13 +550,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-4">
             <Building2
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="authorities-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.competent_authorities")}
             </h2>
@@ -540,22 +567,22 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               <Link
                 key={auth.id}
                 href={`/atlas/jurisdictions/${auth.jurisdiction}`}
-                className="flex items-start gap-4 py-3 px-4 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-150 group"
+                className="flex items-start gap-4 py-3 px-4 rounded-lg hover:bg-[var(--atlas-bg-surface)] hover:shadow-sm transition-all duration-150 group"
               >
-                <span className="text-[16px] font-bold text-gray-900  tracking-tight flex-shrink-0 w-16 group-hover:text-gray-800 transition-colors">
+                <span className="text-[16px] font-bold text-[var(--atlas-text-primary)]  tracking-tight flex-shrink-0 w-16 group-hover:text-[var(--atlas-text-primary)] transition-colors">
                   {auth.abbreviation}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[13px] font-medium text-gray-700">
+                    <span className="text-[13px] font-medium text-[var(--atlas-text-secondary)]">
                       {getTranslatedAuthority(auth, language).name}
                     </span>
-                    <span className="text-[11px]  text-gray-500">
+                    <span className="text-[11px]  text-[var(--atlas-text-muted)]">
                       {JURISDICTION_FLAGS[auth.jurisdiction] ??
                         auth.jurisdiction}
                     </span>
                   </div>
-                  <p className="text-[12px] text-gray-500 leading-relaxed mt-0.5 truncate">
+                  <p className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed mt-0.5 truncate">
                     {(() => {
                       const m = getTranslatedAuthority(auth, language).mandate;
                       return m.length > 80 ? m.slice(0, 80) + "..." : m;
@@ -564,7 +591,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                 </div>
                 <ExternalLink
                   size={12}
-                  className="text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0 mt-1"
+                  className="text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-muted)] transition-colors flex-shrink-0 mt-1"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
@@ -584,13 +611,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-4">
             <Link2
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="related-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.related_sources")}
             </h2>
@@ -643,7 +670,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                   <Link
                     key={rel.id}
                     href={`/atlas/sources/${rel.id}`}
-                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white hover:shadow-sm transition-all duration-150 group"
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--atlas-bg-surface)] hover:shadow-sm transition-all duration-150 group"
                   >
                     <span
                       className={`text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${relTypeStyle.bg} ${relTypeStyle.text}`}
@@ -651,11 +678,11 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                       {TYPE_LABELS[rel.type]}
                     </span>
 
-                    <span className="text-[13px] text-gray-800 truncate group-hover:text-gray-800 transition-colors flex-1 min-w-0">
+                    <span className="text-[13px] text-[var(--atlas-text-primary)] truncate group-hover:text-[var(--atlas-text-primary)] transition-colors flex-1 min-w-0">
                       {rel.title_en}
                     </span>
 
-                    <span className="text-[11px]  text-gray-500 flex-shrink-0">
+                    <span className="text-[11px]  text-[var(--atlas-text-muted)] flex-shrink-0">
                       {JURISDICTION_FLAGS[rel.jurisdiction] ?? rel.jurisdiction}
                     </span>
                   </Link>
@@ -672,13 +699,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-3">
             <Info
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="notes-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.notes")}
             </h2>
@@ -687,7 +714,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.notes.map((note, i) => (
               <p
                 key={i}
-                className="text-[12px] text-gray-500 leading-relaxed pl-4 border-l-2 border-gray-200"
+                className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed pl-4 border-l-2 border-[var(--atlas-border)]"
               >
                 {note}
               </p>
@@ -703,13 +730,13 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
           <div className="flex items-center gap-2 mb-3">
             <Cpu
               size={15}
-              className="text-gray-500"
+              className="text-[var(--atlas-text-muted)]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
             <h2
               id="integration-heading"
-              className="text-[11px] font-semibold text-gray-500 tracking-[0.15em] uppercase"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
               {t("atlas.caelex_integration")}
             </h2>
@@ -718,14 +745,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.caelex_engine_mapping &&
               source.caelex_engine_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-[var(--atlas-text-muted)] uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     {t("atlas.engines_label")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {source.caelex_engine_mapping.map((engine) => (
                       <span
                         key={engine}
-                        className="text-[10px]  text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
+                        className="text-[10px]  text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] rounded px-2 py-0.5"
                       >
                         {engine}
                       </span>
@@ -737,14 +764,14 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             {source.caelex_data_file_mapping &&
               source.caelex_data_file_mapping.length > 0 && (
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+                  <span className="text-[10px] font-medium text-[var(--atlas-text-muted)] uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                     {t("atlas.data_files_label")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {source.caelex_data_file_mapping.map((file) => (
                       <span
                         key={file}
-                        className="text-[10px]  text-gray-600 bg-white border border-gray-200 rounded px-2 py-0.5"
+                        className="text-[10px]  text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] rounded px-2 py-0.5"
                       >
                         {file}
                       </span>
@@ -754,10 +781,10 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               )}
 
             <div className="flex items-start gap-4">
-              <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
+              <span className="text-[10px] font-medium text-[var(--atlas-text-muted)] uppercase tracking-wider w-20 flex-shrink-0 pt-0.5">
                 {t("atlas.verified_label")}
               </span>
-              <span className="text-[11px] text-gray-500">
+              <span className="text-[11px] text-[var(--atlas-text-muted)]">
                 {source.last_verified}
               </span>
             </div>
@@ -769,8 +796,8 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
       <SourceNotes sourceId={source.id} />
 
       {/* ─── Footer ─── */}
-      <footer className="mt-12 pt-4 border-t border-gray-200">
-        <p className="text-[10px] text-gray-500 leading-relaxed max-w-3xl">
+      <footer className="mt-12 pt-4 border-t border-[var(--atlas-border)]">
+        <p className="text-[10px] text-[var(--atlas-text-muted)] leading-relaxed max-w-3xl">
           {t("atlas.footer_disclaimer", { date: source.last_verified })}
         </p>
       </footer>

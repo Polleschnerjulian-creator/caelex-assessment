@@ -301,16 +301,18 @@ body {
    Keeps the rest of the app unaffected — Atlas owns its own palette. */
 
 .atlas-themed {
-  /* Light (default) */
+  /* Light (default) — matches existing Atlas palette */
   --atlas-bg-page: #f7f8fa;
   --atlas-bg-surface: #ffffff;
   --atlas-bg-surface-muted: #fafbfc;
   --atlas-bg-inset: #f3f4f6;
+  --atlas-bg-input: #ffffff;
   --atlas-text-primary: #111827;
-  --atlas-text-secondary: #4b5563;
+  --atlas-text-secondary: #374151;
   --atlas-text-muted: #6b7280;
   --atlas-text-faint: #9ca3af;
   --atlas-border: #e5e7eb;
+  --atlas-border-subtle: #f3f4f6;
   --atlas-border-strong: #d1d5db;
   --atlas-accent: #059669;
   --atlas-accent-soft: #ecfdf5;
@@ -321,22 +323,39 @@ body {
 }
 
 .atlas-themed[data-atlas-theme="dark"] {
-  --atlas-bg-page: #0a0f1a;
-  --atlas-bg-surface: #111827;
-  --atlas-bg-surface-muted: #1f2937;
-  --atlas-bg-inset: #0f1520;
+  /* Dark — inspired by Apple/Linear: soft off-black surfaces, not pure black.
+     AA/AAA contrast on all text tiers against --atlas-bg-surface. */
+  --atlas-bg-page: #0a0d12;
+  --atlas-bg-surface: #131821;
+  --atlas-bg-surface-muted: #1a2029;
+  --atlas-bg-inset: #10141b;
+  --atlas-bg-input: #1a2029;
   --atlas-text-primary: #f1f5f9;
-  --atlas-text-secondary: #cbd5e1;
-  --atlas-text-muted: #94a3b8;
-  --atlas-text-faint: #64748b;
-  --atlas-border: #1f2937;
-  --atlas-border-strong: #334155;
+  --atlas-text-secondary: #d1d5db;
+  --atlas-text-muted: #9ca3af;
+  --atlas-text-faint: #6b7280;
+  --atlas-border: #262d39;
+  --atlas-border-subtle: #1a2029;
+  --atlas-border-strong: #374151;
   --atlas-accent: #10b981;
   --atlas-accent-soft: rgba(16, 185, 129, 0.12);
-  --atlas-scrollbar-thumb: #334155;
-  --atlas-scrollbar-thumb-hover: #475569;
+  --atlas-scrollbar-thumb: #374151;
+  --atlas-scrollbar-thumb-hover: #4b5563;
   --atlas-selection-bg: rgba(16, 185, 129, 0.25);
   color-scheme: dark;
+}
+
+/* Give inputs/textareas inside Atlas the themed surface so the
+   browser's default white doesn't leak through in dark mode. */
+.atlas-themed input,
+.atlas-themed textarea,
+.atlas-themed select {
+  background-color: var(--atlas-bg-input);
+  color: var(--atlas-text-primary);
+}
+.atlas-themed input::placeholder,
+.atlas-themed textarea::placeholder {
+  color: var(--atlas-text-faint);
 }
 
 .atlas-themed ::selection {

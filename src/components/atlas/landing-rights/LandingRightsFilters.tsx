@@ -71,9 +71,9 @@ export function LandingRightsFilters() {
   ].filter((v) => v !== "all").length;
 
   return (
-    <aside className="flex flex-col gap-5 p-5 rounded-xl bg-white border border-gray-100 sticky top-6">
+    <aside className="flex flex-col gap-5 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] sticky top-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-700">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--atlas-text-secondary)]">
           Filters
         </h3>
         {activeCount > 0 && (
@@ -105,8 +105,8 @@ export function LandingRightsFilters() {
         onChange={(v) => setParam("depth", v)}
       />
 
-      <div className="pt-3 border-t border-gray-100">
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
+      <div className="pt-3 border-t border-[var(--atlas-border-subtle)]">
+        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-3">
           Operator status
         </h4>
         <div className="flex flex-col gap-3">
@@ -131,8 +131,8 @@ export function LandingRightsFilters() {
         </div>
       </div>
 
-      <div className="pt-3 border-t border-gray-100">
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
+      <div className="pt-3 border-t border-[var(--atlas-border-subtle)]">
+        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-3">
           Regulatory screens
         </h4>
         <div className="flex flex-col gap-3">
@@ -167,13 +167,13 @@ function FilterSelect({
 }) {
   return (
     <div>
-      <label className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 block mb-1.5">
+      <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] block mb-1.5">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-[12px] bg-white focus:border-gray-400 focus:outline-none"
+        className="w-full rounded-md border border-[var(--atlas-border)] px-2 py-1.5 text-[12px] bg-[var(--atlas-bg-surface)] focus:border-[var(--atlas-border-strong)] focus:outline-none"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

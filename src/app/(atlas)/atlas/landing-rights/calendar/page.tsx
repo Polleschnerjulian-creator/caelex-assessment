@@ -55,23 +55,32 @@ export default async function CalendarPage({
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-[32px] font-light tracking-tight text-gray-900">
+        <h1 className="text-[32px] font-light tracking-tight text-[var(--atlas-text-primary)]">
           Calendar
         </h1>
-        <p className="mt-1 text-[13px] text-gray-600 max-w-2xl">
+        <p className="mt-1 text-[13px] text-[var(--atlas-text-secondary)] max-w-2xl">
           Renewal deadlines, deployment milestones, WRC conferences, and
           regulatory-change dates — auto-computed from profile data plus
           publicly-verified global milestones.
         </p>
-        <div className="mt-4 flex items-center gap-4 text-[12px] text-gray-500">
+        <div className="mt-4 flex items-center gap-4 text-[12px] text-[var(--atlas-text-muted)]">
           <span>
-            <strong className="text-gray-900">{upcomingCount}</strong> upcoming
+            <strong className="text-[var(--atlas-text-primary)]">
+              {upcomingCount}
+            </strong>{" "}
+            upcoming
           </span>
           <span>
-            <strong className="text-gray-900">{pastCount}</strong> past
+            <strong className="text-[var(--atlas-text-primary)]">
+              {pastCount}
+            </strong>{" "}
+            past
           </span>
           <span>
-            <strong className="text-gray-900">{events.length}</strong> shown
+            <strong className="text-[var(--atlas-text-primary)]">
+              {events.length}
+            </strong>{" "}
+            shown
           </span>
         </div>
       </header>
@@ -79,7 +88,7 @@ export default async function CalendarPage({
       <CalendarFilters range={range} sp={sp} />
 
       {events.length === 0 ? (
-        <div className="rounded-xl bg-white border border-gray-100 p-12 text-center text-gray-500">
+        <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-12 text-center text-[var(--atlas-text-muted)]">
           No events match the current filters.
         </div>
       ) : (
@@ -110,7 +119,7 @@ function CalendarFilters({ range, sp }: { range: string; sp: SearchParams }) {
           <a
             key={r.v}
             href={href}
-            className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${isActive ? "bg-gray-900 text-white" : "bg-white border border-gray-200 text-gray-700 hover:border-gray-300"}`}
+            className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${isActive ? "bg-gray-900 text-white" : "bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)]"}`}
           >
             {r.l}
           </a>
