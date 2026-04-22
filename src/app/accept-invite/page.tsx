@@ -133,7 +133,10 @@ function AcceptInviteInner() {
       inviteToken: token,
       email: info.email,
     });
-    router.push(`/signup?${qs.toString()}`);
+    // Invite redemptions go through the Atlas-branded signup so the
+    // onboarding matches the rest of the product. The generic /signup
+    // stays for dashboard-first flows that aren't Atlas-scoped.
+    router.push(`/atlas-signup?${qs.toString()}`);
   };
 
   const goLogin = () => {
