@@ -86,6 +86,23 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // IndexNow ownership-proof rewrite — Bing + Yandex fetch
+  // /{INDEXNOW_KEY}.txt and expect the plaintext key as response.
+  // Rewriting to /api/indexnow?key=<INDEXNOW_KEY> avoids committing
+  // the key to git while still serving the exact file Bing looks
+  // for. Guarded by INDEXNOW_KEY being set — otherwise the rewrite
+  // just doesn't match anything and /{random}.txt falls through to
+  // standard static-file handling (404).
+  async rewrites() {
+    const key = process.env.INDEXNOW_KEY;
+    if (!key) return [];
+    return [
+      {
+        source: `/${key}.txt`,
+        destination: `/api/indexnow?key=${key}`,
+      },
+    ];
+  },
   // Apply security headers to all routes
   // NOTE: CSP is handled dynamically in middleware.ts with nonces
   async headers() {

@@ -59,11 +59,26 @@ export function OrganizationJsonLd() {
       addressLocality: "Berlin",
       addressCountry: "DE",
     },
+    // Expanded 2026-04-22. Google's Knowledge Graph trigger is
+    // heavily weighted by the count + authority of sameAs entries —
+    // they prove "this entity is the same across trusted platforms".
+    // Populate every public profile Caelex has. Leave ENV-gated slots
+    // for platforms that are still in setup (Wikidata, Crunchbase)
+    // so activation is a single ENV change, not a code deploy.
     sameAs: [
       siteConfig.linkedIn,
       "https://x.com/caboracaelex",
+      "https://instagram.com/caelex.eu",
       `${siteConfig.url}/about`,
-    ],
+      `${siteConfig.url}/what-is-caelex`,
+      // Optional external profiles — set ENV vars to include. Each
+      // is an entity-verification signal if the profile exists.
+      process.env.NEXT_PUBLIC_WIKIDATA_URL, // e.g. https://www.wikidata.org/wiki/Q...
+      process.env.NEXT_PUBLIC_CRUNCHBASE_URL, // e.g. https://www.crunchbase.com/organization/caelex
+      process.env.NEXT_PUBLIC_YOUTUBE_URL, // e.g. https://youtube.com/@caelex
+      process.env.NEXT_PUBLIC_GITHUB_URL, // e.g. https://github.com/caelex
+      process.env.NEXT_PUBLIC_MASTODON_URL, // Fediverse presence if any
+    ].filter((v): v is string => Boolean(v)),
     contactPoint: [
       {
         "@type": "ContactPoint",
@@ -129,12 +144,35 @@ export function OrganizationJsonLd() {
 // ============================================================================
 
 export function WebSiteJsonLd() {
+  // Enhanced 2026-04-22: added potentialAction SearchAction (enables
+  // Google Sitelinks Searchbox once the site ranks for its brand
+  // query) and inLanguage / publisher pointers into the Organization
+  // graph. The @id anchor lets JSON-LD consumers (especially Google's
+  // rich-results parser) join WebSite + Organization + SoftwareApplication
+  // into a single coherent entity.
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${siteConfig.url}/#website`,
     name: siteConfig.name,
+    alternateName: ["Caelex", "Caelex GmbH", "caelex.eu"],
     url: siteConfig.url,
     description: siteConfig.description,
+    inLanguage: ["en", "de"],
+    publisher: { "@id": `${siteConfig.url}/#organization` },
+    // SearchAction — once the domain earns brand-query ranking,
+    // this enables the "search this site" box directly inside the
+    // Google result. Search target URL matches the existing
+    // /search?q=... pattern (see src/app/search if present) or
+    // defaults to the glossary/blog search on the respective page.
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (

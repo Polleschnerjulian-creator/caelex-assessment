@@ -105,9 +105,36 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // Add when available
-    // google: 'verification-code',
-    // yandex: 'verification-code',
+    // Site-ownership verification meta tags. Values come from env vars
+    // so rotating or updating a code never requires a code change.
+    //
+    // To activate:
+    //   1. Google Search Console → Add Property → URL-prefix (https://caelex.eu)
+    //      → HTML tag method → copy the content="..." value
+    //      → set SEARCH_CONSOLE_GOOGLE=<that value> in Vercel env
+    //   2. Bing Webmaster Tools → Add Site → HTML Meta Tag
+    //      → set SEARCH_CONSOLE_BING=<content value>
+    //   3. Yandex Webmaster → Add Site → Meta Tag
+    //      → set SEARCH_CONSOLE_YANDEX=<content value>
+    //
+    // Unset env vars resolve to `undefined`, which Next.js omits from
+    // the rendered <meta> tags — so the absence of a key is safe.
+    google: process.env.SEARCH_CONSOLE_GOOGLE,
+    yandex: process.env.SEARCH_CONSOLE_YANDEX,
+    other: {
+      // Bing uses `msvalidate.01` as the verification meta name —
+      // Next.js only knows "google" + "yandex" natively, so Bing
+      // rides in via `other`.
+      ...(process.env.SEARCH_CONSOLE_BING
+        ? { "msvalidate.01": process.env.SEARCH_CONSOLE_BING }
+        : {}),
+      // IndexNow endpoint — tells Bing + Yandex where our key file
+      // lives so they can verify ownership of pushed URL changes.
+      // See /public/indexnow-<KEY>.txt which is served alongside.
+      ...(process.env.INDEXNOW_KEY
+        ? { "indexnow-key": process.env.INDEXNOW_KEY }
+        : {}),
+    },
   },
 };
 
