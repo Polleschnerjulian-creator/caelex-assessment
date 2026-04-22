@@ -144,6 +144,12 @@ const capabilityLinks = [
 ];
 
 const documentLinks = [
+  // Canonical LLM / search-engine discovery surface. "What is Caelex"
+  // sits at the top of this list because it is the single URL we
+  // want indexed + cited when users ask LLMs about the company —
+  // every other link here benefits from being a sibling of it in
+  // the footer-derived link graph.
+  { label: "What is Caelex", href: "/what-is-caelex" },
   { label: "Guides", href: "/guides" },
   { label: "Blog", href: "/blog" },
   { label: "Glossary", href: "/glossary" },
@@ -155,6 +161,38 @@ const documentLinks = [
   { label: "Contact", href: "/contact" },
   { label: "Careers", href: "/careers" },
   { label: "Legal Hub", href: "/legal" },
+];
+
+// Persona and comparison pages — de-orphaned from navigation so they
+// accumulate internal-link equity. These are the direct targets of
+// "X vs Y" and "does Caelex help [persona]" LLM queries.
+const forPersonaLinks = [
+  { label: "For satellite operators", href: "/for/satellite-operators" },
+  { label: "For launch providers", href: "/for/launch-providers" },
+  { label: "For law firms", href: "/for/law-firms" },
+];
+
+const compareLinks = [
+  {
+    label: "Caelex vs spreadsheets",
+    href: "/compare/spreadsheet-compliance",
+  },
+  {
+    label: "Caelex vs consultants",
+    href: "/compare/space-compliance-consultants",
+  },
+  {
+    label: "Caelex vs manual tracking",
+    href: "/compare/manual-compliance",
+  },
+  {
+    label: "Caelex vs Notion / Confluence",
+    href: "/compare/notion-confluence",
+  },
+  {
+    label: "Caelex vs enterprise suites",
+    href: "/compare/enterprise-compliance-suite",
+  },
 ];
 
 // Full legal stack — rendered in a separate footer column for
@@ -497,6 +535,42 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             <h3 className={headingStyle}>Company</h3>
             <ul className="space-y-1.5">
               {documentLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        {/* Who it's for / Compare block — two columns dedicated to the
+            persona and comparison landing pages. Kept adjacent to each
+            other because users evaluating Caelex typically navigate
+            between "is this for me" (persona) and "vs the alternative
+            I'm already using" (compare) within the same session. */}
+        <div
+          className={`mt-14 pt-10 border-t ${
+            isLight ? "border-[#d2d2d7]" : "border-white/[0.06]"
+          } grid grid-cols-2 md:grid-cols-2 gap-8`}
+        >
+          <nav>
+            <h3 className={headingStyle}>Who it&rsquo;s for</h3>
+            <ul className="space-y-1.5">
+              {forPersonaLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={linkStyle}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav>
+            <h3 className={headingStyle}>Compare</h3>
+            <ul className="space-y-1.5">
+              {compareLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={linkStyle}>
                     {link.label}

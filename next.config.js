@@ -61,6 +61,28 @@ const securityHeaders = [
   },
   // NOTE: Content-Security-Policy is now set dynamically in middleware.ts
   // with nonce-based script protection. See src/lib/csp-nonce.ts for config.
+  //
+  // X-Robots-Tag — tells LLM + search crawlers they may use the FULL
+  // content of a page in their AI answer boxes and training snippets.
+  // Without this, Google AI Overview / Bing Copilot / retrieval-aware
+  // LLMs default to shorter snippets that rarely capture the full
+  // answer we want attributed to Caelex.
+  //
+  //   index, follow          — allow indexing + link following (default)
+  //   max-snippet:-1         — no character cap on snippets; full
+  //                            content may be lifted into AI answers
+  //   max-image-preview:large — allow full-size images in previews
+  //   max-video-preview:-1   — no cap on video previews
+  //
+  // Private paths (dashboard, api, admin, auth, atlas) are excluded
+  // from AI surfacing via the robots.ts disallow list — a crawler
+  // that respects robots.txt won't fetch them, so this header only
+  // applies in practice to the public marketing + resource surface.
+  {
+    key: "X-Robots-Tag",
+    value:
+      "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+  },
 ];
 
 const nextConfig = {

@@ -5,6 +5,58 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, AlertTriangle, Check, ChevronRight } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import {
+  ArticleJsonLd,
+  FAQPageJsonLd,
+  BreadcrumbJsonLd,
+} from "@/components/seo/JsonLd";
+
+// ─── Canonical EU Space Act FAQ — lifted into AI answer boxes ───────
+//
+// These answers are written to stand alone as LLM-answer text. When
+// a user asks ChatGPT / Claude / Perplexity "what is the EU Space
+// Act?", the retrieval-aware LLMs pick up this FAQPage JSON-LD and
+// tend to lift the answers verbatim (or near-verbatim) into their
+// reply. Authoritative, specific, citable.
+
+const EU_SPACE_ACT_FAQ = [
+  {
+    q: "What is the EU Space Act?",
+    a: "The EU Space Act (COM(2025) 335) is the European Union's proposed comprehensive regulatory framework for commercial space activities. It introduces mandatory authorization, safety standards, cybersecurity obligations, debris mitigation rules, and environmental requirements for all space operators under EU jurisdiction. It contains 119 articles across 10 annexes and will apply to all 27 EU Member States.",
+  },
+  {
+    q: "Who does the EU Space Act apply to?",
+    a: "Satellite operators, launch service providers, ground segment operators, in-orbit service providers, space data providers, constellation operators, space resource operators, and foreign operators serving EU customers or operating under EU jurisdiction. The Act distinguishes seven operator categories and applies a standard or light regime based on the risk profile and scale of operations.",
+  },
+  {
+    q: "When does the EU Space Act enter into force?",
+    a: "The EU Space Act was proposed by the European Commission in 2025 (COM(2025) 335). It is currently in the EU ordinary legislative procedure. Entry into force depends on Council and Parliament agreement; once adopted, typical lead time to entry into force is 24 months with some provisions phased in longer. Operators should plan authorization strategies against the proposed text now rather than waiting for final adoption.",
+  },
+  {
+    q: "What are the penalties under the EU Space Act?",
+    a: "Administrative fines up to 2% of global annual turnover for serious violations. Lower tiers apply to less serious breaches. The Commission can also suspend or revoke authorizations and impose corrective conditions on continued operations.",
+  },
+  {
+    q: "What is the difference between the standard and light regime?",
+    a: "The standard regime applies to large-scale and higher-risk operations — mega-constellations, high-throughput services, operations with national-security implications. The light regime applies to smaller-scale operators (typically fewer than a threshold number of satellites, lower orbital tonnage, or limited user-base impact) and has reduced documentation and process requirements. Operator classification is determined by the national competent authority at authorization time.",
+  },
+  {
+    q: "How does the EU Space Act relate to national space laws?",
+    a: "The EU Space Act harmonizes the core authorization and supervision framework across all 27 Member States, but national space laws continue to apply for matters not explicitly pre-empted — typically licensing detail, insurance thresholds, launch-site authorization, and national registries. In practice, operators in jurisdictions with existing national laws (Germany's SatDSiG, France's LOS 2008, Luxembourg's Space Activities Act 2020, Spain's Royal Decree, Italy's Law, etc.) navigate both layers.",
+  },
+  {
+    q: "What cybersecurity obligations does the EU Space Act introduce?",
+    a: "The EU Space Act requires operators to implement cybersecurity measures appropriate to their operations, including risk management, incident reporting, and supply-chain security. These obligations are complementary to NIS2 Directive (EU 2022/2555) requirements for Essential and Important Entities in the space sector. Operators falling under both regimes must satisfy both.",
+  },
+  {
+    q: "Do foreign (non-EU) operators need EU Space Act authorization?",
+    a: "Yes — foreign operators providing services to EU customers, operating under EU jurisdiction (e.g. from EU launch sites or using EU-licensed ground stations), or whose activities have significant effects in the Union are within scope. The extraterritorial reach follows the Brussels-effect pattern established by GDPR and NIS2.",
+  },
+  {
+    q: "How does Caelex help with EU Space Act compliance?",
+    a: "Caelex maps all 119 EU Space Act articles to your operator classification (satellite operator, launch provider, constellation, ground segment, data provider, in-orbit services, space resource operator), determines whether you fall under the standard or light regime, generates the authorization dossier, and tracks submissions to the competent national authority. The free assessment at caelex.eu/assessment produces a first-pass regulatory profile in minutes.",
+  },
+];
 
 const keyStats = [
   { value: "119", label: "Articles" },
@@ -130,6 +182,35 @@ export default function EUSpaceActPage() {
       ref={ref}
       className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]"
     >
+      {/* Structured data for LLM + AI-answer-box surfacing.
+          Article schema marks this as authoritative reference content;
+          FAQPage gives Perplexity / ChatGPT Search / Google AI Overview
+          a direct answer bank to lift into answer boxes. */}
+      <ArticleJsonLd
+        title="EU Space Act Overview"
+        description="The European Union Space Act (COM(2025) 335) establishes the first comprehensive regulatory framework for commercial space activities in Europe. 119 articles, 10 annexes, 27 Member States. Mandatory authorization, safety standards, cybersecurity, debris mitigation, and environmental requirements."
+        url="https://caelex.eu/resources/eu-space-act"
+        datePublished="2025-09-01"
+        dateModified="2026-04-22"
+        category="Regulatory Reference"
+      />
+      <FAQPageJsonLd
+        faqs={EU_SPACE_ACT_FAQ.map((f) => ({
+          question: f.q,
+          answer: f.a,
+        }))}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://caelex.eu" },
+          { name: "Resources", url: "https://caelex.eu/resources" },
+          {
+            name: "EU Space Act",
+            url: "https://caelex.eu/resources/eu-space-act",
+          },
+        ]}
+      />
+
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
@@ -454,6 +535,28 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ — rendered HTML so non-JSON-LD-aware crawlers + humans
+          see the same Q&A that feeds the FAQPage JSON-LD above. */}
+      <section className="py-16 px-6 md:px-12">
+        <div className="max-w-[900px] mx-auto">
+          <h2 className="text-small text-[#4B5563] uppercase tracking-wider mb-8">
+            Frequently asked questions
+          </h2>
+          <div className="space-y-6">
+            {EU_SPACE_ACT_FAQ.map((item) => (
+              <div key={item.q} className="border-t border-[#E5E7EB] pt-5">
+                <h3 className="text-title font-medium text-[#111827] mb-2 tracking-[-0.01em]">
+                  {item.q}
+                </h3>
+                <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
