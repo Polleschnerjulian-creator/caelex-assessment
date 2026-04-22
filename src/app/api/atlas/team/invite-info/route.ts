@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * GET /api/atlas/team/invite-info?token=...
@@ -10,17 +15,28 @@ import { logger } from "@/lib/logger";
  * invite-accept page and the signup page can show who invited, which
  * org the invitee is joining, and lock the email field to the right
  * address. Only leaks the fields a legitimate invitee would already
- * see in the email body — so there's no enumeration risk.
+ * see in the email body.
+ *
+ * Rate-limited at public_api (5/hr/IP) so attackers can't brute-probe
+ * tokens at scale — 256-bit entropy makes any one token infeasible to
+ * guess, but without a limit an attacker could scan for in-flight
+ * invitations over time and harvest (firm → email) pairs for phishing.
+ * Audit: docs/security/atlas-audit-2026-04-22.md (C-1).
  *
  * Returns:
  *   200 { email, organizationName, inviterName, expiresAt }
- *   404 when the token doesn't exist
- *   410 when already accepted or expired
+ *   404 when the token doesn't exist, is already accepted, or expired
+ *       (unified — don't leak which of these states applies)
  */
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  // Tight rate-limit before any DB access. IP-based — this endpoint is
+  // pre-auth so no user context to key on.
+  const rl = await checkRateLimit("public_api", getIdentifier(request));
+  if (!rl.success) return createRateLimitResponse(rl);
+
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   if (!token || token.length > 500) {
@@ -30,6 +46,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Unified "not found" — previously we returned 404 / 410 depending on
+  // whether the token was unknown vs. accepted vs. expired. That state
+  // distinction was a trivial oracle for attackers: 410 confirms a
+  // token once existed. Return the same shape for all three.
+  const notFound = () =>
+    NextResponse.json({ error: "Invitation not found" }, { status: 404 });
+
   try {
     const invitation = await prisma.organizationInvitation.findUnique({
       where: { token },
@@ -37,24 +60,9 @@ export async function GET(request: NextRequest) {
         organization: { select: { name: true } },
       },
     });
-    if (!invitation) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 },
-      );
-    }
-    if (invitation.acceptedAt) {
-      return NextResponse.json(
-        { error: "Invitation already accepted" },
-        { status: 410 },
-      );
-    }
-    if (invitation.expiresAt < new Date()) {
-      return NextResponse.json(
-        { error: "Invitation expired" },
-        { status: 410 },
-      );
-    }
+    if (!invitation) return notFound();
+    if (invitation.acceptedAt) return notFound();
+    if (invitation.expiresAt < new Date()) return notFound();
 
     // Whether a User already exists for this email — the client uses
     // this to decide whether to send the accept flow via signup or via
@@ -67,14 +75,16 @@ export async function GET(request: NextRequest) {
       }),
       prisma.user.findUnique({
         where: { id: invitation.invitedBy },
-        select: { name: true, email: true },
+        select: { name: true },
       }),
     ]);
 
     return NextResponse.json({
       email: invitation.email,
       organizationName: invitation.organization.name,
-      inviterName: inviter?.name || inviter?.email || "A colleague",
+      // Never fall back to the inviter email — combined with an invite
+      // lookup it would hand phishers (firm → partner email) pairs.
+      inviterName: inviter?.name || "A colleague",
       expiresAt: invitation.expiresAt,
       accountExists: Boolean(existingUser),
     });

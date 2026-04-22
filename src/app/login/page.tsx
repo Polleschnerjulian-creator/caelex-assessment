@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { analytics } from "@/lib/analytics";
+import { safeInternalUrl } from "@/lib/safe-redirect";
 import styles from "./login.module.css";
 
 /**
@@ -142,7 +143,14 @@ function LightBars() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  // Whitelist: only same-origin relative paths. Absolute URLs like
+  // `?callbackUrl=https://evil.com` would otherwise cause router.push
+  // to do a full-document navigation to the attacker's origin with
+  // the session cookie live. Audit C-2.
+  const callbackUrl = safeInternalUrl(
+    searchParams.get("callbackUrl"),
+    "/dashboard",
+  );
   const prefilledEmail = searchParams.get("email") ?? "";
 
   const [email, setEmail] = useState(prefilledEmail);

@@ -71,8 +71,14 @@ function getSessionId(): string {
     currentSessionId = sessionStorage.getItem("caelex_session_id");
 
     if (!currentSessionId) {
-      // Generate new session ID
-      currentSessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      // Prefer crypto.randomUUID() (modern browsers + Node 19+) for
+      // CSPRNG-grade session IDs; fall back to Math.random only if
+      // the API is unavailable (very old browsers). Audit L-1.
+      const uuid =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      currentSessionId = `sess_${uuid}`;
       sessionStorage.setItem("caelex_session_id", currentSessionId);
     }
   }

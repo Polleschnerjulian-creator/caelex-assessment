@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requirePlatformAdmin } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { logAuditEvent } from "@/lib/audit";
 
 /**
  * GET   /api/admin/atlas-updates — List source checks for admin review
@@ -74,6 +75,24 @@ export async function PATCH(request: NextRequest) {
       sourceId: parsed.data.sourceId,
       action: parsed.data.action,
       reviewedBy: admin.userId,
+    });
+
+    // Audit M-5 fix: admin decisions on regulatory-source changes belong in
+    // the tamper-evident AuditLog chain, not only the app logger, so they
+    // surface in the Audit Center + compliance exports.
+    await logAuditEvent({
+      userId: admin.userId,
+      action:
+        parsed.data.action === "reviewed"
+          ? "atlas_source_reviewed"
+          : "atlas_source_dismissed",
+      entityType: "atlas_source_check",
+      entityId: parsed.data.sourceId,
+      newValue: {
+        status: updated.status,
+        note: parsed.data.note ?? null,
+      },
+      description: `Platform-admin ${parsed.data.action} source ${parsed.data.sourceId}`,
     });
 
     return NextResponse.json({ check: updated });

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { safeInternalUrl } from "@/lib/safe-redirect";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,13 +18,11 @@ import Logo from "@/components/ui/Logo";
 function MfaChallengeContent() {
   const { update: updateSession } = useSession();
   const searchParams = useSearchParams();
-  const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const callbackUrl =
-    rawCallbackUrl.startsWith("/") &&
-    !rawCallbackUrl.startsWith("//") &&
-    !rawCallbackUrl.includes("://")
-      ? rawCallbackUrl
-      : "/dashboard";
+  // Single source of truth for redirect safety — see /lib/safe-redirect.
+  const callbackUrl = safeInternalUrl(
+    searchParams.get("callbackUrl"),
+    "/dashboard",
+  );
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isBackupCode, setIsBackupCode] = useState(false);
