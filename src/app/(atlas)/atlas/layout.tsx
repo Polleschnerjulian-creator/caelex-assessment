@@ -25,7 +25,7 @@ const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-them
 export const metadata = {
   title: "ATLAS — Space Law Database",
   description:
-    "Comprehensive space law database covering 17 jurisdictions, 315 legal sources, and 202 regulatory authorities across Europe.",
+    "Space law reference covering UN treaties, EU instruments, and national space legislation with deep-links to official sources.",
 };
 
 export default async function AtlasLayout({

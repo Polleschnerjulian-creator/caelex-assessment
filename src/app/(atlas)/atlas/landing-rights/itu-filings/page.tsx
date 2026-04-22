@@ -4,7 +4,7 @@ import { ITUFilingCard } from "@/components/atlas/landing-rights/ITUFilingCard";
 export const metadata = {
   title: "ITU Filings — Atlas Landing Rights",
   description:
-    "Statically curated ITU satellite network filings with BIU status, Resolution 35 milestones, and deep-links to the ITU Space Network Systems database.",
+    "ITU satellite network filings indexed with BIU status, Resolution 35 milestones, and deep-links to the ITU Space Network Systems database.",
 };
 
 export default function ITUFilingsPage() {

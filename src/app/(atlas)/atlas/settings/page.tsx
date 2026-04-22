@@ -25,6 +25,19 @@ import {
   useAtlasTheme,
   type AtlasTheme,
 } from "../_components/AtlasThemeProvider";
+import {
+  ALL_SOURCES,
+  ALL_AUTHORITIES,
+  getAvailableJurisdictions,
+} from "@/data/legal-sources";
+
+// Computed inventory counts — derived from the same barrel exports the
+// rest of Atlas uses, so the settings stats never drift from reality.
+const ATLAS_STATS = {
+  jurisdictions: getAvailableJurisdictions().length,
+  sources: ALL_SOURCES.length,
+  authorities: ALL_AUTHORITIES.length,
+};
 
 /* ────────────────────────────────────────────
    Types
@@ -836,26 +849,21 @@ export default function SettingsPage() {
 
               <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
                 {[
-                  { label: t("atlas.settings_version"), value: "1.0" },
                   {
                     label: t("atlas.settings_jurisdictions"),
-                    value: "10",
+                    value: String(ATLAS_STATS.jurisdictions),
                   },
                   {
                     label: t("atlas.settings_legal_sources"),
-                    value: "244",
+                    value: String(ATLAS_STATS.sources),
                   },
                   {
                     label: t("atlas.settings_authorities"),
-                    value: "132",
+                    value: String(ATLAS_STATS.authorities),
                   },
                   {
                     label: t("atlas.settings_theme"),
                     value: resolvedTheme === "dark" ? "Dark" : "Light",
-                  },
-                  {
-                    label: t("atlas.settings_data"),
-                    value: t("atlas.settings_data_value"),
                   },
                 ].map((row) => (
                   <div
