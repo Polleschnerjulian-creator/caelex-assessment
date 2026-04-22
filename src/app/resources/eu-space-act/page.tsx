@@ -189,7 +189,7 @@ export default function EUSpaceActPage() {
       <ArticleJsonLd
         title="EU Space Act Overview"
         description="The European Union Space Act (COM(2025) 335) establishes the first comprehensive regulatory framework for commercial space activities in Europe. 119 articles, 10 annexes, 27 Member States. Mandatory authorization, safety standards, cybersecurity, debris mitigation, and environmental requirements."
-        url="https://caelex.eu/resources/eu-space-act"
+        url="https://www.caelex.eu/resources/eu-space-act"
         datePublished="2025-09-01"
         dateModified="2026-04-22"
         category="Regulatory Reference"
@@ -202,11 +202,11 @@ export default function EUSpaceActPage() {
       />
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Resources", url: "https://caelex.eu/resources" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Resources", url: "https://www.caelex.eu/resources" },
           {
             name: "EU Space Act",
-            url: "https://caelex.eu/resources/eu-space-act",
+            url: "https://www.caelex.eu/resources/eu-space-act",
           },
         ]}
       />

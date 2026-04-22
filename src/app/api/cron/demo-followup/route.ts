@@ -109,11 +109,11 @@ export async function GET(req: Request) {
               </p>
               <p style="color: #333; line-height: 1.6;">
                 Simply reply to this email or
-                <a href="https://caelex.eu/contact" style="color: #3B82F6;">contact us</a>
+                <a href="https://www.caelex.eu/contact" style="color: #3B82F6;">contact us</a>
                 to schedule a time that works best for you.
               </p>
               <div style="margin: 24px 0; text-align: center;">
-                <a href="https://caelex.eu/contact"
+                <a href="https://www.caelex.eu/contact"
                    style="display: inline-block; background: #3B82F6; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">
                   Schedule Your Demo
                 </a>

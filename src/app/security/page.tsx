@@ -683,8 +683,8 @@ export default function SecurityPage() {
     <main className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Security", url: "https://caelex.eu/security" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Security", url: "https://www.caelex.eu/security" },
         ]}
       />
       <HeroSection />

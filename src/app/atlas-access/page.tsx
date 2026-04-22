@@ -404,7 +404,7 @@ export default function AtlasAccessPage() {
       <main className={styles.content}>
         <Link
           className={styles.brandLockup}
-          href="https://caelex.eu"
+          href="https://www.caelex.eu"
           aria-label="Caelex home"
         >
           <CaelexWordmark height={28} />
@@ -696,7 +696,7 @@ export default function AtlasAccessPage() {
                   your questions.
                 </p>
                 <div className={styles.successActions}>
-                  <Link href="https://caelex.eu">Back to caelex.eu →</Link>
+                  <Link href="https://www.caelex.eu">Back to caelex.eu →</Link>
                 </div>
               </div>
             )}

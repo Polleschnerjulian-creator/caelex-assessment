@@ -80,7 +80,7 @@ export function buildPassportData(params: BuildPassportParams): PassportData {
     certificates,
   } = params;
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://caelex.eu";
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.caelex.eu";
 
   const now = new Date();
   const expiresAt = new Date(now);

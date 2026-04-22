@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Caelex",
     ],
   }),
-  alternates: { canonical: "https://caelex.eu/legal/sub-processors" },
+  alternates: { canonical: "https://www.caelex.eu/legal/sub-processors" },
 };
 
 export default function SubProcessorsPage() {

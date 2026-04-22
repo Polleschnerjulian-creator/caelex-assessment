@@ -54,8 +54,8 @@ export default function DemoPage() {
     <div className="min-h-screen bg-white">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Request a Demo", url: "https://caelex.eu/demo" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Request a Demo", url: "https://www.caelex.eu/demo" },
         ]}
       />
       {/* Hero */}

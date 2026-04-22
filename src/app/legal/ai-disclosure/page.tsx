@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     path: "/legal/ai-disclosure",
     keywords: ["KI-Transparenz", "AI Act", "VO 2024/1689", "Caelex"],
   }),
-  alternates: { canonical: "https://caelex.eu/legal/ai-disclosure" },
+  alternates: { canonical: "https://www.caelex.eu/legal/ai-disclosure" },
 };
 
 export default function AIDisclosurePage() {

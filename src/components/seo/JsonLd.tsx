@@ -54,6 +54,13 @@ export function OrganizationJsonLd() {
       "@type": "Place",
       name: "Berlin, Germany",
     },
+    // Founder — documented as a schema:Person so Google's Knowledge
+    // Graph can link the company to the person (strengthens the
+    // "is this a real business" signal for brand queries).
+    founder: {
+      "@type": "Person",
+      name: "Julian Polleschner",
+    },
     address: {
       "@type": "PostalAddress",
       addressLocality: "Berlin",
@@ -298,6 +305,67 @@ export function SoftwareApplicationJsonLd() {
       "US",
       "NZ",
     ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+// ============================================================================
+// ATLAS-SPECIFIC SOFTWARE APPLICATION SCHEMA
+// ============================================================================
+
+/**
+ * Dedicated schema for ATLAS by Caelex. Rendered on the public ATLAS
+ * entry points (/atlas-access) so search engines and LLMs can treat
+ * Atlas as its own indexable product rather than folding it into the
+ * Caelex Comply SoftwareApplication schema. `isRelatedTo` points back
+ * at the main Caelex app so the two products are joined in the graph
+ * without being conflated.
+ */
+export function AtlasSoftwareApplicationJsonLd() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "@id": `${siteConfig.url}/#atlas`,
+    name: "ATLAS by Caelex",
+    alternateName: ["Caelex ATLAS", "Atlas"],
+    applicationCategory: "LegalApplication",
+    applicationSubCategory: "Legal Research Database",
+    operatingSystem: "Web (any modern browser)",
+    url: `${siteConfig.url}/atlas-access`,
+    description:
+      "The searchable space-law database for law firms. Continuously updated across 10+ jurisdictions — UN space treaties, EU instruments (EU Space Act, NIS2, CER, Dual-Use Regulation), and national legislation deep-linked to every official primary-source portal. Firm-wide shared annotations, AI-assisted research via Astra, change alerts the moment any source is amended.",
+    publisher: { "@id": `${siteConfig.url}/#organization` },
+    isRelatedTo: { "@id": `${siteConfig.url}/#softwareapplication` },
+    audience: {
+      "@type": "Audience",
+      audienceType:
+        "Law firms advising space-sector clients, in-house legal counsel at space operators, regulatory lawyers",
+    },
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+      description:
+        "Sales-assisted onboarding. Free 30-minute intro call to request firm-wide access — no credit card.",
+      url: `${siteConfig.url}/atlas-access`,
+    },
+    featureList: [
+      "Searchable space-law database across 10+ jurisdictions",
+      "UN space treaties (OST, Liability, Registration, Rescue, Moon)",
+      "EU instruments (EU Space Act, NIS2, CER, Dual-Use Regulation)",
+      "Deep-links to every article on authoritative national primary-source portals",
+      "Firm-wide shared annotations",
+      "AI-assisted research via Astra copilot",
+      "Source-change alerts and amendment redlines",
+      "Continuously updated regulatory content",
+    ],
+    inLanguage: ["en", "de"],
   };
 
   return (
@@ -671,7 +739,7 @@ export function VideoObjectJsonLd({
     publisher: {
       "@type": "Organization",
       name: "Caelex",
-      url: "https://caelex.eu",
+      url: "https://www.caelex.eu",
     },
   };
 

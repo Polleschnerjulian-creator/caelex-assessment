@@ -113,7 +113,9 @@ export async function POST(request: Request) {
     // Also track acquisition events for marketing analytics
     if (data.eventType === "page_view" && !data.userId) {
       // Parse UTM parameters from path/referrer
-      const url = data.path ? new URL(data.path, "https://caelex.eu") : null;
+      const url = data.path
+        ? new URL(data.path, "https://www.caelex.eu")
+        : null;
       const utm_source = url?.searchParams.get("utm_source");
       const utm_medium = url?.searchParams.get("utm_medium");
       const utm_campaign = url?.searchParams.get("utm_campaign");

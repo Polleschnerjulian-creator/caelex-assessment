@@ -148,7 +148,7 @@ export const SECURITY_DE: LegalDocument = {
     "mailto:security@caelex.eu",
     "",
     "Machine-readable contact (RFC 9116):",
-    "https://caelex.eu/.well-known/security.txt",
+    "https://www.caelex.eu/.well-known/security.txt",
   ],
   links: [
     { label: "/.well-known/security.txt", href: "/.well-known/security.txt" },

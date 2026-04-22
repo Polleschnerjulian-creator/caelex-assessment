@@ -66,14 +66,14 @@ export default async function ComparisonPage({ params }: PageProps) {
 }
 
 function ComparisonLayout({ comparison }: { comparison: Comparison }) {
-  const pageUrl = `https://caelex.eu/compare/${comparison.slug}`;
+  const pageUrl = `https://www.caelex.eu/compare/${comparison.slug}`;
 
   return (
     <>
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Compare", url: "https://caelex.eu/compare" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Compare", url: "https://www.caelex.eu/compare" },
           { name: comparison.headline, url: pageUrl },
         ]}
       />

@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://caelex.eu";
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.caelex.eu";
     const shareUrl = `${APP_URL}/verity/passport/${record.passportId}`;
 
     return NextResponse.json(

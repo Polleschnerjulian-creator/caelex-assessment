@@ -60,18 +60,21 @@ export function BaseLayout({ children, previewText }: BaseLayoutProps) {
               email because you have an account with Caelex.
             </Text>
             <Text style={footerLinksStyle}>
-              <Link href="https://caelex.eu/dashboard" style={footerLinkStyle}>
+              <Link
+                href="https://www.caelex.eu/dashboard"
+                style={footerLinkStyle}
+              >
                 Dashboard
               </Link>
               {" • "}
               <Link
-                href="https://caelex.eu/dashboard/settings"
+                href="https://www.caelex.eu/dashboard/settings"
                 style={footerLinkStyle}
               >
                 Notification Settings
               </Link>
               {" • "}
-              <Link href="https://caelex.eu/help" style={footerLinkStyle}>
+              <Link href="https://www.caelex.eu/help" style={footerLinkStyle}>
                 Help
               </Link>
             </Text>
@@ -85,14 +88,14 @@ export function BaseLayout({ children, previewText }: BaseLayoutProps) {
             </Text>
             <Text style={impressumLinksStyle}>
               <Link
-                href="https://caelex.eu/legal/impressum"
+                href="https://www.caelex.eu/legal/impressum"
                 style={footerLinkStyle}
               >
                 Impressum
               </Link>
               {" • "}
               <Link
-                href="https://caelex.eu/legal/privacy"
+                href="https://www.caelex.eu/legal/privacy"
                 style={footerLinkStyle}
               >
                 Datenschutz

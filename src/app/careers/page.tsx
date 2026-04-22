@@ -78,8 +78,8 @@ export default function CareersPage() {
     <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Careers", url: "https://caelex.eu/careers" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Careers", url: "https://www.caelex.eu/careers" },
         ]}
       />
       {/* Hero Section */}

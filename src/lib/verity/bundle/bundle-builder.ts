@@ -298,7 +298,7 @@ to verify the enclosed Verity attestations without contacting Caelex.
 6. **Check revocation status.**
    Each entry's \`status\` field reflects revocation + expiry at
    bundle-emission time. For the live view, hit
-   \`https://caelex.eu/api/v1/verity/attestation/status/:attestationId\`
+   \`https://www.caelex.eu/api/v1/verity/attestation/status/:attestationId\`
    — the \`credentialStatus.id\` in each VC points at this endpoint.
 
 ## What a green result means
@@ -313,7 +313,7 @@ to verify the enclosed Verity attestations without contacting Caelex.
 
 ## Getting help
 
-- DID document: \`didDocument\` (see also \`https://caelex.eu/.well-known/did.json\`)
+- DID document: \`didDocument\` (see also \`https://www.caelex.eu/.well-known/did.json\`)
 - Public keys: \`issuerKeys\`
 - Contact: \`security@caelex.eu\`
 `;

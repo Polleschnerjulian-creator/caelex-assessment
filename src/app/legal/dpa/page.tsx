@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     ],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/dpa",
+    canonical: "https://www.caelex.eu/legal/dpa",
     languages: { de: "/legal/dpa", en: "/legal/dpa-en" },
   },
 };

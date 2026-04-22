@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://caelex.eu";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.caelex.eu";
 
   try {
     const { searchParams } = new URL(request.url);

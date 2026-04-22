@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     ],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/terms-en",
+    canonical: "https://www.caelex.eu/legal/terms-en",
     languages: { de: "/legal/terms", en: "/legal/terms-en" },
   },
 };

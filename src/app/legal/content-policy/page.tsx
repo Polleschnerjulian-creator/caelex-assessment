@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     path: "/legal/content-policy",
     keywords: ["Acceptable Use", "AUP", "Nutzungsregeln", "Caelex"],
   }),
-  alternates: { canonical: "https://caelex.eu/legal/content-policy" },
+  alternates: { canonical: "https://www.caelex.eu/legal/content-policy" },
 };
 
 export default function ContentPolicyPage() {

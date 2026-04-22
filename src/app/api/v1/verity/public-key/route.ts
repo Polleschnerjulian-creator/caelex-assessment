@@ -32,7 +32,8 @@ export async function GET() {
           }
         : null,
       total_keys: keys.length,
-      verification_url: "https://caelex.eu/api/v1/verity/attestation/verify",
+      verification_url:
+        "https://www.caelex.eu/api/v1/verity/attestation/verify",
     });
   } catch (error) {
     safeLog("Public key endpoint failed", {

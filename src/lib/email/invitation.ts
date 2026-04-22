@@ -138,7 +138,7 @@ const TEMPLATE = `<!DOCTYPE html>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="padding-right:10px; vertical-align:middle;">
-                    <img src="https://caelex.eu/images/logo-black.png"
+                    <img src="https://www.caelex.eu/images/logo-black.png"
                          width="22" height="22" alt="Caelex"
                          style="display:block; width:22px; height:22px; border:0;">
                   </td>
@@ -222,7 +222,7 @@ const TEMPLATE = `<!DOCTYPE html>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                 <tr>
                   <td style="padding-right:8px; vertical-align:middle;">
-                    <img src="https://caelex.eu/images/logo-black.png"
+                    <img src="https://www.caelex.eu/images/logo-black.png"
                          width="18" height="18" alt=""
                          style="display:block; width:18px; height:18px; border:0; opacity:0.55;">
                   </td>
@@ -251,9 +251,9 @@ const TEMPLATE = `<!DOCTYPE html>
             <td align="center" style="padding: 8px 24px 0 24px;">
               <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:11px; color:rgba(10,10,11,0.35); letter-spacing:-0.005em;">
                 Caelex &middot;
-                <a href="https://caelex.eu" style="color:rgba(10,10,11,0.42); text-decoration:none;">caelex.eu</a> &middot;
-                <a href="https://caelex.eu/legal/impressum" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Impressum</a> &middot;
-                <a href="https://caelex.eu/legal/privacy" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Datenschutz</a>
+                <a href="https://www.caelex.eu" style="color:rgba(10,10,11,0.42); text-decoration:none;">caelex.eu</a> &middot;
+                <a href="https://www.caelex.eu/legal/impressum" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Impressum</a> &middot;
+                <a href="https://www.caelex.eu/legal/privacy" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Datenschutz</a>
               </div>
             </td>
           </tr>
@@ -316,7 +316,7 @@ export function renderInvitationEmail(params: InvitationEmailParams): {
     "",
     `Diese Einladung läuft in ${params.expiresInDays} Tagen ab. Falls Sie sie unerwartet erhalten, ignorieren Sie die E-Mail — es wird kein Konto erstellt.`,
     "",
-    "— Caelex ATLAS · hi@caelex.eu · https://caelex.eu",
+    "— Caelex ATLAS · hi@caelex.eu · https://www.caelex.eu",
   ].join("\n");
 
   return { subject, html, text };

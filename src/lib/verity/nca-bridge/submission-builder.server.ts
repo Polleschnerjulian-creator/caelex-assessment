@@ -2,7 +2,7 @@ import "server-only";
 import { getNCAProfiles } from "@/lib/shield/nca-thresholds.server";
 import type { NCASubmissionBundle } from "./types";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://caelex.eu";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.caelex.eu";
 
 interface AttestationForBundle {
   attestationId: string;

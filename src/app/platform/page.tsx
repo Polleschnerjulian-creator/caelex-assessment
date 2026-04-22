@@ -184,8 +184,8 @@ export default function PlatformPage() {
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Platform", url: "https://caelex.eu/platform" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Platform", url: "https://www.caelex.eu/platform" },
         ]}
       />
       <main className="pt-32 pb-20">

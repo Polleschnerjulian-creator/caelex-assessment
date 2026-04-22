@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     path: "/legal/terms/archive",
     keywords: ["AGB Archiv", "Terms archive", "Caelex Versionsverlauf"],
   }),
-  alternates: { canonical: "https://caelex.eu/legal/terms/archive" },
+  alternates: { canonical: "https://www.caelex.eu/legal/terms/archive" },
 };
 
 interface Version {

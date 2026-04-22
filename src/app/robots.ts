@@ -34,7 +34,7 @@ import { MetadataRoute } from "next";
  *   /sitemap.xml    — canonical URL inventory
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://caelex.eu";
+  const baseUrl = "https://www.caelex.eu";
 
   // Authenticated product surface + build artifacts. Every rule
   // below inherits this disallow list — so no matter which crawler

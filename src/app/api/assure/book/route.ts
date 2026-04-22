@@ -350,7 +350,7 @@ export async function POST(request: NextRequest) {
               ${nextStepsText}
               <p style="line-height: 1.7; margin: 0 0 24px 0;">
                 In the meantime, you can run our free
-                <a href="https://caelex.eu/assessment" style="color: #10B981; text-decoration: none; font-weight: 500;">compliance assessment</a>
+                <a href="https://www.caelex.eu/assessment" style="color: #10B981; text-decoration: none; font-weight: 500;">compliance assessment</a>
                 to get a head start on your regulatory profile.
               </p>
               <div style="background: #f8faf9; border-radius: 12px; padding: 20px; border: 1px solid #e5ebe8;">
@@ -413,7 +413,7 @@ export async function POST(request: NextRequest) {
                 : ""
             }
             <p style="font-size: 12px; color: #999;">
-              ${formattedDate ? `<a href="https://caelex.eu/dashboard/admin/bookings" style="color: #10B981;">View in admin panel</a>` : `Follow-up by ${followUpAt.toISOString().split("T")[0]}. <a href="https://caelex.eu/dashboard/admin" style="color: #10B981;">Open admin panel</a>`}
+              ${formattedDate ? `<a href="https://www.caelex.eu/dashboard/admin/bookings" style="color: #10B981;">View in admin panel</a>` : `Follow-up by ${followUpAt.toISOString().split("T")[0]}. <a href="https://www.caelex.eu/dashboard/admin" style="color: #10B981;">Open admin panel</a>`}
             </p>
           </div>
         `,

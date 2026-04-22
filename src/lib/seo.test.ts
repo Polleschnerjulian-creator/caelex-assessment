@@ -17,7 +17,7 @@ describe("seo", () => {
   describe("siteConfig", () => {
     it("has required fields", () => {
       expect(siteConfig.name).toBe("Caelex");
-      expect(siteConfig.url).toBe("https://caelex.eu");
+      expect(siteConfig.url).toBe("https://www.caelex.eu");
       expect(siteConfig.tagline).toBe("Regulatory OS for the orbital economy");
       expect(siteConfig.ogImage).toBeDefined();
       expect(siteConfig.twitterHandle).toBeDefined();
@@ -52,7 +52,7 @@ describe("seo", () => {
         description: "Test",
         path: "/pricing",
       });
-      expect(meta.alternates?.canonical).toBe("https://caelex.eu/pricing");
+      expect(meta.alternates?.canonical).toBe("https://www.caelex.eu/pricing");
     });
 
     it("defaults path to empty string for root URL", () => {
@@ -60,7 +60,7 @@ describe("seo", () => {
         title: "Test",
         description: "Test",
       });
-      expect(meta.alternates?.canonical).toBe("https://caelex.eu");
+      expect(meta.alternates?.canonical).toBe("https://www.caelex.eu");
     });
 
     it("uses custom ogImage when provided", () => {

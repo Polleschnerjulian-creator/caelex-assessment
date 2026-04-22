@@ -74,7 +74,7 @@ export function issueCertificate(params: {
   const certificate_unsigned = {
     certificate_id: `vc_${Date.now()}_${randomBytes(8).toString("hex")}`,
     version: "1.0" as const,
-    schema: "https://caelex.eu/verity/certificate/v1" as const,
+    schema: "https://www.caelex.eu/verity/certificate/v1" as const,
 
     subject: {
       operator_id: params.operator_id,
@@ -110,7 +110,8 @@ export function issueCertificate(params: {
     ).toISOString(),
   };
 
-  const verification_url = "https://caelex.eu/api/v1/verity/certificate/verify";
+  const verification_url =
+    "https://www.caelex.eu/api/v1/verity/certificate/verify";
 
   // Sign the certificate
   const data_to_sign = serializeForSigning(

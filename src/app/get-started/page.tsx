@@ -235,8 +235,8 @@ function GetStartedContent() {
       <div className="min-h-screen bg-[#F7F8FA] relative overflow-hidden">
         <BreadcrumbJsonLd
           items={[
-            { name: "Home", url: "https://caelex.eu" },
-            { name: "Get Started", url: "https://caelex.eu/get-started" },
+            { name: "Home", url: "https://www.caelex.eu" },
+            { name: "Get Started", url: "https://www.caelex.eu/get-started" },
           ]}
         />
 
@@ -315,8 +315,8 @@ function GetStartedContent() {
     <div className="min-h-screen bg-[#F7F8FA] relative overflow-hidden">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Get Started", url: "https://caelex.eu/get-started" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Get Started", url: "https://www.caelex.eu/get-started" },
         ]}
       />
 

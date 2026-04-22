@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
               </div>
 
               <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">
-                Manage in the <a href="https://caelex.eu/dashboard/admin/contact-requests" style="color: #111;">admin panel</a>.
+                Manage in the <a href="https://www.caelex.eu/dashboard/admin/contact-requests" style="color: #111;">admin panel</a>.
               </p>
             </div>
           `,

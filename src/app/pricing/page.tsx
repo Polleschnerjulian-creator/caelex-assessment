@@ -533,8 +533,8 @@ export default function PricingPage() {
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Pricing", url: "https://caelex.eu/pricing" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Pricing", url: "https://www.caelex.eu/pricing" },
         ]}
       />
       {/* ================================================================== */}

@@ -395,7 +395,7 @@ function redirectWithError(message: string): NextResponse {
     process.env.NEXTAUTH_URL ||
     process.env.AUTH_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://caelex.eu";
+    "https://www.caelex.eu";
   const errorUrl = `/login?error=${encodeURIComponent(message)}`;
   return NextResponse.redirect(new URL(errorUrl, baseUrl));
 }

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
       "Caelex",
     ],
   }),
-  alternates: { canonical: "https://caelex.eu/legal/security" },
+  alternates: { canonical: "https://www.caelex.eu/legal/security" },
 };
 
 export default function SecurityPage() {

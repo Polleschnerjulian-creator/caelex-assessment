@@ -17,9 +17,9 @@ export default function Home() {
       <VideoObjectJsonLd
         name="Caelex — Regulatory OS for the orbital economy"
         description="The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws."
-        thumbnailUrl="https://caelex.eu/og-image.png"
+        thumbnailUrl="https://www.caelex.eu/og-image.png"
         uploadDate="2026-01-01"
-        contentUrl="https://caelex.eu/videos/hero-bg.mp4"
+        contentUrl="https://www.caelex.eu/videos/hero-bg.mp4"
       />
       <Hero />
       <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">

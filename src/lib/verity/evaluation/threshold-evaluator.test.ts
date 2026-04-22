@@ -109,7 +109,7 @@ describe("threshold-evaluator", () => {
     },
     issued_at: "2026-03-01T00:00:00Z",
     expires_at: "2026-06-01T00:00:00Z",
-    verification_url: "https://caelex.eu/verify/va_123_abc",
+    verification_url: "https://www.caelex.eu/verify/va_123_abc",
     signature: "sig_hex",
   };
 

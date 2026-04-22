@@ -99,7 +99,7 @@ export async function sendNewsletterConfirmation(
   to: string,
   token: string,
 ): Promise<EmailResult> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://caelex.eu";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.caelex.eu";
   const confirmationUrl = `${baseUrl}/api/newsletter/confirm?token=${token}`;
 
   const html = await render(

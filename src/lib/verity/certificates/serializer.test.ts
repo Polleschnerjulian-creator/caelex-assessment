@@ -12,7 +12,7 @@ import {
 const sampleCertificate: VerityCertificate = {
   certificate_id: "cert_001",
   version: "1.0",
-  schema: "https://caelex.eu/verity/certificate/v1",
+  schema: "https://www.caelex.eu/verity/certificate/v1",
   subject: {
     operator_id: "op_1",
     operator_name: "TestCo",
@@ -52,7 +52,7 @@ const sampleCertificate: VerityCertificate = {
   },
   issued_at: "2026-03-01T00:00:00Z",
   expires_at: "2026-06-01T00:00:00Z",
-  verification_url: "https://caelex.eu/verify/cert_001",
+  verification_url: "https://www.caelex.eu/verify/cert_001",
   signature: "sig_hex",
 };
 
@@ -88,7 +88,7 @@ const sampleAttestation: ThresholdAttestation = {
   },
   issued_at: "2026-03-01T00:00:00Z",
   expires_at: "2026-06-01T00:00:00Z",
-  verification_url: "https://caelex.eu/verify/va_123_abc",
+  verification_url: "https://www.caelex.eu/verify/va_123_abc",
   signature: "sig_hex",
 };
 

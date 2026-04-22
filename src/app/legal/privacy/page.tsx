@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     keywords: ["Datenschutz", "DSGVO", "GDPR", "Privacy Policy", "Caelex"],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/privacy",
+    canonical: "https://www.caelex.eu/legal/privacy",
     languages: { de: "/legal/privacy", en: "/legal/privacy-en" },
   },
 };

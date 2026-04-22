@@ -152,7 +152,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       certificate,
-      verification_url: "https://caelex.eu/api/v1/verity/certificate/verify",
+      verification_url:
+        "https://www.caelex.eu/api/v1/verity/certificate/verify",
       ...(failed.length > 0 ? { failed_regulations: failed } : {}),
     });
   } catch (error) {

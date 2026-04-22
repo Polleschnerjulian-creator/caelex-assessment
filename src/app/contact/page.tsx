@@ -100,8 +100,8 @@ export default function ContactPage() {
     <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Contact", url: "https://caelex.eu/contact" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Contact", url: "https://www.caelex.eu/contact" },
         ]}
       />
       {/* Hero Section */}

@@ -97,7 +97,7 @@ const FAQ: { q: string; a: string }[] = [
 // ─── Page ────────────────────────────────────────────────────────────
 
 export default function WhatIsCaelexPage() {
-  const pageUrl = "https://caelex.eu/what-is-caelex";
+  const pageUrl = "https://www.caelex.eu/what-is-caelex";
 
   return (
     <>
@@ -106,7 +106,7 @@ export default function WhatIsCaelexPage() {
       <FAQPageJsonLd faqs={FAQ.map((f) => ({ question: f.q, answer: f.a }))} />
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
+          { name: "Home", url: "https://www.caelex.eu" },
           { name: "What is Caelex", url: pageUrl },
         ]}
       />

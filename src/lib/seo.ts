@@ -9,8 +9,8 @@ export const siteConfig = {
   tagline: "Regulatory OS for the orbital economy",
   description:
     "The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules.",
-  url: "https://caelex.eu",
-  ogImage: "https://caelex.eu/og-image.png",
+  url: "https://www.caelex.eu",
+  ogImage: "https://www.caelex.eu/og-image.png",
   twitterHandle: "@caboracaelex",
   linkedIn: "https://linkedin.com/company/caelex",
   email: "cs@caelex.eu",
@@ -114,30 +114,43 @@ export function generateMetadata({
 // ============================================================================
 
 export const pageMetadata = {
+  // Page titles + descriptions rewritten 2026-04-22 per the SEO
+  // package. Targeting "space law" + "space compliance" + "law firm"
+  // + "space operator" long-tail queries that currently have 0 CTR
+  // despite impressions — the old titles didn't match the query
+  // intent. New copy leans hard on concrete entity names (EU Space
+  // Act, 19 jurisdictions, 453 sources) and explicit audience terms
+  // (law firms, space operators) so Google's title-rewrite engine
+  // has less leeway to override us.
   home: generateMetadata({
-    title: "Caelex",
+    title: "Caelex — Space Law Software for Law Firms & Space Operators",
     description:
-      "The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules and AI-powered guidance.",
+      "Searchable space law database for law firms. EU Space Act, national regulations, compliance briefings — continuously updated across 10+ jurisdictions.",
     path: "/",
     keywords: [
+      "space law software",
       "space compliance",
       "EU Space Act",
       "satellite regulation",
-      "space law",
+      "space law database",
+      "space law for law firms",
       "NIS2 space",
       "space licensing",
+      "orbital economy",
     ],
   }),
 
   platform: generateMetadata({
-    title: "Platform Overview",
+    title: "Space Compliance Platform — Caelex",
     description:
-      "Explore Caelex's 12 compliance modules covering authorization, cybersecurity, debris mitigation, insurance, and more across 10+ space jurisdictions.",
+      "Caelex turns 450+ legal sources into actionable compliance workflows for space operators and law firms. Built for the EU Space Act era.",
     path: "/platform",
     keywords: [
       "space compliance platform",
       "satellite compliance software",
+      "EU Space Act platform",
       "space regulatory technology",
+      "space operator compliance",
     ],
   }),
 
@@ -151,31 +164,47 @@ export const pageMetadata = {
   }),
 
   about: generateMetadata({
-    title: "About Caelex",
+    title: "About Caelex — The Regulatory OS for the Orbital Economy",
     description:
-      "Learn about Caelex's mission to simplify space compliance. Our team helps satellite operators navigate complex regulations across the globe.",
+      "Caelex builds the software that makes space law operational. For law firms advising on orbital missions and space operators navigating licensing.",
     path: "/about",
     keywords: [
+      "about Caelex",
       "space compliance company",
+      "space law software company",
       "Caelex team",
+      "Caelex founders",
       "space regulation experts",
+      "orbital economy software",
     ],
   }),
 
   contact: generateMetadata({
-    title: "Contact",
+    title: "Contact Caelex — Space Law Software for Law Firms",
     description:
-      "Get in touch with Caelex. Request a demo, ask questions, or learn how we can help with your space compliance needs.",
+      "Get in touch with the Caelex team. Space law compliance, EU Space Act advisory, ATLAS database access.",
     path: "/contact",
-    keywords: ["contact space compliance", "space regulation help"],
+    keywords: [
+      "contact Caelex",
+      "contact space law software",
+      "ATLAS access",
+      "EU Space Act advisory",
+      "space compliance contact",
+    ],
   }),
 
   demo: generateMetadata({
-    title: "Request a Demo",
+    title: "Request a Demo — Caelex Space Compliance Platform",
     description:
-      "See Caelex in action. Book a personalized demo to explore how our platform simplifies EU Space Act, NIS2, and national space law compliance.",
+      "30-minute walkthrough of Caelex and ATLAS. See how law firms use it to manage space compliance across jurisdictions.",
     path: "/demo",
-    keywords: ["space compliance demo", "satellite regulation demo"],
+    keywords: [
+      "Caelex demo",
+      "ATLAS demo",
+      "space compliance demo",
+      "space law database demo",
+      "EU Space Act walkthrough",
+    ],
   }),
 
   assessment: generateMetadata({
@@ -204,14 +233,17 @@ export const pageMetadata = {
   }),
 
   blog: generateMetadata({
-    title: "Space Compliance Blog",
+    title: "Caelex Blog — Insights on Space Law, Compliance & the EU Space Act",
     description:
-      "Expert insights on EU Space Act, NIS2, space debris, export control, and satellite licensing. Stay ahead of space regulation changes.",
+      "Analysis and commentary on space law, orbital regulation, and compliance for the orbital economy. By the Caelex team.",
     path: "/blog",
     keywords: [
+      "space law blog",
       "space compliance blog",
       "EU Space Act news",
+      "orbital regulation analysis",
       "satellite regulation updates",
+      "space law insights",
     ],
   }),
 

@@ -218,7 +218,7 @@ function ErrorState({ message }: { message: string }) {
       </h2>
       <p className="text-slate-400 text-sm mb-8">{message}</p>
       <a
-        href="https://caelex.eu"
+        href="https://www.caelex.eu"
         className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
       >
         <Shield className="w-4 h-4" />
@@ -460,7 +460,7 @@ export default function PassportView({ passportId }: Props) {
             </a>
             <span className="hidden sm:inline text-slate-700">·</span>
             <a
-              href="https://caelex.eu"
+              href="https://www.caelex.eu"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-300 transition-colors"

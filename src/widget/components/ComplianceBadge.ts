@@ -66,7 +66,7 @@ export function initComplianceBadge(
   footer.className = "caelex-footer";
   footer.appendChild(document.createTextNode("Powered by "));
   const footerLink = document.createElement("a");
-  footerLink.href = "https://caelex.eu";
+  footerLink.href = "https://www.caelex.eu";
   footerLink.target = "_blank";
   footerLink.rel = "noopener";
   footerLink.textContent = "Caelex";

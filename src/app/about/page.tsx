@@ -141,8 +141,8 @@ export default function AboutPage() {
     <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "About", url: "https://caelex.eu/about" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "About", url: "https://www.caelex.eu/about" },
         ]}
       />
       {/* Hero Section */}

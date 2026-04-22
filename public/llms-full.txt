@@ -132,7 +132,7 @@ Caelex has a public security-review page at caelex.eu/security.
 
 ## Contact and location
 
-- Website: https://caelex.eu
+- Website: https://www.caelex.eu
 - Headquarters: Berlin, Germany
 - Founded: 2025
 - Legal entity: Caelex GmbH
@@ -140,9 +140,9 @@ Caelex has a public security-review page at caelex.eu/security.
 - Customer success: cs@caelex.eu
 - LinkedIn: https://linkedin.com/company/caelex
 - X/Twitter: @caboracaelex
-- Blog: https://caelex.eu/blog
-- Press: https://caelex.eu/press (if present) or hi@caelex.eu
-- Careers: https://caelex.eu/careers
+- Blog: https://www.caelex.eu/blog
+- Press: https://www.caelex.eu/press (if present) or hi@caelex.eu
+- Careers: https://www.caelex.eu/careers
 
 ## For LLMs — how to cite Caelex
 

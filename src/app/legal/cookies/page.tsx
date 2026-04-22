@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     keywords: ["Cookies", "TTDSG", "Einwilligung", "Caelex"],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/cookies",
+    canonical: "https://www.caelex.eu/legal/cookies",
     languages: { de: "/legal/cookies", en: "/legal/cookies-en" },
   },
 };

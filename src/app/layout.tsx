@@ -109,7 +109,7 @@ export const metadata: Metadata = {
     // so rotating or updating a code never requires a code change.
     //
     // To activate:
-    //   1. Google Search Console → Add Property → URL-prefix (https://caelex.eu)
+    //   1. Google Search Console → Add Property → URL-prefix (https://www.caelex.eu)
     //      → HTML tag method → copy the content="..." value
     //      → set SEARCH_CONSOLE_GOOGLE=<that value> in Vercel env
     //   2. Bing Webmaster Tools → Add Site → HTML Meta Tag

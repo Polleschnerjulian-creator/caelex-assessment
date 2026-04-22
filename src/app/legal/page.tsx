@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     path: "/legal",
     keywords: ["Legal Hub", "AGB", "DPA", "Datenschutz", "Impressum", "Caelex"],
   }),
-  alternates: { canonical: "https://caelex.eu/legal" },
+  alternates: { canonical: "https://www.caelex.eu/legal" },
 };
 
 export default function LegalHubPage() {

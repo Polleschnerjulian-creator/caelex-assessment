@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
           description: a.description,
           entityId: a.entityId,
           isManual: a.evidenceSource === "manual",
-          verifyUrl: `https://caelex.eu/verity/verify?id=${a.attestationId}`,
+          verifyUrl: `https://www.caelex.eu/verity/verify?id=${a.attestationId}`,
         };
       })
       .filter((a) => !statusFilter || a.status === statusFilter);

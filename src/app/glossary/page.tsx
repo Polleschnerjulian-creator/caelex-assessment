@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Space Compliance Glossary | Caelex",
     description:
       "50+ definitions covering EU Space Act, NIS2 Directive, space debris mitigation, and regulatory compliance terminology.",
-    url: "https://caelex.eu/glossary",
+    url: "https://www.caelex.eu/glossary",
   },
 };
 

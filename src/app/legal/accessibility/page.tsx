@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     keywords: ["Accessibility", "BFSG", "WCAG", "Barrierefreiheit"],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/accessibility",
+    canonical: "https://www.caelex.eu/legal/accessibility",
     languages: {
       de: "/legal/barrierefreiheit",
       en: "/legal/accessibility",

@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     description:
       "Start your free space compliance assessment. Get your regulatory profile across EU Space Act, NIS2, and 10 national jurisdictions in minutes.",
     type: "website",
-    url: "https://caelex.eu/assessment",
+    url: "https://www.caelex.eu/assessment",
     images: [
       {
-        url: "https://caelex.eu/og-image.png",
+        url: "https://www.caelex.eu/og-image.png",
         width: 1200,
         height: 630,
         alt: "Compliance Assessment",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description: "Start your free space compliance assessment.",
   },
   alternates: {
-    canonical: "https://caelex.eu/assessment",
+    canonical: "https://www.caelex.eu/assessment",
   },
 };
 
@@ -41,8 +41,8 @@ export default function AssessmentPage() {
     <div className="landing-light bg-[#F7F8FA] text-[#111827]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Assessment", url: "https://caelex.eu/assessment" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Assessment", url: "https://www.caelex.eu/assessment" },
         ]}
       />
       <RegulationPicker />

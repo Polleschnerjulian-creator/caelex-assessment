@@ -63,14 +63,14 @@ export default async function PersonaPage({ params }: PageProps) {
 }
 
 function PersonaLanding({ persona }: { persona: Persona }) {
-  const pageUrl = `https://caelex.eu/for/${persona.slug}`;
+  const pageUrl = `https://www.caelex.eu/for/${persona.slug}`;
 
   return (
     <>
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "For", url: "https://caelex.eu/for" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "For", url: "https://www.caelex.eu/for" },
           { name: persona.label, url: pageUrl },
         ]}
       />

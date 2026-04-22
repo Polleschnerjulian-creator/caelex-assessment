@@ -315,7 +315,7 @@ ${escapeHtml(motivation)}
             <p style="font-size: 12px; color: #999; margin: 0;">
               Caelex – Space Compliance Platform
               <br />
-              <a href="https://caelex.eu" style="color: #666;">www.caelex.eu</a>
+              <a href="https://www.caelex.eu" style="color: #666;">www.caelex.eu</a>
             </p>
           </div>
         </div>

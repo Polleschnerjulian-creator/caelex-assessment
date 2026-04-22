@@ -133,8 +133,8 @@ export default function VerityPage() {
     <div className="min-h-screen bg-[#09090B]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Verity", url: "https://caelex.eu/verity" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Verity", url: "https://www.caelex.eu/verity" },
         ]}
       />
       <Navigation theme="light" />

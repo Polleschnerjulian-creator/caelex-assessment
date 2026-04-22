@@ -210,7 +210,8 @@ export function generateAttestation(
   };
 
   // verification_url is added AFTER signing (unsigned)
-  const verification_url = "https://caelex.eu/api/v1/verity/attestation/verify";
+  const verification_url =
+    "https://www.caelex.eu/api/v1/verity/attestation/verify";
 
   // 5. Sign with Ed25519 — ONLY the defined fields
   const data_to_sign = serializeForSigning(

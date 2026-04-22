@@ -334,7 +334,7 @@ export default function AtlasResetPasswordPage() {
       <main className={styles.content}>
         <Link
           className={styles.brandLockup}
-          href="https://caelex.eu"
+          href="https://www.caelex.eu"
           aria-label="Caelex home"
         >
           <CaelexWordmark height={28} />

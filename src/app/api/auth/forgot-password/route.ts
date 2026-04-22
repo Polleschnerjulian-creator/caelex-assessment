@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ||
       process.env.NEXTAUTH_URL ||
       process.env.AUTH_URL ||
-      "https://caelex.eu";
+      "https://www.caelex.eu";
     const resetUrl = `${appUrl.replace(/\/+$/, "")}/atlas-reset-password?token=${encodeURIComponent(rawToken)}`;
 
     // Send via Resend directly so we can stamp the Caelex ATLAS
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="font-size: 12px; color: #9ca3af;">
               Caelex ATLAS — the searchable space-law database for law firms.<br />
-              <a href="https://caelex.eu" style="color: #9ca3af;">caelex.eu</a>
+              <a href="https://www.caelex.eu" style="color: #9ca3af;">caelex.eu</a>
             </p>
           </div>
         `,

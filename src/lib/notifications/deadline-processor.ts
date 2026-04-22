@@ -205,7 +205,7 @@ async function processDeadline(
   }
 
   // Build dashboard URL
-  const baseUrl = (process.env.AUTH_URL || "https://caelex.eu").replace(
+  const baseUrl = (process.env.AUTH_URL || "https://www.caelex.eu").replace(
     /\/$/,
     "",
   );

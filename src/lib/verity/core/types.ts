@@ -156,7 +156,7 @@ export interface VerityCertificate {
   // --- SIGNED FIELDS ---
   certificate_id: string;
   version: "1.0";
-  schema: "https://caelex.eu/verity/certificate/v1";
+  schema: "https://www.caelex.eu/verity/certificate/v1";
 
   subject: {
     operator_id: string;

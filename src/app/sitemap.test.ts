@@ -57,7 +57,7 @@ describe("sitemap()", () => {
     }
   });
 
-  it("all URLs start with https://caelex.eu", () => {
+  it("all URLs start with https://www.caelex.eu", () => {
     const result = sitemap();
     for (const entry of result) {
       expect(entry.url).toMatch(/^https:\/\/caelex\.eu/);
@@ -66,7 +66,7 @@ describe("sitemap()", () => {
 
   it("includes the home page with priority 1.0", () => {
     const result = sitemap();
-    const home = result.find((e) => e.url === "https://caelex.eu");
+    const home = result.find((e) => e.url === "https://www.caelex.eu");
     expect(home).toBeDefined();
     expect(home!.priority).toBe(1.0);
   });
@@ -74,7 +74,7 @@ describe("sitemap()", () => {
   it("includes blog post pages", () => {
     const result = sitemap();
     const blogPages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/blog/"),
+      e.url.startsWith("https://www.caelex.eu/blog/"),
     );
     expect(blogPages.length).toBe(2);
   });
@@ -82,7 +82,7 @@ describe("sitemap()", () => {
   it("includes guide pages", () => {
     const result = sitemap();
     const guidePages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/guides/"),
+      e.url.startsWith("https://www.caelex.eu/guides/"),
     );
     expect(guidePages.length).toBe(2);
   });
@@ -90,7 +90,7 @@ describe("sitemap()", () => {
   it("includes glossary term pages", () => {
     const result = sitemap();
     const glossaryPages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/glossary/"),
+      e.url.startsWith("https://www.caelex.eu/glossary/"),
     );
     expect(glossaryPages.length).toBe(2);
   });
@@ -98,7 +98,7 @@ describe("sitemap()", () => {
   it("includes module pages", () => {
     const result = sitemap();
     const modulePages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/modules/"),
+      e.url.startsWith("https://www.caelex.eu/modules/"),
     );
     expect(modulePages.length).toBe(2);
   });
@@ -106,7 +106,7 @@ describe("sitemap()", () => {
   it("includes jurisdiction pages", () => {
     const result = sitemap();
     const jurisdictionPages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/jurisdictions/"),
+      e.url.startsWith("https://www.caelex.eu/jurisdictions/"),
     );
     expect(jurisdictionPages.length).toBe(2);
   });
@@ -114,7 +114,7 @@ describe("sitemap()", () => {
   it("includes comparison pages", () => {
     const result = sitemap();
     const comparePages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/compare/"),
+      e.url.startsWith("https://www.caelex.eu/compare/"),
     );
     expect(comparePages.length).toBe(3);
   });
@@ -122,7 +122,7 @@ describe("sitemap()", () => {
   it("includes legal pages", () => {
     const result = sitemap();
     const legalPages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/legal/"),
+      e.url.startsWith("https://www.caelex.eu/legal/"),
     );
     expect(legalPages.length).toBeGreaterThan(0);
   });
@@ -130,7 +130,7 @@ describe("sitemap()", () => {
   it("includes assessment pages", () => {
     const result = sitemap();
     const assessmentPages = result.filter((e) =>
-      e.url.startsWith("https://caelex.eu/assessment/"),
+      e.url.startsWith("https://www.caelex.eu/assessment/"),
     );
     expect(assessmentPages.length).toBeGreaterThan(0);
   });

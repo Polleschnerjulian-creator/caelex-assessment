@@ -10,7 +10,7 @@ import { COMPARISONS } from "./compare/[slug]/comparisons";
 // SITEMAP CONFIGURATION
 // ============================================================================
 
-const baseUrl = "https://caelex.eu";
+const baseUrl = "https://www.caelex.eu";
 
 // Dynamic content imports - these are used to generate sitemap entries
 

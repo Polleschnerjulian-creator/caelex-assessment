@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("@/lib/seo", () => ({
   siteConfig: {
     name: "Caelex",
-    url: "https://caelex.eu",
+    url: "https://www.caelex.eu",
     email: "cs@caelex.eu",
   },
 }));
@@ -87,8 +87,8 @@ describe("GET /rss.xml", () => {
   it("contains proper link URLs for items", async () => {
     const response = await GET();
     const body = await response.text();
-    expect(body).toContain("https://caelex.eu/blog/eu-space-act-explained");
-    expect(body).toContain("https://caelex.eu/blog/nis2-space-operators");
+    expect(body).toContain("https://www.caelex.eu/blog/eu-space-act-explained");
+    expect(body).toContain("https://www.caelex.eu/blog/nis2-space-operators");
   });
 
   it("contains pubDate elements", async () => {
@@ -113,6 +113,6 @@ describe("GET /rss.xml", () => {
   it("contains atom:link for self-reference", async () => {
     const response = await GET();
     const body = await response.text();
-    expect(body).toContain('atom:link href="https://caelex.eu/rss.xml"');
+    expect(body).toContain('atom:link href="https://www.caelex.eu/rss.xml"');
   });
 });

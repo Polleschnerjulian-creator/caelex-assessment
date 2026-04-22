@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
             message || "(no message)",
             "",
             `Demo Request ID: ${demoRequest.id}`,
-            `Manage: https://caelex.eu/dashboard/admin/bookings`,
+            `Manage: https://www.caelex.eu/dashboard/admin/bookings`,
           ]
             .filter((line): line is string => line !== null)
             .join("\n"),
@@ -268,9 +268,9 @@ export async function POST(request: NextRequest) {
           }
           <p style="line-height: 1.6; margin: 0 0 16px 0;">
             In the meantime, feel free to explore our
-            <a href="https://caelex.eu/resources/faq" style="color: #111827;">FAQ</a>
+            <a href="https://www.caelex.eu/resources/faq" style="color: #111827;">FAQ</a>
             or run a free
-            <a href="https://caelex.eu/assessment" style="color: #111827;">compliance assessment</a>.
+            <a href="https://www.caelex.eu/assessment" style="color: #111827;">compliance assessment</a>.
           </p>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
           <p style="font-size: 12px; color: #9ca3af;">
@@ -326,8 +326,8 @@ export async function POST(request: NextRequest) {
           <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">
             ${
               booking
-                ? `Manage in the <a href="https://caelex.eu/dashboard/admin/bookings" style="color: #111;">bookings panel</a>.`
-                : `Follow-up scheduled for ${fromZonedTime(followUpAt.toISOString().slice(0, 10), TIMEZONE).toISOString().split("T")[0]}. Manage in the <a href="https://caelex.eu/dashboard/admin/bookings" style="color: #111;">admin panel</a>.`
+                ? `Manage in the <a href="https://www.caelex.eu/dashboard/admin/bookings" style="color: #111;">bookings panel</a>.`
+                : `Follow-up scheduled for ${fromZonedTime(followUpAt.toISOString().slice(0, 10), TIMEZONE).toISOString().split("T")[0]}. Manage in the <a href="https://www.caelex.eu/dashboard/admin/bookings" style="color: #111;">admin panel</a>.`
             }
           </p>
         </div>

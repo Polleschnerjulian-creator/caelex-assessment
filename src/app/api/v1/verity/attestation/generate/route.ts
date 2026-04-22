@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       attestation,
-      verification_url: "https://caelex.eu/api/v1/verity/attestation/verify",
+      verification_url:
+        "https://www.caelex.eu/api/v1/verity/attestation/verify",
     });
   } catch (error) {
     safeLog("Attestation generation failed", {

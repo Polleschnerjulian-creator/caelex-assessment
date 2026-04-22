@@ -66,11 +66,11 @@ The API uses standard HTTP status codes. Error responses include:
     contact: {
       name: "Caelex Support",
       email: "support@caelex.eu",
-      url: "https://caelex.eu/support",
+      url: "https://www.caelex.eu/support",
     },
     license: {
       name: "Proprietary",
-      url: "https://caelex.eu/terms",
+      url: "https://www.caelex.eu/terms",
     },
   },
   servers: [
@@ -79,7 +79,7 @@ The API uses standard HTTP status codes. Error responses include:
       description: "Production",
     },
     {
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://caelex.eu"}/api/v1`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.caelex.eu"}/api/v1`,
       description: "Local development",
     },
   ],

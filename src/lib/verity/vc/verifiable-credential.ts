@@ -154,7 +154,7 @@ export function attestationToVC(
       },
     },
     credentialStatus: {
-      id: `https://caelex.eu/api/v1/verity/attestation/status/${attestation.attestation_id}`,
+      id: `https://www.caelex.eu/api/v1/verity/attestation/status/${attestation.attestation_id}`,
       type: "RevocationList2020Status",
     },
     proof: {

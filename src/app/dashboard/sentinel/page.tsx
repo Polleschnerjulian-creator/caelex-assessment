@@ -1272,7 +1272,7 @@ function SetupGuide({
                 <span className="text-[var(--accent-primary)]">
                   SENTINEL_ENDPOINT
                 </span>
-                =&quot;https://caelex.eu/api/v1/sentinel&quot;
+                =&quot;https://www.caelex.eu/api/v1/sentinel&quot;
               </p>
               <p>
                 <span className="text-[var(--accent-primary)]">

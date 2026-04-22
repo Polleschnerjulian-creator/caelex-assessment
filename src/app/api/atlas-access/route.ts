@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
           "",
           `DemoRequest ID: ${accessRequest.id}`,
           `Source: atlas_access`,
-          `Manage: https://caelex.eu/dashboard/admin/bookings`,
+          `Manage: https://www.caelex.eu/dashboard/admin/bookings`,
         ]
           .filter((line): line is string => line !== null)
           .join("\n"),
@@ -367,7 +367,7 @@ export async function POST(request: NextRequest) {
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
           <p style="font-size: 12px; color: #9ca3af;">
             Caelex ATLAS — the searchable space-law database for law firms.<br />
-            <a href="https://caelex.eu" style="color: #9ca3af;">caelex.eu</a>
+            <a href="https://www.caelex.eu" style="color: #9ca3af;">caelex.eu</a>
           </p>
         </div>
       `;
@@ -429,7 +429,7 @@ export async function POST(request: NextRequest) {
           }
 
           <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">
-            Manage in the <a href="https://caelex.eu/dashboard/admin/bookings" style="color: #111;">bookings panel</a> — source tag: <code>atlas_access</code>.
+            Manage in the <a href="https://www.caelex.eu/dashboard/admin/bookings" style="color: #111;">bookings panel</a> — source tag: <code>atlas_access</code>.
           </p>
         </div>
       `,

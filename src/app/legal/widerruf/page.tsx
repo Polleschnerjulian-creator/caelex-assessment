@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     keywords: ["Widerrufsrecht", "Widerrufsbelehrung", "Caelex", "§ 312g BGB"],
   }),
   alternates: {
-    canonical: "https://caelex.eu/legal/widerruf",
+    canonical: "https://www.caelex.eu/legal/widerruf",
   },
 };
 

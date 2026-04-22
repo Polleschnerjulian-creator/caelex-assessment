@@ -64,8 +64,8 @@ export default function SentinelPage() {
     <div className="min-h-screen bg-[#09090B]">
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: "https://caelex.eu" },
-          { name: "Sentinel", url: "https://caelex.eu/sentinel" },
+          { name: "Home", url: "https://www.caelex.eu" },
+          { name: "Sentinel", url: "https://www.caelex.eu/sentinel" },
         ]}
       />
       <Navigation theme="dark" />

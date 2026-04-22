@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const headersList = await headers();
     const host =
       headersList.get("host") ||
-      new URL(process.env.NEXT_PUBLIC_APP_URL || "https://caelex.eu").host;
+      new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.caelex.eu").host;
     const protocol = headersList.get("x-forwarded-proto") || "https";
     const baseUrl = `${protocol}://${host}`;
 
