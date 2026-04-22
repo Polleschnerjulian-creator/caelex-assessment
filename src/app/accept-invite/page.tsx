@@ -59,11 +59,12 @@ function AcceptInviteInner() {
         );
         if (!infoRes.ok) {
           if (cancelled) return;
-          if (infoRes.status === 410) {
-            setError("Diese Einladung ist abgelaufen oder bereits angenommen.");
-          } else {
-            setError("Diese Einladung ist ungültig.");
-          }
+          // Audit C-1 follow-up: invite-info now returns a unified 404
+          // for not-found / expired / accepted so it can't be used as a
+          // token-state oracle. One generic message here matches that.
+          setError(
+            "Diese Einladung ist ungültig, abgelaufen, oder wurde bereits angenommen.",
+          );
           setStatus("error");
           return;
         }

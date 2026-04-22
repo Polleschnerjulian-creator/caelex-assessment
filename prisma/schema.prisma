@@ -126,6 +126,11 @@ model User {
   // ATLAS: per-user annotations on legal sources
   atlasAnnotations AtlasAnnotation[]
 
+  // Password reset tokens (C-4). One-to-many because a user can have
+  // multiple outstanding requests (e.g. two tabs), though the
+  // endpoint invalidates the prior token on each new request.
+  passwordResetTokens PasswordResetToken[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -8419,4 +8424,33 @@ model AtlasAnnotation {
   @@index([userId])
   @@index([organizationId])
   @@index([sourceId])
+}
+
+// ============================================
+// PASSWORD RESET (C-4)
+// ============================================
+//
+// Self-service password reset flow. The raw token is generated with
+// crypto.randomBytes(32).toString("hex") (256-bit CSPRNG), emailed to
+// the user via the /atlas-reset-password link, and NEVER stored in
+// the DB — we store only its SHA-256 hash so a DB leak can't be used
+// to hijack in-flight resets.
+//
+// Tokens are single-use (markedUsedAt on consume), expire after 60
+// minutes, and any outstanding token for the same user is invalidated
+// when a new one is issued. The forgot-password endpoint always
+// returns 200 regardless of whether a user exists (anti-enumeration).
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique // SHA-256 hex of the raw token
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

@@ -2,7 +2,7 @@
 
 **Scope:** Complete security analysis of the ATLAS sub-application — authentication + invitation flows, API endpoints, data access + multi-tenancy, frontend + infrastructure.
 **Methodology:** Four parallel audit tracks (auth, API, data, frontend/infra) with cross-verification of disputed findings.
-**Posture:** Findings only — no code changes were made as part of this audit.
+**Posture:** Findings only at authoring time. **Remediation status appended at the bottom of this document — see "Remediation log".**
 
 ---
 
@@ -343,3 +343,39 @@ Cross-track disagreements were manually verified before inclusion in this report
 - One track claimed the `CRON_SECRET` comparison had a timing-attack bug due to the length pre-check. This is **incorrect** — `crypto.timingSafeEqual` throws on length mismatch, so the length check is mandatory; the length itself is trivially observable in any HTTP request (bytes on the wire), so there is no new leak. The implementation is sound.
 
 No code was changed during this audit. All findings are reported against the head of `claude/vibrant-kirch-091e7e` (equal to `origin/main` as of commit `268c1fcb`).
+
+---
+
+## Remediation log — 2026-04-22
+
+All fixable findings from this audit have been shipped across three batches. H-3 (CSP `'unsafe-inline'`) is a Next.js 15 limitation, M-3 (`AtlasBookmark` org-scoping) needs a product decision, and L-2 (history retention) needs an ops policy — those three are tracked but not fixed in this pass.
+
+| ID      | Status           | Commit / file                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C-1** | ✅ Fixed         | `public_api` rate limit + unified 404 on all not-found/expired/accepted in [src/app/api/atlas/team/invite-info/route.ts](../../src/app/api/atlas/team/invite-info/route.ts)                                                                                                                                                                                                                               |
+| **C-2** | ✅ Fixed         | New [src/lib/safe-redirect.ts](../../src/lib/safe-redirect.ts) helper, applied in [src/app/login/page.tsx](../../src/app/login/page.tsx) and [src/app/auth/mfa-challenge/page.tsx](../../src/app/auth/mfa-challenge/page.tsx)                                                                                                                                                                             |
+| **C-3** | ✅ Fixed         | `AtlasAnnotation.@@unique` now `(userId, organizationId, sourceId)` in [prisma/schema.prisma](../../prisma/schema.prisma); upsert updated in [src/app/api/atlas/annotations/route.ts](../../src/app/api/atlas/annotations/route.ts)                                                                                                                                                                       |
+| **C-4** | ✅ Fixed         | New `PasswordResetToken` model + real implementation of [src/app/api/auth/forgot-password/route.ts](../../src/app/api/auth/forgot-password/route.ts) + new [src/app/api/auth/reset-password/route.ts](../../src/app/api/auth/reset-password/route.ts) + new [src/app/atlas-reset-password/page.tsx](../../src/app/atlas-reset-password/page.tsx). Single-use + 60min expiry + SHA-256 hashed tokens in DB |
+| **H-1** | ✅ Fixed         | Slot-check + booking wrapped in `prisma.$transaction` at `Serializable` isolation in [src/app/api/atlas-access/route.ts](../../src/app/api/atlas-access/route.ts). Concurrent requests now lose the race cleanly with a 409                                                                                                                                                                               |
+| **H-2** | ✅ Fixed         | `logAuditEvent` on annotation upsert/delete and bookmark create/bulk-import/delete. Admin `AtlasSourceCheck` review now also hits the audit chain                                                                                                                                                                                                                                                         |
+| **H-3** | ⚠️ Accepted      | Next.js 15 inlines hydration scripts; `'unsafe-inline'` required until framework supports nonce. Revisit on Next.js 16 upgrade                                                                                                                                                                                                                                                                            |
+| **M-1** | ✅ Fixed         | Inviter email fallback dropped — `inviterName` falls back to `"A colleague"`, never to the inviter's email address                                                                                                                                                                                                                                                                                        |
+| **M-2** | ✅ Already fixed | False positive — `RegisterSchema.acceptTerms` has `.refine((v) => v === true)` so `safeParse` rejects missing/false values before the handler runs ([src/lib/validations.ts:102](../../src/lib/validations.ts#L102))                                                                                                                                                                                      |
+| **M-3** | 🔵 Deferred      | Needs product decision on whether bookmarks follow the user across orgs or are workspace-scoped                                                                                                                                                                                                                                                                                                           |
+| **M-4** | ✅ Fixed         | Bookmark bulk-import quota now checked inside a `Serializable` interactive transaction in [src/app/api/atlas/bookmarks/route.ts](../../src/app/api/atlas/bookmarks/route.ts)                                                                                                                                                                                                                              |
+| **M-5** | ✅ Fixed         | `logAuditEvent` added to `AtlasSourceCheck` admin review in [src/app/api/admin/atlas-updates/route.ts](../../src/app/api/admin/atlas-updates/route.ts)                                                                                                                                                                                                                                                    |
+| **L-1** | ✅ Fixed         | Analytics session ID now `crypto.randomUUID()` with graceful fallback in [src/lib/analytics.ts](../../src/lib/analytics.ts)                                                                                                                                                                                                                                                                               |
+| **L-2** | 🔵 Deferred      | `AtlasSourceCheckHistory` retention policy needs ops decision (proposed: 7 years per GDPR Art. 5(1)(e))                                                                                                                                                                                                                                                                                                   |
+| **L-3** | ✅ Fixed         | Sentry `beforeSend` now deep-redacts sensitive keys across `request`, `breadcrumbs`, `contexts`, `extra`, `tags`; drops cookies entirely; email-regex scrubs freeform text in [sentry.client.config.ts](../../sentry.client.config.ts)                                                                                                                                                                    |
+
+### Post-remediation posture
+
+**LOW.** Four CRITICALs, two HIGHs, four MEDIUMs and two LOWs closed. Three items deferred with explicit rationale above.
+
+### Verification checklist for production deploy
+
+- [x] `prisma db push` reconciles `AtlasAnnotation` new unique key and adds `PasswordResetToken` table (`build:deploy` handles this via `db push --skip-generate`)
+- [x] `RESEND_API_KEY` present in prod env so `/api/auth/forgot-password` can actually dispatch reset emails
+- [x] `NEXT_PUBLIC_APP_URL` set so the reset-link URL is constructed against the canonical origin (not the Host header)
+- [ ] Manual smoke test after deploy: request reset → email arrives → link opens `/atlas-reset-password` → new password updates → re-using the same link fails
+- [ ] Manual smoke test: submit a fake booking at `/atlas-access` → confirm one Booking row, one Google Calendar event, CRM contact tagged `atlas_access`
