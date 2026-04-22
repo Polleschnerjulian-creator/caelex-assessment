@@ -111,6 +111,10 @@
       "schedule": "30 4 * * *"
     },
     {
+      "path": "/api/cron/atlas-feed-discovery",
+      "schedule": "45 4 * * *"
+    },
+    {
       "path": "/api/cron/astra-cleanup",
       "schedule": "15 3 * * *"
     },

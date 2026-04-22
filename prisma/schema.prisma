@@ -8293,6 +8293,38 @@ enum AtlasAmendmentReviewStatus {
   REJECTED // Admin dismissed as noise/false positive
 }
 
+/// Phase-2 auto-update — discovered source candidates from public RSS /
+/// Atom / SPARQL feeds (UNOOSA, Gesetze-im-Internet, BGBl, EUR-Lex ...)
+/// that aren't yet indexed in ALL_SOURCES. Admin reviews each, either
+/// adds it to the static data files (APPROVED → manual PR), or dismisses
+/// it as out-of-scope (REJECTED). dedupKey prevents the same entry from
+/// being queued twice across runs.
+model AtlasPendingSourceCandidate {
+  id             String                             @id @default(cuid())
+  /// ISO code or "INT" / "EU" when supranational.
+  jurisdiction   String
+  /// Which feed this came from — "UNOOSA", "GESETZE_IM_INTERNET", "EUR_LEX", etc.
+  feedSource     String
+  title          String
+  url            String
+  description    String?
+  publishedAt    DateTime?
+  /// Keywords that matched the space-law filter.
+  matchKeywords  Json?
+  detectedAt     DateTime                           @default(now())
+  reviewStatus   AtlasAmendmentReviewStatus         @default(PENDING)
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  reviewNote     String?
+  /// Unique dedupe key — feed identifier ∶∶ normalized URL. Stops the
+  /// same entry from re-inserting on every poll.
+  dedupKey       String                             @unique
+
+  @@index([reviewStatus, detectedAt])
+  @@index([jurisdiction, detectedAt])
+  @@index([feedSource, detectedAt])
+}
+
 // ─── ATLAS Bookmarks (per-user) ────────────────────────────────────
 
 /// Per-user saved items across Atlas (legal sources, country profiles,
