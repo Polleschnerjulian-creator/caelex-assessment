@@ -11,6 +11,7 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getJurisdictionNames } from "../i18n-labels";
 import { ArrowRight, Filter, Check, FileDown } from "lucide-react";
+import { BookmarkButton } from "../_components/BookmarkButton";
 
 // ─── Build enriched jurisdiction data ──────────────────────────────
 
@@ -339,6 +340,19 @@ export default function JurisdictionsPage() {
                 PDF
               </a>
             )}
+            <div className="absolute bottom-3 right-3 z-10">
+              <BookmarkButton
+                item={{
+                  id: `jurisdiction:${j.code}`,
+                  type: "jurisdiction",
+                  title: JURISDICTION_NAMES[j.code] || j.country,
+                  subtitle: j.hasSpaceAct
+                    ? `${j.actName} (${j.actYear})`
+                    : j.actName || t("atlas.no_comprehensive_law"),
+                  href: `/atlas/jurisdictions/${j.code.toLowerCase()}`,
+                }}
+              />
+            </div>
           </article>
         ))}
       </div>

@@ -12,6 +12,7 @@ import { LandingRightsStatusBadge } from "./LandingRightsStatusBadge";
 import { SourceLink } from "./SourceLink";
 import { ITUFilingCard } from "./ITUFilingCard";
 import { getITUFilingsByOperator } from "@/data/landing-rights/itu-filings";
+import { BookmarkButton } from "@/app/(atlas)/atlas/_components/BookmarkButton";
 
 const CATEGORIES: LandingRightsCategory[] = [
   "market_access",
@@ -43,12 +44,23 @@ export function JurisdictionProfileView({
   return (
     <div className="flex flex-col gap-6">
       {!embed && (
-        <header className="flex items-baseline gap-4">
+        <header className="flex items-baseline gap-4 flex-wrap">
           <h1 className="text-[40px] font-light tracking-tight text-gray-900">
             {profile.jurisdiction}
           </h1>
           <DepthBadge depth={profile.depth} />
           <LastVerifiedStamp date={profile.last_verified} />
+          <div className="ml-auto">
+            <BookmarkButton
+              item={{
+                id: `landing-rights:${profile.jurisdiction}`,
+                type: "jurisdiction",
+                title: `${profile.jurisdiction} — Landing Rights`,
+                subtitle: profile.overview.regime_type.replace("_", " "),
+                href: `/atlas/landing-rights/${profile.jurisdiction.toLowerCase()}`,
+              }}
+            />
+          </div>
         </header>
       )}
 

@@ -22,6 +22,7 @@ import {
 } from "@/data/legal-sources";
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import { BookmarkButton } from "../../_components/BookmarkButton";
 
 /**
  * /atlas/treaties/[slug] — per-treaty deep-dive.
@@ -280,9 +281,22 @@ export default async function TreatyDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
-          <span className="rounded px-2 py-1 text-[9px] font-medium tracking-wider uppercase border bg-emerald-50 border-emerald-200 text-emerald-700">
-            {statusLabel}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded px-2 py-1 text-[9px] font-medium tracking-wider uppercase border bg-emerald-50 border-emerald-200 text-emerald-700">
+              {statusLabel}
+            </span>
+            <BookmarkButton
+              item={{
+                id: `treaty:${treaty.id}`,
+                type: "source",
+                title: treaty.title_en,
+                subtitle: treaty.un_reference
+                  ? `${treaty.id} · ${treaty.un_reference}`
+                  : treaty.id,
+                href: `/atlas/treaties/${slug}`,
+              }}
+            />
+          </div>
         </div>
         <h1 className="text-[22px] font-semibold tracking-tight text-gray-900 leading-snug mb-3 max-w-4xl">
           {treaty.title_en}

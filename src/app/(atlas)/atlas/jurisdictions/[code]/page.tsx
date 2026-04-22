@@ -39,6 +39,7 @@ import {
 import { getProfile, type JurisdictionCode } from "@/data/landing-rights";
 import { JurisdictionProfileView } from "@/components/atlas/landing-rights/JurisdictionProfileView";
 import JurisdictionExport from "@/components/atlas/JurisdictionExport";
+import { BookmarkButton } from "../../_components/BookmarkButton";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
@@ -462,15 +463,26 @@ export default function JurisdictionDetailPage({
                 ? ` (${jurisdiction.legislation.yearEnacted}${jurisdiction.legislation.yearAmended ? `, ${t("atlas.amended", { year: String(jurisdiction.legislation.yearAmended) })}` : ""})`
                 : ""}
             </p>
-            {hasDetailedSources && (
-              <button
-                onClick={handleExportBriefing}
-                className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
-              >
-                <Download size={14} strokeWidth={1.5} aria-hidden="true" />
-                {t("atlas.briefing_export")}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              <BookmarkButton
+                item={{
+                  id: `jurisdiction:${displayCode}`,
+                  type: "jurisdiction",
+                  title: jurisdiction.countryName,
+                  subtitle: jurisdiction.legislation.name,
+                  href: `/atlas/jurisdictions/${displayCode.toLowerCase()}`,
+                }}
+              />
+              {hasDetailedSources && (
+                <button
+                  onClick={handleExportBriefing}
+                  className="print:hidden flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-all duration-150"
+                >
+                  <Download size={14} strokeWidth={1.5} aria-hidden="true" />
+                  {t("atlas.briefing_export")}
+                </button>
+              )}
+            </div>
           </div>
         </header>
 

@@ -16,6 +16,7 @@ import {
   Cpu,
 } from "lucide-react";
 import SourceNotes from "@/components/atlas/SourceNotes";
+import { BookmarkButton } from "../../_components/BookmarkButton";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -280,19 +281,30 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </p>
           )}
 
-        {/* ─── View official text — prominent action ─── */}
-        {source.source_url && (
-          <a
-            href={source.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
-          >
-            {t("atlas.view_official_text")}
-            <span className="sr-only">(opens in new window)</span>
-            <ExternalLink size={13} strokeWidth={2} aria-hidden="true" />
-          </a>
-        )}
+        {/* ─── Actions row: bookmark + view official text ─── */}
+        <div className="inline-flex items-center gap-4 mt-3">
+          <BookmarkButton
+            item={{
+              id: `source:${source.id}`,
+              type: "source",
+              title: getTranslatedSource(source, language).title,
+              subtitle: `${jurisdictionName} · ${source.official_reference ?? source.id}`,
+              href: `/atlas/sources/${source.id}`,
+            }}
+          />
+          {source.source_url && (
+            <a
+              href={source.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[13px] text-gray-900 font-medium hover:text-gray-800 transition-colors"
+            >
+              {t("atlas.view_official_text")}
+              <span className="sr-only">(opens in new window)</span>
+              <ExternalLink size={13} strokeWidth={2} aria-hidden="true" />
+            </a>
+          )}
+        </div>
       </header>
 
       {/* ─── Metadata grid ─── */}
