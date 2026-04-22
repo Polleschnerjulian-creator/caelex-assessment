@@ -1,0 +1,42 @@
+# Caelex
+
+> Caelex is the regulatory operating system for the orbital economy — the compliance platform satellite operators, launch providers, and space service companies use to navigate the EU Space Act, NIS2 Directive, and national space laws across 10+ European jurisdictions, from authorization to audit. Caelex is built in Berlin, founded 2025.
+
+Caelex sits between space operators and their regulators. It maps your specific operation (operator type, constellation tier, mission phase) to every applicable regulation, then runs the assessments, generates the authorization documents, and produces the audit evidence. It does so across 12+ compliance modules in a single workspace, with AI-assisted document generation (Astra) and continuous monitoring.
+
+Caelex also operates ATLAS — a separate sub-product: a searchable space-law database for law firms, covering UN treaties, EU instruments, and national legislation across 10+ jurisdictions with shared annotations and AI-assisted research.
+
+## Products
+
+- [Comply](https://caelex.eu/platform): The regulatory command center — real-time compliance posture across EU Space Act (119 articles), NIS2, and 10+ national space laws. Covers authorization, registration, cybersecurity, debris mitigation, environmental, insurance, export control (ITAR/EAR), spectrum/ITU, UK Space Industry Act, US regulatory (FCC/FAA), COPUOS/IADC, digital twin, and evidence management.
+- [Atlas](https://caelex.eu/atlas-access): The searchable space-law database built for law firms. UN treaties, EU instruments, national legislation across 10+ jurisdictions — deep-linked to official sources, with firm-wide annotations and AI-assisted research. Sales-assisted onboarding — book a free 30-minute demo.
+- [Sentinel](https://caelex.eu/sentinel): Autonomous compliance-evidence agents deployed at operator premises. Cryptographically signed hash chains, tamper-evident audit trails, cross-verification against public orbital data.
+- [Ephemeris](https://caelex.eu/systems/ephemeris): Forward-looking compliance risk engine. Models every satellite as a digital twin and forecasts compliance trajectories across the mission lifecycle.
+- [Verity](https://caelex.eu/verity): Zero-knowledge compliance attestation. Cryptographic proofs that demonstrate regulatory adherence to auditors without revealing operational data.
+
+## What Caelex is for
+
+- [Platform overview](https://caelex.eu/platform): the full Comply module list and how they fit together
+- [Pricing](https://caelex.eu/pricing): tier structure for Comply
+- [Demo request](https://caelex.eu/demo): personalized walkthrough
+- [About Caelex](https://caelex.eu/about): team, mission, Berlin HQ
+- [Security](https://caelex.eu/security): how Caelex protects customer data (encryption, audit trail, MFA, hash chain, SSO)
+
+## Regulatory knowledge base
+
+- [EU Space Act overview](https://caelex.eu/resources/eu-space-act): 119 articles explained, 9 modules, standard vs light regime
+- [Jurisdictions](https://caelex.eu/jurisdictions): 10 European national space-law regimes (DE, FR, UK, IT, LU, NL, BE, ES, NO, SE, DK, AT, CH, plus EU + international)
+- [Modules](https://caelex.eu/modules): the 15 compliance-module reference pages
+- [Glossary](https://caelex.eu/glossary): space-law terminology with formal definitions
+- [Timeline](https://caelex.eu/resources/timeline): EU Space Act + NIS2 + national space law timeline
+- [FAQ](https://caelex.eu/resources/faq): frequent questions about scope and applicability
+- [Guides](https://caelex.eu/guides): operator-facing how-to content
+- [Blog](https://caelex.eu/blog): analysis and updates
+- [API documentation](https://caelex.eu/docs/api): public API v1 for compliance queries
+
+## Optional
+
+- [Legal](https://caelex.eu/legal): impressum, privacy, terms, cookies (DE + EN)
+- [Careers](https://caelex.eu/careers): open roles in Berlin
+- [Contact](https://caelex.eu/contact): hi@caelex.eu for general, cs@caelex.eu for customer success
+- [llms-full.txt](https://caelex.eu/llms-full.txt): long-form version of this index for LLM consumption
