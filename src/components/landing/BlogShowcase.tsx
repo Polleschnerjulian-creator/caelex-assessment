@@ -62,6 +62,20 @@ const ENTRIES: BlogEntry[] = [
     image: "/images/blog/compliance-engine.png",
   },
   {
+    id: "atlas",
+    slug: "atlas",
+    href: "/atlas-access",
+    category: "Space Law · Searchable Reference",
+    title: "The Space-Law Knowledge Base",
+    pill: "Atlas",
+    description:
+      "Caelex Atlas is the searchable space-law database built for law firms. UN treaties, EU instruments, and national legislation across 10 jurisdictions — every article deep-linked to its official source, with shared firm-wide annotations, AI-assisted research, and change alerts the moment any source is amended.",
+    // TODO: swap for a dedicated ATLAS asset once the brand shoot lands.
+    // compliance-engine.png is the closest thematic match (regulatory
+    // text / citation rendering) in the existing set.
+    image: "/images/blog/compliance-engine.png",
+  },
+  {
     id: "verity",
     slug: "verity",
     href: "/verity",
