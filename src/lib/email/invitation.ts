@@ -3,17 +3,21 @@ import "server-only";
 /**
  * Caelex ATLAS invitation email — renderer.
  *
- * The canonical design lives as a standalone HTML file at
- * src/lib/email/templates/invitation.html so designers can preview it
- * without running Node. The TypeScript here ships the exact same HTML
- * as a template literal so runtime delivery doesn't depend on Vercel's
- * file-trace picking up an ad-hoc .html asset — one bundled constant,
- * one source of truth.
+ * Apple-style light template (updated 2026-04-22 per brand refresh).
+ * Hero headline on plain #fafafa stage, white card below holding the
+ * action. English hero line, German body copy — matches the brand's
+ * bilingual posture for EU law-firm audiences.
  *
- * If you edit the .html file, mirror the edit here (or vice versa).
- * The shape is load-bearing: Outlook VML fallback + mustache-style
- * placeholders + inline styles only. See the .html file's top comment
- * for placeholder names and design constraints.
+ * Placeholders (mustache style, all substituted in renderInvitationEmail):
+ *   {{organizationName}}    — inviting firm's name
+ *   {{inviterName}}         — inviting user's display name or email
+ *   {{recipientFirstName}}  — best-effort first name derived from email
+ *   {{inviteUrl}}           — invite link (href-safe substitution)
+ *   {{expiresInDays}}       — expiry in days (integer)
+ *
+ * Everything user-controllable is HTML-escaped; the invite URL is
+ * scheme-validated (http/https only) to block javascript: injection.
+ * Outlook VML fallback preserved for the CTA button.
  */
 
 export interface InvitationEmailParams {
@@ -28,8 +32,7 @@ export interface InvitationEmailParams {
  * Escape untrusted input before it lands in the HTML body. Every
  * placeholder comes from the database and can legally contain HTML-
  * special characters — an org name with `&` or an inviter email
- * containing `<` must NOT render as markup. Same rationale as H3 in
- * the /api/atlas/team route.
+ * containing `<` must NOT render as markup.
  */
 function escapeHtml(s: string): string {
   return s
@@ -56,68 +59,218 @@ function safeUrl(raw: string): string {
   }
 }
 
-const TEMPLATE = `<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="supported-color-schemes" content="light dark" />
-    <title>Einladung zu Caelex ATLAS</title>
-  </head>
-  <body style="margin:0;padding:0;background-color:#F7F8FA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;">
-    <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;visibility:hidden;opacity:0;color:transparent;height:0;width:0;">{{inviterName}} hat Sie zu {{organizationName}} auf Caelex ATLAS eingeladen.</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F8FA;padding:40px 16px;">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:16px;overflow:hidden;">
-            <tr>
-              <td style="padding:24px 32px;background-color:#0A0D12;color:#FFFFFF;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;">Caelex&nbsp;·&nbsp;ATLAS</td>
-            </tr>
-            <tr>
-              <td style="padding:32px;">
-                <h1 style="margin:0 0 12px 0;font-size:22px;font-weight:600;color:#111827;line-height:1.3;">Einladung zu {{organizationName}}</h1>
-                <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#374151;">{{inviterName}} hat Sie eingeladen, dem Team von <strong style="color:#111827;">{{organizationName}}</strong> auf Caelex ATLAS beizutreten &mdash; der Regulatorik-Plattform f&uuml;r die Raumfahrtbranche.</p>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px 0;">
-                  <tr>
-                    <td align="center" bgcolor="#10B981" style="border-radius:10px;">
-                      <!--[if mso]>
-                      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{inviteUrl}}" style="height:44px;v-text-anchor:middle;width:220px;" arcsize="23%" stroke="f" fillcolor="#10B981">
-                        <w:anchorlock/>
-                        <center style="color:#FFFFFF;font-family:sans-serif;font-size:14px;font-weight:600;">Einladung annehmen</center>
-                      </v:roundrect>
-                      <![endif]-->
-                      <!--[if !mso]><!-- -->
-                      <a href="{{inviteUrl}}" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;background-color:#10B981;border-radius:10px;">Einladung annehmen</a>
-                      <!--<![endif]-->
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin:0 0 8px 0;font-size:12px;line-height:1.6;color:#6B7280;">Oder kopieren Sie diesen Link in Ihren Browser:</p>
-                <p style="margin:0 0 24px 0;font-size:12px;line-height:1.5;color:#10B981;word-break:break-all;font-family:'SF Mono',Menlo,Consolas,monospace;"><a href="{{inviteUrl}}" style="color:#10B981;text-decoration:underline;">{{inviteUrl}}</a></p>
-                <hr style="border:0;border-top:1px solid #E5E7EB;margin:24px 0;" />
-                <p style="margin:0 0 6px 0;font-size:12px;color:#6B7280;line-height:1.6;">Diese Einladung wurde an <strong style="color:#374151;">{{recipientEmail}}</strong> gesendet und ist {{expiresInDays}} Tage g&uuml;ltig.</p>
-                <p style="margin:0;font-size:12px;color:#9CA3AF;line-height:1.6;">Falls Sie nicht erwartet haben, zu einer Organisation auf Caelex ATLAS eingeladen zu werden, ignorieren Sie diese E-Mail einfach &mdash; es wird kein Konto erstellt.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:20px 32px;background-color:#FAFBFC;border-top:1px solid #E5E7EB;font-size:11px;color:#9CA3AF;line-height:1.6;">
-                <strong style="color:#374151;">Caelex GmbH</strong> &nbsp;&middot;&nbsp; The regulatory operating system for the orbital economy<br />
-                <a href="https://caelex.eu" style="color:#9CA3AF;text-decoration:underline;">caelex.eu</a> &nbsp;&middot;&nbsp; <a href="mailto:hi@caelex.eu" style="color:#9CA3AF;text-decoration:underline;">hi@caelex.eu</a>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
+/**
+ * Best-effort first-name extraction from an email address.
+ *
+ * Falls back to an empty string when the local part doesn't look
+ * name-like (digits, short, hex), which lets the caller render
+ * a neutral "Hallo," greeting without awkward "Hallo foo.bar123,".
+ *
+ * Examples:
+ *   anna.schmidt@firm.eu     → "Anna"
+ *   julian+atlas@caelex.eu   → "Julian"
+ *   j.polleschner@caelex.eu  → "J"       (too short → "")
+ *   5f7c@throwaway.example   → ""        (no letters in first segment)
+ *   contact@firm.eu          → "Contact"
+ */
+function firstNameFromEmail(email: string): string {
+  const local = email.split("@")[0] ?? "";
+  if (!local) return "";
+  // Split on common separators then pick the first segment.
+  const first = local.split(/[._\-+]/)[0] ?? "";
+  // Reject non-name-like segments: too short, digit-heavy, or no
+  // alphabetic content at all.
+  if (first.length < 2) return "";
+  if (!/^[a-zA-ZÀ-ÿ]/.test(first)) return "";
+  if ((first.match(/\d/g)?.length ?? 0) >= Math.ceil(first.length / 2))
+    return "";
+  // Capitalise first letter, lower-case the rest — handles "ANNA"
+  // and "anna" uniformly as "Anna".
+  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+}
+
+const TEMPLATE = `<!DOCTYPE html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light">
+  <title>Einladung zu ATLAS</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    /* Neutralise Gmail's auto dark-mode inversion for our grey palette */
+    :root { color-scheme: light only; supported-color-schemes: light only; }
+
+    @media only screen and (max-width: 620px) {
+      .container  { width: 100% !important; padding: 0 20px !important; }
+      .card       { padding: 32px 24px !important; }
+      .display    { font-size: 32px !important; line-height: 1.08 !important; letter-spacing: -0.025em !important; }
+      .btn-cell a { width: 100% !important; box-sizing: border-box !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#fafafa; color:#0a0a0b; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif;">
+
+  <!-- Preheader (hidden preview text in inbox) -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#fafafa; opacity:0;">
+    {{inviterName}} hat Sie zu ATLAS eingeladen — {{expiresInDays}} Tage gültig.
+  </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#fafafa;">
+    <tr>
+      <td align="center" style="padding: 56px 16px 24px 16px;">
+
+        <!-- Caelex wordmark: logo + text, left-aligned at top -->
+        <table role="presentation" class="container" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px; width:100%;">
+          <tr>
+            <td align="left" style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding-right:10px; vertical-align:middle;">
+                    <img src="https://caelex.eu/images/logo-black.png"
+                         width="22" height="22" alt="Caelex"
+                         style="display:block; width:22px; height:22px; border:0;">
+                  </td>
+                  <td style="vertical-align:middle; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:17px; font-weight:500; letter-spacing:-0.01em; color:#0a0a0b;">
+                    caelex
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Hero: Apple-style display headline on plain background (no card around it) -->
+        <table role="presentation" class="container" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px; width:100%;">
+          <tr>
+            <td align="left" style="padding-bottom: 16px;">
+              <div class="display" style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-weight:300; font-size:44px; line-height:1.04; letter-spacing:-0.03em; color:#0a0a0b;">
+                You've been<br>invited to ATLAS.
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" style="padding-bottom: 36px;">
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:16px; font-weight:400; line-height:1.55; letter-spacing:-0.005em; color:rgba(10,10,11,0.58);">
+                <strong style="color:#0a0a0b; font-weight:500;">{{inviterName}}</strong> von {{organizationName}} hat Sie zu ATLAS hinzugefügt &mdash; der durchsuchbaren Space-Law-Datenbank für Kanzleien.
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Card: only contains the action -->
+        <table role="presentation" class="container" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px; width:100%; background-color:#ffffff; border:1px solid rgba(10,10,11,0.08); border-radius:14px;">
+          <tr>
+            <td class="card" style="padding: 36px 40px;">
+
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:15px; font-weight:400; line-height:1.6; letter-spacing:-0.005em; color:#0a0a0b; margin-bottom:4px;">
+                Hallo{{recipientFirstNameGreetingSuffix}},
+              </div>
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:15px; font-weight:400; line-height:1.6; letter-spacing:-0.005em; color:rgba(10,10,11,0.65); margin-bottom:28px;">
+                Mit Ihrem Zugang können Sie Weltraumrecht-Jurisdiktionen vergleichen, Lizenzierungsanforderungen durchsuchen, Compliance-Briefings exportieren und sich benachrichtigen lassen, sobald sich relevante Regelwerke ändern.
+              </div>
+
+              <!-- Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td class="btn-cell" align="left" style="border-radius:10px; background-color:#0a0a0b;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{inviteUrl}}" style="height:46px; v-text-anchor:middle; width:220px;" arcsize="22%" stroke="f" fillcolor="#0a0a0b">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; font-size:15px; font-weight:600; letter-spacing:-0.005em;">Einladung annehmen &rarr;</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-- -->
+                    <a href="{{inviteUrl}}" style="display:inline-block; padding:13px 26px; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:15px; font-weight:600; letter-spacing:-0.005em; color:#ffffff; text-decoration:none; border-radius:10px; background-color:#0a0a0b;">
+                      Einladung annehmen &rarr;
+                    </a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback link -->
+              <div style="margin-top:24px; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:12px; line-height:1.55; color:rgba(10,10,11,0.55); letter-spacing:-0.005em;">
+                Falls der Button nicht funktioniert, &ouml;ffnen Sie diesen Link:<br>
+                <a href="{{inviteUrl}}" style="color:#0a0a0b; text-decoration:underline; text-underline-offset:2px; word-break:break-all;">{{inviteUrl}}</a>
+              </div>
+
+              <!-- Meta -->
+              <div style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(10,10,11,0.08); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:12px; line-height:1.55; color:rgba(10,10,11,0.55); letter-spacing:-0.005em;">
+                Diese Einladung l&auml;uft in {{expiresInDays}} Tagen ab. Falls Sie diese E-Mail unerwartet erhalten, k&ouml;nnen Sie sie ignorieren &mdash; es wird kein Konto erstellt.
+              </div>
+
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" class="container" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px; width:100%;">
+          <tr>
+            <td align="center" style="padding: 40px 24px 20px 24px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td style="padding-right:8px; vertical-align:middle;">
+                    <img src="https://caelex.eu/images/logo-black.png"
+                         width="18" height="18" alt=""
+                         style="display:block; width:18px; height:18px; border:0; opacity:0.55;">
+                  </td>
+                  <td style="vertical-align:middle; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:12px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:rgba(10,10,11,0.55); padding-right:10px;">
+                    Atlas
+                  </td>
+                  <td style="vertical-align:middle; color:rgba(10,10,11,0.22); font-size:13px; padding-right:10px;">
+                    &middot;
+                  </td>
+                  <td style="vertical-align:middle; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:12px; font-weight:400; color:rgba(10,10,11,0.55); letter-spacing:-0.005em;">
+                    by Caelex
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0 24px 12px 24px;">
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:12px; line-height:1.6; color:rgba(10,10,11,0.42); letter-spacing:-0.005em;">
+                Automatisch versendet. Bitte nicht auf diese Adresse antworten.<br>
+                Bei Fragen: <a href="mailto:hi@caelex.eu" style="color:rgba(10,10,11,0.55); text-decoration:underline; text-underline-offset:2px;">hi@caelex.eu</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 8px 24px 0 24px;">
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','Segoe UI',Arial,sans-serif; font-size:11px; color:rgba(10,10,11,0.35); letter-spacing:-0.005em;">
+                Caelex &middot;
+                <a href="https://caelex.eu" style="color:rgba(10,10,11,0.42); text-decoration:none;">caelex.eu</a> &middot;
+                <a href="https://caelex.eu/legal/impressum" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Impressum</a> &middot;
+                <a href="https://caelex.eu/legal/privacy" style="color:rgba(10,10,11,0.42); text-decoration:underline; text-underline-offset:2px;">Datenschutz</a>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
 </html>`;
 
 /**
- * Render the invitation email with all placeholders substituted. Returns
- * an HTML string ready to pass to Resend's `html` field. The matching
- * text alternative for clients that reject HTML is returned separately
- * so Resend can include both parts.
+ * Render the invitation email with all placeholders substituted.
+ * Returns an HTML string ready to pass to Resend's `html` field, a
+ * matching plain-text alternative for clients that reject HTML, and
+ * the subject line.
  */
 export function renderInvitationEmail(params: InvitationEmailParams): {
   subject: string;
@@ -126,8 +279,15 @@ export function renderInvitationEmail(params: InvitationEmailParams): {
 } {
   const safeOrg = escapeHtml(params.organizationName);
   const safeInviter = escapeHtml(params.inviterName);
-  const safeRecipient = escapeHtml(params.recipientEmail);
   const safeExpires = escapeHtml(String(params.expiresInDays));
+
+  // First-name greeting: when we get a usable first name, render
+  // "Hallo Anna,"; otherwise render a neutral "Hallo,". Implemented
+  // via a greeting-suffix placeholder so the template has a single
+  // substitution slot regardless of whether we have a name.
+  const firstName = firstNameFromEmail(params.recipientEmail);
+  const greetingSuffix = firstName ? ` ${escapeHtml(firstName)}` : "";
+
   const url = safeUrl(params.inviteUrl);
   // URL in attribute context: escape only `"` so we don't break the
   // attribute, but leave `&` intact so query strings survive.
@@ -137,26 +297,26 @@ export function renderInvitationEmail(params: InvitationEmailParams): {
 
   const html = TEMPLATE.replace(/\{\{organizationName\}\}/g, safeOrg)
     .replace(/\{\{inviterName\}\}/g, safeInviter)
-    .replace(/\{\{recipientEmail\}\}/g, safeRecipient)
     .replace(/\{\{expiresInDays\}\}/g, safeExpires)
-    // inviteUrl appears both inside href="" attributes and in body text.
-    // Using attribute-safe form everywhere is correct — & stays literal,
-    // " is encoded, which is valid inside text too.
+    .replace(/\{\{recipientFirstNameGreetingSuffix\}\}/g, greetingSuffix)
+    // inviteUrl appears both inside href="" attributes and in body
+    // text. Replace attribute form first (exact match of href="…"
+    // prevents double-substitution) then the remaining text forms.
     .replace(/href="\{\{inviteUrl\}\}"/g, `href="${urlAttr}"`)
     .replace(/\{\{inviteUrl\}\}/g, urlText);
 
-  const subject = `${params.organizationName} — Einladung zu Caelex ATLAS`;
+  const subject = `${params.organizationName} — Einladung zu ATLAS`;
 
   const text = [
-    `${params.inviterName} hat Sie zu ${params.organizationName} auf Caelex ATLAS eingeladen.`,
+    firstName ? `Hallo ${firstName},` : "Hallo,",
+    "",
+    `${params.inviterName} von ${params.organizationName} hat Sie zu Caelex ATLAS eingeladen — der durchsuchbaren Space-Law-Datenbank für Kanzleien.`,
     "",
     `Einladung annehmen: ${url}`,
     "",
-    `Diese Einladung wurde an ${params.recipientEmail} gesendet und ist ${params.expiresInDays} Tage gültig.`,
+    `Diese Einladung läuft in ${params.expiresInDays} Tagen ab. Falls Sie sie unerwartet erhalten, ignorieren Sie die E-Mail — es wird kein Konto erstellt.`,
     "",
-    "Falls Sie nicht erwartet haben, eingeladen zu werden, ignorieren Sie diese E-Mail — es wird kein Konto erstellt.",
-    "",
-    "— Caelex · hi@caelex.eu · https://caelex.eu",
+    "— Caelex ATLAS · hi@caelex.eu · https://caelex.eu",
   ].join("\n");
 
   return { subject, html, text };
