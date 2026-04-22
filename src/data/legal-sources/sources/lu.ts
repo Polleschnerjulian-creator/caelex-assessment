@@ -1016,10 +1016,95 @@ const MILITARY_LU: LegalSource[] = [
   },
 ];
 
+// ─── Foundational / Constitutional (1) ─────────────────────────────
+//
+// Added 2026-04-22. LU's legal dataset was already comprehensive
+// across the substantive regimes (Space Resources Act 2017 + Space
+// Activities Act 2020 + telecoms + export + NIS + GDPR + policy
+// docs), so the only material gap for parity with DE / FR is the
+// constitutional anchor. Other candidate additions (environmental
+// law for ground-segment siting, sanctions framework, implementing
+// règlements grand-ducaux under the two space acts) could not be
+// independently verified during this pass — Legilux + LSA block
+// automated source verification — and were deferred rather than
+// added on weaker evidence.
+
+const FOUNDATIONAL_LU: LegalSource[] = [
+  {
+    // Constitution — LU remains under the 1868 Constitution,
+    // continuously amended. The major 2022-2023 revision package
+    // (published as four distinct revisions, in force 1 July 2023)
+    // modernised the text but did NOT formally replace the 1868
+    // document — common misconception worth flagging in notes.
+    id: "LU-CONSTITUTION",
+    jurisdiction: "LU",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Constitution of the Grand Duchy of Luxembourg — Space-Relevant Articles",
+    title_local:
+      "Constitution du Grand-Duché de Luxembourg (du 17 octobre 1868, modifiée; dernière révision majeure entrée en vigueur 1.7.2023)",
+    date_enacted: "1868-10-17",
+    date_last_amended: "2023-07-01",
+    official_reference:
+      "Mémorial A n°23 du 22 octobre 1868; révision majeure par quatre lois constitutionnelles (Chapitres I à III + Chapitre IV) entrées en vigueur le 1er juillet 2023",
+    source_url:
+      "https://legilux.public.lu/eli/etat/leg/constitution/1868/10/17/n1/jo",
+    issuing_body: "Chambre des députés",
+    competent_authorities: ["LU-MAE", "LU-MECO"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "liability"],
+    key_provisions: [
+      {
+        section: "Art. 37",
+        title: "Treaty-making power",
+        summary:
+          "The Grand Duke negotiates and signs international treaties. Treaties affecting state sovereignty or binding obligations on individuals require approval by law of the Chamber of Deputies before ratification. This is how LU ratified the OST, Liability Convention, and Registration Convention, and how LU acceded to the Moon Agreement.",
+        complianceImplication:
+          "Space operators relying on LU's treaty commitments (e.g. registration under the Registration Convention) are relying on obligations that required Chamber approval — robust and parliament-backed, not executive-only commitments.",
+      },
+      {
+        section: "Art. 49bis",
+        title: "Delegation of sovereign powers to international institutions",
+        summary:
+          "« L'exercice d'attributions réservées par la Constitution aux pouvoirs législatif, exécutif et judiciaire peut être temporairement dévolu par traité à des institutions de droit international. » Constitutional basis for LU's transfer of certain competences to ESA and the EU — relevant for ESA Convention commitments and EU space-related regulations (EU Space Act when enacted).",
+      },
+      {
+        section: "Art. 32",
+        title: "Executive power of the Grand Duke",
+        summary:
+          "Executive power is vested in the Grand Duke. Implementing regulations (règlements grand-ducaux, RGDs) under the Space Resources Act 2017 and Space Activities Act 2020 are issued under this executive authority — which is why implementing detail can be added administratively without reopening the primary statute.",
+      },
+      {
+        section: "Chapter II (droits fondamentaux)",
+        title: "Fundamental rights — post-2023 revision",
+        summary:
+          "The 2022-2023 revision package substantially expanded the fundamental-rights chapter, including environmental protection as a state objective (relevant for launch-site environmental assessments) and explicit protection of personal data (relevant for EO data processing alongside the GDPR framework).",
+      },
+    ],
+    scope_description:
+      "Luxembourg's constitutional framework for space-relevant state action: treaty ratification (Art. 37), delegation of competences to ESA/EU (Art. 49bis), and executive authority to issue implementing RGDs under the primary space statutes (Art. 32). The 1868 Constitution has been extensively revised — most recently via the four constitutional laws that entered into force 1 July 2023 — but has not been formally replaced.",
+    related_sources: [
+      "LU-SPACE-RESOURCES-2017",
+      "LU-SPACE-ACTIVITIES-2020",
+      "LU-OST-RATIFICA",
+      "LU-LIABILITY-RATIFICA",
+      "LU-REGISTRATION-RATIFICA",
+    ],
+    notes: [
+      "Common misconception: the 2022-2023 changes are sometimes referred to as a « nouvelle Constitution de 2023 » — in formal terms they are revisions to the 1868 Constitution, not a replacement. The 1868 Constitution remains the numbered reference document.",
+      "Unlike Germany (federal with express Länder competences to navigate) or the USA (federal with state laws), Luxembourg's unitary-state structure means constitutional competence for space is concentrated at the national level — there is no sub-national regulatory layer to reconcile.",
+    ],
+    last_verified: "2026-04-22",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_LU: LegalSource[] = [
   ...TREATIES_LU,
+  ...FOUNDATIONAL_LU,
   ...PRIMARY_LEGISLATION_LU,
   ...IMPLEMENTING_REGULATIONS_LU,
   ...TELECOM_LU,
