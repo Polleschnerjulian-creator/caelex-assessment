@@ -30,6 +30,7 @@ import {
   ALL_AUTHORITIES,
   getAvailableJurisdictions,
 } from "@/data/legal-sources";
+import { AccountBanner } from "@/components/atlas/AccountBanner";
 
 // Computed inventory counts — derived from the same barrel exports the
 // rest of Atlas uses, so the settings stats never drift from reality.
@@ -460,9 +461,12 @@ export default function SettingsPage() {
       <h1 className="text-[24px] font-semibold tracking-tight text-[var(--atlas-text-primary)] mb-1">
         {t("atlas.settings")}
       </h1>
-      <p className="text-[13px] text-[var(--atlas-text-muted)] mb-8">
+      <p className="text-[13px] text-[var(--atlas-text-muted)] mb-6">
         {t("atlas.settings_desc")}
       </p>
+
+      {/* ─── Account banner (always visible) ─── */}
+      <AccountBanner />
 
       {/* ─── Tab Bar ─── */}
       <div className="flex items-center gap-1 mb-8 border-b border-[var(--atlas-border)]">
