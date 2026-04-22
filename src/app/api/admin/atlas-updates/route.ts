@@ -5,6 +5,8 @@ import { requirePlatformAdmin } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { logAuditEvent } from "@/lib/audit";
+import { dispatchSourceAmendment } from "@/lib/atlas/notify";
+import { getLegalSourceById } from "@/data/legal-sources";
 
 /**
  * GET   /api/admin/atlas-updates — List source checks for admin review
@@ -94,6 +96,26 @@ export async function PATCH(request: NextRequest) {
       },
       description: `Platform-admin ${parsed.data.action} source ${parsed.data.sourceId}`,
     });
+
+    // Fan out AtlasNotification rows to subscribers of this source
+    // and its containing jurisdiction — but ONLY on "reviewed"
+    // actions. A dismissed source change isn't something subscribers
+    // need to hear about (admin triaged it as noise). Fire-and-forget
+    // via `void` so an empty subscriber list or a write hiccup in
+    // the notifications table can never roll back the admin's
+    // review decision.
+    if (parsed.data.action === "reviewed") {
+      const source = getLegalSourceById(parsed.data.sourceId);
+      const sourceTitle =
+        source?.title_local ?? source?.title_en ?? parsed.data.sourceId;
+      void dispatchSourceAmendment({
+        sourceId: parsed.data.sourceId,
+        title: `${sourceTitle} — amendment detected`,
+        summary:
+          parsed.data.note?.trim() ||
+          `A change to ${sourceTitle} has been detected and reviewed. Check the source page for the diff and updated provisions.`,
+      });
+    }
 
     return NextResponse.json({ check: updated });
   } catch (err) {

@@ -40,6 +40,7 @@ import { getProfile, type JurisdictionCode } from "@/data/landing-rights";
 import { JurisdictionProfileView } from "@/components/atlas/landing-rights/JurisdictionProfileView";
 import JurisdictionExport from "@/components/atlas/JurisdictionExport";
 import { BookmarkButton } from "../../_components/BookmarkButton";
+import { WatchButton } from "@/components/atlas/WatchButton";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
@@ -479,6 +480,14 @@ export default function JurisdictionDetailPage({
                 : ""}
             </p>
             <div className="flex items-center gap-2">
+              {/* Watch this jurisdiction — opt into amendment alerts
+                  when an admin reviews a change to any source under
+                  this country code. See /atlas/alerts for the feed. */}
+              <WatchButton
+                targetType="JURISDICTION"
+                targetId={displayCode}
+                size="sm"
+              />
               <BookmarkButton
                 item={{
                   id: `jurisdiction:${displayCode}`,

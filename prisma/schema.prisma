@@ -126,6 +126,12 @@ model User {
   // ATLAS: per-user annotations on legal sources
   atlasAnnotations AtlasAnnotation[]
 
+  // ATLAS: alerts — subscriptions (what the user watches) and the
+  // notifications that subscription generates (what the user sees
+  // on /atlas/alerts).
+  atlasAlertSubscriptions AtlasAlertSubscription[]
+  atlasNotifications      AtlasNotification[]
+
   // Password reset tokens (C-4). One-to-many because a user can have
   // multiple outstanding requests (e.g. two tabs), though the
   // endpoint invalidates the prior token on each new request.
@@ -2711,6 +2717,12 @@ model Organization {
 
   // ATLAS: per-user annotations on legal sources (org-scoped for team queries)
   atlasAnnotations AtlasAnnotation[]
+
+  // ATLAS: per-user alert subscriptions and notifications, org-scoped
+  // so a team-wide audit log of who-subscribed-to-what stays within
+  // the firm's workspace.
+  atlasAlertSubscriptions AtlasAlertSubscription[]
+  atlasNotifications      AtlasNotification[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -8424,6 +8436,97 @@ model AtlasAnnotation {
   @@index([userId])
   @@index([organizationId])
   @@index([sourceId])
+}
+
+// ============================================
+// ATLAS: ALERTS (SUBSCRIPTIONS + NOTIFICATIONS)
+// ============================================
+//
+// Two-model design:
+//
+// AtlasAlertSubscription — "this user wants to be notified about
+//   changes to this target." Target is either a specific source
+//   (targetType=SOURCE, targetId = AtlasSourceCheck.sourceId) or
+//   an entire jurisdiction (targetType=JURISDICTION, targetId = ISO
+//   country code / "EU" / "INT"). User-scoped, unique per target
+//   so toggle is idempotent.
+//
+// AtlasNotification — a concrete notification the user sees in
+//   /atlas/alerts. Created by the dispatch helper (src/lib/atlas/
+//   notify.ts) whenever an admin approves an AtlasSourceCheck
+//   amendment or publishes an AtlasUpdate. Fan-out at dispatch
+//   time keeps the subscription list on the critical path small
+//   (nothing to join at read time).
+//
+// Data retention: notifications are soft-ephemeral — after ~90
+// days they can be hard-deleted by a retention cron. For now no
+// cleanup exists; adding one is a follow-up.
+
+enum AtlasAlertTargetType {
+  SOURCE
+  JURISDICTION
+}
+
+model AtlasAlertSubscription {
+  id             String               @id @default(cuid())
+  userId         String
+  organizationId String
+  targetType     AtlasAlertTargetType
+  targetId       String // sourceId for SOURCE, ISO code for JURISDICTION
+  createdAt      DateTime             @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // One subscription per (user, target) — toggle is idempotent.
+  @@unique([userId, targetType, targetId])
+  // Fan-out index: when an amendment fires for a given source /
+  // jurisdiction, the dispatch helper queries on (targetType, targetId)
+  // to enumerate subscribers.
+  @@index([targetType, targetId])
+  @@index([userId])
+  @@index([organizationId])
+}
+
+enum AtlasNotificationKind {
+  // An admin approved an AtlasSourceCheck amendment — the source's
+  // content has materially changed and subscribers to that source
+  // (and to its jurisdiction) get notified.
+  SOURCE_AMENDED
+
+  // An admin published an AtlasUpdate scoped to a jurisdiction —
+  // subscribers to that jurisdiction get notified.
+  JURISDICTION_UPDATE
+
+  // An admin published a general AtlasUpdate that's broadcast to
+  // every member of every org. No subscription required.
+  ADMIN_BROADCAST
+}
+
+model AtlasNotification {
+  id             String                @id @default(cuid())
+  userId         String
+  organizationId String
+  kind           AtlasNotificationKind
+  title          String // Short headline shown in the list
+  summary        String                @db.Text // 1-3 sentence body
+  // Origin of the notification — lets the UI deep-link back to
+  // either a source detail page (sources/[id]) or a jurisdiction
+  // page (jurisdictions/[code]). Kept as strings (not relations)
+  // because sources live in a static data file, not the DB.
+  targetType     String
+  targetId       String
+  sourceId       String? // optional: specific source that triggered
+
+  readAt    DateTime? // null = unread
+  createdAt DateTime  @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt]) // "unread count" + "unread list" queries
+  @@index([userId, createdAt]) // "latest N for this user"
+  @@index([createdAt]) // retention-cleanup cron
 }
 
 // ============================================
