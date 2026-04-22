@@ -4,6 +4,7 @@ import { getAllTerms } from "@/content/glossary/terms";
 import { getAllPosts } from "@/content/blog/posts";
 import { getAllGuides } from "@/content/guides/guides";
 import { PERSONAS } from "./for/[slug]/personas";
+import { COMPARISONS } from "./compare/[slug]/comparisons";
 
 // ============================================================================
 // SITEMAP CONFIGURATION
@@ -13,12 +14,10 @@ const baseUrl = "https://caelex.eu";
 
 // Dynamic content imports - these are used to generate sitemap entries
 
-// Comparison pages
-const comparisonPages = [
-  { slug: "space-compliance-consultants", updatedAt: "2025-01-15" },
-  { slug: "manual-compliance", updatedAt: "2025-01-15" },
-  { slug: "spreadsheet-compliance", updatedAt: "2025-01-15" },
-];
+// Comparison pages — single source of truth is the COMPARISONS array
+// imported from /compare/[slug]/comparisons.ts; the sitemap reflects
+// whatever lives there so adding a comparison never means touching
+// this file twice.
 
 // ============================================================================
 // GENERATE SITEMAP
@@ -147,12 +146,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  // Comparison pages
-  const comparePages: MetadataRoute.Sitemap = comparisonPages.map((page) => ({
-    url: `${baseUrl}/compare/${page.slug}`,
-    lastModified: page.updatedAt,
+  // Comparison pages — generated from the COMPARISONS data file so
+  // the sitemap and the actual routes can never drift apart. Priority
+  // 0.85 because "Caelex vs X" is a high-intent LLM-query target.
+  const comparePages: MetadataRoute.Sitemap = COMPARISONS.map((c) => ({
+    url: `${baseUrl}/compare/${c.slug}`,
+    lastModified: new Date("2026-04-22"),
     changeFrequency: "monthly" as const,
-    priority: 0.7,
+    priority: 0.85,
   }));
 
   // Resource pages
