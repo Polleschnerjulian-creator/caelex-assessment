@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual, createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { summariseDiff } from "@/lib/atlas/diff-summarizer.server";
 
 // Import all legal sources
 import {
@@ -71,6 +72,11 @@ const FETCH_CONCURRENCY = 8;
  *  a hostile redirect target serving a huge response. */
 const MAX_BODY_BYTES = 5_000_000; // 5 MB
 
+/** Cap the per-source content snapshot we persist to Postgres. Full
+ *  5 MB * ~400 sources would balloon the table; 200 KB keeps the whole
+ *  store under ~80 MB while preserving enough text for Claude to diff. */
+const MAX_SNAPSHOT_CHARS = 200_000;
+
 function isValidCronSecret(header: string, secret: string): boolean {
   try {
     const headerBuffer = Buffer.from(header);
@@ -138,12 +144,19 @@ export async function GET(request: Request) {
 
     // M22: fetch existing rows for the batch only (vs. the whole table)
     // so we don't transfer all 350+ hashes for 50 records we'll touch.
+    // currentContent is pulled so we can diff previous-vs-new via the
+    // summariser when a change is detected (Phase 1 amendment-loop).
     const batchIds = batch.map((s) => s.id);
     const existingMap = new Map(
       (
         await prisma.atlasSourceCheck.findMany({
           where: { sourceId: { in: batchIds } },
-          select: { sourceId: true, contentHash: true, previousHash: true },
+          select: {
+            sourceId: true,
+            contentHash: true,
+            previousHash: true,
+            currentContent: true,
+          },
         })
       ).map((r) => [r.sourceId, r]),
     );
@@ -254,16 +267,18 @@ export async function GET(request: Request) {
 
         const content = await readBodyBounded(response);
         const newHash = hashContent(content);
+        const newSnapshot = content.slice(0, MAX_SNAPSHOT_CHARS);
 
         const existing = existingMap.get(source.id);
         const previousHash = existing?.contentHash ?? null;
+        const previousContent = existing?.currentContent ?? null;
         const isChanged = previousHash !== null && previousHash !== newHash;
 
         // M20: each real content change is also appended to the
         // AtlasSourceCheckHistory table so we never lose prior versions.
         // AtlasSourceCheck.previousHash only holds the most recent prior
         // hash; the history row is the append-only audit trail.
-        await prisma.$transaction([
+        const [, historyRow] = await prisma.$transaction([
           prisma.atlasSourceCheck.upsert({
             where: { sourceId: source.id },
             create: {
@@ -272,6 +287,7 @@ export async function GET(request: Request) {
               sourceUrl: source.source_url,
               contentHash: newHash,
               previousHash: null,
+              currentContent: newSnapshot,
               status: "UNCHANGED",
               httpStatus,
               lastChecked: new Date(),
@@ -279,6 +295,7 @@ export async function GET(request: Request) {
             update: {
               contentHash: newHash,
               previousHash: isChanged ? previousHash : existing?.previousHash,
+              currentContent: newSnapshot,
               status: isChanged ? "CHANGED" : "UNCHANGED",
               httpStatus,
               errorMessage: null,
@@ -300,6 +317,39 @@ export async function GET(request: Request) {
               ]
             : []),
         ]);
+
+        // When a change is detected AND we had a previous snapshot to
+        // compare against, ask Claude to summarise the diff. Updates the
+        // history row asynchronously — a summariser failure or missing
+        // API key does not fail the cron, it just leaves the row without
+        // a summary for admins to review manually.
+        if (isChanged && historyRow && previousContent) {
+          const summary = await summariseDiff({
+            sourceId: source.id,
+            jurisdiction: source.jurisdiction,
+            sourceUrl: source.source_url,
+            previousContent,
+            newContent: newSnapshot,
+          });
+          if (summary) {
+            await prisma.atlasSourceCheckHistory.update({
+              where: { id: historyRow.id },
+              data: {
+                diffSummaryAi: summary.summary,
+                diffKeyChanges: summary.keyChanges,
+                // Auto-reject cosmetic-only diffs so admins only see
+                // real legal changes in their review queue.
+                reviewStatus: summary.isCosmetic ? "REJECTED" : "PENDING",
+                ...(summary.isCosmetic
+                  ? {
+                      reviewNote: "Auto-rejected: cosmetic diff only.",
+                      reviewedAt: new Date(),
+                    }
+                  : {}),
+              },
+            });
+          }
+        }
 
         return isChanged ? "changed" : "unchanged";
       } catch (err) {

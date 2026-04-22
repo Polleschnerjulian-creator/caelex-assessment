@@ -8203,22 +8203,26 @@ model OntologyVersion {
 // ─── ATLAS Source Monitoring ────────────────────────────────────────
 
 model AtlasSourceCheck {
-  id           String           @id @default(cuid())
-  sourceId     String // Legal source ID (e.g., "DE-SATDSIG-2007")
-  jurisdiction String // Country code (e.g., "DE")
-  sourceUrl    String // URL that was checked
-  contentHash  String? // SHA-256 hash of fetched content
-  previousHash String? // Previous hash for comparison
-  status       AtlasCheckStatus @default(PENDING)
-  httpStatus   Int? // HTTP status code from fetch
-  errorMessage String? // Error details if fetch failed
-  lastChecked  DateTime         @default(now())
-  lastChanged  DateTime? // When the content hash last changed
-  reviewedAt   DateTime? // When an admin reviewed the change
-  reviewedBy   String? // Admin user ID who reviewed
-  reviewNote   String? // Admin notes on the change
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id             String           @id @default(cuid())
+  sourceId       String // Legal source ID (e.g., "DE-SATDSIG-2007")
+  jurisdiction   String // Country code (e.g., "DE")
+  sourceUrl      String // URL that was checked
+  contentHash    String? // SHA-256 hash of fetched content
+  previousHash   String? // Previous hash for comparison
+  /// Latest fetched body, truncated to ~200 KB. Retained so that when the
+  /// next fetch differs we can diff current-vs-previous for the Claude
+  /// summary without re-fetching the original URL again.
+  currentContent String? // @db.Text
+  status         AtlasCheckStatus @default(PENDING)
+  httpStatus     Int? // HTTP status code from fetch
+  errorMessage   String? // Error details if fetch failed
+  lastChecked    DateTime         @default(now())
+  lastChanged    DateTime? // When the content hash last changed
+  reviewedAt     DateTime? // When an admin reviewed the change
+  reviewedBy     String? // Admin user ID who reviewed
+  reviewNote     String? // Admin notes on the change
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@unique([sourceId])
   @@index([status])
@@ -8262,8 +8266,31 @@ model AtlasSourceCheckHistory {
   httpStatus   Int?
   detectedAt   DateTime @default(now())
 
+  /// Claude-generated 1-2 sentence summary of what changed. Written
+  /// asynchronously after the check; null until the summariser runs.
+  /// "COSMETIC_ONLY" signals no substantive legal change.
+  diffSummaryAi   String?
+  /// Optional structured tags like ["article-added", "date-change"].
+  diffKeyChanges  Json?
+  /// Review state for this specific amendment candidate.
+  reviewStatus    AtlasAmendmentReviewStatus @default(PENDING)
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewNote      String?
+  /// Flag set by the reviewer when an amendment has been written back
+  /// into the static LegalSource.amendments[] array (via PR/data-file
+  /// edit). Lets the admin queue mark entries as 'already integrated'.
+  integratedAt    DateTime?
+
   @@index([sourceId, detectedAt])
   @@index([jurisdiction, detectedAt])
+  @@index([reviewStatus, detectedAt])
+}
+
+enum AtlasAmendmentReviewStatus {
+  PENDING // Awaiting admin review
+  APPROVED // Admin confirmed a real amendment
+  REJECTED // Admin dismissed as noise/false positive
 }
 
 // ─── ATLAS Bookmarks (per-user) ────────────────────────────────────
