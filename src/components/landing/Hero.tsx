@@ -95,17 +95,10 @@ export default function Hero() {
             {/* Left: Headline */}
             <div>
               <div className="font-medium tracking-[-0.03em] leading-[1.05]">
-                <span
-                  className="block text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/80 mb-1"
-                  aria-hidden="true"
-                >
-                  The World&apos;s First
-                </span>
-                <h1 className="text-[clamp(2.5rem,6vw,5rem)] text-white">
-                  <span className="sr-only">The World&apos;s First </span>
-                  Space Compliance
+                <h1 className="text-[clamp(2rem,4.8vw,3.75rem)] text-white">
+                  The regulatory operating system
                   <br />
-                  OS.
+                  for the orbital economy.
                 </h1>
               </div>
             </div>

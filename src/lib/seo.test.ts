@@ -18,7 +18,7 @@ describe("seo", () => {
     it("has required fields", () => {
       expect(siteConfig.name).toBe("Caelex");
       expect(siteConfig.url).toBe("https://caelex.eu");
-      expect(siteConfig.tagline).toBe("Space Compliance OS");
+      expect(siteConfig.tagline).toBe("Regulatory OS for the orbital economy");
       expect(siteConfig.ogImage).toBeDefined();
       expect(siteConfig.twitterHandle).toBeDefined();
       expect(siteConfig.email).toBeDefined();
@@ -33,7 +33,9 @@ describe("seo", () => {
         title: "Pricing",
         description: "Our plans",
       });
-      expect(meta.title).toBe("Pricing | Caelex — Space Compliance OS");
+      expect(meta.title).toBe(
+        "Pricing | Caelex — Regulatory OS for the orbital economy",
+      );
     });
 
     it("generates correct title when title matches site name", () => {
@@ -41,7 +43,7 @@ describe("seo", () => {
         title: "Caelex",
         description: "The platform",
       });
-      expect(meta.title).toBe("Caelex — Space Compliance OS");
+      expect(meta.title).toBe("Caelex — Regulatory OS for the orbital economy");
     });
 
     it("sets canonical URL from path", () => {

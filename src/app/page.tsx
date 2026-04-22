@@ -13,8 +13,8 @@ export default function Home() {
     <>
       <SoftwareApplicationJsonLd />
       <VideoObjectJsonLd
-        name="Caelex Space Compliance OS"
-        description="The world's first space compliance operating system. Navigate EU Space Act, NIS2, and national space laws."
+        name="Caelex — Regulatory OS for the orbital economy"
+        description="The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws."
         thumbnailUrl="https://caelex.eu/og-image.png"
         uploadDate="2026-01-01"
         contentUrl="https://caelex.eu/videos/hero-bg.mp4"

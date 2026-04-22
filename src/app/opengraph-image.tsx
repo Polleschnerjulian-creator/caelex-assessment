@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Caelex — Space Compliance OS";
+export const alt = "Caelex — Regulatory OS for the orbital economy";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -43,14 +43,16 @@ export default async function Image() {
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div
           style={{
-            fontSize: "72px",
+            fontSize: "56px",
             fontWeight: 600,
             color: "#ffffff",
             letterSpacing: "-0.03em",
             lineHeight: 1.05,
           }}
         >
-          Space Compliance OS.
+          The regulatory operating system
+          <br />
+          for the orbital economy.
         </div>
         <div
           style={{

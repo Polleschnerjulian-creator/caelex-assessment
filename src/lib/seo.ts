@@ -6,9 +6,9 @@ import { Metadata } from "next";
 
 export const siteConfig = {
   name: "Caelex",
-  tagline: "Space Compliance OS",
+  tagline: "Regulatory OS for the orbital economy",
   description:
-    "The world's first space compliance OS. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules.",
+    "The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules.",
   url: "https://caelex.eu",
   ogImage: "https://caelex.eu/og-image.png",
   twitterHandle: "@caboracaelex",
@@ -117,7 +117,7 @@ export const pageMetadata = {
   home: generateMetadata({
     title: "Caelex",
     description:
-      "The world's first space compliance OS. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules and AI-powered guidance.",
+      "The regulatory operating system for the orbital economy. Navigate EU Space Act, NIS2, and national space laws across 10+ jurisdictions with 12 compliance modules and AI-powered guidance.",
     path: "/",
     keywords: [
       "space compliance",

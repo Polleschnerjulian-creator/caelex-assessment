@@ -84,7 +84,7 @@ export default function LinkedInBannerPage() {
               lineHeight: 1,
             }}
           >
-            Space Compliance OS.
+            Regulatory OS for the orbital economy.
           </span>
 
           {/* Domain — bottom right */}
