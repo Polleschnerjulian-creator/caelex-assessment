@@ -28,6 +28,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { format, toZonedTime } from "date-fns-tz";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import {
@@ -286,10 +287,26 @@ export async function POST(request: NextRequest) {
         { isolationLevel: "Serializable" },
       );
     } catch (err) {
-      if (err instanceof SlotUnavailableError) {
+      // Two paths surface as the same user-facing conflict:
+      //   1. Our sentinel — we found a conflicting booking inside the tx
+      //      and aborted.
+      //   2. Postgres serialization failure (Prisma P2034) — Postgres
+      //      itself detected a concurrent write that would violate
+      //      serializability. This is the whole point of using
+      //      Serializable isolation, so we must translate it to a 409
+      //      instead of letting it bubble up as a 500.
+      const isSlotRace =
+        err instanceof SlotUnavailableError ||
+        (err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2034");
+      if (isSlotRace) {
         logger.warn("Atlas access slot taken during commit", {
           accessRequestId: accessRequest.id,
           scheduledAt: scheduledAt.toISOString(),
+          prismaCode:
+            err instanceof Prisma.PrismaClientKnownRequestError
+              ? err.code
+              : undefined,
         });
         return NextResponse.json(
           {

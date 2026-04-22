@@ -100,7 +100,15 @@ export async function POST(request: Request) {
   const email = parsed.data.email;
 
   // Require a configured app URL; silent fallback to "" produced a broken link
-  const appUrl = process.env.NEXTAUTH_URL || process.env.AUTH_URL;
+  // Strip any trailing slash — otherwise `${appUrl}/accept-invite`
+  // would produce a double-slash URL like "https://caelex.eu//accept-invite"
+  // if NEXTAUTH_URL is set with one. Most proxies normalize it, but some
+  // email clients flag double-slash URLs as suspicious.
+  const appUrl = (
+    process.env.NEXTAUTH_URL ||
+    process.env.AUTH_URL ||
+    ""
+  ).replace(/\/+$/, "");
   if (!appUrl) {
     logger.error("Atlas team invite: no NEXTAUTH_URL / AUTH_URL configured");
     return NextResponse.json(

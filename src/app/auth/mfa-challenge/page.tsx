@@ -331,10 +331,13 @@ function MfaChallengeContent() {
           </div>
         </div>
 
-        {/* Back to Login */}
+        {/* Back to Login — brand-aware. If the user was heading for
+            /atlas-anything, send them back to the ATLAS login; otherwise
+            the normal Caelex /login. Derived from callbackUrl so the
+            two brand flows don't cross. */}
         <div className="mt-6 text-center">
           <a
-            href="/login"
+            href={callbackUrl.startsWith("/atlas") ? "/atlas-login" : "/login"}
             className="inline-flex items-center gap-1.5 text-small text-slate-400 dark:text-white/25
               hover:text-slate-600 dark:hover:text-white/50 transition-colors duration-200"
           >
