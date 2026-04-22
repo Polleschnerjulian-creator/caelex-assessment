@@ -431,7 +431,7 @@ function SignupForm() {
       </button>
 
       <p className={styles.signinHint}>
-        Already have an account? <Link href="/login">Sign in</Link>
+        Already have an account? <Link href="/atlas-login">Sign in</Link>
       </p>
     </form>
   );

@@ -175,7 +175,7 @@ export default function AtlasForgotPasswordPage() {
         <div className={styles.center}>
           <div className={styles.panel}>
             <div className={styles.eyebrow}>
-              <Link href="/login" className={styles.backLink}>
+              <Link href="/atlas-login" className={styles.backLink}>
                 <span className={styles.backLinkIcon} aria-hidden="true">
                   <ArrowLeft size={14} strokeWidth={2} />
                 </span>

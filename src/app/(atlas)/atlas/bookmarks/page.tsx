@@ -39,7 +39,7 @@ export default function BookmarksPage() {
                 <Laptop size={11} className="text-amber-500" />
                 Stored in this browser only.{" "}
                 <Link
-                  href="/login"
+                  href="/atlas-login"
                   className="underline hover:text-[var(--atlas-text-primary)]"
                 >
                   Sign in

@@ -146,7 +146,7 @@ function AcceptInviteInner() {
       email: info.email,
       callbackUrl: `/accept-invite?token=${token}`,
     });
-    router.push(`/login?${qs.toString()}`);
+    router.push(`/atlas-login?${qs.toString()}`);
   };
 
   return (

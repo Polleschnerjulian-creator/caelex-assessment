@@ -34,7 +34,10 @@ export default async function AtlasLayout({
   // accept flow without being signed in first.
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login?callbackUrl=%2Fatlas");
+    // ATLAS gets its own dark-stage login — /login is the normal
+    // Caelex compliance-platform sign-in and must not be used here,
+    // otherwise ATLAS prospects land on a different brand experience.
+    redirect("/atlas-login?callbackUrl=%2Fatlas");
   }
 
   // Membership check — a user with an account but no active org

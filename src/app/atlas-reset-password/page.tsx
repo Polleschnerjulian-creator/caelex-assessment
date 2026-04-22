@@ -196,7 +196,7 @@ function ResetForm() {
           You can now sign in to ATLAS with your new password.
         </p>
         <div style={{ textAlign: "center" }}>
-          <Link href="/login" className={styles.successCTA}>
+          <Link href="/atlas-login" className={styles.successCTA}>
             Continue to sign in →
           </Link>
         </div>
@@ -343,7 +343,7 @@ export default function AtlasResetPasswordPage() {
         <div className={styles.center}>
           <div className={styles.panel}>
             <div className={styles.eyebrow}>
-              <Link href="/login" className={styles.backLink}>
+              <Link href="/atlas-login" className={styles.backLink}>
                 <span className={styles.backLinkIcon} aria-hidden="true">
                   <ArrowLeft size={14} strokeWidth={2} />
                 </span>
