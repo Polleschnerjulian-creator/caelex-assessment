@@ -290,8 +290,9 @@ function LoginForm() {
       </button>
 
       <p className={styles.tiny}>
-        Don&rsquo;t have an account?{" "}
-        <Link href="/atlas-signup">Create account</Link>
+        Invited to a firm? <Link href="/atlas-signup">Redeem your invite</Link>
+        <br />
+        New to ATLAS? <Link href="/atlas-access">Request access</Link>
         <br />
         By continuing you agree to our <Link href="/legal/terms">
           Terms

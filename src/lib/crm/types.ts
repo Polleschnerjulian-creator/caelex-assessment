@@ -253,5 +253,6 @@ export interface AutoLinkInput {
     | "booking"
     | "newsletter"
     | "signup"
-    | "manual";
+    | "manual"
+    | "atlas_access";
 }

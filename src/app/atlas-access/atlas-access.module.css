@@ -1,0 +1,933 @@
+/* ==============================================================
+   /atlas-access — same dark stage + bars as /login, /atlas-signup
+   and /atlas-forgot-password, but with a two-column layout where
+   the left column carries the pitch + calendar/slot picker and
+   the right column carries the booking form card.
+
+   The form is intentionally Calendly-like but fully in-house so the
+   UX, branding, and CRM wiring are owned end-to-end (instead of an
+   embedded third-party widget that breaks the dark aesthetic).
+   ============================================================== */
+
+.root {
+  --black: #000000;
+  --ink: #0a0a0b;
+  --text: #f5f5f4;
+  --text-mute: rgba(245, 245, 244, 0.55);
+  --text-dim: rgba(245, 245, 244, 0.35);
+  --card-bg: rgba(10, 10, 11, 0.62);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --chip-bg: rgba(255, 255, 255, 0.04);
+  --chip-border: rgba(255, 255, 255, 0.1);
+  --chip-active-bg: #f5f5f4;
+  --chip-active-fg: #000000;
+  --accent: #6ee7b7;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", "Inter", system-ui, sans-serif;
+
+  font-family: var(--font-sans);
+  color: var(--text);
+  min-height: 100vh;
+  position: relative;
+  background: var(--black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+/* ---------- Stage (shared atmosphere) ---------- */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 140% 100% at 20% 110%,
+    #1e1e21 0%,
+    #151517 28%,
+    #0c0c0e 55%,
+    var(--ink) 80%,
+    var(--black) 100%
+  );
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      1px 1px at 12% 20%,
+      rgba(255, 255, 255, 0.7),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 37% 11%,
+      rgba(255, 255, 255, 0.45),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.2px 1.2px at 58% 25%,
+      rgba(255, 255, 255, 0.75),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 72% 8%,
+      rgba(255, 255, 255, 0.4),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 85% 18%,
+      rgba(255, 255, 255, 0.55),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 93% 35%,
+      rgba(255, 255, 255, 0.45),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.2px 1.2px at 8% 40%,
+      rgba(255, 255, 255, 0.6),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 22% 55%,
+      rgba(255, 255, 255, 0.3),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 45% 42%,
+      rgba(255, 255, 255, 0.5),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 65% 48%,
+      rgba(255, 255, 255, 0.4),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 88% 55%,
+      rgba(255, 255, 255, 0.6),
+      transparent 55%
+    );
+  opacity: 0.7;
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 82%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 82%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.bar {
+  position: absolute;
+  width: var(--w, 1.5px);
+  height: var(--h, 40%);
+  top: var(--t, 30%);
+  left: var(--l, 0%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 12%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.08) 88%,
+    transparent 100%
+  );
+  filter: blur(0.35px);
+  box-shadow:
+    0 0 10px 1px rgba(255, 255, 255, 0.18),
+    0 0 28px 3px rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform-origin: center center;
+  animation:
+    barLife var(--life, 10s) ease-in-out var(--delay, 0s) infinite,
+    barMotion var(--dur, 5s) ease-in-out var(--delay, 0s) infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes barLife {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  8% {
+    opacity: calc(var(--o, 0.5) * 0.35);
+  }
+  20% {
+    opacity: var(--o, 0.5);
+  }
+  45% {
+    opacity: calc(var(--o, 0.5) * 0.5);
+  }
+  65% {
+    opacity: var(--o, 0.5);
+  }
+  92% {
+    opacity: calc(var(--o, 0.5) * 0.2);
+  }
+}
+
+@keyframes barMotion {
+  0%,
+  100% {
+    transform: scaleY(0.7);
+  }
+  30% {
+    transform: scaleY(1.15);
+  }
+  55% {
+    transform: scaleY(0.85);
+  }
+  80% {
+    transform: scaleY(1.2);
+  }
+}
+
+.slats {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0) 60px,
+      rgba(255, 255, 255, 0.035) 60px,
+      rgba(255, 255, 255, 0.035) 120px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0) 59px,
+      rgba(255, 255, 255, 0.1) 60px,
+      rgba(255, 255, 255, 0) 61px
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 85% at 50% 55%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* ---------- Layout ---------- */
+.content {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 40px 48px;
+}
+
+.brandLockup {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  text-decoration: none;
+  justify-self: start;
+  line-height: 1;
+  opacity: 0.92;
+  transition: opacity 0.15s ease;
+}
+.brandLockup:hover {
+  opacity: 1;
+}
+.brandLockup img {
+  display: block;
+}
+
+.center {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 72px;
+  align-items: start;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+/* ---------- Left column: pitch + calendar ---------- */
+.pitch {
+  max-width: 560px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 0 0 20px 0;
+}
+.eyebrowDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(110, 231, 183, 0.6);
+}
+
+.pitch h1 {
+  font-weight: 300;
+  font-size: clamp(44px, 5.2vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin: 0 0 22px 0;
+  color: var(--text);
+}
+.pitch p {
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin: 0 0 32px 0;
+  max-width: 480px;
+}
+
+.bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 40px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+}
+.bulletIcon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+}
+.bullet strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ---------- Calendar section ---------- */
+.calendar {
+  margin-top: 40px;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.calendarTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.calendarLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.calendarMonth {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+.tzChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+}
+
+.dateRow {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scroll-behavior: smooth;
+}
+.dateRow::-webkit-scrollbar {
+  height: 6px;
+}
+.dateRow::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.dateCard {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 82px;
+  padding: 14px 16px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-mute);
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease,
+    transform 0.08s ease;
+}
+.dateCard:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text);
+}
+.dateCard[data-active="true"] {
+  background: var(--chip-active-bg);
+  color: var(--chip-active-fg);
+  border-color: var(--chip-active-bg);
+}
+.dateCard[data-active="true"] .dateDay {
+  color: var(--chip-active-fg);
+}
+.dateCard[data-active="true"] .dateDow {
+  color: rgba(0, 0, 0, 0.6);
+}
+.dateCard[data-active="true"] .dateMonth {
+  color: rgba(0, 0, 0, 0.55);
+}
+.dateCard:active {
+  transform: translateY(1px);
+}
+.dateDow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.dateDay {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0;
+}
+.dateMonth {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease,
+    transform 0.08s ease;
+}
+.slot:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+.slot[data-active="true"] {
+  background: var(--chip-active-bg);
+  color: var(--chip-active-fg);
+  border-color: var(--chip-active-bg);
+}
+.slot:active {
+  transform: translateY(1px);
+}
+
+/* ---------- Right column: form card ---------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 32px;
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 20px 60px -20px rgba(0, 0, 0, 0.6);
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: 0;
+  width: 100%;
+  position: sticky;
+  top: 28px;
+}
+
+.card h2 {
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px 0;
+  color: var(--text);
+}
+.kicker {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin: 0 0 22px 0;
+}
+
+.slotSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--chip-border);
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 22px;
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: -0.005em;
+  line-height: 1.45;
+}
+.slotSummary[data-filled="true"] {
+  border-style: solid;
+  border-color: rgba(110, 231, 183, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--text);
+}
+.slotSummaryIcon {
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+.slotSummary[data-filled="true"] .slotSummaryIcon {
+  color: var(--accent);
+}
+.slotSummaryBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.slotSummaryLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.slotSummary[data-filled="true"] .slotSummaryLabel {
+  color: var(--accent);
+}
+.slotSummaryValue {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.slotSummary[data-filled="true"] .slotSummaryValue {
+  color: var(--text);
+  font-weight: 500;
+}
+.slotClear {
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.12s ease;
+}
+.slotClear:hover {
+  color: var(--text);
+}
+
+.field {
+  margin-bottom: 14px;
+}
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+}
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(245,245,244,0.55)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+  cursor: pointer;
+}
+.field textarea {
+  min-height: 86px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.fieldRow .field {
+  margin-bottom: 0;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #f5f5f4;
+  color: var(--black);
+  border: 1px solid #f5f5f4;
+  border-radius: 10px;
+  padding: 13px 18px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    background 0.12s ease,
+    opacity 0.12s ease;
+  margin-top: 20px;
+}
+.btn:hover:not(:disabled) {
+  background: #ffffff;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn .arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.btn:hover:not(:disabled) .arrow {
+  transform: translateX(3px);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: 13px;
+  color: #fecaca;
+}
+.errorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+}
+
+.fineprint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 18px 0 0 0;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+.fineprint a {
+  color: var(--text-mute);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.fineprint a:hover {
+  color: var(--text);
+}
+
+/* ---------- Success state ---------- */
+.successCard {
+  text-align: center;
+  padding: 36px 32px;
+}
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 22px auto;
+  color: var(--accent);
+}
+.successCard h2 {
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px 0;
+  color: var(--text);
+}
+.successCard p {
+  font-size: 14px;
+  color: var(--text-mute);
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  margin: 0 0 18px 0;
+}
+.successSlot {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 20px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.successSlotLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.successSlotValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.successActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+.successActions a,
+.successActions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mute);
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+.successActions a:hover,
+.successActions button:hover {
+  color: var(--text);
+}
+
+/* ---------- Product lockup (footer) ---------- */
+.productLockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text);
+}
+.caelexMark {
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+.atlasName {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.attribution {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+  margin-right: 2px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1040px) {
+  .center {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .card {
+    margin-left: 0;
+    max-width: 100%;
+    position: static;
+  }
+  .pitch {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .content {
+    padding: 28px 22px;
+  }
+  .center {
+    padding: 24px 0;
+    gap: 36px;
+  }
+  .pitch h1 {
+    font-size: clamp(36px, 9vw, 48px);
+  }
+  .card {
+    padding: 24px;
+  }
+  .slotGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
