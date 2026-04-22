@@ -9,22 +9,13 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { renderInvitationEmail } from "@/lib/email/invitation";
 
 export const runtime = "nodejs";
 
-/**
- * Escape untrusted strings before they land in an HTML email body.
- * Closes the stored-XSS / phishing-template injection vector in
- * invitation mails (H3).
- */
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+/** Invitation tokens live 14 days — mirrors createInvitation(). Keep in
+ *  sync when changing expiry logic in organization-service.ts. */
+const INVITE_EXPIRY_DAYS = 14;
 
 const InviteSchema = z.object({
   email: z.string().email().max(254), // RFC 5321 maximum
@@ -125,35 +116,35 @@ export async function POST(request: Request) {
       atlas.userId,
     );
 
-    const inviteUrl = `${appUrl}/atlas-invite/${invitation.token}`;
+    // New canonical accept URL — query-param based, lives at
+    // /accept-invite. The old /atlas-invite/[token] path is kept as a
+    // redirect shim for any invitations already in flight.
+    const inviteUrl = `${appUrl}/accept-invite?token=${encodeURIComponent(invitation.token)}`;
 
-    // H3: escape every untrusted field that lands in the HTML body.
-    // `atlas.userName`, `atlas.userEmail`, `atlas.organizationName` all come
-    // from the DB and can legally contain HTML-special characters.
-    const safeInviterName = escapeHtml(atlas.userName || atlas.userEmail || "");
-    const safeOrg = escapeHtml(atlas.organizationName);
-
-    // Send invitation email via Resend (non-blocking)
+    // Send invitation email via Resend (non-blocking — a failed email
+    // doesn't roll back the invitation; owner can resend from the UI).
+    // Template + placeholder substitution + HTML-escaping all happen
+    // inside renderInvitationEmail() so this call site stays minimal.
     try {
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
+      const { subject, html, text } = renderInvitationEmail({
+        organizationName: atlas.organizationName,
+        inviterName: atlas.userName || atlas.userEmail || "Ein Kollege",
+        inviteUrl,
+        recipientEmail: email,
+        expiresInDays: INVITE_EXPIRY_DAYS,
+      });
       await resend.emails.send({
-        from: "ATLAS <noreply@caelex.eu>",
+        // Sender name per brand guidelines ("Caelex ATLAS"), sender
+        // address noreply@caelex.eu (verified domain). Replies route
+        // to hi@caelex.eu so the shared inbox catches human questions.
+        from: "Caelex ATLAS <noreply@caelex.eu>",
         to: email,
-        subject: `${atlas.organizationName} \u2013 Einladung zu ATLAS`,
-        html: `
-          <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto;">
-            <h2 style="font-size: 18px; color: #111;">ATLAS Einladung</h2>
-            <p style="color: #555; font-size: 14px; line-height: 1.6;">
-              Sie wurden von <strong>${safeInviterName}</strong> eingeladen,
-              dem Team von <strong>${safeOrg}</strong> auf ATLAS beizutreten.
-            </p>
-            <a href="${inviteUrl}" style="display: inline-block; padding: 12px 24px; background: #111; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; margin: 16px 0;">
-              Einladung annehmen
-            </a>
-            <p style="color: #999; font-size: 12px;">Dieser Link ist 7 Tage g\u00fcltig.</p>
-          </div>
-        `,
+        replyTo: "hi@caelex.eu",
+        subject,
+        html,
+        text,
       });
     } catch (emailErr) {
       logger.warn("Atlas team invite email failed (non-blocking)", {

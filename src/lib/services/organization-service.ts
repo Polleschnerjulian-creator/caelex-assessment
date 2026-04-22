@@ -549,9 +549,11 @@ export async function createInvitation(
   // Generate secure token
   const token = crypto.randomBytes(32).toString("hex");
 
-  // Set expiration to 7 days from now
+  // Set expiration to 14 days from now — gives invitees a full two-week
+  // window to act (holidays, slow approvals, forwarded inboxes). Prior
+  // 7-day window ran out too often for operators' onboarding cadence.
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  expiresAt.setDate(expiresAt.getDate() + 14);
 
   const invitation = await prisma.organizationInvitation.create({
     data: {
