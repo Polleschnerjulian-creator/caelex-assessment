@@ -217,7 +217,7 @@ function LoginForm() {
       <div className={styles.field}>
         <label className={styles.fieldLabel} htmlFor="login-password">
           <span>Password</span>
-          <Link href="/forgot-password">Forgot password?</Link>
+          <Link href="/atlas-forgot-password">Forgot password?</Link>
         </label>
         <div className={styles.passwordWrap}>
           <input
