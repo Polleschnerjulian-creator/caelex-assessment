@@ -1,11 +1,6 @@
-// ⚠️  TEMPORARY: /atlas is publicly accessible without login.
-// Reason: emailed external reviewer — they won't go through login setup.
-// Revert by uncommenting the auth guard below. Do not leave this open.
-// Opened: 2026-04-20 — close again within a few days.
-
-// import { redirect } from "next/navigation";
-// import { auth } from "@/lib/auth";
-// import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
@@ -33,27 +28,31 @@ export default async function AtlasLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // ⚠️  TEMPORARY — auth guard disabled. Restore this block to re-lock /atlas.
-  //
-  // const session = await auth();
-  //
-  // if (!session?.user) {
-  //   redirect("/login");
-  // }
-  //
-  // // Check organization membership
-  // const membership = await prisma.organizationMember.findFirst({
-  //   where: { userId: session.user.id },
-  //   include: {
-  //     organization: {
-  //       select: { isActive: true },
-  //     },
-  //   },
-  // });
-  //
-  // if (!membership || !membership.organization.isActive) {
-  //   redirect("/atlas-no-access");
-  // }
+  // Auth gate — /atlas is no longer publicly accessible. The invite-
+  // redemption path at /accept-invite and /atlas-invite/[token] are
+  // outside this (atlas) route group, so invitees can still reach the
+  // accept flow without being signed in first.
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login?callbackUrl=%2Fatlas");
+  }
+
+  // Membership check — a user with an account but no active org
+  // membership lands on /atlas-no-access which explains the situation
+  // (rather than a generic redirect loop). Uses findFirst because a
+  // user can belong to multiple orgs; we only need to know one is
+  // active.
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId: session.user.id },
+    include: {
+      organization: {
+        select: { isActive: true },
+      },
+    },
+  });
+  if (!membership || !membership.organization.isActive) {
+    redirect("/atlas-no-access");
+  }
 
   return (
     <LanguageProvider>
