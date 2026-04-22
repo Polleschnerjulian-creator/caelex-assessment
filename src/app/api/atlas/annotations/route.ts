@@ -8,6 +8,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { logAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -82,16 +83,32 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Capture the previous value BEFORE the upsert so the audit log
+    // records a real before/after diff instead of "unknown → new".
+    const previous = await prisma.atlasAnnotation.findUnique({
+      where: {
+        userId_organizationId_sourceId: {
+          userId: atlas.userId,
+          organizationId: atlas.organizationId,
+          sourceId: parsed.data.sourceId,
+        },
+      },
+      select: { text: true },
+    });
+
+    // C-3 fix: composite key now includes organizationId so annotations
+    // are uniquely scoped per (user, org, source) — prevents cross-org
+    // silent overwrites for users with memberships in multiple firms.
     const annotation = await prisma.atlasAnnotation.upsert({
       where: {
-        userId_sourceId: {
+        userId_organizationId_sourceId: {
           userId: atlas.userId,
+          organizationId: atlas.organizationId,
           sourceId: parsed.data.sourceId,
         },
       },
       update: {
         text: parsed.data.text,
-        organizationId: atlas.organizationId,
       },
       create: {
         userId: atlas.userId,
@@ -99,6 +116,21 @@ export async function POST(request: Request) {
         sourceId: parsed.data.sourceId,
         text: parsed.data.text,
       },
+    });
+
+    // H-2 fix: annotations can contain firm-confidential case notes,
+    // so every mutation belongs in the tamper-evident audit chain.
+    await logAuditEvent({
+      userId: atlas.userId,
+      organizationId: atlas.organizationId,
+      action: previous
+        ? "atlas_annotation_updated"
+        : "atlas_annotation_created",
+      entityType: "atlas_annotation",
+      entityId: parsed.data.sourceId,
+      previousValue: previous ? { text: previous.text } : undefined,
+      newValue: { text: parsed.data.text },
+      description: `Annotation on source ${parsed.data.sourceId}`,
     });
 
     return NextResponse.json({ annotation });
@@ -122,10 +154,19 @@ export async function DELETE(request: Request) {
   }
 
   // L7: use deleteMany as an idempotent no-op-on-missing. The unique
-  // composite key would be (userId, sourceId) via prisma.delete, but the
-  // row may legitimately not exist yet (users toggling annotations
-  // before ever saving) and we don't want a 404 — a successful no-op
-  // is the right UX.
+  // composite key would be (userId, organizationId, sourceId) via
+  // prisma.delete, but the row may legitimately not exist yet (users
+  // toggling annotations before ever saving) and we don't want a 404 —
+  // a successful no-op is the right UX.
+  const previous = await prisma.atlasAnnotation.findFirst({
+    where: {
+      userId: atlas.userId,
+      sourceId: parsed.data,
+      organizationId: atlas.organizationId,
+    },
+    select: { text: true },
+  });
+
   const result = await prisma.atlasAnnotation.deleteMany({
     where: {
       userId: atlas.userId,
@@ -133,6 +174,20 @@ export async function DELETE(request: Request) {
       organizationId: atlas.organizationId,
     },
   });
+
+  // H-2 fix: audit the deletion if a row actually existed. No-op
+  // deletes (user toggling before ever saving) don't need audit noise.
+  if (previous && result.count > 0) {
+    await logAuditEvent({
+      userId: atlas.userId,
+      organizationId: atlas.organizationId,
+      action: "atlas_annotation_deleted",
+      entityType: "atlas_annotation",
+      entityId: parsed.data,
+      previousValue: { text: previous.text },
+      description: `Annotation deleted from source ${parsed.data}`,
+    });
+  }
 
   return NextResponse.json({ success: true, deleted: result.count });
 }

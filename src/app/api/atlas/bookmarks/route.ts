@@ -7,7 +7,20 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
+
+/**
+ * Sentinel thrown from inside the interactive transaction to signal
+ * quota exhaustion — caught at the outer layer to return a 409 without
+ * leaking stack/Prisma internals. Keeping it module-scoped so the
+ * `instanceof` check survives transpilation.
+ */
+class QuotaExceededError extends Error {
+  constructor(public readonly currentCount: number) {
+    super("Bookmark quota exceeded");
+  }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,53 +113,96 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
 
-    // Pre-fetch current count once for quota enforcement
-    const currentCount = await prisma.atlasBookmark.count({
-      where: { userId: session.user.id },
-    });
-
     // Support both single and bulk import
     const bulk = BulkImportSchema.safeParse(body);
     if (bulk.success) {
-      // M10: cap total rows per user
-      if (currentCount + bulk.data.items.length > MAX_BOOKMARKS_PER_USER) {
-        return NextResponse.json(
-          {
-            error: "Bookmark quota exceeded",
-            limit: MAX_BOOKMARKS_PER_USER,
-            current: currentCount,
-          },
-          { status: 409 },
-        );
-      }
-      const result = await prisma.$transaction(
-        bulk.data.items.map((it) =>
-          prisma.atlasBookmark.upsert({
-            where: {
-              userId_itemId: {
-                userId: session.user!.id,
-                itemId: it.itemId,
+      // M-4 fix: prior version ran the count() outside the transaction,
+      // so two concurrent imports could both pass the quota gate before
+      // either one committed. Now the count happens *inside* a
+      // Serializable interactive tx — Postgres rejects one of the
+      // concurrent transactions on serialization-failure, which we
+      // surface as a 409 just like an over-quota result.
+      const userId = session.user.id;
+      const items = bulk.data.items;
+      try {
+        const result = await prisma.$transaction(
+          async (tx) => {
+            // Only NEW itemIds consume quota — upsert'd updates don't
+            // grow the row count, so gate on inserts only.
+            const existing = await tx.atlasBookmark.findMany({
+              where: {
+                userId,
+                itemId: { in: items.map((it) => it.itemId) },
               },
+              select: { itemId: true },
+            });
+            const existingIds = new Set(existing.map((e) => e.itemId));
+            const newCount = items.filter(
+              (it) => !existingIds.has(it.itemId),
+            ).length;
+            const currentCount = await tx.atlasBookmark.count({
+              where: { userId },
+            });
+            if (currentCount + newCount > MAX_BOOKMARKS_PER_USER) {
+              throw new QuotaExceededError(currentCount);
+            }
+            return Promise.all(
+              items.map((it) =>
+                tx.atlasBookmark.upsert({
+                  where: { userId_itemId: { userId, itemId: it.itemId } },
+                  create: {
+                    userId,
+                    itemId: it.itemId,
+                    itemType: it.itemType,
+                    title: it.title,
+                    subtitle: it.subtitle ?? null,
+                    href: it.href,
+                    note: it.note ?? null,
+                  },
+                  update: {
+                    title: it.title,
+                    subtitle: it.subtitle ?? null,
+                    href: it.href,
+                  },
+                }),
+              ),
+            );
+          },
+          { isolationLevel: "Serializable" },
+        );
+
+        // H-2 fix: single audit entry per bulk call keeps the log
+        // readable and makes import-activity traceable without spam.
+        await logAuditEvent({
+          userId,
+          action: "atlas_bookmarks_imported",
+          entityType: "atlas_bookmark",
+          entityId: `bulk:${result.length}`,
+          newValue: { count: result.length },
+          description: `Imported ${result.length} bookmarks`,
+        });
+
+        return NextResponse.json({ imported: result.length });
+      } catch (err) {
+        if (err instanceof QuotaExceededError) {
+          return NextResponse.json(
+            {
+              error: "Bookmark quota exceeded",
+              limit: MAX_BOOKMARKS_PER_USER,
+              current: err.currentCount,
             },
-            create: {
-              userId: session.user!.id,
-              itemId: it.itemId,
-              itemType: it.itemType,
-              title: it.title,
-              subtitle: it.subtitle ?? null,
-              href: it.href,
-              note: it.note ?? null,
-            },
-            update: {
-              title: it.title,
-              subtitle: it.subtitle ?? null,
-              href: it.href,
-            },
-          }),
-        ),
-      );
-      return NextResponse.json({ imported: result.length });
+            { status: 409 },
+          );
+        }
+        throw err;
+      }
     }
+
+    // Single-bookmark path reads the count once up-front; upsert-on-
+    // existing doesn't grow the count so the race window here is tiny.
+    const currentCount = await prisma.atlasBookmark.count({
+      where: { userId: session.user.id },
+    });
 
     const single = BookmarkSchema.safeParse(body);
     if (!single.success) {
@@ -180,6 +236,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const existedBefore = await prisma.atlasBookmark.findUnique({
+      where: {
+        userId_itemId: {
+          userId: session.user.id,
+          itemId: single.data.itemId,
+        },
+      },
+      select: { id: true },
+    });
+
     const row = await prisma.atlasBookmark.upsert({
       where: {
         userId_itemId: {
@@ -202,6 +268,22 @@ export async function POST(req: NextRequest) {
         href: single.data.href,
       },
     });
+
+    // H-2 fix: only audit-log true creates so updating a title in
+    // place (common for a stale cached label) doesn't spam the chain.
+    if (!existedBefore) {
+      await logAuditEvent({
+        userId: session.user.id,
+        action: "atlas_bookmark_created",
+        entityType: "atlas_bookmark",
+        entityId: single.data.itemId,
+        newValue: {
+          itemType: single.data.itemType,
+          title: single.data.title,
+        },
+        description: `Bookmarked ${single.data.itemType} ${single.data.itemId}`,
+      });
+    }
 
     return NextResponse.json({
       bookmark: {
@@ -232,13 +314,25 @@ export async function DELETE(req: NextRequest) {
     if (!itemId) {
       return NextResponse.json({ error: "itemId required" }, { status: 400 });
     }
-    await prisma.atlasBookmark
+    // H-2 fix: audit the delete only when a row actually existed,
+    // so no-op deletes (idempotent retries, uninstall flows) don't
+    // clutter the audit trail.
+    const removed = await prisma.atlasBookmark
       .delete({
         where: { userId_itemId: { userId: session.user.id, itemId } },
+        select: { itemType: true, title: true },
       })
-      .catch(() => {
-        /* idempotent: ignore missing */
+      .catch(() => null);
+    if (removed) {
+      await logAuditEvent({
+        userId: session.user.id,
+        action: "atlas_bookmark_deleted",
+        entityType: "atlas_bookmark",
+        entityId: itemId,
+        previousValue: removed,
+        description: `Bookmark removed: ${removed.itemType} ${itemId}`,
       });
+    }
     return NextResponse.json({ deleted: true });
   } catch (err) {
     logger.error("Atlas bookmarks DELETE failed", { error: err });

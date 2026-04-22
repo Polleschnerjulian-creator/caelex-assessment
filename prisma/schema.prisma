@@ -8411,7 +8411,11 @@ model AtlasAnnotation {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, sourceId])
+  // C-3 fix: organizationId MUST be part of the unique key. Without
+  // it, a user who belongs to two orgs (e.g. outside counsel) would
+  // collide on (userId, sourceId) and silently overwrite the
+  // annotation from the other org. See docs/security/atlas-audit-2026-04-22.md.
+  @@unique([userId, organizationId, sourceId])
   @@index([userId])
   @@index([organizationId])
   @@index([sourceId])

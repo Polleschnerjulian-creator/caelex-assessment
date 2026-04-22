@@ -61,6 +61,17 @@ const ROLES = [
 
 const TEAM_SIZES = ["1-5", "6-20", "21-50", "51-200", "200+"] as const;
 
+/**
+ * Sentinel thrown from inside the booking transaction when a
+ * concurrent request has taken the same slot. Caught at the outer
+ * layer to return a clean 409 without leaking Prisma internals.
+ */
+class SlotUnavailableError extends Error {
+  constructor() {
+    super("Slot unavailable");
+  }
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -156,26 +167,20 @@ export async function POST(request: NextRequest) {
       role,
     });
 
-    // 2. Slot availability re-check (DB + Google Calendar)
-    const [conflictingBookings, calendarBusy] = await Promise.all([
-      prisma.booking.findMany({
-        where: {
-          scheduledAt: { gte: scheduledAt, lt: endAt },
-          status: { in: ["CONFIRMED", "COMPLETED"] },
-        },
-        select: { id: true },
-      }),
-      isCalendarConfigured()
-        ? getBusyIntervals({
-            timeMinIso: scheduledAt.toISOString(),
-            timeMaxIso: endAt.toISOString(),
-            timezone: TIMEZONE,
-          })
-        : Promise.resolve([]),
-    ]);
+    // 2. External (Google Calendar) availability check — has to stay
+    //    outside the DB transaction because freebusy.query is a network
+    //    call and we don't want to hold a Serializable tx open on its
+    //    round-trip.
+    const calendarBusy = isCalendarConfigured()
+      ? await getBusyIntervals({
+          timeMinIso: scheduledAt.toISOString(),
+          timeMaxIso: endAt.toISOString(),
+          timezone: TIMEZONE,
+        })
+      : [];
 
-    if (conflictingBookings.length > 0 || calendarBusy.length > 0) {
-      logger.warn("Atlas access slot no longer available", {
+    if (calendarBusy.length > 0) {
+      logger.warn("Atlas access slot blocked by Google Calendar", {
         accessRequestId: accessRequest.id,
         scheduledAt: scheduledAt.toISOString(),
       });
@@ -227,28 +232,75 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Booking record
-    const booking = await prisma.booking.create({
-      data: {
-        name,
-        email,
-        company: firm,
-        scheduledAt,
-        durationMinutes: DURATION_MINUTES,
-        timezone: TIMEZONE,
-        status: "CONFIRMED",
-        demoRequestId: accessRequest.id,
-        googleEventId: googleEvent?.eventId || null,
-        googleEventHtmlLink: googleEvent?.htmlLink || null,
-        meetLink: googleEvent?.meetLink || null,
-      },
-      select: {
-        id: true,
-        scheduledAt: true,
-        meetLink: true,
-        googleEventHtmlLink: true,
-      },
-    });
+    // 4. DB-level slot re-check + Booking create, atomic.
+    //
+    // H-1 fix: previous version ran the DB conflict check and the
+    // booking.create() in two separate round-trips — two concurrent
+    // requests could both pass the check before either one committed,
+    // leading to a double-booked slot. Wrapping both in a Serializable
+    // interactive tx means Postgres rejects one of the racers on
+    // serialization-failure, which surfaces here as a 409 just like an
+    // explicit conflict.
+    type BookingResult = {
+      id: string;
+      scheduledAt: Date;
+      meetLink: string | null;
+      googleEventHtmlLink: string | null;
+    };
+    let booking: BookingResult;
+    try {
+      booking = await prisma.$transaction(
+        async (tx) => {
+          const conflict = await tx.booking.findFirst({
+            where: {
+              scheduledAt: { gte: scheduledAt, lt: endAt },
+              status: { in: ["CONFIRMED", "COMPLETED"] },
+            },
+            select: { id: true },
+          });
+          if (conflict) {
+            throw new SlotUnavailableError();
+          }
+          return tx.booking.create({
+            data: {
+              name,
+              email,
+              company: firm,
+              scheduledAt,
+              durationMinutes: DURATION_MINUTES,
+              timezone: TIMEZONE,
+              status: "CONFIRMED",
+              demoRequestId: accessRequest.id,
+              googleEventId: googleEvent?.eventId || null,
+              googleEventHtmlLink: googleEvent?.htmlLink || null,
+              meetLink: googleEvent?.meetLink || null,
+            },
+            select: {
+              id: true,
+              scheduledAt: true,
+              meetLink: true,
+              googleEventHtmlLink: true,
+            },
+          });
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (err) {
+      if (err instanceof SlotUnavailableError) {
+        logger.warn("Atlas access slot taken during commit", {
+          accessRequestId: accessRequest.id,
+          scheduledAt: scheduledAt.toISOString(),
+        });
+        return NextResponse.json(
+          {
+            error: "This time slot was just taken. Please pick another slot.",
+            code: "SLOT_UNAVAILABLE",
+          },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
 
     const slotLabel = formatSlotForHumans(booking.scheduledAt);
     const meetLink = booking.meetLink;
