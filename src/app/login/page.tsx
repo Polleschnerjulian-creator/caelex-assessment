@@ -1,16 +1,164 @@
 "use client";
 
-import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { getSession, signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { analytics } from "@/lib/analytics";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
-import Logo from "@/components/ui/Logo";
+import styles from "./login.module.css";
 
-export default function LoginPage() {
+/**
+ * Atlas-branded login.
+ *
+ * Full-viewport dark stage with animated light bars, stars, vignette +
+ * a glass card on the right. Uses the existing NextAuth credentials +
+ * Google providers. Preserves callbackUrl + email prefill so the
+ * /accept-invite flow can deep-link people straight here with their
+ * invited address already filled.
+ *
+ * Keyframes + layout live in login.module.css so nothing leaks out of
+ * the /login route.
+ */
+
+interface SignInResult {
+  error?: string;
+}
+
+/**
+ * Caelex brand icon — three-fold radial symbol. Kept inline so the
+ * /login route has no external SVG dependency. Referenced via <use>
+ * so it renders crisp at any size without re-declaring paths.
+ */
+function CaelexIconDefs() {
+  return (
+    <svg
+      width="0"
+      height="0"
+      style={{ position: "absolute" }}
+      aria-hidden="true"
+    >
+      <defs>
+        <symbol id="caelex-icon" viewBox="0 0 100 100">
+          <g
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+            fill="none"
+          >
+            <g>
+              <path d="M 41 49 Q 37 27 33 10" />
+              <path d="M 45 49 Q 43 27 41 10" />
+              <path d="M 50 49 Q 50 27 50 10" />
+              <path d="M 55 49 Q 57 27 59 10" />
+              <path d="M 59 49 Q 63 27 67 10" />
+            </g>
+            <g transform="rotate(120 50 50)">
+              <path d="M 41 49 Q 37 27 33 10" />
+              <path d="M 45 49 Q 43 27 41 10" />
+              <path d="M 50 49 Q 50 27 50 10" />
+              <path d="M 55 49 Q 57 27 59 10" />
+              <path d="M 59 49 Q 63 27 67 10" />
+            </g>
+            <g transform="rotate(240 50 50)">
+              <path d="M 41 49 Q 37 27 33 10" />
+              <path d="M 45 49 Q 43 27 41 10" />
+              <path d="M 50 49 Q 50 27 50 10" />
+              <path d="M 55 49 Q 57 27 59 10" />
+              <path d="M 59 49 Q 63 27 67 10" />
+            </g>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+  );
+}
+
+function CaelexMark({ className }: { className?: string }) {
+  return (
+    <svg className={className} aria-hidden="true">
+      <use href="#caelex-icon" />
+    </svg>
+  );
+}
+
+/**
+ * Generates the animated light bars once on mount. Seeded RNG so the
+ * layout is deterministic — important for SSR/CSR parity and for
+ * visual continuity between reloads (users don't see the bars
+ * jumping around).
+ */
+function LightBars() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const COUNT = 100;
+    const W_MIN = 1;
+    const W_MAX = 2.4;
+    const H_MIN = 15;
+    const H_MAX = 62;
+    const O_MIN = 0.25;
+    const O_MAX = 0.92;
+    const HEIGHT_DUR_MIN = 4;
+    const HEIGHT_DUR_MAX = 9;
+    const LIFE_DUR_MIN = 10;
+    const LIFE_DUR_MAX = 22;
+    const DELAY_MAX = 16;
+
+    // Seeded pseudo-random — same layout every render. Using a plain
+    // LCG instead of crypto because we want deterministic output, not
+    // cryptographic strength.
+    let seed = 42;
+    const rnd = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+
+    container.innerHTML = "";
+    for (let i = 0; i < COUNT; i++) {
+      const bar = document.createElement("span");
+      bar.className = styles.bar;
+
+      const w = W_MIN + rnd() * (W_MAX - W_MIN);
+      const h = H_MIN + rnd() * (H_MAX - H_MIN);
+      const t = rnd() * (100 - h);
+      const l = rnd() * 100;
+      const o = O_MIN + rnd() * (O_MAX - O_MIN);
+      const heightDur =
+        HEIGHT_DUR_MIN + rnd() * (HEIGHT_DUR_MAX - HEIGHT_DUR_MIN);
+      const lifeDur = LIFE_DUR_MIN + rnd() * (LIFE_DUR_MAX - LIFE_DUR_MIN);
+      const delay = rnd() * DELAY_MAX;
+
+      bar.style.setProperty("--w", `${w.toFixed(2)}px`);
+      bar.style.setProperty("--h", `${h.toFixed(1)}%`);
+      bar.style.setProperty("--t", `${t.toFixed(1)}%`);
+      bar.style.setProperty("--l", `${l.toFixed(2)}%`);
+      bar.style.setProperty("--o", o.toFixed(3));
+      bar.style.setProperty("--dur", `${heightDur.toFixed(2)}s`);
+      bar.style.setProperty("--life", `${lifeDur.toFixed(2)}s`);
+      bar.style.setProperty("--delay", `-${delay.toFixed(2)}s`);
+
+      container.appendChild(bar);
+    }
+
+    return () => {
+      if (container) container.innerHTML = "";
+    };
+  }, []);
+
+  return <div ref={containerRef} className={styles.bars} />;
+}
+
+function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const prefilledEmail = searchParams.get("email") ?? "";
+
+  const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -22,31 +170,33 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      const result = (await signIn("credentials", {
         email,
         password,
         redirect: false,
-      });
+      })) as SignInResult | undefined;
 
       if (result?.error) {
         setError("Invalid email or password");
         setLoading(false);
-      } else {
-        analytics.track(
-          "login",
-          { provider: "credentials" },
-          { category: "conversion" },
-        );
+        return;
+      }
 
-        // Check if MFA is required before granting full access
-        const session = await getSession();
-        if (session?.user?.mfaRequired && !session?.user?.mfaVerified) {
-          router.push(
-            `/auth/mfa-challenge?callbackUrl=${encodeURIComponent("/dashboard")}`,
-          );
-        } else {
-          router.push("/dashboard");
-        }
+      analytics.track(
+        "login",
+        { provider: "credentials" },
+        { category: "conversion" },
+      );
+
+      // MFA-required accounts go through the challenge first, carrying
+      // the same callbackUrl so the final destination is preserved.
+      const session = await getSession();
+      if (session?.user?.mfaRequired && !session?.user?.mfaVerified) {
+        router.push(
+          `/auth/mfa-challenge?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        );
+      } else {
+        router.push(callbackUrl);
       }
     } catch {
       setError("Something went wrong");
@@ -55,206 +205,176 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    // Google OAuth — can't carry MFA state through the redirect, so we
+    // just let NextAuth handle the full flow back to callbackUrl.
+    signIn("google", { callbackUrl });
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#F7F8FA] dark:bg-[#0A0A0F] flex"
-      style={{ colorScheme: "light dark" }}
-    >
-      {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden items-center justify-center">
-        {/* Grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
+    <form onSubmit={handleSubmit} noValidate>
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="login-email">
+          Email
+        </label>
+        <input
+          id="login-email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@firm.eu"
+          required
+        />
+      </div>
 
-        {/* Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#E5E7EB]/50 dark:bg-white/[0.03] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F7F8FA] dark:from-[#0A0A0F] to-transparent" />
-
-        {/* Content */}
-        <div className="relative z-10 max-w-md px-12">
-          <div className="mb-8">
-            <Logo size={28} className="text-[#111827] dark:text-white" />
-          </div>
-
-          <h2 className="text-3xl font-medium text-[#111827] dark:text-white mb-4 leading-tight">
-            Space Compliance,
-            <br />
-            <span className="text-[#111827] dark:text-white">Simplified.</span>
-          </h2>
-
-          <p className="text-[#4B5563] dark:text-[#9CA3AF] text-subtitle leading-relaxed mb-10">
-            The regulatory compliance platform trusted by satellite operators,
-            launch providers, and space service companies across Europe.
-          </p>
-
-          {/* Feature list */}
-          <div className="space-y-4">
-            {[
-              "EU Space Act & NIS2 compliance",
-              "10 national jurisdiction assessments",
-              "AI-powered document generation",
-            ].map((feature) => (
-              <div key={feature} className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#111827] dark:bg-white" />
-                <span className="text-[#4B5563] dark:text-[#9CA3AF] text-sm">
-                  {feature}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="login-password">
+          <span>Password</span>
+          <Link href="/forgot-password">Forgot password?</Link>
+        </label>
+        <div className={styles.passwordWrap}>
+          <input
+            id="login-password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff size={14} strokeWidth={1.5} />
+            ) : (
+              <Eye size={14} strokeWidth={1.5} />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
-        {/* Subtle border */}
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-px bg-[#E5E7EB] dark:bg-white/[0.08]" />
+      {error && (
+        <div className={styles.errorBanner} role="alert">
+          <span className={styles.errorDot} />
+          <span>{error}</span>
+        </div>
+      )}
 
-        <div className="max-w-[400px] w-full">
-          {/* Mobile logo */}
-          <div className="lg:hidden mb-10">
-            <Logo size={24} className="text-[#111827] dark:text-white" />
-          </div>
+      <button type="submit" className={styles.btn} disabled={loading}>
+        {loading ? (
+          <>
+            <span className={styles.spinner} />
+            Signing in…
+          </>
+        ) : (
+          "Continue"
+        )}
+      </button>
 
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-medium text-[#111827] dark:text-white mb-2">
-              Welcome back
+      <div className={styles.divider}>or</div>
+
+      <button
+        type="button"
+        className={styles.btnSecondary}
+        onClick={handleGoogleSignIn}
+      >
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21.6 12.23c0-.75-.07-1.48-.2-2.18H12v4.13h5.39c-.23 1.24-.94 2.29-2 2.99v2.48h3.24c1.9-1.75 2.97-4.32 2.97-7.42z"
+            fill="#f5f5f4"
+          />
+          <path
+            d="M12 22c2.7 0 4.96-.9 6.61-2.43l-3.24-2.48c-.9.6-2.04.96-3.37.96-2.59 0-4.78-1.75-5.56-4.1H3.1v2.57A9.98 9.98 0 0 0 12 22z"
+            fill="#f5f5f4"
+          />
+          <path
+            d="M6.44 13.95A5.98 5.98 0 0 1 6.12 12c0-.68.12-1.34.32-1.95V7.48H3.1A10 10 0 0 0 2 12c0 1.61.38 3.13 1.1 4.52l3.34-2.57z"
+            fill="#f5f5f4"
+          />
+          <path
+            d="M12 6.36c1.46 0 2.78.5 3.82 1.49l2.86-2.86C16.96 3.42 14.7 2.5 12 2.5A9.98 9.98 0 0 0 3.1 7.48l3.34 2.57C7.22 8.1 9.41 6.36 12 6.36z"
+            fill="#f5f5f4"
+          />
+        </svg>
+        Continue with Google
+      </button>
+
+      <p className={styles.tiny}>
+        Don&rsquo;t have an account? <Link href="/signup">Create account</Link>
+        <br />
+        By continuing you agree to our <Link href="/legal/terms">
+          Terms
+        </Link>{" "}
+        and <Link href="/legal/privacy">Privacy Policy</Link>.
+      </p>
+    </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className={styles.root}>
+      <div className={styles.stage}>
+        <div className={styles.atmosphere} />
+        <div className={styles.stars} />
+        <LightBars />
+        <div className={styles.slats} />
+        <div className={styles.vignette} />
+      </div>
+
+      <CaelexIconDefs />
+
+      <main className={styles.content}>
+        <Link
+          className={styles.brandLockup}
+          href="https://caelex.eu"
+          aria-label="Caelex home"
+        >
+          <CaelexMark className={styles.caelexMark} />
+          <span className={styles.wordtype}>caelex</span>
+        </Link>
+
+        <div className={styles.center}>
+          <div className={styles.headline}>
+            <h1>
+              Navigate
+              <br />
+              the orbital
+              <br />
+              frontier.
             </h1>
-            <p className="text-[#4B5563] dark:text-[#9CA3AF] text-body-lg">
-              Sign in to access your compliance dashboard
+            <p>
+              The searchable space law database for law firms. Continuously
+              updated, always current.
             </p>
           </div>
 
-          {/* OAuth buttons */}
-          <div className="mb-6">
-            <button
-              onClick={handleGoogleSignIn}
-              className="w-full border border-[#E5E7EB] dark:border-white/[0.10] hover:border-[#D1D5DB] dark:hover:border-white/[0.18] bg-white dark:bg-white/[0.06] hover:bg-[#F1F3F5] dark:hover:bg-white/[0.09] text-[#111827] dark:text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </button>
-          </div>
+          <div>
+            <div className={styles.card}>
+              <h2>Sign in to ATLAS</h2>
+              <p className={styles.kicker}>Continue to your workspace.</p>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-px bg-[#E5E7EB] dark:bg-white/[0.08] flex-1" />
-            <span className="text-[#9CA3AF] dark:text-[#6B7280] text-small uppercase tracking-wider">
-              or
-            </span>
-            <div className="h-px bg-[#E5E7EB] dark:bg-white/[0.08] flex-1" />
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-small font-medium text-[#4B5563] dark:text-[#9CA3AF] mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                className="w-full bg-white dark:bg-white/[0.06] border border-[#E5E7EB] dark:border-white/[0.10] text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#6B7280] rounded-lg px-4 py-3 text-subtitle focus:border-[#111827] dark:focus:border-white/[0.25] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 dark:focus:ring-white/10 transition-all"
-                required
-              />
+              <Suspense
+                fallback={
+                  <div style={{ height: 320, opacity: 0.4 }}>Loading…</div>
+                }
+              >
+                <LoginForm />
+              </Suspense>
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-small font-medium text-[#4B5563] dark:text-[#9CA3AF]">
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-small text-[#111827] dark:text-white hover:text-[#374151] dark:hover:text-white/80 underline transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white dark:bg-white/[0.06] border border-[#E5E7EB] dark:border-white/[0.10] text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#6B7280] rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-[#111827] dark:focus:border-white/[0.25] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 dark:focus:ring-white/10 transition-all"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#4B5563] dark:hover:text-white transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                <p className="text-red-400 text-body">{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#111827] dark:bg-white hover:bg-[#374151] dark:hover:bg-white/90 text-white dark:text-[#111827] font-semibold py-3 rounded-lg text-subtitle transition-all duration-200 disabled:opacity-50 disabled:hover:bg-[#111827] dark:disabled:hover:bg-white flex items-center justify-center gap-2 mt-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 dark:border-[#111827]/30 border-t-white dark:border-t-[#111827] rounded-full animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Sign up link */}
-          <p className="text-center mt-8 text-body text-[#4B5563] dark:text-[#9CA3AF]">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/signup"
-              className="text-[#111827] dark:text-white hover:text-[#374151] dark:hover:text-white/80 underline transition-colors"
-            >
-              Create account
-            </Link>
-          </p>
+          </div>
         </div>
-      </div>
+
+        <div className={styles.productLockup}>
+          <CaelexMark className={styles.caelexMark} />
+          <span className={styles.atlasName}>ATLAS</span>
+          <span className={styles.sep} />
+          <span className={styles.attribution}>by Caelex</span>
+        </div>
+      </main>
     </div>
   );
 }
