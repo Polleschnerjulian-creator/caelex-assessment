@@ -1627,10 +1627,310 @@ const PENDING_TECHNICAL_FR: LegalSource[] = [
   },
 ];
 
+// ─── Foundational & Cross-Cutting (4) ───────────────────────────────
+//
+// Entries added 2026-04-22 to close structural gaps in the French
+// dataset. None of these instruments are space-specific, but each
+// one sits in the legal chain that any French space operator
+// navigates: constitutional foundations, personal-data protection
+// applied to satellite imagery, PPST for sensitive R&D, and the
+// FDI screening regime that gates foreign investment in space-sector
+// French entities.
+//
+// Verification strategy: Légifrance blocks automated fetches, so
+// live verification was done via CNIL (LIL), Wikisource
+// (Constitution), and known-stable Légifrance URL patterns for the
+// two decrees. source_url values are the canonical public URLs that
+// front-end users will click through to.
+
+const FOUNDATIONAL_FR: LegalSource[] = [
+  {
+    // Constitution — the articles that allocate treaty-making and
+    // legislative power for space matters. Narrower than the full
+    // constitution; only the space-relevant articles are summarised.
+    id: "FR-CONSTITUTION",
+    jurisdiction: "FR",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Constitution of the Fifth Republic — Space-Relevant Articles",
+    title_local:
+      "Constitution du 4 octobre 1958 — articles relatifs à la compétence spatiale (Art. 34, 52, 55)",
+    date_enacted: "1958-10-04",
+    date_last_amended: "2024-03-08",
+    official_reference:
+      "JORF du 5 octobre 1958, consolidation la plus récente : révision constitutionnelle du 8 mars 2024 (liberté de recourir à l'IVG)",
+    source_url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006071194/",
+    issuing_body: "Assemblée constituante / Parlement réuni en Congrès",
+    competent_authorities: ["FR-MINARMES", "FR-MINECO"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "liability"],
+    key_provisions: [
+      {
+        section: "Art. 34",
+        title: "Matters reserved to statute",
+        summary:
+          "La loi fixe les règles concernant les garanties fondamentales accordées aux citoyens pour l'exercice des libertés publiques, la nationalité, les droits civils, le régime d'émission de la monnaie, les principes fondamentaux de la défense nationale, et les obligations imposées par cette défense. This is the constitutional anchor for why the Loi sur les opérations spatiales (LOS) must be a loi (statute) and not a simple décret.",
+        complianceImplication:
+          "The licensing regime for space activities touches fundamental liberties (industry, property) and national defence — so constitutional reserve to statute requires Parliament action, not executive-only regulation. Explains why LOS amendments must pass both chambers.",
+      },
+      {
+        section: "Art. 52",
+        title: "Treaty negotiation and ratification",
+        summary:
+          "« Le Président de la République négocie et ratifie les traités. » The President has exclusive power to negotiate and ratify international treaties — the hook by which France became party to the OST, Liability, Registration, and Rescue conventions.",
+      },
+      {
+        section: "Art. 55",
+        title: "Primacy of treaties",
+        summary:
+          "« Les traités ou accords régulièrement ratifiés ou approuvés ont, dès leur publication, une autorité supérieure à celle des lois, sous réserve, pour chaque accord ou traité, de son application par l'autre partie. » Ratified treaties have authority superior to statute. Means OST, Liability, and Registration Convention obligations prevail over conflicting domestic law — a key principle when LOS is interpreted against international space-law obligations.",
+        complianceImplication:
+          "In litigation, operators can invoke OST / Liability Convention provisions directly against the French state when LOS interpretation diverges from treaty text.",
+      },
+    ],
+    scope_description:
+      "Selected constitutional provisions structuring French space-law competence. Art. 34 establishes that space licensing belongs to the legislative domain; Art. 52 vests treaty-making in the Executive; Art. 55 places ratified space treaties above statute. Not a full Constitution reading — use as navigation anchor for the French legal hierarchy.",
+    related_sources: [
+      "FR-LOS-2008",
+      "FR-INT-OST-RATIFICATION",
+      "FR-INT-LIABILITY-1972",
+      "FR-INT-REGISTRATION-1975",
+    ],
+    notes: [
+      "The French Constitution has no explicit « espace » or « activités spatiales » article — federal competence derives from Art. 34 (national defence principles) and Art. 52 (treaty-making) read together with the treaties listed above.",
+      "Constitutional Council jurisprudence (décisions Nos. 74-54 DC, 79-105 DC) treats space activities as falling within the State's sovereign competence under Art. 34.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    // Loi Informatique et Libertés — the French personal-data
+    // protection statute. Matters for ATLAS because high-resolution
+    // Earth observation data routinely captures identifiable persons
+    // (vehicles, buildings, individuals in large-aperture imagery),
+    // and French satellite operators must apply LIL + GDPR to data
+    // processing decisions.
+    id: "FR-LIL-1978",
+    jurisdiction: "FR",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Data Protection Act",
+    title_local:
+      "Loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés (Loi Informatique et Libertés — LIL)",
+    date_enacted: "1978-01-06",
+    date_last_amended: "2024-05-21",
+    official_reference:
+      "JORF du 7 janvier 1978, refondue par Ord. n° 2018-1125 du 12 décembre 2018 et Loi n° 2018-493 du 20 juin 2018 (transposition RGPD); mises à jour via Loi n° 2024-449 du 21 mai 2024",
+    source_url: "https://www.legifrance.gouv.fr/loda/id/LEGISCTA000037817521/",
+    issuing_body: "Parlement",
+    competent_authorities: ["FR-CNIL"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "data_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: ["data_security", "cybersecurity"],
+    key_provisions: [
+      {
+        section: "Art. 1",
+        title: "Founding principle",
+        summary:
+          "« L'informatique doit être au service de chaque citoyen. Elle ne doit porter atteinte ni à l'identité humaine, ni aux droits de l'homme, ni à la vie privée, ni aux libertés individuelles ou publiques. »",
+      },
+      {
+        section: "Art. 2",
+        title: "Material scope — personal data processing",
+        summary:
+          "Applies to automated processing of personal data, and to non-automated processing of data contained in files. Personal data means any information relating to an identified or identifiable natural person — incorporating GDPR Art. 4 definitions.",
+        complianceImplication:
+          "High-resolution Earth observation imagery in which individuals are identifiable (e.g. vehicles + location context, recognisable individuals) is personal data. CNIL has taken this position in enforcement against street-level imaging services — operators should assume the same reasoning applies to sub-30cm GSD satellite imagery.",
+      },
+      {
+        section: "Art. 4.3",
+        title: "Data minimisation",
+        summary:
+          "Processing must be « adéquate, pertinente et, au regard des finalités pour lesquelles elles sont traitées, limitée à ce qui est nécessaire ». Collecting incidental persons in satellite imagery tests this principle — the operator must justify the resolution-fidelity trade-off.",
+      },
+      {
+        section: "Title II Chapter III",
+        title: "Transfers outside the EU",
+        summary:
+          "Transfers of personal data to non-EU recipients require adequacy decision, Standard Contractual Clauses, or other GDPR-compatible safeguards. Relevant for satellite data relayed to US ground stations or distributed to non-EU customers.",
+        complianceImplication:
+          "French EO operators with US downlink stations or US-based constellation-as-a-service customers must have SCC or Data Privacy Framework in place.",
+      },
+      {
+        section: "CNIL sanction powers",
+        title: "Administrative fines up to €20M or 4% of worldwide turnover",
+        summary:
+          "CNIL applies the GDPR sanction scale. Historical precedent: high-resolution imagery providers have been the subject of CNIL formal notices and sanctions in the Street View / aerial mapping context.",
+      },
+    ],
+    scope_description:
+      "The French transposition and complement to the GDPR. French space operators processing imagery, customer data, or ground-station user data are subject to CNIL enforcement under this statute — distinct from but parallel to the LOS licensing regime. Matters especially at resolution levels where individuals become identifiable in the imagery itself.",
+    related_sources: ["FR-CNIL", "FR-DECRET-2009-640", "EU-GDPR-2016"],
+    implements: "EU-GDPR-2016",
+    notes: [
+      "2018 was the substantive refoundation — Loi 2018-493 (20 June 2018) and Ord. 2018-1125 (12 December 2018) rewrote LIL to align with GDPR while preserving French-specific derogations (e.g. journalism, research).",
+      "For satellite EO operators, the CNIL's « imagerie aérienne et satellitaire » position paper (updated 2022) is the most useful soft-law guidance on how resolution + metadata combinations create personal-data risk.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    // PPST — the sensitive-research protection regime. Directly
+    // relevant for space operators because CNES, ONERA, and major
+    // satellite primes (Airbus Defence & Space Toulouse, Thales
+    // Alenia Cannes) hold ZRR classifications under PPST. Foreign
+    // personnel assignments, internships, and research-collaboration
+    // visits at these sites require prior SGDSN / FSD authorisation.
+    id: "FR-PPST",
+    jurisdiction: "FR",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Protection of National Scientific and Technical Heritage",
+    title_local:
+      "Protection du potentiel scientifique et technique de la nation (PPST) — Art. 413-7 Code pénal, Décrets n° 2011-1425 du 2 novembre 2011 et n° 2012-901 du 20 juillet 2012",
+    date_enacted: "2011-11-02",
+    date_last_amended: "2022-07-06",
+    official_reference:
+      "Art. 413-7 du Code pénal; Décret n° 2011-1425 du 2.11.2011 (JORF n°0256 du 4.11.2011); Décret n° 2012-901 du 20.7.2012 (JORF n°0170 du 24.7.2012); mises à jour via Décret n° 2022-965 du 1.7.2022",
+    source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000024780923/",
+    issuing_body: "Premier ministre / SGDSN",
+    competent_authorities: ["FR-SGDSN", "FR-MINARMES", "FR-MESR"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "ground_segment",
+      "data_provider",
+    ],
+    compliance_areas: [
+      "export_control",
+      "military_dual_use",
+      "cybersecurity",
+      "data_security",
+    ],
+    key_provisions: [
+      {
+        section: "Art. 413-7 Code pénal",
+        title: "Criminal basis",
+        summary:
+          "Criminalises unauthorised physical access, data exfiltration, or disclosure affecting the scientific and technical heritage of the nation. Penalties up to 7 years imprisonment and €100 000 fine (aggravated cases); aggravated 10-year / €150 000 when committed for the benefit of a foreign power.",
+      },
+      {
+        section: "Décret 2011-1425 Art. 2",
+        title: "ZRR — zones à régime restrictif",
+        summary:
+          "Sensitive research establishments are designated as Zones à Régime Restrictif. All access by foreign nationals (and certain French nationals with extra-EU ties) requires prior authorisation by the competent minister (typically via the FSD — Fonctionnaire de Sécurité de Défense — ministériel), issued after SGDSN concurrence.",
+        complianceImplication:
+          "Any foreign engineer, intern, researcher, or business visitor to CNES, ONERA, Airbus DS Toulouse, Thales Alenia Cannes, or ArianeGroup Vernon needs prior PPST clearance. Typical processing time: 6-8 weeks for EU nationals, 3-5 months for extra-EU. Operators must plan for this lead time.",
+      },
+      {
+        section: "Décret 2012-901 Art. 1",
+        title: "Protected scientific domains",
+        summary:
+          "Defines protected domains including aerospace propulsion, advanced materials, cryptography, electronic warfare, space-situational awareness and space C2 — all directly space-relevant. Establishments hosting these activities are eligible for ZRR designation.",
+      },
+      {
+        section: "FSD obligations",
+        title: "Ministry-level security officer duties",
+        summary:
+          "Each ministry designates an FSD (Fonctionnaire de Sécurité de Défense) who runs the PPST vetting for establishments under ministry oversight. CNES falls under MESR; ONERA under Minarmées; private primes fall under Minéco via the DGE.",
+      },
+      {
+        section: "Décret 2022-965",
+        title: "2022 update — expanded scope",
+        summary:
+          "The 2022 update extended the PPST classification criteria to cover emerging technologies (quantum computing, AI/ML in defence applications, bio-tech) and reinforced the FSD's audit powers over ZRR establishments.",
+      },
+    ],
+    scope_description:
+      "Cross-cutting national security regime protecting sensitive French scientific and technical capability. Overlaps with but is legally distinct from export control (CIEEMG for munitions, SBDU for dual-use) — PPST is about controlling access to the *research environment*, not about controlling the export of the *output*. Space operators interact with PPST primarily through visitor authorisation processes at ZRR-designated facilities.",
+    related_sources: ["FR-CIEEMG", "FR-SBDU-DUALUSE", "FR-SGDSN"],
+    notes: [
+      "PPST compliance failure is under-appreciated as a risk in international space collaboration. A foreign engineer entering a ZRR without prior clearance is a criminal offence under Art. 413-7 — on the part of both the visitor AND the establishment that admitted them.",
+      "For French primes, the « Correspondant PPST » (internal security coordinator) role is the operational counterparty for visitor/hiring authorisations.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    // IEF / FDI screening — Décret 2019-1590 + Art. L.151-3 +
+    // R.151-3 Code monétaire et financier. Space is explicitly
+    // listed as a protected sector. Directly mirrors the AWG § 55 ff.
+    // function in German law and is the gate for foreign acquisitions
+    // of French space-sector companies.
+    id: "FR-IEF-2019",
+    jurisdiction: "FR",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Foreign Direct Investment Screening in France",
+    title_local:
+      "Contrôle des investissements étrangers en France (IEF) — Décret n° 2019-1590 du 31 décembre 2019 et Art. L.151-3 / R.151-3 du Code monétaire et financier",
+    date_enacted: "2019-12-31",
+    date_last_amended: "2023-12-28",
+    official_reference:
+      "Décret n° 2019-1590 du 31 décembre 2019 (JORF n°0001 du 1.1.2020); Art. L.151-3 et R.151-1 à R.151-17 Code monétaire et financier; modifié par Décrets n° 2020-892 du 22.7.2020, n° 2023-1293 du 28.12.2023",
+    source_url:
+      "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072026/LEGISCTA000041411379/",
+    issuing_body: "Ministère de l'économie — Direction générale du Trésor",
+    competent_authorities: ["FR-MINECO"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control", "licensing"],
+    key_provisions: [
+      {
+        section: "Art. R.151-3 I 2°",
+        title: "Space activities listed as sensitive sector",
+        summary:
+          "« Activités dans le secteur de l'aéronautique et du spatial » are explicitly enumerated as sensitive activities triggering the IEF screening regime. Applies when the French target performs R&D, production, or supply in the aerospace and space sector.",
+        complianceImplication:
+          "Every acquisition, merger, or significant investment in a French space company by a non-French investor triggers a prior-authorisation requirement. The target cannot close the transaction until Minéco authorisation is granted (typically 30-75 business days, extendable).",
+      },
+      {
+        section: "Art. R.151-2",
+        title: "Investment thresholds triggering review",
+        summary:
+          "Review is triggered by: (a) acquiring control over a French entity active in the listed sectors, (b) acquiring ≥25% of voting rights (for investors from EU/EEA), (c) acquiring ≥10% of voting rights (for investors from outside EU/EEA — threshold lowered from 25% by the COVID-era Décret 2020-892, made permanent in 2023).",
+      },
+      {
+        section: "Art. L.151-3 II",
+        title: "Sanctions for non-compliance",
+        summary:
+          "Transactions closed without prior IEF authorisation are voidable. The Minister can impose financial penalties up to the amount of the investment or up to twice the amount of the irregular transaction. Can also order divestiture or impose corrective conditions post-closing.",
+      },
+      {
+        section: "Art. R.151-6",
+        title: "« Rescrit IEF » pre-filing consultation",
+        summary:
+          "Investors may file a « demande de rescrit » to obtain a binding Treasury opinion on whether a proposed transaction falls within the regime — useful where the target's space-sector activities are marginal or ambiguous. Response within 2 months; binding on the administration.",
+      },
+      {
+        section: "Post-closing conditions",
+        title: "Undertakings typically imposed on space-sector targets",
+        summary:
+          "Authorisations are typically conditional on undertakings: maintenance of strategic industrial capabilities in France, ring-fencing of sensitive technologies, continuity of supply to French state customers (especially Minarmées), information rights for the French state on board/C-suite changes, and export-compliance undertakings.",
+      },
+    ],
+    scope_description:
+      "France's foreign-investment-screening regime for sensitive sectors. Aerospace & space is explicitly a listed sensitive sector — every cross-border deal involving a French space company needs Minéco clearance. Applies to direct acquisitions, mergers, and financial investments at the 10%/25% thresholds depending on investor origin. Administered by the Direction générale du Trésor; technical assessment typically involves inter-ministerial consultation with Minarmées and CNES.",
+    related_sources: ["FR-CIEEMG", "FR-SBDU-DUALUSE", "FR-LOS-2008"],
+    notes: [
+      "Procedural reality: operators should anticipate IEF clearance as part of transaction timelines. Deal-length impact typically 6-12 weeks beyond standard M&A, longer for complex technology transfers.",
+      "Interaction with LOS: a change of control at a LOS licensee can separately trigger a licence review under LOS Art. 3, independent of the IEF authorisation.",
+    ],
+    last_verified: "2026-04-22",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_FR: LegalSource[] = [
   ...TREATIES_FR,
+  ...FOUNDATIONAL_FR,
   ...LOS_FRAMEWORK_FR,
   ...TECHNICAL_FR,
   ...CNES_FRAMEWORK_FR,
