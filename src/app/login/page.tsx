@@ -318,8 +318,12 @@ export default function LoginPage() {
           href="https://caelex.eu"
           aria-label="Caelex home"
         >
-          <CaelexMark size={22} className={styles.caelexMark} />
-          <CaelexWordmark height={18} />
+          {/* Icon is the anchor — wordmark height is tuned so the
+              baseline of 'caelex' sits flush with the icon's visual
+              centre. 44 / 26 keeps the lockup feeling like a single
+              piece rather than two disconnected marks. */}
+          <CaelexMark size={44} className={styles.caelexMarkLarge} />
+          <CaelexWordmark height={26} />
         </Link>
 
         <div className={styles.center}>
@@ -354,10 +358,14 @@ export default function LoginPage() {
         </div>
 
         <div className={styles.productLockup}>
-          <CaelexMark size={20} className={styles.caelexMark} />
+          <CaelexMark size={22} className={styles.caelexMark} />
           <span className={styles.atlasName}>ATLAS</span>
           <span className={styles.sep} />
-          <span className={styles.attribution}>by Caelex</span>
+          {/* 'by Caelex' text replaced with the actual wordmark so the
+              whole lockup reads as one branded unit. 'by' stays as
+              typography — it's a preposition, not part of the logo. */}
+          <span className={styles.attribution}>by</span>
+          <CaelexWordmark height={14} />
         </div>
       </main>
     </div>
