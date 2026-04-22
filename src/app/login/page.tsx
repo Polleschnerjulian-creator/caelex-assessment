@@ -4,9 +4,18 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { analytics } from "@/lib/analytics";
 import styles from "./login.module.css";
+
+/**
+ * Official brand assets. Drop the authoritative PNGs at these paths
+ * in /public/brand/ — see the note at the top of page.tsx for the
+ * expected sizes and background treatment.
+ */
+const CAELEX_ICON_SRC = "/brand/caelex-icon.png";
+const CAELEX_WORDMARK_SRC = "/brand/caelex-wordmark.png";
 
 /**
  * Atlas-branded login.
@@ -26,59 +35,37 @@ interface SignInResult {
 }
 
 /**
- * Caelex brand icon — three-fold radial symbol. Kept inline so the
- * /login route has no external SVG dependency. Referenced via <use>
- * so it renders crisp at any size without re-declaring paths.
+ * Caelex brand icon — renders the official PNG at /public/brand/caelex-icon.png.
+ * We fetch it through next/image so the CDN caches + optimises it per
+ * viewport. size prop drives both the rendered box and the optimised
+ * source (next/image picks the closest srcset width).
  */
-function CaelexIconDefs() {
+function CaelexMark({ size, className }: { size: number; className?: string }) {
   return (
-    <svg
-      width="0"
-      height="0"
-      style={{ position: "absolute" }}
-      aria-hidden="true"
-    >
-      <defs>
-        <symbol id="caelex-icon" viewBox="0 0 100 100">
-          <g
-            stroke="currentColor"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          >
-            <g>
-              <path d="M 41 49 Q 37 27 33 10" />
-              <path d="M 45 49 Q 43 27 41 10" />
-              <path d="M 50 49 Q 50 27 50 10" />
-              <path d="M 55 49 Q 57 27 59 10" />
-              <path d="M 59 49 Q 63 27 67 10" />
-            </g>
-            <g transform="rotate(120 50 50)">
-              <path d="M 41 49 Q 37 27 33 10" />
-              <path d="M 45 49 Q 43 27 41 10" />
-              <path d="M 50 49 Q 50 27 50 10" />
-              <path d="M 55 49 Q 57 27 59 10" />
-              <path d="M 59 49 Q 63 27 67 10" />
-            </g>
-            <g transform="rotate(240 50 50)">
-              <path d="M 41 49 Q 37 27 33 10" />
-              <path d="M 45 49 Q 43 27 41 10" />
-              <path d="M 50 49 Q 50 27 50 10" />
-              <path d="M 55 49 Q 57 27 59 10" />
-              <path d="M 59 49 Q 63 27 67 10" />
-            </g>
-          </g>
-        </symbol>
-      </defs>
-    </svg>
+    <Image
+      src={CAELEX_ICON_SRC}
+      alt="Caelex"
+      width={size}
+      height={size}
+      priority
+      className={className}
+    />
   );
 }
 
-function CaelexMark({ className }: { className?: string }) {
+function CaelexWordmark({ height = 22 }: { height?: number }) {
+  // Wordmark is wider than tall — width is fluid, height is the anchor.
+  // Using a generous width budget (height × 5) covers the "caelex"
+  // aspect without cropping on common render sizes.
   return (
-    <svg className={className} aria-hidden="true">
-      <use href="#caelex-icon" />
-    </svg>
+    <Image
+      src={CAELEX_WORDMARK_SRC}
+      alt="caelex"
+      width={height * 5}
+      height={height}
+      priority
+      style={{ height, width: "auto" }}
+    />
   );
 }
 
@@ -325,16 +312,14 @@ export default function LoginPage() {
         <div className={styles.vignette} />
       </div>
 
-      <CaelexIconDefs />
-
       <main className={styles.content}>
         <Link
           className={styles.brandLockup}
           href="https://caelex.eu"
           aria-label="Caelex home"
         >
-          <CaelexMark className={styles.caelexMark} />
-          <span className={styles.wordtype}>caelex</span>
+          <CaelexMark size={22} className={styles.caelexMark} />
+          <CaelexWordmark height={18} />
         </Link>
 
         <div className={styles.center}>
@@ -369,7 +354,7 @@ export default function LoginPage() {
         </div>
 
         <div className={styles.productLockup}>
-          <CaelexMark className={styles.caelexMark} />
+          <CaelexMark size={20} className={styles.caelexMark} />
           <span className={styles.atlasName}>ATLAS</span>
           <span className={styles.sep} />
           <span className={styles.attribution}>by Caelex</span>
