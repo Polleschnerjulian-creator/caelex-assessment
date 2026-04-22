@@ -3,15 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Calendar as CalendarIcon,
-  CheckCircle2,
-  Clock,
-  Globe,
-  ShieldCheck,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Calendar as CalendarIcon, CheckCircle2, Clock, X } from "lucide-react";
 import styles from "./atlas-access.module.css";
 
 /**
@@ -423,44 +415,18 @@ export default function AtlasAccessPage() {
           <div className={styles.pitch}>
             <div className={styles.eyebrow}>
               <span className={styles.eyebrowDot} />
-              Invite-only access
+              Free demo · No commitment
             </div>
             <h1>
-              Get access
+              See ATLAS
               <br />
-              to ATLAS.
+              in action.
             </h1>
             <p>
-              We onboard law firms one at a time. Book a 20-minute intro with
-              Caelex and, once we&rsquo;ve confirmed fit, you&rsquo;ll receive
-              personal workspace credentials — usually within one business day.
+              Book a free 30-minute demo — no commitment, no credit card. A
+              Caelex expert walks you through ATLAS tailored to your practice
+              and answers your questions live.
             </p>
-
-            <ul className={styles.bullets}>
-              <li className={styles.bullet}>
-                <Sparkles size={15} className={styles.bulletIcon} />
-                <span>
-                  <strong>Personal walkthrough</strong> of ATLAS tailored to
-                  your practice — space, defence, satellite, or cross-border.
-                </span>
-              </li>
-              <li className={styles.bullet}>
-                <ShieldCheck size={15} className={styles.bulletIcon} />
-                <span>
-                  <strong>Compliance-grade access</strong> — every seat is
-                  provisioned manually with an audit trail, per-firm workspace,
-                  and verified user identity.
-                </span>
-              </li>
-              <li className={styles.bullet}>
-                <Globe size={15} className={styles.bulletIcon} />
-                <span>
-                  <strong>Your jurisdictions, your language.</strong>{" "}
-                  We&rsquo;ll make sure the sources you rely on are live before
-                  you get the invite.
-                </span>
-              </li>
-            </ul>
 
             <section className={styles.calendar}>
               <div className={styles.calendarHeader}>
@@ -526,10 +492,10 @@ export default function AtlasAccessPage() {
           <div>
             {stage === "form" ? (
               <div className={styles.card}>
-                <h2>Request access</h2>
+                <h2>Book your demo</h2>
                 <p className={styles.kicker}>
-                  Tell us about your firm — we&rsquo;ll confirm your slot within
-                  a few hours.
+                  Pick a slot and tell us a bit about your firm. No commitment —
+                  cancel or reschedule anytime.
                 </p>
 
                 <div
@@ -693,7 +659,7 @@ export default function AtlasAccessPage() {
                       </>
                     ) : (
                       <>
-                        Book intro call <span className={styles.arrow}>→</span>
+                        Book demo <span className={styles.arrow}>→</span>
                       </>
                     )}
                   </button>
@@ -710,7 +676,7 @@ export default function AtlasAccessPage() {
                 <div className={styles.successIcon} aria-hidden="true">
                   <CheckCircle2 size={28} strokeWidth={1.5} />
                 </div>
-                <h2>Your intro is booked.</h2>
+                <h2>Your demo is booked.</h2>
                 <p>
                   Thanks, {name.split(" ")[0] || "there"}. We&rsquo;ve sent a
                   confirmation to{" "}
@@ -726,9 +692,8 @@ export default function AtlasAccessPage() {
                   </div>
                 )}
                 <p style={{ marginTop: 12 }}>
-                  We&rsquo;ll review your firm&rsquo;s fit on the call. Once
-                  approved, your ATLAS workspace is usually provisioned within
-                  one business day.
+                  We&rsquo;ll see you on the call. No prep needed — just bring
+                  your questions.
                 </p>
                 <div className={styles.successActions}>
                   <Link href="https://caelex.eu">Back to caelex.eu →</Link>

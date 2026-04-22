@@ -300,7 +300,7 @@ function LoginForm() {
       <p className={styles.tiny}>
         Invited to a firm? <Link href="/atlas-signup">Redeem your invite</Link>
         <br />
-        New to ATLAS? <Link href="/atlas-access">Request access</Link>
+        New to ATLAS? <Link href="/atlas-access">Book a free demo</Link>
         <br />
         By continuing you agree to our <Link href="/legal/terms">
           Terms

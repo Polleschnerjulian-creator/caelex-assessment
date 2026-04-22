@@ -47,7 +47,7 @@ import { linkInboundLead } from "@/lib/crm/auto-link.server";
 export const runtime = "nodejs";
 
 const TIMEZONE = "Europe/Berlin";
-const DURATION_MINUTES = 20;
+const DURATION_MINUTES = 30;
 
 const ROLES = [
   "partner",
@@ -199,9 +199,9 @@ export async function POST(request: NextRequest) {
     let googleEvent: Awaited<ReturnType<typeof createDemoEvent>> = null;
     try {
       googleEvent = await createDemoEvent({
-        summary: `ATLAS intro: ${firm}`,
+        summary: `ATLAS demo: ${firm}`,
         description: [
-          `ATLAS access request from ${name}`,
+          `ATLAS demo request from ${name}`,
           `Firm: ${firm}`,
           `Email: ${email}`,
           `Role: ${role}`,
@@ -312,19 +312,20 @@ export async function POST(request: NextRequest) {
     //    uses a single global sender. Matches the invitation flow in
     //    /api/atlas/team/route.ts so ATLAS comms share one sender
     //    identity across invites, password-reset, and access flows.
-    const prospectSubject = `Your Caelex ATLAS intro is booked — ${slotLabel}`;
+    const prospectSubject = `Your Caelex ATLAS demo is booked — ${slotLabel}`;
     const prospectHtml = `
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #111;">
           <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 24px 0;">
-            Your Caelex ATLAS intro is booked
+            Your Caelex ATLAS demo is booked
           </h2>
           <p style="line-height: 1.6; margin: 0 0 16px 0;">
             Hi ${escapeHtml(name.split(" ")[0] || name)},
           </p>
           <p style="line-height: 1.6; margin: 0 0 16px 0;">
-            Thanks for requesting access to ATLAS. Your 20-minute intro with
-            the Caelex team is confirmed — a calendar invite from Google
-            Calendar is on its way separately.
+            Thanks for booking a demo of ATLAS. Your 30-minute walkthrough
+            with the Caelex team is confirmed — a calendar invite from
+            Google Calendar is on its way separately. No commitment, no
+            credit card — just bring your questions.
           </p>
           <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 16px 0;">
             <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280;">When</p>
@@ -339,10 +340,9 @@ export async function POST(request: NextRequest) {
             }
           </div>
           <p style="line-height: 1.6; margin: 0 0 16px 0;">
-            On the call we&rsquo;ll walk through ATLAS end-to-end, make sure
-            the jurisdictions and sources you rely on are covered, and — if
-            we&rsquo;re a good fit — provision your firm&rsquo;s workspace
-            within one business day.
+            On the call we&rsquo;ll walk you through ATLAS end-to-end and
+            answer whatever you throw at us. Purely unverbindlich — no
+            sales pressure, no follow-up obligation.
           </p>
           <p style="line-height: 1.6; margin: 0 0 16px 0;">
             Need to reschedule? Just reply to this email.
@@ -378,11 +378,11 @@ export async function POST(request: NextRequest) {
     // 6. Email: internal notification to the Caelex sales inbox
     await sendEmail({
       to: "cs@caelex.eu",
-      subject: `ATLAS access BOOKED: ${escapeHtml(name)} (${escapeHtml(firm)}) — ${slotLabel}`,
+      subject: `ATLAS demo BOOKED: ${escapeHtml(name)} (${escapeHtml(firm)}) — ${slotLabel}`,
       html: `
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #111;">
           <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 24px 0;">
-            ATLAS access request — intro booked
+            ATLAS demo booked
           </h2>
 
           <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
@@ -429,7 +429,7 @@ export async function POST(request: NextRequest) {
       role,
       source: "atlas_access",
       activityType: "MEETING_SCHEDULED",
-      activitySummary: `ATLAS intro booked — ${slotLabel}`,
+      activitySummary: `ATLAS demo booked — ${slotLabel}`,
       activityBody: notes || undefined,
       demoRequestId: accessRequest.id,
       bookingId: booking.id,
