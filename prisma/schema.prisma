@@ -8661,6 +8661,10 @@ model LegalMatter {
   accessLogs  LegalMatterAccessLog[]
   invitations LegalMatterInvitation[]
 
+  // Phase 2 workspace data
+  tasks MatterTask[]
+  notes MatterNote[]
+
   @@unique([lawFirmOrgId, clientOrgId, reference])
   @@index([clientOrgId, status])
   @@index([lawFirmOrgId, status])
@@ -8690,6 +8694,88 @@ model LegalMatterInvitation {
 
   @@index([matterId])
   @@index([expiresAt])
+}
+
+// ─── Phase 2 — Matter Workspace ─────────────────────────────────
+//
+// The firm-side working surface of a LegalMatter. Tasks and notes
+// live inside a matter and are visible only to members of the firm
+// organisation (the operator can VIEW them via matter-inspection,
+// but not by default — that's a Phase 2+ RBAC decision). No Caelex-
+// pull yet; firm-owned data only.
+
+enum MatterTaskStatus {
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+enum MatterTaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// A single actionable item attached to a matter. Typical examples:
+/// "Prepare memo on FR licensing timeline", "Submit ITU coordination
+/// filing by 2026-06-14", "Review draft response from BNetzA".
+model MatterTask {
+  id       String @id @default(cuid())
+  matterId String
+
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      MatterTaskStatus   @default(OPEN)
+  priority    MatterTaskPriority @default(NORMAL)
+
+  // Author + current assignee (both firm-side users). Nullable
+  // assignee because tasks may be unassigned until a partner picks
+  // them up.
+  createdBy  String
+  assignedTo String?
+
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  @@index([matterId, status])
+  @@index([matterId, dueDate])
+}
+
+/// Free-form notes / memo drafts attached to a matter. Rich-text
+/// content stored as serialised JSON string (TipTap/ProseMirror-
+/// compatible) so we can upgrade the editor without schema changes.
+/// Phase 2 ships with plain-text content; richer later.
+model MatterNote {
+  id       String @id @default(cuid())
+  matterId String
+
+  title   String
+  content String @db.Text // can be large — memo drafts
+
+  // Version tracking via a parent-child chain: each edit creates a
+  // new row with `parentNoteId` pointing back. Enables diff views
+  // later without overwriting history.
+  parentNoteId String?
+  isLatest     Boolean @default(true)
+
+  createdBy  String
+  lastEditBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  @@index([matterId, isLatest, updatedAt])
+  @@index([parentNoteId])
 }
 
 /// Append-only audit trail of every cross-organisation data access

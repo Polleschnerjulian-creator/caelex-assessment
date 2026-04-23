@@ -215,6 +215,21 @@ export function MatterDetail({
             )}
           </div>
           <div className="flex flex-col gap-2 flex-shrink-0">
+            {/* Phase 2: full-screen matter workspace. Only from the
+                Atlas (law-firm) side for now — operator-side workspace
+                is a separate Phase-2b concern. Active matters only —
+                a workspace on a PENDING/REVOKED matter has nothing
+                meaningful to show. */}
+            {viewerSide === "ATLAS" && matter.status === "ACTIVE" && (
+              <button
+                onClick={() =>
+                  router.push(`/atlas/network/${matterId}/workspace`)
+                }
+                className="px-3 py-1.5 text-xs rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-medium hover:opacity-90"
+              >
+                → Zum Workspace
+              </button>
+            )}
             {canSuspend && (
               <button
                 onClick={() => setStatus("SUSPENDED")}
