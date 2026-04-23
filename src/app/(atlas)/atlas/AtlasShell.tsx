@@ -18,6 +18,7 @@ import {
   Bell,
   Menu,
   X,
+  Briefcase,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
@@ -47,6 +48,10 @@ const MAIN_NAV = [
     icon: Ticket,
   },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
+  // Legal Network: Kanzlei-Mandanten-Bridge zu Caelex. Zwischen
+  // Bookmarks und Alerts, weil's ein eigenständiges Workstream-Ziel
+  // ist (nicht nur Lookup wie Jurisdictions).
+  { labelKey: "atlas.network", href: "/atlas/network", icon: Briefcase },
   { labelKey: "atlas.bookmarks", href: "/atlas/bookmarks", icon: Bookmark },
   // Alerts — user-level notifications feed. The unread-count badge
   // (rendered inline below) is what makes this item more than

@@ -36,6 +36,7 @@ import {
   Satellite,
   Activity,
   Network,
+  Briefcase,
   LayoutGrid,
   FolderKanban,
   CheckSquare,
@@ -1237,6 +1238,15 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Legal Engagements
+              </NavItem>
+              {/* Legal Network Phase 1: Atlas-Bridge zu Kanzleien */}
+              <NavItem
+                href="/dashboard/network/legal-counsel"
+                icon={<Briefcase size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+              >
+                Meine Anwälte
               </NavItem>
             </div>
           </div>
