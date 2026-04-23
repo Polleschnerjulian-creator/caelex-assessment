@@ -20,7 +20,12 @@ import type {
   LegalSourceType,
   RelevanceLevel,
   KeyProvision,
+  Authority,
 } from "@/data/legal-sources";
+import {
+  LEGAL_SOURCE_TRANSLATIONS_DE,
+  AUTHORITY_TRANSLATIONS_DE,
+} from "@/data/legal-sources/translations-de";
 import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
@@ -29,6 +34,7 @@ import {
   type CaseStudy,
   type ConductCondition,
 } from "@/data/landing-rights";
+import { foldText, escapeRegex } from "@/lib/atlas/search-normalize";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -38,36 +44,55 @@ import {
 // "FAA", "OSHAA" don't drown in substring matches (auth/ISO/ation,
 // supervISOr, provISO, etc.). Higher-tier matches always beat any
 // number of lower-tier ones thanks to the wide score gaps.
-
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+//
+// Language-native: all strings (title, haystack, query token) are run
+// through `foldText` so diacritics, ß, and case differences don't
+// silently drop matches. German translations (title, provision titles,
+// scope, provision summaries) are concatenated into the source haystack
+// so a native-German query like "weltraumgesetz" or "satellitenbetrieb"
+// matches the BWRG even though its English title is "Space Act".
 
 /**
  * Builds the same haystack used by performSearch for a given source.
  * Kept colocated so the snippet helper and the ranker see identical
  * text — no risk of the snippet pointing at a token the ranker didn't
- * actually score.
+ * actually score. Returns folded (lowercased, diacritic-stripped) text
+ * so callers can skip redundant normalisation.
  */
 function buildSourceHaystack(s: LegalSource): string {
-  return `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions.map((p: KeyProvision) => `${p.title} ${p.summary}`).join(" ")}`.toLowerCase();
+  const en = `${s.id} ${s.title_en} ${s.title_local ?? ""} ${s.official_reference ?? ""} ${s.scope_description ?? ""} ${s.compliance_areas.join(" ")} ${s.key_provisions.map((p: KeyProvision) => `${p.title} ${p.summary}`).join(" ")}`;
+  const de = LEGAL_SOURCE_TRANSLATIONS_DE.get(s.id);
+  const deText = de
+    ? `${de.title} ${de.scopeDescription ?? ""} ${Object.values(de.provisions)
+        .map((p) => `${p.title} ${p.summary}`)
+        .join(" ")}`
+    : "";
+  return foldText(`${en} ${deText}`);
+}
+
+function buildAuthorityHaystack(a: Authority): string {
+  const en = `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`;
+  const de = AUTHORITY_TRANSLATIONS_DE.get(a.id);
+  const deText = de ? `${de.name} ${de.mandate}` : "";
+  return foldText(`${en} ${deText}`);
 }
 
 /**
  * Extract a short snippet around the first match when it's outside the
  * source title. Returns null when the match is in the title or missing —
- * the row already makes those cases visually obvious.
+ * the row already makes those cases visually obvious. Operates on folded
+ * text so the snippet match tracks the ranker exactly.
  */
 function sourceMatchSnippet(
   source: LegalSource,
   query: string,
   radius = 70,
 ): string | null {
-  const q = query.trim().toLowerCase();
+  const q = foldText(query.trim());
   if (!q) return null;
   const token = q.split(/\s+/)[0];
   if (!token) return null;
-  if (source.title_en.toLowerCase().includes(token)) return null;
+  if (foldText(source.title_en).includes(token)) return null;
   const haystack = buildSourceHaystack(source);
   const idx = haystack.indexOf(token);
   if (idx === -1) return null;
@@ -76,16 +101,25 @@ function sourceMatchSnippet(
   return `${start > 0 ? "…" : ""}${haystack.slice(start, end).trim()}${end < haystack.length ? "…" : ""}`;
 }
 
-function scoreMatch(title: string, haystack: string, token: string): number {
-  const lowerTitle = title.toLowerCase();
-  const wordRe = new RegExp(`\\b${escapeRegex(token)}\\b`, "i");
-  const titleIdx = lowerTitle.indexOf(token);
-  const titleWholeWord = wordRe.test(title);
+/**
+ * Score a match. `foldedTitle`, `foldedHaystack`, and `foldedToken`
+ * must all have been run through `foldText` upstream — this function
+ * assumes lowercase, diacritic-free input and does no normalisation
+ * of its own.
+ */
+function scoreMatch(
+  foldedTitle: string,
+  foldedHaystack: string,
+  foldedToken: string,
+): number {
+  const wordRe = new RegExp(`\\b${escapeRegex(foldedToken)}\\b`);
+  const titleIdx = foldedTitle.indexOf(foldedToken);
+  const titleWholeWord = wordRe.test(foldedTitle);
   if (titleWholeWord && titleIdx === 0) return 1000;
   if (titleWholeWord) return 500;
   if (titleIdx !== -1) return 100 - Math.min(titleIdx, 100);
-  if (wordRe.test(haystack)) return 50;
-  const hIdx = haystack.indexOf(token);
+  if (wordRe.test(foldedHaystack)) return 50;
+  const hIdx = foldedHaystack.indexOf(foldedToken);
   return hIdx >= 0 ? Math.max(0, 10 - Math.floor(hIdx / 10)) : -Infinity;
 }
 
@@ -152,29 +186,36 @@ interface SearchResults {
 }
 
 function performSearch(query: string): SearchResults | null {
-  const q = query.toLowerCase().trim();
-  if (!q || q.length < 2) return null;
+  const raw = query.trim();
+  if (!raw || raw.length < 2) return null;
+  // q is the folded query: lowercased, NFD-decomposed, combining marks
+  // stripped, ß→ss. Every haystack below is also folded before match,
+  // so "weltraumgesetz" finds "Weltraumgesetz", "osterreich" finds
+  // "Österreich", and "straße" finds "Strasse".
+  const q = foldText(raw);
 
   const jurisdictions = [...JURISDICTION_DATA.entries()].filter(
     ([code, data]) =>
-      data.countryName.toLowerCase().includes(q) ||
+      foldText(data.countryName).includes(q) ||
       code.toLowerCase() === q ||
-      data.legislation.name.toLowerCase().includes(q) ||
-      data.licensingAuthority.name.toLowerCase().includes(q),
+      foldText(data.legislation.name).includes(q) ||
+      foldText(data.licensingAuthority.name).includes(q),
   );
 
   const scoredSources = ALL_SOURCES.map((s) => {
     const haystack = buildSourceHaystack(s);
-    return { source: s, score: scoreMatch(s.title_en, haystack, q) };
+    return { source: s, score: scoreMatch(foldText(s.title_en), haystack, q) };
   })
     .filter(({ score }) => score > -Infinity)
     .sort((a, b) => b.score - a.score);
   const sources = scoredSources.map(({ source }) => source);
 
   const scoredAuthorities = ALL_AUTHORITIES.map((a) => {
-    const haystack =
-      `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`.toLowerCase();
-    return { authority: a, score: scoreMatch(a.name_en, haystack, q) };
+    const haystack = buildAuthorityHaystack(a);
+    return {
+      authority: a,
+      score: scoreMatch(foldText(a.name_en), haystack, q),
+    };
   })
     .filter(({ score }) => score > -Infinity)
     .sort((a, b) => b.score - a.score);
@@ -182,26 +223,23 @@ function performSearch(query: string): SearchResults | null {
 
   const landingRightsProfiles = ALL_LANDING_RIGHTS_PROFILES.filter(
     (p) =>
-      p.overview.summary.toLowerCase().includes(q) ||
+      foldText(p.overview.summary).includes(q) ||
       p.regulators.some(
         (r) =>
-          r.name.toLowerCase().includes(q) ||
-          r.abbreviation.toLowerCase().includes(q),
+          foldText(r.name).includes(q) || foldText(r.abbreviation).includes(q),
       ) ||
       p.jurisdiction.toLowerCase() === q,
   );
 
   const landingRightsCaseStudies = ALL_CASE_STUDIES.filter(
     (cs) =>
-      cs.title.toLowerCase().includes(q) ||
-      cs.operator.toLowerCase().includes(q) ||
-      cs.narrative.toLowerCase().includes(q),
+      foldText(cs.title).includes(q) ||
+      foldText(cs.operator).includes(q) ||
+      foldText(cs.narrative).includes(q),
   );
 
   const landingRightsConduct = ALL_CONDUCT_CONDITIONS.filter(
-    (c) =>
-      c.title.toLowerCase().includes(q) ||
-      c.requirement.toLowerCase().includes(q),
+    (c) => foldText(c.title).includes(q) || foldText(c.requirement).includes(q),
   );
 
   if (
