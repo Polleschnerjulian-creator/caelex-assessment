@@ -3,440 +3,842 @@
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
- * AIMode — the full-screen Atlas AI overlay.
+ * AIMode — full-screen Atlas AI overlay.
  *
- * This is a VISUAL PROTOTYPE only. No backend, no AI calls, no token
- * spend. When the user types a query and submits, we run a mock
- * orchestration sequence (pending → running → done cascade across
- * four fake agents) with hardcoded result cards. The goal is to
- * validate the UX paradigm before wiring up real agents.
+ * VISUAL PROTOTYPE. No backend, no LLM calls, no token spend.
+ * Submits run a fake streaming response so the whole interaction
+ * loop (entity reaction → stream → token-meter → shockwave →
+ * settle) can be evaluated end-to-end in-browser.
  *
- * Design language:
- *   - Dark stage (indigo/slate) with soft vignette
- *   - Centre: Singularity (organic pulsing orb)
- *   - Thinking state: AgentConstellation of satellite nodes around it
- *   - Result cards materialise in a column below the orb as each
- *     satellite completes
+ * Composition:
+ *   AtlasEntity          → the Three.js scene behind the UI
+ *   Command palette      → ⌘/ or slash-first input
+ *   Model switcher       → visual only, no runtime effect
+ *   Mic                  → real WebAudio analyser (listening mode)
+ *   Sound                → WebAudio blips on interactions
+ *   Attachments          → dropzone + button, chips in the search bar
+ *   Conversation         → faux stream, fades behind the input
+ *
+ * Replacement plan: when we wire real agents, only `runResponse`
+ * needs to change — the rest of the UX stays the same.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, ArrowUp, Sparkles } from "lucide-react";
-import { Singularity, type SingularityState } from "./Singularity";
-import { AgentConstellation, type Agent } from "./AgentConstellation";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
+import {
+  AtlasEntity,
+  type AtlasEntityHandle,
+  type AtlasMode,
+} from "./AtlasEntity";
+import styles from "./ai-mode.module.css";
+
+// ─── Config ────────────────────────────────────────────────────────────
+
+const MODELS = {
+  "ATLAS-1": { ctx: 220000, label: "220k" },
+  "ATLAS Mini": { ctx: 64000, label: "64k" },
+  "ATLAS Pro": { ctx: 1000000, label: "1M" },
+} as const;
+type ModelName = keyof typeof MODELS;
+
+const SUGGESTIONS = [
+  "Lizenzregime Weltraum · DE vs. FR",
+  "Was ist neu im EU Space Act?",
+  "Frist ITU Filing prüfen",
+  "Haftung Startstaat erklären",
+];
+
+const COMMANDS = [
+  {
+    name: "memo",
+    icon: "✎",
+    desc: "Mandantenmemo draften",
+    fill: "Draft a memo on: ",
+  },
+  {
+    name: "compare",
+    icon: "⇌",
+    desc: "Jurisdiktionen vergleichen",
+    fill: "Compare jurisdictions on: ",
+  },
+  {
+    name: "cite",
+    icon: "⌘",
+    desc: "Citations extrahieren",
+    fill: "Extract citations for: ",
+  },
+  {
+    name: "watch",
+    icon: "◉",
+    desc: "Monitor einrichten",
+    fill: "Watch changes for: ",
+  },
+  { name: "explain", icon: "?", desc: "Konzept erklären", fill: "Explain: " },
+  {
+    name: "precedent",
+    icon: "§",
+    desc: "Precedent finden",
+    fill: "Find precedent for: ",
+  },
+] as const;
+
+const FAKE_RESPONSES = [
+  "Gute Frage. Drei Punkte sind dabei relevant — die Rechtsgrundlage, die Zuständigkeit und die Frist. Ich ziehe gleich die Paragraphen.",
+  "Das ist eine mehrstufige Prüfung. Erst Art. VI OST als Dach, dann das nationale Genehmigungsrecht, zuletzt die Spectrum-Koordination.",
+  "Spannender Fall. Der sauberste Weg ist eine Matrix: Jurisdiktion × Anwendungsbereich × Frist. Lass mich das aufstellen.",
+  "Vorab: die Regelung im EU Space Act greift, aber es gibt einen Delegated Act (Annex II), der die konkrete Compliance-Schwelle definiert.",
+  "Zwei relevante Präzedenzfälle aus unserer Matter-History — beide mit ähnlicher Struktur. Ich vergleiche Tenor und Regulator-Reaktion.",
+];
+
+function fmtTokens(n: number): string {
+  if (n < 1000) return `${n}`;
+  if (n < 10000) return `${(n / 1000).toFixed(2)}k`;
+  if (n < 100000) return `${(n / 1000).toFixed(1)}k`;
+  if (n < 1000000) return `${Math.round(n / 1000)}k`;
+  return `${(n / 1e6).toFixed(1)}M`;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────
+
+interface ChatMsg {
+  id: string;
+  role: "user" | "atlas";
+  text: string;
+  streaming?: boolean;
+}
 
 interface AIModeProps {
   open: boolean;
   onClose: () => void;
 }
 
-// Mock agent plan. In the real system this would come from the
-// entity's planning step; for the prototype we simulate 4 agents
-// that run with staggered completion timers.
-const MOCK_AGENTS: Omit<Agent, "status">[] = [
-  { id: "a1", label: "Jurisdictional compare · DE / FR" },
-  { id: "a2", label: "Live regulatory change monitor" },
-  { id: "a3", label: "Matter precedent search" },
-  { id: "a4", label: "Paragraph-level citation extract" },
-];
-
-interface ResultCard {
-  agentId: string;
-  title: string;
-  body: string;
-  citations: number;
-  jurisdiction: string;
-}
-
-// Demo content only — in the real system these come from agent outputs.
-const MOCK_RESULTS: Record<string, ResultCard> = {
-  a1: {
-    agentId: "a1",
-    title: "Lizenzregime im Vergleich",
-    body: "DE (BWRG §3): Genehmigung durch BMWK erforderlich, 6-9 Monate. FR (LOS 2008): Registrierung via CNES, 3-4 Monate + Pflicht-Versicherung 50M€.",
-    citations: 7,
-    jurisdiction: "DE · FR",
-  },
-  a2: {
-    agentId: "a2",
-    title: "Aktive Änderungen letzte 14 Tage",
-    body: "EU: Space Act Annex II Entwurf v0.8 veröffentlicht (Delegated Act für Debris Mitigation). Kein direkter Mandant-Impact, Review empfohlen.",
-    citations: 2,
-    jurisdiction: "EU",
-  },
-  a3: {
-    agentId: "a3",
-    title: "3 ähnliche Matters gefunden",
-    body: "Mandat 2024-112 (in-orbit refueling, DE-Launch): ähnliche Struktur. Precedent-Memo vorhanden — klonen?",
-    citations: 1,
-    jurisdiction: "Intern",
-  },
-  a4: {
-    agentId: "a4",
-    title: "Key Provisions extrahiert",
-    body: "OST Art. VI (Staatenverantwortlichkeit), Liability Convention Art. II (absolute Haftung), BWRG §6 (Schadensvorsorge).",
-    citations: 12,
-    jurisdiction: "INT · DE",
-  },
-};
-
-type Phase = "idle" | "listening" | "thinking" | "responding";
+// ─── Component ────────────────────────────────────────────────────────
 
 export function AIMode({ open, onClose }: AIModeProps) {
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [results, setResults] = useState<ResultCard[]>([]);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [mode, setMode] = useState<AtlasMode>("idle");
+  const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [totalTokens, setTotalTokens] = useState(8234);
+  const [modelName, setModelName] = useState<ModelName>("ATLAS-1");
+  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState("");
+  const [cmdActiveIdx, setCmdActiveIdx] = useState(0);
+  const [toastText, setToastText] = useState<string | null>(null);
+  const [tokenPulse, setTokenPulse] = useState(0); // changes to retrigger CSS anim
+  const [audioLevel, setAudioLevel] = useState(0);
 
-  // Reset when closing
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cmdInputRef = useRef<HTMLInputElement>(null);
+  const conversationRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const entityHandle = useRef<AtlasEntityHandle | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const micAnalyserRef = useRef<AnalyserNode | null>(null);
+  const micRafRef = useRef<number>(0);
+  const lastTypeTs = useRef<number>(0);
+  const idleReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const maxTokens = MODELS[modelName].ctx;
+
+  // ── Reset when overlay closes ──────────────────────────────
   useEffect(() => {
-    if (!open) return;
-    setPhase("idle");
-    setQuery("");
-    setSubmittedQuery("");
-    setAgents([]);
-    setResults([]);
-    // Small delay before focusing so the mount animation plays first
-    const t = setTimeout(() => inputRef.current?.focus(), 700);
-    return () => clearTimeout(t);
+    if (open) {
+      const t = setTimeout(() => inputRef.current?.focus(), 350);
+      return () => clearTimeout(t);
+    } else {
+      setMode("idle");
+      setInputValue("");
+      setMessages([]);
+      setAttachments([]);
+      setCmdOpen(false);
+    }
   }, [open]);
 
-  // Phase transitions when typing
+  // ── Return to idle after typing pause ──────────────────────
+  // The "typing" mode re-energises the entity, but if the user
+  // stops typing we drift back to idle after ~1.5s so the orb
+  // doesn't look forever-excited.
   useEffect(() => {
-    if (phase === "thinking" || phase === "responding") return;
-    setPhase(query.length > 0 ? "listening" : "idle");
-  }, [query, phase]);
+    if (mode !== "typing") return;
+    const check = () => {
+      if (performance.now() - lastTypeTs.current > 1500 && mode === "typing") {
+        setMode("idle");
+      }
+    };
+    const id = setInterval(check, 300);
+    return () => clearInterval(id);
+  }, [mode]);
 
-  // Run the mock agent simulation. Purely client-side — no fetch, no
-  // AI, no tokens. This is the hook to rip out and replace with real
-  // agent dispatching later.
-  const runMockPipeline = () => {
-    if (!query.trim()) return;
-    setSubmittedQuery(query.trim());
-    setQuery("");
-    setPhase("thinking");
-    setResults([]);
-    const initialAgents: Agent[] = MOCK_AGENTS.map((a) => ({
-      ...a,
-      status: "pending",
-    }));
-    setAgents(initialAgents);
+  // ── Keyboard shortcuts ─────────────────────────────────────
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: globalThis.KeyboardEvent) => {
+      const metaKey = e.metaKey || e.ctrlKey;
+      if (metaKey && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      if (metaKey && e.key === "/") {
+        e.preventDefault();
+        setCmdOpen(true);
+        setCmdQuery("");
+      }
+      if (e.key === "Escape") {
+        if (cmdOpen) {
+          setCmdOpen(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, cmdOpen, onClose]);
 
-    // Stagger: each agent starts running 400ms after the previous,
-    // completes 1800-3200ms after its start. Creates a natural
-    // "orchestrated activity" rhythm.
-    initialAgents.forEach((agent, i) => {
-      const startDelay = 500 + i * 400;
-      const runDuration = 1800 + Math.random() * 1400;
+  // ── Command palette focus ──────────────────────────────────
+  useEffect(() => {
+    if (cmdOpen) setTimeout(() => cmdInputRef.current?.focus(), 40);
+  }, [cmdOpen]);
 
-      setTimeout(() => {
-        setAgents((prev) =>
-          prev.map((a) =>
-            a.id === agent.id ? { ...a, status: "running" } : a,
+  // ── Auto-scroll conversation ───────────────────────────────
+  useEffect(() => {
+    if (conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // ── Click outside model menu ───────────────────────────────
+  useEffect(() => {
+    if (!modelMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(`[data-atlas-menu]`)) setModelMenuOpen(false);
+    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [modelMenuOpen]);
+
+  // ── Dropzone (global) ──────────────────────────────────────
+  useEffect(() => {
+    if (!open) return;
+    const onDrag = (e: DragEvent) => e.preventDefault();
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      if (!e.dataTransfer?.files) return;
+      addAttachments(Array.from(e.dataTransfer.files));
+    };
+    window.addEventListener("dragover", onDrag);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragover", onDrag);
+      window.removeEventListener("drop", onDrop);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // ── Cleanup mic on unmount ─────────────────────────────────
+  useEffect(() => {
+    return () => {
+      stopListening();
+      if (idleReturnTimerRef.current) clearTimeout(idleReturnTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Helpers ────────────────────────────────────────────────
+  const playSound = useCallback(
+    (type: "click" | "whoosh" | "chime") => {
+      if (!soundOn) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext
+        )();
+      }
+      const ctx = audioCtxRef.current;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      let freq = 1800;
+      let dur = 0.04;
+      let vol = 0.05;
+      let wave: OscillatorType = "sine";
+      if (type === "click") {
+        freq = 2400;
+        dur = 0.03;
+        vol = 0.03;
+      }
+      if (type === "whoosh") {
+        freq = 300;
+        dur = 0.35;
+        vol = 0.12;
+        wave = "triangle";
+      }
+      if (type === "chime") {
+        freq = 880;
+        dur = 0.4;
+        vol = 0.08;
+      }
+      osc.type = wave;
+      osc.frequency.setValueAtTime(freq, now);
+      if (type === "whoosh")
+        osc.frequency.exponentialRampToValueAtTime(80, now + dur);
+      if (type === "chime")
+        osc.frequency.exponentialRampToValueAtTime(freq * 2, now + dur);
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur);
+    },
+    [soundOn],
+  );
+
+  const toast = useCallback((msg: string) => {
+    setToastText(msg);
+    setTimeout(() => setToastText((t) => (t === msg ? null : t)), 1800);
+  }, []);
+
+  // ── Attachments ────────────────────────────────────────────
+  const addAttachments = useCallback(
+    (files: File[]) => {
+      setAttachments((prev) => [...prev, ...files]);
+      playSound("click");
+      if (files.length) toast(`Anhang: ${files[0].name}`);
+    },
+    [playSound, toast],
+  );
+
+  // ── Mic ────────────────────────────────────────────────────
+  const stopListening = useCallback(() => {
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+    if (micRafRef.current) {
+      cancelAnimationFrame(micRafRef.current);
+      micRafRef.current = 0;
+    }
+    micAnalyserRef.current = null;
+    setListening(false);
+    setAudioLevel(0);
+    setMode("idle");
+  }, []);
+
+  const startListening = useCallback(async () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext
+        )();
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+      const src = audioCtxRef.current.createMediaStreamSource(stream);
+      const analyser = audioCtxRef.current.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      micAnalyserRef.current = analyser;
+
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        if (!micAnalyserRef.current) return;
+        micAnalyserRef.current.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += data[i];
+        const avg = sum / data.length / 255;
+        setAudioLevel(avg);
+        micRafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+
+      setListening(true);
+      setMode("listening");
+      toast("Hört zu…");
+    } catch {
+      toast("Mikrofon nicht verfügbar");
+    }
+  }, [toast]);
+
+  // ── Submit / Fake response ─────────────────────────────────
+  const runResponse = useCallback(
+    async (_prompt: string) => {
+      setMode("thinking");
+      await sleep(700 + Math.random() * 500);
+      playSound("chime");
+      const id = `m-${Date.now()}-atlas`;
+      setMessages((prev) => [
+        ...prev,
+        { id, role: "atlas", text: "", streaming: true },
+      ]);
+      setMode("speaking");
+      const text =
+        FAKE_RESPONSES[Math.floor(Math.random() * FAKE_RESPONSES.length)];
+      const words = text.split(" ");
+      for (let i = 0; i < words.length; i++) {
+        await sleep(40 + Math.random() * 90);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  text: m.text + (i === 0 ? "" : " ") + words[i],
+                }
+              : m,
           ),
         );
-      }, startDelay);
+        setTotalTokens((n) => Math.min(maxTokens, n + 1));
+      }
+      setMessages((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, streaming: false } : m)),
+      );
+      setMode("idle");
+    },
+    [maxTokens, playSound],
+  );
 
-      setTimeout(() => {
-        setAgents((prev) =>
-          prev.map((a) => (a.id === agent.id ? { ...a, status: "done" } : a)),
-        );
-        const result = MOCK_RESULTS[agent.id];
-        if (result) {
-          setResults((prev) => [...prev, result]);
-        }
-      }, startDelay + runDuration);
-    });
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      const text = inputValue.trim();
+      if (!text) return;
+      const userId = `m-${Date.now()}-user`;
+      setMessages((prev) => [...prev, { id: userId, role: "user", text }]);
+      const typedTokens = Math.floor(inputValue.length / 3.2);
+      const attachmentCost = attachments.length * 400;
+      setTotalTokens((n) =>
+        Math.min(maxTokens, n + typedTokens + attachmentCost),
+      );
+      setInputValue("");
+      setTokenPulse((n) => n + 1);
+      entityHandle.current?.bumpEnergy(0.9);
+      entityHandle.current?.triggerShockwave();
+      playSound("whoosh");
+      runResponse(text);
+    },
+    [attachments.length, inputValue, maxTokens, playSound, runResponse],
+  );
 
-    // After the last agent's worst-case finish + synthesis time,
-    // swing into "responding" to signal the entity has the answer.
-    const totalTime = 500 + (initialAgents.length - 1) * 400 + 3200 + 600;
-    setTimeout(() => setPhase("responding"), totalTime);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setInputValue(v);
+    lastTypeTs.current = performance.now();
+    setMode("typing");
+    entityHandle.current?.bumpEnergy(0.04);
+    playSound("click");
+    if (v.startsWith("/")) {
+      setCmdOpen(true);
+      setCmdQuery(v.slice(1));
+    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const handleInputKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape" && !cmdOpen) onClose();
+  };
+
+  // ── Token meter calc ───────────────────────────────────────
+  const typedTok = Math.floor(inputValue.length / 3.2);
+  const currentTokens = Math.min(maxTokens, totalTokens + typedTok);
+  const tokenPct = Math.min(100, (currentTokens / maxTokens) * 100);
+  const tokenWarn = tokenPct >= 75 && tokenPct < 92;
+  const tokenCrit = tokenPct >= 92;
+
+  // ── Command filtering ──────────────────────────────────────
+  const filteredCmds = useMemo(() => {
+    const q = cmdQuery.toLowerCase();
+    return COMMANDS.filter(
+      (c) => c.name.includes(q) || c.desc.toLowerCase().includes(q),
+    );
+  }, [cmdQuery]);
+
+  useEffect(() => {
+    setCmdActiveIdx((i) => Math.min(i, Math.max(0, filteredCmds.length - 1)));
+  }, [filteredCmds.length]);
+
+  const runCmd = useCallback((cmd: (typeof COMMANDS)[number]) => {
+    setInputValue(cmd.fill);
+    setCmdOpen(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(cmd.fill.length, cmd.fill.length);
+    }, 50);
+  }, []);
+
+  const handleCmdKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      runMockPipeline();
+      setCmdActiveIdx((i) => Math.min(i + 1, filteredCmds.length - 1));
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setCmdActiveIdx((i) => Math.max(i - 1, 0));
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const cmd = filteredCmds[cmdActiveIdx];
+      if (cmd) runCmd(cmd);
     }
     if (e.key === "Escape") {
-      onClose();
+      setCmdOpen(false);
     }
   };
 
-  const resetConversation = () => {
-    setPhase("idle");
-    setQuery("");
-    setSubmittedQuery("");
-    setAgents([]);
-    setResults([]);
-    inputRef.current?.focus();
-  };
+  // ── Render gate ────────────────────────────────────────────
+  if (!open) return null;
+
+  const suggestionsHidden = messages.length > 0 || inputValue.length > 0;
+  const pillHasText = inputValue.length > 0;
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[100] overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Dark stage with subtle gradient.
-              deep indigo → near-black radial vignette → centre */}
-          <motion.div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, #1e1b4b 0%, #0a0a1a 50%, #000000 100%)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          />
+    <div
+      className={`${styles.overlay} fixed inset-0 z-[100] overflow-hidden bg-black`}
+    >
+      {/* 3D entity behind everything */}
+      <AtlasEntity
+        mode={mode}
+        audioLevel={audioLevel}
+        onReady={(handle) => {
+          entityHandle.current = handle;
+        }}
+      />
 
-          {/* Ambient noise particles. 40 tiny dots drifting slowly —
-              gives the stage atmosphere without stealing focus. */}
-          <ParticleDust />
-
-          {/* Close button — top-right, discreet but findable */}
+      {/* ─ Top bar ─ */}
+      <div
+        className={`${styles.topbar} fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-4`}
+      >
+        <div className={styles.brand}>ATLAS</div>
+        <div className="flex items-center gap-2.5" data-atlas-menu>
           <button
-            onClick={onClose}
-            aria-label="Exit AI Mode"
-            className="absolute top-6 right-6 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08] transition-all text-[11px] tracking-wide backdrop-blur-sm"
+            type="button"
+            aria-label="Model"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModelMenuOpen((v) => !v);
+              playSound("click");
+            }}
+            className={styles.glassBtn}
           >
-            <X size={14} strokeWidth={1.8} />
-            Classic Mode
-          </button>
-
-          {/* Brand tag — top-left */}
-          <div className="absolute top-6 left-6 z-30 flex items-center gap-2">
-            <Sparkles size={14} className="text-violet-300/80" />
-            <span className="text-[11px] font-medium tracking-[0.25em] uppercase text-white/60">
-              Atlas · AI Mode
-            </span>
-          </div>
-
-          {/* Submitted query — appears above the orb once user submits */}
-          <AnimatePresence>
-            {submittedQuery && (
-              <motion.div
-                className="absolute top-24 left-1/2 -translate-x-1/2 z-20 max-w-2xl px-6"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <p className="text-center text-[15px] text-white/70 italic">
-                  „{submittedQuery}"
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Stage centre — Singularity + agent constellation.
-              Fixed mid-height so results can flow below. */}
-          <div
-            className="absolute inset-x-0 z-10 flex items-center justify-center"
-            style={{ top: "20vh", height: 420 }}
-          >
-            <div className="relative flex items-center justify-center">
-              <AgentConstellation
-                agents={agents}
-                visible={phase === "thinking" || phase === "responding"}
-                radius={220}
+            <span className={styles.modelDot} />
+            <span>{modelName}</span>
+            <svg className={styles.modelChev} viewBox="0 0 24 24">
+              <path
+                d="M6 9l6 6 6-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 180,
-                  damping: 20,
-                  delay: 0.15,
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Toggle sound"
+            onClick={() => {
+              setSoundOn((v) => !v);
+              toast(!soundOn ? "Sound on" : "Sound off");
+            }}
+            className={`${styles.glassBtn} ${styles.glassBtnSquare}`}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" strokeLinejoin="round" />
+              {soundOn ? (
+                <path
+                  d="M15.5 8.5a4 4 0 010 7M19 5a8.5 8.5 0 010 14"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path d="M17 9l6 6M23 9l-6 6" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Exit AI Mode"
+            onClick={onClose}
+            className={`${styles.glassBtn}`}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+            </svg>
+            <span>Classic</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Model menu */}
+      <div
+        data-atlas-menu
+        className={`${styles.menu} ${modelMenuOpen ? styles.menuOpen : ""}`}
+      >
+        {(Object.keys(MODELS) as ModelName[]).map((name) => (
+          <div
+            key={name}
+            onClick={() => {
+              setModelName(name);
+              setModelMenuOpen(false);
+              toast(`Switched to ${name}`);
+              playSound("click");
+            }}
+            className={`${styles.menuItem} ${name === modelName ? styles.menuItemActive : ""}`}
+          >
+            <svg className="tick" viewBox="0 0 24 24">
+              <path
+                d="M5 12l5 5 9-11"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>{name}</span>
+            <span className="sub">{MODELS[name].label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Conversation */}
+      <div ref={conversationRef} className={styles.conversation}>
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
+          >
+            {m.text}
+          </div>
+        ))}
+      </div>
+
+      {/* Search area */}
+      <form className={styles.search} onSubmit={handleSubmit}>
+        {/* Attachments */}
+        <div className={styles.attachments}>
+          {attachments.map((file, i) => (
+            <div key={`${file.name}-${i}`} className={styles.chipFile}>
+              <svg viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span>
+                {file.name.length > 24
+                  ? file.name.slice(0, 22) + "…"
+                  : file.name}
+              </span>
+              <button
+                type="button"
+                aria-label="Remove"
+                className={styles.chipRemove}
+                onClick={() => {
+                  setAttachments((prev) => prev.filter((_, j) => j !== i));
+                  playSound("click");
                 }}
               >
-                <Singularity state={phase as SingularityState} size={240} />
-              </motion.div>
+                <svg viewBox="0 0 24 24">
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                </svg>
+              </button>
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Result cards column — streams in as agents complete */}
+        {/* Suggestions */}
+        <div
+          className={`${styles.suggestions} ${suggestionsHidden ? styles.suggestionsHidden : ""}`}
+        >
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={styles.chipSugg}
+              onClick={() => {
+                setInputValue(s);
+                inputRef.current?.focus();
+                playSound("click");
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Token meter */}
+        <div className={styles.tokens} aria-hidden="true">
           <div
-            className="absolute inset-x-0 z-10"
-            style={{ top: "calc(20vh + 440px)" }}
-          >
-            <div className="max-w-3xl mx-auto px-6 space-y-2">
-              <AnimatePresence>
-                {results.map((r) => (
-                  <motion.div
-                    key={r.agentId}
-                    initial={{ opacity: 0, y: 20, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-5 hover:bg-white/[0.05] transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <h3 className="text-[13px] font-semibold text-white/90 tracking-tight">
-                        {r.title}
-                      </h3>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/40">
-                          {r.jurisdiction}
-                        </span>
-                        <span className="text-[9px] font-medium text-emerald-300/80 bg-emerald-500/10 rounded-full px-2 py-0.5 border border-emerald-500/20">
-                          {r.citations} cit.
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-[12px] text-white/70 leading-relaxed">
-                      {r.body}
-                    </p>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Synthesis footer once responding */}
-              <AnimatePresence>
-                {phase === "responding" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="flex items-center justify-between pt-4 px-2"
-                  >
-                    <span className="text-[10px] tracking-wider uppercase text-emerald-300/70">
-                      · Synthese fertig · {results.length} Agents ·{" "}
-                      {results.reduce((s, r) => s + r.citations, 0)} Citations ·
-                    </span>
-                    <button
-                      onClick={resetConversation}
-                      className="text-[11px] text-white/50 hover:text-white/80 transition"
-                    >
-                      Neue Frage
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Input bar — always bottom-centre */}
-          <motion.div
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-6"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55, duration: 0.4, ease: "easeOut" }}
+            key={tokenPulse}
+            className={`${styles.tokenBar} ${styles.tokenPulse}`}
           >
             <div
-              className={`flex items-end gap-3 rounded-2xl border backdrop-blur-xl transition-colors ${
-                phase === "thinking"
-                  ? "border-violet-400/30 bg-white/[0.04]"
-                  : phase === "listening"
-                    ? "border-teal-400/30 bg-white/[0.05]"
-                    : "border-white/10 bg-white/[0.03]"
-              }`}
+              className={`${styles.tokenFill} ${tokenCrit ? styles.tokenFillCritical : tokenWarn ? styles.tokenFillWarning : ""}`}
+              style={{ width: `${Math.max(0.6, tokenPct)}%` }}
+            />
+          </div>
+          <div className={styles.tokensLabel}>
+            <span className={styles.tokensCurrent}>
+              {fmtTokens(currentTokens)}
+            </span>
+            <span className={styles.tokensSep}>/</span>
+            <span className={styles.tokensMax}>{MODELS[modelName].label}</span>
+          </div>
+        </div>
+
+        {/* Pill */}
+        <div
+          className={`${styles.pill} ${pillHasText ? styles.pillHasText : ""}`}
+        >
+          <button
+            type="button"
+            aria-label="Attach"
+            className={styles.iconBtn}
+            onClick={() => {
+              fileInputRef.current?.click();
+              playSound("click");
+            }}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            placeholder="Frag Atlas."
+            autoComplete="off"
+            spellCheck={false}
+            onChange={handleInputChange}
+            onKeyDown={handleInputKey}
+          />
+          <div className={styles.actionSlot}>
+            <button
+              type="button"
+              aria-label="Voice"
+              onClick={() => (listening ? stopListening() : startListening())}
+              className={`${styles.iconBtn} ${styles.actionSlotMic} ${listening ? styles.micListening : ""}`}
             >
-              <textarea
-                ref={inputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  phase === "thinking"
-                    ? "Agents arbeiten…"
-                    : "Frag Atlas alles — „Was muss mein Mandant für in-orbit-servicing in DE und FR beachten?"
-                }
-                rows={1}
-                disabled={phase === "thinking"}
-                className="flex-1 bg-transparent resize-none outline-none text-[15px] text-white placeholder:text-white/30 py-4 pl-5 leading-relaxed"
-                style={{ maxHeight: 140 }}
-              />
-              <div className="flex items-center gap-2 pr-3 pb-3">
-                <button
-                  type="button"
-                  aria-label="Voice input (coming soon)"
-                  disabled
-                  className="h-9 w-9 inline-flex items-center justify-center rounded-xl bg-white/[0.04] text-white/30 cursor-not-allowed border border-white/5"
-                  title="Voice — coming soon"
-                >
-                  <Mic size={15} strokeWidth={1.8} />
-                </button>
-                <button
-                  type="button"
-                  onClick={runMockPipeline}
-                  disabled={!query.trim() || phase === "thinking"}
-                  aria-label="Ask Atlas"
-                  className="h-9 w-9 inline-flex items-center justify-center rounded-xl bg-white/90 hover:bg-white text-black disabled:bg-white/10 disabled:text-white/30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ArrowUp size={15} strokeWidth={2.4} />
-                </button>
+              <svg viewBox="0 0 24 24">
+                <rect
+                  x="9"
+                  y="4"
+                  width="6"
+                  height="11"
+                  rx="3"
+                  strokeLinejoin="round"
+                />
+                <path d="M6 11a6 6 0 0 0 12 0" strokeLinecap="round" />
+                <path d="M12 17v4M9 21h6" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              type="submit"
+              aria-label="Submit"
+              className={`${styles.iconBtn} ${styles.submitBtn} ${styles.actionSlotSubmit}`}
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M5 12h14M13 6l6 6-6 6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          hidden
+          multiple
+          onChange={(e) => {
+            if (e.target.files) addAttachments(Array.from(e.target.files));
+            e.target.value = "";
+          }}
+        />
+      </form>
+
+      {/* Command palette */}
+      <div
+        className={`${styles.cmdPalette} ${cmdOpen ? styles.cmdPaletteOpen : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setCmdOpen(false);
+        }}
+      >
+        <div className={styles.cmdPanel}>
+          <input
+            ref={cmdInputRef}
+            className={styles.cmdInput}
+            type="text"
+            value={cmdQuery}
+            placeholder="Run a command…"
+            autoComplete="off"
+            spellCheck={false}
+            onChange={(e) => setCmdQuery(e.target.value)}
+            onKeyDown={handleCmdKey}
+          />
+          <div className={styles.cmdList}>
+            {filteredCmds.length === 0 ? (
+              <div className={styles.cmdItem} style={{ opacity: 0.5 }}>
+                Kein Treffer
               </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between px-2">
-              <span className="text-[10px] text-white/30 tracking-wide">
-                Enter to send · Esc to exit
-              </span>
-              <span className="text-[10px] text-white/30 tracking-wide">
-                Prototyp · keine echten Agents · 0 Tokens
-              </span>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            ) : (
+              filteredCmds.map((c, i) => (
+                <div
+                  key={c.name}
+                  className={`${styles.cmdItem} ${i === cmdActiveIdx ? styles.cmdItemActive : ""}`}
+                  onClick={() => runCmd(c)}
+                  onMouseEnter={() => setCmdActiveIdx(i)}
+                >
+                  <span className={styles.cmdIco}>{c.icon}</span>/{c.name}
+                  <span className={styles.cmdDesc}>{c.desc}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Toast */}
+      <div className={`${styles.toast} ${toastText ? styles.toastShow : ""}`}>
+        {toastText}
+      </div>
+
+      {/* Welcome hint once per mount */}
+      <WelcomeHint toast={toast} />
+    </div>
   );
 }
 
-// ─── Ambient particle dust ────────────────────────────────────────────
-//
-// 40 tiny dots distributed randomly, each drifting on its own slow loop.
-// Reference-seeded so SSR + client hydration produce the same layout.
-
-function ParticleDust() {
-  // Pseudo-random but deterministic positions. Using (index * prime)
-  // keeps client + server renders identical without needing state.
-  const particles = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    x: (i * 37) % 100,
-    y: (i * 59) % 100,
-    delay: (i * 0.17) % 4,
-    duration: 10 + ((i * 3) % 8),
-    size: i % 4 === 0 ? 2 : 1,
-  }));
-  return (
-    <div
-      className="absolute inset-0 pointer-events-none overflow-hidden"
-      aria-hidden="true"
-    >
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full bg-white/40"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0, 0.7, 0],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </div>
-  );
+function WelcomeHint({ toast }: { toast: (m: string) => void }) {
+  const shown = useRef(false);
+  useEffect(() => {
+    if (shown.current) return;
+    shown.current = true;
+    const id = setTimeout(
+      () => toast("⌘K fokussieren · ⌘/ Commands · Prototyp · 0 Tokens"),
+      1200,
+    );
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
 }
