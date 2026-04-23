@@ -293,6 +293,35 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:atlas_semantic",
       }),
+
+      // Legal Network — Phase 1. Each tier targets one abuse vector:
+      //   invite: stop invite-spam flooding operators
+      //   accept: stop brute-force on one-time tokens
+      //   amendment: stop scope-negotiation loops
+      //   audit_read: generous; normal audit viewing
+      legal_matter_invite: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:legal_matter_invite",
+      }),
+      legal_matter_accept: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(20, "24 h"),
+        analytics: true,
+        prefix: "ratelimit:legal_matter_accept",
+      }),
+      legal_matter_amendment: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "24 h"),
+        analytics: true,
+        prefix: "ratelimit:legal_matter_amendment",
+      }),
+      legal_matter_audit_read: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 m"),
+        prefix: "ratelimit:legal_matter_audit_read",
+      }),
     }
   : null;
 
@@ -395,6 +424,10 @@ const fallbackLimiters = {
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
   atlas_semantic: new InMemoryRateLimiter(20, 60000), // 20/min dev vs 40/min (Redis)
+  legal_matter_invite: new InMemoryRateLimiter(5, 3600000), // 5/hr dev vs 10/hr (Redis)
+  legal_matter_accept: new InMemoryRateLimiter(10, 86400000), // 10/day dev vs 20/day
+  legal_matter_amendment: new InMemoryRateLimiter(3, 86400000), // 3/day dev vs 5/day
+  legal_matter_audit_read: new InMemoryRateLimiter(15, 60000), // 15/min dev vs 30/min
 };
 
 // ─── Public API ───
@@ -428,7 +461,11 @@ export type RateLimitType =
   | "nexus"
   | "hub"
   | "astra_chat"
-  | "atlas_semantic";
+  | "atlas_semantic"
+  | "legal_matter_invite"
+  | "legal_matter_accept"
+  | "legal_matter_amendment"
+  | "legal_matter_audit_read";
 
 /**
  * Check rate limit for an identifier.

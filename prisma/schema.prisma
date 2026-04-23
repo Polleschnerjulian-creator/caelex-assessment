@@ -2644,6 +2644,13 @@ model Organization {
   attestations           ComplianceAttestation[] // Network: compliance attestations
   operatorProfile        OperatorProfile? // Unified operator profile
 
+  // Legal Network Phase 1 — trust bridge between Atlas (law firms)
+  // and Caelex (operators). An Organization may be an operator, a
+  // law firm, or both. See 2026-04-23-legal-network-phase-1-design.md.
+  orgType                OrganizationType   @default(OPERATOR)
+  legalMattersAsFirm     LegalMatter[]      @relation("LegalMatterFirm")
+  legalMattersAsClient   LegalMatter[]      @relation("LegalMatterClient")
+
   // Context Omnipresence: provenance & signed snapshots
   derivationTraces DerivationTrace[] // Per-field provenance chain (append-only)
   profileSnapshots ProfileSnapshot[] // Frozen + signed operator-profile snapshots
@@ -8556,4 +8563,170 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ============================================
+// LEGAL NETWORK — PHASE 1 (Identity & Linking)
+// ============================================
+//
+// Bilateral trust-bridge between Atlas (law firm organisations) and
+// Caelex (operator organisations). A LegalMatter is the long-lived
+// record of a firm↔client relationship; invitations are ephemeral
+// tokens that expire after 72h; every access gets a hash-chained
+// audit log entry.
+//
+// See docs/superpowers/specs/2026-04-23-legal-network-phase-1-design.md
+// for the full design rationale.
+
+enum OrganizationType {
+  OPERATOR // default — uses Caelex for compliance
+  LAW_FIRM // uses Atlas to represent operator clients
+  BOTH // rare; e.g. firm with in-house satellite subsidiary
+}
+
+enum MatterStatus {
+  PENDING_INVITE // token sent, no acceptance yet
+  PENDING_CONSENT // token accepted with amendment; awaiting counter-signature
+  ACTIVE
+  SUSPENDED // operator paused; can be resumed
+  CLOSED // normal termination
+  REVOKED // forced termination (trust breach)
+}
+
+enum NetworkSide {
+  ATLAS
+  CAELEX
+}
+
+enum LegalMatterAction {
+  READ_ASSESSMENT
+  READ_AUTHORIZATION
+  READ_DOCUMENT
+  READ_TIMELINE
+  READ_INCIDENT
+  EXPORT_DOCUMENT
+  SUMMARY_GENERATED
+  MEMO_DRAFTED
+  MATTER_REVOKED // lifecycle event logged as an access entry for chain continuity
+  MATTER_SUSPENDED
+  MATTER_RESUMED
+  SCOPE_AMENDED
+}
+
+/// Long-lived record of a law-firm ↔ operator matter.
+model LegalMatter {
+  id String @id @default(cuid())
+
+  // Identities — both sides of the relationship
+  lawFirmOrgId String
+  clientOrgId  String
+
+  // Human labels
+  name        String
+  reference   String? // firm's internal matter number (e.g. "BHO-2026-112")
+  description String?
+
+  // Scope — array of ScopeItem, validated by the application layer.
+  // Kept as Json rather than a sub-model because Phase 2 may add
+  // free-form fields per category (e.g. per-jurisdiction filter).
+  scope Json
+
+  // Lifecycle
+  status           MatterStatus
+  invitedBy        String // userId of the initiator
+  invitedFrom      NetworkSide
+  invitedAt        DateTime    @default(now())
+  acceptedAt       DateTime?
+  acceptedBy       String? // userId of the counter-signer
+  revokedAt        DateTime?
+  revokedBy        String?
+  revocationReason String?
+
+  // Effective window — both set at ACTIVE transition (nullable while
+  // in PENDING_*). Default duration 12 months from acceptedAt.
+  effectiveFrom  DateTime?
+  effectiveUntil DateTime?
+
+  // Mutual consent proof — SHA-256 of the canonical handshake bundle.
+  // Recomputed from stored fields at verification time; any drift
+  // fails the integrity check.
+  handshakeHash String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lawFirmOrg Organization @relation("LegalMatterFirm", fields: [lawFirmOrgId], references: [id], onDelete: Cascade)
+  clientOrg  Organization @relation("LegalMatterClient", fields: [clientOrgId], references: [id], onDelete: Cascade)
+
+  accessLogs  LegalMatterAccessLog[]
+  invitations LegalMatterInvitation[]
+
+  @@unique([lawFirmOrgId, clientOrgId, reference])
+  @@index([clientOrgId, status])
+  @@index([lawFirmOrgId, status])
+  @@index([effectiveUntil])
+}
+
+/// Ephemeral invitation. Lives only until `consumedAt` is stamped or
+/// `expiresAt` passes. After consumption the matter transitions out
+/// of PENDING_INVITE.
+model LegalMatterInvitation {
+  id                     String    @id @default(cuid())
+  matterId               String
+  tokenHash              String    @unique // SHA-256 of the one-time token
+  expiresAt              DateTime // 72h from creation
+  consumedAt             DateTime?
+  proposedScope          Json
+  proposedDurationMonths Int?
+
+  // Amendment tracking: when the recipient narrows the scope at accept
+  // time, a second invitation is generated with the amended scope for
+  // the original inviter to counter-sign. This field links that chain.
+  amendmentOf String? // previous invitationId if this is a counter-proposal
+
+  createdAt DateTime @default(now())
+
+  matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  @@index([matterId])
+  @@index([expiresAt])
+}
+
+/// Append-only audit trail of every cross-organisation data access
+/// OR matter-lifecycle event. Entries are hash-chained for tamper
+/// evidence; the daily audit-chain-anchor cron signs chain heads
+/// into the Verity attestation service.
+model LegalMatterAccessLog {
+  id       String @id @default(cuid())
+  matterId String
+
+  // Who
+  actorUserId String?
+  actorOrgId  String
+  actorSide   NetworkSide
+
+  // What
+  action       LegalMatterAction
+  resourceType String // Prisma model name, e.g. "CybersecurityAssessment"
+  resourceId   String?
+
+  // Authorisation trace
+  matterScope String // which scope category authorised this access
+  context     Json? // arbitrary metadata
+
+  // Request fingerprint
+  ipAddress String?
+  userAgent String?
+
+  // Tamper-evident hash chain. `previousHash` of the first entry is
+  // the matter's `handshakeHash`. `entryHash` = SHA-256(previousHash
+  // || canonicalJSON(thisEntryWithoutHashes)).
+  previousHash String?
+  entryHash    String
+
+  createdAt DateTime @default(now())
+
+  matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  @@index([matterId, createdAt])
 }
