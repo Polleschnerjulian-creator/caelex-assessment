@@ -79,10 +79,19 @@ function useFirmBranding(): { name: string | null; logo: string | null } {
 function deriveKeyFacts(
   j: JurisdictionLaw,
 ): Array<{ num: string; label: string; value: string; detail: string }> {
-  const processingWks = j.timeline.typicalProcessingWeeks;
-  const fee = j.timeline.applicationFee?.trim() || "Not published";
+  // NOTE: "Processing Timeline" card removed — the source figures
+  // (typicalProcessingWeeks, applicationFee) are editorial estimates.
+  // We replace it with a Registration card, which is verifiable
+  // against the national registry name / UN registration status.
   const mandatory = j.insuranceLiability.mandatoryInsurance;
   const coverage = j.insuranceLiability.minimumCoverage?.trim();
+
+  const regime = j.insuranceLiability.liabilityRegime.toUpperCase();
+  const govIndemn = j.insuranceLiability.governmentIndemnification;
+
+  const registryStr = j.registration.nationalRegistryExists
+    ? j.registration.registryName?.trim() || "National registry maintained"
+    : "No national registry";
 
   return [
     {
@@ -101,12 +110,11 @@ function deriveKeyFacts(
     },
     {
       num: "03",
-      label: "Processing Timeline",
-      value:
-        processingWks.min === processingWks.max
-          ? `${processingWks.max} weeks`
-          : `${processingWks.min}–${processingWks.max} weeks`,
-      detail: `Application fee: ${fee}`,
+      label: "Registration",
+      value: registryStr,
+      detail: j.registration.unRegistrationRequired
+        ? "UN Registration Convention (1975) applies"
+        : "UN Registration Convention not required",
     },
     {
       num: "04",
@@ -114,7 +122,7 @@ function deriveKeyFacts(
       value: mandatory
         ? `Mandatory${coverage ? ` · ${coverage}` : ""}`
         : "Voluntary",
-      detail: `Regime: ${j.insuranceLiability.liabilityRegime.toUpperCase()}${j.insuranceLiability.governmentIndemnification ? " · Gov. indemnification available" : ""}`,
+      detail: `Regime: ${regime}${govIndemn ? " · Gov. indemnification available" : ""}`,
     },
   ];
 }

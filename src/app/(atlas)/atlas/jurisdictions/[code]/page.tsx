@@ -531,17 +531,12 @@ export default function JurisdictionDetailPage({
                 jurisdiction.insuranceLiability.liabilityRegime.slice(1)}
             </span>
           </div>
-          <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
-            <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
-              {t("atlas.label_processing")}
-            </span>
-            <span className="text-[13px] font-semibold text-[var(--atlas-text-primary)] block">
-              {t("atlas.processing_weeks", {
-                min: String(jurisdiction.timeline.typicalProcessingWeeks.min),
-                max: String(jurisdiction.timeline.typicalProcessingWeeks.max),
-              })}
-            </span>
-          </div>
+          {/*
+            Processing-time card removed — the figures in
+            timeline.typicalProcessingWeeks are editorial estimates, not
+            tied to a primary-source publication. We only show
+            verifiable, source-citeable data on jurisdiction pages.
+          */}
           <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-4 py-3.5">
             <span className="text-[10px] font-medium text-[var(--atlas-text-faint)] uppercase tracking-wider block mb-1">
               {t("atlas.label_insurance")}

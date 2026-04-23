@@ -17,8 +17,7 @@ type SortField =
   | "year"
   | "status"
   | "authority"
-  | "liability"
-  | "processing";
+  | "liability";
 
 type SortDirection = "asc" | "desc";
 
@@ -187,11 +186,6 @@ export default function JurisdictionTable({
             (liabilityOrder[b.insuranceLiability.liabilityRegime] ?? 4);
           break;
         }
-        case "processing":
-          cmp =
-            a.timeline.typicalProcessingWeeks.min -
-            b.timeline.typicalProcessingWeeks.min;
-          break;
       }
 
       return sortDirection === "asc" ? cmp : -cmp;
@@ -302,15 +296,6 @@ export default function JurisdictionTable({
                   onSort={handleSort}
                 />
               </th>
-              <th className="px-3 py-2.5 w-[90px] hidden lg:table-cell">
-                <SortHeader
-                  label="Timeline"
-                  field="processing"
-                  currentField={sortField}
-                  currentDirection={sortDirection}
-                  onSort={handleSort}
-                />
-              </th>
               <th className="px-3 py-2.5 w-[40px]" />
             </tr>
           </thead>
@@ -373,14 +358,6 @@ export default function JurisdictionTable({
                   <LiabilityBadge
                     regime={law.insuranceLiability.liabilityRegime}
                   />
-                </td>
-
-                {/* Processing Time */}
-                <td className="px-3 py-2.5 hidden lg:table-cell">
-                  <span className="text-[11px]  text-[var(--atlas-text-muted)]">
-                    {law.timeline.typicalProcessingWeeks.min}&ndash;
-                    {law.timeline.typicalProcessingWeeks.max}w
-                  </span>
                 </td>
 
                 {/* Arrow */}

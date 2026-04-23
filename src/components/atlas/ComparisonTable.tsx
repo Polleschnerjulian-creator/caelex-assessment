@@ -109,6 +109,13 @@ function arrJoin(val: string[] | undefined, fallback = "N/A"): string {
 // ─── Dimension Row Definition Factories ───
 
 function getAuthRows(t: (key: string) => string): RowDef[] {
+  // NOTE: `processing_time` and `application_fee` rows were removed
+  // deliberately. The underlying `timeline.typicalProcessingWeeks` and
+  // `timeline.applicationFee` fields in national-space-laws.ts are
+  // editorial estimates/ranges (e.g. "€5,000–€15,000", "12–26 weeks")
+  // not tied to a primary source — showing them in a
+  // "primary-source-only" Atlas undermines the product's credibility.
+  // Keep the underlying data for potential future use once verified.
   return [
     {
       label: t("atlas.licensing_authority"),
@@ -124,19 +131,6 @@ function getAuthRows(t: (key: string) => string): RowDef[] {
     {
       label: t("atlas.comp_status"),
       accessor: (l) => l.legislation.status.toUpperCase(),
-      highlightDifferences: true,
-    },
-    {
-      label: t("atlas.processing_time"),
-      accessor: (l) =>
-        `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} ${t("atlas.weeks")}`,
-      monospace: true,
-      highlightDifferences: true,
-    },
-    {
-      label: t("atlas.comp_application_fee"),
-      accessor: (l) => safeStr(l.timeline.applicationFee),
-      monospace: true,
       highlightDifferences: true,
     },
     {
@@ -242,20 +236,11 @@ function getDebrisRows(t: (key: string) => string): RowDef[] {
 }
 
 function getTimelineRows(t: (key: string) => string): RowDef[] {
+  // NOTE: processing_time and application_fee rows removed — both are
+  // unverifiable editorial estimates. annualFee / otherCosts remain for
+  // now because they sometimes cite a statutory figure, but they're on
+  // the watchlist: any row without a primary-source cite should go.
   return [
-    {
-      label: t("atlas.processing_time"),
-      accessor: (l) =>
-        `${l.timeline.typicalProcessingWeeks.min}–${l.timeline.typicalProcessingWeeks.max} ${t("atlas.weeks")}`,
-      monospace: true,
-      highlightDifferences: true,
-    },
-    {
-      label: t("atlas.comp_application_fee"),
-      accessor: (l) => safeStr(l.timeline.applicationFee),
-      monospace: true,
-      highlightDifferences: true,
-    },
     {
       label: t("atlas.comp_annual_fee"),
       accessor: (l) => safeStr(l.timeline.annualFee),
@@ -443,8 +428,6 @@ export default function ComparisonTable({
         "licensing_authority",
         "legislation",
         "status",
-        "processing_time",
-        "application_fee",
         "mandatory_insurance",
         "gov_indemnification",
         "licensing_requirements",
@@ -480,13 +463,7 @@ export default function ComparisonTable({
   );
 
   const timelineRows = useMemo(
-    () =>
-      addConceptKeys(getTimelineRows(t), [
-        "processing_time",
-        "application_fee",
-        "annual_fee",
-        "other_costs",
-      ]),
+    () => addConceptKeys(getTimelineRows(t), ["annual_fee", "other_costs"]),
     [t],
   );
 

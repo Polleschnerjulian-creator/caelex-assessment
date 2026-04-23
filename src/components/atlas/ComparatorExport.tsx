@@ -80,6 +80,10 @@ function joinArr(
 
 // ─── Dimension Row Definitions ───
 
+// NOTE: Processing Time + Application Fee rows removed — those fields
+// in the underlying data are editorial estimates, not primary-source
+// figures. Keeping them in a Atlas-branded briefing would undermine
+// the "primary-source only" positioning.
 const AUTH_ROWS: RowDef[] = [
   {
     label: "Licensing Authority",
@@ -94,18 +98,6 @@ const AUTH_ROWS: RowDef[] = [
   {
     label: "Status",
     accessor: (l) => txt(l.legislation.status.toUpperCase()),
-  },
-  {
-    label: "Processing Time",
-    accessor: (l) =>
-      txt(
-        `${l.timeline.typicalProcessingWeeks.min}\u2013${l.timeline.typicalProcessingWeeks.max} weeks`,
-      ),
-    emphasis: true,
-  },
-  {
-    label: "Application Fee",
-    accessor: (l) => txt(l.timeline.applicationFee),
   },
   {
     label: "Mandatory Insurance",
@@ -177,22 +169,15 @@ const DEBRIS_ROWS: RowDef[] = [
   },
 ];
 
+// NOTE: Processing Time + Application Fee rows removed for the same
+// reason as in AUTH_ROWS — editorial estimates, not primary-source.
+// Annual Fee + Other Costs kept (statutory where cited) but also
+// on the watchlist for future cleanup if not verifiable.
 const TIMELINE_ROWS: RowDef[] = [
-  {
-    label: "Processing Time",
-    accessor: (l) =>
-      txt(
-        `${l.timeline.typicalProcessingWeeks.min}\u2013${l.timeline.typicalProcessingWeeks.max} weeks`,
-      ),
-    emphasis: true,
-  },
-  {
-    label: "Application Fee",
-    accessor: (l) => txt(l.timeline.applicationFee),
-  },
   {
     label: "Annual Fee",
     accessor: (l) => txt(l.timeline.annualFee),
+    emphasis: true,
   },
   {
     label: "Other Costs",
@@ -241,7 +226,7 @@ const SECTIONS: SectionDef[] = [
     key: "authorization",
     num: "01",
     label: "Authorization & Licensing",
-    lede: "Competent authorities, enabling legislation, processing timelines, and the insurance posture required to file a national authorization application.",
+    lede: "Competent authorities, enabling legislation, and the insurance posture required to file a national authorization application.",
     rows: AUTH_ROWS,
   },
   {
@@ -261,8 +246,8 @@ const SECTIONS: SectionDef[] = [
   {
     key: "timeline",
     num: "04",
-    label: "Timeline & Costs",
-    lede: "Typical processing time, application and annual fees, and ancillary costs disclosed in the authorization workflow.",
+    label: "Fees",
+    lede: "Recurring and ancillary fees disclosed in the authorization workflow. Processing times and application fees are not shown because the figures available to Atlas are editorial estimates rather than statutory publications.",
     rows: TIMELINE_ROWS,
   },
   {
@@ -287,7 +272,7 @@ const DIMENSION_LABELS: Record<string, string> = {
   liability: "Liability & Insurance",
   debris: "Debris Mitigation",
   registration: "Registration",
-  timeline: "Timeline & Costs",
+  timeline: "Fees",
   eu_readiness: "EU Space Act Readiness",
 };
 
@@ -318,26 +303,10 @@ interface GlanceCard {
 function deriveGlanceCards(
   jurisdictions: { code: SpaceLawCountryCode; data: JurisdictionLaw }[],
 ): GlanceCard[] {
-  const withTimeline = jurisdictions.filter(
-    (j) => j.data.timeline.typicalProcessingWeeks,
-  );
-  const fastest = withTimeline.reduce(
-    (min, j) =>
-      j.data.timeline.typicalProcessingWeeks.max <
-      min.data.timeline.typicalProcessingWeeks.max
-        ? j
-        : min,
-    withTimeline[0],
-  );
-  const slowest = withTimeline.reduce(
-    (max, j) =>
-      j.data.timeline.typicalProcessingWeeks.max >
-      max.data.timeline.typicalProcessingWeeks.max
-        ? j
-        : max,
-    withTimeline[0],
-  );
-
+  // NOTE: "Fastest Path" card removed — it was derived from
+  // `typicalProcessingWeeks.max`, which is an editorial estimate. We
+  // now lead with enacted-law coverage (verifiable against the
+  // national gazette), then insurance, deorbit and registry posture.
   const mandatoryInsurance = jurisdictions.filter(
     (j) => j.data.insuranceLiability.mandatoryInsurance,
   );
@@ -353,17 +322,21 @@ function deriveGlanceCards(
     (j) => j.data.registration.nationalRegistryExists,
   );
 
+  const enacted = jurisdictions.filter(
+    (j) => j.data.legislation.status === "enacted",
+  );
+
   return [
     {
       num: "01",
-      label: "Fastest Path",
-      value: fastest
-        ? `${fastest.data.countryName} · ${fastest.data.timeline.typicalProcessingWeeks.max} wks`
-        : "—",
+      label: "Enacted Frameworks",
+      value: `${enacted.length} of ${jurisdictions.length}`,
       detail:
-        slowest && fastest && slowest.code !== fastest.code
-          ? `Slowest: ${slowest.data.countryName} · ${slowest.data.timeline.typicalProcessingWeeks.max} wks`
-          : "Single jurisdiction — no comparison",
+        enacted.length === jurisdictions.length
+          ? "All selected jurisdictions operate under an enacted national space law"
+          : enacted.length > 0
+            ? `Enacted in: ${enacted.map((j) => j.code).join(" · ")}`
+            : "None of the selected jurisdictions has an enacted dedicated space law",
     },
     {
       num: "02",
