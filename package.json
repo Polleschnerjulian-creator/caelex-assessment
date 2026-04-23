@@ -39,7 +39,7 @@
     "test:mutation": "stryker run",
     "lighthouse": "lhci autorun",
     "build:widget": "npx tsx widget.build.ts",
-    "atlas:embed": "npx tsx scripts/atlas-embed.ts"
+    "atlas:embed": "npx tsx --env-file-if-exists=.env.local scripts/atlas-embed.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.53",
