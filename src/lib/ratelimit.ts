@@ -282,6 +282,17 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:astra_chat",
       }),
+
+      // Atlas semantic search: 40 per minute per user. Tight because
+      // each call hits the AI Gateway for a query embedding (cost +
+      // latency), and the Atlas UI debounces at 300ms so a typing
+      // session generates well under 40 calls/min in practice.
+      atlas_semantic: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(40, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:atlas_semantic",
+      }),
     }
   : null;
 
@@ -383,6 +394,7 @@ const fallbackLimiters = {
   nexus: new InMemoryRateLimiter(15, 3600000),
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
+  atlas_semantic: new InMemoryRateLimiter(20, 60000), // 20/min dev vs 40/min (Redis)
 };
 
 // ─── Public API ───
@@ -415,7 +427,8 @@ export type RateLimitType =
   | "verity_bundle"
   | "nexus"
   | "hub"
-  | "astra_chat";
+  | "astra_chat"
+  | "atlas_semantic";
 
 /**
  * Check rate limit for an identifier.
