@@ -441,17 +441,45 @@ export function AIMode({ open, onClose }: AIModeProps) {
         // Manual SSE parser. Works in all modern browsers without
         // pulling a dependency. Each message block is separated by
         // a blank line; within a block `data: …` carries the payload.
+        //
+        // Deltas are coalesced through a requestAnimationFrame buffer:
+        // Claude emits many small token deltas (sometimes 50-100/s),
+        // each of which would otherwise trigger a React re-render of
+        // ALL messages — and every message has a backdrop-filter blur,
+        // which is among the most expensive paint operations in the
+        // browser. Batching to 1 flush per frame (~60fps) is the
+        // difference between silky streaming and visible jank.
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = "";
+        let sseBuffer = "";
+        let textBuffer = "";
+        let tokenAccum = 0;
+        let rafId = 0;
+
+        const flush = () => {
+          rafId = 0;
+          if (textBuffer.length > 0) {
+            const chunkToAppend = textBuffer;
+            textBuffer = "";
+            setAtlasText((t) => t + chunkToAppend);
+          }
+          if (tokenAccum > 0) {
+            const add = tokenAccum;
+            tokenAccum = 0;
+            setTotalTokens((n) => Math.min(maxTokens, n + add));
+          }
+        };
+        const scheduleFlush = () => {
+          if (!rafId) rafId = requestAnimationFrame(flush);
+        };
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
-          buffer += decoder.decode(value, { stream: true });
+          sseBuffer += decoder.decode(value, { stream: true });
 
-          const chunks = buffer.split("\n\n");
-          buffer = chunks.pop() ?? "";
+          const chunks = sseBuffer.split("\n\n");
+          sseBuffer = chunks.pop() ?? "";
 
           for (const chunk of chunks) {
             const dataLine = chunk
@@ -465,8 +493,9 @@ export function AIMode({ open, onClose }: AIModeProps) {
                 | { type: "error"; message: string };
               if (evt.type === "text") {
                 receivedAny = true;
-                setAtlasText((t) => t + evt.text);
-                setTotalTokens((n) => Math.min(maxTokens, n + 1));
+                textBuffer += evt.text;
+                tokenAccum += 1;
+                scheduleFlush();
               } else if (evt.type === "error") {
                 if (!receivedAny) {
                   setAtlasText(
@@ -485,6 +514,9 @@ export function AIMode({ open, onClose }: AIModeProps) {
             }
           }
         }
+        // Final flush after stream ends — any deltas still buffered.
+        if (rafId) cancelAnimationFrame(rafId);
+        flush();
 
         if (!receivedAny) {
           setAtlasText(() => "Keine Antwort empfangen. Erneut versuchen?");
@@ -519,9 +551,11 @@ export function AIMode({ open, onClose }: AIModeProps) {
       );
       setInputValue("");
       setTokenPulse((n) => n + 1);
-      entityHandle.current?.bumpEnergy(0.9);
-      entityHandle.current?.triggerShockwave();
-      playSound("whoosh");
+      // Sanfter Send-Moment: kein Shockwave-Ring, nur ein kleiner
+      // Energy-Bump damit der Orb merklich aber ruhig in den
+      // Thinking-State rollt. Der Sound wird zum dezenten Click.
+      entityHandle.current?.bumpEnergy(0.25);
+      playSound("click");
       runResponse(text, historyBeforePrompt);
     },
     [

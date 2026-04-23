@@ -122,16 +122,22 @@ const SHELL_VERT = /* glsl */ `
     float speakingBoost = step(2.5, uMode) * step(uMode, 3.5);
     float listeningBoost= step(3.5, uMode);
 
+    // gedämpfte flow-amplitude: thinking war 0.20 (starke deformation),
+    // speaking 0.12. das war mit dem starken timeScale-boost zusammen
+    // zu viel "explosions"-feeling. jetzt sanfte wellen statt schocks.
     float flowAmp = uFlowAmp
       + typingBoost   * 0.06
-      + thinkingBoost * 0.20
-      + speakingBoost * 0.12
+      + thinkingBoost * 0.10
+      + speakingBoost * 0.06
       - listeningBoost* 0.08;
 
+    // Zahmere timeScale-werte: thinking war 1.3 (stark), speaking 0.6.
+    // das wirkte beim submit + während des streamings wie eine kleine
+    // explosion. halbiert auf 0.6 / 0.3 — spürbar, aber nicht hektisch.
     float timeScale = 1.0
       + typingBoost   * 0.35
-      + thinkingBoost * 1.3
-      + speakingBoost * 0.6
+      + thinkingBoost * 0.6
+      + speakingBoost * 0.3
       - listeningBoost* 0.3;
 
     float tt = t * timeScale;
@@ -200,11 +206,15 @@ const SHELL_FRAG = /* glsl */ `
     float intensity = (0.28 + rim * 0.95) * actBoost * flick * gp;
     intensity *= 1.0 + uEnergy * 0.55;
 
+    // Speaking: ruhigeres, langsameres pulsieren (3Hz statt 7Hz,
+    // 18% statt 35% amplitude) — der orb soll beim sprechen "atmen"
+    // und nicht flackern. text-streaming + schnelles shader-flicker
+    // kumulieren sonst zu wahrgenommenem jank.
     float speaking = step(2.5, vMode) * step(vMode, 3.5);
-    intensity *= 1.0 + speaking * 0.35 * (0.5 + 0.5 * sin(uTime * 7.0));
+    intensity *= 1.0 + speaking * 0.18 * (0.5 + 0.5 * sin(uTime * 3.0));
 
     float thinking = step(1.5, vMode) * step(vMode, 2.5);
-    intensity *= 1.0 + thinking * 0.25;
+    intensity *= 1.0 + thinking * 0.2;
 
     gl_FragColor = vec4(vec3(1.0), alpha * intensity * 0.32);
   }
