@@ -46,12 +46,64 @@ Returns a JSON summary — not the raw records. The summary is designed to fit i
       },
     },
   },
+
+  {
+    name: "search_legal_sources",
+    description: `Searches Atlas's curated legal corpus (800+ space-law instruments) via semantic similarity. Use this WHENEVER you need to cite a specific regulation, article, or paragraph — do not invent citations from memory.
+
+Good queries are concept-level: "satellite licensing authority Germany", "re-entry safety obligations EU", "NIS2 incident reporting timelines". Returns the top 5 matches with jurisdiction, title, and relevance score. After picking a match, quote it precisely in your answer; direct users to the source URL so they can read the original text.
+
+This tool does NOT require any scope on the matter — the Atlas corpus is shared across all firms and clients. It's always safe to call.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Concept-level search query in any supported language (EN/DE/FR/ES). 4-200 characters.",
+        },
+        limit: {
+          type: "number",
+          description: "Number of matches to return, 1-10. Default 5.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+
+  {
+    name: "draft_memo_to_note",
+    description: `Saves the current draft content as a persistent Matter Note. Use this at the end of a conversation when the user has asked you to produce a memo, summary, or draft — you write the content to a note so the lawyer can find it later in the Notes tab.
+
+Do NOT call this unprompted. Only when the user explicitly says "save this", "draft a memo", "write this up", or similar. Confirm the note title with the user before saving if it's ambiguous.
+
+Requires a scope granting ANNOTATE on any category (notes are firm-internal metadata, not client data — the scope check is a consistency guard, not a privacy gate).`,
+    input_schema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description:
+            "Short descriptive title, 3-200 chars. E.g. 'Memo — FR spectrum licensing timeline'.",
+        },
+        content: {
+          type: "string",
+          description:
+            "The full memo/note content, Markdown-formatted. Can be up to 100k chars.",
+        },
+      },
+      required: ["title", "content"],
+    },
+  },
 ];
 
 /**
  * Tool name lookup — used by the executor to dispatch by name.
  */
-export type MatterToolName = "load_compliance_overview";
+export type MatterToolName =
+  | "load_compliance_overview"
+  | "search_legal_sources"
+  | "draft_memo_to_note";
 
 export function isMatterToolName(name: string): name is MatterToolName {
   return MATTER_TOOLS.some((t) => t.name === name);

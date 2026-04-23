@@ -21,6 +21,9 @@ import {
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
+import { sendEmail } from "@/lib/email";
+import { renderLegalMatterInviteEmail } from "@/lib/email/legal-matter-invite";
+import { logger } from "@/lib/logger";
 import type { NetworkSide } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -105,10 +108,36 @@ export async function POST(request: NextRequest) {
       proposedDurationMonths: parsed.data.proposedDurationMonths,
     });
 
-    // Response includes the raw token only to the initiator — so the
-    // UI can copy-paste an invitation link if email delivery fails.
-    // In production, email dispatch (Resend) is the primary path; we
-    // leave that wiring to a follow-up commit.
+    // Fire email (best-effort; don't block the response on delivery).
+    // We look up the counterparty-org's primary owner email as the
+    // recipient — in Phase 2 the invite form can collect a specific
+    // address. For now the OWNER is the obvious consent-holder.
+    void dispatchInviteEmail({
+      matterId: result.matter.id,
+      rawToken: result.rawToken,
+      initiatorSide,
+      initiatorOrgName:
+        (
+          await prisma.organization.findUnique({
+            where: { id: membership.organization.id },
+            select: { name: true },
+          })
+        )?.name ?? "Atlas",
+      initiatorUserName:
+        session.user.name ?? session.user.email ?? "Ein Atlas-User",
+      counterpartyOrgId: parsed.data.counterpartyOrgId,
+      matterName: parsed.data.name,
+      matterReference: parsed.data.reference,
+      proposedScope: parsed.data.proposedScope,
+      expiresAt: result.invitation.expiresAt,
+    }).catch((err) => {
+      logger.error(
+        `Legal-Network invite email dispatch failed: ${err.message}`,
+      );
+    });
+
+    // Response still includes the raw token so the UI can render
+    // a copy-able fallback link even if email delivery is down.
     return NextResponse.json(
       {
         matterId: result.matter.id,
@@ -127,4 +156,106 @@ export async function POST(request: NextRequest) {
     }
     throw err;
   }
+}
+
+// ─── Email dispatch (fire-and-forget) ────────────────────────────────
+//
+// Best-effort delivery — we never want a failing Resend call to tank
+// the invite creation. The raw token is still in the API response so
+// the UI can show a copy-able link as a fallback.
+
+interface DispatchEmailInput {
+  matterId: string;
+  rawToken: string;
+  initiatorSide: NetworkSide;
+  initiatorOrgName: string;
+  initiatorUserName: string;
+  counterpartyOrgId: string;
+  matterName: string;
+  matterReference?: string;
+  proposedScope: Array<{ category: string; permissions: string[] }>;
+  expiresAt: Date;
+}
+
+async function dispatchInviteEmail(input: DispatchEmailInput): Promise<void> {
+  const recipient = await findRecipient(input.counterpartyOrgId);
+  if (!recipient) {
+    logger.warn(
+      `Legal-Network invite: no OWNER email found for org ${input.counterpartyOrgId}`,
+    );
+    return;
+  }
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
+    "https://www.caelex.eu";
+  const acceptUrl = `${baseUrl}/network/accept/${input.rawToken}`;
+
+  const expiresInHours = Math.max(
+    1,
+    Math.floor((input.expiresAt.getTime() - Date.now()) / (60 * 60 * 1000)),
+  );
+
+  // Humanise the scope into a one-line summary for the email.
+  const scopeSummary =
+    input.proposedScope
+      .map((s) => {
+        const cat = s.category.toLowerCase().replace(/_/g, " ");
+        return `${cat} (${s.permissions.join("/")})`;
+      })
+      .join(" · ") || "Minimaler Scope";
+
+  const direction: "ATLAS_INVITES_CAELEX" | "CAELEX_INVITES_ATLAS" =
+    input.initiatorSide === "ATLAS"
+      ? "ATLAS_INVITES_CAELEX"
+      : "CAELEX_INVITES_ATLAS";
+
+  const { subject, html, text } = renderLegalMatterInviteEmail({
+    inviterOrgName: input.initiatorOrgName,
+    inviterName: input.initiatorUserName,
+    recipientOrgName: recipient.orgName,
+    matterName: input.matterName,
+    matterReference: input.matterReference ?? null,
+    scopeSummary,
+    acceptUrl,
+    expiresInHours,
+    direction,
+  });
+
+  await sendEmail({
+    to: recipient.email,
+    subject,
+    html,
+    text,
+  });
+}
+
+async function findRecipient(
+  orgId: string,
+): Promise<{ email: string; orgName: string } | null> {
+  // Primary: the organisation's OWNER — the person with ultimate
+  // consent authority. Falls back to any ADMIN.
+  const owner = await prisma.organizationMember.findFirst({
+    where: { organizationId: orgId, role: "OWNER" },
+    include: {
+      user: { select: { email: true } },
+      organization: { select: { name: true } },
+    },
+    orderBy: { joinedAt: "asc" },
+  });
+  if (owner?.user.email) {
+    return { email: owner.user.email, orgName: owner.organization.name };
+  }
+  const admin = await prisma.organizationMember.findFirst({
+    where: { organizationId: orgId, role: "ADMIN" },
+    include: {
+      user: { select: { email: true } },
+      organization: { select: { name: true } },
+    },
+    orderBy: { joinedAt: "asc" },
+  });
+  if (admin?.user.email) {
+    return { email: admin.user.email, orgName: admin.organization.name };
+  }
+  return null;
 }

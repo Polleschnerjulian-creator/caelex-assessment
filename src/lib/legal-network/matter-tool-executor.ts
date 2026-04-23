@@ -20,7 +20,11 @@ import "server-only";
  */
 
 import { z } from "zod";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { cosineSimilarity, embed } from "ai";
 import { prisma } from "@/lib/prisma";
+import { ALL_SOURCES } from "@/data/legal-sources";
 import type { LegalMatter } from "@prisma/client";
 import {
   requireActiveMatter,
@@ -44,6 +48,16 @@ export interface ToolExecutionResult {
 
 const LoadComplianceOverviewInput = z.object({
   detail_level: z.enum(["summary", "full"]).optional(),
+});
+
+const SearchLegalSourcesInput = z.object({
+  query: z.string().min(4).max(200),
+  limit: z.number().int().min(1).max(10).optional(),
+});
+
+const DraftMemoToNoteInput = z.object({
+  title: z.string().min(3).max(200),
+  content: z.string().min(10).max(100_000),
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -205,6 +219,204 @@ async function loadComplianceOverview(args: {
   return { content: JSON.stringify(summary), isError: false };
 }
 
+// ─── search_legal_sources ─────────────────────────────────────────────
+//
+// Module-cached vector catalogue — same file as the /api/atlas/
+// semantic-search endpoint. Shipped with Commit 88f3e801.
+
+interface EmbeddingEntry {
+  id: string;
+  type: "source" | "authority" | "profile" | "case-study" | "conduct";
+  contentHash: string;
+  vector: number[];
+}
+
+let catalogueCache: Promise<EmbeddingEntry[] | null> | null = null;
+function loadCatalogue(): Promise<EmbeddingEntry[] | null> {
+  if (catalogueCache) return catalogueCache;
+  catalogueCache = (async () => {
+    try {
+      const path = join(
+        process.cwd(),
+        "src",
+        "data",
+        "atlas",
+        "embeddings.json",
+      );
+      const raw = await readFile(path, "utf8");
+      return JSON.parse(raw) as EmbeddingEntry[];
+    } catch {
+      return null;
+    }
+  })();
+  return catalogueCache;
+}
+
+async function searchLegalSources(args: {
+  input: unknown;
+  matter: LegalMatter;
+  actorUserId: string;
+  actorOrgId: string;
+}): Promise<ToolExecutionResult> {
+  const parsed = SearchLegalSourcesInput.safeParse(args.input);
+  if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
+
+  const catalogue = await loadCatalogue();
+  if (!catalogue) {
+    return errOutput(
+      "Legal corpus not indexed. Run `npm run atlas:embed` first.",
+      "NOT_INDEXED",
+    );
+  }
+
+  const limit = parsed.data.limit ?? 5;
+
+  try {
+    const { embedding: queryVector } = await embed({
+      model: "openai/text-embedding-3-small",
+      value: parsed.data.query,
+      providerOptions: { openai: { dimensions: 512 } },
+      abortSignal: AbortSignal.timeout(4000),
+      maxRetries: 1,
+    });
+
+    const scored = catalogue
+      .map((entry) => ({
+        id: entry.id,
+        type: entry.type,
+        score: cosineSimilarity(queryVector, entry.vector),
+      }))
+      .filter((m) => m.score >= 0.25)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+
+    // Hydrate sources — we only include legal sources (not authorities
+    // or landing-rights profiles) since those are the citable items.
+    const hydrated = scored
+      .map((m) => {
+        const [, rawId] = m.id.split(":");
+        if (m.type !== "source" || !rawId) return null;
+        const s = ALL_SOURCES.find((x) => x.id === rawId);
+        if (!s) return null;
+        return {
+          id: s.id,
+          title: s.title_en,
+          titleLocal: s.title_local,
+          jurisdiction: s.jurisdiction,
+          type: s.type,
+          officialReference: s.official_reference,
+          sourceUrl: s.source_url,
+          score: Math.round(m.score * 100) / 100,
+          keyProvisionsPreview: s.key_provisions
+            .slice(0, 3)
+            .map((p) => `${p.title}: ${p.summary.slice(0, 150)}`),
+        };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null);
+
+    // Audit-log — corpus access isn't scope-gated (public-ish data)
+    // but we log it to the matter's chain so there's a full record
+    // of what Claude consulted on this client's behalf.
+    await emitAccessLog({
+      matter: args.matter,
+      actorUserId: args.actorUserId,
+      actorOrgId: args.actorOrgId,
+      actorSide: "ATLAS",
+      action: "SUMMARY_GENERATED",
+      resourceType: "LegalSourceCorpus",
+      resourceId: null,
+      matterScope: "AUDIT_LOGS",
+      context: {
+        tool: "search_legal_sources",
+        query: parsed.data.query,
+        hits: hydrated.length,
+      },
+    });
+
+    return {
+      content: JSON.stringify({
+        query: parsed.data.query,
+        matches: hydrated,
+      }),
+      isError: false,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return errOutput(`Embedding failed: ${msg}`, "EMBEDDING_ERROR");
+  }
+}
+
+// ─── draft_memo_to_note ───────────────────────────────────────────────
+
+async function draftMemoToNote(args: {
+  input: unknown;
+  matter: LegalMatter;
+  actorUserId: string;
+  actorOrgId: string;
+}): Promise<ToolExecutionResult> {
+  const parsed = DraftMemoToNoteInput.safeParse(args.input);
+  if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
+
+  // Consistency check: require the caller to have ANNOTATE on at least
+  // one category. Notes are firm-internal, but we block stub-scope
+  // matters from quietly filling the workspace with notes.
+  try {
+    // "any category with ANNOTATE" — we try COMPLIANCE_ASSESSMENTS as
+    // the most likely granted, then bail with a meaningful message.
+    await requireActiveMatter({
+      matterId: args.matter.id,
+      callerOrgId: args.actorOrgId,
+      callerSide: "ATLAS",
+      category: "COMPLIANCE_ASSESSMENTS",
+      permission: "ANNOTATE",
+    });
+  } catch (err) {
+    if (err instanceof MatterAccessError) {
+      return errOutput(
+        `Cannot save memo: matter scope doesn't grant ANNOTATE on any data category. Ask user to request a scope amendment.`,
+        err.code,
+      );
+    }
+    throw err;
+  }
+
+  const note = await prisma.matterNote.create({
+    data: {
+      matterId: args.matter.id,
+      title: parsed.data.title,
+      content: parsed.data.content,
+      createdBy: args.actorUserId,
+    },
+  });
+
+  await emitAccessLog({
+    matter: args.matter,
+    actorUserId: args.actorUserId,
+    actorOrgId: args.actorOrgId,
+    actorSide: "ATLAS",
+    action: "MEMO_DRAFTED",
+    resourceType: "MatterNote",
+    resourceId: note.id,
+    matterScope: "AUDIT_LOGS",
+    context: {
+      tool: "draft_memo_to_note",
+      title: parsed.data.title,
+      contentLength: parsed.data.content.length,
+    },
+  });
+
+  return {
+    content: JSON.stringify({
+      noteId: note.id,
+      title: note.title,
+      savedAt: note.createdAt,
+      message:
+        "Note saved. Tell the user the draft is now in the Notes tab of the workspace.",
+    }),
+    isError: false,
+  };
+}
+
 // ─── Dispatcher ───────────────────────────────────────────────────────
 
 export async function executeTool(args: {
@@ -217,9 +429,11 @@ export async function executeTool(args: {
   switch (args.name) {
     case "load_compliance_overview":
       return loadComplianceOverview(args);
+    case "search_legal_sources":
+      return searchLegalSources(args);
+    case "draft_memo_to_note":
+      return draftMemoToNote(args);
     default: {
-      // Exhaustiveness check — if a new tool is added to MatterToolName
-      // but not wired here, TS flags it.
       const _never: never = args.name;
       return errOutput(`Unknown tool: ${String(_never)}`, "UNKNOWN_TOOL");
     }

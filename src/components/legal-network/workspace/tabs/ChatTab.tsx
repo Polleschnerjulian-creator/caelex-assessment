@@ -45,6 +45,8 @@ interface ChatMessage {
 
 const TOOL_LABEL: Record<string, string> = {
   load_compliance_overview: "Compliance-Daten werden abgerufen",
+  search_legal_sources: "Atlas-Rechtsquellen werden durchsucht",
+  draft_memo_to_note: "Memo wird als Notiz gespeichert",
 };
 
 export function ChatTab({ matterId }: { matterId: string }) {
