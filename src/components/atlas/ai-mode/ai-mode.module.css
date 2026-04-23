@@ -551,11 +551,17 @@
 .pill input {
   flex: 1;
   min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 0 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  padding: 0 10px;
   height: 44px;
+  line-height: 44px;
   color: var(--fg);
   font-family: inherit;
   font-size: 16px;
@@ -568,36 +574,53 @@
   font-weight: 300;
   letter-spacing: -0.01em;
 }
+/* Safari autofill highlighting must be killed explicitly — otherwise
+   an ugly cream-yellow block bleeds through the transparent glass. */
+.pill input:-webkit-autofill,
+.pill input:-webkit-autofill:hover,
+.pill input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--fg);
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  caret-color: rgba(255, 255, 255, 0.85);
+  transition: background-color 5000s ease-in-out 0s;
+}
+/* Safari search-decoration controls poke through input type=search */
+.pill input::-webkit-search-decoration,
+.pill input::-webkit-search-cancel-button,
+.pill input::-webkit-search-results-button,
+.pill input::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
+}
 
 .iconBtn {
   flex: 0 0 auto;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  /* Subtiler als der Vorgänger: kein heller Gradient, stattdessen
-     sehr dunkles transparentes Grau, dezenter Ring. Soll die Pill
-     nicht dominieren — die Aufmerksamkeit gehört der Singularität. */
-  background: rgba(255, 255, 255, 0.035);
-  box-shadow:
-    0 0 0 0.5px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* Vollständig transparent: die Icons schweben als reine Glyphen
+     INNERHALB der Pill-Glasoberfläche, ohne selber ein eigenes
+     "Button-in-Button"-Chrome zu haben. Hover zeigt einen sehr
+     dezenten Glass-Hintergrund als Affordanz. */
+  background: transparent;
+  box-shadow: none;
   border: none;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s var(--ease);
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease),
+    transform 0.15s var(--ease);
 }
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.95);
-  box-shadow:
-    0 0 0 0.5px rgba(255, 255, 255, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .iconBtn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 .iconBtn:active {
   transform: translateY(0) scale(0.95);
