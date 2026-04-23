@@ -8662,8 +8662,9 @@ model LegalMatter {
   invitations LegalMatterInvitation[]
 
   // Phase 2 workspace data
-  tasks MatterTask[]
-  notes MatterNote[]
+  tasks         MatterTask[]
+  notes         MatterNote[]
+  conversations MatterConversation[]
 
   @@unique([lawFirmOrgId, clientOrgId, reference])
   @@index([clientOrgId, status])
@@ -8747,6 +8748,56 @@ model MatterTask {
 
   @@index([matterId, status])
   @@index([matterId, dueDate])
+}
+
+enum MatterChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+/// A conversation thread scoped to a LegalMatter. The thread persists
+/// across sessions so lawyers can return to ongoing strategy chats.
+/// Each matter may have many conversations (split by topic).
+model MatterConversation {
+  id       String @id @default(cuid())
+  matterId String
+
+  title         String // auto-generated from first user message, user-editable
+  createdBy     String
+  lastMessageAt DateTime @default(now())
+
+  // Running counters so the workspace list can show "23 Msgs · 4.2k tokens"
+  // without a N+1 aggregation.
+  messageCount Int @default(0)
+  totalTokens  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matter   LegalMatter                 @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  messages MatterConversationMessage[]
+
+  @@index([matterId, lastMessageAt])
+}
+
+model MatterConversationMessage {
+  id             String @id @default(cuid())
+  conversationId String
+
+  role    MatterChatRole
+  content String         @db.Text
+
+  // Usage telemetry — populated on assistant messages from Claude's
+  // response. Zero for user messages.
+  tokensInput  Int @default(0)
+  tokensOutput Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  conversation MatterConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
 
 /// Free-form notes / memo drafts attached to a matter. Rich-text

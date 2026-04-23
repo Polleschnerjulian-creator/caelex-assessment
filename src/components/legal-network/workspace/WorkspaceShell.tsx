@@ -19,6 +19,7 @@ import { OverviewTab } from "./tabs/OverviewTab";
 import { TasksTab } from "./tabs/TasksTab";
 import { NotesTab } from "./tabs/NotesTab";
 import { AuditTab } from "./tabs/AuditTab";
+import { ChatTab } from "./tabs/ChatTab";
 
 interface MatterContext {
   id: string;
@@ -36,13 +37,18 @@ interface MatterContext {
   _count: { accessLogs: number; invitations: number };
 }
 
-type TabKey = "overview" | "tasks" | "notes" | "audit";
+type TabKey = "overview" | "chat" | "tasks" | "notes" | "audit";
 
 const TABS: Array<{ key: TabKey; label: string; hint: string }> = [
   {
     key: "overview",
     label: "Übersicht",
     hint: "Mandanten-Kontext, Scope, Zeitlinie",
+  },
+  {
+    key: "chat",
+    label: "AI Chat",
+    hint: "Claude Sonnet im Mandanten-Kontext — Memos, Strategie, Fragen",
   },
   {
     key: "tasks",
@@ -173,6 +179,7 @@ export function WorkspaceShell({ matterId }: { matterId: string }) {
       {/* Tab content */}
       <main className="flex-1 overflow-y-auto px-8 py-6">
         {activeTab === "overview" && <OverviewTab matter={matter} />}
+        {activeTab === "chat" && <ChatTab matterId={matterId} />}
         {activeTab === "tasks" && <TasksTab matterId={matterId} />}
         {activeTab === "notes" && <NotesTab matterId={matterId} />}
         {activeTab === "audit" && <AuditTab matterId={matterId} />}
