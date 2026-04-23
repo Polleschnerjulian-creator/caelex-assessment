@@ -212,7 +212,11 @@
   top: 120px;
   bottom: 160px;
   max-height: none;
-  width: 760px;
+  width: 720px;
+  /* Shift nach links um die pixel-hälfte des kontext-panels plus
+     eines sichtbaren gaps. Ohne diesen shift klebt eine
+     right-aligned user-message am panel. */
+  transform: translateX(calc(-50% - 190px));
   mask-image: linear-gradient(
     180deg,
     transparent 0%,
@@ -227,6 +231,13 @@
     #000 96%,
     transparent 100%
   );
+}
+/* Auf schmalen screens (<1280px) ist das panel versteckt → kein
+   shift nötig, konversation bleibt mittig. */
+@media (max-width: 1279px) {
+  .conversationActive {
+    transform: translateX(-50%);
+  }
 }
 .conversation::-webkit-scrollbar {
   display: none;
@@ -974,12 +985,11 @@
   will-change: transform, opacity;
 }
 .entityMinimized {
-  /* Factor 0.28 bringt den orb von ~480px auf ~135px visuelle größe.
-     Translate verschiebt den (skalierten) canvas-mittelpunkt so,
-     dass der orb in die obere linke bildschirmecke wandert —
-     ca. x:120px, y:150px vom viewport-ursprung. */
-  transform: scale(0.28) translate(-128%, -108%);
-  opacity: 0.75;
+  /* Factor 0.22 → ~100-120px visuelle größe, klarer corner-spot.
+     Translate weiter nach top-left damit die kugel näher an die
+     ecke rückt und den text-bereich sauberer freigibt. */
+  transform: scale(0.22) translate(-165%, -150%);
+  opacity: 0.78;
 }
 
 /* ───────── Context Panel (rechts) ───────── */
@@ -990,7 +1000,10 @@
   position: fixed;
   top: 70px;
   right: 20px;
-  bottom: 16px;
+  /* Endet auf höhe der text-eingabe — nicht bis ganz unten durchziehen.
+     search-area sitzt bei bottom 12%, ca. 150px hoch. Panel hört
+     darüber auf mit kleinem gap. */
+  bottom: calc(12% + 160px);
   width: 340px;
   max-width: 32vw;
   z-index: 25;
@@ -1146,14 +1159,13 @@
   font-size: 9px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
 }
 .contextScore {
-  font-size: 9px;
-  color: rgba(180, 220, 255, 0.55);
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
 }
 .contextSourceTitle {
   font-size: 11.5px;
@@ -1168,10 +1180,10 @@
   overflow: hidden;
 }
 .contextSourceMeta {
-  font-size: 9.5px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.35);
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.002em;
+  line-height: 1.35;
 }
 
 .contextChips {
@@ -1182,14 +1194,14 @@
 .contextChip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.75);
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  letter-spacing: 0.01em;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  letter-spacing: -0.003em;
   animation: msgIn 0.3s var(--ease);
 }
 

@@ -677,6 +677,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
         <AtlasEntity
           mode={mode}
           audioLevel={audioLevel}
+          starsHidden={hasConversation}
           onReady={(handle) => {
             entityHandle.current = handle;
           }}
@@ -687,17 +688,15 @@ export function AIMode({ open, onClose }: AIModeProps) {
           Zeigt semantische Quellen aus dem Atlas-Corpus, live-
           zitate aus Claudes antwort, und modell-info. Versteckt
           sich unter 1280px screen width. */}
-      <ContextPanel
-        query={contextQuery}
-        assistantText={contextAssistantText}
-        modelLabel="claude-sonnet-4.6"
-      />
+      <ContextPanel query={contextQuery} assistantText={contextAssistantText} />
 
       {/* ─ Top bar ─ */}
+      {/* Brand-label oben-links wurde entfernt — in aktiver conversation
+          sitzt da die mini-orb, und in idle ist die große orb mitte
+          eindeutig genug. */}
       <div
-        className={`${styles.topbar} fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-4`}
+        className={`${styles.topbar} fixed top-0 left-0 right-0 z-30 flex items-center justify-end px-6 py-4`}
       >
-        <div className={styles.brand}>ATLAS</div>
         <div className="flex items-center gap-2.5" data-atlas-menu>
           <button
             type="button"

@@ -38,8 +38,6 @@ interface ContextPanelProps {
   query: string | null;
   /** The assistant's text as it streams in — used for citation parsing. */
   assistantText: string;
-  /** Model name the server is using. */
-  modelLabel?: string;
 }
 
 interface HydratedSource {
@@ -234,11 +232,7 @@ function useSemanticSources(query: string | null): {
 
 // ─── Component ────────────────────────────────────────────────────────
 
-export function ContextPanel({
-  query,
-  assistantText,
-  modelLabel = "claude-sonnet-4-6",
-}: ContextPanelProps) {
+export function ContextPanel({ query, assistantText }: ContextPanelProps) {
   const { sources, loading, reason } = useSemanticSources(query);
   const citations = useMemo(
     () => extractCitations(assistantText),
@@ -338,21 +332,6 @@ export function ContextPanel({
               </div>
             </ContextSection>
           )}
-
-          <ContextSection title="Modell">
-            <div className={styles.contextMeta}>
-              <div>
-                <span className={styles.contextMetaLabel}>Engine</span>
-                <span className={styles.contextMetaValue}>{modelLabel}</span>
-              </div>
-              <div>
-                <span className={styles.contextMetaLabel}>Länge</span>
-                <span className={styles.contextMetaValue}>
-                  {assistantText.length} Zeichen
-                </span>
-              </div>
-            </div>
-          </ContextSection>
         </>
       )}
     </aside>

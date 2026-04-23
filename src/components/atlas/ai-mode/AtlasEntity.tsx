@@ -49,6 +49,10 @@ interface AtlasEntityProps {
   mode: AtlasMode;
   /** Audio amplitude 0..1 for listening-mode surface pulse. */
   audioLevel?: number;
+  /** When true, the starfield fades out (used when the orb shrinks
+   *  into the corner during an active conversation — a tiny corner-
+   *  orb on a full starfield looks visually inconsistent). */
+  starsHidden?: boolean;
   /** Fired once with a handle exposing imperative hooks. */
   onReady?: (handle: AtlasEntityHandle) => void;
 }
@@ -285,6 +289,7 @@ const STAR_VERT = /* glsl */ `
 const STAR_FRAG = /* glsl */ `
   precision highp float;
   uniform float uTime;
+  uniform float uStarsAlpha;
   varying float vSeed;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
@@ -292,7 +297,7 @@ const STAR_FRAG = /* glsl */ `
     if (d > 0.5) discard;
     float alpha = smoothstep(0.5, 0.0, d);
     float flick = 0.55 + 0.45 * sin(uTime * (0.3 + vSeed * 1.8) + vSeed * 20.0);
-    gl_FragColor = vec4(vec3(1.0), alpha * flick * 0.35);
+    gl_FragColor = vec4(vec3(1.0), alpha * flick * 0.35 * uStarsAlpha);
   }
 `;
 
@@ -401,6 +406,7 @@ function modeIndex(m: AtlasMode): number {
 export function AtlasEntity({
   mode,
   audioLevel = 0,
+  starsHidden = false,
   onReady,
 }: AtlasEntityProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -410,6 +416,8 @@ export function AtlasEntity({
     mode: "idle" as AtlasMode,
     audio: 0,
     energy: 0,
+    starsTargetAlpha: 1, // 1 = visible, 0 = faded out
+    starsAlpha: 1,
     triggerShockwaveAt: -99,
     disposed: false,
   });
@@ -417,6 +425,7 @@ export function AtlasEntity({
   // Keep runtime.current in sync with React props every render
   runtime.current.mode = mode;
   runtime.current.audio = audioLevel;
+  runtime.current.starsTargetAlpha = starsHidden ? 0 : 1;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -548,7 +557,11 @@ export function AtlasEntity({
     starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute("aSeed", new THREE.BufferAttribute(starSeed, 1));
     const starMat = new THREE.ShaderMaterial({
-      uniforms: { uTime: uniforms.uTime, uPxSize: { value: 1.4 * PR } },
+      uniforms: {
+        uTime: uniforms.uTime,
+        uPxSize: { value: 1.4 * PR },
+        uStarsAlpha: { value: 1.0 },
+      },
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
@@ -642,6 +655,13 @@ export function AtlasEntity({
       uniforms.uTime.value = t;
       ringMat.uniforms.uTime.value = t;
       ringMat.uniforms.uStart.value = runtime.current.triggerShockwaveAt;
+
+      // Starfield-fade: smooth interpolation zum zielwert. 0.08 pro
+      // frame → ~0.8s für einen vollen 0↔1 übergang, matched damit
+      // die CSS-transition des entity-wrappers ungefähr zeitlich.
+      runtime.current.starsAlpha +=
+        (runtime.current.starsTargetAlpha - runtime.current.starsAlpha) * 0.08;
+      starMat.uniforms.uStarsAlpha.value = runtime.current.starsAlpha;
 
       // Mouse easing
       mouse.x += (mouseTarget.x - mouse.x) * 0.035;
