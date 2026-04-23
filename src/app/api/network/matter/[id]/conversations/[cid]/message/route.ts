@@ -25,15 +25,21 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { buildMatterSystemPrompt } from "@/lib/legal-network/matter-system-prompt";
+import {
+  MATTER_TOOLS,
+  isMatterToolName,
+} from "@/lib/legal-network/matter-tools";
+import { executeTool } from "@/lib/legal-network/matter-tool-executor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 120; // tool-use loops may take longer
 
 const MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS = 1500;
+const MAX_TOKENS = 2000;
 const TEMPERATURE = 0.5;
 const HISTORY_LIMIT = 40; // messages from DB sent to Claude per turn
+const MAX_TOOL_ITERATIONS = 4; // stop runaway tool loops
 
 const Body = z.object({
   content: z.string().min(1).max(10000),
@@ -182,49 +188,161 @@ export async function POST(
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       };
 
-      // Let the client know the user message ID so it can echo it
-      // immediately (even before the reply arrives).
       send({
         type: "user_message_saved",
         messageId: userMsg.id,
         createdAt: userMsg.createdAt,
       });
 
-      let assistantContent = "";
+      // ── Tool-use loop ────────────────────────────────────────
+      // Each iteration makes one Claude call. If the response is
+      // text-only (stop_reason !== "tool_use"), we're done and the
+      // text has already been streamed to the client. If it contains
+      // tool_use blocks, we execute them server-side, append the
+      // assistant's response + tool_result back to the message list,
+      // and loop. Max 4 iterations to bound cost + latency.
+      const conversationMessages: Anthropic.MessageParam[] = messages;
+      let accumulatedText = "";
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      let iterations = 0;
+
       try {
-        const anthropicStream = anthropic.messages.stream({
-          model: MODEL,
-          max_tokens: MAX_TOKENS,
-          temperature: TEMPERATURE,
-          system: systemPrompt,
-          messages,
-        });
+        while (iterations < MAX_TOOL_ITERATIONS) {
+          iterations++;
 
-        let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
-        const bump = () => {
-          if (inactivityTimer) clearTimeout(inactivityTimer);
-          inactivityTimer = setTimeout(() => anthropicStream.abort(), 30_000);
-        };
-        bump();
+          const turnStream = anthropic.messages.stream({
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            temperature: TEMPERATURE,
+            system: systemPrompt,
+            messages: conversationMessages,
+            tools: MATTER_TOOLS,
+          });
 
-        anthropicStream.on("text", (delta) => {
+          let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+          const bump = () => {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => turnStream.abort(), 30_000);
+          };
           bump();
-          assistantContent += delta;
-          send({ type: "text", text: delta });
-        });
 
-        const final = await anthropicStream.finalMessage();
-        if (inactivityTimer) clearTimeout(inactivityTimer);
+          turnStream.on("text", (delta) => {
+            bump();
+            accumulatedText += delta;
+            send({ type: "text", text: delta });
+          });
 
-        // Persist the assistant message + usage
+          const response = await turnStream.finalMessage();
+          if (inactivityTimer) clearTimeout(inactivityTimer);
+
+          totalInputTokens += response.usage.input_tokens;
+          totalOutputTokens += response.usage.output_tokens;
+
+          // If no tool-use, we're done — the final text has been streamed.
+          if (response.stop_reason !== "tool_use") {
+            break;
+          }
+
+          // Extract tool_use blocks and execute them. Preserve ordering
+          // as Anthropic gave them so tool_result IDs line up exactly.
+          const toolUses = response.content.filter(
+            (c): c is Anthropic.ToolUseBlock => c.type === "tool_use",
+          );
+
+          // Append the assistant's response (including both text and
+          // tool_use blocks) to the conversation. Anthropic requires
+          // this — tool_result must follow the assistant's tool_use
+          // in the exact same conversation shape.
+          conversationMessages.push({
+            role: "assistant",
+            content: response.content,
+          });
+
+          // Execute all tool calls in parallel, collect results in
+          // the same order.
+          const toolResults = await Promise.all(
+            toolUses.map(
+              async (tu): Promise<Anthropic.ToolResultBlockParam> => {
+                send({ type: "tool_use_start", name: tu.name, id: tu.id });
+                if (!isMatterToolName(tu.name)) {
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: true,
+                  });
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: JSON.stringify({
+                      error: `Unknown tool: ${tu.name}`,
+                    }),
+                    is_error: true,
+                  };
+                }
+                try {
+                  const result = await executeTool({
+                    name: tu.name,
+                    input: tu.input,
+                    matter,
+                    actorUserId: session.user!.id!,
+                    actorOrgId: membership.organizationId,
+                  });
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: result.isError,
+                  });
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: result.content,
+                    is_error: result.isError,
+                  };
+                } catch (err) {
+                  const msg = err instanceof Error ? err.message : String(err);
+                  logger.error(`Tool ${tu.name} failed: ${msg}`);
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: true,
+                  });
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: JSON.stringify({ error: msg }),
+                    is_error: true,
+                  };
+                }
+              },
+            ),
+          );
+
+          conversationMessages.push({
+            role: "user",
+            content: toolResults,
+          });
+        }
+
+        if (iterations >= MAX_TOOL_ITERATIONS) {
+          send({
+            type: "tool_limit_reached",
+            iterations,
+            hint: "Assistant ran out of tool-use iterations; answer may be incomplete.",
+          });
+        }
+
         const assistantMsg = await prisma.$transaction(async (tx) => {
           const msg = await tx.matterConversationMessage.create({
             data: {
               conversationId: cid,
               role: "ASSISTANT",
-              content: assistantContent,
-              tokensInput: final.usage.input_tokens,
-              tokensOutput: final.usage.output_tokens,
+              content: accumulatedText,
+              tokensInput: totalInputTokens,
+              tokensOutput: totalOutputTokens,
             },
           });
           await tx.matterConversation.update({
@@ -233,7 +351,7 @@ export async function POST(
               lastMessageAt: new Date(),
               messageCount: { increment: 1 },
               totalTokens: {
-                increment: final.usage.input_tokens + final.usage.output_tokens,
+                increment: totalInputTokens + totalOutputTokens,
               },
             },
           });
@@ -244,20 +362,21 @@ export async function POST(
           type: "done",
           messageId: assistantMsg.id,
           usage: {
-            input: final.usage.input_tokens,
-            output: final.usage.output_tokens,
+            input: totalInputTokens,
+            output: totalOutputTokens,
           },
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Matter chat: stream failed — ${msg}`);
-        // Persist whatever we got so the chat doesn't rewind on retry
-        if (assistantContent.length > 0) {
+        if (accumulatedText.length > 0) {
           await prisma.matterConversationMessage.create({
             data: {
               conversationId: cid,
               role: "ASSISTANT",
-              content: assistantContent + "\n\n[Stream unterbrochen]",
+              content: accumulatedText + "\n\n[Stream unterbrochen]",
+              tokensInput: totalInputTokens,
+              tokensOutput: totalOutputTokens,
             },
           });
           await prisma.matterConversation.update({
@@ -265,6 +384,9 @@ export async function POST(
             data: {
               lastMessageAt: new Date(),
               messageCount: { increment: 1 },
+              totalTokens: {
+                increment: totalInputTokens + totalOutputTokens,
+              },
             },
           });
         }

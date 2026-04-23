@@ -27,13 +27,25 @@ interface ConversationSummary {
   totalTokens: number;
 }
 
+interface ToolTrace {
+  id: string;
+  name: string;
+  isError?: boolean;
+  completed?: boolean;
+}
+
 interface ChatMessage {
   id: string;
   role: "USER" | "ASSISTANT" | "SYSTEM";
   content: string;
   createdAt: string;
   streaming?: boolean;
+  tools?: ToolTrace[];
 }
+
+const TOOL_LABEL: Record<string, string> = {
+  load_compliance_overview: "Compliance-Daten werden abgerufen",
+};
 
 export function ChatTab({ matterId }: { matterId: string }) {
   const [conversations, setConversations] = useState<
@@ -220,6 +232,51 @@ export function ChatTab({ matterId }: { matterId: string }) {
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === optimisticUserId ? { ...m, id: evt.messageId } : m,
+                ),
+              );
+            } else if (evt.type === "tool_use_start") {
+              // Claude is calling a tool — add a "working" trace chip
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId
+                    ? {
+                        ...m,
+                        tools: [
+                          ...(m.tools ?? []),
+                          { id: evt.id, name: evt.name, completed: false },
+                        ],
+                      }
+                    : m,
+                ),
+              );
+            } else if (evt.type === "tool_use_result") {
+              // Tool returned — mark that chip complete with success/error
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId
+                    ? {
+                        ...m,
+                        tools: (m.tools ?? []).map((t) =>
+                          t.id === evt.id
+                            ? { ...t, completed: true, isError: !!evt.isError }
+                            : t,
+                        ),
+                      }
+                    : m,
+                ),
+              );
+            } else if (evt.type === "tool_limit_reached") {
+              // Rare edge-case — surface a small footer note
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId
+                    ? {
+                        ...m,
+                        content:
+                          m.content +
+                          "\n\n_Hinweis: Tool-Loop-Limit erreicht, Antwort evtl. unvollständig._",
+                      }
+                    : m,
                 ),
               );
             } else if (evt.type === "done") {
@@ -434,14 +491,47 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         {isUser ? (
           <div className="whitespace-pre-wrap">{message.content}</div>
         ) : (
-          <div className="markdown">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {message.content || (message.streaming ? " " : "")}
-            </ReactMarkdown>
-            {message.streaming && (
-              <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
+          <>
+            {/* Tool-use traces — rendered inline so lawyers see
+                what Claude actually pulled from Caelex. Anti-black-
+                box signal analog zum ContextPanel im Atlas AI Mode. */}
+            {message.tools && message.tools.length > 0 && (
+              <div className="mb-2 flex flex-col gap-1">
+                {message.tools.map((t) => (
+                  <div
+                    key={t.id}
+                    className={`inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-md self-start ${
+                      t.isError
+                        ? "bg-red-500/10 text-red-300 ring-1 ring-red-500/30"
+                        : t.completed
+                          ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30"
+                          : "bg-white/[0.05] text-white/60 ring-1 ring-white/10"
+                    }`}
+                  >
+                    <span className="text-[9px]">
+                      {t.isError ? "⚠" : t.completed ? "✓" : "•"}
+                    </span>
+                    <span className="font-medium">
+                      {TOOL_LABEL[t.name] ?? t.name}
+                    </span>
+                    {!t.completed && (
+                      <span className="text-[10px] opacity-70 animate-pulse">
+                        läuft…
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
-          </div>
+            <div className="markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content || (message.streaming ? " " : "")}
+              </ReactMarkdown>
+              {message.streaming && (
+                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
