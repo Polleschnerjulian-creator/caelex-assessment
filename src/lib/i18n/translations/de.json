@@ -815,6 +815,8 @@
     "sources": "Quellen",
     "sources_auth": "{sources} Quellen · {auth} Beh.",
     "sources_count": "{count} Rechtsquellen",
+    "similar_concepts": "Ähnliche Konzepte",
+    "semantic_searching": "Suche wird erweitert…",
     "space_act_enacted": "Weltraumgesetz erlassen",
     "space_act_year": "Weltraumgesetz",
     "status": "Status",

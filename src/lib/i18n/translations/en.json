@@ -815,6 +815,8 @@
     "sources": "Sources",
     "sources_auth": "{sources} sources · {auth} auth.",
     "sources_count": "{count} legal sources",
+    "similar_concepts": "Related concepts",
+    "semantic_searching": "expanding search…",
     "space_act_enacted": "Space Act Enacted",
     "space_act_year": "Space Act",
     "status": "Status",

@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Scale, Building2, Globe2 } from "lucide-react";
+import { ArrowRight, Scale, Building2, Globe2, Sparkles } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useAtlasSemanticSearch } from "@/hooks/useAtlasSemanticSearch";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   // Single source of truth — barrel aggregates every jurisdiction
@@ -35,6 +36,16 @@ import {
   type ConductCondition,
 } from "@/data/landing-rights";
 import { foldText, escapeRegex } from "@/lib/atlas/search-normalize";
+
+// Discriminated union for the render layer. Keeps each branch's
+// `entity` strongly typed so TSX narrowing via `item.kind ===` works
+// without extra casts.
+type HydratedSemanticItem =
+  | { kind: "source"; score: number; entity: LegalSource }
+  | { kind: "authority"; score: number; entity: Authority }
+  | { kind: "profile"; score: number; entity: LandingRightsProfile }
+  | { kind: "case-study"; score: number; entity: CaseStudy }
+  | { kind: "conduct"; score: number; entity: ConductCondition };
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -313,7 +324,93 @@ export default function CommandCenterPage() {
     [debouncedQuery],
   );
 
+  // Semantic search runs in parallel to the exact-match performSearch
+  // above. The hook owns its own debounce (300 ms) and cancels
+  // in-flight requests on new keystrokes. Status transitions: idle →
+  // loading → ready | not_indexed | rate_limited | error.
+  const semantic = useAtlasSemanticSearch(query, {
+    minQueryLength: 4,
+    debounceMs: 300,
+    limit: 12,
+  });
+
+  // Hydrate semantic match IDs ("source:INT-OST-1967") back into full
+  // entities so the section can render them with the same visual
+  // vocabulary as the exact-match rows. We also filter out any item
+  // already shown in the exact-match list — the semantic bucket is
+  // purely "what you didn't ask for directly".
+  const semanticHydrated = useMemo((): HydratedSemanticItem[] => {
+    if (semantic.matches.length === 0) return [];
+
+    const exactSourceIds = new Set((results?.sources ?? []).map((s) => s.id));
+    const exactAuthorityIds = new Set(
+      (results?.authorities ?? []).map((a) => a.id),
+    );
+    // Profile jurisdictions are a narrow enum (JurisdictionCode), but the
+    // semantic-match rawId arrives as a plain string. Cast to string on
+    // the Set so `.has(rawId)` typechecks without forcing rawId through
+    // the enum.
+    const exactProfileJurisdictions = new Set<string>(
+      (results?.landingRightsProfiles ?? []).map((p) => p.jurisdiction),
+    );
+    const exactCaseStudyIds = new Set(
+      (results?.landingRightsCaseStudies ?? []).map((c) => c.id),
+    );
+    const exactConductIds = new Set(
+      (results?.landingRightsConduct ?? []).map((c) => c.id),
+    );
+
+    const out: HydratedSemanticItem[] = [];
+    for (const m of semantic.matches) {
+      const [, rawId] = m.id.split(":");
+      if (!rawId) continue;
+      switch (m.type) {
+        case "source": {
+          if (exactSourceIds.has(rawId)) break;
+          const s = ALL_SOURCES.find((x) => x.id === rawId);
+          if (s) out.push({ kind: "source", score: m.score, entity: s });
+          break;
+        }
+        case "authority": {
+          if (exactAuthorityIds.has(rawId)) break;
+          const a = ALL_AUTHORITIES.find((x) => x.id === rawId);
+          if (a) out.push({ kind: "authority", score: m.score, entity: a });
+          break;
+        }
+        case "profile": {
+          if (exactProfileJurisdictions.has(rawId)) break;
+          const p = ALL_LANDING_RIGHTS_PROFILES.find(
+            (x) => x.jurisdiction === rawId,
+          );
+          if (p) out.push({ kind: "profile", score: m.score, entity: p });
+          break;
+        }
+        case "case-study": {
+          if (exactCaseStudyIds.has(rawId)) break;
+          const c = ALL_CASE_STUDIES.find((x) => x.id === rawId);
+          if (c) out.push({ kind: "case-study", score: m.score, entity: c });
+          break;
+        }
+        case "conduct": {
+          if (exactConductIds.has(rawId)) break;
+          const c = ALL_CONDUCT_CONDITIONS.find((x) => x.id === rawId);
+          if (c) out.push({ kind: "conduct", score: m.score, entity: c });
+          break;
+        }
+      }
+    }
+    return out;
+  }, [semantic.matches, results]);
+
+  const hasSemanticSection = semanticHydrated.length > 0;
+  const semanticLoading = semantic.status === "loading";
+
   const hasResults = results !== null;
+  // hasAnyResults drives the layout transition (centered hero → top-
+  // anchored) so the page still lifts when only the semantic bucket
+  // has matches (or is about to produce some). hasResults keeps its
+  // narrower meaning — "exact-match hits exist".
+  const hasAnyResults = hasResults || hasSemanticSection || semanticLoading;
   const [showAllSources, setShowAllSources] = useState(false);
 
   useEffect(() => {
@@ -356,11 +453,11 @@ export default function CommandCenterPage() {
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16">
       {/* ─── Centered search area ─── */}
       <div
-        className={`transition-all duration-700 ease-out ${hasResults ? "pt-10" : "pt-[22vh]"}`}
+        className={`transition-all duration-700 ease-out ${hasAnyResults ? "pt-10" : "pt-[22vh]"}`}
       >
         {/* Greeting */}
         <p
-          className={`font-normal text-[var(--atlas-text-muted)] tracking-[-0.01em] transition-all duration-700 ease-out ${hasResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
+          className={`font-normal text-[var(--atlas-text-muted)] tracking-[-0.01em] transition-all duration-700 ease-out ${hasAnyResults ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
         >
           {t(greetingKey)}
           {userName && (
@@ -387,7 +484,7 @@ export default function CommandCenterPage() {
               text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)]
               font-light tracking-[-0.02em] leading-none
               transition-all duration-500
-              ${hasResults ? "text-[28px] lg:text-[36px] py-4" : "text-[40px] lg:text-[52px] py-5"}
+              ${hasAnyResults ? "text-[28px] lg:text-[36px] py-4" : "text-[40px] lg:text-[52px] py-5"}
             `}
             style={{ caretColor: "#111", outline: "none", boxShadow: "none" }}
           />
@@ -395,7 +492,7 @@ export default function CommandCenterPage() {
 
         {/* Subtle stats line */}
         <div
-          className={`flex items-center gap-4 transition-all duration-500 ${hasResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
+          className={`flex items-center gap-4 transition-all duration-500 ${hasAnyResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}
         >
           <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
             {t("atlas.sources_count", { count: ALL_SOURCES.length })}
@@ -726,9 +823,165 @@ export default function CommandCenterPage() {
         </div>
       )}
 
+      {/* ─── Ähnliche Konzepte (semantische Suche) ─── */}
+      {/* Rendert parallel zu den Exact-Match-Sektionen. Leuchtet auch dann,
+          wenn gar kein Exact-Treffer existiert — für natürlichsprachliche
+          Queries wie "was wenn mein satellit abstürzt" ist das oft der
+          einzige relevante Bucket. Bleibt still (kein Spinner-Chrom) wenn
+          der Corpus nicht indiziert ist (reason:"not_indexed"). */}
+      {(hasSemanticSection || semanticLoading) && (
+        <div className="pb-20">
+          <section>
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles
+                size={13}
+                className="text-[var(--atlas-text-faint)]"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
+                {t("atlas.similar_concepts")}
+              </h2>
+              {semanticLoading && (
+                <span className="text-[10px] text-[var(--atlas-text-faint)] italic animate-pulse">
+                  {t("atlas.semantic_searching")}
+                </span>
+              )}
+              {!semanticLoading && semantic.tookMs !== null && (
+                <span className="text-[9px] text-[var(--atlas-text-faint)]">
+                  · {semantic.tookMs} ms
+                </span>
+              )}
+            </div>
+            <div className="space-y-1">
+              {semanticHydrated.map((item) => {
+                if (item.kind === "source") {
+                  const s = item.entity;
+                  return (
+                    <button
+                      key={`sem-source-${s.id}`}
+                      onClick={() => router.push(`/atlas/sources/${s.id}`)}
+                      className="w-full flex items-start gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
+                    >
+                      <span
+                        className={`h-2 w-2 mt-2 rounded-full flex-shrink-0 ${RELEVANCE_DOT[s.relevance_level]}`}
+                      />
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--atlas-text-faint)] w-12 flex-shrink-0 mt-1">
+                        {TYPE_LABELS[s.type]}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[14px] font-medium text-[var(--atlas-text-primary)] truncate block group-hover:text-black transition-colors">
+                          {getTranslatedSource(s, language).title}
+                        </span>
+                        {s.official_reference && (
+                          <span className="text-[10px] text-[var(--atlas-text-faint)]">
+                            {s.official_reference}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] flex-shrink-0 mt-1">
+                        {s.jurisdiction}
+                      </span>
+                    </button>
+                  );
+                }
+                if (item.kind === "authority") {
+                  const a = item.entity;
+                  return (
+                    <button
+                      key={`sem-authority-${a.id}`}
+                      onClick={() =>
+                        router.push(`/atlas/jurisdictions/${a.jurisdiction}`)
+                      }
+                      className="w-full flex items-start gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition-all duration-200 group"
+                    >
+                      <span className="text-[12px] font-bold text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-inset)] rounded-md px-2 py-1 flex-shrink-0 mt-0.5">
+                        {a.abbreviation}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[14px] font-semibold text-[var(--atlas-text-primary)] block group-hover:text-black transition-colors">
+                          {getTranslatedAuthority(a, language).name}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-[var(--atlas-text-muted)] flex-shrink-0 mt-1">
+                        {a.jurisdiction}
+                      </span>
+                    </button>
+                  );
+                }
+                if (item.kind === "profile") {
+                  const p = item.entity;
+                  return (
+                    <button
+                      key={`sem-profile-${p.jurisdiction}`}
+                      onClick={() =>
+                        router.push(
+                          `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
+                        )
+                      }
+                      className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
+                    >
+                      <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
+                        {p.jurisdiction}
+                      </span>
+                      <span className="text-[13px] text-[var(--atlas-text-secondary)] line-clamp-2 flex-1">
+                        {p.overview.summary}
+                      </span>
+                    </button>
+                  );
+                }
+                if (item.kind === "case-study") {
+                  const c = item.entity;
+                  return (
+                    <button
+                      key={`sem-case-${c.id}`}
+                      onClick={() =>
+                        router.push(
+                          `/atlas/landing-rights/case-studies/${c.id}`,
+                        )
+                      }
+                      className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
+                    >
+                      <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
+                        {c.jurisdiction}
+                      </span>
+                      <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] flex-1">
+                        {c.title}
+                      </span>
+                    </button>
+                  );
+                }
+                if (item.kind === "conduct") {
+                  const c = item.entity;
+                  return (
+                    <button
+                      key={`sem-conduct-${c.id}`}
+                      onClick={() =>
+                        router.push(`/atlas/landing-rights/conduct`)
+                      }
+                      className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
+                    >
+                      <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
+                        {c.jurisdiction}
+                      </span>
+                      <div className="flex-1">
+                        <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] block">
+                          {c.title}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </section>
+        </div>
+      )}
+
       {/* ─── Legal Footer ─── */}
       <footer
-        className={`transition-all duration-700 ${hasResults ? "mt-20" : "mt-40"} pt-8 border-t border-[var(--atlas-border-subtle)] pb-10`}
+        className={`transition-all duration-700 ${hasAnyResults ? "mt-20" : "mt-40"} pt-8 border-t border-[var(--atlas-border-subtle)] pb-10`}
       >
         <div className="space-y-4">
           <div className="flex items-center gap-2">
