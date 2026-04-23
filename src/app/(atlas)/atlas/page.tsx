@@ -460,19 +460,22 @@ export default function CommandCenterPage() {
       {/* The entry-point to the Singularity overlay. When clicked, the
           whole page fades behind a dark stage and the orb appears.
           Prototyp — keine AI-Kosten, kein Backend. */}
+      {/* Entry-Button bewusst minimal: dunkles Glas auf hellem Atlas-BG,
+          Sparkles-Icon subtil in Weiß. Gleiche Typo wie die bestehenden
+          Atlas-UI-Buttons (11px, tracking +0.02). */}
       <button
         onClick={() => setAiModeOpen(true)}
         aria-label="Enter AI Mode"
         className="fixed top-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full
-          bg-gradient-to-r from-violet-600 to-emerald-500
-          hover:from-violet-500 hover:to-emerald-400
-          text-white text-[12px] font-medium tracking-wide
-          shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40
-          transition-all duration-200 hover:-translate-y-0.5
-          border border-white/10"
+          bg-[#0f0f12] text-white/90
+          text-[11px] font-medium tracking-[0.08em] uppercase
+          hover:bg-[#1a1a1f] hover:text-white
+          transition-colors duration-200
+          border border-white/[0.06]
+          shadow-[0_1px_2px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(255,255,255,0.04)_inset]"
       >
-        <Sparkles size={14} strokeWidth={2} />
-        <span>Atlas AI Mode</span>
+        <Sparkles size={13} strokeWidth={1.8} className="opacity-80" />
+        <span>AI Mode</span>
       </button>
 
       {/* ─── AI Mode overlay ─── */}
