@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Scale, Building2, Globe2, Sparkles } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useAtlasSemanticSearch } from "@/hooks/useAtlasSemanticSearch";
+import { AIMode } from "@/components/atlas/ai-mode/AIMode";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   // Single source of truth — barrel aggregates every jurisdiction
@@ -412,6 +413,10 @@ export default function CommandCenterPage() {
   // narrower meaning — "exact-match hits exist".
   const hasAnyResults = hasResults || hasSemanticSection || semanticLoading;
   const [showAllSources, setShowAllSources] = useState(false);
+  // AI Mode toggle. When true, the full-screen Singularity overlay
+  // mounts above the normal search UI. Purely visual prototype for
+  // now — no real agent dispatch, no AI cost.
+  const [aiModeOpen, setAiModeOpen] = useState(false);
 
   useEffect(() => {
     setShowAllSources(false);
@@ -451,6 +456,28 @@ export default function CommandCenterPage() {
 
   return (
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16">
+      {/* ─── AI Mode Toggle (top-right corner) ─── */}
+      {/* The entry-point to the Singularity overlay. When clicked, the
+          whole page fades behind a dark stage and the orb appears.
+          Prototyp — keine AI-Kosten, kein Backend. */}
+      <button
+        onClick={() => setAiModeOpen(true)}
+        aria-label="Enter AI Mode"
+        className="fixed top-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full
+          bg-gradient-to-r from-violet-600 to-emerald-500
+          hover:from-violet-500 hover:to-emerald-400
+          text-white text-[12px] font-medium tracking-wide
+          shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40
+          transition-all duration-200 hover:-translate-y-0.5
+          border border-white/10"
+      >
+        <Sparkles size={14} strokeWidth={2} />
+        <span>Atlas AI Mode</span>
+      </button>
+
+      {/* ─── AI Mode overlay ─── */}
+      <AIMode open={aiModeOpen} onClose={() => setAiModeOpen(false)} />
+
       {/* ─── Centered search area ─── */}
       <div
         className={`transition-all duration-700 ease-out ${hasAnyResults ? "pt-10" : "pt-[22vh]"}`}
