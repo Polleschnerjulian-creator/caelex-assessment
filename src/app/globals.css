@@ -2363,13 +2363,19 @@ html:not(.dark) .caelex-v2 .glass-card::after {
      COVER PAGE — Linear-style top-left block, otherwise empty
      ════════════════════════════════════════════════════════════════ */
 
+  /*
+   * IMPORTANT: do NOT use `100vh` in print — browsers vary wildly
+   * (Chrome treats it as the screen viewport, not the page). Use an
+   * A4-derived min-height instead: 297mm - 18mm top - 22mm bottom
+   * = 257mm of content area. The flex column pins the bottom block.
+   */
   .print-cover {
-    height: calc(100vh - 40mm);
-    min-height: 230mm;
+    min-height: 257mm;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     page-break-after: always;
+    break-after: page;
   }
 
   .print-cover-top {
@@ -2409,7 +2415,25 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     letter-spacing: -0.035em;
     color: #000;
     margin: 0;
-    max-width: 88%;
+    max-width: 95%;
+    /* Prevent ugly mid-word breaks on a list of country names joined
+       with "·" — CSS only breaks between words, which is what we want. */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Cover title auto-scale: when a comparator briefing has many
+     jurisdictions, the joined title string grows long. Two utility
+     modifiers let JSX pick a smaller size without re-declaring the
+     base rule. */
+  .print-cover-title.is-medium {
+    font-size: 38pt;
+    line-height: 1.05;
+  }
+
+  .print-cover-title.is-small {
+    font-size: 30pt;
+    line-height: 1.1;
   }
 
   .print-cover-subtitle {
@@ -2471,10 +2495,12 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
   .print-glance {
     page-break-after: always;
+    break-after: page;
   }
 
   .print-glance-header {
     margin-bottom: 20pt;
+    break-after: avoid;
   }
 
   .print-glance-kicker {
@@ -2506,11 +2532,19 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     grid-template-columns: repeat(2, 1fr);
     gap: 16pt 20pt;
     margin-top: 20pt;
+    /* Keep glance grid together on one page — it's the exec summary;
+       splitting it across pages breaks the scan pattern. */
+    break-inside: avoid;
   }
 
   .print-glance-card {
-    padding: 10pt 0;
+    padding: 12pt 0 6pt 0;
     border-top: 0.5pt solid #e5e7eb;
+    break-inside: avoid;
+    /* Consistent minimum height keeps the 2-col grid visually
+       balanced even when one card has 1 line of detail and another
+       has 3. */
+    min-height: 58pt;
   }
 
   .print-glance-card-num {
@@ -2551,18 +2585,22 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
   .print-section {
     page-break-before: always;
+    break-before: page;
     margin-bottom: 24pt;
   }
 
-  .print-section:first-child {
-    page-break-before: auto;
-  }
-
+  /*
+   * Section header block stays with its lede — never split across
+   * a page break. break-after: avoid ensures the title + rule never
+   * end a page alone without the lede/table following.
+   */
   .print-section-header {
     display: flex;
     align-items: baseline;
     gap: 14pt;
     margin-bottom: 6pt;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   .print-section-num {
@@ -2581,11 +2619,47 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     margin: 0;
   }
 
+  /* Inline count suffix after a section title, e.g. "(14)" */
+  .print-section-count {
+    font-size: 12pt;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-left: 8pt;
+    letter-spacing: 0.02em;
+  }
+
+  /* Inline country-code suffix after a cover title, e.g. "FR" */
+  .print-cover-title-suffix {
+    font-size: 24pt;
+    font-weight: 500;
+    color: #6b7280;
+    letter-spacing: -0.01em;
+    margin-left: 6pt;
+  }
+
+  /* Cover branding row — Atlas mark on the left, firm logo on the
+     right. Reusable between Comparator and Jurisdiction covers. */
+  .print-cover-brandrow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28pt;
+  }
+
+  .print-cover-firmlogo {
+    max-height: 32pt;
+    max-width: 140pt;
+    object-fit: contain;
+    margin-top: -4pt;
+  }
+
   .print-section-rule {
     width: 100%;
     height: 0.5pt;
     background: #000;
     margin: 6pt 0 14pt 0;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   .print-section-lede {
@@ -2594,9 +2668,24 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     max-width: 80%;
     line-height: 1.55;
     margin: 0 0 16pt 0;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
-  /* ─── Data table (refined) ─── */
+  /* ─── Data table (refined) ───
+   *
+   * Using table-layout: fixed so wide country cells wrap cleanly
+   * rather than pushing the table off the page edge. The provision
+   * column is pinned narrow; the remaining width is split equally
+   * across country columns regardless of how many are selected.
+   *
+   * With N jurisdictions on A4 portrait (content width ~174mm):
+   *   N=2  → each country ≈ 67mm       comfortable
+   *   N=3  → each country ≈ 47mm       comfortable
+   *   N=4  → each country ≈ 36mm       readable
+   *   N=5  → each country ≈ 29mm       tight but wraps
+   *   N≥6  → JSX should flip to landscape via .print-wide-table
+   */
   .print-table {
     width: 100%;
     border-collapse: collapse;
@@ -2604,14 +2693,20 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     line-height: 1.4;
     margin-bottom: 12pt;
     page-break-inside: auto;
+    table-layout: fixed;
   }
 
+  /* thead repeats on every page when the table overflows — requires
+     table-header-group display PLUS break-inside: avoid on thead. */
   .print-table thead {
     display: table-header-group;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .print-table tr {
     page-break-inside: avoid;
+    break-inside: avoid;
     page-break-after: auto;
   }
 
@@ -2623,25 +2718,49 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     color: #6b7280;
     text-align: left;
     vertical-align: bottom;
-    padding: 4pt 8pt 10pt 8pt;
+    padding: 4pt 6pt 10pt 6pt;
     border-bottom: 1pt solid #000;
     background: transparent !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .print-table td {
-    padding: 8pt;
+    padding: 7pt 6pt;
     vertical-align: top;
     border-bottom: 0.25pt solid #e5e7eb;
     color: #111;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .print-table-provision {
-    width: 120pt;
-    min-width: 110pt;
+    width: 22%;
   }
 
   .print-table-country {
-    min-width: 100pt;
+    /* Let the fixed layout auto-distribute remaining width. */
+  }
+
+  /*
+   * Wide-table modifier — applied to .print-section when the table
+   * has ≥6 countries. Shrinks fonts and paddings so the table still
+   * fits A4 portrait without turning landscape (keeps document
+   * orientation consistent with cover and glance).
+   */
+  .print-section.print-wide-table .print-table {
+    font-size: 7.5pt;
+    line-height: 1.35;
+  }
+  .print-section.print-wide-table .print-table th {
+    font-size: 6.5pt;
+    padding: 3pt 4pt 8pt 4pt;
+  }
+  .print-section.print-wide-table .print-table td {
+    padding: 5pt 4pt;
+  }
+  .print-section.print-wide-table .print-table-provision {
+    width: 18%;
   }
 
   .print-table-code {
@@ -2709,6 +2828,79 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     border: 0.75pt dashed #94a3b8;
   }
 
+  /* ─── Authority table cell helpers (JurisdictionExport) ─── */
+  .print-authority-abbr {
+    font-weight: 700;
+    color: #000;
+    letter-spacing: 0.02em;
+  }
+
+  .print-authority-mandate {
+    color: #374151;
+    line-height: 1.55;
+  }
+
+  /* ─── Legal-source card (JurisdictionExport) ─── */
+  /*
+   * A stack of source cards sits under each grouped section. Each
+   * card keeps its header + meta + body + provisions together on one
+   * page. These classes replace a pile of inline styles that had
+   * accumulated in JurisdictionExport.tsx.
+   */
+  .print-source-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14pt;
+  }
+
+  .print-source-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding-left: 12pt;
+    border-left: 0.5pt solid #e5e7eb;
+  }
+
+  .print-source-title {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: #000;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  .print-source-meta {
+    font-size: 7.5pt;
+    color: #94a3b8;
+    margin-top: 3pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .print-source-body {
+    font-size: 8.5pt;
+    color: #374151;
+    margin-top: 6pt;
+    line-height: 1.55;
+  }
+
+  .print-source-provisions {
+    margin-top: 6pt;
+  }
+
+  .print-source-provision {
+    font-size: 8pt;
+    color: #374151;
+    margin-top: 4pt;
+    line-height: 1.5;
+  }
+
+  .print-source-provision-section {
+    font-weight: 600;
+    color: #000;
+    margin-right: 4pt;
+  }
+
   /* ─── Analysis callout ─── */
   .print-callout {
     margin-top: 14pt;
@@ -2716,6 +2908,7 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     border-left: 2pt solid #000;
     background: #fafafa !important;
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .print-callout-label {
@@ -2739,10 +2932,12 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
   .print-appendix {
     page-break-before: always;
+    break-before: page;
   }
 
   .print-appendix-section {
     margin-bottom: 22pt;
+    break-inside: avoid;
   }
 
   .print-appendix-title {

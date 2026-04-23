@@ -310,9 +310,6 @@ function deriveGlanceCards(
   const mandatoryInsurance = jurisdictions.filter(
     (j) => j.data.insuranceLiability.mandatoryInsurance,
   );
-  const voluntaryInsurance = jurisdictions.filter(
-    (j) => !j.data.insuranceLiability.mandatoryInsurance,
-  );
 
   const deorbitRequired = jurisdictions.filter(
     (j) => j.data.debrisMitigation.deorbitRequirement,
@@ -357,13 +354,19 @@ function deriveGlanceCards(
           : "No formal deorbit requirement in any selected jurisdiction",
     },
     {
+      // Fixed: previously gated the detail text on
+      // `voluntaryInsurance.length === 0`, which is unrelated to the
+      // registry card. The correct discriminant is whether any
+      // national registry is present.
       num: "04",
       label: "National Registry",
       value: `${hasRegistry.length} of ${jurisdictions.length}`,
       detail:
-        voluntaryInsurance.length === 0
-          ? "UN Registration Convention applies in all"
-          : `UN Registration Convention applies in all; national registries: ${hasRegistry.map((j) => j.code).join(" · ") || "none"}`,
+        hasRegistry.length === jurisdictions.length
+          ? "National registry maintained in every selected jurisdiction"
+          : hasRegistry.length === 0
+            ? "No national registry maintained — UN Registration Convention may still apply"
+            : `National registry in: ${hasRegistry.map((j) => j.code).join(" · ")}`,
     },
   ];
 }
@@ -412,8 +415,57 @@ export default function ComparatorExport({
       ? deriveGlanceCards(jurisdictions)
       : null;
 
+  // ─── Layout sizing rules ───
+  //
+  // Cover title font-size scales down as more jurisdictions are
+  // joined into one line, so e.g. "France · Germany · Luxembourg ·
+  // United Kingdom · Netherlands" doesn't wrap into four ugly lines
+  // at the default 48pt.
+  //
+  // Likewise, data tables with many countries need tighter typography
+  // to keep rows readable and avoid horizontal overflow on A4
+  // portrait (~174mm usable width).
+  const coverTitleClass =
+    jurisdictions.length >= 5
+      ? "print-cover-title is-small"
+      : jurisdictions.length >= 3
+        ? "print-cover-title is-medium"
+        : "print-cover-title";
+
+  const sectionExtraClass = jurisdictions.length >= 6 ? "print-wide-table" : "";
+
+  // With 5+ jurisdictions, A4 portrait (≈174mm usable) gives each
+  // country column ≤30mm — too narrow for readable text even with
+  // the wide-table modifier. In that case we inject a page-level
+  // landscape override so the whole PDF prints in A4 landscape
+  // (297×210mm content), giving ~40mm per country column at N=6 and
+  // still enough at N=10+.
+  //
+  // The <style> below is global but harmless: it only matters inside
+  // @media print, and only when THIS comparator component is on the
+  // page (JurisdictionExport is on a different route). No other
+  // export shares this render tree.
+  const needsLandscape = jurisdictions.length >= 5;
+
   return (
     <div className="print-export-container" aria-hidden="true">
+      {needsLandscape ? (
+        <style
+          // Inline <style> is the only way to override @page size
+          // from inside a React tree — @page rules can't be scoped
+          // by selector. Also shrinks .print-cover min-height from
+          // 257mm (portrait content area) to 170mm (landscape content
+          // area) so the cover fills a landscape page instead of
+          // overflowing onto a second one.
+          dangerouslySetInnerHTML={{
+            __html: `@media print {
+              @page { size: A4 landscape; margin: 16mm 18mm 18mm 18mm; }
+              .print-cover { min-height: 170mm; }
+            }`,
+          }}
+        />
+      ) : null}
+
       {/* ══════════ COVER ══════════ */}
       <div className="print-cover">
         <div className="print-cover-top">
@@ -421,7 +473,7 @@ export default function ComparatorExport({
           <div className="print-cover-mark-rule" />
 
           <div className="print-cover-kicker">Regulatory Briefing</div>
-          <h1 className="print-cover-title">{countryNames}</h1>
+          <h1 className={coverTitleClass}>{countryNames}</h1>
           <p className="print-cover-subtitle">
             {dimensionLabel} — side-by-side analysis of {jurisdictions.length}{" "}
             European space-law frameworks, built on Atlas&apos;s primary-source
@@ -480,7 +532,10 @@ export default function ComparatorExport({
 
       {/* ══════════ DATA SECTIONS ══════════ */}
       {sections.map((section) => (
-        <div key={section.key} className="print-section">
+        <div
+          key={section.key}
+          className={`print-section ${sectionExtraClass}`.trim()}
+        >
           <div className="print-section-header">
             <div className="print-section-num">{section.num}</div>
             <h2 className="print-section-title">{section.label}</h2>

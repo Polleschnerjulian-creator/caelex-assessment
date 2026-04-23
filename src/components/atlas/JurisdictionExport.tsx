@@ -137,15 +137,8 @@ function ProvisionLine({
   translatedSummary: string | null;
 }) {
   return (
-    <div
-      style={{
-        fontSize: "8pt",
-        color: "#374151",
-        marginTop: "4pt",
-        lineHeight: 1.5,
-      }}
-    >
-      <span style={{ fontWeight: 600, color: "#000", marginRight: "4pt" }}>
+    <div className="print-source-provision">
+      <span className="print-source-provision-section">
         {provision.section}
       </span>
       {translatedSummary ?? provision.summary}
@@ -190,47 +183,21 @@ export default function JurisdictionExport({
       {/* ══════════ COVER ══════════ */}
       <div className="print-cover">
         <div className="print-cover-top">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: "28pt",
-            }}
-          >
+          <div className="print-cover-brandrow">
             <div>
               <div className="print-cover-mark">Atlas</div>
               <div className="print-cover-mark-rule" />
             </div>
             {firm.logo ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={firm.logo}
-                alt=""
-                style={{
-                  maxHeight: "32pt",
-                  maxWidth: "140pt",
-                  objectFit: "contain",
-                  marginTop: "-4pt",
-                }}
-              />
+              <img src={firm.logo} alt="" className="print-cover-firmlogo" />
             ) : null}
           </div>
 
           <div className="print-cover-kicker">Regulatory Briefing</div>
           <h1 className="print-cover-title">
             {jurisdiction.countryName}{" "}
-            <span
-              style={{
-                fontSize: "24pt",
-                fontWeight: 500,
-                color: "#6B7280",
-                letterSpacing: "-0.01em",
-                marginLeft: "6pt",
-              }}
-            >
-              {code}
-            </span>
+            <span className="print-cover-title-suffix">{code}</span>
           </h1>
           <p className="print-cover-subtitle">{coverSubtitle}</p>
         </div>
@@ -311,24 +278,14 @@ export default function JurisdictionExport({
               <div className="print-section-num">{num}</div>
               <h2 className="print-section-title">
                 {group.title}
-                <span
-                  style={{
-                    fontSize: "12pt",
-                    fontWeight: 400,
-                    color: "#94A3B8",
-                    marginLeft: "8pt",
-                    letterSpacing: "0.02em",
-                  }}
-                >
+                <span className="print-section-count">
                   ({group.sources.length})
                 </span>
               </h2>
             </div>
             <div className="print-section-rule" />
 
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "14pt" }}
-            >
+            <div className="print-source-list">
               {group.sources.map((source) => {
                 const translated = getTranslatedSource(source, language);
                 const meta = [
@@ -341,52 +298,17 @@ export default function JurisdictionExport({
                   .join(" · ");
 
                 return (
-                  <div
-                    key={source.id}
-                    style={{
-                      pageBreakInside: "avoid",
-                      paddingLeft: "12pt",
-                      borderLeft: "0.5pt solid #E5E7EB",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "10.5pt",
-                        fontWeight: 600,
-                        color: "#000",
-                        lineHeight: 1.3,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {translated.title}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "7.5pt",
-                        color: "#94A3B8",
-                        marginTop: "3pt",
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {meta}
-                    </div>
+                  <div key={source.id} className="print-source-card">
+                    <div className="print-source-title">{translated.title}</div>
+                    <div className="print-source-meta">{meta}</div>
                     {source.scope_description ? (
-                      <div
-                        style={{
-                          fontSize: "8.5pt",
-                          color: "#374151",
-                          marginTop: "6pt",
-                          lineHeight: 1.55,
-                        }}
-                      >
+                      <div className="print-source-body">
                         {translated.scopeDescription ??
                           source.scope_description}
                       </div>
                     ) : null}
                     {source.key_provisions.length > 0 ? (
-                      <div style={{ marginTop: "6pt" }}>
+                      <div className="print-source-provisions">
                         {source.key_provisions.slice(0, 3).map((p, i) => (
                           <ProvisionLine
                             key={i}
@@ -416,14 +338,7 @@ export default function JurisdictionExport({
             </div>
             <h2 className="print-section-title">
               Competent Authorities
-              <span
-                style={{
-                  fontSize: "12pt",
-                  fontWeight: 400,
-                  color: "#94A3B8",
-                  marginLeft: "8pt",
-                }}
-              >
+              <span className="print-section-count">
                 ({authorities.length})
               </span>
             </h2>
@@ -436,10 +351,15 @@ export default function JurisdictionExport({
           </p>
 
           <table className="print-table">
+            <colgroup>
+              <col style={{ width: "14%" }} />
+              <col style={{ width: "30%" }} />
+              <col style={{ width: "56%" }} />
+            </colgroup>
             <thead>
               <tr>
-                <th style={{ width: "14%" }}>Abbr.</th>
-                <th style={{ width: "30%" }}>Authority</th>
+                <th>Abbr.</th>
+                <th>Authority</th>
                 <th>Mandate</th>
               </tr>
             </thead>
@@ -452,19 +372,11 @@ export default function JurisdictionExport({
                     : ta.mandate;
                 return (
                   <tr key={auth.id}>
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        color: "#000",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
+                    <td className="print-authority-abbr">
                       {auth.abbreviation}
                     </td>
-                    <td style={{ color: "#111" }}>{ta.name}</td>
-                    <td style={{ color: "#374151", lineHeight: 1.55 }}>
-                      {mandate}
-                    </td>
+                    <td>{ta.name}</td>
+                    <td className="print-authority-mandate">{mandate}</td>
                   </tr>
                 );
               })}
