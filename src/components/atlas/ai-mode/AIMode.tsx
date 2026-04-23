@@ -39,6 +39,7 @@ import {
   type AtlasEntityHandle,
   type AtlasMode,
 } from "./AtlasEntity";
+import { ContextPanel } from "./ContextPanel";
 import styles from "./ai-mode.module.css";
 
 // ─── Config ────────────────────────────────────────────────────────────
@@ -568,6 +569,23 @@ export function AIMode({ open, onClose }: AIModeProps) {
     ],
   );
 
+  // ── ContextPanel inputs ────────────────────────────────────
+  // Die "aktive anfrage" ist die letzte user-message. Der streaming-
+  // text für die citation-extraktion ist die letzte atlas-message.
+  // Wird nur neu berechnet wenn messages sich wirklich ändert.
+  const contextQuery = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "user") return messages[i].text;
+    }
+    return null;
+  }, [messages]);
+  const contextAssistantText = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "atlas") return messages[i].text;
+    }
+    return "";
+  }, [messages]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     setInputValue(v);
@@ -649,6 +667,16 @@ export function AIMode({ open, onClose }: AIModeProps) {
         onReady={(handle) => {
           entityHandle.current = handle;
         }}
+      />
+
+      {/* Kontext-Panel (rechts) — Transparenz / Anti-Blackbox.
+          Zeigt semantische Quellen aus dem Atlas-Corpus, live-
+          zitate aus Claudes antwort, und modell-info. Versteckt
+          sich unter 1280px screen width. */}
+      <ContextPanel
+        query={contextQuery}
+        assistantText={contextAssistantText}
+        modelLabel="claude-sonnet-4.6"
       />
 
       {/* ─ Top bar ─ */}
