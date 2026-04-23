@@ -174,6 +174,10 @@
 }
 
 /* ───────── Conversation ───────── */
+/* Idle: schmaler container im unteren bildbereich (klassischer chat-
+   position über dem eingabefeld). Aktiv: nimmt den freigewordenen
+   platz — orb ist weg, panel rechts, also ausnutzen: volle
+   mittelspalte zwischen orb-ecke und context-panel. */
 .conversation {
   position: fixed;
   left: 50%;
@@ -197,6 +201,31 @@
     transparent 0%,
     #000 18%,
     #000 100%
+  );
+  transition:
+    top 0.7s var(--ease),
+    bottom 0.7s var(--ease),
+    max-height 0.7s var(--ease),
+    width 0.7s var(--ease);
+}
+.conversationActive {
+  top: 120px;
+  bottom: 160px;
+  max-height: none;
+  width: 760px;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 4%,
+    #000 96%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 4%,
+    #000 96%,
+    transparent 100%
   );
 }
 .conversation::-webkit-scrollbar {
@@ -244,15 +273,28 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-top-left-radius: 6px;
 }
+/* Streaming-indikator: kleiner pulsierender punkt rechts unten
+   statt block-caret. sieht mit markdown-content sauberer aus. */
 .msgStreaming::after {
-  content: "▊";
-  opacity: 0.6;
-  margin-left: 2px;
-  animation: caret 0.9s steps(2) infinite;
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+  animation: caretPulse 1.1s ease-in-out infinite;
 }
-@keyframes caret {
+@keyframes caretPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
   50% {
-    opacity: 0;
+    opacity: 1;
+    transform: scale(1.15);
   }
 }
 
@@ -817,6 +859,127 @@
   opacity: 0.45;
   margin-left: auto;
   font-size: 11px;
+}
+
+/* ───────── Markdown rendering innerhalb der atlas messages ───────── */
+/* claude-antworten bringen #headers, **bold**, listen, --- und
+   code. raw gerendert ist das unleserlich. hier die legal-grade
+   typografie-overrides für das dark-stage-theme. */
+
+.markdown {
+  display: block;
+}
+.markdown > *:first-child {
+  margin-top: 0;
+}
+.markdown > *:last-child {
+  margin-bottom: 0;
+}
+.mdH1 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.98);
+}
+.mdH2 {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.95);
+}
+.mdH3 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.75);
+}
+.mdP {
+  margin: 0 0 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: -0.003em;
+}
+.mdUl,
+.mdOl {
+  margin: 0 0 10px;
+  padding-left: 18px;
+}
+.mdLi {
+  margin: 2px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.86);
+}
+.mdLi::marker {
+  color: rgba(255, 255, 255, 0.35);
+}
+.mdStrong {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.98);
+}
+.mdEm {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.84);
+}
+.mdCode {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: rgba(184, 230, 255, 0.9);
+}
+.mdHr {
+  margin: 14px 0;
+  border: 0;
+  height: 0.5px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.mdQuote {
+  margin: 10px 0;
+  padding: 8px 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.72);
+  font-style: italic;
+  font-size: 13px;
+}
+.mdLink {
+  color: rgba(184, 230, 255, 0.9);
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 230, 255, 0.3);
+  text-underline-offset: 2px;
+}
+.mdLink:hover {
+  text-decoration-color: rgba(184, 230, 255, 0.8);
+}
+
+/* ───────── Entity-Wrapper — schrumpfen wenn conversation aktiv ───────── */
+/* Im idle füllt der orb die scene. Sobald eine nachricht existiert,
+   transition auf top-links in einen kompakten "presence-spot", damit
+   die konversation den zentralen text-platz bekommt und lesbar wird. */
+
+.entityWrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transition:
+    transform 0.9s var(--ease),
+    opacity 0.9s var(--ease);
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+.entityMinimized {
+  /* Factor 0.28 bringt den orb von ~480px auf ~135px visuelle größe.
+     Translate verschiebt den (skalierten) canvas-mittelpunkt so,
+     dass der orb in die obere linke bildschirmecke wandert —
+     ca. x:120px, y:150px vom viewport-ursprung. */
+  transform: scale(0.28) translate(-128%, -108%);
+  opacity: 0.75;
 }
 
 /* ───────── Context Panel (rechts) ───────── */

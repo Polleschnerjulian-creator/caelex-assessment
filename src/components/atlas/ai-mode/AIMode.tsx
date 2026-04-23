@@ -39,6 +39,7 @@ import {
   type AtlasEntityHandle,
   type AtlasMode,
 } from "./AtlasEntity";
+import { AtlasMarkdown } from "./AtlasMarkdown";
 import { ContextPanel } from "./ContextPanel";
 import styles from "./ai-mode.module.css";
 
@@ -569,6 +570,11 @@ export function AIMode({ open, onClose }: AIModeProps) {
     ],
   );
 
+  // Sobald ein einziger chat eintrag existiert, wechseln wir in den
+  // "aktiv"-layout-state: orb schrumpft + wandert oben-links, die
+  // konversation bekommt den zentralen platz, der text wird lesbar.
+  const hasConversation = messages.length > 0;
+
   // ── ContextPanel inputs ────────────────────────────────────
   // Die "aktive anfrage" ist die letzte user-message. Der streaming-
   // text für die citation-extraktion ist die letzte atlas-message.
@@ -660,14 +666,22 @@ export function AIMode({ open, onClose }: AIModeProps) {
     <div
       className={`${styles.overlay} fixed inset-0 z-[100] overflow-hidden bg-black`}
     >
-      {/* 3D entity behind everything */}
-      <AtlasEntity
-        mode={mode}
-        audioLevel={audioLevel}
-        onReady={(handle) => {
-          entityHandle.current = handle;
-        }}
-      />
+      {/* 3D entity behind everything. Ein wrapper mit CSS-scale/translate
+          schrumpft den orb und schiebt ihn oben-links, sobald eine
+          konversation aktiv ist. Der three.js-canvas bleibt intern
+          voll-aufgelöst — die skalierung ist rein visuell, damit der
+          text-raum in der mitte frei wird. */}
+      <div
+        className={`${styles.entityWrapper} ${hasConversation ? styles.entityMinimized : ""}`}
+      >
+        <AtlasEntity
+          mode={mode}
+          audioLevel={audioLevel}
+          onReady={(handle) => {
+            entityHandle.current = handle;
+          }}
+        />
+      </div>
 
       {/* Kontext-Panel (rechts) — Transparenz / Anti-Blackbox.
           Zeigt semantische Quellen aus dem Atlas-Corpus, live-
@@ -773,13 +787,16 @@ export function AIMode({ open, onClose }: AIModeProps) {
       </div>
 
       {/* Conversation */}
-      <div ref={conversationRef} className={styles.conversation}>
+      <div
+        ref={conversationRef}
+        className={`${styles.conversation} ${hasConversation ? styles.conversationActive : ""}`}
+      >
         {messages.map((m) => (
           <div
             key={m.id}
             className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
           >
-            {m.text}
+            {m.role === "atlas" ? <AtlasMarkdown text={m.text} /> : m.text}
           </div>
         ))}
       </div>
