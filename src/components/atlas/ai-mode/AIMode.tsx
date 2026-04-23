@@ -5,22 +5,22 @@
  *
  * AIMode — full-screen Atlas AI overlay.
  *
- * VISUAL PROTOTYPE. No backend, no LLM calls, no token spend.
- * Submits run a fake streaming response so the whole interaction
- * loop (entity reaction → stream → token-meter → shockwave →
- * settle) can be evaluated end-to-end in-browser.
+ * Wired to /api/atlas/ai-chat which streams Claude Sonnet responses
+ * back as Server-Sent Events. The UI renders deltas in real time so
+ * the conversation paints token-by-token, same feel as the mock had.
  *
  * Composition:
  *   AtlasEntity          → the Three.js scene behind the UI
  *   Command palette      → ⌘/ or slash-first input
- *   Model switcher       → visual only, no runtime effect
+ *   Model switcher       → visual only (always sonnet on the server)
  *   Mic                  → real WebAudio analyser (listening mode)
  *   Sound                → WebAudio blips on interactions
  *   Attachments          → dropzone + button, chips in the search bar
- *   Conversation         → faux stream, fades behind the input
+ *   Conversation         → real SSE stream from the backend
  *
- * Replacement plan: when we wire real agents, only `runResponse`
- * needs to change — the rest of the UX stays the same.
+ * Future work: pass attachment files in the payload (multimodal),
+ * wire the model switcher to send a model hint, surface tool-use
+ * when the backend adds agentic orchestration.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -91,13 +91,7 @@ const COMMANDS = [
   },
 ] as const;
 
-const FAKE_RESPONSES = [
-  "Gute Frage. Drei Punkte sind dabei relevant — die Rechtsgrundlage, die Zuständigkeit und die Frist. Ich ziehe gleich die Paragraphen.",
-  "Das ist eine mehrstufige Prüfung. Erst Art. VI OST als Dach, dann das nationale Genehmigungsrecht, zuletzt die Spectrum-Koordination.",
-  "Spannender Fall. Der sauberste Weg ist eine Matrix: Jurisdiktion × Anwendungsbereich × Frist. Lass mich das aufstellen.",
-  "Vorab: die Regelung im EU Space Act greift, aber es gibt einen Delegated Act (Annex II), der die konkrete Compliance-Schwelle definiert.",
-  "Zwei relevante Präzedenzfälle aus unserer Matter-History — beide mit ähnlicher Struktur. Ich vergleiche Tenor und Regulator-Reaktion.",
-];
+const API_ENDPOINT = "/api/atlas/ai-chat";
 
 function fmtTokens(n: number): string {
   if (n < 1000) return `${n}`;
@@ -105,10 +99,6 @@ function fmtTokens(n: number): string {
   if (n < 100000) return `${(n / 1000).toFixed(1)}k`;
   if (n < 1000000) return `${Math.round(n / 1000)}k`;
   return `${(n / 1e6).toFixed(1)}M`;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -382,39 +372,132 @@ export function AIMode({ open, onClose }: AIModeProps) {
     }
   }, [toast]);
 
-  // ── Submit / Fake response ─────────────────────────────────
+  // ── Submit / real streaming from /api/atlas/ai-chat ────────
+  //
+  // Pipeline: user submits → we add the user message → we POST the full
+  // conversation history to the SSE endpoint → as deltas arrive, we
+  // append them to the atlas message in real time.
+  //
+  // `prevMessages` is the history snapshot BEFORE the current user
+  // message is added — we concat it with the new prompt on the way
+  // out so the server sees a clean "chronological" conversation.
   const runResponse = useCallback(
-    async (_prompt: string) => {
+    async (prompt: string, prevMessages: ChatMsg[]) => {
+      const atlasId = `m-${Date.now()}-atlas`;
       setMode("thinking");
-      await sleep(700 + Math.random() * 500);
       playSound("chime");
-      const id = `m-${Date.now()}-atlas`;
       setMessages((prev) => [
         ...prev,
-        { id, role: "atlas", text: "", streaming: true },
+        { id: atlasId, role: "atlas", text: "", streaming: true },
       ]);
-      setMode("speaking");
-      const text =
-        FAKE_RESPONSES[Math.floor(Math.random() * FAKE_RESPONSES.length)];
-      const words = text.split(" ");
-      for (let i = 0; i < words.length; i++) {
-        await sleep(40 + Math.random() * 90);
+
+      const payloadMessages: Array<{
+        role: "user" | "assistant";
+        content: string;
+      }> = [
+        ...prevMessages
+          .filter((m) => m.text.trim().length > 0)
+          .map((m) => ({
+            role:
+              m.role === "user" ? ("user" as const) : ("assistant" as const),
+            content: m.text,
+          })),
+        { role: "user", content: prompt },
+      ];
+
+      let receivedAny = false;
+      const setAtlasText = (updater: (prev: string) => string) => {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === id
-              ? {
-                  ...m,
-                  text: m.text + (i === 0 ? "" : " ") + words[i],
-                }
-              : m,
+            m.id === atlasId ? { ...m, text: updater(m.text) } : m,
           ),
         );
-        setTotalTokens((n) => Math.min(maxTokens, n + 1));
+      };
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: payloadMessages }),
+        });
+
+        if (res.status === 429) {
+          setAtlasText(
+            () => "Rate limit erreicht — kurz warten, dann nochmal.",
+          );
+          return;
+        }
+        if (res.status === 401) {
+          setAtlasText(() => "Session abgelaufen. Bitte Seite neu laden.");
+          return;
+        }
+        if (!res.ok || !res.body) {
+          setAtlasText(() => "Verbindung zur AI fehlgeschlagen.");
+          return;
+        }
+
+        setMode("speaking");
+
+        // Manual SSE parser. Works in all modern browsers without
+        // pulling a dependency. Each message block is separated by
+        // a blank line; within a block `data: …` carries the payload.
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() ?? "";
+
+          for (const chunk of chunks) {
+            const dataLine = chunk
+              .split("\n")
+              .find((l) => l.startsWith("data: "));
+            if (!dataLine) continue;
+            try {
+              const evt = JSON.parse(dataLine.slice(6)) as
+                | { type: "text"; text: string }
+                | { type: "done"; usage?: { input: number; output: number } }
+                | { type: "error"; message: string };
+              if (evt.type === "text") {
+                receivedAny = true;
+                setAtlasText((t) => t + evt.text);
+                setTotalTokens((n) => Math.min(maxTokens, n + 1));
+              } else if (evt.type === "error") {
+                if (!receivedAny) {
+                  setAtlasText(
+                    () =>
+                      "AI-Stream wurde unterbrochen. Bitte nochmal versuchen.",
+                  );
+                }
+              } else if (evt.type === "done" && evt.usage) {
+                // Real-usage telemetry bump to keep the meter honest.
+                setTotalTokens((n) =>
+                  Math.min(maxTokens, n + evt.usage!.output),
+                );
+              }
+            } catch {
+              // Malformed chunk — SSE framing error. Skip and continue.
+            }
+          }
+        }
+
+        if (!receivedAny) {
+          setAtlasText(() => "Keine Antwort empfangen. Erneut versuchen?");
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Netzwerkfehler";
+        setAtlasText(() => `Fehler: ${msg}`);
+      } finally {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === atlasId ? { ...m, streaming: false } : m)),
+        );
+        setMode("idle");
       }
-      setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, streaming: false } : m)),
-      );
-      setMode("idle");
     },
     [maxTokens, playSound],
   );
@@ -424,6 +507,9 @@ export function AIMode({ open, onClose }: AIModeProps) {
       e.preventDefault();
       const text = inputValue.trim();
       if (!text) return;
+      // Snapshot current history BEFORE adding the user's message so
+      // runResponse can concatenate cleanly without duplicating.
+      const historyBeforePrompt = messages;
       const userId = `m-${Date.now()}-user`;
       setMessages((prev) => [...prev, { id: userId, role: "user", text }]);
       const typedTokens = Math.floor(inputValue.length / 3.2);
@@ -436,9 +522,16 @@ export function AIMode({ open, onClose }: AIModeProps) {
       entityHandle.current?.bumpEnergy(0.9);
       entityHandle.current?.triggerShockwave();
       playSound("whoosh");
-      runResponse(text);
+      runResponse(text, historyBeforePrompt);
     },
-    [attachments.length, inputValue, maxTokens, playSound, runResponse],
+    [
+      attachments.length,
+      inputValue,
+      maxTokens,
+      messages,
+      playSound,
+      runResponse,
+    ],
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
