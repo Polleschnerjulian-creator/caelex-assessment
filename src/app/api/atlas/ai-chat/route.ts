@@ -7,16 +7,16 @@
  * Streams responses back as Server-Sent Events so the UI can render
  * tokens as they arrive.
  *
- * This route deliberately mirrors the Astra pattern (direct Anthropic
- * SDK with ANTHROPIC_API_KEY, model = claude-sonnet-4-6) rather than
- * routing through the AI Gateway. Reason: this endpoint shares the
- * Astra key and quota; a future unification can migrate both paths
- * together.
+ * Phase 6a — adds tool-use loop. Currently one tool:
+ *   • find_or_open_matter — searches the user's law-firm matters and
+ *     (if unambiguous + action=open) emits a `navigate` SSE event so
+ *     the client routes into the matter workspace.
  *
- * Tool-use is not wired yet — this is a plain conversational call.
- * When agent orchestration comes online, we'll add tools (semantic
- * search over the embedded corpus, citation lookup, jurisdiction
- * comparator, etc.) via the same `messages.stream` handler.
+ * This route deliberately mirrors the Astra + matter-chat pattern
+ * (direct Anthropic SDK with ANTHROPIC_API_KEY, model = claude-sonnet-
+ * 4-6) rather than routing through the AI Gateway. Reason: this
+ * endpoint shares the Astra key and quota; a future unification can
+ * migrate both paths together.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -27,16 +27,19 @@ import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
+import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 120; // tool-use loops may take longer
 
 // ─── Config ──────────────────────────────────────────────────────────
 
 const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 1024;
 const TEMPERATURE = 0.6;
+const MAX_TOOL_ITERATIONS = 3; // find_or_open_matter shouldn't chain deeply
 
 const SYSTEM_PROMPT = `You are Atlas, a specialised AI assistant for space-law practitioners at law firms that advise satellite operators, launch providers, and space-service companies.
 
@@ -51,6 +54,14 @@ const SYSTEM_PROMPT = `You are Atlas, a specialised AI assistant for space-law p
 - When you reference regulations, name the instrument AND the section/article (e.g. "BWRG §6 Abs. 2", "EU Space Act Art. 14", "NIS2 Art. 21", "Outer Space Treaty Art. VI").
 - Be concise: lead with the answer, then the reasoning. Avoid fluff.
 - If you don't know something specific, say so rather than invent citations.
+
+## Tools you can call
+You have a tool \`find_or_open_matter\` that searches the caller's law-firm matters and can route them into a mandate workspace. Call it when the user expresses intent to open, find, or switch to a specific matter — phrasings like "öffne Workspace zu Mandant X", "zeig mir den Fall Y", "switch to matter Z", "finde mein Mandat mit Ref ATLAS-…". Do NOT call it for generic legal questions that are not about mandate navigation.
+
+After calling:
+- On a single active match → briefly confirm in one sentence; the client will navigate automatically ("Öffne Workspace zu 'X'…").
+- On multiple matches → list them numbered and ask the user to pick.
+- On zero matches → suggest creating a new matter at /atlas/network.
 
 ## Domain knowledge
 You have deep knowledge of:
@@ -122,53 +133,160 @@ export async function POST(request: NextRequest) {
   const anthropic = new Anthropic({ apiKey });
   const encoder = new TextEncoder();
 
-  // Construct the SSE stream. We forward every text delta as its own
-  // event so the client can paint tokens as they arrive — no artificial
-  // chunking. On error we emit one "error" event before closing so the
-  // UI can render a user-facing message.
+  // SSE stream with tool-use loop. Text deltas stream as they arrive;
+  // when Claude requests a tool we execute server-side, append the
+  // result, and loop. Cap at MAX_TOOL_ITERATIONS to bound cost/latency.
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (obj: Record<string, unknown>) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       };
 
+      // Seed the conversation with the user-facing messages.
+      const conversationMessages: Anthropic.MessageParam[] =
+        parsed.data.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+      let iterations = 0;
+
       try {
-        const anthropicStream = anthropic.messages.stream({
-          model: MODEL,
-          max_tokens: MAX_TOKENS,
-          temperature: TEMPERATURE,
-          system: SYSTEM_PROMPT,
-          messages: parsed.data.messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        });
+        while (iterations < MAX_TOOL_ITERATIONS) {
+          iterations++;
 
-        // Inactivity guard: abort the upstream call if no delta arrives
-        // for 30s. Keeps a stalled connection from holding a serverless
-        // invocation slot indefinitely.
-        let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
-        const bumpInactivity = () => {
+          const turnStream = anthropic.messages.stream({
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            temperature: TEMPERATURE,
+            system: SYSTEM_PROMPT,
+            messages: conversationMessages,
+            tools: ATLAS_TOOLS,
+          });
+
+          // Inactivity guard — abort the upstream call if no delta
+          // arrives for 30s. Protects a stalled invocation slot.
+          let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+          const bump = () => {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => turnStream.abort(), 30_000);
+          };
+          bump();
+
+          turnStream.on("text", (delta) => {
+            bump();
+            send({ type: "text", text: delta });
+          });
+
+          const response = await turnStream.finalMessage();
           if (inactivityTimer) clearTimeout(inactivityTimer);
-          inactivityTimer = setTimeout(() => anthropicStream.abort(), 30_000);
-        };
-        bumpInactivity();
 
-        anthropicStream.on("text", (delta) => {
-          bumpInactivity();
-          send({ type: "text", text: delta });
-        });
+          // Text-only response? → we're done.
+          if (response.stop_reason !== "tool_use") {
+            send({
+              type: "done",
+              usage: {
+                input: response.usage.input_tokens,
+                output: response.usage.output_tokens,
+              },
+            });
+            break;
+          }
 
-        const final = await anthropicStream.finalMessage();
-        if (inactivityTimer) clearTimeout(inactivityTimer);
+          // Collect tool_use blocks in order, execute them, feed
+          // tool_result back to the next turn.
+          const toolUses = response.content.filter(
+            (c): c is Anthropic.ToolUseBlock => c.type === "tool_use",
+          );
 
-        send({
-          type: "done",
-          usage: {
-            input: final.usage.input_tokens,
-            output: final.usage.output_tokens,
-          },
-        });
+          conversationMessages.push({
+            role: "assistant",
+            content: response.content,
+          });
+
+          const toolResults = await Promise.all(
+            toolUses.map(
+              async (tu): Promise<Anthropic.ToolResultBlockParam> => {
+                send({ type: "tool_use_start", name: tu.name, id: tu.id });
+
+                if (!isAtlasToolName(tu.name)) {
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: true,
+                  });
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: JSON.stringify({
+                      error: `Unknown tool: ${tu.name}`,
+                    }),
+                    is_error: true,
+                  };
+                }
+
+                try {
+                  const result = await executeAtlasTool({
+                    name: tu.name,
+                    input: tu.input,
+                    callerUserId: atlas.userId,
+                    callerOrgId: atlas.organizationId,
+                  });
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: result.isError,
+                  });
+                  // Client-side navigation directive — the AIMode SSE
+                  // handler translates this into router.push().
+                  if (result.navigateUrl && !result.isError) {
+                    send({
+                      type: "navigate",
+                      url: result.navigateUrl,
+                      tool: tu.name,
+                    });
+                  }
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: result.content,
+                    is_error: result.isError,
+                  };
+                } catch (err) {
+                  const msg = err instanceof Error ? err.message : String(err);
+                  logger.error(`Atlas tool ${tu.name} failed: ${msg}`);
+                  send({
+                    type: "tool_use_result",
+                    name: tu.name,
+                    id: tu.id,
+                    isError: true,
+                  });
+                  return {
+                    type: "tool_result",
+                    tool_use_id: tu.id,
+                    content: JSON.stringify({ error: msg }),
+                    is_error: true,
+                  };
+                }
+              },
+            ),
+          );
+
+          conversationMessages.push({
+            role: "user",
+            content: toolResults,
+          });
+        }
+
+        if (iterations >= MAX_TOOL_ITERATIONS) {
+          send({
+            type: "tool_limit_reached",
+            iterations,
+            hint: "Tool-Loop-Limit erreicht — Antwort evtl. unvollständig.",
+          });
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Atlas AI chat: stream failed — ${msg}`);

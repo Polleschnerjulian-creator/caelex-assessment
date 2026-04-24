@@ -34,6 +34,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
+import { useRouter } from "next/navigation";
 import {
   AtlasEntity,
   type AtlasEntityHandle,
@@ -105,12 +106,29 @@ function fmtTokens(n: number): string {
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
+interface ToolTrace {
+  id: string;
+  name: string;
+  isError?: boolean;
+  completed?: boolean;
+  /** When a tool's result includes a navigation directive, the chip
+   *  renders with a "→ öffne …" styling so the user sees the redirect
+   *  coming. */
+  navigate?: boolean;
+}
+
 interface ChatMsg {
   id: string;
   role: "user" | "atlas";
   text: string;
   streaming?: boolean;
+  tools?: ToolTrace[];
 }
+
+/** Atlas tool → human label for the transparency chip. */
+const TOOL_LABEL: Record<string, string> = {
+  find_or_open_matter: "Mandate werden durchsucht",
+};
 
 interface AIModeProps {
   open: boolean;
@@ -120,6 +138,7 @@ interface AIModeProps {
 // ─── Component ────────────────────────────────────────────────────────
 
 export function AIMode({ open, onClose }: AIModeProps) {
+  const router = useRouter();
   const [mode, setMode] = useState<AtlasMode>("idle");
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -489,10 +508,21 @@ export function AIMode({ open, onClose }: AIModeProps) {
               .find((l) => l.startsWith("data: "));
             if (!dataLine) continue;
             try {
+              // Phase 6a — expanded union for tool-use events. Navigate
+              // + tool chips piggyback on the same SSE connection.
               const evt = JSON.parse(dataLine.slice(6)) as
                 | { type: "text"; text: string }
                 | { type: "done"; usage?: { input: number; output: number } }
-                | { type: "error"; message: string };
+                | { type: "error"; message: string }
+                | { type: "tool_use_start"; name: string; id: string }
+                | {
+                    type: "tool_use_result";
+                    name: string;
+                    id: string;
+                    isError?: boolean;
+                  }
+                | { type: "navigate"; url: string; tool?: string }
+                | { type: "tool_limit_reached"; iterations: number };
               if (evt.type === "text") {
                 receivedAny = true;
                 textBuffer += evt.text;
@@ -509,6 +539,74 @@ export function AIMode({ open, onClose }: AIModeProps) {
                 // Real-usage telemetry bump to keep the meter honest.
                 setTotalTokens((n) =>
                   Math.min(maxTokens, n + evt.usage!.output),
+                );
+              } else if (evt.type === "tool_use_start") {
+                // Append a pending tool chip to the current atlas msg
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === atlasId
+                      ? {
+                          ...m,
+                          tools: [
+                            ...(m.tools ?? []),
+                            { id: evt.id, name: evt.name, completed: false },
+                          ],
+                        }
+                      : m,
+                  ),
+                );
+              } else if (evt.type === "tool_use_result") {
+                // Mark the matching chip complete (success/error)
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === atlasId
+                      ? {
+                          ...m,
+                          tools: (m.tools ?? []).map((t) =>
+                            t.id === evt.id
+                              ? {
+                                  ...t,
+                                  completed: true,
+                                  isError: !!evt.isError,
+                                }
+                              : t,
+                          ),
+                        }
+                      : m,
+                  ),
+                );
+              } else if (evt.type === "navigate") {
+                // Flag the matching tool chip as "navigate" for visual
+                // feedback, then push — small delay so the user sees
+                // the confirmation sentence before the route changes.
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === atlasId
+                      ? {
+                          ...m,
+                          tools: (m.tools ?? []).map((t) =>
+                            t.name === evt.tool && !t.navigate
+                              ? { ...t, navigate: true }
+                              : t,
+                          ),
+                        }
+                      : m,
+                  ),
+                );
+                // Flush any buffered text first so the user sees the
+                // whole confirmation before navigation kicks in.
+                if (rafId) cancelAnimationFrame(rafId);
+                flush();
+                setTimeout(() => {
+                  onClose();
+                  router.push(evt.url);
+                }, 600);
+              } else if (evt.type === "tool_limit_reached") {
+                // Rare — surface a subtle inline note.
+                setAtlasText(
+                  (t) =>
+                    t +
+                    "\n\n_Hinweis: Tool-Loop-Limit erreicht, Antwort evtl. unvollständig._",
                 );
               }
             } catch {
@@ -533,7 +631,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
         setMode("idle");
       }
     },
-    [maxTokens, playSound],
+    [maxTokens, playSound, onClose, router],
   );
 
   const handleSubmit = useCallback(
@@ -795,6 +893,42 @@ export function AIMode({ open, onClose }: AIModeProps) {
             key={m.id}
             className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
           >
+            {/* Tool-use transparency chips — rendered above the message
+                text so users see what Atlas actually did (searches,
+                navigations). Same pattern as ContextPanel's data-source
+                chips, but scoped to this turn. */}
+            {m.role === "atlas" && m.tools && m.tools.length > 0 && (
+              <div className={styles.toolChips}>
+                {m.tools.map((t) => (
+                  <span
+                    key={t.id}
+                    className={`${styles.toolChip} ${
+                      t.isError
+                        ? styles.toolChipError
+                        : t.navigate
+                          ? styles.toolChipNavigate
+                          : t.completed
+                            ? styles.toolChipDone
+                            : styles.toolChipPending
+                    }`}
+                  >
+                    <span className={styles.toolChipIcon}>
+                      {t.isError
+                        ? "⚠"
+                        : t.navigate
+                          ? "→"
+                          : t.completed
+                            ? "✓"
+                            : "•"}
+                    </span>
+                    <span>{TOOL_LABEL[t.name] ?? t.name}</span>
+                    {!t.completed && (
+                      <span className={styles.toolChipDots}>…</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
             {m.role === "atlas" ? <AtlasMarkdown text={m.text} /> : m.text}
           </div>
         ))}
