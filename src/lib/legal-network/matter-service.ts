@@ -173,8 +173,7 @@ export async function createInvite(
 
 // ─── Accept / Reject ──────────────────────────────────────────────────
 
-export interface AcceptInviteInput {
-  rawToken: string;
+export type AcceptInviteInput = InvitationLookup & {
   /** The accepting user (counter-signer). */
   acceptingUserId: string;
   acceptingOrgId: string;
@@ -184,6 +183,30 @@ export interface AcceptInviteInput {
   amendedDurationMonths?: number;
   ipAddress?: string | null;
   userAgent?: string | null;
+};
+
+/** Accept/reject can address the invitation by either token (for the
+ *  email-link flow) OR by invitationId (for the session-authenticated
+ *  inbox flow). Exactly one must be set. */
+type InvitationLookup =
+  | { rawToken: string; invitationId?: never }
+  | { rawToken?: never; invitationId: string };
+
+/** Look up a LegalMatterInvitation by token hash OR by id. Shared
+ *  between accept + reject so both flows have identical resolution
+ *  semantics regardless of entry point. */
+async function resolveInvitation(lookup: InvitationLookup) {
+  if (lookup.rawToken) {
+    const tokenHash = hashToken(lookup.rawToken);
+    return prisma.legalMatterInvitation.findUnique({
+      where: { tokenHash },
+      include: { matter: true },
+    });
+  }
+  return prisma.legalMatterInvitation.findUnique({
+    where: { id: lookup.invitationId },
+    include: { matter: true },
+  });
 }
 
 export interface AcceptInviteResult {
@@ -196,12 +219,7 @@ export interface AcceptInviteResult {
 export async function acceptInvite(
   input: AcceptInviteInput,
 ): Promise<AcceptInviteResult> {
-  const tokenHash = hashToken(input.rawToken);
-  const invitation = await prisma.legalMatterInvitation.findUnique({
-    where: { tokenHash },
-    include: { matter: true },
-  });
-
+  const invitation = await resolveInvitation(input);
   if (!invitation) {
     throw new MatterServiceError("TOKEN_INVALID", "Invitation not found");
   }
@@ -345,18 +363,16 @@ export async function acceptInvite(
   return { matter: updated, counterToken: newToken.raw };
 }
 
-export async function rejectInvite(input: {
-  rawToken: string;
+export type RejectInviteInput = InvitationLookup & {
   rejectingUserId: string;
   rejectingOrgId: string;
   reason?: string;
-}): Promise<LegalMatter> {
-  const tokenHash = hashToken(input.rawToken);
-  const invitation = await prisma.legalMatterInvitation.findUnique({
-    where: { tokenHash },
-    include: { matter: true },
-  });
+};
 
+export async function rejectInvite(
+  input: RejectInviteInput,
+): Promise<LegalMatter> {
+  const invitation = await resolveInvitation(input);
   if (!invitation) {
     throw new MatterServiceError("TOKEN_INVALID", "Invitation not found");
   }

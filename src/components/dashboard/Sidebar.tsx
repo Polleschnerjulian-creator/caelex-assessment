@@ -43,6 +43,7 @@ import {
   GitBranch,
   Layers,
   MessageSquare,
+  Inbox,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -629,6 +630,35 @@ export default function Sidebar({
       clearInterval(interval);
     };
   }, [user?.role]);
+
+  // ─── Pending Legal Network invitations (inbox badge) ───────────────
+  // Polled every 60s for any logged-in user (invites are org-level, not
+  // role-gated). Silently fails — the inbox still works, just no badge.
+  const [pendingInviteCount, setPendingInviteCount] = useState(0);
+  useEffect(() => {
+    if (!user?.email) return;
+    let cancelled = false;
+    async function fetchInvites() {
+      try {
+        const res = await fetch("/api/network/invitations", {
+          cache: "no-store",
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setPendingInviteCount(data.invitations?.length ?? 0);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+    fetchInvites();
+    const interval = setInterval(fetchInvites, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [user?.email]);
 
   const toggleCollapse = () => {
     if (forgeMode) return; // Don't allow manual toggle in forge mode
@@ -1247,6 +1277,19 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Meine Anwälte
+              </NavItem>
+              <NavItem
+                href="/dashboard/network/inbox"
+                icon={<Inbox size={18} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                collapsed={collapsed}
+                badge={
+                  pendingInviteCount > 0
+                    ? String(pendingInviteCount)
+                    : undefined
+                }
+              >
+                Posteingang
               </NavItem>
             </div>
           </div>
