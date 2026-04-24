@@ -8665,6 +8665,7 @@ model LegalMatter {
   tasks         MatterTask[]
   notes         MatterNote[]
   conversations MatterConversation[]
+  artifacts     MatterArtifact[]
 
   @@unique([lawFirmOrgId, clientOrgId, reference])
   @@index([clientOrgId, status])
@@ -8754,6 +8755,47 @@ enum MatterChatRole {
   USER
   ASSISTANT
   SYSTEM
+}
+
+enum ArtifactKind {
+  // Structured tool outputs — rendered by dedicated card types
+  COMPLIANCE_OVERVIEW // from load_compliance_overview
+  CITATIONS // from search_legal_sources
+  MEMO // from draft_memo_to_note
+  // Fallback: plain assistant text that didn't come from a tool
+  TEXT
+  // Future: COMPARISON, CHECKLIST, TIMELINE, CHART
+}
+
+/// A "card" on the matter pinboard. Created when Claude calls a tool
+/// (or replies in free-form text); represents a concrete work-product
+/// the lawyer can reference, pin, or delete.
+///
+/// payload is kind-specific JSON validated on the client by the
+/// matching ArtifactCard variant. Storing as Json keeps the schema
+/// stable while kinds evolve.
+model MatterArtifact {
+  id             String  @id @default(cuid())
+  matterId       String
+  conversationId String? // null for manually-created cards
+
+  kind    ArtifactKind
+  title   String
+  payload Json
+
+  // Layout hints
+  widthHint String  @default("medium") // "small" | "medium" | "large"
+  position  Int     @default(0) // masonry-order, lower = earlier
+  pinned    Boolean @default(false)
+
+  createdBy String // userId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  @@index([matterId, position])
+  @@index([matterId, pinned, createdAt])
 }
 
 /// A conversation thread scoped to a LegalMatter. The thread persists

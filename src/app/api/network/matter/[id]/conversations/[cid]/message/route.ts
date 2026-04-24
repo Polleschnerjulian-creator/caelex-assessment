@@ -288,6 +288,7 @@ export async function POST(
                     matter,
                     actorUserId: session.user!.id!,
                     actorOrgId: membership.organizationId,
+                    conversationId: cid,
                   });
                   send({
                     type: "tool_use_result",
@@ -295,6 +296,16 @@ export async function POST(
                     id: tu.id,
                     isError: result.isError,
                   });
+                  // If a pinboard card was created, tell the UI to
+                  // refresh — the card is already persisted so the
+                  // GET /artifacts endpoint has it.
+                  if (result.artifactId && !result.isError) {
+                    send({
+                      type: "artifact_created",
+                      artifactId: result.artifactId,
+                      tool: tu.name,
+                    });
+                  }
                   return {
                     type: "tool_result",
                     tool_use_id: tu.id,

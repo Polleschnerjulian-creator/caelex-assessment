@@ -42,6 +42,10 @@ export interface ToolExecutionResult {
    *  as authoritative data; it's an error message it should surface
    *  transparently to the user. */
   isError: boolean;
+  /** Pinboard card created from this tool invocation. Null on error,
+   *  or when the tool is scope-free-informational (rare). The UI
+   *  refreshes the pinboard when a new artifactId streams back. */
+  artifactId?: string;
 }
 
 // ─── Input schemas ────────────────────────────────────────────────────
@@ -69,6 +73,43 @@ function errOutput(message: string, code?: string): ToolExecutionResult {
   };
 }
 
+/** Create a pinboard artifact for a successful tool result. Position
+ *  is "last + 1" so new cards land at the end of the masonry; users
+ *  can repin later. Failures are caught and swallowed — a missing
+ *  card shouldn't derail the tool call itself. */
+async function persistArtifact(args: {
+  matterId: string;
+  conversationId?: string;
+  kind: "COMPLIANCE_OVERVIEW" | "CITATIONS" | "MEMO" | "TEXT";
+  title: string;
+  payload: Record<string, unknown>;
+  widthHint?: "small" | "medium" | "large";
+  createdBy: string;
+}): Promise<string | undefined> {
+  try {
+    const last = await prisma.matterArtifact.findFirst({
+      where: { matterId: args.matterId },
+      orderBy: { position: "desc" },
+      select: { position: true },
+    });
+    const artifact = await prisma.matterArtifact.create({
+      data: {
+        matterId: args.matterId,
+        conversationId: args.conversationId,
+        kind: args.kind,
+        title: args.title,
+        payload: args.payload as object,
+        widthHint: args.widthHint ?? "medium",
+        position: (last?.position ?? 0) + 1,
+        createdBy: args.createdBy,
+      },
+    });
+    return artifact.id;
+  } catch {
+    return undefined;
+  }
+}
+
 // ─── load_compliance_overview ─────────────────────────────────────────
 
 async function loadComplianceOverview(args: {
@@ -76,6 +117,7 @@ async function loadComplianceOverview(args: {
   matter: LegalMatter;
   actorUserId: string;
   actorOrgId: string;
+  conversationId?: string;
 }): Promise<ToolExecutionResult> {
   const parsed = LoadComplianceOverviewInput.safeParse(args.input);
   if (!parsed.success) {
@@ -216,7 +258,17 @@ async function loadComplianceOverview(args: {
     },
   });
 
-  return { content: JSON.stringify(summary), isError: false };
+  const artifactId = await persistArtifact({
+    matterId: args.matter.id,
+    conversationId: args.conversationId,
+    kind: "COMPLIANCE_OVERVIEW",
+    title: "Compliance-Übersicht",
+    payload: summary as unknown as Record<string, unknown>,
+    widthHint: "medium",
+    createdBy: args.actorUserId,
+  });
+
+  return { content: JSON.stringify(summary), isError: false, artifactId };
 }
 
 // ─── search_legal_sources ─────────────────────────────────────────────
@@ -257,6 +309,7 @@ async function searchLegalSources(args: {
   matter: LegalMatter;
   actorUserId: string;
   actorOrgId: string;
+  conversationId?: string;
 }): Promise<ToolExecutionResult> {
   const parsed = SearchLegalSourcesInput.safeParse(args.input);
   if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
@@ -333,12 +386,26 @@ async function searchLegalSources(args: {
       },
     });
 
+    const artifactId = await persistArtifact({
+      matterId: args.matter.id,
+      conversationId: args.conversationId,
+      kind: "CITATIONS",
+      title: `Zitate: „${parsed.data.query.slice(0, 60)}"`,
+      payload: {
+        query: parsed.data.query,
+        matches: hydrated,
+      },
+      widthHint: "medium",
+      createdBy: args.actorUserId,
+    });
+
     return {
       content: JSON.stringify({
         query: parsed.data.query,
         matches: hydrated,
       }),
       isError: false,
+      artifactId,
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -353,6 +420,7 @@ async function draftMemoToNote(args: {
   matter: LegalMatter;
   actorUserId: string;
   actorOrgId: string;
+  conversationId?: string;
 }): Promise<ToolExecutionResult> {
   const parsed = DraftMemoToNoteInput.safeParse(args.input);
   if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
@@ -405,6 +473,21 @@ async function draftMemoToNote(args: {
     },
   });
 
+  const artifactId = await persistArtifact({
+    matterId: args.matter.id,
+    conversationId: args.conversationId,
+    kind: "MEMO",
+    title: parsed.data.title,
+    payload: {
+      noteId: note.id,
+      title: note.title,
+      content: parsed.data.content,
+      contentLength: parsed.data.content.length,
+    },
+    widthHint: "large",
+    createdBy: args.actorUserId,
+  });
+
   return {
     content: JSON.stringify({
       noteId: note.id,
@@ -414,6 +497,7 @@ async function draftMemoToNote(args: {
         "Note saved. Tell the user the draft is now in the Notes tab of the workspace.",
     }),
     isError: false,
+    artifactId,
   };
 }
 
@@ -425,6 +509,11 @@ export async function executeTool(args: {
   matter: LegalMatter;
   actorUserId: string;
   actorOrgId: string;
+  /** Conversation that triggered this tool call — the resulting
+   *  artifact gets tagged so the UI can group cards by thread if
+   *  we ever add per-conversation filtering. Optional because
+   *  admin/script-triggered calls don't belong to a conversation. */
+  conversationId?: string;
 }): Promise<ToolExecutionResult> {
   switch (args.name) {
     case "load_compliance_overview":
