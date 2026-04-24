@@ -20,6 +20,85 @@ import type Anthropic from "@anthropic-ai/sdk";
 
 export const ATLAS_TOOLS: Anthropic.Tool[] = [
   {
+    name: "find_operator_organization",
+    description: `Searches the Caelex operator-organisation directory (all registered satellite operators / launch providers / space-service companies) by name fragment. Use this before \`create_matter_invite\` to resolve a client name to an orgId — never pass a guessed id.
+
+Matches are fuzzy (case-insensitive contains on name + slug). Only ACTIVE operator orgs are returned. Max 8 candidates.
+
+After calling:
+  - 1 match → use its \`id\` in create_matter_invite, confirm the org name with user.
+  - Multiple matches → list numbered, ask user to pick.
+  - Zero matches → tell user the operator is not (yet) on Caelex; they must sign up first or invite them via email (not supported by this tool).`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Free-text org name fragment (e.g. 'Rocket', 'Arianespace', 'Planet Labs'). 2-100 characters.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+
+  {
+    name: "create_matter_invite",
+    description: `Creates a bilateral matter invitation from the caller's law firm to a Caelex operator org. The operator must still accept (handshake), but from Atlas's side the mandate draft is persisted and the invitation email is sent to the operator's OWNER.
+
+HARD RULE — confirmation flow:
+  1. On first call for a given mandate, ALWAYS pass action='preview'. Returns a dry-run payload with operator name + proposed scope + expiry.
+  2. Only after the user has explicitly approved in natural language (e.g. 'ja, schick', 'bestätigt', 'go'), call again with action='create'.
+  Never create without a preview turn first — even if the user was very explicit, the preview shows the operator org resolution which may surprise them.
+
+On successful create, the client automatically navigates into the new matter's workspace (hero state — no conversations yet). The invitation email dispatch happens best-effort; even if email fails the mandate is created and the user gets the workspace link.
+
+Scope levels:
+  - 'advisory' (L1) — read + summaries only. One-off advisory work.
+  - 'active_counsel' (L2) — read + annotate on compliance/auth/docs/timeline/incidents. Ongoing mandate.
+  - 'full_counsel' (L3) — L2 + export + spacecraft registry. Full legal representation.
+
+Defaults: scope_level='active_counsel', duration_months=12.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["preview", "create"],
+          description:
+            "'preview' for dry-run (mandatory first turn); 'create' to actually persist + send email.",
+        },
+        operator_org_id: {
+          type: "string",
+          description:
+            "cuid of the operator org (resolved via find_operator_organization first).",
+        },
+        matter_name: {
+          type: "string",
+          description:
+            "Human-readable mandate name, 3-200 chars. E.g. 'ESA Copernicus — NIS2 Compliance', 'Rocket Inc — Launch Authorization'.",
+        },
+        reference: {
+          type: "string",
+          description:
+            "Optional firm-internal reference number, e.g. 'BHO-2026-112'. Max 50 chars.",
+        },
+        scope_level: {
+          type: "string",
+          enum: ["advisory", "active_counsel", "full_counsel"],
+          description:
+            "Predefined scope tier. Use advisory for one-off questions, active_counsel for ongoing mandates, full_counsel for full representation.",
+        },
+        duration_months: {
+          type: "number",
+          description: "Validity in months, 1-60. Default 12.",
+        },
+      },
+      required: ["action", "operator_org_id", "matter_name"],
+    },
+  },
+
+  {
     name: "find_or_open_matter",
     description: `Searches the user's law-firm for matching mandates (matters) by name or reference and either lists candidates or navigates directly into a matter's workspace.
 
@@ -58,7 +137,10 @@ Style after calling:
   },
 ];
 
-export type AtlasToolName = "find_or_open_matter";
+export type AtlasToolName =
+  | "find_or_open_matter"
+  | "find_operator_organization"
+  | "create_matter_invite";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

@@ -128,6 +128,8 @@ interface ChatMsg {
 /** Atlas tool → human label for the transparency chip. */
 const TOOL_LABEL: Record<string, string> = {
   find_or_open_matter: "Mandate werden durchsucht",
+  find_operator_organization: "Mandanten-Verzeichnis abgefragt",
+  create_matter_invite: "Einladung vorbereitet",
 };
 
 interface AIModeProps {
