@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   Pin,
   PinOff,
@@ -29,12 +29,14 @@ import {
   ExternalLink,
   Clock,
   Sparkles,
+  Globe2,
 } from "lucide-react";
 
 export type ArtifactKind =
   | "COMPLIANCE_OVERVIEW"
   | "CITATIONS"
   | "MEMO"
+  | "JURISDICTION_COMPARE"
   | "TEXT";
 
 export interface PinboardArtifact {
@@ -79,7 +81,9 @@ export function ArtifactCard({
         ? Scale
         : artifact.kind === "MEMO"
           ? FileText
-          : Sparkles;
+          : artifact.kind === "JURISDICTION_COMPARE"
+            ? Globe2
+            : Sparkles;
 
   return (
     <article
@@ -150,6 +154,9 @@ export function ArtifactCard({
           <CitationsBody payload={artifact.payload} />
         )}
         {artifact.kind === "MEMO" && <MemoBody payload={artifact.payload} />}
+        {artifact.kind === "JURISDICTION_COMPARE" && (
+          <ComparisonBody payload={artifact.payload} />
+        )}
         {artifact.kind === "TEXT" && <TextBody payload={artifact.payload} />}
       </div>
 
@@ -179,6 +186,8 @@ function labelFor(kind: ArtifactKind): string {
       return "Rechtsquellen";
     case "MEMO":
       return "Memo";
+    case "JURISDICTION_COMPARE":
+      return "Vergleich";
     case "TEXT":
       return "Notiz";
   }
@@ -360,6 +369,102 @@ function MemoBody({ payload }: { payload: Record<string, unknown> }) {
       </div>
     </div>
   );
+}
+
+// ─── JURISDICTION_COMPARE body ────────────────────────────────────────
+//
+// Compact view for the masonry: country flags + names as a row,
+// plus a 2-row mini-table with the two highest-signal fields
+// (Lizenzbehörde + verpflichtende Versicherung). Detailed table lives
+// in the drawer.
+
+interface ComparisonBodyPayload {
+  topic?: string | null;
+  jurisdictions?: Array<{
+    code: string;
+    name: string;
+    flag: string;
+    licensingAuthority?: { name: string };
+    insurance?: { mandatory: boolean; minimumCoverage: string | null };
+    timeline?: { typicalProcessingWeeks?: { min: number; max: number } };
+  }>;
+  unknown?: string[];
+}
+
+function ComparisonBody({ payload }: { payload: Record<string, unknown> }) {
+  const p = payload as ComparisonBodyPayload;
+  const list = p.jurisdictions ?? [];
+
+  if (list.length === 0) {
+    return <p className="text-[12px] text-white/40">Keine Daten geladen.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Flag row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {list.map((j) => (
+          <span
+            key={j.code}
+            className="inline-flex items-center gap-1 text-[11px] text-white/85 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5"
+          >
+            <span aria-hidden="true">{j.flag}</span>
+            <span className="font-medium">{j.code}</span>
+          </span>
+        ))}
+        {p.topic && (
+          <span className="text-[10px] text-white/40 italic ml-auto">
+            {p.topic}
+          </span>
+        )}
+      </div>
+
+      {/* Mini compare-grid: 2 hot rows */}
+      <div className="rounded-lg border border-white/[0.05] overflow-hidden">
+        <div className="grid text-[10px]" style={gridCols(list.length)}>
+          <div className="px-2 py-1.5 text-white/40 tracking-[0.18em] uppercase border-b border-white/[0.05] bg-white/[0.02]">
+            Behörde
+          </div>
+          {list.map((j) => (
+            <div
+              key={j.code}
+              className="px-2 py-1.5 text-white/80 truncate border-b border-white/[0.05] bg-white/[0.02]"
+              title={j.licensingAuthority?.name}
+            >
+              {j.licensingAuthority?.name ?? "—"}
+            </div>
+          ))}
+          <div className="px-2 py-1.5 text-white/40 tracking-[0.18em] uppercase">
+            Versicherung
+          </div>
+          {list.map((j) => (
+            <div
+              key={j.code}
+              className="px-2 py-1.5 text-white/80 truncate"
+              title={j.insurance?.minimumCoverage ?? undefined}
+            >
+              {j.insurance?.mandatory
+                ? (j.insurance.minimumCoverage ?? "Pflicht")
+                : "Freiwillig"}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {p.unknown && p.unknown.length > 0 && (
+        <div className="text-[10px] text-amber-400/80">
+          Unbekannte Codes: {p.unknown.join(", ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** CSS grid template for the comparison mini-table: 1 label column +
+ *  N data columns of equal width. Inline-styled because the column
+ *  count is dynamic. */
+function gridCols(n: number): CSSProperties {
+  return { gridTemplateColumns: `90px repeat(${n}, minmax(0, 1fr))` };
 }
 
 // ─── TEXT body ────────────────────────────────────────────────────────

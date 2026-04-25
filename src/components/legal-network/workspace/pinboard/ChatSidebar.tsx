@@ -57,6 +57,7 @@ export interface ChatMessage {
 const TOOL_LABEL: Record<string, string> = {
   load_compliance_overview: "Compliance-Daten abgerufen",
   search_legal_sources: "Rechtsquellen durchsucht",
+  compare_jurisdictions: "Jurisdiktionen verglichen",
   draft_memo_to_note: "Memo gespeichert",
 };
 

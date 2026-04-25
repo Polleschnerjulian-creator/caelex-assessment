@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect } from "react";
+import { useEffect, type CSSProperties, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -33,6 +33,7 @@ import {
   FileText,
   Sparkles,
   ExternalLink,
+  Globe2,
 } from "lucide-react";
 import type { ArtifactKind, PinboardArtifact } from "./ArtifactCard";
 
@@ -117,6 +118,9 @@ export function ArtifactDetailDrawer({
             <CitationsFull payload={artifact.payload} />
           )}
           {artifact.kind === "MEMO" && <MemoFull payload={artifact.payload} />}
+          {artifact.kind === "JURISDICTION_COMPARE" && (
+            <ComparisonFull payload={artifact.payload} />
+          )}
           {artifact.kind === "TEXT" && <TextFull payload={artifact.payload} />}
         </div>
       </div>
@@ -134,6 +138,8 @@ function iconFor(kind: ArtifactKind) {
       return Scale;
     case "MEMO":
       return FileText;
+    case "JURISDICTION_COMPARE":
+      return Globe2;
     case "TEXT":
       return Sparkles;
   }
@@ -147,6 +153,8 @@ function labelFor(kind: ArtifactKind): string {
       return "Rechtsquellen · Detailansicht";
     case "MEMO":
       return "Memo · Detailansicht";
+    case "JURISDICTION_COMPARE":
+      return "Jurisdiktions-Vergleich";
     case "TEXT":
       return "Notiz · Detailansicht";
   }
@@ -463,6 +471,319 @@ function MemoFull({ payload }: { payload: Record<string, unknown> }) {
       </div>
     </div>
   );
+}
+
+// ─── JURISDICTION_COMPARE full body ─────────────────────────────────
+//
+// Full side-by-side table. We render rows per dimension (legislation,
+// authority, insurance, debris, timeline, EU Space Act) so the eye
+// scans across countries naturally. Each cell is clickable when there's
+// an official URL. Long text wraps in the cell.
+
+interface ComparisonFullPayload {
+  topic?: string | null;
+  jurisdictions?: Array<{
+    code: string;
+    name: string;
+    flag: string;
+    legislation?: {
+      name: string;
+      yearEnacted: number;
+      status: string;
+      officialUrl: string | null;
+    };
+    licensingAuthority?: { name: string; website: string };
+    insurance?: {
+      mandatory: boolean;
+      minimumCoverage: string | null;
+      liabilityRegime: string;
+      liabilityCap: string | null;
+    };
+    debris?: {
+      deorbitRequired: boolean;
+      deorbitTimeline: string | null;
+      passivationRequired: boolean;
+      collisionAvoidance: boolean;
+    };
+    timeline?: {
+      typicalProcessingWeeks: { min: number; max: number };
+      applicationFee: string | null;
+      annualFee: string | null;
+    };
+    euSpaceAct?: { relationship: string; description: string };
+    notes?: string[];
+    lastUpdated?: string;
+  }>;
+  unknown?: string[];
+}
+
+function ComparisonFull({ payload }: { payload: Record<string, unknown> }) {
+  const p = payload as ComparisonFullPayload;
+  const list = p.jurisdictions ?? [];
+
+  if (list.length === 0) {
+    return <p className="text-[12px] text-white/45">Keine Daten geladen.</p>;
+  }
+
+  // Define rows once so the table stays declarative. Each row knows
+  // how to render its cell from a single jurisdiction.
+  type J = NonNullable<ComparisonFullPayload["jurisdictions"]>[number];
+  const rows: Array<{
+    label: string;
+    render: (j: J) => ReactNode;
+  }> = [
+    {
+      label: "Gesetzgebung",
+      render: (j) => (
+        <div className="space-y-0.5">
+          <div className="text-white/85">{j.legislation?.name ?? "—"}</div>
+          {j.legislation?.yearEnacted && (
+            <div className="text-[10px] text-white/40">
+              {j.legislation.yearEnacted} ·{" "}
+              <span className="capitalize">{j.legislation.status}</span>
+            </div>
+          )}
+          {j.legislation?.officialUrl && (
+            <a
+              href={j.legislation.officialUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] text-emerald-300/80 hover:text-emerald-300"
+            >
+              Original <ExternalLink size={9} strokeWidth={1.8} />
+            </a>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Lizenzbehörde",
+      render: (j) => (
+        <div className="space-y-0.5">
+          <div className="text-white/85">
+            {j.licensingAuthority?.name ?? "—"}
+          </div>
+          {j.licensingAuthority?.website && (
+            <a
+              href={j.licensingAuthority.website}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] text-emerald-300/80 hover:text-emerald-300 truncate max-w-full"
+            >
+              {j.licensingAuthority.website.replace(/^https?:\/\//, "")}
+              <ExternalLink
+                size={9}
+                strokeWidth={1.8}
+                className="flex-shrink-0"
+              />
+            </a>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Versicherung",
+      render: (j) =>
+        j.insurance ? (
+          <div className="space-y-0.5">
+            <div
+              className={
+                j.insurance.mandatory ? "text-amber-300" : "text-white/60"
+              }
+            >
+              {j.insurance.mandatory ? "Pflicht" : "Freiwillig"}
+            </div>
+            {j.insurance.minimumCoverage && (
+              <div className="text-[10px] text-white/55">
+                Min: {j.insurance.minimumCoverage}
+              </div>
+            )}
+            <div className="text-[10px] text-white/45 capitalize">
+              {j.insurance.liabilityRegime} liability
+              {j.insurance.liabilityCap && ` · cap ${j.insurance.liabilityCap}`}
+            </div>
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      label: "Debris-Mitigation",
+      render: (j) =>
+        j.debris ? (
+          <div className="space-y-0.5 text-[11px]">
+            <div>
+              Deorbit:{" "}
+              <span className={j.debris.deorbitRequired ? "" : "text-white/40"}>
+                {j.debris.deorbitRequired
+                  ? (j.debris.deorbitTimeline ?? "Ja")
+                  : "Nein"}
+              </span>
+            </div>
+            <div className="text-white/55">
+              Passivierung: {j.debris.passivationRequired ? "✓" : "—"} ·
+              Kollisionsausweich: {j.debris.collisionAvoidance ? "✓" : "—"}
+            </div>
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      label: "Bearbeitung",
+      render: (j) =>
+        j.timeline ? (
+          <div className="space-y-0.5 text-[11px]">
+            <div>
+              {j.timeline.typicalProcessingWeeks.min}–
+              {j.timeline.typicalProcessingWeeks.max} Wochen
+            </div>
+            {j.timeline.applicationFee && (
+              <div className="text-[10px] text-white/55">
+                Antrag: {j.timeline.applicationFee}
+              </div>
+            )}
+            {j.timeline.annualFee && (
+              <div className="text-[10px] text-white/55">
+                Jährlich: {j.timeline.annualFee}
+              </div>
+            )}
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      label: "EU Space Act",
+      render: (j) =>
+        j.euSpaceAct ? (
+          <div className="space-y-0.5">
+            <div className="capitalize text-white/85">
+              {j.euSpaceAct.relationship}
+            </div>
+            <div className="text-[10px] text-white/55 line-clamp-3">
+              {j.euSpaceAct.description}
+            </div>
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Header bar with flags */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {list.map((j) => (
+          <span
+            key={j.code}
+            className="inline-flex items-center gap-1.5 text-[12px] text-white/90 bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1"
+          >
+            <span aria-hidden="true">{j.flag}</span>
+            <span className="font-medium">{j.code}</span>
+            <span className="text-white/45 text-[10px]">{j.name}</span>
+          </span>
+        ))}
+        {p.topic && (
+          <span className="ml-auto text-[10px] text-white/45 italic">
+            Fokus: {p.topic}
+          </span>
+        )}
+      </div>
+
+      {p.unknown && p.unknown.length > 0 && (
+        <div className="text-[11px] text-amber-400/85 bg-amber-500/[0.06] border border-amber-500/20 rounded-md px-3 py-2">
+          Unbekannte Codes (nicht in Atlas-Datenbank): {p.unknown.join(", ")}
+        </div>
+      )}
+
+      {/* Compare table */}
+      <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+        <div className="grid text-[12px]" style={cmpGrid(list.length)}>
+          {rows.map((row, rowIdx) => (
+            <ComparisonRow
+              key={row.label}
+              label={row.label}
+              cells={list.map((j) => row.render(j))}
+              isLast={rowIdx === rows.length - 1}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Notes section */}
+      {list.some((j) => j.notes && j.notes.length > 0) && (
+        <div className="space-y-2">
+          <h3 className="text-[10px] tracking-[0.22em] uppercase text-white/45">
+            Notizen
+          </h3>
+          <div className="space-y-2">
+            {list.map((j) =>
+              j.notes && j.notes.length > 0 ? (
+                <div
+                  key={j.code}
+                  className="rounded-md bg-white/[0.025] border border-white/[0.04] px-3 py-2"
+                >
+                  <div className="text-[10px] tracking-wider uppercase text-white/40 mb-1">
+                    {j.flag} {j.code}
+                  </div>
+                  <ul className="text-[11px] text-white/70 space-y-0.5 list-disc pl-4">
+                    {j.notes.map((n, i) => (
+                      <li key={i}>{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null,
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="text-[10px] text-white/30 pt-2 border-t border-white/[0.04]">
+        Quelle: Atlas Jurisdiction Database. Letzte Aktualisierung pro
+        Jurisdiktion in der jeweiligen Karte.
+      </div>
+    </div>
+  );
+}
+
+/** Renders one full row of the comparison grid: label cell + N data
+ *  cells. Splits out so the row markup is declarative + the parent
+ *  doesn't need to know cell-rendering details. */
+function ComparisonRow({
+  label,
+  cells,
+  isLast,
+}: {
+  label: string;
+  cells: ReactNode[];
+  isLast: boolean;
+}) {
+  const border = isLast ? "" : "border-b border-white/[0.05]";
+  return (
+    <>
+      <div
+        className={`px-3 py-2.5 text-[10px] tracking-[0.18em] uppercase text-white/45 bg-white/[0.02] ${border}`}
+      >
+        {label}
+      </div>
+      {cells.map((cell, i) => (
+        <div
+          key={i}
+          className={`px-3 py-2.5 text-white/85 ${border} ${
+            i < cells.length - 1 ? "border-r border-white/[0.04]" : ""
+          }`}
+        >
+          {cell}
+        </div>
+      ))}
+    </>
+  );
+}
+
+function cmpGrid(n: number): CSSProperties {
+  return { gridTemplateColumns: `120px repeat(${n}, minmax(0, 1fr))` };
 }
 
 // ─── TEXT full body ─────────────────────────────────────────────────

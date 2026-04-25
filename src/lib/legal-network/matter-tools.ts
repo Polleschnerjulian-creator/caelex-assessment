@@ -72,6 +72,38 @@ This tool does NOT require any scope on the matter — the Atlas corpus is share
   },
 
   {
+    name: "compare_jurisdictions",
+    description: `Generates a side-by-side comparison of 2-5 European space-law jurisdictions on the dimensions that lawyers most often need: licensing authority, mandatory insurance, debris mitigation requirements, processing timelines, EU Space Act relationship, etc.
+
+Source: Atlas's curated jurisdiction database (covering FR, DE, IT, UK, LU, NL, BE, ES, AT, PL, DK, NO, SE, FI, PT, GR, CZ, IE, CH, US, NZ, and more). Static data — does NOT consume client matter scope. Always safe to call.
+
+Use this when the user asks comparative questions: "Vergleiche DE und FR Lizenzregime", "Welche EU-Jurisdiktion ist günstigster für Mega-Constellations", "How does NL differ from BE on operator authorisation". Do NOT invent jurisdiction facts — call this tool.
+
+Returns a structured payload with each jurisdiction's key fields. The pinboard renders it as a side-by-side ComparisonCard. After the tool returns, summarise the most relevant differences in 2-4 bullets — the card has the full data.
+
+Country codes follow ISO 3166-1 alpha-2 (DE, FR, UK, etc.). Lower-case is also accepted.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        jurisdictions: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 2,
+          maxItems: 5,
+          description:
+            "2-5 country codes (ISO 3166-1 alpha-2, e.g. ['DE', 'FR', 'IT']). Will be matched case-insensitively against the Atlas jurisdiction database.",
+        },
+        topic: {
+          type: "string",
+          description:
+            "Optional focus area to highlight: 'licensing', 'insurance', 'debris', 'timeline', 'eu-space-act'. Affects which fields are emphasised in the comparison; the full payload is always returned.",
+        },
+      },
+      required: ["jurisdictions"],
+    },
+  },
+
+  {
     name: "draft_memo_to_note",
     description: `Saves the current draft content as a persistent Matter Note. Use this at the end of a conversation when the user has asked you to produce a memo, summary, or draft — you write the content to a note so the lawyer can find it later in the Notes tab.
 
@@ -103,6 +135,7 @@ Requires a scope granting ANNOTATE on any category (notes are firm-internal meta
 export type MatterToolName =
   | "load_compliance_overview"
   | "search_legal_sources"
+  | "compare_jurisdictions"
   | "draft_memo_to_note";
 
 export function isMatterToolName(name: string): name is MatterToolName {

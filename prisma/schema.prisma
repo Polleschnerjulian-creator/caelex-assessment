@@ -8762,9 +8762,10 @@ enum ArtifactKind {
   COMPLIANCE_OVERVIEW // from load_compliance_overview
   CITATIONS // from search_legal_sources
   MEMO // from draft_memo_to_note
+  JURISDICTION_COMPARE // from compare_jurisdictions (Phase I)
   // Fallback: plain assistant text that didn't come from a tool
   TEXT
-  // Future: COMPARISON, CHECKLIST, TIMELINE, CHART
+  // Future: CHECKLIST, TIMELINE, CHART
 }
 
 /// A "card" on the matter pinboard. Created when Claude calls a tool

@@ -126,6 +126,45 @@ describe("formatMatterToolInput — draft_memo_to_note", () => {
   });
 });
 
+describe("formatMatterToolInput — compare_jurisdictions", () => {
+  it("renders codes joined with vs. separator", () => {
+    expect(
+      formatMatterToolInput("compare_jurisdictions", {
+        jurisdictions: ["DE", "FR", "IT"],
+      }),
+    ).toBe("DE vs. FR vs. IT");
+  });
+
+  it("uppercases lowercase codes", () => {
+    expect(
+      formatMatterToolInput("compare_jurisdictions", {
+        jurisdictions: ["de", "fr"],
+      }),
+    ).toBe("DE vs. FR");
+  });
+
+  it("appends topic when provided", () => {
+    expect(
+      formatMatterToolInput("compare_jurisdictions", {
+        jurisdictions: ["DE", "FR"],
+        topic: "licensing",
+      }),
+    ).toBe("DE vs. FR · licensing");
+  });
+
+  it("filters out non-string entries", () => {
+    expect(
+      formatMatterToolInput("compare_jurisdictions", {
+        jurisdictions: ["DE", 42, null, "FR"],
+      }),
+    ).toBe("DE vs. FR");
+  });
+
+  it("handles missing jurisdictions field gracefully", () => {
+    expect(formatMatterToolInput("compare_jurisdictions", {})).toBe("");
+  });
+});
+
 describe("formatMatterToolInput — fallbacks", () => {
   it("renders truncated JSON for unknown tool names", () => {
     const out = formatMatterToolInput("unknown_tool" as never, {

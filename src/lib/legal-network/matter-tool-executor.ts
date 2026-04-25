@@ -25,6 +25,8 @@ import { join } from "node:path";
 import { cosineSimilarity, embed } from "ai";
 import { prisma } from "@/lib/prisma";
 import { ALL_SOURCES } from "@/data/legal-sources";
+import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import type { LegalMatter } from "@prisma/client";
 import {
   requireActiveMatter,
@@ -54,6 +56,11 @@ const LoadComplianceOverviewInput = z.object({
   detail_level: z.enum(["summary", "full"]).optional(),
 });
 
+const CompareJurisdictionsInput = z.object({
+  jurisdictions: z.array(z.string().min(2).max(3)).min(2).max(5),
+  topic: z.string().max(100).optional(),
+});
+
 const SearchLegalSourcesInput = z.object({
   query: z.string().min(4).max(200),
   limit: z.number().int().min(1).max(10).optional(),
@@ -80,7 +87,12 @@ function errOutput(message: string, code?: string): ToolExecutionResult {
 async function persistArtifact(args: {
   matterId: string;
   conversationId?: string;
-  kind: "COMPLIANCE_OVERVIEW" | "CITATIONS" | "MEMO" | "TEXT";
+  kind:
+    | "COMPLIANCE_OVERVIEW"
+    | "CITATIONS"
+    | "MEMO"
+    | "JURISDICTION_COMPARE"
+    | "TEXT";
   title: string;
   payload: Record<string, unknown>;
   widthHint?: "small" | "medium" | "large";
@@ -413,6 +425,188 @@ async function searchLegalSources(args: {
   }
 }
 
+// ─── compare_jurisdictions ────────────────────────────────────────────
+//
+// Pulls 2-5 jurisdictions from the static JURISDICTION_DATA Map and
+// composes a comparison payload. Like search_legal_sources, this is
+// scope-free (the corpus is public knowledge) but logs to AUDIT_LOGS
+// so the operator sees what Atlas consulted on their behalf.
+
+interface JurisdictionComparePayload {
+  /** Optional focus area the user supplied. */
+  topic: string | null;
+  /** Country codes that were resolved successfully. */
+  jurisdictions: Array<{
+    code: string;
+    name: string;
+    flag: string;
+    legislation: {
+      name: string;
+      yearEnacted: number;
+      status: string;
+      officialUrl: string | null;
+    };
+    licensingAuthority: {
+      name: string;
+      website: string;
+    };
+    insurance: {
+      mandatory: boolean;
+      minimumCoverage: string | null;
+      liabilityRegime: string;
+      liabilityCap: string | null;
+    };
+    debris: {
+      deorbitRequired: boolean;
+      deorbitTimeline: string | null;
+      passivationRequired: boolean;
+      collisionAvoidance: boolean;
+    };
+    timeline: {
+      typicalProcessingWeeks: { min: number; max: number };
+      applicationFee: string | null;
+      annualFee: string | null;
+    };
+    euSpaceAct: {
+      relationship: string;
+      description: string;
+    };
+    notes: string[];
+    lastUpdated: string;
+  }>;
+  /** Country codes that were requested but not found in the dataset. */
+  unknown: string[];
+}
+
+async function compareJurisdictions(args: {
+  input: unknown;
+  matter: LegalMatter;
+  actorUserId: string;
+  actorOrgId: string;
+  conversationId?: string;
+}): Promise<ToolExecutionResult> {
+  const parsed = CompareJurisdictionsInput.safeParse(args.input);
+  if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
+
+  const requested = parsed.data.jurisdictions.map((c) =>
+    c.toUpperCase(),
+  ) as SpaceLawCountryCode[];
+
+  // De-duplicate while preserving order so Claude's output matches
+  // what the user asked for.
+  const seen = new Set<string>();
+  const unique: SpaceLawCountryCode[] = [];
+  for (const c of requested) {
+    if (!seen.has(c)) {
+      seen.add(c);
+      unique.push(c);
+    }
+  }
+
+  const found: JurisdictionComparePayload["jurisdictions"] = [];
+  const unknown: string[] = [];
+
+  for (const code of unique) {
+    const j = JURISDICTION_DATA.get(code);
+    if (!j) {
+      unknown.push(code);
+      continue;
+    }
+    found.push({
+      code: j.countryCode,
+      name: j.countryName,
+      flag: j.flagEmoji,
+      legislation: {
+        name: j.legislation.name,
+        yearEnacted: j.legislation.yearEnacted,
+        status: j.legislation.status,
+        officialUrl: j.legislation.officialUrl ?? null,
+      },
+      licensingAuthority: {
+        name: j.licensingAuthority.name,
+        website: j.licensingAuthority.website,
+      },
+      insurance: {
+        mandatory: j.insuranceLiability.mandatoryInsurance,
+        minimumCoverage: j.insuranceLiability.minimumCoverage ?? null,
+        liabilityRegime: j.insuranceLiability.liabilityRegime,
+        liabilityCap: j.insuranceLiability.liabilityCap ?? null,
+      },
+      debris: {
+        deorbitRequired: j.debrisMitigation.deorbitRequirement,
+        deorbitTimeline: j.debrisMitigation.deorbitTimeline ?? null,
+        passivationRequired: j.debrisMitigation.passivationRequired,
+        collisionAvoidance: j.debrisMitigation.collisionAvoidance,
+      },
+      timeline: {
+        typicalProcessingWeeks: j.timeline.typicalProcessingWeeks,
+        applicationFee: j.timeline.applicationFee ?? null,
+        annualFee: j.timeline.annualFee ?? null,
+      },
+      euSpaceAct: {
+        relationship: j.euSpaceActCrossRef.relationship,
+        description: j.euSpaceActCrossRef.description,
+      },
+      notes: j.notes ?? [],
+      lastUpdated: j.lastUpdated,
+    });
+  }
+
+  if (found.length < 2) {
+    return errOutput(
+      `Need at least 2 valid jurisdictions; resolved ${found.length}. Unknown codes: ${unknown.join(", ")}`,
+      "INSUFFICIENT_JURISDICTIONS",
+    );
+  }
+
+  const payload: JurisdictionComparePayload = {
+    topic: parsed.data.topic ?? null,
+    jurisdictions: found,
+    unknown,
+  };
+
+  // Audit-log the comparison — same pattern as search_legal_sources,
+  // since both are static-corpus reads. Operator can see in the log
+  // exactly which jurisdictions Atlas looked at for them.
+  await emitAccessLog({
+    matter: args.matter,
+    actorUserId: args.actorUserId,
+    actorOrgId: args.actorOrgId,
+    actorSide: "ATLAS",
+    action: "SUMMARY_GENERATED",
+    resourceType: "JurisdictionComparison",
+    resourceId: null,
+    matterScope: "AUDIT_LOGS",
+    context: {
+      tool: "compare_jurisdictions",
+      jurisdictions: found.map((j) => j.code),
+      topic: parsed.data.topic ?? null,
+      unknown,
+    },
+  });
+
+  // Title humanises the country codes for the card.
+  const title = parsed.data.topic
+    ? `${found.map((j) => j.code).join(" vs. ")} — ${parsed.data.topic}`
+    : `${found.map((j) => j.code).join(" vs. ")}`;
+
+  const artifactId = await persistArtifact({
+    matterId: args.matter.id,
+    conversationId: args.conversationId,
+    kind: "JURISDICTION_COMPARE",
+    title,
+    payload: payload as unknown as Record<string, unknown>,
+    widthHint: "large", // tables benefit from the full 2-col span
+    createdBy: args.actorUserId,
+  });
+
+  return {
+    content: JSON.stringify(payload),
+    isError: false,
+    artifactId,
+  };
+}
+
 // ─── draft_memo_to_note ───────────────────────────────────────────────
 
 async function draftMemoToNote(args: {
@@ -520,6 +714,8 @@ export async function executeTool(args: {
       return loadComplianceOverview(args);
     case "search_legal_sources":
       return searchLegalSources(args);
+    case "compare_jurisdictions":
+      return compareJurisdictions(args);
     case "draft_memo_to_note":
       return draftMemoToNote(args);
     default: {

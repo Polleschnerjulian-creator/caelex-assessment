@@ -63,6 +63,17 @@ export function formatMatterToolInput(
       return `${quote(title, 50)} · ${contentLength.toLocaleString("de-DE")} Zeichen`;
     }
 
+    case "compare_jurisdictions": {
+      const codes = Array.isArray(args.jurisdictions)
+        ? (args.jurisdictions as unknown[])
+            .filter((c): c is string => typeof c === "string")
+            .map((c) => c.toUpperCase())
+        : [];
+      const topic = asString(args.topic);
+      const codeStr = codes.join(" vs. ");
+      return topic ? `${codeStr} · ${topic}` : codeStr;
+    }
+
     default: {
       try {
         const json = JSON.stringify(args);
