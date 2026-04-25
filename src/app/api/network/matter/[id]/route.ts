@@ -14,6 +14,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,45 +23,54 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    const { id } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId: session.user.id },
-    select: { organizationId: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (!membership) {
-    return NextResponse.json({ error: "No active org" }, { status: 403 });
-  }
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+      orderBy: { joinedAt: "asc" },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "No active org" }, { status: 403 });
+    }
 
-  const matter = await prisma.legalMatter.findUnique({
-    where: { id },
-    include: {
-      lawFirmOrg: {
-        select: { id: true, name: true, slug: true, logoUrl: true },
+    const matter = await prisma.legalMatter.findUnique({
+      where: { id },
+      include: {
+        lawFirmOrg: {
+          select: { id: true, name: true, slug: true, logoUrl: true },
+        },
+        clientOrg: {
+          select: { id: true, name: true, slug: true, logoUrl: true },
+        },
+        _count: { select: { accessLogs: true, invitations: true } },
       },
-      clientOrg: {
-        select: { id: true, name: true, slug: true, logoUrl: true },
-      },
-      _count: { select: { accessLogs: true, invitations: true } },
-    },
-  });
-  if (!matter) {
-    return NextResponse.json({ error: "Matter not found" }, { status: 404 });
-  }
-  if (
-    matter.lawFirmOrgId !== membership.organizationId &&
-    matter.clientOrgId !== membership.organizationId
-  ) {
+    });
+    if (!matter) {
+      return NextResponse.json({ error: "Matter not found" }, { status: 404 });
+    }
+    if (
+      matter.lawFirmOrgId !== membership.organizationId &&
+      matter.clientOrgId !== membership.organizationId
+    ) {
+      return NextResponse.json(
+        { error: "Not a party to this matter" },
+        { status: 403 },
+      );
+    }
+
+    return NextResponse.json({ matter });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Network matter GET failed: ${msg}`);
     return NextResponse.json(
-      { error: "Not a party to this matter" },
-      { status: 403 },
+      { error: "Failed to load matter" },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json({ matter });
 }

@@ -14,6 +14,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,59 +50,77 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const gate = await resolveFirmAuth(session.user.id, id);
-  if (!gate) {
+  try {
+    const { id } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const gate = await resolveFirmAuth(session.user.id, id);
+    if (!gate) {
+      return NextResponse.json(
+        { error: "Not a firm-side member of this matter" },
+        { status: 403 },
+      );
+    }
+    const tasks = await prisma.matterTask.findMany({
+      where: { matterId: id },
+      orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+    });
+    return NextResponse.json({ tasks });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Tasks list failed: ${msg}`);
     return NextResponse.json(
-      { error: "Not a firm-side member of this matter" },
-      { status: 403 },
+      { error: "Failed to load tasks" },
+      { status: 500 },
     );
   }
-  const tasks = await prisma.matterTask.findMany({
-    where: { matterId: id },
-    orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
-  });
-  return NextResponse.json({ tasks });
 }
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const gate = await resolveFirmAuth(session.user.id, id);
-  if (!gate) {
+  try {
+    const { id } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const gate = await resolveFirmAuth(session.user.id, id);
+    if (!gate) {
+      return NextResponse.json(
+        { error: "Not a firm-side member of this matter" },
+        { status: 403 },
+      );
+    }
+    const raw = await req.json().catch(() => null);
+    const parsed = CreateTask.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request", issues: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+    const task = await prisma.matterTask.create({
+      data: {
+        matterId: id,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
+        priority: parsed.data.priority ?? "NORMAL",
+        assignedTo: parsed.data.assignedTo,
+        createdBy: session.user.id,
+      },
+    });
+    return NextResponse.json({ task }, { status: 201 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Task create failed: ${msg}`);
     return NextResponse.json(
-      { error: "Not a firm-side member of this matter" },
-      { status: 403 },
+      { error: "Failed to create task" },
+      { status: 500 },
     );
   }
-  const raw = await req.json().catch(() => null);
-  const parsed = CreateTask.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid request", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
-  const task = await prisma.matterTask.create({
-    data: {
-      matterId: id,
-      title: parsed.data.title,
-      description: parsed.data.description,
-      dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
-      priority: parsed.data.priority ?? "NORMAL",
-      assignedTo: parsed.data.assignedTo,
-      createdBy: session.user.id,
-    },
-  });
-  return NextResponse.json({ task }, { status: 201 });
 }

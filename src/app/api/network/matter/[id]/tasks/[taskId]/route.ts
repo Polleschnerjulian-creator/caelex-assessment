@@ -10,6 +10,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -45,67 +46,87 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; taskId: string }> },
 ) {
-  const { id, taskId } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const gate = await resolveFirmAuth(session.user.id, id);
-  if (!gate) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const { id, taskId } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const gate = await resolveFirmAuth(session.user.id, id);
+    if (!gate)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const raw = await req.json().catch(() => null);
-  const parsed = PatchTask.safeParse(raw);
-  if (!parsed.success) {
+    const raw = await req.json().catch(() => null);
+    const parsed = PatchTask.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request", issues: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+    const existing = await prisma.matterTask.findUnique({
+      where: { id: taskId },
+      select: { matterId: true },
+    });
+    if (!existing || existing.matterId !== id) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    // When a task transitions to DONE/CANCELLED, stamp completedAt
+    // so later analytics know when it closed.
+    const data: Record<string, unknown> = { ...parsed.data };
+    if (parsed.data.dueDate !== undefined) {
+      data.dueDate = parsed.data.dueDate ? new Date(parsed.data.dueDate) : null;
+    }
+    if (parsed.data.status === "DONE" || parsed.data.status === "CANCELLED") {
+      data.completedAt = new Date();
+    } else if (parsed.data.status) {
+      data.completedAt = null;
+    }
+
+    const task = await prisma.matterTask.update({
+      where: { id: taskId },
+      data,
+    });
+    return NextResponse.json({ task });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Task PATCH failed: ${msg}`);
     return NextResponse.json(
-      { error: "Invalid request", issues: parsed.error.flatten() },
-      { status: 400 },
+      { error: "Failed to update task" },
+      { status: 500 },
     );
   }
-  const existing = await prisma.matterTask.findUnique({
-    where: { id: taskId },
-    select: { matterId: true },
-  });
-  if (!existing || existing.matterId !== id) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 });
-  }
-
-  // When a task transitions to DONE/CANCELLED, stamp completedAt
-  // so later analytics know when it closed.
-  const data: Record<string, unknown> = { ...parsed.data };
-  if (parsed.data.dueDate !== undefined) {
-    data.dueDate = parsed.data.dueDate ? new Date(parsed.data.dueDate) : null;
-  }
-  if (parsed.data.status === "DONE" || parsed.data.status === "CANCELLED") {
-    data.completedAt = new Date();
-  } else if (parsed.data.status) {
-    data.completedAt = null;
-  }
-
-  const task = await prisma.matterTask.update({
-    where: { id: taskId },
-    data,
-  });
-  return NextResponse.json({ task });
 }
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; taskId: string }> },
 ) {
-  const { id, taskId } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { id, taskId } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const gate = await resolveFirmAuth(session.user.id, id);
+    if (!gate)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const existing = await prisma.matterTask.findUnique({
+      where: { id: taskId },
+      select: { matterId: true },
+    });
+    if (!existing || existing.matterId !== id) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+    await prisma.matterTask.delete({ where: { id: taskId } });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Task DELETE failed: ${msg}`);
+    return NextResponse.json(
+      { error: "Failed to delete task" },
+      { status: 500 },
+    );
   }
-  const gate = await resolveFirmAuth(session.user.id, id);
-  if (!gate) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const existing = await prisma.matterTask.findUnique({
-    where: { id: taskId },
-    select: { matterId: true },
-  });
-  if (!existing || existing.matterId !== id) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 });
-  }
-  await prisma.matterTask.delete({ where: { id: taskId } });
-  return NextResponse.json({ ok: true });
 }
