@@ -22,6 +22,7 @@ import {
   Settings,
   Plus,
   Lightbulb,
+  Sparkles,
 } from "lucide-react";
 
 interface PharosShellProps {
@@ -50,6 +51,11 @@ const NAV_ITEMS = [
     href: "/pharos/oversights",
     label: "Aufsichten",
     icon: Gavel,
+  },
+  {
+    href: "/pharos/astra",
+    label: "Astra · KI-Assistent",
+    icon: Sparkles,
   },
   {
     href: "/pharos/setup",
