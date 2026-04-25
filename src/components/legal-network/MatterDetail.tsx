@@ -14,6 +14,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ScopeItem, ScopeCategory } from "@/lib/legal-network/scope";
 import { LifecycleActionsPanel } from "./lifecycle/LifecycleActionsPanel";
+import {
+  MatterActivityTimeline,
+  type AuditPayload,
+} from "./MatterActivityTimeline";
 
 interface MatterDetailData {
   matter: {
@@ -39,22 +43,10 @@ interface MatterDetailData {
   };
 }
 
-interface AuditData {
-  entries: Array<{
-    id: string;
-    action: string;
-    actorOrgId: string;
-    actorSide: "ATLAS" | "CAELEX";
-    resourceType: string;
-    resourceId: string | null;
-    matterScope: string;
-    createdAt: string;
-    previousHash: string | null;
-    entryHash: string;
-  }>;
-  chainValid: boolean;
-  verifications: Array<{ id: string; valid: boolean; reason?: string }>;
-}
+// Audit payload shape now lives next to the timeline component that
+// renders it (Phase AA). Aliasing keeps existing references inside
+// MatterDetail readable.
+type AuditData = AuditPayload;
 
 const CATEGORY_LABEL: Record<ScopeCategory, string> = {
   COMPLIANCE_ASSESSMENTS: "Compliance-Bewertungen",
@@ -284,61 +276,12 @@ export function MatterDetail({
         </div>
       </section>
 
-      {/* Audit log */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[10px] font-semibold tracking-[0.22em] uppercase text-slate-500">
-            Audit-Log
-          </h2>
-          {audit && (
-            <span
-              className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                audit.chainValid
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                  : "bg-red-500/10 text-red-700 dark:text-red-400"
-              }`}
-            >
-              {audit.chainValid ? "Chain verified" : "Chain broken"}
-            </span>
-          )}
-        </div>
-        {!audit && (
-          <div className="text-sm text-slate-400 animate-pulse">lade log…</div>
-        )}
-        {audit && audit.entries.length === 0 && (
-          <div className="text-xs text-slate-500">
-            Noch keine Einträge. Der erste Zugriff wird hier erscheinen.
-          </div>
-        )}
-        {audit && audit.entries.length > 0 && (
-          <ol className="space-y-1">
-            {audit.entries.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-start gap-3 text-xs py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0"
-              >
-                <span className="text-slate-400 tabular-nums flex-shrink-0">
-                  {new Date(e.createdAt).toLocaleTimeString("de-DE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    day: "2-digit",
-                    month: "2-digit",
-                  })}
-                </span>
-                <span className="font-medium text-slate-700 dark:text-slate-300 flex-shrink-0">
-                  {e.action}
-                </span>
-                <span className="text-slate-500 truncate flex-1">
-                  {e.resourceType} · {e.actorSide}
-                </span>
-                <span className="text-[10px] text-slate-400 flex-shrink-0">
-                  {e.entryHash.slice(0, 8)}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
+      {/* Activity timeline — Phase AA replaces the previously-flat
+          audit list. Same data source (`/api/network/matter/:id/access-log`),
+          same hash-chain verification, but rendered as a day-grouped
+          human-readable feed with side-aware actor labels. The forensic
+          chain badge still lives prominently in the timeline header. */}
+      <MatterActivityTimeline audit={audit} viewerSide={viewerSide} />
 
       {/* Lifecycle / Danger zone — Phase D'.
           Last section so it doesn't compete with the data-rich scope
