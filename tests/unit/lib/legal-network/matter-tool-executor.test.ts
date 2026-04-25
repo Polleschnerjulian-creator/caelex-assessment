@@ -38,6 +38,9 @@ vi.mock("@/lib/prisma", () => ({
     matterNote: {
       create: vi.fn(),
     },
+    document: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -153,6 +156,7 @@ function setupHappyPathDefaults() {
   mockedPrisma.debrisAssessment.findMany.mockResolvedValue([]);
   mockedPrisma.insuranceAssessment.findMany.mockResolvedValue([]);
   mockedPrisma.environmentalAssessment.findMany.mockResolvedValue([]);
+  mockedPrisma.document.findMany.mockResolvedValue([]);
 }
 
 // ─── Dispatcher ───────────────────────────────────────────────────────
@@ -804,5 +808,267 @@ describe("compare_jurisdictions", () => {
 
     const payload = JSON.parse(result.content);
     expect(payload.topic).toBe("debris");
+  });
+});
+
+// ─── list_matter_documents ────────────────────────────────────────────
+//
+// Documents ARE client data — the scope-gate (DOCUMENTS / READ) is
+// enforced. These tests cover: scope-failure surfacing, enum-validation,
+// query/category/status filtering, audit-log shape, payload structure.
+
+describe("list_matter_documents", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupHappyPathDefaults();
+  });
+
+  it("INVALID_INPUT for malformed args (limit > 25)", async () => {
+    const result = await executeTool({
+      name: "list_matter_documents",
+      input: { limit: 100 },
+      ...ACTOR,
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INVALID_INPUT");
+    // Scope check shouldn't run if input was rejected
+    expect(mockedRequire).not.toHaveBeenCalled();
+  });
+
+  it("surfaces SCOPE_INSUFFICIENT as access-denied tool error", async () => {
+    mockedRequire.mockRejectedValueOnce(
+      new MatterAccessError("SCOPE_INSUFFICIENT", "no DOCUMENTS read"),
+    );
+
+    const result = await executeTool({
+      name: "list_matter_documents",
+      input: {},
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(true);
+    const payload = JSON.parse(result.content);
+    expect(payload.code).toBe("SCOPE_INSUFFICIENT");
+    expect(payload.error).toContain("DOCUMENTS");
+    // No DB query, no log on a denied call
+    expect(mockedPrisma.document.findMany).not.toHaveBeenCalled();
+    expect(mockedLog).not.toHaveBeenCalled();
+  });
+
+  it("INVALID_CATEGORY for unknown category enum value", async () => {
+    const result = await executeTool({
+      name: "list_matter_documents",
+      input: { category: "TOTALLY_FAKE_CATEGORY" },
+      ...ACTOR,
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INVALID_CATEGORY");
+    // Scope check passed, but DB query never ran
+    expect(mockedPrisma.document.findMany).not.toHaveBeenCalled();
+  });
+
+  it("INVALID_STATUS for unknown status enum value", async () => {
+    const result = await executeTool({
+      name: "list_matter_documents",
+      input: { status: "ARCHIVED_FOREVER" },
+      ...ACTOR,
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INVALID_STATUS");
+  });
+
+  it("requires DOCUMENTS scope with READ permission", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: {},
+      ...ACTOR,
+    });
+    expect(mockedRequire).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "DOCUMENTS",
+        permission: "READ",
+      }),
+    );
+  });
+
+  it("happy path: returns payload with documents + creates artifact", async () => {
+    const sampleDoc = {
+      id: "doc-1",
+      name: "Mission Authorisation 2026",
+      fileName: "auth-2026.pdf",
+      fileSize: 524_288,
+      mimeType: "application/pdf",
+      category: "AUTHORIZATION",
+      subcategory: null,
+      status: "ACTIVE",
+      version: 2,
+      issueDate: new Date("2026-01-15"),
+      expiryDate: new Date("2027-01-15"),
+      isExpired: false,
+      moduleType: "AUTHORIZATION",
+      regulatoryRef: "BWRG §6 Abs. 2",
+      createdAt: new Date("2026-01-15"),
+      updatedAt: new Date("2026-04-01"),
+    };
+    mockedPrisma.document.findMany.mockResolvedValue([sampleDoc]);
+
+    const result = await executeTool({
+      name: "list_matter_documents",
+      input: { query: "auth" },
+      conversationId: "conv-1",
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(false);
+    const payload = JSON.parse(result.content);
+    expect(payload.totalMatches).toBe(1);
+    expect(payload.documents[0]).toMatchObject({
+      id: "doc-1",
+      name: "Mission Authorisation 2026",
+      category: "AUTHORIZATION",
+      status: "ACTIVE",
+      version: 2,
+      regulatoryRef: "BWRG §6 Abs. 2",
+    });
+    // Dates are ISO strings in the wire payload
+    expect(typeof payload.documents[0].issueDate).toBe("string");
+    expect(typeof payload.documents[0].expiryDate).toBe("string");
+
+    // Artifact persisted with kind=DOCUMENT_REFERENCE
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kind: "DOCUMENT_REFERENCE",
+          conversationId: "conv-1",
+        }),
+      }),
+    );
+    expect(result.artifactId).toBe("art-new");
+  });
+
+  it("scopes findMany to clientOrgId + isLatest=true", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: {},
+      ...ACTOR,
+    });
+
+    expect(mockedPrisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          organizationId: ACTOR.matter.clientOrgId,
+          isLatest: true,
+        }),
+      }),
+    );
+  });
+
+  it("query is passed as case-insensitive contains on name + fileName", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: { query: "Insurance" },
+      ...ACTOR,
+    });
+
+    const call = mockedPrisma.document.findMany.mock.calls[0][0];
+    expect(call.where.OR).toEqual([
+      { name: { contains: "Insurance", mode: "insensitive" } },
+      { fileName: { contains: "Insurance", mode: "insensitive" } },
+    ]);
+  });
+
+  it("category filter is passed through as enum value", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: { category: "INSURANCE_POLICY" },
+      ...ACTOR,
+    });
+
+    const call = mockedPrisma.document.findMany.mock.calls[0][0];
+    expect(call.where.category).toBe("INSURANCE_POLICY");
+  });
+
+  it("status filter is passed through as enum value", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: { status: "EXPIRED" },
+      ...ACTOR,
+    });
+
+    const call = mockedPrisma.document.findMany.mock.calls[0][0];
+    expect(call.where.status).toBe("EXPIRED");
+  });
+
+  it("default limit is 10, configurable up to 25", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: {},
+      ...ACTOR,
+    });
+    expect(mockedPrisma.document.findMany.mock.calls[0][0].take).toBe(10);
+
+    vi.clearAllMocks();
+    setupHappyPathDefaults();
+
+    await executeTool({
+      name: "list_matter_documents",
+      input: { limit: 25 },
+      ...ACTOR,
+    });
+    expect(mockedPrisma.document.findMany.mock.calls[0][0].take).toBe(25);
+  });
+
+  it("emits DOCUMENTS-scoped audit log with READ_DOCUMENT action", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: { query: "license", category: "LICENSE" },
+      ...ACTOR,
+    });
+
+    expect(mockedLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "READ_DOCUMENT",
+        matterScope: "DOCUMENTS",
+        resourceType: "DocumentList",
+        context: expect.objectContaining({
+          tool: "list_matter_documents",
+          query: "license",
+          category: "LICENSE",
+          hits: 0,
+        }),
+      }),
+    );
+  });
+
+  it("title humanises filter components", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: { category: "INSURANCE_POLICY", query: "Q1 2026" },
+      ...ACTOR,
+    });
+
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: 'Dokumente: insurance policy · „Q1 2026"',
+        }),
+      }),
+    );
+  });
+
+  it("fallback title when no filters supplied", async () => {
+    await executeTool({
+      name: "list_matter_documents",
+      input: {},
+      ...ACTOR,
+    });
+
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: "Dokumente — 0 Treffer",
+        }),
+      }),
+    );
   });
 });

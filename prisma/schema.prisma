@@ -8763,6 +8763,7 @@ enum ArtifactKind {
   CITATIONS // from search_legal_sources
   MEMO // from draft_memo_to_note
   JURISDICTION_COMPARE // from compare_jurisdictions (Phase I)
+  DOCUMENT_REFERENCE // from list_matter_documents (Phase O)
   // Fallback: plain assistant text that didn't come from a tool
   TEXT
   // Future: CHECKLIST, TIMELINE, CHART

@@ -72,6 +72,47 @@ This tool does NOT require any scope on the matter — the Atlas corpus is share
   },
 
   {
+    name: "list_matter_documents",
+    description: `Lists documents from the client's vault — filings, licenses, certificates, insurance policies, technical specs, etc. Returns the most recent matches with name, category, status, file size, and (when storage URL is available) a download link.
+
+Use this when the user asks "what documents do we have", "find the insurance certificate", "show me filings on this matter", or before drafting a memo that needs evidence references.
+
+Access requires READ on DOCUMENTS scope. If the matter doesn't grant it, the tool returns an access-denied error and the user should be told to request a scope amendment for DOCUMENTS.
+
+Filters:
+  - query: optional fuzzy match on document name + filename
+  - category: optional DocumentCategory enum filter (LICENSE, AUTHORIZATION, INSURANCE_POLICY, COMPLIANCE_REPORT, TECHNICAL_SPEC, …). Pass a single value, case-sensitive.
+  - status: optional, defaults to non-deleted. Use "ACTIVE" or "APPROVED" to focus on live documents only.
+  - limit: 1-25, default 10.
+
+Returns the latest version per document chain (isLatest=true). Older versions aren't surfaced — they're available via a future history endpoint.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Optional fuzzy match on document name + fileName. 0-100 chars.",
+        },
+        category: {
+          type: "string",
+          description:
+            "Optional DocumentCategory filter. One of: LICENSE, PERMIT, AUTHORIZATION, CERTIFICATE, ISO_CERTIFICATE, SECURITY_CERT, INSURANCE_POLICY, INSURANCE_CERT, COMPLIANCE_REPORT, AUDIT_REPORT, INCIDENT_REPORT, ANNUAL_REPORT, TECHNICAL_SPEC, DESIGN_DOC, TEST_REPORT, SAFETY_ANALYSIS, CONTRACT, NDA, SLA, REGULATORY_FILING, CORRESPONDENCE, NOTIFICATION, POLICY, PROCEDURE, TRAINING, OTHER.",
+        },
+        status: {
+          type: "string",
+          description:
+            "Optional DocumentStatus filter (DRAFT, PENDING_REVIEW, UNDER_REVIEW, PENDING_APPROVAL, APPROVED, ACTIVE, EXPIRED, SUPERSEDED).",
+        },
+        limit: {
+          type: "number",
+          description: "Number of documents to return, 1-25. Default 10.",
+        },
+      },
+    },
+  },
+
+  {
     name: "compare_jurisdictions",
     description: `Generates a side-by-side comparison of 2-5 European space-law jurisdictions on the dimensions that lawyers most often need: licensing authority, mandatory insurance, debris mitigation requirements, processing timelines, EU Space Act relationship, etc.
 
@@ -135,6 +176,7 @@ Requires a scope granting ANNOTATE on any category (notes are firm-internal meta
 export type MatterToolName =
   | "load_compliance_overview"
   | "search_legal_sources"
+  | "list_matter_documents"
   | "compare_jurisdictions"
   | "draft_memo_to_note";
 

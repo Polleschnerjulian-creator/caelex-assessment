@@ -30,6 +30,8 @@ import {
   Clock,
   Sparkles,
   Globe2,
+  FolderOpen,
+  AlertTriangle,
 } from "lucide-react";
 
 export type ArtifactKind =
@@ -37,6 +39,7 @@ export type ArtifactKind =
   | "CITATIONS"
   | "MEMO"
   | "JURISDICTION_COMPARE"
+  | "DOCUMENT_REFERENCE"
   | "TEXT";
 
 export interface PinboardArtifact {
@@ -83,7 +86,9 @@ export function ArtifactCard({
           ? FileText
           : artifact.kind === "JURISDICTION_COMPARE"
             ? Globe2
-            : Sparkles;
+            : artifact.kind === "DOCUMENT_REFERENCE"
+              ? FolderOpen
+              : Sparkles;
 
   return (
     <article
@@ -157,6 +162,9 @@ export function ArtifactCard({
         {artifact.kind === "JURISDICTION_COMPARE" && (
           <ComparisonBody payload={artifact.payload} />
         )}
+        {artifact.kind === "DOCUMENT_REFERENCE" && (
+          <DocumentsBody payload={artifact.payload} />
+        )}
         {artifact.kind === "TEXT" && <TextBody payload={artifact.payload} />}
       </div>
 
@@ -188,6 +196,8 @@ function labelFor(kind: ArtifactKind): string {
       return "Memo";
     case "JURISDICTION_COMPARE":
       return "Vergleich";
+    case "DOCUMENT_REFERENCE":
+      return "Dokumente";
     case "TEXT":
       return "Notiz";
   }
@@ -465,6 +475,118 @@ function ComparisonBody({ payload }: { payload: Record<string, unknown> }) {
  *  count is dynamic. */
 function gridCols(n: number): CSSProperties {
   return { gridTemplateColumns: `90px repeat(${n}, minmax(0, 1fr))` };
+}
+
+// ─── DOCUMENT_REFERENCE body ──────────────────────────────────────────
+//
+// Compact list of the top 4 documents from the matter's vault. Each
+// row shows the name, category-pill and last-updated date. Expired
+// docs get an amber warning glyph. Click → drawer with full list.
+
+interface DocumentSummary {
+  id: string;
+  name: string;
+  fileName: string;
+  fileSize: number;
+  category: string;
+  status: string;
+  expiryDate: string | null;
+  isExpired: boolean;
+  updatedAt: string;
+}
+
+interface DocumentsBodyPayload {
+  query?: string | null;
+  category?: string | null;
+  status?: string | null;
+  totalMatches?: number;
+  documents?: DocumentSummary[];
+}
+
+function DocumentsBody({ payload }: { payload: Record<string, unknown> }) {
+  const p = payload as DocumentsBodyPayload;
+  const docs = p.documents ?? [];
+  const filterParts: string[] = [];
+  if (p.query) filterParts.push(`„${p.query}"`);
+  if (p.category) filterParts.push(humaniseEnum(p.category));
+
+  if (docs.length === 0) {
+    return (
+      <div className="text-[12px] text-white/40">
+        Keine Dokumente gefunden
+        {filterParts.length > 0 ? ` für ${filterParts.join(" · ")}` : ""}.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {filterParts.length > 0 && (
+        <div className="text-[10px] text-white/45 italic">
+          Filter: {filterParts.join(" · ")}
+        </div>
+      )}
+      {docs.slice(0, 4).map((d) => (
+        <div
+          key={d.id}
+          className="flex items-start gap-2 px-2.5 py-1.5 rounded-md bg-white/[0.02] border border-white/[0.04]"
+        >
+          <FileText
+            size={11}
+            strokeWidth={1.8}
+            className="text-white/55 mt-0.5 flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-[12px] text-white/90 truncate">{d.name}</div>
+            <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-white/40">
+              <span className="capitalize">{humaniseEnum(d.category)}</span>
+              <span>·</span>
+              <span>{formatBytes(d.fileSize)}</span>
+              <span>·</span>
+              <span className="tabular-nums">
+                {new Date(d.updatedAt).toLocaleDateString("de-DE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                })}
+              </span>
+              {d.isExpired && (
+                <span
+                  className="text-amber-400 inline-flex items-center gap-0.5"
+                  title={
+                    d.expiryDate
+                      ? `Abgelaufen ${new Date(d.expiryDate).toLocaleDateString("de-DE")}`
+                      : "Abgelaufen"
+                  }
+                >
+                  <AlertTriangle size={9} strokeWidth={1.8} />
+                  abgelaufen
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+      {docs.length > 4 && (
+        <div className="text-[10px] text-white/30 text-center pt-0.5">
+          +{docs.length - 4} weitere
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Turn `INSURANCE_POLICY` into `Insurance policy` for display. */
+function humaniseEnum(s: string): string {
+  if (!s) return "";
+  const lower = s.toLowerCase().replace(/_/g, " ");
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/** Bytes → human-readable (KB/MB). Lawyers don't read GB-files. */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // ─── TEXT body ────────────────────────────────────────────────────────

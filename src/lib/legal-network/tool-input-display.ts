@@ -74,6 +74,19 @@ export function formatMatterToolInput(
       return topic ? `${codeStr} · ${topic}` : codeStr;
     }
 
+    case "list_matter_documents": {
+      const query = asString(args.query);
+      const category = asString(args.category);
+      const status = asString(args.status);
+      const limit = asNumber(args.limit, 10);
+      const parts: string[] = [];
+      if (query) parts.push(quote(query, 30));
+      if (category) parts.push(category.replace(/_/g, " ").toLowerCase());
+      if (status) parts.push(status.toLowerCase());
+      parts.push(`max ${limit}`);
+      return parts.join(" · ");
+    }
+
     default: {
       try {
         const json = JSON.stringify(args);

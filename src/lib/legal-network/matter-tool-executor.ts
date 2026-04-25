@@ -27,7 +27,11 @@ import { prisma } from "@/lib/prisma";
 import { ALL_SOURCES } from "@/data/legal-sources";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
-import type { LegalMatter } from "@prisma/client";
+import type {
+  LegalMatter,
+  DocumentCategory,
+  DocumentStatus,
+} from "@prisma/client";
 import {
   requireActiveMatter,
   emitAccessLog,
@@ -61,6 +65,13 @@ const CompareJurisdictionsInput = z.object({
   topic: z.string().max(100).optional(),
 });
 
+const ListMatterDocumentsInput = z.object({
+  query: z.string().max(100).optional(),
+  category: z.string().max(50).optional(),
+  status: z.string().max(30).optional(),
+  limit: z.number().int().min(1).max(25).optional(),
+});
+
 const SearchLegalSourcesInput = z.object({
   query: z.string().min(4).max(200),
   limit: z.number().int().min(1).max(10).optional(),
@@ -92,6 +103,7 @@ async function persistArtifact(args: {
     | "CITATIONS"
     | "MEMO"
     | "JURISDICTION_COMPARE"
+    | "DOCUMENT_REFERENCE"
     | "TEXT";
   title: string;
   payload: Record<string, unknown>;
@@ -425,6 +437,239 @@ async function searchLegalSources(args: {
   }
 }
 
+// ─── list_matter_documents ────────────────────────────────────────────
+//
+// Lists Documents from the client's vault. Unlike compare_jurisdictions
+// (static public corpus) this IS client data — gated through
+// requireActiveMatter on DOCUMENTS / READ. The audit log uses
+// matterScope: DOCUMENTS so the operator can see exactly when their
+// vault was queried by Atlas.
+
+interface DocumentReferencePayload {
+  query: string | null;
+  category: string | null;
+  status: string | null;
+  totalMatches: number;
+  documents: Array<{
+    id: string;
+    name: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    category: string;
+    subcategory: string | null;
+    status: string;
+    version: number;
+    issueDate: string | null;
+    expiryDate: string | null;
+    isExpired: boolean;
+    moduleType: string | null;
+    regulatoryRef: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+}
+
+const VALID_DOCUMENT_CATEGORIES = new Set<DocumentCategory>([
+  "LICENSE",
+  "PERMIT",
+  "AUTHORIZATION",
+  "CERTIFICATE",
+  "ISO_CERTIFICATE",
+  "SECURITY_CERT",
+  "INSURANCE_POLICY",
+  "INSURANCE_CERT",
+  "COMPLIANCE_REPORT",
+  "AUDIT_REPORT",
+  "INCIDENT_REPORT",
+  "ANNUAL_REPORT",
+  "TECHNICAL_SPEC",
+  "DESIGN_DOC",
+  "TEST_REPORT",
+  "SAFETY_ANALYSIS",
+  "CONTRACT",
+  "NDA",
+  "SLA",
+  "REGULATORY_FILING",
+  "CORRESPONDENCE",
+  "NOTIFICATION",
+  "POLICY",
+  "PROCEDURE",
+  "TRAINING",
+  "OTHER",
+]);
+
+const VALID_DOCUMENT_STATUSES = new Set<DocumentStatus>([
+  "DRAFT",
+  "PENDING_REVIEW",
+  "UNDER_REVIEW",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "ACTIVE",
+  "EXPIRED",
+  "SUPERSEDED",
+]);
+
+async function listMatterDocuments(args: {
+  input: unknown;
+  matter: LegalMatter;
+  actorUserId: string;
+  actorOrgId: string;
+  conversationId?: string;
+}): Promise<ToolExecutionResult> {
+  const parsed = ListMatterDocumentsInput.safeParse(args.input);
+  if (!parsed.success) return errOutput("Invalid tool input", "INVALID_INPUT");
+
+  // Scope gate — DOCUMENTS / READ. Same pattern as load_compliance_overview;
+  // documents ARE client data, gate must be enforced.
+  try {
+    await requireActiveMatter({
+      matterId: args.matter.id,
+      callerOrgId: args.actorOrgId,
+      callerSide: "ATLAS",
+      category: "DOCUMENTS",
+      permission: "READ",
+    });
+  } catch (err) {
+    if (err instanceof MatterAccessError) {
+      return errOutput(
+        `Access denied: ${err.message}. Ask the user to request a scope amendment on DOCUMENTS.`,
+        err.code,
+      );
+    }
+    throw err;
+  }
+
+  // Validate enum filters BEFORE hitting Prisma — Prisma would throw
+  // a less-helpful error on an unknown enum value.
+  const categoryRaw = parsed.data.category;
+  const statusRaw = parsed.data.status;
+  if (
+    categoryRaw &&
+    !VALID_DOCUMENT_CATEGORIES.has(categoryRaw as DocumentCategory)
+  ) {
+    return errOutput(
+      `Unknown category: ${categoryRaw}. Use one of the documented enum values.`,
+      "INVALID_CATEGORY",
+    );
+  }
+  if (statusRaw && !VALID_DOCUMENT_STATUSES.has(statusRaw as DocumentStatus)) {
+    return errOutput(
+      `Unknown status: ${statusRaw}. Use one of: DRAFT, PENDING_REVIEW, UNDER_REVIEW, PENDING_APPROVAL, APPROVED, ACTIVE, EXPIRED, SUPERSEDED.`,
+      "INVALID_STATUS",
+    );
+  }
+
+  const limit = parsed.data.limit ?? 10;
+  const query = parsed.data.query?.trim() ?? "";
+
+  const documents = await prisma.document.findMany({
+    where: {
+      organizationId: args.matter.clientOrgId,
+      isLatest: true,
+      ...(categoryRaw ? { category: categoryRaw as DocumentCategory } : {}),
+      ...(statusRaw ? { status: statusRaw as DocumentStatus } : {}),
+      ...(query.length > 0
+        ? {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { fileName: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      name: true,
+      fileName: true,
+      fileSize: true,
+      mimeType: true,
+      category: true,
+      subcategory: true,
+      status: true,
+      version: true,
+      issueDate: true,
+      expiryDate: true,
+      isExpired: true,
+      moduleType: true,
+      regulatoryRef: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    take: limit,
+  });
+
+  const payload: DocumentReferencePayload = {
+    query: query.length > 0 ? query : null,
+    category: categoryRaw ?? null,
+    status: statusRaw ?? null,
+    totalMatches: documents.length,
+    documents: documents.map((d) => ({
+      id: d.id,
+      name: d.name,
+      fileName: d.fileName,
+      fileSize: d.fileSize,
+      mimeType: d.mimeType,
+      category: d.category,
+      subcategory: d.subcategory,
+      status: d.status,
+      version: d.version,
+      issueDate: d.issueDate?.toISOString() ?? null,
+      expiryDate: d.expiryDate?.toISOString() ?? null,
+      isExpired: d.isExpired,
+      moduleType: d.moduleType,
+      regulatoryRef: d.regulatoryRef,
+      createdAt: d.createdAt.toISOString(),
+      updatedAt: d.updatedAt.toISOString(),
+    })),
+  };
+
+  await emitAccessLog({
+    matter: args.matter,
+    actorUserId: args.actorUserId,
+    actorOrgId: args.actorOrgId,
+    actorSide: "ATLAS",
+    action: "READ_DOCUMENT",
+    resourceType: "DocumentList",
+    resourceId: null,
+    matterScope: "DOCUMENTS",
+    context: {
+      tool: "list_matter_documents",
+      query: parsed.data.query ?? null,
+      category: categoryRaw ?? null,
+      status: statusRaw ?? null,
+      hits: documents.length,
+    },
+  });
+
+  // Title humanises the filter for the card header
+  const titleParts: string[] = [];
+  if (categoryRaw)
+    titleParts.push(categoryRaw.replace(/_/g, " ").toLowerCase());
+  if (query) titleParts.push(`„${query}"`);
+  const title =
+    titleParts.length > 0
+      ? `Dokumente: ${titleParts.join(" · ")}`
+      : `Dokumente — ${documents.length} Treffer`;
+
+  const artifactId = await persistArtifact({
+    matterId: args.matter.id,
+    conversationId: args.conversationId,
+    kind: "DOCUMENT_REFERENCE",
+    title,
+    payload: payload as unknown as Record<string, unknown>,
+    widthHint: "medium",
+    createdBy: args.actorUserId,
+  });
+
+  return {
+    content: JSON.stringify(payload),
+    isError: false,
+    artifactId,
+  };
+}
+
 // ─── compare_jurisdictions ────────────────────────────────────────────
 //
 // Pulls 2-5 jurisdictions from the static JURISDICTION_DATA Map and
@@ -714,6 +959,8 @@ export async function executeTool(args: {
       return loadComplianceOverview(args);
     case "search_legal_sources":
       return searchLegalSources(args);
+    case "list_matter_documents":
+      return listMatterDocuments(args);
     case "compare_jurisdictions":
       return compareJurisdictions(args);
     case "draft_memo_to_note":

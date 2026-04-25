@@ -34,6 +34,8 @@ import {
   Sparkles,
   ExternalLink,
   Globe2,
+  FolderOpen,
+  AlertTriangle,
 } from "lucide-react";
 import type { ArtifactKind, PinboardArtifact } from "./ArtifactCard";
 
@@ -121,6 +123,9 @@ export function ArtifactDetailDrawer({
           {artifact.kind === "JURISDICTION_COMPARE" && (
             <ComparisonFull payload={artifact.payload} />
           )}
+          {artifact.kind === "DOCUMENT_REFERENCE" && (
+            <DocumentsFull payload={artifact.payload} />
+          )}
           {artifact.kind === "TEXT" && <TextFull payload={artifact.payload} />}
         </div>
       </div>
@@ -140,6 +145,8 @@ function iconFor(kind: ArtifactKind) {
       return FileText;
     case "JURISDICTION_COMPARE":
       return Globe2;
+    case "DOCUMENT_REFERENCE":
+      return FolderOpen;
     case "TEXT":
       return Sparkles;
   }
@@ -155,6 +162,8 @@ function labelFor(kind: ArtifactKind): string {
       return "Memo · Detailansicht";
     case "JURISDICTION_COMPARE":
       return "Jurisdiktions-Vergleich";
+    case "DOCUMENT_REFERENCE":
+      return "Dokumente · Detailansicht";
     case "TEXT":
       return "Notiz · Detailansicht";
   }
@@ -784,6 +793,245 @@ function ComparisonRow({
 
 function cmpGrid(n: number): CSSProperties {
   return { gridTemplateColumns: `120px repeat(${n}, minmax(0, 1fr))` };
+}
+
+// ─── DOCUMENT_REFERENCE full body ───────────────────────────────────
+//
+// Full list of all matched documents with metadata. Each row shows
+// name + filename + size + version + status pill + dates + module
+// + regulatory ref (when set). Expired documents get an amber stripe.
+
+interface DocumentDetail {
+  id: string;
+  name: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  category: string;
+  subcategory: string | null;
+  status: string;
+  version: number;
+  issueDate: string | null;
+  expiryDate: string | null;
+  isExpired: boolean;
+  moduleType: string | null;
+  regulatoryRef: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface DocumentsFullPayload {
+  query?: string | null;
+  category?: string | null;
+  status?: string | null;
+  totalMatches?: number;
+  documents?: DocumentDetail[];
+}
+
+function DocumentsFull({ payload }: { payload: Record<string, unknown> }) {
+  const p = payload as DocumentsFullPayload;
+  const docs = p.documents ?? [];
+
+  const filterChips: Array<{ label: string; value: string }> = [];
+  if (p.query) filterChips.push({ label: "Suche", value: p.query });
+  if (p.category)
+    filterChips.push({
+      label: "Kategorie",
+      value: humaniseEnumStr(p.category),
+    });
+  if (p.status)
+    filterChips.push({ label: "Status", value: p.status.toLowerCase() });
+
+  return (
+    <div className="space-y-4">
+      {/* Filter chips */}
+      {filterChips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {filterChips.map((chip) => (
+            <span
+              key={chip.label}
+              className="inline-flex items-center gap-1 text-[10px] text-white/70 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5"
+            >
+              <span className="text-white/40">{chip.label}:</span>
+              <span>{chip.value}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Result count */}
+      <div className="text-[11px] text-white/45">
+        {docs.length === 0
+          ? "Keine Dokumente"
+          : `${docs.length} Dokument${docs.length === 1 ? "" : "e"}`}
+      </div>
+
+      {/* Document list */}
+      <div className="space-y-2">
+        {docs.map((d) => (
+          <DocumentRow key={d.id} doc={d} />
+        ))}
+      </div>
+
+      {docs.length === 0 && filterChips.length > 0 && (
+        <div className="text-[11px] text-white/40 italic pt-2 border-t border-white/[0.04]">
+          Tipp: Filter lockern oder Claude einen breiteren Query stellen.
+        </div>
+      )}
+
+      <div className="text-[10px] text-white/30 pt-2 border-t border-white/[0.04]">
+        Quelle: Dokumenten-Vault des Mandanten · Zugriff via DOCUMENTS scope ·
+        Audit-logged
+      </div>
+    </div>
+  );
+}
+
+function DocumentRow({ doc }: { doc: DocumentDetail }) {
+  const expiringSoon =
+    doc.expiryDate &&
+    !doc.isExpired &&
+    new Date(doc.expiryDate).getTime() - Date.now() < 30 * 24 * 3600 * 1000;
+
+  const stripeColor = doc.isExpired
+    ? "border-l-amber-500/60"
+    : expiringSoon
+      ? "border-l-amber-500/30"
+      : "border-l-transparent";
+
+  return (
+    <div
+      className={`rounded-lg bg-white/[0.02] border border-white/[0.06] border-l-2 ${stripeColor} px-3.5 py-3`}
+    >
+      <div className="flex items-start gap-2.5">
+        <FileText
+          size={13}
+          strokeWidth={1.8}
+          className="text-white/55 mt-0.5 flex-shrink-0"
+        />
+        <div className="flex-1 min-w-0 space-y-1">
+          {/* Title row */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium text-white truncate">
+                {doc.name}
+              </div>
+              <div className="text-[10px] text-white/45 truncate font-mono">
+                {doc.fileName}
+              </div>
+            </div>
+            <StatusPill status={doc.status} />
+          </div>
+
+          {/* Meta row */}
+          <div className="flex items-center gap-2 text-[10px] text-white/45 flex-wrap">
+            <span className="capitalize">{humaniseEnumStr(doc.category)}</span>
+            {doc.subcategory && (
+              <>
+                <span>·</span>
+                <span>{doc.subcategory}</span>
+              </>
+            )}
+            <span>·</span>
+            <span>{formatBytesStr(doc.fileSize)}</span>
+            <span>·</span>
+            <span>v{doc.version}</span>
+            {doc.regulatoryRef && (
+              <>
+                <span>·</span>
+                <span className="text-emerald-300/70 font-mono">
+                  {doc.regulatoryRef}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Dates row */}
+          <div className="flex items-center gap-2 text-[10px] text-white/40">
+            <span>
+              Aktualisiert{" "}
+              {new Date(doc.updatedAt).toLocaleDateString("de-DE", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+            {doc.issueDate && (
+              <>
+                <span>·</span>
+                <span>
+                  Ausgestellt{" "}
+                  {new Date(doc.issueDate).toLocaleDateString("de-DE", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </>
+            )}
+            {doc.expiryDate && (
+              <>
+                <span>·</span>
+                <span
+                  className={
+                    doc.isExpired
+                      ? "text-amber-400 font-medium"
+                      : expiringSoon
+                        ? "text-amber-400/80"
+                        : ""
+                  }
+                >
+                  {doc.isExpired ? "Abgelaufen" : "Läuft ab"}{" "}
+                  {new Date(doc.expiryDate).toLocaleDateString("de-DE", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </>
+            )}
+          </div>
+
+          {doc.isExpired && (
+            <div className="text-[10px] text-amber-400 inline-flex items-center gap-1 mt-0.5">
+              <AlertTriangle size={9} strokeWidth={1.8} />
+              Dokument ist abgelaufen — eventuell nicht mehr gültig
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const tone =
+    status === "ACTIVE" || status === "APPROVED"
+      ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30"
+      : status === "EXPIRED" || status === "SUPERSEDED"
+        ? "bg-slate-500/10 text-slate-400 ring-slate-500/30"
+        : status === "DRAFT"
+          ? "bg-white/[0.04] text-white/55 ring-white/10"
+          : "bg-amber-500/10 text-amber-300 ring-amber-500/30";
+  return (
+    <span
+      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ring-1 ${tone} flex-shrink-0`}
+    >
+      {status.toLowerCase().replace(/_/g, " ")}
+    </span>
+  );
+}
+
+function humaniseEnumStr(s: string): string {
+  if (!s) return "";
+  const lower = s.toLowerCase().replace(/_/g, " ");
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+function formatBytesStr(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // ─── TEXT full body ─────────────────────────────────────────────────

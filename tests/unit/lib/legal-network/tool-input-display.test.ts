@@ -165,6 +165,47 @@ describe("formatMatterToolInput — compare_jurisdictions", () => {
   });
 });
 
+describe("formatMatterToolInput — list_matter_documents", () => {
+  it("renders only `max N` when no filters supplied", () => {
+    expect(formatMatterToolInput("list_matter_documents", {})).toBe("max 10");
+  });
+
+  it("includes quoted query when present", () => {
+    expect(
+      formatMatterToolInput("list_matter_documents", {
+        query: "insurance",
+      }),
+    ).toBe('„insurance" · max 10');
+  });
+
+  it("includes humanised category", () => {
+    expect(
+      formatMatterToolInput("list_matter_documents", {
+        category: "INSURANCE_POLICY",
+      }),
+    ).toBe("insurance policy · max 10");
+  });
+
+  it("combines query + category + status + limit", () => {
+    expect(
+      formatMatterToolInput("list_matter_documents", {
+        query: "Mission",
+        category: "AUTHORIZATION",
+        status: "ACTIVE",
+        limit: 25,
+      }),
+    ).toBe('„Mission" · authorization · active · max 25');
+  });
+
+  it("uses default limit 10 when missing", () => {
+    expect(
+      formatMatterToolInput("list_matter_documents", {
+        category: "LICENSE",
+      }),
+    ).toBe("license · max 10");
+  });
+});
+
 describe("formatMatterToolInput — fallbacks", () => {
   it("renders truncated JSON for unknown tool names", () => {
     const out = formatMatterToolInput("unknown_tool" as never, {
