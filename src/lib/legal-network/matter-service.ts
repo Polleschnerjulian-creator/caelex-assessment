@@ -234,15 +234,34 @@ export async function acceptInvite(
   }
 
   const matter = invitation.matter;
+  const isAmendment = invitation.amendmentOf !== null;
 
-  // Only the counter-party can accept. If the matter was CAELEX→ATLAS,
-  // the acceptor must be the firm. If ATLAS→CAELEX, the operator.
-  const expectedAcceptorOrgId =
-    matter.invitedFrom === "ATLAS" ? matter.clientOrgId : matter.lawFirmOrgId;
+  // For original invitations, the counter-party (recipient) accepts.
+  // For amendments, the ORIGINAL INVITER counter-signs the narrowed
+  // scope — so the expected acceptor flips to the same side as the
+  // matter's invitedFrom.
+  const expectedAcceptorOrgId = isAmendment
+    ? matter.invitedFrom === "ATLAS"
+      ? matter.lawFirmOrgId
+      : matter.clientOrgId
+    : matter.invitedFrom === "ATLAS"
+      ? matter.clientOrgId
+      : matter.lawFirmOrgId;
   if (input.acceptingOrgId !== expectedAcceptorOrgId) {
     throw new MatterServiceError(
       "NOT_AUTHORIZED",
-      "Caller is not the counter-party",
+      isAmendment
+        ? "Caller is not the original inviter; only they can counter-sign an amendment"
+        : "Caller is not the counter-party",
+    );
+  }
+
+  // Spec: 1 round of amendment maximum. The original inviter cannot
+  // re-amend a counter-signing invitation — only ACCEPT or REJECT.
+  if (isAmendment && input.amendedScope) {
+    throw new MatterServiceError(
+      "INVALID_SCOPE",
+      "Cannot re-amend an amendment — only accept or reject (1 round limit)",
     );
   }
   if (

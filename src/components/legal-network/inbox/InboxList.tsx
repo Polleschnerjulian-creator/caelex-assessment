@@ -44,6 +44,13 @@ interface Invitation {
   expiresAt: string;
   proposedScope: ScopeItem[];
   proposedDurationMonths: number;
+  /** When set, this is an amendment counter-invitation — the operator
+   *  narrowed the proposed scope and the lawyer must counter-sign. */
+  amendmentOf: string | null;
+  /** Original scope BEFORE the operator's amendment. Lets the UI
+   *  highlight exactly which permissions were removed. */
+  originalScope: ScopeItem[] | null;
+  originalDurationMonths: number | null;
   matter: {
     id: string;
     name: string;
@@ -167,13 +174,24 @@ function InboxCard({
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
-  // Figure out direction — who invited whom affects the wording
-  const requester =
-    invitation.matter.invitedFrom === "ATLAS"
+  // Figure out direction — for ORIGINALS the requester is the inviter,
+  // for AMENDMENTS the "requester" (counter-signer-target) is actually
+  // the original RECIPIENT who narrowed the scope and now wants
+  // counter-signature. Either way we show "the other side".
+  const isAmendment = invitation.amendmentOf !== null;
+  const otherSide = isAmendment
+    ? invitation.matter.invitedFrom === "ATLAS"
+      ? invitation.client // operator narrowed the firm's invite
+      : invitation.lawFirm // firm narrowed the operator's invite
+    : invitation.matter.invitedFrom === "ATLAS"
       ? invitation.lawFirm
       : invitation.client;
-  const RequesterIcon =
-    invitation.matter.invitedFrom === "ATLAS" ? Scale : Building2;
+  const requester = otherSide;
+  const RequesterIcon = isAmendment
+    ? SlidersHorizontal
+    : invitation.matter.invitedFrom === "ATLAS"
+      ? Scale
+      : Building2;
 
   const submit = useCallback(
     async (
@@ -266,19 +284,32 @@ function InboxCard({
         onClick={() => setExpanded((e) => !e)}
         className="w-full px-5 py-4 flex items-start gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-left"
       >
-        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-600 dark:text-slate-300">
+        <div
+          className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+            isAmendment
+              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+          }`}
+        >
           <RequesterIcon size={16} strokeWidth={1.8} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-0.5">
+            {isAmendment && (
+              <span className="text-[10px] tracking-wide uppercase font-medium px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                Anpassung
+              </span>
+            )}
             <span className="font-medium text-slate-700 dark:text-slate-300">
               {requester.name}
             </span>
             <span>·</span>
             <span>
-              {invitation.matter.invitedFrom === "ATLAS"
-                ? "Kanzlei → Operator"
-                : "Operator → Kanzlei"}
+              {isAmendment
+                ? "hat deinen Scope-Vorschlag angepasst"
+                : invitation.matter.invitedFrom === "ATLAS"
+                  ? "Kanzlei → Operator"
+                  : "Operator → Kanzlei"}
             </span>
           </div>
           <h3 className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
@@ -325,14 +356,31 @@ function InboxCard({
             </div>
           )}
 
+          {/* Amendment banner — explains what's at stake before the
+              scope diff is rendered. The amender already narrowed the
+              scope to what THEY want; the lawyer either accepts that
+              narrowing or rejects (no further amend per spec). */}
+          {isAmendment && !amending && (
+            <div className="mb-4 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-3">
+              <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                <strong>{requester.name}</strong> hat den vorgeschlagenen Scope
+                angepasst. Wenn du zustimmst, wird das Mandat mit dem
+                reduzierten Umfang aktiviert. Eine weitere Runde Anpassung ist
+                nicht möglich (1-Round-Limit).
+              </p>
+            </div>
+          )}
+
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500">
                 {amending
                   ? `Scope-Anpassung — entfernte Permissions werden dem Anfragenden zur Gegenbestätigung geschickt`
-                  : "Vorgeschlagener Scope"}
+                  : isAmendment
+                    ? "Angepasster Scope (wird aktiviert)"
+                    : "Vorgeschlagener Scope"}
               </div>
-              {!amending && (
+              {!amending && !isAmendment && (
                 <button
                   onClick={startAmend}
                   className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
@@ -349,10 +397,23 @@ function InboxCard({
                     key={item.category}
                     item={item}
                     amending={amending}
+                    showDiff={isAmendment && !amending}
                     originalPermissions={
-                      invitation.proposedScope.find(
-                        (p) => p.category === item.category,
-                      )?.permissions ?? []
+                      // Edit mode: original is the proposedScope (pre-edit
+                      // copy). Diff/review mode: original is the FIRST
+                      // proposal (the lawyer's invite, before operator
+                      // narrowed). View mode: original = current scope.
+                      isAmendment && invitation.originalScope
+                        ? (invitation.originalScope.find(
+                            (p) => p.category === item.category,
+                          )?.permissions ??
+                          invitation.proposedScope.find(
+                            (p) => p.category === item.category,
+                          )?.permissions ??
+                          [])
+                        : (invitation.proposedScope.find(
+                            (p) => p.category === item.category,
+                          )?.permissions ?? [])
                     }
                     onToggle={(p) => togglePermission(item.category, p)}
                     onDrop={() => dropCategory(item.category)}
@@ -385,6 +446,28 @@ function InboxCard({
                       >
                         wiederherstellen
                       </button>
+                    </li>
+                  ))}
+              {/* Amendment review: categories the operator dropped entirely */}
+              {isAmendment &&
+                !amending &&
+                invitation.originalScope &&
+                invitation.originalScope
+                  .filter(
+                    (p) =>
+                      !invitation.proposedScope.find(
+                        (a) => a.category === p.category,
+                      ),
+                  )
+                  .map((item) => (
+                    <li
+                      key={item.category}
+                      className="flex items-center justify-between px-3 py-2 rounded-md bg-amber-50/60 dark:bg-amber-950/15 border border-dashed border-amber-300 dark:border-amber-800/50 text-xs text-amber-800 dark:text-amber-300 line-through"
+                    >
+                      <span>{CATEGORY_LABEL[item.category]}</span>
+                      <span className="text-[10px] no-underline tracking-wide uppercase">
+                        entfernt
+                      </span>
                     </li>
                   ))}
             </ul>
@@ -500,20 +583,29 @@ function InboxCard({
                 >
                   Ablehnen
                 </button>
-                <button
-                  onClick={startAmend}
-                  disabled={submitting !== null}
-                  className="px-4 h-9 rounded-md border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 text-sm font-medium"
-                >
-                  Anpassen
-                </button>
+                {/* Anpassen is hidden for amendment-reviews — spec says
+                    1 round of amendment max, the lawyer can only accept
+                    or reject the operator's narrowing. */}
+                {!isAmendment && (
+                  <button
+                    onClick={startAmend}
+                    disabled={submitting !== null}
+                    className="px-4 h-9 rounded-md border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 text-sm font-medium"
+                  >
+                    Anpassen
+                  </button>
+                )}
                 <button
                   onClick={() => submit("ACCEPT")}
                   disabled={submitting !== null}
                   className="ml-auto px-4 h-9 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 text-sm font-medium inline-flex items-center gap-2"
                 >
                   <Check size={12} strokeWidth={2.2} />
-                  {submitting === "ACCEPT" ? "Sende…" : "Akzeptieren"}
+                  {submitting === "ACCEPT"
+                    ? "Sende…"
+                    : isAmendment
+                      ? "Angepasst akzeptieren"
+                      : "Akzeptieren"}
                 </button>
               </>
             )}
@@ -543,16 +635,27 @@ function InboxCard({
 function ScopeRow({
   item,
   amending,
+  showDiff,
   originalPermissions,
   onToggle,
   onDrop,
 }: {
   item: ScopeItem;
+  /** True when the operator is editing the scope (live narrowing). */
   amending: boolean;
+  /** True when the lawyer is reviewing an amendment (read-only diff). */
+  showDiff?: boolean;
+  /** The full proposed-permission list for this category — used both
+   *  by amending mode (toggle source) and showDiff mode (diff source). */
   originalPermissions: ScopePermission[];
   onToggle: (p: ScopePermission) => void;
   onDrop: () => void;
 }) {
+  // In showDiff mode we still iterate over `originalPermissions` so
+  // dropped permissions render with strike-through. In normal view
+  // we only show the active permissions.
+  const permissionsToRender =
+    amending || showDiff ? originalPermissions : item.permissions;
   return (
     <li className="px-3 py-2.5 rounded-md bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40">
       <div className="flex items-start justify-between gap-3">
@@ -561,8 +664,22 @@ function ScopeRow({
             {CATEGORY_LABEL[item.category]}
           </div>
           <div className="mt-1 flex flex-wrap gap-1.5">
-            {originalPermissions.map((p) => {
+            {permissionsToRender.map((p) => {
               const enabled = item.permissions.includes(p);
+              if (showDiff) {
+                return (
+                  <span
+                    key={p}
+                    className={`text-[10px] px-2 py-0.5 rounded-full ring-1 ${
+                      enabled
+                        ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 ring-emerald-200/60 dark:ring-emerald-900/40"
+                        : "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 line-through ring-amber-200/60 dark:ring-amber-900/40"
+                    }`}
+                  >
+                    {PERMISSION_LABEL[p]}
+                  </span>
+                );
+              }
               return amending ? (
                 <button
                   key={p}
