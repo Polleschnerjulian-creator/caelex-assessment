@@ -8424,6 +8424,14 @@ model AtlasResearchEntry {
   /// research entries don't have to be matter-scoped.
   sourceMatterId String?
 
+  /// Phase 5+ — vector embedding of (title + content), used for
+  /// semantic recall. 512-dim openai/text-embedding-3-small via the
+  /// Vercel AI Gateway, matching the Atlas-corpus embedding pipeline
+  /// for cross-comparable scores. Empty array = no embedding yet
+  /// (entry was created before the feature OR the gateway call
+  /// failed at save time — backfilled lazily on next read).
+  embedding Float[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

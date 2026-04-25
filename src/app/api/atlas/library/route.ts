@@ -22,6 +22,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import {
+  embedLibraryText,
+  composeEmbeddingInput,
+} from "@/lib/atlas/library-embeddings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -103,14 +107,30 @@ export async function POST(request: NextRequest) {
       return trimmedContent.length > t.length ? `${t}…` : t;
     })();
 
+    const finalTitle =
+      parsed.data.title?.trim() || defaultTitle || "Atlas-Notiz";
+
+    // Phase 5+ — embed (title + query + content) for semantic recall.
+    // Best-effort: if the gateway call fails we save with an empty
+    // vector and the lazy-backfill path in /recall will retry on
+    // first read. Better than blocking the save on a transient
+    // gateway hiccup.
+    const embeddingInput = composeEmbeddingInput(
+      finalTitle,
+      trimmedContent,
+      parsed.data.query?.trim() || null,
+    );
+    const embedding = (await embedLibraryText(embeddingInput)) ?? [];
+
     const entry = await prisma.atlasResearchEntry.create({
       data: {
         userId: session.user.id,
-        title: parsed.data.title?.trim() || defaultTitle || "Atlas-Notiz",
+        title: finalTitle,
         content: trimmedContent,
         query: parsed.data.query?.trim() || null,
         sourceKind: parsed.data.sourceKind ?? null,
         sourceMatterId: parsed.data.sourceMatterId ?? null,
+        embedding,
       },
     });
 

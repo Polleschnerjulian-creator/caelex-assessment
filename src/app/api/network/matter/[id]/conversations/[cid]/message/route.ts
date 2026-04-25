@@ -31,6 +31,10 @@ import {
 } from "@/lib/legal-network/matter-tools";
 import { executeTool } from "@/lib/legal-network/matter-tool-executor";
 import { formatMatterToolInput } from "@/lib/legal-network/tool-input-display";
+import {
+  recallLibrary,
+  formatRecallForSystemPrompt,
+} from "@/lib/atlas/library-recall";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -174,11 +178,41 @@ export async function POST(
       content: m.content,
     }));
 
-  const systemPrompt = buildMatterSystemPrompt({
+  const baseSystemPrompt = buildMatterSystemPrompt({
     matter,
     clientOrg: matter.clientOrg,
     lawFirmOrg: matter.lawFirmOrg,
   });
+
+  // Phase 5+ — Personal Library recall. Best-effort: pull top-3 hits
+  // from the lawyer's library that semantically match the new user
+  // turn, append them to the system prompt as "RELEVANT FROM YOUR
+  // LIBRARY" context. The matter ID gets the +0.05 same-matter bonus
+  // so prior research linked to this mandate ranks higher.
+  //
+  // Failure modes (table missing, gateway down, empty library) all
+  // collapse to no-op — the system prompt is unchanged. Atlas
+  // streams normally and the user sees no error.
+  let recallSnippet = "";
+  try {
+    const recall = await recallLibrary(session.user.id, parsed.data.content, {
+      limit: 3,
+      matterId: id,
+      snippetLength: 240,
+    });
+    if (recall.matches.length > 0) {
+      recallSnippet = formatRecallForSystemPrompt(recall.matches);
+    }
+  } catch (err) {
+    // Never let recall failure poison the chat. Log + continue with
+    // the base system prompt.
+    logger.warn(
+      `Library recall failed (continuing without): ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  const systemPrompt = recallSnippet
+    ? `${baseSystemPrompt}\n${recallSnippet}`
+    : baseSystemPrompt;
 
   const anthropic = new Anthropic({ apiKey });
   const encoder = new TextEncoder();
