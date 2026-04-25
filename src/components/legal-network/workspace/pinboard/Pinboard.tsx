@@ -52,6 +52,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArtifactCard, type PinboardArtifact } from "./ArtifactCard";
 import { ArtifactDetailDrawer } from "./ArtifactDetailDrawer";
 import { ManualCardComposer } from "./ManualCardComposer";
+import { SystemCards } from "./SystemCards";
 
 export interface PinboardHandle {
   /** Re-fetch the artifact list. Called from the SSE stream parent
@@ -194,6 +195,12 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
 
     return (
       <>
+        {/* Tasks + Notes always at the top — they're not artifacts,
+            they're live mutable entities with their own CRUD drawers.
+            Sit above the artifacts grid so the lawyer can see open
+            work + recent notes at a glance without scrolling. */}
+        <SystemCards matterId={matterId} />
+
         <ManualCardComposer matterId={matterId} onCreated={load} />
 
         {artifacts.length === 0 ? (
@@ -309,16 +316,14 @@ function SortableCard({
 
 function EmptyBoardHint() {
   return (
-    <div className="flex items-center justify-center min-h-[40vh] px-6">
+    <div className="flex items-center justify-center px-6 py-12">
       <div className="text-center max-w-sm">
-        <div className="mx-auto w-12 h-12 rounded-full bg-white/[0.03] ring-1 ring-white/[0.06] flex items-center justify-center mb-3">
-          <Sparkles size={18} strokeWidth={1.5} className="text-white/45" />
+        <div className="mx-auto w-10 h-10 rounded-full bg-white/[0.03] ring-1 ring-white/[0.06] flex items-center justify-center mb-2">
+          <Sparkles size={14} strokeWidth={1.5} className="text-white/45" />
         </div>
-        <p className="text-sm text-white/70 mb-1">Pinboard ist leer</p>
         <p className="text-[12px] text-white/40 leading-relaxed">
-          Stelle Claude links eine Frage — Compliance-Abrufe, Quellen­suchen
-          oder Memos landen hier automatisch. Oder leg eine eigene Karte an
-          (oben).
+          Noch keine Karten von Claude. Stelle ihm links eine Frage —
+          Compliance-Abrufe, Quellen­suchen oder Memos landen hier automatisch.
         </p>
       </div>
     </div>
