@@ -30,6 +30,7 @@ import {
   isMatterToolName,
 } from "@/lib/legal-network/matter-tools";
 import { executeTool } from "@/lib/legal-network/matter-tool-executor";
+import { formatMatterToolInput } from "@/lib/legal-network/tool-input-display";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -264,7 +265,13 @@ export async function POST(
           const toolResults = await Promise.all(
             toolUses.map(
               async (tu): Promise<Anthropic.ToolResultBlockParam> => {
-                send({ type: "tool_use_start", name: tu.name, id: tu.id });
+                // Phase R: humanised input summary alongside tool name
+                send({
+                  type: "tool_use_start",
+                  name: tu.name,
+                  id: tu.id,
+                  inputSummary: formatMatterToolInput(tu.name, tu.input),
+                });
                 if (!isMatterToolName(tu.name)) {
                   send({
                     type: "tool_use_result",

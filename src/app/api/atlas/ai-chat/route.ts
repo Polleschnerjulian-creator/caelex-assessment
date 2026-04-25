@@ -29,6 +29,7 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
+import { formatAtlasToolInput } from "@/lib/atlas/tool-input-display";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -230,7 +231,17 @@ export async function POST(request: NextRequest) {
           const toolResults = await Promise.all(
             toolUses.map(
               async (tu): Promise<Anthropic.ToolResultBlockParam> => {
-                send({ type: "tool_use_start", name: tu.name, id: tu.id });
+                // Phase R: humanised input summary so the user sees
+                // EXACTLY what Claude is calling — not just the tool
+                // name. Prevents black-box tool execution from feeling
+                // opaque, especially for create_matter_invite where
+                // the args determine real DB writes + email dispatch.
+                send({
+                  type: "tool_use_start",
+                  name: tu.name,
+                  id: tu.id,
+                  inputSummary: formatAtlasToolInput(tu.name, tu.input),
+                });
 
                 if (!isAtlasToolName(tu.name)) {
                   send({

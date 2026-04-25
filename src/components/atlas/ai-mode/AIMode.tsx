@@ -115,6 +115,10 @@ interface ToolTrace {
    *  renders with a "→ öffne …" styling so the user sees the redirect
    *  coming. */
   navigate?: boolean;
+  /** Phase R: humanised summary of the input args, e.g.
+   *  „Vorschau: 'Rocket Inc' · L3 Full Counsel · 12M". Server formats
+   *  via formatAtlasToolInput() and sends in tool_use_start. */
+  inputSummary?: string;
 }
 
 interface ChatMsg {
@@ -516,7 +520,12 @@ export function AIMode({ open, onClose }: AIModeProps) {
                 | { type: "text"; text: string }
                 | { type: "done"; usage?: { input: number; output: number } }
                 | { type: "error"; message: string }
-                | { type: "tool_use_start"; name: string; id: string }
+                | {
+                    type: "tool_use_start";
+                    name: string;
+                    id: string;
+                    inputSummary?: string;
+                  }
                 | {
                     type: "tool_use_result";
                     name: string;
@@ -551,7 +560,12 @@ export function AIMode({ open, onClose }: AIModeProps) {
                           ...m,
                           tools: [
                             ...(m.tools ?? []),
-                            { id: evt.id, name: evt.name, completed: false },
+                            {
+                              id: evt.id,
+                              name: evt.name,
+                              completed: false,
+                              inputSummary: evt.inputSummary,
+                            },
                           ],
                         }
                       : m,
@@ -924,6 +938,11 @@ export function AIMode({ open, onClose }: AIModeProps) {
                             : "•"}
                     </span>
                     <span>{TOOL_LABEL[t.name] ?? t.name}</span>
+                    {t.inputSummary && (
+                      <span className={styles.toolChipArgs}>
+                        · {t.inputSummary}
+                      </span>
+                    )}
                     {!t.completed && (
                       <span className={styles.toolChipDots}>…</span>
                     )}

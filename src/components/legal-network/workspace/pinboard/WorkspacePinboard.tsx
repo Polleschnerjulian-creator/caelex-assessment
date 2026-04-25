@@ -280,6 +280,8 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
                               id: evt.id,
                               name: evt.name,
                               completed: false,
+                              // Phase R: humanised input summary
+                              inputSummary: evt.inputSummary,
                             },
                           ],
                         }

@@ -41,6 +41,8 @@ export interface ToolTrace {
   isError?: boolean;
   completed?: boolean;
   artifactId?: string;
+  /** Phase R: server-formatted summary of the tool input args. */
+  inputSummary?: string;
 }
 
 export interface ChatMessage {
@@ -318,6 +320,11 @@ function MessageRow({ message }: { message: ChatMessage }) {
                     <span className="font-medium">
                       {TOOL_LABEL[t.name] ?? t.name}
                     </span>
+                    {t.inputSummary && (
+                      <span className="text-[9px] opacity-65 max-w-[180px] truncate">
+                        · {t.inputSummary}
+                      </span>
+                    )}
                     {!t.completed && (
                       <span className="text-[9px] opacity-70 animate-pulse">
                         …

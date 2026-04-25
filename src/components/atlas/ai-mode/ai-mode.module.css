@@ -1283,6 +1283,18 @@
   opacity: 0.7;
   animation: toolChipPulse 1.2s ease-in-out infinite;
 }
+/* Phase R: humanised arg summary appended after the tool name.
+   Slightly muted + monospace tabular feel. Truncates on overflow so
+   long summaries don't stretch the chip out of layout. */
+.toolChipArgs {
+  font-size: 10px;
+  opacity: 0.65;
+  font-feature-settings: "tnum" 1;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 @keyframes toolChipPulse {
   0%,
   100% {
