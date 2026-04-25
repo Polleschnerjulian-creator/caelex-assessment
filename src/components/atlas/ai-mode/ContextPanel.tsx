@@ -31,6 +31,7 @@ import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
 } from "@/data/landing-rights";
+import { extractCitations, type Citation } from "@/lib/atlas/citations";
 import styles from "./ai-mode.module.css";
 
 interface ContextPanelProps {
@@ -50,74 +51,10 @@ interface HydratedSource {
   href: string;
 }
 
-interface Citation {
-  key: string;
-  label: string;
-  hint?: string;
-}
-
-// ─── Citation parsers ─────────────────────────────────────────────────
-//
-// We look for the textual patterns lawyers actually write: "BWRG §3",
-// "Art. VI OST", "NIS2 Art. 21". Missed matches are fine — the panel
-// is additive information, not authoritative. The alternative (LLM-
-// based citation extraction) would cost tokens and add latency, and
-// false-negatives at streaming time feel worse than missing one hit.
-
-const CITATION_RULES: Array<{
-  re: RegExp;
-  label: (m: RegExpMatchArray) => string;
-  hint?: (m: RegExpMatchArray) => string;
-}> = [
-  {
-    re: /\b(BWRG|BDSG|TKG|LuftVG|AZG)\s*§\s*(\d+[a-z]?)/gi,
-    label: (m) => `${m[1].toUpperCase()} §${m[2]}`,
-    hint: () => "Deutsches Gesetz",
-  },
-  {
-    re: /\b(NIS2|NIS-2)\s*Art\.\s*(\d+)/gi,
-    label: (m) => `NIS2 Art. ${m[2]}`,
-    hint: () => "EU-Direktive 2022/2555",
-  },
-  {
-    re: /\bArt\.\s*(I{1,3}|IV|V|VI{0,3}|IX|X{0,3})\s*(OST|Outer Space Treaty)/gi,
-    label: (m) => `OST Art. ${m[1]}`,
-    hint: () => "Weltraumvertrag 1967",
-  },
-  {
-    re: /\bArt\.\s*(\d+)\s*(EU Space Act|Space Act EU)/gi,
-    label: (m) => `EU Space Act Art. ${m[1]}`,
-  },
-  {
-    re: /\b(FCC|FAA|ITAR|EAR)\s*(?:Part|§|Rule)?\s*([\d\.]+)/gi,
-    label: (m) => `${m[1].toUpperCase()} ${m[2]}`,
-    hint: () => "US-Regelung",
-  },
-  {
-    re: /\b(Liability Convention|Registration Convention|Rescue Agreement|Moon Agreement)\s*Art\.\s*([IVX]+|\d+)/gi,
-    label: (m) => `${m[1]} Art. ${m[2]}`,
-    hint: () => "UN-Weltraumvertrag",
-  },
-];
-
-function extractCitations(text: string): Citation[] {
-  const seen = new Map<string, Citation>();
-  for (const rule of CITATION_RULES) {
-    const matches = text.matchAll(rule.re);
-    for (const m of matches) {
-      const label = rule.label(m);
-      const key = label.toLowerCase();
-      if (!seen.has(key)) {
-        seen.set(key, {
-          key,
-          label,
-          hint: rule.hint ? rule.hint(m) : undefined,
-        });
-      }
-    }
-  }
-  return Array.from(seen.values());
-}
+// Citation parsing now lives in @/lib/atlas/citations so the same
+// rule-set drives both this side-panel chip list AND the inline
+// citation chips that AtlasMarkdown renders within message bodies
+// (Phase 3 — Citations Highlighter). One source of truth.
 
 // ─── Source hydration ─────────────────────────────────────────────────
 

@@ -36,6 +36,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Briefcase, UserPlus, PenLine, Scale } from "lucide-react";
+import type { Citation } from "@/lib/atlas/citations";
 import {
   AtlasEntity,
   type AtlasEntityHandle,
@@ -879,6 +880,20 @@ export function AIMode({ open, onClose }: AIModeProps) {
     playSound("chime");
   }, [playSound, toast]);
 
+  // Phase 3 — Citations Highlighter wiring. When a lawyer clicks
+  // "Bei Atlas nachfragen" inside a citation popover, format an
+  // explain-prompt and route it through the existing chat pipeline
+  // (same as if they typed the question themselves). Closes any open
+  // action panel first to clear the stage for the answer.
+  const handleAskAtlasCitation = useCallback(
+    (citation: Citation) => {
+      const hint = citation.hint ? ` (${citation.hint})` : "";
+      const prompt = `Erkläre ${citation.label}${hint}: Geltungsbereich, kerngehalt der norm, häufige praktische auslegung. Mit verweis auf primärquelle.`;
+      submitPromptFromPanel(prompt);
+    },
+    [submitPromptFromPanel],
+  );
+
   const handleCmdKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -1107,7 +1122,14 @@ export function AIMode({ open, onClose }: AIModeProps) {
                 ))}
               </div>
             )}
-            {m.role === "atlas" ? <AtlasMarkdown text={m.text} /> : m.text}
+            {m.role === "atlas" ? (
+              <AtlasMarkdown
+                text={m.text}
+                onAskAtlas={handleAskAtlasCitation}
+              />
+            ) : (
+              m.text
+            )}
           </div>
         ))}
       </div>
