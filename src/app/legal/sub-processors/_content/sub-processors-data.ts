@@ -205,4 +205,29 @@ export const SUB_PROCESSORS: SubProcessor[] = [
     dpaUrl: "https://www.anthropic.com/legal/dpa",
     addedOn: "2024-03-01",
   },
+  {
+    id: "openai",
+    name: "OpenAI, L.L.C.",
+    entity:
+      "OpenAI, L.L.C., 3180 18th Street, San Francisco, CA 94110, USA · Routed via Vercel AI Gateway",
+    category: "ai",
+    categoryLabel: {
+      de: "KI-Embeddings (semantische Recherche)",
+      en: "AI embeddings (semantic search)",
+    },
+    purpose: {
+      de: "Erzeugung von Vektor-Embeddings (text-embedding-3-small @ 512 Dimensionen) für die Atlas-Korpus-Semantiksuche und die Phase-5+ Personal-Library-Recall. Routing über das Vercel AI Gateway — keine direkte Vertragsbeziehung zwischen OpenAI und Caelex; OpenAI wirkt als Sub-Sub-Processor von Vercel.",
+      en: "Vector embedding generation (text-embedding-3-small @ 512 dims) for Atlas corpus semantic search and the Phase 5+ Personal Library recall. Routed through Vercel AI Gateway — no direct contractual relationship between OpenAI and Caelex; OpenAI acts as a sub-sub-processor under Vercel.",
+    },
+    dataTypes: {
+      de: "Nutzer-Anfragetext (kurze Such-Queries) und Library-Eintragstexte (Titel + ggf. ursprüngliche Frage + erste 3.000 Zeichen des Inhalts) zur Vektor-Repräsentation. Keine Klartext-Speicherung über die API-Aufruf-Dauer hinaus (OpenAI Zero-Data-Retention für API-Kunden seit 2023).",
+      en: "User query text (short search queries) and library-entry texts (title + optional original question + first 3,000 chars of content) for vector representation. No plaintext retention beyond the API call duration (OpenAI Zero-Data-Retention for API customers since 2023).",
+    },
+    location: "USA",
+    transferMechanism:
+      "EU-US Data Privacy Framework (zertifiziert) · Standardvertragsklauseln · Zero-Data-Retention für API-Aufrufe · Routing über Vercel AI Gateway (kein eigener Vertrag mit Caelex)",
+    website: "https://www.openai.com",
+    dpaUrl: "https://openai.com/policies/data-processing-addendum/",
+    addedOn: "2026-04-25",
+  },
 ];

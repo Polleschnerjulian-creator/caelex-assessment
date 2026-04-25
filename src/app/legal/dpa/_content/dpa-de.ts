@@ -260,6 +260,46 @@ export const DPA_DE: LegalDocument = {
           type: "p",
           text: "(5) Die bloße Nutzung von Dienstleistern ohne Zugriff auf personenbezogene Daten (z.B. anonyme CDN-Bereitstellung, reine Paketzustellung) ist keine Unterauftragsverarbeitung i.S.d. DSGVO.",
         },
+        {
+          type: "p",
+          text: "(6) Soweit der Kunde Berufsgeheimnisträger im Sinne des § 203 StGB ist (insbesondere Rechtsanwälte, Steuerberater, Wirtschaftsprüfer, Ärzte), gilt zusätzlich der Berufsgeheimnisträger-Annex unten (§ 10a). Caelex verpflichtet alle Sub-Auftragsverarbeiter, die Zugang zu Mandantengeheimnissen erhalten können, schriftlich auf die Verschwiegenheit und weist sie ausdrücklich auf die strafrechtlichen Folgen aus § 203 StGB hin (§ 43e Abs. 3 BRAO).",
+        },
+      ],
+    },
+    {
+      id: "d10a",
+      number: "§ 10a",
+      title:
+        "Annex Berufsgeheimnisträger (§ 43e BRAO · § 203 StGB · § 62a StBerG)",
+      blocks: [
+        {
+          type: "p",
+          text: "(1) Anwendungsbereich. Dieser Annex findet Anwendung, wenn der Kunde Berufsgeheimnisträger im Sinne des § 203 StGB ist und unter Caelex Daten verarbeitet, die einer beruflichen Verschwiegenheitspflicht unterliegen — namentlich Mandanten-, Klienten-, Patientenbeziehungen sowie sämtliche darauf bezogene Sachverhalte (einschließlich der bloßen Tatsache der Mandatierung).",
+        },
+        {
+          type: "p",
+          text: "(2) Verpflichtung von Caelex. Caelex und sämtliche bei Caelex zur Auftragsverarbeitung befugten Personen sind ausdrücklich auf die Verschwiegenheit verpflichtet und über die strafrechtlichen Folgen einer Verletzung gemäß § 203 StGB sowie etwaige berufsrechtliche Sanktionen belehrt. Caelex dokumentiert diese Belehrung schriftlich für jede mitwirkende Person und stellt entsprechende Nachweise auf Anforderung des Kunden zur Verfügung.",
+        },
+        {
+          type: "p",
+          text: "(3) Sub-Auftragsverarbeiter. Caelex verpflichtet jeden Sub-Auftragsverarbeiter, der Zugang zu Mandantengeheimnissen erhalten kann (insbesondere KI-Dienstleister, Hosting-Anbieter und Datenbankbetreiber), durch eine zusätzliche Vereinbarung in Textform auf die Verschwiegenheit und auf die strafrechtlichen Folgen aus § 203 StGB. Die Vereinbarung umfasst insbesondere die Verpflichtung, Daten nicht zu Trainingszwecken zu verwenden, sie nach Verarbeitung unverzüglich zu löschen (Zero-Data-Retention, soweit technisch möglich) und sich Weisungen des Kunden über Caelex unterzuordnen.",
+        },
+        {
+          type: "p",
+          text: "(4) Need-to-know-Prinzip. Caelex stellt sicher, dass Mandantendaten nur denjenigen Personen und Systemen zugänglich gemacht werden, die für die jeweilige Verarbeitung erforderlich sind. Im bilateralen Mandat-Bridge-Modul (Atlas × Caelex) wird der Zugriff der Anwaltskanzlei auf das im Handshake-Verfahren festgelegte Scope-Set technisch beschränkt; jeder Zugriff wird in einem manipulationssicheren Audit-Log (Hash-Chain) protokolliert.",
+        },
+        {
+          type: "p",
+          text: "(5) Drittlandtransfer. KI-Inferenz-Anbieter und Embedding-Anbieter mit Sitz in den USA (insbesondere Anthropic PBC und OpenAI L.L.C.) verarbeiten Mandantengeheimnisse nur unter zertifiziertem EU-US Data Privacy Framework, ergänzt um Standardvertragsklauseln und Zero-Data-Retention-Zusagen. Auf Wunsch des Kunden kann für Mandate mit erhöhter Sensibilität eine Verarbeitung ausschließlich in EU-Regionen vereinbart werden (z.B. Anthropic via AWS Bedrock Frankfurt).",
+        },
+        {
+          type: "p",
+          text: "(6) Beschlagnahmefreiheit / Auskunftsverweigerung. Caelex erkennt die Beschlagnahmefreiheit der dem Kunden anvertrauten Geheimnisse (§ 97 StPO) an und macht von etwaigen Auskunfts- oder Herausgabeverweigerungsrechten Gebrauch, soweit dies rechtlich zulässig ist. Caelex informiert den Kunden unverzüglich über behördliche Auskunftsersuchen, die Mandantengeheimnisse betreffen, soweit eine Information nicht selbst gegen geltendes Recht verstößt.",
+        },
+        {
+          type: "p",
+          text: "(7) Beendigung. Bei Beendigung des Hauptvertrages oder eines konkreten Mandats stellt Caelex die Mandantendaten in einem strukturierten, gängigen und maschinenlesbaren Format zur Verfügung und löscht oder pseudonymisiert sie nach den Weisungen des Kunden — vorbehaltlich gesetzlicher Aufbewahrungspflichten und vorbehaltlich des Rechts der mandatsbearbeitenden Anwaltskanzlei zur eigenen Aktenführung gemäß § 50 BRAO.",
+        },
       ],
     },
     {

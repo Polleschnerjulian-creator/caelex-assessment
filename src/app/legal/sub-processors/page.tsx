@@ -37,7 +37,7 @@ export default function SubProcessorsPage() {
             Sub-processors — List of Caelex sub-processors under Art. 28(2) GDPR
           </p>
           <p className="text-body text-[#6B7280] mb-10">
-            Stand · Effective: 18. April 2026 · {SUB_PROCESSORS.length} aktive
+            Stand · Effective: 25. April 2026 · {SUB_PROCESSORS.length} aktive
             Unterauftragsverarbeiter · {SUB_PROCESSORS.length} active
             sub-processors
           </p>

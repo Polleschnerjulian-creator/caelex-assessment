@@ -245,6 +245,50 @@ export function ConsentCard({ token }: { token: string }) {
           </p>
         </div>
 
+        {/* P0-Compliance · DSGVO-Hinweis: Mit Akzeptieren erteilst du
+            die Genehmigung zur Drittlandverarbeitung über die im AVV
+            gelisteten Sub-Auftragsverarbeiter (Anthropic, OpenAI über
+            Vercel AI Gateway) auf Basis EU-US-DPF + SCC + Zero-Data-
+            Retention. Caelex verpflichtet alle Sub-Processoren auf
+            § 203 StGB / § 43e BRAO. */}
+        <div className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 space-y-2">
+          <p className="text-[10px] tracking-[0.18em] uppercase font-semibold text-slate-500 dark:text-slate-400">
+            Datenschutz · Verarbeitungs-Hinweis
+          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Mit Akzeptieren erteilst du die allgemeine Genehmigung nach Art. 28
+            Abs. 2 DSGVO für die Verarbeitung mandatsbezogener Daten durch
+            Caelex und die im{" "}
+            <a
+              href="/legal/sub-processors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-dotted hover:text-slate-900 dark:hover:text-slate-200"
+            >
+              Sub-Processor-Register
+            </a>{" "}
+            gelisteten Anbieter — insbesondere KI-Inferenz (Anthropic, USA,
+            EU-US-DPF) und Embeddings (OpenAI über Vercel AI Gateway).
+            Drittlandtransfer auf Basis EU-US Data Privacy Framework + SCC +
+            Zero-Data-Retention.
+          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Bei Berufsgeheimnisträgern (§ 203 StGB) gilt zusätzlich der
+            Berufsgeheimnisträger-Annex § 10a im{" "}
+            <a
+              href="/legal/dpa"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-dotted hover:text-slate-900 dark:hover:text-slate-200"
+            >
+              AVV
+            </a>
+            : alle Sub-Processoren werden ausdrücklich auf § 43e Abs. 3 BRAO
+            verpflichtet. Need-to-know-Prinzip wird per Scope-Gate technisch
+            durchgesetzt.
+          </p>
+        </div>
+
         <p className="text-xs text-slate-400">
           Token läuft ab am {new Date(expiresAt).toLocaleString("de-DE")}.
         </p>
