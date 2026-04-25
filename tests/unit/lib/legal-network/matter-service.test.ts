@@ -367,6 +367,64 @@ describe("matter-service / acceptInvite — original invitation", () => {
       }),
     );
   });
+
+  it("returns counterInvitationId on amend so caller can dispatch counter-sign email", async () => {
+    // Phase H requirement: the route handler dispatches a counter-
+    // sign email outside the DB transaction, so it needs the new
+    // invitation id surfaced from the service. Without this field
+    // the email dispatcher has no way to load the diff context.
+    mockedPrisma.legalMatterInvitation.findUnique.mockResolvedValue(
+      buildInvitation({
+        proposedScope: [
+          {
+            category: "COMPLIANCE_ASSESSMENTS",
+            permissions: ["READ", "ANNOTATE"],
+          },
+        ],
+      }),
+    );
+    mockedPrisma.legalMatter.update.mockResolvedValue(
+      buildMatter({ status: "PENDING_CONSENT" }),
+    );
+    mockedPrisma.legalMatterInvitation.update.mockResolvedValue(
+      buildInvitation({ consumedAt: new Date() }),
+    );
+    mockedPrisma.legalMatterInvitation.create.mockResolvedValue(
+      buildInvitation({ id: "inv-counter-h", amendmentOf: "inv-1" }),
+    );
+
+    const result = await acceptInvite({
+      rawToken: "raw-token-abc",
+      acceptingUserId: "user-op-1",
+      acceptingOrgId: OPERATOR_ORG.id,
+      amendedScope: [
+        { category: "COMPLIANCE_ASSESSMENTS", permissions: ["READ"] },
+      ],
+    });
+
+    expect(result.counterInvitationId).toBe("inv-counter-h");
+  });
+
+  it("does NOT set counterInvitationId on direct (non-amend) accept", async () => {
+    mockedPrisma.legalMatterInvitation.findUnique.mockResolvedValue(
+      buildInvitation(),
+    );
+    mockedPrisma.legalMatter.update.mockResolvedValue(
+      buildMatter({ status: "ACTIVE" }),
+    );
+    mockedPrisma.legalMatterInvitation.update.mockResolvedValue(
+      buildInvitation({ consumedAt: new Date() }),
+    );
+
+    const result = await acceptInvite({
+      rawToken: "raw-token-abc",
+      acceptingUserId: "user-op-1",
+      acceptingOrgId: OPERATOR_ORG.id,
+    });
+
+    expect(result.matter.status).toBe("ACTIVE");
+    expect(result.counterInvitationId).toBeUndefined();
+  });
 });
 
 // ─── acceptInvite — AMENDMENT counter-sign flow (Phase 7b regression) ─

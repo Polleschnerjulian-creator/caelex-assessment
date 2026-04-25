@@ -214,6 +214,10 @@ export interface AcceptInviteResult {
   /** If the recipient amended, we return PENDING_CONSENT and a NEW
    *  token for the original inviter to counter-sign. */
   counterToken?: string;
+  /** ID of the new counter-invitation row. Set only on amend.
+   *  Caller uses this to dispatch the counter-sign email outside
+   *  the DB transaction so a Resend outage can't rollback state. */
+  counterInvitationId?: string;
 }
 
 export async function acceptInvite(
@@ -354,32 +358,38 @@ export async function acceptInvite(
 
   // Case B: amendment → new invitation for the original inviter
   const newToken = mintInviteToken();
-  const updated = await prisma.$transaction(async (tx) => {
-    const m = await tx.legalMatter.update({
-      where: { id: matter.id },
-      data: {
-        status: "PENDING_CONSENT",
-        scope: finalScope as unknown as Prisma.InputJsonValue,
-      },
-    });
-    await tx.legalMatterInvitation.update({
-      where: { id: invitation.id },
-      data: { consumedAt: now },
-    });
-    await tx.legalMatterInvitation.create({
-      data: {
-        matterId: matter.id,
-        tokenHash: newToken.hash,
-        expiresAt: newToken.expiresAt,
-        proposedScope: finalScope as unknown as Prisma.InputJsonValue,
-        proposedDurationMonths: input.amendedDurationMonths ?? null,
-        amendmentOf: invitation.id,
-      },
-    });
-    return m;
-  });
+  const { matter: updated, counterInvitationId } = await prisma.$transaction(
+    async (tx) => {
+      const m = await tx.legalMatter.update({
+        where: { id: matter.id },
+        data: {
+          status: "PENDING_CONSENT",
+          scope: finalScope as unknown as Prisma.InputJsonValue,
+        },
+      });
+      await tx.legalMatterInvitation.update({
+        where: { id: invitation.id },
+        data: { consumedAt: now },
+      });
+      const counter = await tx.legalMatterInvitation.create({
+        data: {
+          matterId: matter.id,
+          tokenHash: newToken.hash,
+          expiresAt: newToken.expiresAt,
+          proposedScope: finalScope as unknown as Prisma.InputJsonValue,
+          proposedDurationMonths: input.amendedDurationMonths ?? null,
+          amendmentOf: invitation.id,
+        },
+      });
+      return { matter: m, counterInvitationId: counter.id };
+    },
+  );
 
-  return { matter: updated, counterToken: newToken.raw };
+  return {
+    matter: updated,
+    counterToken: newToken.raw,
+    counterInvitationId,
+  };
 }
 
 export type RejectInviteInput = InvitationLookup & {

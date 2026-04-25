@@ -24,6 +24,7 @@ import {
   rejectInvite,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
+import { dispatchCounterSignEmail } from "@/lib/legal-network/email-dispatch";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
 
 export const runtime = "nodejs";
@@ -98,12 +99,21 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get("user-agent"),
     });
 
+    // Dispatch counter-sign email when amendment created a new
+    // PENDING_CONSENT invitation. Best-effort fire-and-forget — same
+    // pattern as the inbox accept route. The "production also emails
+    // this" comment in earlier versions of this route is now actually
+    // true with this dispatch.
+    if (result.counterInvitationId) {
+      void dispatchCounterSignEmail({
+        counterInvitationId: result.counterInvitationId,
+        amendingUserId: session.user.id,
+      });
+    }
+
     return NextResponse.json({
       matterId: result.matter.id,
       status: result.matter.status,
-      // If an amendment was made, we return the counter-token so the
-      // client UI can render the invite-link-to-copy. In production
-      // the server also emails this to the original inviter.
       counterToken: result.counterToken,
     });
   } catch (err) {

@@ -25,6 +25,7 @@ import {
   rejectInvite,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
+import { dispatchCounterSignEmail } from "@/lib/legal-network/email-dispatch";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
 
 export const runtime = "nodejs";
@@ -108,6 +109,17 @@ export async function POST(
         null,
       userAgent: request.headers.get("user-agent"),
     });
+
+    // Fire the counter-sign email if this was an amendment. Best-
+    // effort — the matter is already in PENDING_CONSENT, the lawyer's
+    // inbox-badge will pop within ≤60s polling regardless. Email is
+    // a latency-shortener, not a correctness mechanism.
+    if (result.counterInvitationId) {
+      void dispatchCounterSignEmail({
+        counterInvitationId: result.counterInvitationId,
+        amendingUserId: session.user.id,
+      });
+    }
 
     return NextResponse.json({
       matterId: result.matter.id,
