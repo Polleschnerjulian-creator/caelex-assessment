@@ -80,10 +80,20 @@ export async function GET(_request: NextRequest) {
       })),
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`Network matters list failed: ${msg}`);
+    // Surface the actual cause to Vercel logs — the generic "Failed
+    // to load matters" public message hides what's wrong, which made
+    // the diagnostic loop on the AB-2 left panel painful. Stack +
+    // name help us spot prisma exceptions vs auth-shape mismatches.
+    const errName = err instanceof Error ? err.name : typeof err;
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const errStack = err instanceof Error ? err.stack : undefined;
+    logger.error(
+      `Network matters list failed [${errName}]: ${errMsg}${
+        errStack ? `\n${errStack}` : ""
+      }`,
+    );
     return NextResponse.json(
-      { error: "Failed to load matters" },
+      { error: "Failed to load matters", code: errName, detail: errMsg },
       { status: 500 },
     );
   }

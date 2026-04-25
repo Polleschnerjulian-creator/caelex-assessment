@@ -167,7 +167,10 @@ export function MattersPanel({
   onNavigate: (matterId: string) => void;
 }) {
   const [matters, setMatters] = useState<MatterRow[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<{
+    status: number;
+    raw: string;
+  } | null>(null);
   const [callerSide, setCallerSide] = useState<"ATLAS" | "CAELEX" | null>(null);
   const [query, setQuery] = useState("");
 
@@ -179,13 +182,32 @@ export function MattersPanel({
     (async () => {
       try {
         const res = await fetch("/api/network/matters", { cache: "no-store" });
-        const json = await res.json();
+        const json = await res.json().catch(() => ({}));
         if (cancelled) return;
-        if (!res.ok) throw new Error(json.error ?? "Fehler beim Laden");
+        if (!res.ok) {
+          // Phase 3 hardening — surface the server's diagnostic detail
+          // when present so 500s don't read as opaque "Failed to load"
+          // sentences. The /api/network/matters route now emits
+          // { error, code, detail } where code is the JS error.name
+          // and detail is the raw message.
+          const parts = [
+            typeof json.error === "string" ? json.error : `HTTP ${res.status}`,
+            typeof json.code === "string" ? json.code : null,
+            typeof json.detail === "string" ? json.detail : null,
+          ].filter(Boolean);
+          setErrorState({
+            status: res.status,
+            raw: parts.join(" — "),
+          });
+          return;
+        }
+        setErrorState(null);
         setMatters(json.matters ?? []);
         setCallerSide(json.callerSide ?? null);
       } catch (err) {
-        if (!cancelled) setError((err as Error).message);
+        if (!cancelled) {
+          setErrorState({ status: 0, raw: (err as Error).message });
+        }
       }
     })();
     return () => {
@@ -193,17 +215,39 @@ export function MattersPanel({
     };
   }, [open]);
 
-  // Friendly DE error fallback — the upstream API returns english
-  // "Failed to load matters" on 500. Replace with a user-friendly DE
-  // sentence; the original message survives in the network log for
-  // debugging without surfacing to the lawyer.
+  // Diagnostic-friendly error message. Branches on HTTP status so the
+  // lawyer (and dev) sees what actually went wrong, not a generic
+  // "couldn't load" smokescreen. The raw upstream message stays
+  // visible as a small monospace tag for quick triage.
   const displayError = useMemo(() => {
-    if (!error) return null;
-    if (/failed to load|fehler beim laden/i.test(error)) {
-      return "Mandate konnten nicht geladen werden.";
+    if (!errorState) return null;
+    const { status, raw } = errorState;
+    if (status === 401) {
+      return {
+        msg: "Sitzung abgelaufen — bitte Seite neu laden.",
+        tag: `401 · ${raw}`,
+      };
     }
-    return error;
-  }, [error]);
+    if (status === 403) {
+      return {
+        msg: "Dein Account ist keiner Kanzlei zugeordnet. Admin fragen.",
+        tag: `403 · ${raw}`,
+      };
+    }
+    if (status === 500) {
+      // Try to pluck the diagnostic detail from the new shape the
+      // server emits (code + detail). Falls back to raw if the panel
+      // is hitting an older deployment.
+      return {
+        msg: "Server-Fehler beim Laden der Mandate.",
+        tag: `500 · ${raw}`,
+      };
+    }
+    if (status === 0) {
+      return { msg: "Netzwerk nicht erreichbar.", tag: raw };
+    }
+    return { msg: raw, tag: `HTTP ${status}` };
+  }, [errorState]);
 
   const filtered = useMemo(() => {
     if (!matters) return null;
@@ -252,7 +296,9 @@ export function MattersPanel({
       {/* States */}
       {displayError && (
         <div className={styles.panelError}>
-          <AlertTriangle size={11} strokeWidth={1.7} /> {displayError}
+          <AlertTriangle size={11} strokeWidth={1.7} />
+          <span className={styles.panelErrorMsg}>{displayError.msg}</span>
+          <code className={styles.panelErrorTag}>{displayError.tag}</code>
         </div>
       )}
       {!displayError && !matters && (
