@@ -1429,183 +1429,190 @@
      - z-index 30 — sits above the conversation but below the topbar
        (which is 30 too; equal stacking, panel paints later) */
 
+/* Container — same visual language as the right-side ContextPanel.
+   Glass surface, subtle inset highlight, faint outer shadow. The orb
+   does NOT shift when this panel opens — Atlas stays centred. */
 .actionPanel {
   position: fixed;
-  left: 24px;
-  top: 80px;
-  bottom: 96px;
-  width: 380px;
-  max-width: calc(100vw - 48px);
-  z-index: 30;
+  left: 20px;
+  top: 70px;
+  /* Mirror ContextPanel's bottom anchor: stop just above the search
+     area (which sits at bottom 12% + ~150px tall) so the panel
+     doesn't overlap the input + quick-action row. */
+  bottom: calc(12% + 160px);
+  width: 340px;
+  max-width: 32vw;
+  z-index: 25;
   display: flex;
   flex-direction: column;
+  padding: 16px;
   border-radius: 18px;
-  background: rgba(13, 13, 16, 0.72);
+  background: rgba(16, 16, 20, 0.55);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
   box-shadow:
-    0 0 0 0.5px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 24px 48px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  transform: translateX(calc(-100% - 32px)) scale(0.96);
+    0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 30px 60px -20px rgba(0, 0, 0, 0.8);
+  transform: translateX(-20px);
   opacity: 0;
   pointer-events: none;
   transition:
-    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.6s var(--ease),
+    opacity 0.5s var(--ease);
 }
 .actionPanelOpen {
-  transform: translateX(0) scale(1);
+  transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Orb-shift companion class. Translate the entity wrapper rightward
-   so the orb sits visually balanced between the open left panel and
-   the right ContextPanel. Soft cubic curve matches the panel slide. */
-.entityShifted {
-  transform: translateX(180px);
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+/* Below 1280px the right ContextPanel hides — so the left action
+   panel can use a bit more horizontal space without colliding.
+   Below 1100px morph into a centred top-overlay so smaller laptops
+   can still use the panels without obscuring the orb. */
+@media (max-width: 1279px) {
+  .actionPanel {
+    width: 320px;
+  }
 }
-
-/* Mobile: morph the panel into a centred modal. ContextPanel hides
-   under 1280px so we don't compete; under 1100px the action panel
-   takes the full width minus 24px gutters. */
 @media (max-width: 1100px) {
   .actionPanel {
     left: 16px;
     right: 16px;
     width: auto;
     max-width: none;
-    top: 64px;
-    bottom: 120px;
-  }
-  .entityShifted {
-    transform: translateX(0);
+    top: 60px;
+    bottom: 140px;
   }
 }
 
-/* ── Header (icon + title + subtitle + close X) */
+/* ── Header (tag + sub + close X) — matches .contextHeader exactly:
+   uppercase tag, wide letter-spacing, faint border-bottom. */
 .actionPanelHeader {
   position: relative;
-  padding: 18px 20px 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
 }
-.actionPanelTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+.actionPanelTag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
 }
-.actionPanelIcon {
-  color: rgba(110, 231, 183, 0.9); /* emerald-300 */
-}
-.actionPanelTitle {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 0;
-}
-.actionPanelSubtitle {
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0;
-  line-height: 1.45;
-  padding-right: 28px; /* keep close button clear */
+.actionPanelSub {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.02em;
 }
 .actionPanelClose {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 24px;
-  height: 24px;
+  top: -2px;
+  right: 0;
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.15s var(--ease);
+  transition: all 0.18s var(--ease);
 }
 .actionPanelClose:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* ── Body (scrollable region beneath the header) */
+/* Optional explanatory line beneath the header (mirrors
+   .contextEmpty's typographic feel — faint, narrow, leading 1.55). */
+.actionPanelIntro {
+  margin: 0 0 14px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: -0.003em;
+}
+
+/* ── Body (scrollable region) */
 .actionPanelBody {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 20px 20px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .actionPanelBody::-webkit-scrollbar {
-  width: 6px;
-}
-.actionPanelBody::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  display: none;
 }
 
-/* ── Loading / empty / error states */
+/* ── Loading / empty / error states ─ matched to .contextEmpty
+   feel (faint, narrow, subtle) so the panel remains quiet. */
 .panelLoading {
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.45);
-  padding: 12px 4px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 16px 4px;
   text-align: center;
   animation: panelPulse 1.4s ease-in-out infinite;
 }
 .panelEmpty {
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 14px 4px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 16px 4px;
   text-align: center;
-  line-height: 1.5;
+  letter-spacing: -0.003em;
 }
 .panelError {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: rgba(252, 165, 165, 0.95);
-  background: rgba(239, 68, 68, 0.08);
-  border: 0.5px solid rgba(239, 68, 68, 0.25);
+  width: auto;
+  font-size: 10.5px;
+  color: rgba(252, 165, 165, 0.85);
+  background: rgba(239, 68, 68, 0.06);
+  box-shadow: 0 0 0 0.5px rgba(239, 68, 68, 0.18);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 6px 9px;
   margin-bottom: 10px;
+  letter-spacing: -0.003em;
 }
 @keyframes panelPulse {
   0%,
   100% {
-    opacity: 0.5;
+    opacity: 0.55;
   }
   50% {
-    opacity: 0.85;
+    opacity: 0.9;
   }
 }
 
-/* ── MattersPanel: search + list */
+/* ── MattersPanel: search + list — matched to .contextSource */
 .panelSearchRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 11px;
+  padding: 7px 10px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 12px;
-  transition: border-color 0.15s var(--ease);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+  margin-bottom: 10px;
+  transition: box-shadow 0.18s var(--ease);
 }
 .panelSearchRow:focus-within {
-  border-color: rgba(110, 231, 183, 0.4);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 }
 .panelSearchIcon {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
 }
 .panelSearchInput {
@@ -1613,12 +1620,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11.5px;
   font-family: inherit;
+  letter-spacing: -0.003em;
 }
 .panelSearchInput::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .panelList {
@@ -1627,7 +1635,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 .panelMatterRow {
   display: flex;
@@ -1636,16 +1644,21 @@
   width: 100%;
   padding: 9px 10px;
   border-radius: 10px;
-  background: transparent;
-  border: 0.5px solid transparent;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+  border: none;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  transition: all 0.13s var(--ease);
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    transform 0.15s var(--ease);
 }
 .panelMatterRow:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.15);
+  transform: translateX(-1px);
 }
 .panelMatterStatus {
   flex-shrink: 0;
@@ -1671,44 +1684,48 @@
   overflow: hidden;
 }
 .panelMatterName {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.86);
+  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .panelMatterRef {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
   font-family: "SF Mono", ui-monospace, monospace;
+  letter-spacing: 0.02em;
 }
 .panelMatterMeta {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: -0.002em;
 }
 .panelMatterMetaDot {
   opacity: 0.5;
 }
 .panelMatterChev {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.3);
-  transition: all 0.15s var(--ease);
+  color: rgba(255, 255, 255, 0.25);
+  transition: all 0.18s var(--ease);
 }
 .panelMatterRow:hover .panelMatterChev {
-  color: rgba(110, 231, 183, 0.8);
+  color: rgba(255, 255, 255, 0.65);
   transform: translateX(2px);
 }
 
-/* ── Forms shared (Invite, Memo, Compare) */
+/* ── Forms shared (Invite, Memo, Compare) — same surface treatment
+   as .panelMatterRow / .contextSource: subtle bg, hairline stroke. */
 .panelForm {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 .panelFormField {
   display: flex;
@@ -1717,17 +1734,17 @@
   position: relative;
 }
 .panelFormLabel {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.45);
 }
 .panelFormHint {
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.32);
   margin-left: 4px;
 }
 .panelFormInput,
@@ -1735,26 +1752,30 @@
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+  border: none;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11.5px;
   font-family: inherit;
+  letter-spacing: -0.003em;
   outline: none;
-  transition: all 0.13s var(--ease);
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease);
   resize: vertical;
 }
 .panelFormInput:focus,
 .panelFormTextarea:focus {
-  border-color: rgba(110, 231, 183, 0.45);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 }
 .panelFormInput::placeholder,
 .panelFormTextarea::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.3);
 }
 .panelFormTextarea {
-  min-height: 60px;
+  min-height: 56px;
   line-height: 1.5;
 }
 
@@ -1764,14 +1785,16 @@
   margin: 4px 0 0;
   padding: 4px;
   border-radius: 10px;
-  background: rgba(20, 20, 24, 0.95);
+  background: rgba(18, 18, 22, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   box-shadow:
     0 0 0 0.5px rgba(255, 255, 255, 0.1),
-    0 8px 20px rgba(0, 0, 0, 0.35);
+    0 8px 20px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   gap: 1px;
-  max-height: 240px;
+  max-height: 220px;
   overflow-y: auto;
   position: absolute;
   top: 100%;
@@ -1788,127 +1811,155 @@
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11.5px;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background 0.12s var(--ease);
+  transition: background 0.18s var(--ease);
+  letter-spacing: -0.003em;
 }
 .panelTypeaheadItem:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
 }
 .panelTypeaheadItem svg {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
 }
 
-/* Picked counterparty pill */
+/* Picked counterparty pill — neutral glass, not emerald-flooded.
+   Atlas accent reserved for the submit action; selection is just
+   "this is what's chosen" without screaming. */
 .panelChosenOrg {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 7px 9px 7px 10px;
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 0.5px solid rgba(16, 185, 129, 0.3);
-  color: rgba(110, 231, 183, 0.95);
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11.5px;
   font-weight: 500;
+  letter-spacing: -0.003em;
+}
+.panelChosenOrg svg {
+  color: rgba(255, 255, 255, 0.4);
 }
 .panelChosenOrgClear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.55);
   cursor: pointer;
-  transition: all 0.13s var(--ease);
+  transition: all 0.18s var(--ease);
 }
 .panelChosenOrgClear:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
 }
 
-/* ── Submit button (Invite send / Memo / Compare) */
+/* ── Submit button — restrained glass with a faint emerald tint on
+   hover, matching the .quickAction button language. Not a loud CTA. */
 .panelSubmitBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   margin-top: 4px;
-  padding: 9px 14px;
+  padding: 8px 12px;
   border-radius: 10px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 0.5px solid rgba(16, 185, 129, 0.4);
-  color: rgba(167, 243, 208, 1);
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11.5px;
   font-weight: 500;
   font-family: inherit;
+  letter-spacing: -0.003em;
   cursor: pointer;
-  transition: all 0.15s var(--ease);
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    color 0.18s var(--ease),
+    transform 0.15s var(--ease);
 }
 .panelSubmitBtn:not(:disabled):hover {
-  background: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow:
+    0 0 0 0.5px rgba(16, 185, 129, 0.35),
+    0 0 16px rgba(16, 185, 129, 0.18);
   color: #fff;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
   transform: translateY(-1px);
 }
 .panelSubmitBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
+.panelSubmitBtn svg {
+  color: rgba(110, 231, 183, 0.85);
+}
+.panelSubmitBtn:not(:disabled):hover svg {
+  color: rgba(110, 231, 183, 1);
+}
 
-/* ── ComparePanel country grid */
+/* ── ComparePanel country grid — same hairline-stroke surface as
+   form inputs, emerald only on the active state. */
 .panelCountryGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 .panelCountryChip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
+  padding: 6px 9px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+  border: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
   font-family: inherit;
+  letter-spacing: -0.003em;
   cursor: pointer;
-  transition: all 0.13s var(--ease);
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    color 0.18s var(--ease);
   text-align: left;
 }
 .panelCountryChip:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.95);
 }
 .panelCountryChipActive {
-  background: rgba(16, 185, 129, 0.14);
-  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 0.5px rgba(16, 185, 129, 0.32);
   color: rgba(167, 243, 208, 1);
 }
 .panelCountryChipActive:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.16);
+  box-shadow: 0 0 0 0.5px rgba(16, 185, 129, 0.48);
   color: #fff;
 }
 .panelCountryCode {
   font-family: "SF Mono", ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
 }
 .panelCountryChipActive .panelCountryCode {
-  color: rgba(110, 231, 183, 1);
+  color: rgba(110, 231, 183, 0.95);
 }
 .panelCountryLabel {
   flex: 1;

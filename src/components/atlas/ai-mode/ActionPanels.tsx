@@ -37,10 +37,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Briefcase,
-  UserPlus,
-  PenLine,
-  Scale,
   Search,
   X,
   Loader2,
@@ -58,33 +54,43 @@ export type ActionPanelKey = "matters" | "invite" | "memo" | "compare";
 
 interface PanelShellProps {
   open: boolean;
-  title: string;
-  subtitle?: string;
-  icon: typeof Briefcase;
+  /** Tag-style label rendered uppercase with wide tracking, matching
+   *  the right-side ContextPanel header pattern (KONTEXT · Atlas-
+   *  Transparenz). Keep this short — one or two words. */
+  tag: string;
+  /** Subtitle next to the tag, rendered small and muted. Optional. */
+  sub?: string;
+  /** Optional explanatory text below the header bar — for panels
+   *  that need a sentence of orientation (Memo composer, Compare). */
+  intro?: string;
   onClose: () => void;
   children: ReactNode;
 }
 
 // ─── Shared shell ─────────────────────────────────────────────────
 //
-// Animation: slide-in from the left edge with opacity ramp. Anchored
-// fixed to the viewport so it sits above the 3D entity. The
-// AIMode-side .entityShifted class handles the orb offset to keep
-// the visual centre of mass between the left panel and the right
-// ContextPanel.
+// Visual language matched to ContextPanel on the right side: glass
+// surface (translucent, blurred, faint inset highlight), tag-style
+// uppercase header, subdued body type. No icon in the header — the
+// quick-action buttons below the search bar carry the iconography;
+// re-stating it in the panel header would be duplicate noise.
+//
+// Animation: slide-in from the left with a slight scale-up so the
+// panel "lands" rather than slips. Mirrors the right ContextPanel's
+// own opening curve.
 
 function ActionPanelShell({
   open,
-  title,
-  subtitle,
-  icon: Icon,
+  tag,
+  sub,
+  intro,
   onClose,
   children,
 }: PanelShellProps) {
   // ESC closes — listen at window level so we catch it even if focus
-  // is somewhere else (e.g. the AI input). AIMode.tsx ALSO has an ESC
-  // handler that closes the whole overlay; we register first via
-  // panel-side state so our handler runs and stops propagation.
+  // is somewhere else (e.g. the AI input). Capture phase + stopProp
+  // prevents AIMode's window-level ESC handler from also firing and
+  // closing the entire overlay.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -104,25 +110,18 @@ function ActionPanelShell({
       aria-hidden={!open}
     >
       <header className={styles.actionPanelHeader}>
-        <div className={styles.actionPanelTitleRow}>
-          <Icon
-            size={14}
-            strokeWidth={1.7}
-            className={styles.actionPanelIcon}
-            aria-hidden="true"
-          />
-          <h2 className={styles.actionPanelTitle}>{title}</h2>
-        </div>
-        {subtitle && <p className={styles.actionPanelSubtitle}>{subtitle}</p>}
+        <span className={styles.actionPanelTag}>{tag}</span>
+        {sub && <span className={styles.actionPanelSub}>{sub}</span>}
         <button
           type="button"
           aria-label="Schließen"
           onClick={onClose}
           className={styles.actionPanelClose}
         >
-          <X size={14} strokeWidth={1.7} />
+          <X size={12} strokeWidth={1.7} />
         </button>
       </header>
+      {intro && <p className={styles.actionPanelIntro}>{intro}</p>}
       <div className={styles.actionPanelBody}>{children}</div>
     </aside>
   );
@@ -194,6 +193,18 @@ export function MattersPanel({
     };
   }, [open]);
 
+  // Friendly DE error fallback — the upstream API returns english
+  // "Failed to load matters" on 500. Replace with a user-friendly DE
+  // sentence; the original message survives in the network log for
+  // debugging without surfacing to the lawyer.
+  const displayError = useMemo(() => {
+    if (!error) return null;
+    if (/failed to load|fehler beim laden/i.test(error)) {
+      return "Mandate konnten nicht geladen werden.";
+    }
+    return error;
+  }, [error]);
+
   const filtered = useMemo(() => {
     if (!matters) return null;
     const q = query.trim().toLowerCase();
@@ -210,9 +221,8 @@ export function MattersPanel({
   return (
     <ActionPanelShell
       open={open}
-      icon={Briefcase}
-      title="Mandate"
-      subtitle={
+      tag="Mandate"
+      sub={
         matters
           ? `${matters.length} insgesamt · ${
               matters.filter((m) => m.status === "ACTIVE").length
@@ -240,12 +250,12 @@ export function MattersPanel({
       </div>
 
       {/* States */}
-      {error && (
+      {displayError && (
         <div className={styles.panelError}>
-          <AlertTriangle size={11} strokeWidth={1.7} /> {error}
+          <AlertTriangle size={11} strokeWidth={1.7} /> {displayError}
         </div>
       )}
-      {!error && !matters && (
+      {!displayError && !matters && (
         <div className={styles.panelLoading}>Lade Mandate…</div>
       )}
       {matters && filtered && filtered.length === 0 && (
@@ -434,9 +444,9 @@ export function InvitePanel({
   return (
     <ActionPanelShell
       open={open}
-      icon={UserPlus}
-      title="Mandant einladen"
-      subtitle="Voreingestellt: lesender Zugriff auf Übersicht + Dokumente. Scope kannst du später verfeinern."
+      tag="Einladen"
+      sub="Mandant + Mandat"
+      intro="Voreingestellt: lesender Zugriff auf Übersicht + Dokumente. Scope kannst du später verfeinern."
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className={styles.panelForm}>
@@ -625,9 +635,9 @@ export function MemoPanel({
   return (
     <ActionPanelShell
       open={open}
-      icon={PenLine}
-      title="Memo entwerfen"
-      subtitle="Atlas verfasst — du gibst Titel, Kontext und Schwerpunkte vor."
+      tag="Memo"
+      sub="Atlas verfasst"
+      intro="Du gibst Titel, Kontext und Schwerpunkte vor — Atlas formt das Memo."
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className={styles.panelForm}>
@@ -744,9 +754,9 @@ export function ComparePanel({
   return (
     <ActionPanelShell
       open={open}
-      icon={Scale}
-      title="Jurisdiktionen vergleichen"
-      subtitle="Mindestens zwei Jurisdiktionen auswählen, dann Thema beschreiben."
+      tag="Vergleich"
+      sub="Jurisdiktionen"
+      intro="Mindestens zwei Jurisdiktionen auswählen, dann Thema beschreiben."
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className={styles.panelForm}>

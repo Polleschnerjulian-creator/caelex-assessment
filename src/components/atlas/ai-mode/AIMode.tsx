@@ -916,7 +916,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
       <div
         className={`${styles.entityWrapper} ${
           hasConversation ? styles.entityMinimized : ""
-        } ${activePanel && !hasConversation ? styles.entityShifted : ""}`}
+        }`}
       >
         <AtlasEntity
           mode={mode}
