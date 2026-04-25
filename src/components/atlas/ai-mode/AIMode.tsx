@@ -51,6 +51,7 @@ import {
   ComparePanel,
   type ActionPanelKey,
 } from "./ActionPanels";
+import { MorningBrief } from "./MorningBrief";
 import styles from "./ai-mode.module.css";
 
 // ─── Config ────────────────────────────────────────────────────────────
@@ -1165,6 +1166,16 @@ export function AIMode({ open, onClose }: AIModeProps) {
             </div>
           ))}
         </div>
+
+        {/* Phase 1 — Welcome-Back Briefing. Sits above the suggestion
+            chips, hidden once the user starts typing or a conversation
+            begins. Component is self-contained: fetches its own data,
+            handles its own dismissal via sessionStorage. */}
+        <MorningBrief
+          hidden={suggestionsHidden}
+          onClick={() => playSound("click")}
+          onCtaClose={onClose}
+        />
 
         {/* Suggestions */}
         <div

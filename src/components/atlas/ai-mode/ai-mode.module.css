@@ -2157,3 +2157,137 @@
     max-width: 260px;
   }
 }
+
+/* ── Phase 1 — Morning Brief ───────────────────────────────────────
+   Atlas's first-contact-of-the-day chip. Sits above the suggestion
+   row, fades in ~700ms after mount so the orb's entrance animation
+   gets the spotlight first. Hidden once the user starts typing or
+   a conversation begins (handled by the .hidden class via prop).
+
+   Visual language: glass surface (rgba(16,16,20,0.55) — matches
+   .contextPanel + .actionPanel exactly), thin hairline stroke,
+   emerald accent reserved for the sparkles icon + CTA-hover. The
+   row reads as a quiet ambient signal, not a CTA banner. */
+
+.morningBrief {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 14px;
+  padding: 6px 8px 6px 11px;
+  border-radius: 999px;
+  background: rgba(16, 16, 20, 0.55);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-size: 11.5px;
+  letter-spacing: -0.003em;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 92vw;
+  /* Hidden by default; .morningBriefVisible flips to visible. */
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition:
+    opacity 0.6s var(--ease),
+    transform 0.6s var(--ease);
+}
+.morningBriefVisible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.morningBriefIcon {
+  color: rgba(110, 231, 183, 0.85); /* emerald-300 */
+  flex-shrink: 0;
+}
+
+.morningBriefGreeting {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.morningBriefText {
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 480px;
+}
+
+.morningBriefCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 4px 9px 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  cursor: pointer;
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    color 0.18s var(--ease),
+    transform 0.15s var(--ease);
+}
+.morningBriefCta:hover {
+  background: rgba(16, 185, 129, 0.13);
+  box-shadow:
+    0 0 0 0.5px rgba(16, 185, 129, 0.4),
+    0 0 14px rgba(16, 185, 129, 0.18);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.morningBriefCta svg {
+  color: rgba(110, 231, 183, 0.85);
+  transition: color 0.18s var(--ease);
+}
+.morningBriefCta:hover svg {
+  color: rgba(110, 231, 183, 1);
+}
+
+.morningBriefDismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.morningBriefDismiss:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Mobile: morph into a stacked column so long briefings don't push
+   the dismiss button off-screen. */
+@media (max-width: 720px) {
+  .morningBrief {
+    flex-wrap: wrap;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .morningBriefText {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
