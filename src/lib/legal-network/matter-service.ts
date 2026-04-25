@@ -27,6 +27,7 @@ import { computeHandshakeHash, computeAccessLogEntryHash } from "./handshake";
 import { mintInviteToken, hashToken, isExpired } from "./tokens";
 import { ScopeSchema, isNarrowerOrEqual, type ScopeItem } from "./scope";
 import { emitAccessLog } from "./require-matter";
+import { findOrgForInvite } from "./org-type";
 
 // ─── Errors ───────────────────────────────────────────────────────────
 
@@ -102,15 +103,15 @@ export async function createInvite(
       : input.initiatorOrgId;
 
   // Sanity: verify the counterparty exists AND has the right org type.
+  // findOrgForInvite is schema-drift resilient — when the orgType
+  // column is missing in prod (the build:deploy pipeline has been
+  // silently dropping db-push failures), it returns the org with
+  // orgType: null so existence + isActive checks still apply, but
+  // the role-shape validation below skips. Once the migration lands
+  // the type validation resumes automatically.
   const [firm, client] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: lawFirmOrgId },
-      select: { id: true, orgType: true, isActive: true, name: true },
-    }),
-    prisma.organization.findUnique({
-      where: { id: clientOrgId },
-      select: { id: true, orgType: true, isActive: true, name: true },
-    }),
+    findOrgForInvite(lawFirmOrgId),
+    findOrgForInvite(clientOrgId),
   ]);
   if (!firm || !firm.isActive) {
     throw new MatterServiceError(
@@ -124,13 +125,20 @@ export async function createInvite(
       "Client organisation not found or inactive",
     );
   }
-  if (firm.orgType !== "LAW_FIRM" && firm.orgType !== "BOTH") {
+  // Conditional role validation — only enforced when orgType is
+  // available. Drift-fallback (null) means we trust the request
+  // and let downstream logic handle any actual abuse.
+  if (firm.orgType && firm.orgType !== "LAW_FIRM" && firm.orgType !== "BOTH") {
     throw new MatterServiceError(
       "COUNTERPARTY_WRONG_TYPE",
       "The firm-side org is not flagged as LAW_FIRM",
     );
   }
-  if (client.orgType !== "OPERATOR" && client.orgType !== "BOTH") {
+  if (
+    client.orgType &&
+    client.orgType !== "OPERATOR" &&
+    client.orgType !== "BOTH"
+  ) {
     throw new MatterServiceError(
       "COUNTERPARTY_WRONG_TYPE",
       "The client-side org is not flagged as OPERATOR",

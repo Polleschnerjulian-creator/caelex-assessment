@@ -45,20 +45,33 @@ export async function POST(
     );
   }
 
+  // Schema-drift resilience: derive actorSide from matter membership
+  // instead of organisation.orgType (column may not exist in prod
+  // yet — see src/lib/legal-network/org-type.ts for the full pattern).
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: session.user.id },
-    select: {
-      organizationId: true,
-      organization: { select: { orgType: true } },
-    },
+    select: { organizationId: true },
     orderBy: { joinedAt: "asc" },
   });
   if (!membership) {
     return NextResponse.json({ error: "No active org" }, { status: 403 });
   }
 
+  const matterSides = await prisma.legalMatter.findUnique({
+    where: { id },
+    select: { lawFirmOrgId: true, clientOrgId: true },
+  });
+  if (!matterSides) {
+    return NextResponse.json({ error: "Matter not found" }, { status: 404 });
+  }
+  if (
+    matterSides.lawFirmOrgId !== membership.organizationId &&
+    matterSides.clientOrgId !== membership.organizationId
+  ) {
+    return NextResponse.json({ error: "Not a party" }, { status: 403 });
+  }
   const actorSide: NetworkSide =
-    membership.organization.orgType === "LAW_FIRM" ? "ATLAS" : "CAELEX";
+    matterSides.lawFirmOrgId === membership.organizationId ? "ATLAS" : "CAELEX";
 
   try {
     const matter = await setMatterStatus({

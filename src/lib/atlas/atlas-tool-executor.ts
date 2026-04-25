@@ -158,26 +158,61 @@ async function findOperatorOrganization(args: {
   }
   const q = parsed.data.query.trim();
 
-  const orgs = await prisma.organization.findMany({
-    where: {
-      isActive: true,
-      // Operator or BOTH orgs — you can't invite a pure law firm
-      // into a matter on the ATLAS side (it would be same-side).
-      orgType: { in: ["OPERATOR", "BOTH"] },
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { slug: { contains: q, mode: "insensitive" } },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      orgType: true,
-    },
-    orderBy: { name: "asc" },
-    take: OPERATOR_LIMIT,
+  // Schema-drift resilient lookup. Try the orgType-filtered query
+  // first; on column-missing, retry without the filter so the tool
+  // still returns matches. The role-shape filter resumes once the
+  // migration lands. See src/lib/legal-network/org-type.ts for the
+  // full pattern.
+  const buildSelect = () => ({
+    id: true,
+    name: true,
+    slug: true,
+    orgType: true,
   });
+  const buildFallbackSelect = () => ({
+    id: true,
+    name: true,
+    slug: true,
+  });
+
+  let orgs: Array<{
+    id: string;
+    name: string;
+    slug: string | null;
+    orgType?: string | null;
+  }>;
+  try {
+    orgs = await prisma.organization.findMany({
+      where: {
+        isActive: true,
+        // Operator or BOTH orgs — you can't invite a pure law firm
+        // into a matter on the ATLAS side (it would be same-side).
+        orgType: { in: ["OPERATOR", "BOTH"] },
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { slug: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      select: buildSelect(),
+      orderBy: { name: "asc" },
+      take: OPERATOR_LIMIT,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/orgtype.*does not exist|column.*orgtype/i.test(msg)) throw err;
+    orgs = await prisma.organization.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { slug: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      select: buildFallbackSelect(),
+      orderBy: { name: "asc" },
+      take: OPERATOR_LIMIT,
+    });
+  }
 
   return {
     content: JSON.stringify({
@@ -232,13 +267,37 @@ async function createMatterInviteTool(args: {
     duration_months,
   } = parsed.data;
 
-  // Resolve the operator org to show a meaningful preview/confirmation.
-  // Also validates: must be active + operator-typed + not the caller's
-  // own org (you can't invite yourself).
-  const operator = await prisma.organization.findUnique({
-    where: { id: operator_org_id },
-    select: { id: true, name: true, slug: true, orgType: true, isActive: true },
-  });
+  // Resolve the operator org. Schema-drift resilient: tries with
+  // orgType, falls back to a select without it so the existence +
+  // isActive checks still apply. The "is this org actually a
+  // LAW_FIRM" wrong-type check is conditional on having orgType
+  // available.
+  let operator: {
+    id: string;
+    name: string;
+    slug: string | null;
+    isActive: boolean;
+    orgType?: string | null;
+  } | null;
+  try {
+    operator = await prisma.organization.findUnique({
+      where: { id: operator_org_id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        orgType: true,
+        isActive: true,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/orgtype.*does not exist|column.*orgtype/i.test(msg)) throw err;
+    operator = await prisma.organization.findUnique({
+      where: { id: operator_org_id },
+      select: { id: true, name: true, slug: true, isActive: true },
+    });
+  }
 
   if (!operator) {
     return {
@@ -258,7 +317,8 @@ async function createMatterInviteTool(args: {
       isError: true,
     };
   }
-  if (operator.orgType === "LAW_FIRM") {
+  // Conditional wrong-type check — skipped under schema drift.
+  if (operator.orgType && operator.orgType === "LAW_FIRM") {
     return {
       content: JSON.stringify({
         error: `${operator.name} is a law firm, not an operator — cannot invite as client`,

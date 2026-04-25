@@ -42,20 +42,35 @@ export async function POST(
     );
   }
 
+  // Schema-drift resilience: don't read orgType from the membership
+  // join (column may not exist in prod yet). Derive actorSide from
+  // matter membership instead — if the caller's org IS the lawFirm
+  // side of THIS matter, they're acting as ATLAS; otherwise CAELEX.
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: session.user.id },
-    select: {
-      organizationId: true,
-      organization: { select: { orgType: true } },
-    },
+    select: { organizationId: true },
     orderBy: { joinedAt: "asc" },
   });
   if (!membership) {
     return NextResponse.json({ error: "No active org" }, { status: 403 });
   }
 
+  const matterSides = await prisma.legalMatter.findUnique({
+    where: { id },
+    select: { lawFirmOrgId: true, clientOrgId: true },
+  });
+  if (!matterSides) {
+    return NextResponse.json({ error: "Matter not found" }, { status: 404 });
+  }
   const actorSide: NetworkSide =
-    membership.organization.orgType === "LAW_FIRM" ? "ATLAS" : "CAELEX";
+    matterSides.lawFirmOrgId === membership.organizationId ? "ATLAS" : "CAELEX";
+  // Sanity: caller must be a party to the matter.
+  if (
+    matterSides.lawFirmOrgId !== membership.organizationId &&
+    matterSides.clientOrgId !== membership.organizationId
+  ) {
+    return NextResponse.json({ error: "Not a party" }, { status: 403 });
+  }
 
   try {
     const matter = await revokeMatter({
