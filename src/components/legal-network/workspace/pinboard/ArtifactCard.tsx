@@ -90,6 +90,14 @@ export function ArtifactCard({
               ? FolderOpen
               : Sparkles;
 
+  // P1-Compliance · KI-VO Art. 50 Kennzeichnung. Tool-output kinds
+  // sind KI-generiert; TEXT entstand durch manuelle Kuratierung
+  // (ManualCardComposer ODER Phase-2 Pin-from-Atlas — letzteres ist
+  // eine Lawyer-Aktion und damit lawyer-authored auch wenn der Inhalt
+  // von Atlas kam). Die Kennzeichnung gilt also nur für direkte
+  // KI-Outputs.
+  const isAiGenerated = artifact.kind !== "TEXT";
+
   return (
     <article
       onMouseEnter={() => setIsHovered(true)}
@@ -111,8 +119,19 @@ export function ArtifactCard({
             <Icon size={13} strokeWidth={1.8} className="text-white/70" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[9px] tracking-[0.2em] uppercase text-white/40">
-              {labelFor(artifact.kind)}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] tracking-[0.2em] uppercase text-white/40">
+                {labelFor(artifact.kind)}
+              </span>
+              {isAiGenerated && (
+                <span
+                  title="KI-generierter Inhalt — anwaltliche Prüfung vor Verwendung beim Mandanten"
+                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] tracking-[0.1em] uppercase font-medium bg-amber-500/[0.08] text-amber-300/85 ring-1 ring-amber-500/25"
+                >
+                  <span aria-hidden="true">◆</span>
+                  KI
+                </span>
+              )}
             </div>
             <h3 className="text-[13px] font-medium text-white truncate">
               {artifact.title}

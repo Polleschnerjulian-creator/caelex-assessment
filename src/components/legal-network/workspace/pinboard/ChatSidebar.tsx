@@ -238,6 +238,22 @@ export function ChatSidebar({
             )}
           </button>
         </div>
+        {/* P1-Compliance · KI-VO Art. 50 Transparenz-Hinweis im
+            Mandat-Chat. Erinnert die Anwältin / den Anwalt vor jedem
+            Send daran, dass Atlas-Antworten anwaltlich zu prüfen sind
+            bevor sie an den Mandanten gehen. */}
+        <p className="mt-2 text-[9.5px] leading-relaxed text-white/30 text-center">
+          Atlas ist KI-Assistenz · Beratungsmittel, keine Rechtsberatung · vor
+          Verwendung beim Mandanten prüfen.{" "}
+          <a
+            href="/legal/ai-disclosure"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-dotted text-white/45 hover:text-white/80 transition"
+          >
+            Mehr
+          </a>
+        </p>
       </div>
     </aside>
   );

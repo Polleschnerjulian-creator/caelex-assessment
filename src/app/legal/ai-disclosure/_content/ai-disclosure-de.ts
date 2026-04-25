@@ -107,7 +107,74 @@ export const AI_DISCLOSURE_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "KI-generierte Inhalte auf der Plattform sind erkennbar gekennzeichnet (z.B. Astra-Chat-Oberfläche, Generate-Wasserzeichen). Wir halten die Kennzeichnungspflichten der KI-VO (Art. 50) ein, soweit sie auf uns anwendbar sind.",
+          text: 'KI-generierte Inhalte auf der Plattform sind erkennbar gekennzeichnet (z.B. Astra-Chat-Oberfläche, Generate-Wasserzeichen, Atlas-Pinboard-Karten mit „🤖 KI-generiert"-Badge). Wir halten die Kennzeichnungspflichten der KI-VO (Art. 50) ein, soweit sie auf uns anwendbar sind.',
+        },
+      ],
+    },
+    {
+      id: "a5a",
+      number: "§ 5a",
+      title:
+        "Atlas × Caelex — bilaterale Anwaltsplattform (Sonderbestimmungen)",
+      blocks: [
+        {
+          type: "p",
+          text: "Atlas ist die anwaltsseitige Oberfläche der Caelex-Plattform. Sie ermöglicht Kanzleien, im Rahmen eines durch beidseitigen Handshake autorisierten Mandats (Legal-Network-Bridge) auf compliance-bezogene Daten ihres Mandanten zuzugreifen und KI-gestützt zu beraten.",
+        },
+        {
+          type: "p",
+          text: "(1) Eingesetzte KI-Komponenten:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Atlas-AI-Chat — Claude Sonnet 4.6 für die Beratung im Mandat-Workspace, mit Tool-Use-Loop (Compliance-Übersicht abrufen, Quellensuche, Jurisdiktionen vergleichen, Memo entwerfen)",
+            "Atlas Foresight — sekundärer Claude-Call nach jeder Antwort, der 2–3 Folge-Aktionen vorschlägt (max. 400 Output-Tokens)",
+            "Atlas Personal Library Recall — Embeddings (OpenAI text-embedding-3-small @ 512 Dimensionen via Vercel AI Gateway) für die semantische Suche in der persönlichen Forschungs-Bibliothek der Anwältin / des Anwalts",
+          ],
+        },
+        {
+          type: "p",
+          text: "(2) Datenfluss zur KI: Mandantendaten werden ausschließlich im Rahmen des im Handshake festgelegten Scope-Sets verarbeitet (technisch erzwungener Need-to-know-Filter, manipulationssicheres Hash-Chain-Audit-Log). Der KI-Anbieter erhält Eingaben unter Zero-Data-Retention-Vereinbarung; keine Speicherung über die Anfrage hinaus, keine Verwendung für Modelltraining.",
+        },
+        {
+          type: "p",
+          text: '(3) Verantwortlichkeit der Anwaltschaft: Atlas-Ausgaben sind anwaltliche Hilfsmittel, keine Rechtsberatung im Sinne des RDG / der BRAO. Die Anwältin / der Anwalt prüft jede Ausgabe vor Verwendung gegenüber dem Mandanten. Atlas-generierte Memos und Vergleiche tragen ein „🤖 KI-generiert" Badge und einen Hinweis auf die Review-Pflicht.',
+        },
+      ],
+    },
+    {
+      id: "a5b",
+      number: "§ 5b",
+      title: "Risikoklassifizierung nach KI-VO (EU AI Act)",
+      blocks: [
+        {
+          type: "p",
+          text: "Wir haben die Atlas- und Caelex-KI-Komponenten gemäß Art. 6 i.V.m. Anhang III KI-VO bewertet:",
+        },
+        {
+          type: "p",
+          text: '(1) KEIN Hochrisiko-System nach Anhang III. Anhang III Nr. 8 erfasst KI-Systeme, die „Justizbehörden bei der Recherche, Auslegung und Anwendung von Rechtsvorschriften unterstützen" — also gerichtliche Anwendung. Atlas richtet sich an Anwältinnen und Anwälte als Beratungsmittel, nicht an Justizbehörden. Eine analoge Anwendung lehnen wir mit der herrschenden Auslegung ab.',
+        },
+        {
+          type: "p",
+          text: '(2) Article-6(3)-Ausnahme erfüllt. Selbst wenn Atlas teilweise unter Anhang III fiele, greifen die Ausnahmen aus Art. 6 Abs. 3 KI-VO: Atlas führt nur „begrenzte Verfahrensaufgaben" aus (Tool-Calls, Such-Aggregation), „verbessert menschliche Tätigkeit" (Memo-Entwürfe als Vorschlag) und „erkennt Muster ohne Entscheidung" (Foresight, Recall). Atlas trifft keine eigenständigen Entscheidungen mit Rechtswirkung; die Anwältin / der Anwalt entscheidet.',
+        },
+        {
+          type: "p",
+          text: "(3) KEIN Profiling natürlicher Personen. Atlas verarbeitet keine personenbezogenen Daten zur Bewertung oder Vorhersage individueller Eigenschaften.",
+        },
+        {
+          type: "p",
+          text: '(4) Transparenzpflichten nach Art. 50 KI-VO werden eingehalten: Nutzerinnen und Nutzer erkennen klar die Interaktion mit einem KI-System (Atlas-Orb-UI, „Frag Atlas"-Eingabefeld, KI-generiert-Badges auf Pinboard-Karten). KI-Ausgaben, die als Memo an Mandanten gehen können, tragen einen sichtbaren Hinweis auf den KI-Ursprung sowie die anwaltliche Review-Pflicht.',
+        },
+        {
+          type: "p",
+          text: "(5) Menschliche Aufsicht (Art. 14 KI-VO als Best-Practice trotz nicht-Hochrisiko): die Anwältin / der Anwalt kann jeden KI-Vorschlag annehmen, ablehnen oder modifizieren. Memo-Entwürfe werden nicht automatisch versendet; Foresight-Vorschläge sind ausschließlich Anzeige.",
+        },
+        {
+          type: "p",
+          text: "(6) Wir dokumentieren diese Bewertung intern und stellen sie auf Anfrage Aufsichtsbehörden bereit. Bei wesentlichen funktionalen Erweiterungen wird die Bewertung neu durchgeführt.",
         },
       ],
     },

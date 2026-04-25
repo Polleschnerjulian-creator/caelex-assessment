@@ -1355,6 +1355,24 @@ export function AIMode({ open, onClose }: AIModeProps) {
         />
       </form>
 
+      {/* P1-Compliance · KI-VO Art. 50 Transparenz-Hinweis. Persistent
+          gerendert am unteren Bildschirmrand, sichtbar in idle UND
+          aktiver Conversation. Klein gehalten — sollte den Lesefluss
+          nicht stören, aber als Erinnerung an die Review-Pflicht
+          immer präsent sein. */}
+      <div className={styles.aiDisclosure}>
+        Atlas ist eine KI-Assistenz. Beratungsmittel — keine Rechtsberatung. Vor
+        Verwendung beim Mandanten prüfen.{" "}
+        <a
+          href="/legal/ai-disclosure"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.aiDisclosureLink}
+        >
+          Mehr
+        </a>
+      </div>
+
       {/* Command palette */}
       <div
         className={`${styles.cmdPalette} ${cmdOpen ? styles.cmdPaletteOpen : ""}`}

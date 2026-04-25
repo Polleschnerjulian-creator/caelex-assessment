@@ -736,6 +736,15 @@ export function MemoPanel({
           <Sparkles size={12} strokeWidth={1.8} />
           Atlas verfasst Memo
         </button>
+
+        {/* P1-Compliance · KI-VO Art. 50 + § 43a BRAO Reminder.
+            Memo-Drafts sind KI-Output und tragen Review-Pflicht;
+            erscheinen im Pinboard mit "KI"-Badge. */}
+        <p className={styles.panelLegalNote}>
+          Atlas-generierte Memos sind anwaltliche Hilfsmittel — vor Verwendung
+          beim Mandanten zu prüfen und freizugeben (§ 43a Abs. 2 BRAO). Im
+          Pinboard kenntlich gemacht durch ein KI-Badge.
+        </p>
       </form>
     </ActionPanelShell>
   );
