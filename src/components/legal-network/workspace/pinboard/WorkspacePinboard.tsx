@@ -34,6 +34,10 @@ import {
   type ChatMessage,
   type ConversationSummary,
 } from "./ChatSidebar";
+import {
+  MatterStatusBanner,
+  shouldShowStatusBanner,
+} from "./MatterStatusBanner";
 
 interface MatterContext {
   id: string;
@@ -414,6 +418,11 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
   }
 
   // ── Empty state: no conversations → centered hero ─────────────
+  // The hero handles two scenarios via the `isActive`-aware copy
+  // inside it: ACTIVE shows the prompt input, anything else shows a
+  // status banner explaining why chat is unavailable. Both look like
+  // a hero (centered) when there are no conversations.
+  const isActive = matter.status === "ACTIVE";
   const showHero = convLoaded && conversations.length === 0;
 
   if (showHero) {
@@ -423,6 +432,7 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
         onSubmit={onHeroSubmit}
         streaming={streaming}
         matterId={matterId}
+        viewerSide="ATLAS"
       />
     );
   }
@@ -460,6 +470,20 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
         </div>
       </header>
 
+      {/* Status banner — only renders when matter is non-ACTIVE.
+          Sits above the grid so the user immediately sees why chat
+          is locked even though history is still browseable. */}
+      {!isActive && shouldShowStatusBanner(matter.status) && (
+        <div className="flex-shrink-0">
+          <MatterStatusBanner
+            status={matter.status}
+            matterId={matterId}
+            counterpartyName={matter.clientOrg.name}
+            viewerSide="ATLAS"
+          />
+        </div>
+      )}
+
       {/* Main: two-column split */}
       <div className="flex-1 min-h-0 grid grid-cols-[320px_1fr]">
         <ChatSidebar
@@ -467,7 +491,7 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
           activeId={activeId}
           messages={messages}
           draft={draft}
-          streaming={streaming}
+          streaming={streaming || !isActive}
           error={chatError}
           onSelect={setActiveId}
           onCreate={async () => {
@@ -495,18 +519,25 @@ function WorkspaceHero({
   onSubmit,
   streaming,
   matterId,
+  viewerSide,
 }: {
   matter: MatterContext;
   onSubmit: (content: string) => void | Promise<void>;
   streaming: boolean;
   matterId: string;
+  viewerSide: "ATLAS" | "CAELEX";
 }) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Active matters get the prompt input; everything else (PENDING_*,
+  // SUSPENDED, REVOKED, CLOSED) shows the status banner explaining
+  // why chat is unavailable + what the next action is.
+  const isActive = matter.status === "ACTIVE";
+
   useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
+    if (isActive) textareaRef.current?.focus();
+  }, [isActive]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -519,13 +550,15 @@ function WorkspaceHero({
 
   return (
     <div className="relative min-h-screen bg-[#050608] text-white overflow-hidden">
-      {/* Ambient background glow */}
+      {/* Ambient background glow — softer when not active so the
+          status banner gets the visual focus instead. */}
       <div className="pointer-events-none absolute inset-0">
         <div
           className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
           style={{
-            background:
-              "radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0) 60%)",
+            background: isActive
+              ? "radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0) 60%)"
+              : "radial-gradient(circle, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%)",
             filter: "blur(40px)",
           }}
         />
@@ -563,63 +596,82 @@ function WorkspaceHero({
           </span>
         </h1>
         <p className="text-[13px] text-white/45 text-center mb-8 max-w-md">
-          Stelle Claude eine Frage — jede Antwort wird auf dieses Mandat
-          zugeschnitten. Tool-Ergebnisse landen hier als Karten.
+          {isActive
+            ? "Stelle Claude eine Frage — jede Antwort wird auf dieses Mandat zugeschnitten. Tool-Ergebnisse landen hier als Karten."
+            : "Mandat ist noch nicht aktiv. Sobald freigeschaltet, kannst du hier mit Claude arbeiten."}
         </p>
 
-        {/* Input */}
-        <div className="w-full max-w-2xl">
-          <div className="relative rounded-2xl border border-white/[0.1] bg-white/[0.025] backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] focus-within:border-white/[0.22] transition">
-            <textarea
-              ref={textareaRef}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Was soll Claude zu diesem Mandat herausfinden?"
-              disabled={streaming}
-              rows={2}
-              className="w-full bg-transparent outline-none resize-none text-[14px] text-white placeholder:text-white/35 px-5 pt-4 pb-12 leading-relaxed"
+        {/* Status banner replaces input when matter is non-ACTIVE */}
+        {!isActive && shouldShowStatusBanner(matter.status) && (
+          <div className="w-full max-w-2xl">
+            <MatterStatusBanner
+              status={matter.status}
+              matterId={matterId}
+              counterpartyName={
+                viewerSide === "ATLAS"
+                  ? matter.clientOrg.name
+                  : matter.lawFirmOrg.name
+              }
+              viewerSide={viewerSide}
             />
-            <button
-              onClick={() => {
-                if (value.trim() && !streaming) onSubmit(value.trim());
-              }}
-              disabled={!value.trim() || streaming}
-              className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/90 transition"
-              title="Senden"
-            >
-              {streaming ? (
-                <Loader2 size={14} strokeWidth={2} className="animate-spin" />
-              ) : (
-                <ArrowUp size={14} strokeWidth={2.2} />
-              )}
-            </button>
-            <div className="absolute bottom-3 left-4 text-[10px] text-white/25">
-              Enter zum Senden · Shift+Enter für neue Zeile
+          </div>
+        )}
+
+        {/* Input — only when matter is ACTIVE */}
+        {isActive && (
+          <div className="w-full max-w-2xl">
+            <div className="relative rounded-2xl border border-white/[0.1] bg-white/[0.025] backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] focus-within:border-white/[0.22] transition">
+              <textarea
+                ref={textareaRef}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Was soll Claude zu diesem Mandat herausfinden?"
+                disabled={streaming}
+                rows={2}
+                className="w-full bg-transparent outline-none resize-none text-[14px] text-white placeholder:text-white/35 px-5 pt-4 pb-12 leading-relaxed"
+              />
+              <button
+                onClick={() => {
+                  if (value.trim() && !streaming) onSubmit(value.trim());
+                }}
+                disabled={!value.trim() || streaming}
+                className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/90 transition"
+                title="Senden"
+              >
+                {streaming ? (
+                  <Loader2 size={14} strokeWidth={2} className="animate-spin" />
+                ) : (
+                  <ArrowUp size={14} strokeWidth={2.2} />
+                )}
+              </button>
+              <div className="absolute bottom-3 left-4 text-[10px] text-white/25">
+                Enter zum Senden · Shift+Enter für neue Zeile
+              </div>
+            </div>
+
+            {/* Suggestions */}
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
+              {HERO_SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => {
+                    setValue(s);
+                    textareaRef.current?.focus();
+                  }}
+                  className="text-[11px] px-3 py-1.5 rounded-full border border-white/[0.08] text-white/55 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition"
+                >
+                  <Sparkles
+                    size={9}
+                    strokeWidth={1.8}
+                    className="inline mr-1.5 -mt-0.5"
+                  />
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Suggestions */}
-          <div className="mt-4 flex flex-wrap gap-2 justify-center">
-            {HERO_SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => {
-                  setValue(s);
-                  textareaRef.current?.focus();
-                }}
-                className="text-[11px] px-3 py-1.5 rounded-full border border-white/[0.08] text-white/55 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition"
-              >
-                <Sparkles
-                  size={9}
-                  strokeWidth={1.8}
-                  className="inline mr-1.5 -mt-0.5"
-                />
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
