@@ -201,6 +201,62 @@ export function MatterDetail({
         </div>
       )}
 
+      {/* P2-Compliance · Operator-side AI-Disclosure-Banner. Persistent
+          visible across all matter states; explains that the matter
+          surface contains AI-generated content from the law firm's
+          Atlas tooling. Helps the operator interpret the bilateral
+          flow and provides a clear path to the AI transparency
+          policy (KI-VO Art. 50). */}
+      {viewerSide === "CAELEX" && (
+        <div className="rounded-xl bg-amber-500/[0.04] dark:bg-amber-500/[0.06] border border-amber-500/20 dark:border-amber-500/25 px-4 py-3 flex items-start gap-3">
+          <div className="text-[10px] tracking-[0.2em] uppercase font-semibold text-amber-700 dark:text-amber-300/80 flex-shrink-0 pt-0.5">
+            KI
+          </div>
+          <div className="flex-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
+            Diese Mandatsoberfläche enthält KI-generierte Inhalte. Die Kanzlei
+            nutzt Atlas (Anthropic Claude via EU-US DPF + Standardvertrags-
+            klauseln + Zero-Retention) als Beratungsmittel. Atlas-generierte
+            Memos und Vergleiche tragen ein „KI"-Badge.{" "}
+            <a
+              href="/legal/ai-disclosure"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-dotted hover:text-amber-700 dark:hover:text-amber-100"
+            >
+              KI-Transparenz-Erklärung
+            </a>
+            .
+          </div>
+        </div>
+      )}
+
+      {/* P2-Compliance · § 50 BRAO Notice (operator-seitig, nur nach
+          Revoke). Erklärt dass die Anwaltskanzlei eigene Akten
+          behalten darf — das ist die rechtliche Realität jeder
+          Mandatsbeendigung in DE und sollte für Operator transparent
+          sein. */}
+      {viewerSide === "CAELEX" && matter.status === "REVOKED" && (
+        <div className="rounded-xl bg-slate-100/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 px-4 py-3 flex items-start gap-3">
+          <div className="text-[10px] tracking-[0.2em] uppercase font-semibold text-slate-500 flex-shrink-0 pt-0.5">
+            § 50 BRAO
+          </div>
+          <div className="flex-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+            Mandat ist widerrufen. Die Kanzlei kann gemäß § 50 BRAO eigene Akten
+            und Werkergebnisse behalten — auch über das Mandatsende hinaus. Auf
+            deinen Wunsch hin kann die Kanzlei den Mandats-Bezug ihrer privaten
+            Bibliothekseinträge lösen (DSGVO Art. 17 ↔ § 50 BRAO Spannungsfeld).
+            Wende dich an die Kanzlei oder an{" "}
+            <a
+              href="mailto:privacy@caelex.eu"
+              className="underline decoration-dotted hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              privacy@caelex.eu
+            </a>
+            .
+          </div>
+        </div>
+      )}
+
       {/* Scope */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
         <h2 className="text-[10px] font-semibold tracking-[0.22em] uppercase text-slate-500 mb-3">

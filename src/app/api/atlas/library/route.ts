@@ -220,7 +220,35 @@ export async function GET(request: NextRequest) {
     const items = hasMore ? entries.slice(0, limit) : entries;
     const nextCursor = hasMore ? items[items.length - 1].id : null;
 
-    return NextResponse.json({ entries: items, nextCursor });
+    // P2-Compliance · enrich entries with matter status. Allows the
+    // library UI to flag entries linked to revoked / suspended matters
+    // so the lawyer can decide whether to keep, decouple, or delete
+    // (§ 50 BRAO Aktenführung vs DSGVO Art. 17 Löschpflicht).
+    const matterIds = Array.from(
+      new Set(items.map((e) => e.sourceMatterId).filter(Boolean) as string[]),
+    );
+    const matterStatuses =
+      matterIds.length > 0
+        ? await prisma.legalMatter
+            .findMany({
+              where: { id: { in: matterIds } },
+              select: { id: true, status: true, name: true },
+            })
+            .catch(() => [])
+        : [];
+    const statusByMatter = new Map(
+      matterStatuses.map((m) => [m.id, { status: m.status, name: m.name }]),
+    );
+    const itemsEnriched = items.map((e) => {
+      const ms = e.sourceMatterId ? statusByMatter.get(e.sourceMatterId) : null;
+      return {
+        ...e,
+        matterStatus: ms?.status ?? null,
+        matterName: ms?.name ?? null,
+      };
+    });
+
+    return NextResponse.json({ entries: itemsEnriched, nextCursor });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
     const errName = err instanceof Error ? err.name : typeof err;

@@ -21,6 +21,7 @@ import {
   Loader2,
   Bookmark,
   ArrowLeft,
+  Unlink,
 } from "lucide-react";
 import Link from "next/link";
 import { AtlasMarkdown } from "@/components/atlas/ai-mode/AtlasMarkdown";
@@ -32,6 +33,8 @@ interface ResearchEntry {
   query: string | null;
   sourceKind: string | null;
   sourceMatterId: string | null;
+  matterStatus: string | null;
+  matterName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,6 +126,72 @@ export function LibraryView() {
     }
   }, []);
 
+  // P2-Compliance · Decouple a single entry from its matter. § 50 BRAO
+  // lets the lawyer keep the work-product; this only severs the
+  // matter pointer (sourceMatterId → null, sourceKind → MANUAL) so
+  // the entry survives in the personal library independent of the
+  // (possibly revoked) mandate.
+  const handleDecouple = useCallback(async (id: string) => {
+    try {
+      const res = await fetch("/api/atlas/library/decouple-matter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entryId: id }),
+      });
+      if (!res.ok) return;
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                sourceMatterId: null,
+                matterStatus: null,
+                matterName: null,
+                sourceKind: "MANUAL",
+              }
+            : e,
+        ),
+      );
+    } catch {
+      // Silent — caller can retry.
+    }
+  }, []);
+
+  // Bulk-decouple every entry tied to revoked matters. One click,
+  // many cleanups; common after a matter wave gets terminated.
+  const handleBulkDecoupleRevoked = useCallback(async () => {
+    const revokedIds = Array.from(
+      new Set(
+        entries
+          .filter((e) => e.matterStatus === "REVOKED" && e.sourceMatterId)
+          .map((e) => e.sourceMatterId as string),
+      ),
+    );
+    if (revokedIds.length === 0) return;
+    await Promise.all(
+      revokedIds.map((mid) =>
+        fetch("/api/atlas/library/decouple-matter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matterId: mid }),
+        }).catch(() => null),
+      ),
+    );
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.matterStatus === "REVOKED"
+          ? {
+              ...e,
+              sourceMatterId: null,
+              matterStatus: null,
+              matterName: null,
+              sourceKind: "MANUAL",
+            }
+          : e,
+      ),
+    );
+  }, [entries]);
+
   const empty = !loading && entries.length === 0 && !notProvisioned;
 
   const stats = useMemo(() => {
@@ -130,7 +199,10 @@ export function LibraryView() {
     const matterChats = entries.filter(
       (e) => e.sourceKind === "MATTER_CHAT",
     ).length;
-    return { total, matterChats };
+    const fromRevokedMatters = entries.filter(
+      (e) => e.matterStatus === "REVOKED",
+    ).length;
+    return { total, matterChats, fromRevokedMatters };
   }, [entries]);
 
   return (
@@ -209,6 +281,44 @@ export function LibraryView() {
           </div>
         )}
 
+        {/* P2-Compliance · Bulk-decouple banner. Surfaces when the
+            lawyer has library entries linked to revoked matters.
+            DSGVO Art. 17 + § 50 BRAO Konflikt: das Werk-Produkt
+            bleibt; der Mandat-Bezug kann optional gelöst werden. */}
+        {!loading && stats.fromRevokedMatters > 0 && (
+          <div className="mb-4 px-3 py-2.5 rounded-lg bg-amber-500/[0.05] ring-1 ring-amber-500/20 text-[11.5px] leading-relaxed flex items-start gap-3">
+            <AlertTriangle
+              size={12}
+              strokeWidth={1.7}
+              className="text-amber-300/85 flex-shrink-0 mt-0.5"
+            />
+            <div className="flex-1 text-amber-200/90">
+              <div className="font-medium mb-0.5">
+                {stats.fromRevokedMatters}{" "}
+                {stats.fromRevokedMatters === 1 ? "Eintrag" : "Einträge"} aus
+                widerrufenen Mandaten
+              </div>
+              <div className="text-amber-200/70">
+                Die Inhalte bleiben dir als Werkergebnis erhalten (§ 50 BRAO).
+                Auf Wunsch des ehemaligen Mandanten kannst du den Mandats- Bezug
+                lösen — der Eintrag wird zu einer freistehenden Notiz.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleBulkDecoupleRevoked}
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md
+                         text-[10.5px] font-medium tracking-tight
+                         bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/35
+                         hover:bg-amber-500/25 hover:text-white
+                         transition-all duration-150"
+            >
+              <Unlink size={10} strokeWidth={1.8} />
+              Alle Bezüge lösen
+            </button>
+          </div>
+        )}
+
         {loading && (
           <div className="py-12 text-center text-[11.5px] text-white/35 animate-pulse">
             Lade Bibliothek…
@@ -251,7 +361,7 @@ export function LibraryView() {
                     <h2 className="text-[13.5px] font-semibold text-white/90 leading-tight tracking-tight">
                       {entry.title}
                     </h2>
-                    <div className="mt-1 flex items-center gap-1.5 text-[10px] tracking-[0.14em] uppercase text-white/35">
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] tracking-[0.14em] uppercase text-white/35 flex-wrap">
                       <time dateTime={entry.createdAt}>
                         {formatDate(entry.createdAt)}
                       </time>
@@ -264,30 +374,57 @@ export function LibraryView() {
                           </span>
                         </>
                       )}
+                      {entry.matterStatus === "REVOKED" && (
+                        <>
+                          <span>·</span>
+                          <span
+                            className="inline-flex items-center gap-1 normal-case tracking-normal text-amber-300/85"
+                            title="Mandat wurde vom Mandanten widerrufen"
+                          >
+                            <AlertTriangle size={9} strokeWidth={1.8} />
+                            Mandat widerrufen
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(entry.id)}
-                    disabled={deleting === entry.id}
-                    title="Eintrag löschen"
-                    className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md
-                               bg-white/[0.02] text-white/40 ring-1 ring-white/[0.06]
-                               opacity-0 group-hover:opacity-100
-                               hover:bg-red-500/12 hover:text-red-300 hover:ring-red-500/30
-                               transition-all duration-150"
-                    aria-label="Eintrag löschen"
-                  >
-                    {deleting === entry.id ? (
-                      <Loader2
-                        size={11}
-                        strokeWidth={2}
-                        className="animate-spin"
-                      />
-                    ) : (
-                      <Trash2 size={11} strokeWidth={1.7} />
+                  <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {entry.matterStatus === "REVOKED" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDecouple(entry.id)}
+                        title="Mandats-Bezug lösen — Eintrag bleibt als freistehende Notiz erhalten"
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md
+                                   bg-white/[0.02] text-white/40 ring-1 ring-white/[0.06]
+                                   hover:bg-amber-500/15 hover:text-amber-200 hover:ring-amber-500/30
+                                   transition-all duration-150"
+                        aria-label="Mandats-Bezug lösen"
+                      >
+                        <Unlink size={11} strokeWidth={1.7} />
+                      </button>
                     )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(entry.id)}
+                      disabled={deleting === entry.id}
+                      title="Eintrag löschen"
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-md
+                                 bg-white/[0.02] text-white/40 ring-1 ring-white/[0.06]
+                                 hover:bg-red-500/12 hover:text-red-300 hover:ring-red-500/30
+                                 transition-all duration-150"
+                      aria-label="Eintrag löschen"
+                    >
+                      {deleting === entry.id ? (
+                        <Loader2
+                          size={11}
+                          strokeWidth={2}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Trash2 size={11} strokeWidth={1.7} />
+                      )}
+                    </button>
+                  </div>
                 </header>
 
                 {entry.query && (
