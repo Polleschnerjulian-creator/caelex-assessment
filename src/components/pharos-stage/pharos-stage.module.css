@@ -1,0 +1,701 @@
+/* ==============================================================
+   Pharos stage — full-viewport dark scene with warm amber light
+   bars and a low atmospheric glow on the horizon. Mirrors the
+   ATLAS-login stage pattern but uses a regulatory-amber palette
+   (Pharos = "Leuchtfeuer") instead of cool white.
+   ============================================================== */
+
+.root {
+  --black: #000000;
+  --ink: #08070a;
+  --amber-soft: rgba(245, 158, 11, 0.85);
+  --amber-glow: rgba(245, 158, 11, 0.25);
+  --amber-deep: #b45309;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --text: #f5f5f4;
+  --text-mute: rgba(245, 245, 244, 0.55);
+  --text-dim: rgba(245, 245, 244, 0.35);
+  --card-bg: rgba(10, 8, 12, 0.62);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", "Inter", system-ui, sans-serif;
+
+  font-family: var(--font-sans);
+  color: var(--text);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Warm amber atmosphere — sits low on the horizon like a lighthouse
+   beam catching low cloud. Anchored at 80% from top so the headline
+   sits just above the glow. */
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 100% 60% at 50% 100%,
+      rgba(245, 158, 11, 0.22) 0%,
+      rgba(180, 83, 9, 0.12) 18%,
+      rgba(120, 53, 15, 0.05) 38%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 140% 100% at 20% 110%,
+      #1a1612 0%,
+      #110d0e 28%,
+      #0a0708 55%,
+      var(--ink) 80%,
+      var(--black) 100%
+    );
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      1px 1px at 12% 20%,
+      rgba(255, 255, 255, 0.7),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 37% 11%,
+      rgba(255, 255, 255, 0.45),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.2px 1.2px at 58% 25%,
+      rgba(255, 255, 255, 0.75),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 72% 8%,
+      rgba(255, 255, 255, 0.4),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 85% 18%,
+      rgba(255, 255, 255, 0.55),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 93% 35%,
+      rgba(255, 255, 255, 0.45),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.2px 1.2px at 8% 40%,
+      rgba(255, 255, 255, 0.6),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 22% 55%,
+      rgba(255, 255, 255, 0.3),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 45% 42%,
+      rgba(255, 255, 255, 0.5),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 65% 48%,
+      rgba(255, 255, 255, 0.4),
+      transparent 55%
+    ),
+    radial-gradient(
+      1px 1px at 88% 55%,
+      rgba(255, 255, 255, 0.6),
+      transparent 55%
+    );
+  opacity: 0.55;
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 82%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 82%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.bar {
+  position: absolute;
+  width: var(--w, 1.5px);
+  height: var(--h, 40%);
+  top: var(--t, 30%);
+  left: var(--l, 0%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(245, 158, 11, 0.06) 12%,
+    rgba(252, 211, 77, 0.92) 50%,
+    rgba(245, 158, 11, 0.06) 88%,
+    transparent 100%
+  );
+  filter: blur(0.4px);
+  box-shadow:
+    0 0 10px 1px rgba(245, 158, 11, 0.32),
+    0 0 28px 3px rgba(245, 158, 11, 0.12);
+  opacity: 0;
+  transform-origin: center center;
+  animation:
+    barLife var(--life, 10s) ease-in-out var(--delay, 0s) infinite,
+    barMotion var(--dur, 5s) ease-in-out var(--delay, 0s) infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes barLife {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  8% {
+    opacity: calc(var(--o, 0.5) * 0.35);
+  }
+  20% {
+    opacity: var(--o, 0.5);
+  }
+  45% {
+    opacity: calc(var(--o, 0.5) * 0.5);
+  }
+  65% {
+    opacity: var(--o, 0.5);
+  }
+  92% {
+    opacity: calc(var(--o, 0.5) * 0.2);
+  }
+}
+
+@keyframes barMotion {
+  0%,
+  100% {
+    transform: scaleY(0.7);
+  }
+  30% {
+    transform: scaleY(1.15);
+  }
+  55% {
+    transform: scaleY(0.85);
+  }
+  80% {
+    transform: scaleY(1.2);
+  }
+}
+
+.slats {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0) 60px,
+      rgba(255, 255, 255, 0.025) 60px,
+      rgba(255, 255, 255, 0.025) 120px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0) 59px,
+      rgba(245, 158, 11, 0.07) 60px,
+      rgba(255, 255, 255, 0) 61px
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* Subtle horizon line — the lighthouse needs a sea-level reference */
+.horizon {
+  position: absolute;
+  bottom: 18%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(245, 158, 11, 0.18) 30%,
+    rgba(245, 158, 11, 0.32) 50%,
+    rgba(245, 158, 11, 0.18) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 85% at 50% 55%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================================
+   Foreground content
+   ============================================================ */
+.content {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 40px 48px;
+}
+
+.brandLockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  justify-self: start;
+  line-height: 1;
+  opacity: 0.92;
+  transition: opacity 0.15s ease;
+}
+.brandLockup:hover {
+  opacity: 1;
+}
+.beacon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #fcd34d 0%, #f59e0b 50%, #b45309 100%);
+  box-shadow:
+    0 0 18px rgba(245, 158, 11, 0.55),
+    0 0 2px rgba(252, 211, 77, 0.9) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #451a03;
+}
+.brandWord {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.brandSep {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 0 4px;
+}
+.brandSub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.center {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 60px 0;
+}
+
+.headline {
+  max-width: 560px;
+}
+.headlineKicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(252, 211, 77, 0.78);
+  margin: 0 0 24px;
+}
+.headline h1 {
+  font-weight: 300;
+  font-size: clamp(46px, 6.4vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0 0 22px 0;
+  color: var(--text);
+}
+.headline h1 em {
+  font-style: normal;
+  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 60%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 400;
+}
+.headline p {
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin: 0;
+  max-width: 480px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 36px;
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+.card h2 {
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+  color: var(--text);
+}
+.kicker {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================================
+   Form fields (used on /pharos-login)
+   ============================================================ */
+.field {
+  margin-bottom: 14px;
+}
+.fieldLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  letter-spacing: -0.005em;
+  color: var(--text-mute);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.fieldLabel a {
+  color: var(--text-mute);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(255, 255, 255, 0.18);
+  font-weight: 500;
+}
+.fieldLabel a:hover {
+  color: var(--text);
+  text-decoration-color: rgba(255, 255, 255, 0.7);
+}
+.field input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.field input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+.field input:focus {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.03);
+}
+
+.passwordWrap {
+  position: relative;
+}
+.passwordWrap button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+.passwordWrap button:hover {
+  color: var(--text-mute);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: 13px;
+  color: #fecaca;
+}
+.errorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(69, 26, 3, 0.2);
+  border-top-color: rgba(69, 26, 3, 0.75);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  color: #451a03;
+  border: 1px solid rgba(245, 158, 11, 0.7);
+  border-radius: 10px;
+  padding: 13px 18px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 0.08s ease,
+    background 0.12s ease,
+    opacity 0.12s ease,
+    box-shadow 0.12s ease;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.18);
+}
+.btn:hover {
+  background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 100%);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.32);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.idCard {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.idCardLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 0 0 4px;
+}
+.idCardName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+}
+.idCardEmail {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin: 2px 0 0;
+}
+
+.footnote {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 18px;
+  line-height: 1.55;
+}
+.footnote a {
+  color: rgba(252, 211, 77, 0.85);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(245, 158, 11, 0.4);
+}
+.footnote a:hover {
+  color: #fcd34d;
+}
+
+.signOutLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 8px 0;
+  transition: color 0.15s ease;
+}
+.signOutLink:hover {
+  color: var(--text-mute);
+}
+
+.productLockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text);
+}
+.productName {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.productAttribution {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+}
+
+@media (max-width: 960px) {
+  .content {
+    padding: 28px 24px;
+  }
+  .center {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px 0;
+  }
+  .headline h1 {
+    font-size: clamp(40px, 11vw, 64px);
+  }
+  .card {
+    padding: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}

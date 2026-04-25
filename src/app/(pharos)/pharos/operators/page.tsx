@@ -111,7 +111,8 @@ async function loadRoster(authorityProfileId: string): Promise<OperatorRow[]> {
 
 export default async function PharosOperatorsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login?callbackUrl=%2Fpharos%2Foperators");
+  if (!session?.user?.id)
+    redirect("/pharos-login?callbackUrl=%2Fpharos%2Foperators");
 
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: session.user.id },

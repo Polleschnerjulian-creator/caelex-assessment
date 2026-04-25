@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function PharosNewOversightPage() {
   const session = await auth();
   if (!session?.user?.id)
-    redirect("/login?callbackUrl=%2Fpharos%2Foversights%2Fnew");
+    redirect("/pharos-login?callbackUrl=%2Fpharos%2Foversights%2Fnew");
 
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: session.user.id },

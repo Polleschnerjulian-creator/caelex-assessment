@@ -32,7 +32,7 @@ export default async function PharosLayout({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login?callbackUrl=%2Fpharos");
+    redirect("/pharos-login?callbackUrl=%2Fpharos");
   }
 
   // Get caller's org and role. Pharos is gated to AUTHORITY orgs.
@@ -53,7 +53,7 @@ export default async function PharosLayout({
   });
 
   if (!membership || !membership.organization.isActive) {
-    redirect("/login?callbackUrl=%2Fpharos");
+    redirect("/pharos-login?callbackUrl=%2Fpharos");
   }
 
   if (membership.organization.orgType !== "AUTHORITY") {

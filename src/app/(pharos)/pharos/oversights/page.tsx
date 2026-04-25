@@ -27,7 +27,7 @@ const STATUS_GROUPS = [
 
 export default async function PharosOversightsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login?callbackUrl=%2Fpharos");
+  if (!session?.user?.id) redirect("/pharos-login?callbackUrl=%2Fpharos");
 
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: session.user.id },

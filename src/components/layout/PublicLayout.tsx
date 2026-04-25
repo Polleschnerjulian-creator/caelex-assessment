@@ -9,6 +9,7 @@ const EXCLUDED_ROUTES = [
   "/dashboard",
   "/assure",
   "/atlas",
+  "/pharos",
   "/login",
   "/signup",
   "/assessment",
