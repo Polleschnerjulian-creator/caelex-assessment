@@ -18,6 +18,7 @@ import { redirect } from "next/navigation";
 import { Lightbulb, LogOut } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ensurePharosPreviewSetup } from "@/lib/pharos/preview-mode";
 import { LightBars } from "@/components/pharos-stage/LightBars";
 import styles from "@/components/pharos-stage/pharos-stage.module.css";
 
@@ -35,6 +36,11 @@ export default async function PharosNoAccessPage() {
   if (!session?.user?.id) {
     redirect("/pharos-login?callbackUrl=%2Fpharos");
   }
+
+  // Preview-Mode hook (env: PHAROS_OPEN_PREVIEW=1) — auto-attach the
+  // visitor to a demo AUTHORITY org. No-op when the flag is unset,
+  // so this line stays in until prod.
+  await ensurePharosPreviewSetup(session.user.id);
 
   // Re-check active AUTHORITY-membership so a user who got attached
   // to an authority org between the redirect and this page load is
