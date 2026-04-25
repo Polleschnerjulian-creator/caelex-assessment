@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -36,16 +36,23 @@ import {
   Globe2,
   FolderOpen,
   AlertTriangle,
+  Download,
+  Loader2,
 } from "lucide-react";
 import type { ArtifactKind, PinboardArtifact } from "./ArtifactCard";
 
 interface ArtifactDetailDrawerProps {
   artifact: PinboardArtifact | null;
+  /** Matter id is needed for the matter-scoped document download flow.
+   *  Could be undefined for legacy callers but in practice the
+   *  Pinboard always passes it. */
+  matterId?: string;
   onClose: () => void;
 }
 
 export function ArtifactDetailDrawer({
   artifact,
+  matterId,
   onClose,
 }: ArtifactDetailDrawerProps) {
   // ESC closes
@@ -124,7 +131,7 @@ export function ArtifactDetailDrawer({
             <ComparisonFull payload={artifact.payload} />
           )}
           {artifact.kind === "DOCUMENT_REFERENCE" && (
-            <DocumentsFull payload={artifact.payload} />
+            <DocumentsFull payload={artifact.payload} matterId={matterId} />
           )}
           {artifact.kind === "TEXT" && <TextFull payload={artifact.payload} />}
         </div>
@@ -828,7 +835,13 @@ interface DocumentsFullPayload {
   documents?: DocumentDetail[];
 }
 
-function DocumentsFull({ payload }: { payload: Record<string, unknown> }) {
+function DocumentsFull({
+  payload,
+  matterId,
+}: {
+  payload: Record<string, unknown>;
+  matterId?: string;
+}) {
   const p = payload as DocumentsFullPayload;
   const docs = p.documents ?? [];
 
@@ -869,7 +882,7 @@ function DocumentsFull({ payload }: { payload: Record<string, unknown> }) {
       {/* Document list */}
       <div className="space-y-2">
         {docs.map((d) => (
-          <DocumentRow key={d.id} doc={d} />
+          <DocumentRow key={d.id} doc={d} matterId={matterId} />
         ))}
       </div>
 
@@ -887,7 +900,13 @@ function DocumentsFull({ payload }: { payload: Record<string, unknown> }) {
   );
 }
 
-function DocumentRow({ doc }: { doc: DocumentDetail }) {
+function DocumentRow({
+  doc,
+  matterId,
+}: {
+  doc: DocumentDetail;
+  matterId?: string;
+}) {
   const expiringSoon =
     doc.expiryDate &&
     !doc.isExpired &&
@@ -898,6 +917,45 @@ function DocumentRow({ doc }: { doc: DocumentDetail }) {
     : expiringSoon
       ? "border-l-amber-500/30"
       : "border-l-transparent";
+
+  // Download flow: hits the matter-scoped endpoint, gets a presigned
+  // R2 URL with 5-min TTL, opens in a new tab. The endpoint emits
+  // both an EXPORT_DOCUMENT entry on the matter hash-chain AND a
+  // documentAccessLog row, so the operator can trace the download
+  // from either audit view.
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function handleDownload() {
+    if (!matterId || downloading) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const res = await fetch(
+        `/api/network/matter/${matterId}/documents/${doc.id}/download`,
+        { cache: "no-store" },
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Surface the typed code if the server provided one — gives
+        // the user actionable signal (e.g. "Scope amendment needed").
+        const msg =
+          json.code === "SCOPE_INSUFFICIENT"
+            ? "Kein EXPORT-Scope auf DOCUMENTS — Erweiterung anfragen."
+            : json.code === "ACCESS_LEVEL_FORBIDDEN"
+              ? "Klassifizierung verbietet cross-org Download."
+              : (json.error ?? "Download fehlgeschlagen");
+        setDownloadError(msg);
+        return;
+      }
+      // Open in a new tab — same-tab would replace the workspace.
+      window.open(json.downloadUrl as string, "_blank", "noopener");
+    } catch (err) {
+      setDownloadError((err as Error).message);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <div
@@ -920,7 +978,28 @@ function DocumentRow({ doc }: { doc: DocumentDetail }) {
                 {doc.fileName}
               </div>
             </div>
-            <StatusPill status={doc.status} />
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <StatusPill status={doc.status} />
+              {matterId && (
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="ml-1 p-1 rounded-md text-white/55 hover:text-white hover:bg-white/[0.06] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Herunterladen (presigned 5-min URL)"
+                  aria-label="Dokument herunterladen"
+                >
+                  {downloading ? (
+                    <Loader2
+                      size={11}
+                      strokeWidth={2}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Download size={11} strokeWidth={1.8} />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Meta row */}
@@ -996,6 +1075,13 @@ function DocumentRow({ doc }: { doc: DocumentDetail }) {
             <div className="text-[10px] text-amber-400 inline-flex items-center gap-1 mt-0.5">
               <AlertTriangle size={9} strokeWidth={1.8} />
               Dokument ist abgelaufen — eventuell nicht mehr gültig
+            </div>
+          )}
+
+          {downloadError && (
+            <div className="text-[10px] text-red-400 inline-flex items-center gap-1 mt-1">
+              <AlertTriangle size={9} strokeWidth={1.8} />
+              {downloadError}
             </div>
           )}
         </div>

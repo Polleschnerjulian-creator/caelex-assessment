@@ -238,6 +238,7 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
 
         <ArtifactDetailDrawer
           artifact={detail}
+          matterId={matterId}
           onClose={() => setDetail(null)}
         />
       </>
