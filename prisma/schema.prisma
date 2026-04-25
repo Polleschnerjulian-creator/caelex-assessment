@@ -2651,6 +2651,9 @@ model Organization {
   orgType                OrganizationType   @default(OPERATOR)
   legalMattersAsFirm     LegalMatter[]      @relation("LegalMatterFirm")
   legalMattersAsClient   LegalMatter[]      @relation("LegalMatterClient")
+  // Pharos — bilateral authority oversight (siehe docs/PHAROS-CONCEPT.md)
+  authorityProfile       AuthorityProfile?  // 1:1 wenn orgType=AUTHORITY
+  oversightsAsOperator   OversightRelationship[] @relation("OversightOperator")
 
   // Context Omnipresence: provenance & signed snapshots
   derivationTraces DerivationTrace[] // Per-field provenance chain (append-only)
@@ -8635,6 +8638,7 @@ model PasswordResetToken {
 enum OrganizationType {
   OPERATOR // default — uses Caelex for compliance
   LAW_FIRM // uses Atlas to represent operator clients
+  AUTHORITY // Pharos — regulator / supervisory authority (BAFA, BNetzA, BMWK, BSI, BMVg, ESA-Liaison, EU Commission)
   BOTH // rare; e.g. firm with in-house satellite subsidiary
 }
 
@@ -8964,4 +8968,188 @@ model LegalMatterAccessLog {
   matter LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
 
   @@index([matterId, createdAt])
+}
+
+// ─── PHAROS — Behörden-seitige Aufsichts-Plattform ─────────────────
+//
+// Drittes Pillar des Caelex-Ökosystems (siehe docs/PHAROS-VISION.md +
+// PHAROS-CONCEPT.md). Behörden beaufsichtigen Operatoren via einem
+// Bilateral-Handshake der dem Mandat-Handshake (Atlas) ähnelt, aber
+// mit einer entscheidenden konzeptuellen Erweiterung: dem Mandatory
+// Disclosure Floor (MDF). Operatoren können MDF-Daten nicht
+// verweigern — Behörden definieren minimum was sie gesetzlich sehen
+// müssen. Voluntary Disclosure (VDF) bleibt operatorseitig flexibel.
+
+/// Behörden-spezifisches Profil. 1:1 zu Organization wenn orgType=AUTHORITY.
+/// Trägt Behörden-Metadaten (Jurisdiktion, Behördentyp, Aufsichtsbereich)
+/// + die kryptografischen Signing-Keys für Public Attestations (Phase P4).
+model AuthorityProfile {
+  id             String  @id @default(cuid())
+  organizationId String  @unique
+
+  // Behörden-Identität
+  authorityType   AuthorityType
+  jurisdiction    String // ISO country code: "DE", "FR", "EU", "NATO"
+  /// Welche Scope-Kategorien beaufsichtigt diese Behörde?
+  /// z.B. BNetzA: ["SPECTRUM"], BSI: ["INCIDENTS","COMPLIANCE_ASSESSMENTS"]
+  /// Stored as Json array of ScopeCategory strings (validated app-side).
+  oversightCategories Json
+
+  // Public-Kontakt
+  contactEmail   String
+  publicWebsite  String?
+  legalReference String? // z.B. "§ 5 BWRG i.V.m. RfPlanV"
+
+  // Kryptografisches Signing (Phase P4 — public attestations)
+  publicSigningKey String? // base64 ed25519 public key
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  initiatedOversights    OversightRelationship[]
+
+  @@index([authorityType])
+  @@index([jurisdiction])
+}
+
+enum AuthorityType {
+  BAFA // Bundesamt für Wirtschaft und Ausfuhrkontrolle
+  BNETZA // Bundesnetzagentur
+  BMWK // Bundesministerium für Wirtschaft und Klimaschutz
+  BMVG // Bundesministerium der Verteidigung
+  BSI // Bundesamt für Sicherheit in der Informationstechnik
+  BAFIN // Bundesanstalt für Finanzdienstleistungsaufsicht
+  ESA_LIAISON // ESA Member-State Liaison
+  EU_COMMISSION // EU DG DEFIS / DG GROW / DG CNECT
+  NATO_NCIA // NATO Communications and Information Agency
+  EU_MEMBER_STATE // generische EU-MS-Behörde
+  OTHER
+}
+
+/// Bilateraler Aufsichts-Handshake zwischen einer Behörde und einem
+/// Operator. Variante des LegalMatter-Pattern, aber mit asymmetrischer
+/// Macht-Verteilung: die Behörde initiiert (nicht-verhandelbarer MDF),
+/// der Operator akzeptiert (kann VDF amenden, kann MDF nicht reduzieren).
+model OversightRelationship {
+  id String @id @default(cuid())
+
+  authorityProfileId String
+  operatorOrgId      String
+
+  // Identifikation
+  oversightTitle     String // human-readable: "BWRG-Aufsicht 2026"
+  oversightReference String? // Behörden-Aktenzeichen, z.B. "BAFA-12345"
+  legalReference     String // gesetzliche Grundlage, z.B. "§ 5 BWRG"
+
+  // Scope-Definition
+  /// Mandatory Disclosure Floor — was operator gesetzlich offenlegen MUSS.
+  /// Stored as Array<ScopeItem> JSON, immutable nach Accept.
+  mandatoryDisclosure Json
+  /// Voluntary Disclosure Floor — zusätzlich freigegeben.
+  /// Operator kann nach Accept anpassen (subject to oversight policy).
+  voluntaryDisclosure Json
+
+  // Status + Lifecycle
+  status      OversightStatus
+  initiatedBy String // userId (authority-side)
+  initiatedAt DateTime  @default(now())
+  acceptedAt  DateTime?
+  acceptedBy  String? // userId (operator-side)
+  endedAt     DateTime?
+  endedBy     String?
+  endReason   String?
+
+  // Conflict / Dispute (when operator contests MDF)
+  disputedAt    DateTime?
+  disputeReason String?
+
+  // Effective window (12 months default, renewable)
+  effectiveFrom  DateTime?
+  effectiveUntil DateTime?
+
+  // Hash-chain root — sha256 of canonical handshake bundle.
+  // Same pattern as LegalMatter.handshakeHash.
+  handshakeHash String
+
+  // Acceptance token (one-time, hashed) — operator clicks /network/pharos-accept/[token]
+  acceptanceTokenHash String?  @unique
+  acceptanceTokenExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorityProfile AuthorityProfile     @relation(fields: [authorityProfileId], references: [id], onDelete: Cascade)
+  operatorOrg      Organization         @relation("OversightOperator", fields: [operatorOrgId], references: [id], onDelete: Cascade)
+  accessLogs       OversightAccessLog[]
+
+  @@unique([authorityProfileId, operatorOrgId, oversightReference])
+  @@index([authorityProfileId, status])
+  @@index([operatorOrgId, status])
+  @@index([effectiveUntil])
+}
+
+enum OversightStatus {
+  PENDING_OPERATOR_ACCEPT // Behörde hat initiiert, Operator muss akzeptieren
+  ACTIVE // Aufsicht läuft
+  SUSPENDED // temporär pausiert (Behörden-side, z.B. ruhendes Verfahren)
+  CLOSED // normal beendet (Frist abgelaufen, Sektor-Wechsel)
+  REVOKED // außerordentlich beendet (Lizenz entzogen, Misuse)
+  DISPUTED // Operator widerspricht der MDF — Eskalations-Pfad
+}
+
+/// Hash-chain Audit-Log für Oversight-Beziehungen. Identisches Pattern
+/// wie LegalMatterAccessLog. Jeder Behörden-Zugriff auf Operator-Daten
+/// wird hier signiert protokolliert; der Operator sieht das in seinem
+/// eigenen Caelex-Dashboard. Tamper-evident via SHA-256 chain rooted
+/// in OversightRelationship.handshakeHash.
+model OversightAccessLog {
+  id            String @id @default(cuid())
+  oversightId   String
+
+  // Wer
+  actorUserId String? // null wenn System-Aktion (z.B. Cron)
+  actorOrgId  String  // immer authority-side für reads, operator-side für consent-actions
+
+  // Was
+  action       OversightAccessAction
+  resourceType String // Prisma model name, z.B. "CybersecurityAssessment"
+  resourceId   String?
+
+  // Authorisations-Trace
+  matterScope String // welche Scope-Kategorie autorisierte den Zugriff (z.B. "DOCUMENTS")
+  context     Json? // arbitrary metadata (e.g. file name, summary action)
+
+  // Request-Fingerprint
+  ipAddress String?
+  userAgent String?
+
+  // Tamper-evident hash chain
+  previousHash String?
+  entryHash    String
+
+  createdAt DateTime @default(now())
+
+  oversight OversightRelationship @relation(fields: [oversightId], references: [id], onDelete: Cascade)
+
+  @@index([oversightId, createdAt])
+}
+
+enum OversightAccessAction {
+  READ_COMPLIANCE_HEATMAP
+  READ_ASSESSMENT
+  READ_AUTHORIZATION
+  READ_DOCUMENT
+  READ_INCIDENT
+  READ_TIMELINE
+  EXPORT_COMPLIANCE_PACKAGE
+  AI_SCREEN
+  AI_ANOMALY_SCAN
+  OVERSIGHT_INITIATED
+  OVERSIGHT_ACCEPTED
+  OVERSIGHT_DISPUTED
+  OVERSIGHT_SUSPENDED
+  OVERSIGHT_RESUMED
+  OVERSIGHT_CLOSED
+  OVERSIGHT_REVOKED
 }
