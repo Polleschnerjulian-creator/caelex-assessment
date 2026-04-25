@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -35,12 +35,17 @@ import {
   recallLibrary,
   formatRecallForSystemPrompt,
 } from "@/lib/atlas/library-recall";
+import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120; // tool-use loops may take longer
 
-const MODEL = "claude-sonnet-4-6";
+// Phase A1 (EU-Bedrock migration): the model identifier comes from
+// buildAnthropicClient() — gateway-prefixed when AI_GATEWAY_API_KEY is
+// set, plain Anthropic id otherwise. Same upstream model, the helper
+// picks the right naming convention per routing path.
+
 const MAX_TOKENS = 2000;
 const TEMPERATURE = 0.5;
 const HISTORY_LIMIT = 40; // messages from DB sent to Claude per turn
@@ -129,14 +134,14 @@ export async function POST(
     );
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    logger.error("Matter chat: ANTHROPIC_API_KEY missing");
+  const setup = buildAnthropicClient();
+  if (!setup) {
     return NextResponse.json(
       { error: "AI assistant not configured" },
       { status: 503 },
     );
   }
+  const MODEL = setup.model;
 
   // Persist the user message FIRST so even if the stream fails the
   // user's input is recorded.
@@ -214,7 +219,7 @@ export async function POST(
     ? `${baseSystemPrompt}\n${recallSnippet}`
     : baseSystemPrompt;
 
-  const anthropic = new Anthropic({ apiKey });
+  const anthropic = setup.client;
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({

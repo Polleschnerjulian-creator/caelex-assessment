@@ -21,7 +21,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
@@ -30,14 +30,20 @@ import { logger } from "@/lib/logger";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { formatAtlasToolInput } from "@/lib/atlas/tool-input-display";
+import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120; // tool-use loops may take longer
 
 // ─── Config ──────────────────────────────────────────────────────────
+//
+// Phase A1 (EU-Bedrock migration): the model identifier is provided by
+// buildAnthropicClient() now — it picks the gateway-prefixed form when
+// AI_GATEWAY_API_KEY is set ("anthropic/claude-sonnet-4.6") OR the
+// direct Anthropic id when ANTHROPIC_API_KEY is set
+// ("claude-sonnet-4-6"). Same upstream model, different addressing.
 
-const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 1024;
 const TEMPERATURE = 0.6;
 const MAX_TOOL_ITERATIONS = 5; // invite flow: find_org → preview → create → done
@@ -145,16 +151,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    logger.error("Atlas AI chat: ANTHROPIC_API_KEY missing");
+  const setup = buildAnthropicClient();
+  if (!setup) {
     return NextResponse.json(
       { error: "AI assistant not configured" },
       { status: 503 },
     );
   }
-
-  const anthropic = new Anthropic({ apiKey });
+  const { client: anthropic, model: MODEL } = setup;
   const encoder = new TextEncoder();
 
   // SSE stream with tool-use loop. Text deltas stream as they arrive;
