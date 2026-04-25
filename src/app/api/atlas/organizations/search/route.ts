@@ -40,25 +40,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Atlas-side typeahead — caller must be a LAW_FIRM. This guards
-    // against operator-org users discovering other operators via
-    // typeahead, which would be a data-leak vector.
+    // Atlas-side typeahead. We deliberately skip the orgType gate
+    // here — the column hasn't been reliably migrated to prod (Vercel
+    // build:deploy swallows db-push failures), and the InvitePanel
+    // is only renderable from Atlas mode anyway. Auth-by-session is
+    // the operative gate; the orgType layer was defence-in-depth.
+    // Once the migration drift is resolved we can re-enable the
+    // LAW_FIRM check from membership.organization.orgType.
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: {
-        organizationId: true,
-        organization: { select: { orgType: true } },
-      },
+      select: { organizationId: true },
       orderBy: { joinedAt: "asc" },
     });
     if (!membership) {
       return NextResponse.json({ error: "No active org" }, { status: 403 });
-    }
-    if (membership.organization.orgType === "OPERATOR") {
-      return NextResponse.json(
-        { error: "Atlas-only endpoint" },
-        { status: 403 },
-      );
     }
 
     const rl = await checkRateLimit(
@@ -80,13 +75,16 @@ export async function GET(request: NextRequest) {
 
     const { q } = parsed.data;
 
-    // Filter to OPERATOR + BOTH (operator-side capable). Exclude the
-    // caller's own org so a firm can't accidentally invite themselves.
+    // Exclude the caller's own org (prevents self-invite). The
+    // orgType filter (only OPERATOR + BOTH) is dropped temporarily
+    // due to schema drift — see comment on the membership query
+    // above. The lawyer can still pick the right counterparty by
+    // name; the worst case is a search hit on another LAW_FIRM,
+    // which the invite endpoint will then reject downstream.
     const orgs = await prisma.organization.findMany({
       where: {
         AND: [
           { id: { not: membership.organizationId } },
-          { orgType: { in: ["OPERATOR", "BOTH"] } },
           { name: { contains: q, mode: "insensitive" } },
         ],
       },

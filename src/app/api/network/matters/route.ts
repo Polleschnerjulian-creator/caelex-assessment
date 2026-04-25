@@ -25,12 +25,17 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // NOTE: deliberately do NOT include `organization.orgType` in the
+    // membership select — that column was added to schema.prisma but
+    // hasn't reliably propagated through `prisma db push` in the
+    // Vercel build pipeline (the `|| echo` swallow in build:deploy
+    // hides such failures). Reading orgType here was bringing the
+    // entire endpoint down with PrismaClientKnownRequestError. We
+    // compute callerSide from the matter data itself below — that
+    // works regardless of whether the column exists in the DB.
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: {
-        organizationId: true,
-        organization: { select: { orgType: true } },
-      },
+      select: { organizationId: true },
       orderBy: { joinedAt: "asc" },
     });
     if (!membership) {
@@ -59,9 +64,22 @@ export async function GET(_request: NextRequest) {
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
     });
 
+    // Heuristic callerSide: if the user's org appears as lawFirmOrgId
+    // in at least half their matters, treat them as ATLAS. Empty
+    // matter list defaults to ATLAS — the panel only renders for
+    // Atlas-side mode anyway, and the side doesn't influence empty-
+    // state UI. An org with type=BOTH and a mix of matters falls to
+    // whichever side is dominant — pragmatic for display purposes.
+    const lawFirmCount = matters.filter(
+      (m) => m.lawFirmOrgId === membership.organizationId,
+    ).length;
+    const callerSide =
+      matters.length === 0 || lawFirmCount * 2 >= matters.length
+        ? "ATLAS"
+        : "CAELEX";
+
     return NextResponse.json({
-      callerSide:
-        membership.organization.orgType === "LAW_FIRM" ? "ATLAS" : "CAELEX",
+      callerSide,
       matters: matters.map((m) => ({
         id: m.id,
         name: m.name,
