@@ -3,21 +3,25 @@
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
- * Pinboard — the masonry area of the matter workspace.
+ * Pinboard — the masonry area of the matter workspace. Phase B turns
+ * it from a read-only display into a workspace:
  *
- * Responsibilities:
- *   1. Fetch `/api/network/matter/:id/artifacts` on mount.
- *   2. Expose a `refresh()` ref-callable so the parent can ping it
- *      when an `artifact_created` SSE event arrives mid-stream.
- *   3. Render cards in a CSS multi-column masonry (no heavy JS lib).
- *   4. Empty-state: friendly hint when no artifacts yet.
+ *   1. Drag-and-drop reorder via @dnd-kit/sortable. Each card is its
+ *      own sortable item; on drop, an optimistic local reorder is
+ *      followed by a single PATCH /artifacts call that persists the
+ *      new positions in a transaction.
  *
- * We use native CSS `columns` instead of a JS masonry library — it's
- * cheaper, needs zero layout measurement, and is enough for ~50 cards.
- * Tradeoff: column order is top-to-bottom, left-to-right, so freshly
- * added cards don't always land at the top of the last column. Paired
- * with server-side `pinned desc, position desc` ordering this reads as
- * "pinned first, newest next" which is what lawyers actually want.
+ *   2. Click-to-detail — clicking a card (without dragging) opens
+ *      ArtifactDetailDrawer with the full payload. The 8px drag
+ *      threshold (activationConstraint) cleanly separates click vs
+ *      drag intent.
+ *
+ *   3. Manual TEXT cards via ManualCardComposer — lawyer can pin
+ *      their own notes without going through Claude.
+ *
+ * Layout switched from CSS `columns` to CSS Grid because column-flow
+ * makes DnD collision detection unstable (cards "jump" between
+ * columns mid-drag). Grid + rectSortingStrategy is rock-solid.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -30,7 +34,24 @@ import {
   useState,
 } from "react";
 import { Sparkles } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ArtifactCard, type PinboardArtifact } from "./ArtifactCard";
+import { ArtifactDetailDrawer } from "./ArtifactDetailDrawer";
+import { ManualCardComposer } from "./ManualCardComposer";
 
 export interface PinboardHandle {
   /** Re-fetch the artifact list. Called from the SSE stream parent
@@ -46,6 +67,14 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
   function Pinboard({ matterId }, ref) {
     const [artifacts, setArtifacts] = useState<PinboardArtifact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [detail, setDetail] = useState<PinboardArtifact | null>(null);
+
+    // DnD: a small drag threshold lets us cleanly distinguish a click
+    // (opens detail drawer) from a drag (starts reordering). 8px is
+    // the @dnd-kit-recommended default for this pattern.
+    const sensors = useSensors(
+      useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    );
 
     const load = useCallback(async () => {
       try {
@@ -66,10 +95,9 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
 
     useImperativeHandle(ref, () => ({ refresh: load }), [load]);
 
-    // ── Actions: pin + delete ───────────────────────────────────
+    // ── Pin/Unpin ───────────────────────────────────────────────
     const togglePin = useCallback(
       async (id: string, pinned: boolean) => {
-        // Optimistic update
         setArtifacts((prev) =>
           prev ? prev.map((a) => (a.id === id ? { ...a, pinned } : a)) : prev,
         );
@@ -83,10 +111,8 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
             },
           );
           if (!res.ok) throw new Error("Pin fehlgeschlagen");
-          // Reload to get server-authoritative order (pinned-first)
           await load();
         } catch {
-          // Revert on error
           setArtifacts((prev) =>
             prev
               ? prev.map((a) => (a.id === id ? { ...a, pinned: !pinned } : a))
@@ -97,11 +123,11 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
       [matterId, load],
     );
 
+    // ── Delete ──────────────────────────────────────────────────
     const remove = useCallback(
       async (id: string) => {
         if (!confirm("Karte entfernen?")) return;
         const snapshot = artifacts;
-        // Optimistic remove
         setArtifacts((prev) => (prev ? prev.filter((a) => a.id !== id) : prev));
         try {
           const res = await fetch(
@@ -116,12 +142,48 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
       [matterId, artifacts],
     );
 
+    // ── DnD reorder ─────────────────────────────────────────────
+    const handleDragEnd = useCallback(
+      async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id || !artifacts) return;
+
+        const oldIndex = artifacts.findIndex((a) => a.id === active.id);
+        const newIndex = artifacts.findIndex((a) => a.id === over.id);
+        if (oldIndex < 0 || newIndex < 0) return;
+
+        // Optimistic reorder
+        const reordered = arrayMove(artifacts, oldIndex, newIndex);
+        setArtifacts(reordered);
+
+        // Persist — assign new sequential positions starting at 1.
+        // Server validates ownership in a single transaction.
+        try {
+          const res = await fetch(`/api/network/matter/${matterId}/artifacts`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order: reordered.map((a, i) => ({
+                id: a.id,
+                position: i + 1,
+              })),
+            }),
+          });
+          if (!res.ok) throw new Error("Reorder fehlgeschlagen");
+        } catch {
+          // Revert to server-authoritative order
+          await load();
+        }
+      },
+      [artifacts, matterId, load],
+    );
+
+    // ── Render states ───────────────────────────────────────────
     if (error && !artifacts) {
       return (
         <div className="p-8 text-center text-sm text-red-400/80">{error}</div>
       );
     }
-
     if (!artifacts) {
       return (
         <div className="p-8 text-center text-sm text-white/35 animate-pulse">
@@ -130,42 +192,124 @@ export const Pinboard = forwardRef<PinboardHandle, PinboardProps>(
       );
     }
 
-    if (artifacts.length === 0) {
-      return <EmptyBoardHint />;
-    }
-
     return (
-      <div
-        className="
-          [column-count:1] sm:[column-count:2] xl:[column-count:3] 2xl:[column-count:4]
-          [column-gap:1rem]
-          px-6 py-6
-        "
-      >
-        {artifacts.map((a) => (
-          <div
-            key={a.id}
-            className="mb-4 break-inside-avoid [-webkit-column-break-inside:avoid]"
+      <>
+        <ManualCardComposer matterId={matterId} onCreated={load} />
+
+        {artifacts.length === 0 ? (
+          <EmptyBoardHint />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <ArtifactCard
-              artifact={a}
-              onTogglePin={togglePin}
-              onDelete={remove}
-            />
-          </div>
-        ))}
-      </div>
+            <SortableContext
+              items={artifacts.map((a) => a.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div
+                className="
+                  grid gap-4 px-6 py-6
+                  grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4
+                  auto-rows-min
+                "
+              >
+                {artifacts.map((a) => (
+                  <SortableCard
+                    key={a.id}
+                    artifact={a}
+                    onTogglePin={togglePin}
+                    onDelete={remove}
+                    onClick={() => setDetail(a)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+
+        <ArtifactDetailDrawer
+          artifact={detail}
+          onClose={() => setDetail(null)}
+        />
+      </>
     );
   },
 );
 
+// ─── Sortable wrapper ────────────────────────────────────────────────
+//
+// Wraps ArtifactCard with @dnd-kit's `useSortable` hook. Exposes the
+// drag listeners on the whole card (so the user can grab anywhere)
+// while still allowing the inner action buttons (pin/delete) and the
+// onClick→detail handler to work, thanks to:
+//   - PointerSensor activationConstraint=8px (click stays click)
+//   - stopPropagation on the action buttons (handled inside ArtifactCard)
+// The "large" widthHint spans 2 columns so memos still feel prominent.
+
+function SortableCard({
+  artifact,
+  onTogglePin,
+  onDelete,
+  onClick,
+}: {
+  artifact: PinboardArtifact;
+  onTogglePin: (id: string, pinned: boolean) => void;
+  onDelete: (id: string) => void;
+  onClick: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: artifact.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : "auto",
+  } as const;
+
+  // Wrap entire card in the sortable handle — except clicks on
+  // action buttons or links bubble up. We also forward onClick on
+  // the wrapper so a NON-dragged click opens the detail drawer.
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={(e) => {
+        // Skip click forwarding when the click came from an inline
+        // button or anchor (pin / delete / "Quelle öffnen") — those
+        // have their own handlers and shouldn't open the drawer.
+        const target = e.target as HTMLElement;
+        if (target.closest("button, a")) return;
+        onClick();
+      }}
+      className={`${
+        artifact.widthHint === "large" ? "sm:col-span-2" : ""
+      } cursor-pointer`}
+    >
+      <ArtifactCard
+        artifact={artifact}
+        onTogglePin={onTogglePin}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
 // ─── Empty state ──────────────────────────────────────────────────────
-// First-load hint: no artifacts yet. The chat on the left is the seed
-// mechanism — once Claude runs a tool, cards land here.
 
 function EmptyBoardHint() {
   return (
-    <div className="flex items-center justify-center min-h-[50vh] px-6">
+    <div className="flex items-center justify-center min-h-[40vh] px-6">
       <div className="text-center max-w-sm">
         <div className="mx-auto w-12 h-12 rounded-full bg-white/[0.03] ring-1 ring-white/[0.06] flex items-center justify-center mb-3">
           <Sparkles size={18} strokeWidth={1.5} className="text-white/45" />
@@ -173,7 +317,8 @@ function EmptyBoardHint() {
         <p className="text-sm text-white/70 mb-1">Pinboard ist leer</p>
         <p className="text-[12px] text-white/40 leading-relaxed">
           Stelle Claude links eine Frage — Compliance-Abrufe, Quellen­suchen
-          oder Memos landen hier automatisch als Karten.
+          oder Memos landen hier automatisch. Oder leg eine eigene Karte an
+          (oben).
         </p>
       </div>
     </div>
