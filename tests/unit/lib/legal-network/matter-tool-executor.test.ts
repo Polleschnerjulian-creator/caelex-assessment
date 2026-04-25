@@ -541,3 +541,268 @@ describe("persistArtifact (tool-driven)", () => {
     expect(result.artifactId).toBeUndefined();
   });
 });
+
+// ─── compare_jurisdictions ────────────────────────────────────────────
+//
+// Phase W: tests run against the REAL JURISDICTION_DATA Map (no mock).
+// That means assertions on country names + legislation match the
+// actual dataset, so a regression in the data file would fail loudly
+// here rather than ship silently. For "unknown code" tests we use
+// codes deliberately not in the dataset (XX, ZZ).
+
+describe("compare_jurisdictions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupHappyPathDefaults();
+  });
+
+  it("returns INVALID_INPUT when fewer than 2 jurisdictions supplied", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE"] },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INVALID_INPUT");
+    // No log written on validation failure
+    expect(mockedLog).not.toHaveBeenCalled();
+  });
+
+  it("returns INVALID_INPUT when more than 5 jurisdictions supplied", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: {
+        jurisdictions: ["DE", "FR", "IT", "ES", "AT", "PL"],
+      },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INVALID_INPUT");
+  });
+
+  it("happy path: 2 jurisdictions returns full payload + creates artifact", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "FR"] },
+      conversationId: "conv-1",
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(false);
+    const payload = JSON.parse(result.content);
+
+    expect(payload.jurisdictions).toHaveLength(2);
+    expect(payload.jurisdictions[0].code).toBe("DE");
+    expect(payload.jurisdictions[1].code).toBe("FR");
+    // Each entry has all the structured fields the UI relies on
+    expect(payload.jurisdictions[0]).toMatchObject({
+      code: "DE",
+      name: expect.any(String),
+      flag: expect.any(String),
+      legislation: expect.objectContaining({
+        name: expect.any(String),
+        yearEnacted: expect.any(Number),
+        status: expect.any(String),
+      }),
+      licensingAuthority: expect.objectContaining({
+        name: expect.any(String),
+        website: expect.any(String),
+      }),
+      insurance: expect.objectContaining({
+        mandatory: expect.any(Boolean),
+        liabilityRegime: expect.any(String),
+      }),
+      debris: expect.any(Object),
+      timeline: expect.any(Object),
+      euSpaceAct: expect.any(Object),
+    });
+    expect(payload.unknown).toEqual([]);
+
+    // Artifact persisted as JURISDICTION_COMPARE with widthHint=large
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kind: "JURISDICTION_COMPARE",
+          widthHint: "large",
+          conversationId: "conv-1",
+        }),
+      }),
+    );
+    expect(result.artifactId).toBe("art-new");
+  });
+
+  it("uppercases lowercase input codes", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["de", "fr"] },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(false);
+    const payload = JSON.parse(result.content);
+    expect(payload.jurisdictions.map((j: { code: string }) => j.code)).toEqual([
+      "DE",
+      "FR",
+    ]);
+  });
+
+  it("de-duplicates repeated codes while preserving order", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["FR", "DE", "FR", "DE", "IT"] },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(false);
+    const payload = JSON.parse(result.content);
+    expect(payload.jurisdictions.map((j: { code: string }) => j.code)).toEqual([
+      "FR",
+      "DE",
+      "IT",
+    ]);
+  });
+
+  it("reports unknown codes separately and still resolves valid ones", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "XX", "FR", "ZZ"] },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(false);
+    const payload = JSON.parse(result.content);
+    expect(payload.jurisdictions.map((j: { code: string }) => j.code)).toEqual([
+      "DE",
+      "FR",
+    ]);
+    expect(payload.unknown).toEqual(["XX", "ZZ"]);
+  });
+
+  it("returns INSUFFICIENT_JURISDICTIONS when fewer than 2 valid codes resolve", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      // One valid, one unknown — only DE resolves, fails the min-2 check
+      input: { jurisdictions: ["DE", "XX"] },
+      ...ACTOR,
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain("INSUFFICIENT_JURISDICTIONS");
+    expect(result.content).toContain("XX");
+    // No artifact written on insufficient-data failures
+    expect(mockedPrisma.matterArtifact.create).not.toHaveBeenCalled();
+  });
+
+  it("emits AUDIT_LOGS-scoped log (NOT a compliance scope)", async () => {
+    await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "FR"] },
+      ...ACTOR,
+    });
+
+    // Audit-only — comparing public corpus data doesn't touch
+    // matter-scoped categories like COMPLIANCE_ASSESSMENTS
+    expect(mockedLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "SUMMARY_GENERATED",
+        matterScope: "AUDIT_LOGS",
+        resourceType: "JurisdictionComparison",
+      }),
+    );
+  });
+
+  it("audit-log context includes the resolved codes + topic + unknown", async () => {
+    await executeTool({
+      name: "compare_jurisdictions",
+      input: {
+        jurisdictions: ["DE", "FR", "ZZ"],
+        topic: "licensing",
+      },
+      ...ACTOR,
+    });
+
+    expect(mockedLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: expect.objectContaining({
+          tool: "compare_jurisdictions",
+          jurisdictions: ["DE", "FR"],
+          topic: "licensing",
+          unknown: ["ZZ"],
+        }),
+      }),
+    );
+  });
+
+  it("title includes topic when supplied", async () => {
+    await executeTool({
+      name: "compare_jurisdictions",
+      input: {
+        jurisdictions: ["DE", "FR"],
+        topic: "spectrum",
+      },
+      ...ACTOR,
+    });
+
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: "DE vs. FR — spectrum",
+        }),
+      }),
+    );
+  });
+
+  it("title omits topic suffix when not supplied", async () => {
+    await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "FR", "IT"] },
+      ...ACTOR,
+    });
+
+    expect(mockedPrisma.matterArtifact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: "DE vs. FR vs. IT",
+        }),
+      }),
+    );
+  });
+
+  it("does NOT call requireActiveMatter (static data, no scope-gate)", async () => {
+    await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "FR"] },
+      ...ACTOR,
+    });
+
+    // Mirrors search_legal_sources behaviour — public corpus, no scope
+    expect(mockedRequire).not.toHaveBeenCalled();
+  });
+
+  it("topic null in payload when not supplied", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: { jurisdictions: ["DE", "FR"] },
+      ...ACTOR,
+    });
+
+    const payload = JSON.parse(result.content);
+    expect(payload.topic).toBeNull();
+  });
+
+  it("topic propagates into payload when supplied", async () => {
+    const result = await executeTool({
+      name: "compare_jurisdictions",
+      input: {
+        jurisdictions: ["DE", "FR"],
+        topic: "debris",
+      },
+      ...ACTOR,
+    });
+
+    const payload = JSON.parse(result.content);
+    expect(payload.topic).toBe("debris");
+  });
+});
