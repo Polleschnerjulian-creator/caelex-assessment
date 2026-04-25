@@ -349,6 +349,20 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
                       : m,
                   ),
                 );
+              } else if (evt.type === "foresight") {
+                // Phase 4 — Atlas Foresight. Event arrives ~1-2s after
+                // `done`, addressed by the post-done messageId. Attach
+                // suggestions to that assistant message so the chip row
+                // renders below the answer. Fire-and-forget — if the
+                // user has already navigated away, the setMessages
+                // call no-ops on a stale tree.
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === evt.messageId
+                      ? { ...m, suggestions: evt.suggestions }
+                      : m,
+                  ),
+                );
               } else if (evt.type === "error") {
                 throw new Error(evt.message ?? "Stream-Fehler");
               }
@@ -497,6 +511,7 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
           error={chatError}
           matterId={matterId}
           onArtifactCreated={() => pinboardRef.current?.refresh()}
+          onSendPrompt={(prompt) => sendMessage(prompt)}
           onSelect={setActiveId}
           onCreate={async () => {
             await createConversation();

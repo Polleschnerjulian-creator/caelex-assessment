@@ -384,6 +384,111 @@ export async function POST(
             output: totalOutputTokens,
           },
         });
+
+        // Phase 4 — Atlas Foresight. Best-effort: kick off a small
+        // Claude call asking "given this Q+A, what 2-3 concrete next
+        // steps would the lawyer take?" Emit the parsed suggestions
+        // as a `foresight` SSE event so the client can render them
+        // as action chips below the answer.
+        //
+        // Non-blocking from a UX perspective — the main answer is
+        // already painted; suggestions arrive ~1-2s later as a soft
+        // postscript. Failure modes (timeout, malformed JSON, model
+        // hiccup) silently skip the event so the message just looks
+        // normal. Never throw — this must not poison the parent stream.
+        try {
+          // Pull last user + assistant turn out of the message list
+          // for the foresight prompt context. We deliberately skip
+          // tool_result / tool_use blocks — the lawyer reads the
+          // synthesised answer, not the raw tool roundtrips.
+          const lastUserMsg = [...conversationMessages]
+            .reverse()
+            .find((m) => m.role === "user");
+          const lastUserText =
+            typeof lastUserMsg?.content === "string"
+              ? lastUserMsg.content
+              : Array.isArray(lastUserMsg?.content)
+                ? lastUserMsg.content
+                    .filter(
+                      (c): c is Anthropic.TextBlockParam => c.type === "text",
+                    )
+                    .map((c) => c.text)
+                    .join(" ")
+                : "";
+
+          if (lastUserText && accumulatedText.length > 50) {
+            const foresightResp = await anthropic.messages.create({
+              model: MODEL,
+              max_tokens: 400,
+              system:
+                "Du bist Atlas, ein juristischer KI-Assistent für eine Kanzlei. " +
+                "Der Anwalt hat gerade eine Antwort von dir erhalten. Schlage 2-3 " +
+                "konkrete nächste Aktionen vor — keine vagen Phrasen, keine " +
+                "Wiederholungen der Antwort, sondern Folgeaktionen die *zusätzlichen* " +
+                "Wert bringen (z.B. eine Frist im Mandat-Kalender notieren, einen " +
+                "spezifischen Punkt vertiefen, einen Vergleich erweitern, ein Memo " +
+                "erstellen, ein Risiko an den Mandanten kommunizieren). " +
+                "\n\nFormat: NUR JSON, kein Vorwort, kein Markdown-Codeblock:\n" +
+                '{ "suggestions": [ { "title": "Kurzer DE-Satz im Imperativ, max 70 Zeichen", "prompt": "Was Atlas als nächstes tun soll" } ] }\n' +
+                "\nMaximal 3 Vorschläge. Leeres Array wenn nichts sinnvoll passt. " +
+                "Jeder title ist auf Deutsch und beginnt mit einem Verb. Jeder prompt " +
+                "ist eine Folgefrage / Anweisung an Atlas (auch auf Deutsch).",
+              messages: [
+                {
+                  role: "user",
+                  content:
+                    `Frage des Anwalts: ${lastUserText.slice(0, 800)}\n\n` +
+                    `Atlas-Antwort: ${accumulatedText.slice(0, 2400)}\n\n` +
+                    "Welche 2-3 konkreten nächsten Aktionen wären jetzt klug?",
+                },
+              ],
+            });
+
+            const text = foresightResp.content
+              .filter((c): c is Anthropic.TextBlock => c.type === "text")
+              .map((c) => c.text)
+              .join("");
+            // Strip code fences in case Claude wraps the JSON despite
+            // the system instruction — happens ~5% of the time.
+            const cleaned = text
+              .replace(/^```(?:json)?\s*/i, "")
+              .replace(/\s*```\s*$/, "")
+              .trim();
+            const parsed = JSON.parse(cleaned) as {
+              suggestions?: Array<{ title?: unknown; prompt?: unknown }>;
+            };
+            const valid = Array.isArray(parsed.suggestions)
+              ? parsed.suggestions
+                  .filter(
+                    (s): s is { title: string; prompt: string } =>
+                      typeof s.title === "string" &&
+                      s.title.trim().length > 0 &&
+                      s.title.length <= 100 &&
+                      typeof s.prompt === "string" &&
+                      s.prompt.trim().length > 0 &&
+                      s.prompt.length <= 600,
+                  )
+                  .slice(0, 3)
+              : [];
+
+            if (valid.length > 0) {
+              send({
+                type: "foresight",
+                messageId: assistantMsg.id,
+                suggestions: valid.map((s, i) => ({
+                  id: `${assistantMsg.id}-fs-${i}`,
+                  title: s.title.trim(),
+                  prompt: s.prompt.trim(),
+                })),
+              });
+            }
+          }
+        } catch (err) {
+          // Foresight is best-effort — log + skip. Never throw.
+          logger.warn(
+            `Foresight call failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Matter chat: stream failed — ${msg}`);

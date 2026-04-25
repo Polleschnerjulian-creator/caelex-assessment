@@ -28,6 +28,8 @@ import {
   Loader2,
   Pin,
   Check as CheckIcon,
+  Sparkles,
+  ArrowUpRight,
 } from "lucide-react";
 
 export interface ConversationSummary {
@@ -47,6 +49,17 @@ export interface ToolTrace {
   inputSummary?: string;
 }
 
+/** Phase 4 — Atlas Foresight. After the main answer streams, the
+ *  server kicks off a small follow-up Claude call asking for 2-3
+ *  concrete next-step actions, then emits them via the `foresight`
+ *  SSE event. Each suggestion is a title (DE imperative) + a prompt
+ *  that gets injected + sent if the lawyer clicks the chip. */
+export interface ForesightSuggestion {
+  id: string;
+  title: string;
+  prompt: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: "USER" | "ASSISTANT" | "SYSTEM";
@@ -54,6 +67,7 @@ export interface ChatMessage {
   createdAt: string;
   streaming?: boolean;
   tools?: ToolTrace[];
+  suggestions?: ForesightSuggestion[];
 }
 
 const TOOL_LABEL: Record<string, string> = {
@@ -79,6 +93,11 @@ interface ChatSidebarProps {
   /** Called after a successful pin so the parent can refresh the
    *  pinboard. */
   onArtifactCreated?: () => void;
+  /** Phase 4 — Atlas Foresight chip click. Bypasses the draft input
+   *  and directly sends the suggested prompt as a new user message
+   *  through the existing chat pipeline. Optional — chips simply
+   *  don't render when this is undefined. */
+  onSendPrompt?: (prompt: string) => void;
   onSelect: (id: string) => void;
   onCreate: () => void;
   onDelete: (id: string) => void;
@@ -95,6 +114,7 @@ export function ChatSidebar({
   error,
   matterId,
   onArtifactCreated,
+  onSendPrompt,
   onSelect,
   onCreate,
   onDelete,
@@ -167,6 +187,7 @@ export function ChatSidebar({
             message={m}
             matterId={matterId}
             onArtifactCreated={onArtifactCreated}
+            onSendPrompt={onSendPrompt}
           />
         ))}
       </div>
@@ -300,10 +321,12 @@ function MessageRow({
   message,
   matterId,
   onArtifactCreated,
+  onSendPrompt,
 }: {
   message: ChatMessage;
   matterId?: string;
   onArtifactCreated?: () => void;
+  onSendPrompt?: (prompt: string) => void;
 }) {
   const isUser = message.role === "USER";
   // Phase 2 — Memo Live-Pinning: assistant paragraphs gain a hover-📌
@@ -390,8 +413,86 @@ function MessageRow({
                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
               )}
             </div>
+            {/* Phase 4 — Atlas Foresight chips. Render only after the
+                main answer has finished streaming AND the foresight
+                event has populated suggestions. Each chip click
+                bypasses the draft input and sends the suggested
+                prompt as a fresh user message through the existing
+                chat pipeline. */}
+            {!message.streaming &&
+              message.suggestions &&
+              message.suggestions.length > 0 &&
+              onSendPrompt && (
+                <ForesightChips
+                  suggestions={message.suggestions}
+                  onSelect={onSendPrompt}
+                />
+              )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── ForesightChips (Phase 4) ────────────────────────────────────────
+//
+// Renders 2-3 next-step suggestions below an Atlas message. Each chip
+// is a single-line action title; click sends the underlying prompt
+// through the chat pipeline as if the lawyer typed it. The opening
+// row label "Atlas schlägt vor:" anchors the chips so they read as
+// guidance, not an Atlas continuation.
+//
+// Animation: fade + slide-up on first paint. The chips arrive ~1-2s
+// after the main answer (the foresight Claude call adds that latency)
+// so the soft entrance reads as "here's a postscript", not "more
+// content arriving".
+
+function ForesightChips({
+  suggestions,
+  onSelect,
+}: {
+  suggestions: ForesightSuggestion[];
+  onSelect: (prompt: string) => void;
+}) {
+  return (
+    <div className="mt-2 pt-2 border-t border-white/[0.04] animate-in fade-in slide-in-from-bottom-1 duration-300">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <Sparkles
+          size={9}
+          strokeWidth={1.8}
+          className="text-emerald-300/80"
+          aria-hidden="true"
+        />
+        <span className="text-[9px] tracking-[0.2em] uppercase text-white/40 font-semibold">
+          Atlas schlägt vor
+        </span>
+      </div>
+      <div className="flex flex-col gap-1">
+        {suggestions.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onSelect(s.prompt)}
+            title={s.prompt}
+            className="
+              group/chip inline-flex items-center gap-1.5 self-start
+              text-left text-[11px] leading-snug
+              text-white/65 hover:text-white
+              bg-white/[0.025] hover:bg-emerald-500/10
+              ring-1 ring-white/[0.06] hover:ring-emerald-500/30
+              rounded-md px-2 py-1
+              transition-all duration-150
+            "
+          >
+            <ArrowUpRight
+              size={10}
+              strokeWidth={1.7}
+              className="text-white/35 group-hover/chip:text-emerald-300 flex-shrink-0 mt-px transition-colors"
+            />
+            <span className="line-clamp-2">{s.title}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
