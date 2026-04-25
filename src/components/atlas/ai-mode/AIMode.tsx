@@ -35,6 +35,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
+import { Briefcase, UserPlus, PenLine, Scale } from "lucide-react";
 import {
   AtlasEntity,
   type AtlasEntityHandle,
@@ -59,6 +60,50 @@ const SUGGESTIONS = [
   "Frist ITU Filing prüfen",
   "Haftung Startstaat erklären",
 ];
+
+// Phase AB — Quick Actions row beneath the pill.
+//
+// Two semantic kinds:
+//   - "navigate" → close the AI overlay and router.push(target). Used for
+//     workflows that have their own dedicated UI surface (matter list,
+//     invite flow). Fast jump out of the prompt context.
+//   - "prompt"   → setInputValue(fill) + focus the search bar. Used for
+//     workflows that ARE prompts but deserve discoverable buttons rather
+//     than being buried in the ⌘/ palette (memo drafting, jurisdiction
+//     comparison). The user still completes the thought verbally.
+//
+// Keyboard shortcuts ⌘1-⌘4 in Linear-style (no browser/OS conflicts).
+const QUICK_ACTIONS = [
+  {
+    icon: Briefcase,
+    label: "Mandate",
+    kind: "navigate" as const,
+    target: "/atlas/network",
+    kbd: "1",
+  },
+  {
+    icon: UserPlus,
+    label: "Mandant einladen",
+    kind: "navigate" as const,
+    target: "/atlas/network/invite",
+    kbd: "2",
+  },
+  {
+    icon: PenLine,
+    label: "Memo entwerfen",
+    kind: "prompt" as const,
+    fill: "Entwurf für ein Memo zu: ",
+    kbd: "3",
+  },
+  {
+    icon: Scale,
+    label: "Jurisdiktionen vergleichen",
+    kind: "prompt" as const,
+    fill: "Jurisdiktionen vergleichen — ",
+    kbd: "4",
+  },
+] as const;
+type QuickAction = (typeof QUICK_ACTIONS)[number];
 
 const COMMANDS = [
   {
@@ -205,6 +250,15 @@ export function AIMode({ open, onClose }: AIModeProps) {
   }, [mode]);
 
   // ── Keyboard shortcuts ─────────────────────────────────────
+  // ⌘K  — focus search bar
+  // ⌘/  — open command palette
+  // ⌘1..⌘4 — quick actions (Phase AB). Linear-style number shortcuts
+  //         deliberately avoid letter keys that collide with browser
+  //         (⌘N new window, ⌘I dev tools italic) or OS (⌘M minimise).
+  // The action handler is captured via a ref so this useEffect can
+  // be declared early without a circular dependency on runQuickAction
+  // (which itself depends on playSound declared further below).
+  const runQuickActionRef = useRef<((a: QuickAction) => void) | null>(null);
   useEffect(() => {
     if (!open) return;
     const handler = (e: globalThis.KeyboardEvent) => {
@@ -217,6 +271,15 @@ export function AIMode({ open, onClose }: AIModeProps) {
         e.preventDefault();
         setCmdOpen(true);
         setCmdQuery("");
+      }
+      // Quick actions — ignore when the command palette is open so
+      // ⌘1-4 don't fight palette navigation.
+      if (metaKey && !cmdOpen) {
+        const idx = ["1", "2", "3", "4"].indexOf(e.key);
+        if (idx !== -1) {
+          e.preventDefault();
+          runQuickActionRef.current?.(QUICK_ACTIONS[idx]);
+        }
       }
       if (e.key === "Escape") {
         if (cmdOpen) {
@@ -751,6 +814,38 @@ export function AIMode({ open, onClose }: AIModeProps) {
     }, 50);
   }, []);
 
+  // Quick action runner — shared by the button row AND the ⌘1-⌘4
+  // keyboard shortcuts below. Closing the overlay first matters for
+  // the "navigate" kind so the destination page mounts cleanly without
+  // the orb still occluding the layout. The 600ms delay used for
+  // tool-driven nav doesn't apply here — the user clicked, no
+  // confirmation animation needed.
+  const runQuickAction = useCallback(
+    (action: QuickAction) => {
+      playSound("click");
+      if (action.kind === "navigate") {
+        onClose();
+        router.push(action.target);
+        return;
+      }
+      // Prompt-injection: same pattern as runCmd, ensures the cursor
+      // sits at the END of the prefill so the lawyer can keep typing.
+      setInputValue(action.fill);
+      setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.setSelectionRange(
+          action.fill.length,
+          action.fill.length,
+        );
+      }, 50);
+    },
+    [onClose, playSound, router],
+  );
+  // Keep the ref-based bridge fresh — the keyboard useEffect (declared
+  // earlier in the component body) reads from this ref to fire ⌘1-4
+  // without forming a forward reference cycle.
+  runQuickActionRef.current = runQuickAction;
+
   const handleCmdKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -1088,6 +1183,39 @@ export function AIMode({ open, onClose }: AIModeProps) {
               </svg>
             </button>
           </div>
+        </div>
+
+        {/* Phase AB — Quick Actions row. Distinct from the suggestion
+            chips above (which inject example QUESTIONS) — these are
+            workflow VERBS: navigate to a matter list, fill the prompt
+            with a memo template, etc. Hidden once a conversation is
+            active or the user starts typing — the row is for the
+            empty/idle state only. */}
+        <div
+          className={`${styles.quickActions} ${
+            suggestionsHidden ? styles.quickActionsHidden : ""
+          }`}
+        >
+          {QUICK_ACTIONS.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                type="button"
+                className={styles.quickAction}
+                onClick={() => runQuickAction(action)}
+                aria-label={`${action.label} (⌘${action.kbd})`}
+              >
+                <span className={styles.quickActionIcon} aria-hidden="true">
+                  <Icon size={14} strokeWidth={1.7} />
+                </span>
+                <span>{action.label}</span>
+                <kbd className={styles.quickActionKbd} aria-hidden="true">
+                  ⌘{action.kbd}
+                </kbd>
+              </button>
+            );
+          })}
         </div>
 
         <input
