@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -26,6 +26,8 @@ import {
   ChevronDown,
   Send,
   Loader2,
+  Pin,
+  Check as CheckIcon,
 } from "lucide-react";
 
 export interface ConversationSummary {
@@ -69,6 +71,14 @@ interface ChatSidebarProps {
   draft: string;
   streaming: boolean;
   error: string | null;
+  /** Phase 2 — Memo Live-Pinning. When set, every paragraph in
+   *  ASSISTANT messages renders a hover-📌 button that pins that
+   *  paragraph to the matter pinboard as a TEXT artifact. Optional
+   *  so the component can be reused outside the workspace flow. */
+  matterId?: string;
+  /** Called after a successful pin so the parent can refresh the
+   *  pinboard. */
+  onArtifactCreated?: () => void;
   onSelect: (id: string) => void;
   onCreate: () => void;
   onDelete: (id: string) => void;
@@ -83,6 +93,8 @@ export function ChatSidebar({
   draft,
   streaming,
   error,
+  matterId,
+  onArtifactCreated,
   onSelect,
   onCreate,
   onDelete,
@@ -150,7 +162,12 @@ export function ChatSidebar({
           </div>
         )}
         {messages.map((m) => (
-          <MessageRow key={m.id} message={m} />
+          <MessageRow
+            key={m.id}
+            message={m}
+            matterId={matterId}
+            onArtifactCreated={onArtifactCreated}
+          />
         ))}
       </div>
 
@@ -279,8 +296,21 @@ function ConversationSwitcher({
 
 // ─── Single message row ──────────────────────────────────────────────
 
-function MessageRow({ message }: { message: ChatMessage }) {
+function MessageRow({
+  message,
+  matterId,
+  onArtifactCreated,
+}: {
+  message: ChatMessage;
+  matterId?: string;
+  onArtifactCreated?: () => void;
+}) {
   const isUser = message.role === "USER";
+  // Phase 2 — Memo Live-Pinning: assistant paragraphs gain a hover-📌
+  // button that pins them as TEXT artifacts. The custom `p` override
+  // below wraps each paragraph in a PinnableParagraph component which
+  // owns the per-paragraph pin state.
+  const pinEnabled = !isUser && Boolean(matterId);
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -337,7 +367,23 @@ function MessageRow({ message }: { message: ChatMessage }) {
               </div>
             )}
             <div className="markdown text-[12px] leading-relaxed">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={
+                  pinEnabled && matterId
+                    ? {
+                        p: ({ children }) => (
+                          <PinnableParagraph
+                            matterId={matterId}
+                            onPinned={onArtifactCreated}
+                          >
+                            {children}
+                          </PinnableParagraph>
+                        ),
+                      }
+                    : undefined
+                }
+              >
                 {message.content || (message.streaming ? " " : "")}
               </ReactMarkdown>
               {message.streaming && (
@@ -349,4 +395,117 @@ function MessageRow({ message }: { message: ChatMessage }) {
       </div>
     </div>
   );
+}
+
+// ─── PinnableParagraph (Phase 2 — Memo Live-Pinning) ─────────────────
+//
+// Wraps a markdown paragraph with a hover-📌 button. Click extracts
+// the paragraph's plain text, POSTs to the matter's artifacts endpoint
+// as a TEXT card, animates a brief "✓ Gepinnt" confirmation, then
+// fires onPinned() so the parent refreshes the pinboard.
+//
+// Why TEXT not MEMO: the artifacts POST endpoint is intentionally
+// scoped to TEXT (sticky-note kind). MEMO carries structured payloads
+// from tool execution with the scope-gated audit log, and exposing
+// MEMO creation client-side would bypass that gate. A pinned excerpt
+// from an Atlas answer is conceptually "lawyer-curated note" — TEXT
+// is the right kind. The card on the pinboard renders the excerpt
+// faithfully and the lawyer can re-title it if needed.
+
+function PinnableParagraph({
+  matterId,
+  onPinned,
+  children,
+}: {
+  matterId: string;
+  onPinned?: () => void;
+  children: ReactNode;
+}) {
+  const [state, setState] = useState<"idle" | "pinning" | "done" | "error">(
+    "idle",
+  );
+
+  async function handlePin(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (state !== "idle") return;
+    const text = childrenToText(children).trim();
+    if (text.length < 2) return;
+    setState("pinning");
+    try {
+      const title = text.length > 60 ? `${text.slice(0, 58).trimEnd()}…` : text;
+      const res = await fetch(`/api/network/matter/${matterId}/artifacts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content: text }),
+      });
+      if (!res.ok) {
+        setState("error");
+        setTimeout(() => setState("idle"), 1600);
+        return;
+      }
+      setState("done");
+      onPinned?.();
+      // Auto-revert after a beat so the user can pin a sibling
+      // paragraph without re-hovering the message bubble.
+      setTimeout(() => setState("idle"), 1800);
+    } catch {
+      setState("error");
+      setTimeout(() => setState("idle"), 1600);
+    }
+  }
+
+  return (
+    <div className="group relative pr-6 -mr-1 my-1">
+      <p className="m-0">{children}</p>
+      <button
+        type="button"
+        onClick={handlePin}
+        disabled={state !== "idle" && state !== "error"}
+        title="An Pinboard heften"
+        className={`
+          absolute right-0 top-0 inline-flex items-center justify-center
+          w-5 h-5 rounded-md transition-all duration-150
+          ${
+            state === "done"
+              ? "bg-emerald-500/20 text-emerald-300 opacity-100"
+              : state === "error"
+                ? "bg-red-500/15 text-red-300 opacity-100"
+                : state === "pinning"
+                  ? "bg-white/[0.08] text-white/70 opacity-100"
+                  : "bg-white/[0.04] text-white/45 opacity-0 group-hover:opacity-100 hover:bg-emerald-500/15 hover:text-emerald-300"
+          }
+        `}
+        aria-label="An Pinboard heften"
+      >
+        {state === "done" ? (
+          <CheckIcon size={11} strokeWidth={2} />
+        ) : state === "pinning" ? (
+          <Loader2 size={10} strokeWidth={2} className="animate-spin" />
+        ) : (
+          <Pin size={10} strokeWidth={1.8} />
+        )}
+      </button>
+    </div>
+  );
+}
+
+/** Recursively flatten react-markdown's parsed children into a string.
+ *  Handles plain-text leaves, numeric leaves, arrays, and nested
+ *  React elements (e.g. `<strong>`, `<em>`) by reading their children
+ *  prop. Links + code spans flatten to their visible text. */
+function childrenToText(children: ReactNode): string {
+  if (children == null || children === false) return "";
+  if (typeof children === "string") return children;
+  if (typeof children === "number") return String(children);
+  if (Array.isArray(children)) return children.map(childrenToText).join("");
+  if (
+    typeof children === "object" &&
+    children !== null &&
+    "props" in children
+  ) {
+    const props = (children as { props?: { children?: ReactNode } }).props;
+    return childrenToText(props?.children);
+  }
+  return "";
 }

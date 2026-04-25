@@ -495,6 +495,8 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
           draft={draft}
           streaming={streaming || !isActive}
           error={chatError}
+          matterId={matterId}
+          onArtifactCreated={() => pinboardRef.current?.refresh()}
           onSelect={setActiveId}
           onCreate={async () => {
             await createConversation();
