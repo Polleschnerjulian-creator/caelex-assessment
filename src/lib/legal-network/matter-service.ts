@@ -398,9 +398,18 @@ export type RejectInviteInput = InvitationLookup & {
   reason?: string;
 };
 
+export interface RejectInviteResult {
+  matter: LegalMatter;
+  /** True if the rejected invitation was an amendment counter-token
+   *  (matter was in PENDING_CONSENT after the recipient narrowed the
+   *  scope). False if it was the original invite. Caller uses this
+   *  to pick the right email-dispatch flow. */
+  wasAmendment: boolean;
+}
+
 export async function rejectInvite(
   input: RejectInviteInput,
-): Promise<LegalMatter> {
+): Promise<RejectInviteResult> {
   const invitation = await resolveInvitation(input);
   if (!invitation) {
     throw new MatterServiceError("TOKEN_INVALID", "Invitation not found");
@@ -426,7 +435,8 @@ export async function rejectInvite(
   }
 
   const now = new Date();
-  return prisma.$transaction(async (tx) => {
+  const wasAmendment = invitation.amendmentOf !== null;
+  const updated = await prisma.$transaction(async (tx) => {
     const m = await tx.legalMatter.update({
       where: { id: matter.id },
       data: {
@@ -442,6 +452,7 @@ export async function rejectInvite(
     });
     return m;
   });
+  return { matter: updated, wasAmendment };
 }
 
 // ─── Revoke / Suspend / Resume ────────────────────────────────────────

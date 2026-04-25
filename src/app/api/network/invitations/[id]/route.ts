@@ -25,7 +25,11 @@ import {
   rejectInvite,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
-import { dispatchCounterSignEmail } from "@/lib/legal-network/email-dispatch";
+import {
+  dispatchCounterSignEmail,
+  dispatchActivatedEmail,
+  dispatchRejectedEmail,
+} from "@/lib/legal-network/email-dispatch";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
 
 export const runtime = "nodejs";
@@ -85,15 +89,27 @@ export async function POST(
     }
 
     if (parsed.data.action === "REJECT") {
-      const matter = await rejectInvite({
+      const result = await rejectInvite({
         invitationId: id,
         rejectingUserId: session.user.id,
         rejectingOrgId: membership.organization.id,
         reason: parsed.data.reason,
       });
+      // Notify the other side. wasAmendment differentiates between
+      // an original-invite reject (other side waited for accept) and
+      // an amendment-counter-token reject (other side waited for
+      // counter-sign on their amendment).
+      void dispatchRejectedEmail({
+        matterId: result.matter.id,
+        actorUserId: session.user.id,
+        reason: parsed.data.reason ?? "",
+        flow: result.wasAmendment
+          ? "COUNTER_AMENDMENT_REJECTED"
+          : "ORIGINAL_REJECTED",
+      });
       return NextResponse.json({
-        matterId: matter.id,
-        status: matter.status,
+        matterId: result.matter.id,
+        status: result.matter.status,
       });
     }
 
@@ -118,6 +134,13 @@ export async function POST(
       void dispatchCounterSignEmail({
         counterInvitationId: result.counterInvitationId,
         amendingUserId: session.user.id,
+      });
+    } else if (result.matter.status === "ACTIVE") {
+      // Direct accept (or counter-sign accept) — matter is now active.
+      // Notify the other side so they know they can start working.
+      void dispatchActivatedEmail({
+        matterId: result.matter.id,
+        actorUserId: session.user.id,
       });
     }
 

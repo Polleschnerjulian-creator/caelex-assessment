@@ -553,20 +553,21 @@ describe("matter-service / rejectInvite", () => {
       buildInvitation(),
     );
     mockedPrisma.legalMatter.update.mockResolvedValue(
-      buildMatter({ status: "REVOKED" }),
+      buildMatter({ status: "CLOSED" }),
     );
     mockedPrisma.legalMatterInvitation.update.mockResolvedValue(
       buildInvitation({ consumedAt: new Date() }),
     );
 
-    const matter = await rejectInvite({
+    const result = await rejectInvite({
       rawToken: "raw-token-abc",
       rejectingUserId: "user-op-1",
       rejectingOrgId: OPERATOR_ORG.id,
       reason: "Scope too broad",
     });
 
-    expect(matter.status).toBe("REVOKED");
+    expect(result.matter.status).toBe("CLOSED");
+    expect(result.wasAmendment).toBe(false);
   });
 
   it("rejects when caller is not a party to the matter", async () => {
@@ -582,6 +583,31 @@ describe("matter-service / rejectInvite", () => {
         reason: "wrong",
       }),
     ).rejects.toMatchObject({ code: "NOT_AUTHORIZED" });
+  });
+
+  it("flags rejecting an amendment counter-invitation as wasAmendment=true", async () => {
+    mockedPrisma.legalMatterInvitation.findUnique.mockResolvedValue(
+      buildInvitation({
+        id: "inv-counter",
+        amendmentOf: "inv-1",
+        matter: buildMatter({ status: "PENDING_CONSENT" }),
+      }),
+    );
+    mockedPrisma.legalMatter.update.mockResolvedValue(
+      buildMatter({ status: "CLOSED" }),
+    );
+    mockedPrisma.legalMatterInvitation.update.mockResolvedValue(
+      buildInvitation({ consumedAt: new Date() }),
+    );
+
+    const result = await rejectInvite({
+      rawToken: "raw-token-abc",
+      rejectingUserId: "user-firm-1",
+      rejectingOrgId: FIRM_ORG.id,
+      reason: "Amendment too narrow",
+    });
+
+    expect(result.wasAmendment).toBe(true);
   });
 });
 

@@ -24,7 +24,11 @@ import {
   rejectInvite,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
-import { dispatchCounterSignEmail } from "@/lib/legal-network/email-dispatch";
+import {
+  dispatchCounterSignEmail,
+  dispatchActivatedEmail,
+  dispatchRejectedEmail,
+} from "@/lib/legal-network/email-dispatch";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
 import { logger } from "@/lib/logger";
 
@@ -78,13 +82,24 @@ export async function POST(request: NextRequest) {
 
   try {
     if (parsed.data.action === "REJECT") {
-      const matter = await rejectInvite({
+      const result = await rejectInvite({
         rawToken: parsed.data.token,
         rejectingUserId: session.user.id,
         rejectingOrgId: membership.organization.id,
         reason: parsed.data.reason,
       });
-      return NextResponse.json({ matterId: matter.id, status: matter.status });
+      void dispatchRejectedEmail({
+        matterId: result.matter.id,
+        actorUserId: session.user.id,
+        reason: parsed.data.reason ?? "",
+        flow: result.wasAmendment
+          ? "COUNTER_AMENDMENT_REJECTED"
+          : "ORIGINAL_REJECTED",
+      });
+      return NextResponse.json({
+        matterId: result.matter.id,
+        status: result.matter.status,
+      });
     }
 
     const result = await acceptInvite({
@@ -109,6 +124,14 @@ export async function POST(request: NextRequest) {
       void dispatchCounterSignEmail({
         counterInvitationId: result.counterInvitationId,
         amendingUserId: session.user.id,
+      });
+    } else if (result.matter.status === "ACTIVE") {
+      // Direct accept or counter-sign accept → matter active. Notify
+      // the OTHER side (the one who was waiting) — phase H+ adds this
+      // closing piece of the notification story.
+      void dispatchActivatedEmail({
+        matterId: result.matter.id,
+        actorUserId: session.user.id,
       });
     }
 

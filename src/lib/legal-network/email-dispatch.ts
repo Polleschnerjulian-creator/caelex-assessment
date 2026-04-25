@@ -19,6 +19,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { renderLegalMatterCounterSignEmail } from "@/lib/email/legal-matter-counter-sign";
+import { renderLegalMatterActivatedEmail } from "@/lib/email/legal-matter-activated";
+import { renderLegalMatterRejectedEmail } from "@/lib/email/legal-matter-rejected";
 import { logger } from "@/lib/logger";
 import {
   ScopeSchema,
@@ -265,5 +267,229 @@ export async function dispatchCounterSignEmail(
     const msg = err instanceof Error ? err.message : String(err);
     logger.error(`Counter-sign email dispatch failed: ${msg}`);
     // Swallow — see file header.
+  }
+}
+
+// ─── Activated dispatcher ────────────────────────────────────────────
+//
+// Fires when acceptInvite returns matter.status === "ACTIVE". Recipient
+// is always the OTHER side from the actor — the actor just clicked
+// accept and got UI feedback, the other side is the one waiting.
+
+interface DispatchActivatedInput {
+  matterId: string;
+  /** User who accepted (operator on direct accept, lawyer on counter-
+   *  sign accept). Used to find the *other* side as recipient. */
+  actorUserId: string;
+}
+
+export async function dispatchActivatedEmail(
+  input: DispatchActivatedInput,
+): Promise<void> {
+  try {
+    const matter = await prisma.legalMatter.findUnique({
+      where: { id: input.matterId },
+      include: {
+        lawFirmOrg: { select: { id: true, name: true } },
+        clientOrg: { select: { id: true, name: true } },
+      },
+    });
+    if (!matter || matter.status !== "ACTIVE") {
+      logger.warn(
+        `Activated email: matter ${input.matterId} not ACTIVE, skipping`,
+      );
+      return;
+    }
+
+    // Determine actor's side via membership lookup (same user might
+    // have changed orgs since they did the action — we use *current*
+    // membership which matches the request that fired the dispatch).
+    const actorMembership = await prisma.organizationMember.findFirst({
+      where: { userId: input.actorUserId },
+      select: { organizationId: true },
+      orderBy: { joinedAt: "asc" },
+    });
+    if (!actorMembership) return;
+
+    const actorOrgId = actorMembership.organizationId;
+    const recipientOrgId =
+      actorOrgId === matter.lawFirmOrgId
+        ? matter.clientOrgId
+        : matter.lawFirmOrgId;
+
+    // Detect counter-sign vs direct accept: if invitedFrom matches the
+    // actor's side, we're in counter-sign-accept territory (original
+    // inviter just signed off on the amendment). Otherwise it's a
+    // direct accept by the counter-party.
+    const inviterOrgId =
+      matter.invitedFrom === "ATLAS" ? matter.lawFirmOrgId : matter.clientOrgId;
+    const isCounterSign = actorOrgId === inviterOrgId;
+    const flow: "DIRECT_ACCEPT" | "COUNTER_SIGN_ACCEPT" = isCounterSign
+      ? "COUNTER_SIGN_ACCEPT"
+      : "DIRECT_ACCEPT";
+
+    const [recipient, actorOrg, actorUser] = await Promise.all([
+      findOrgOwner(recipientOrgId),
+      prisma.organization.findUnique({
+        where: { id: actorOrgId },
+        select: { name: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: input.actorUserId },
+        select: { name: true, email: true },
+      }),
+    ]);
+
+    if (!recipient) {
+      logger.warn(
+        `Activated email: no OWNER/ADMIN email for org ${recipientOrgId}`,
+      );
+      return;
+    }
+
+    const scopeParse = ScopeSchema.safeParse(matter.scope);
+    if (!scopeParse.success) {
+      logger.warn(`Activated email: scope JSON failed validation, skipping`);
+      return;
+    }
+
+    // Compute duration from the effective window (set on activation).
+    let durationMonths = 12;
+    if (matter.effectiveFrom && matter.effectiveUntil) {
+      const ms =
+        new Date(matter.effectiveUntil).getTime() -
+        new Date(matter.effectiveFrom).getTime();
+      durationMonths = Math.max(1, Math.round(ms / (30 * 24 * 3600 * 1000)));
+    }
+
+    // Workspace URL — only the law-firm side has one (Phase 5/6 ships
+    // /atlas/network/[id]/workspace). For operators we point to the
+    // matter detail page in their dashboard.
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
+      "https://www.caelex.eu";
+    const workspaceUrl =
+      recipientOrgId === matter.lawFirmOrgId
+        ? `${baseUrl}/atlas/network/${matter.id}/workspace`
+        : `${baseUrl}/dashboard/network/legal-counsel/${matter.id}`;
+
+    const { subject, html, text } = renderLegalMatterActivatedEmail({
+      actorOrgName: actorOrg?.name ?? "Andere Seite",
+      actorUserName: actorUser?.name ?? actorUser?.email ?? "Ein Mitglied",
+      recipientOrgName: recipient.orgName,
+      matterName: matter.name,
+      matterReference: matter.reference,
+      scopeSummary: humaniseScope(scopeParse.data),
+      durationMonths,
+      workspaceUrl,
+      flow,
+    });
+
+    await sendEmail({
+      to: recipient.email,
+      subject,
+      html,
+      text,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Activated email dispatch failed: ${msg}`);
+  }
+}
+
+// ─── Rejected dispatcher ────────────────────────────────────────────
+//
+// Fires after rejectInvite. Recipient is always the OTHER side. The
+// reason supplied at reject time is forwarded verbatim into the body.
+
+interface DispatchRejectedInput {
+  matterId: string;
+  actorUserId: string;
+  /** The reason the user supplied. Empty string accepted. */
+  reason: string;
+  /** What we were rejecting — original invite vs counter-amendment.
+   *  Affects the headline and copy. Caller knows from the invitation
+   *  context (amendmentOf set or not). */
+  flow: "ORIGINAL_REJECTED" | "COUNTER_AMENDMENT_REJECTED";
+}
+
+export async function dispatchRejectedEmail(
+  input: DispatchRejectedInput,
+): Promise<void> {
+  try {
+    const matter = await prisma.legalMatter.findUnique({
+      where: { id: input.matterId },
+      include: {
+        lawFirmOrg: { select: { id: true, name: true } },
+        clientOrg: { select: { id: true, name: true } },
+      },
+    });
+    if (!matter) {
+      logger.warn(`Rejected email: matter ${input.matterId} missing`);
+      return;
+    }
+
+    const actorMembership = await prisma.organizationMember.findFirst({
+      where: { userId: input.actorUserId },
+      select: { organizationId: true },
+      orderBy: { joinedAt: "asc" },
+    });
+    if (!actorMembership) return;
+
+    const actorOrgId = actorMembership.organizationId;
+    const recipientOrgId =
+      actorOrgId === matter.lawFirmOrgId
+        ? matter.clientOrgId
+        : matter.lawFirmOrgId;
+
+    const [recipient, actorOrg, actorUser] = await Promise.all([
+      findOrgOwner(recipientOrgId),
+      prisma.organization.findUnique({
+        where: { id: actorOrgId },
+        select: { name: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: input.actorUserId },
+        select: { name: true, email: true },
+      }),
+    ]);
+
+    if (!recipient) {
+      logger.warn(
+        `Rejected email: no OWNER/ADMIN email for org ${recipientOrgId}`,
+      );
+      return;
+    }
+
+    // CTA target: side-aware so the recipient lands somewhere they
+    // can actually start a new attempt.
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
+      "https://www.caelex.eu";
+    const newAttemptUrl =
+      recipientOrgId === matter.lawFirmOrgId
+        ? `${baseUrl}/atlas/network`
+        : `${baseUrl}/dashboard/network/legal-counsel`;
+
+    const { subject, html, text } = renderLegalMatterRejectedEmail({
+      rejectingOrgName: actorOrg?.name ?? "Andere Seite",
+      rejectingUserName: actorUser?.name ?? actorUser?.email ?? "Ein Mitglied",
+      recipientOrgName: recipient.orgName,
+      matterName: matter.name,
+      matterReference: matter.reference,
+      reason: input.reason,
+      newAttemptUrl,
+      flow: input.flow,
+    });
+
+    await sendEmail({
+      to: recipient.email,
+      subject,
+      html,
+      text,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Rejected email dispatch failed: ${msg}`);
   }
 }
