@@ -26,6 +26,7 @@ import {
 } from "@/lib/legal-network/matter-service";
 import { dispatchCounterSignEmail } from "@/lib/legal-network/email-dispatch";
 import { ScopeItemSchema } from "@/lib/legal-network/scope";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -132,7 +133,11 @@ export async function POST(request: NextRequest) {
         { status: statusMap[err.code] ?? 400 },
       );
     }
-    throw err;
+    // Unexpected: log + 500 instead of bubbling to Next's default
+    // handler, so production gets a tagged log entry with stack.
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Network accept POST failed: ${msg}`);
+    return NextResponse.json({ error: "Action failed" }, { status: 500 });
   }
 }
 
@@ -145,86 +150,95 @@ export async function POST(request: NextRequest) {
 const QuerySchema = z.object({ token: z.string().min(1).max(200) });
 
 export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const url = new URL(request.url);
-  const parsed = QuerySchema.safeParse({
-    token: url.searchParams.get("token"),
-  });
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Missing token" }, { status: 400 });
-  }
+    const url = new URL(request.url);
+    const parsed = QuerySchema.safeParse({
+      token: url.searchParams.get("token"),
+    });
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Missing token" }, { status: 400 });
+    }
 
-  const { hashToken, isExpired } = await import("@/lib/legal-network/tokens");
-  const tokenHash = hashToken(parsed.data.token);
-  const invitation = await prisma.legalMatterInvitation.findUnique({
-    where: { tokenHash },
-    include: {
-      matter: {
-        include: {
-          lawFirmOrg: {
-            select: { id: true, name: true, logoUrl: true, slug: true },
-          },
-          clientOrg: {
-            select: { id: true, name: true, logoUrl: true, slug: true },
+    const { hashToken, isExpired } = await import("@/lib/legal-network/tokens");
+    const tokenHash = hashToken(parsed.data.token);
+    const invitation = await prisma.legalMatterInvitation.findUnique({
+      where: { tokenHash },
+      include: {
+        matter: {
+          include: {
+            lawFirmOrg: {
+              select: { id: true, name: true, logoUrl: true, slug: true },
+            },
+            clientOrg: {
+              select: { id: true, name: true, logoUrl: true, slug: true },
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!invitation) {
-    return NextResponse.json(
-      { error: "Invitation not found" },
-      { status: 404 },
-    );
-  }
-  if (invitation.consumedAt) {
-    return NextResponse.json(
-      { error: "Invitation already used", consumedAt: invitation.consumedAt },
-      { status: 410 },
-    );
-  }
-  if (isExpired(invitation.expiresAt)) {
-    return NextResponse.json(
-      { error: "Invitation expired", expiresAt: invitation.expiresAt },
-      { status: 410 },
-    );
-  }
+    if (!invitation) {
+      return NextResponse.json(
+        { error: "Invitation not found" },
+        { status: 404 },
+      );
+    }
+    if (invitation.consumedAt) {
+      return NextResponse.json(
+        { error: "Invitation already used", consumedAt: invitation.consumedAt },
+        { status: 410 },
+      );
+    }
+    if (isExpired(invitation.expiresAt)) {
+      return NextResponse.json(
+        { error: "Invitation expired", expiresAt: invitation.expiresAt },
+        { status: 410 },
+      );
+    }
 
-  // Also confirm the viewing user's org is the one expected to accept.
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId: session.user.id },
-    select: { organizationId: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  const expectedAcceptorOrgId =
-    invitation.matter.invitedFrom === "ATLAS"
-      ? invitation.matter.clientOrgId
-      : invitation.matter.lawFirmOrgId;
-  if (!membership || membership.organizationId !== expectedAcceptorOrgId) {
+    // Also confirm the viewing user's org is the one expected to accept.
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      select: { organizationId: true },
+      orderBy: { joinedAt: "asc" },
+    });
+    const expectedAcceptorOrgId =
+      invitation.matter.invitedFrom === "ATLAS"
+        ? invitation.matter.clientOrgId
+        : invitation.matter.lawFirmOrgId;
+    if (!membership || membership.organizationId !== expectedAcceptorOrgId) {
+      return NextResponse.json(
+        { error: "This invitation is for a different organisation" },
+        { status: 403 },
+      );
+    }
+
+    return NextResponse.json({
+      matter: {
+        id: invitation.matter.id,
+        name: invitation.matter.name,
+        reference: invitation.matter.reference,
+        description: invitation.matter.description,
+        invitedFrom: invitation.matter.invitedFrom,
+        status: invitation.matter.status,
+      },
+      lawFirm: invitation.matter.lawFirmOrg,
+      client: invitation.matter.clientOrg,
+      proposedScope: invitation.proposedScope,
+      proposedDurationMonths: invitation.proposedDurationMonths,
+      expiresAt: invitation.expiresAt,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Network accept GET (preview) failed: ${msg}`);
     return NextResponse.json(
-      { error: "This invitation is for a different organisation" },
-      { status: 403 },
+      { error: "Failed to load invitation preview" },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json({
-    matter: {
-      id: invitation.matter.id,
-      name: invitation.matter.name,
-      reference: invitation.matter.reference,
-      description: invitation.matter.description,
-      invitedFrom: invitation.matter.invitedFrom,
-      status: invitation.matter.status,
-    },
-    lawFirm: invitation.matter.lawFirmOrg,
-    client: invitation.matter.clientOrg,
-    proposedScope: invitation.proposedScope,
-    proposedDurationMonths: invitation.proposedDurationMonths,
-    expiresAt: invitation.expiresAt,
-  });
 }
