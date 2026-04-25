@@ -66,6 +66,7 @@ model User {
   complianceSnapshots      ComplianceSnapshot[] // Digital Twin: daily compliance snapshots
   whatIfScenarios          WhatIfScenario[] // Digital Twin: saved what-if scenarios
   atlasBookmarks           AtlasBookmark[] // Atlas: per-user bookmarks
+  atlasResearchEntries     AtlasResearchEntry[] // Atlas: personal research library (Phase 5)
   ncaDocuments             NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages           NCADocPackage[] // Generate 2.0: NCA submission packages
   // Assure: created share links and DD packages
@@ -8385,6 +8386,51 @@ enum AtlasBookmarkType {
   source
   jurisdiction
   authority
+}
+
+/// Phase 5 — Personal Research Library. A lawyer-saved snapshot of an
+/// Atlas answer (or any other markdown content) that lives in their
+/// own private library independent of any single matter. Saved entries
+/// can be re-read, searched, and (Phase 5+) referenced by Atlas in
+/// future conversations as "you've researched this before…" context.
+///
+/// Conceptually distinct from AtlasBookmark which points at corpus
+/// items (sources, jurisdictions, authorities) — research entries
+/// carry full text content that the lawyer curated.
+model AtlasResearchEntry {
+  id     String @id @default(cuid())
+  userId String
+
+  /// User-curated title. Defaults to the first ~80 chars of content
+  /// at save time; the lawyer can edit later.
+  title String
+
+  /// The full saved content (typically an Atlas answer in Markdown).
+  /// Citations stay as plain text — they're re-detected at render
+  /// time via the regex parser in @/lib/atlas/citations.
+  content String @db.Text
+
+  /// Optional: the user question that produced this answer. Useful
+  /// context for future re-reads.
+  query String? @db.Text
+
+  /// Provenance — where this entry came from. Free-form string so we
+  /// don't lock the enum down before we know the full source list.
+  /// Common values: "ATLAS_IDLE", "MATTER_CHAT", "MANUAL".
+  sourceKind String?
+
+  /// If saved from a matter conversation, link back so the lawyer
+  /// can find the entry by matter context. Optional + nullable —
+  /// research entries don't have to be matter-scoped.
+  sourceMatterId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, sourceMatterId])
 }
 
 // ─── ATLAS Curated Updates (admin → users) ─────────────────────────

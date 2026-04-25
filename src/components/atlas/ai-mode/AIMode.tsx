@@ -52,6 +52,7 @@ import {
   type ActionPanelKey,
 } from "./ActionPanels";
 import { MorningBrief } from "./MorningBrief";
+import { LibrarySaveButton } from "./LibrarySaveButton";
 import styles from "./ai-mode.module.css";
 
 // ─── Config ────────────────────────────────────────────────────────────
@@ -1077,62 +1078,91 @@ export function AIMode({ open, onClose }: AIModeProps) {
         ref={conversationRef}
         className={`${styles.conversation} ${hasConversation ? styles.conversationActive : ""}`}
       >
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
-          >
-            {/* Tool-use transparency chips — rendered above the message
+        {messages.map((m, mi) => {
+          // Phase 5 — pull the most recent prior USER message to hand
+          // to the Library save button as `query` provenance.
+          let priorUserText: string | undefined;
+          if (m.role === "atlas") {
+            for (let j = mi - 1; j >= 0; j--) {
+              if (messages[j].role === "user") {
+                priorUserText = messages[j].text;
+                break;
+              }
+            }
+          }
+          return (
+            <div
+              key={m.id}
+              className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
+            >
+              {/* Tool-use transparency chips — rendered above the message
                 text so users see what Atlas actually did (searches,
                 navigations). Same pattern as ContextPanel's data-source
                 chips, but scoped to this turn. */}
-            {m.role === "atlas" && m.tools && m.tools.length > 0 && (
-              <div className={styles.toolChips}>
-                {m.tools.map((t) => (
-                  <span
-                    key={t.id}
-                    className={`${styles.toolChip} ${
-                      t.isError
-                        ? styles.toolChipError
-                        : t.navigate
-                          ? styles.toolChipNavigate
-                          : t.completed
-                            ? styles.toolChipDone
-                            : styles.toolChipPending
-                    }`}
-                  >
-                    <span className={styles.toolChipIcon}>
-                      {t.isError
-                        ? "⚠"
-                        : t.navigate
-                          ? "→"
-                          : t.completed
-                            ? "✓"
-                            : "•"}
-                    </span>
-                    <span>{TOOL_LABEL[t.name] ?? t.name}</span>
-                    {t.inputSummary && (
-                      <span className={styles.toolChipArgs}>
-                        · {t.inputSummary}
+              {m.role === "atlas" && m.tools && m.tools.length > 0 && (
+                <div className={styles.toolChips}>
+                  {m.tools.map((t) => (
+                    <span
+                      key={t.id}
+                      className={`${styles.toolChip} ${
+                        t.isError
+                          ? styles.toolChipError
+                          : t.navigate
+                            ? styles.toolChipNavigate
+                            : t.completed
+                              ? styles.toolChipDone
+                              : styles.toolChipPending
+                      }`}
+                    >
+                      <span className={styles.toolChipIcon}>
+                        {t.isError
+                          ? "⚠"
+                          : t.navigate
+                            ? "→"
+                            : t.completed
+                              ? "✓"
+                              : "•"}
                       </span>
-                    )}
-                    {!t.completed && (
-                      <span className={styles.toolChipDots}>…</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-            {m.role === "atlas" ? (
-              <AtlasMarkdown
-                text={m.text}
-                onAskAtlas={handleAskAtlasCitation}
-              />
-            ) : (
-              m.text
-            )}
-          </div>
-        ))}
+                      <span>{TOOL_LABEL[t.name] ?? t.name}</span>
+                      {t.inputSummary && (
+                        <span className={styles.toolChipArgs}>
+                          · {t.inputSummary}
+                        </span>
+                      )}
+                      {!t.completed && (
+                        <span className={styles.toolChipDots}>…</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {m.role === "atlas" ? (
+                <AtlasMarkdown
+                  text={m.text}
+                  onAskAtlas={handleAskAtlasCitation}
+                />
+              ) : (
+                m.text
+              )}
+              {/* Phase 5 — Library save chip on completed Atlas messages.
+                Compact icon-only variant; sits inside the bubble at
+                the bottom-right corner so it doesn't compete with
+                the answer text or tool-trace chips above. */}
+              {m.role === "atlas" &&
+                !m.streaming &&
+                m.text.trim().length > 30 && (
+                  <div className={styles.msgLibraryAction}>
+                    <LibrarySaveButton
+                      variant="compact"
+                      content={m.text}
+                      query={priorUserText}
+                      sourceKind="ATLAS_IDLE"
+                    />
+                  </div>
+                )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Search area */}

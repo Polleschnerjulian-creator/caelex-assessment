@@ -31,6 +31,7 @@ import {
   Sparkles,
   ArrowUpRight,
 } from "lucide-react";
+import { LibrarySaveButton } from "@/components/atlas/ai-mode/LibrarySaveButton";
 
 export interface ConversationSummary {
   id: string;
@@ -181,15 +182,28 @@ export function ChatSidebar({
             Stelle eine Frage. Claude kennt diesen Mandant.
           </div>
         )}
-        {messages.map((m) => (
-          <MessageRow
-            key={m.id}
-            message={m}
-            matterId={matterId}
-            onArtifactCreated={onArtifactCreated}
-            onSendPrompt={onSendPrompt}
-          />
-        ))}
+        {messages.map((m, i) => {
+          // Walk backwards from this index to the most recent USER
+          // message — that's the question that produced this answer.
+          // Used for Library-save provenance (Phase 5).
+          let precedingUserText: string | undefined;
+          for (let j = i - 1; j >= 0; j--) {
+            if (messages[j].role === "USER") {
+              precedingUserText = messages[j].content;
+              break;
+            }
+          }
+          return (
+            <MessageRow
+              key={m.id}
+              message={m}
+              matterId={matterId}
+              onArtifactCreated={onArtifactCreated}
+              onSendPrompt={onSendPrompt}
+              precedingUserText={precedingUserText}
+            />
+          );
+        })}
       </div>
 
       {error && (
@@ -322,11 +336,15 @@ function MessageRow({
   matterId,
   onArtifactCreated,
   onSendPrompt,
+  precedingUserText,
 }: {
   message: ChatMessage;
   matterId?: string;
   onArtifactCreated?: () => void;
   onSendPrompt?: (prompt: string) => void;
+  /** The user question that produced this assistant message (for
+   *  Phase 5 library-save context). */
+  precedingUserText?: string;
 }) {
   const isUser = message.role === "USER";
   // Phase 2 — Memo Live-Pinning: assistant paragraphs gain a hover-📌
@@ -413,6 +431,22 @@ function MessageRow({
                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
               )}
             </div>
+            {/* Phase 5 — Library save chip. Persists the whole answer
+                (markdown + citations) to the lawyer's cross-matter
+                personal library. Different scope from the per-
+                paragraph pin button (which targets the matter pinboard).
+                Visible only after streaming completes. */}
+            {!message.streaming && message.content.trim().length > 30 && (
+              <div className="mt-2 flex justify-end">
+                <LibrarySaveButton
+                  variant="compact"
+                  content={message.content}
+                  query={precedingUserText}
+                  sourceKind="MATTER_CHAT"
+                  sourceMatterId={matterId}
+                />
+              </div>
+            )}
             {/* Phase 4 — Atlas Foresight chips. Render only after the
                 main answer has finished streaming AND the foresight
                 event has populated suggestions. Each chip click

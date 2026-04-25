@@ -2291,3 +2291,15 @@
     white-space: normal;
   }
 }
+
+/* ── Phase 5 — Library save action inside Atlas message bubble ───── */
+.msgLibraryAction {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  opacity: 0.6;
+  transition: opacity 0.18s var(--ease);
+}
+.msg:hover .msgLibraryAction {
+  opacity: 1;
+}

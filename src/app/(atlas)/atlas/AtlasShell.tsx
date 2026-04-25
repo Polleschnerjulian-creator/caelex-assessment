@@ -53,6 +53,10 @@ const MAIN_NAV = [
   // ist (nicht nur Lookup wie Jurisdictions).
   { labelKey: "atlas.network", href: "/atlas/network", icon: Briefcase },
   { labelKey: "atlas.bookmarks", href: "/atlas/bookmarks", icon: Bookmark },
+  // Phase 5 — Personal Research Library: lawyer's cross-matter
+  // bookshelf of saved Atlas answers. Distinct from bookmarks
+  // (which point at corpus items); library entries carry full content.
+  { labelKey: "atlas.library", href: "/atlas/library", icon: Bookmark },
   // Alerts — user-level notifications feed. The unread-count badge
   // (rendered inline below) is what makes this item more than
   // decorative: without it, users wouldn't know new alerts had landed.
