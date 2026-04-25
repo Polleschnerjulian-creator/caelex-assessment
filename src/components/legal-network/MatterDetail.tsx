@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ScopeItem, ScopeCategory } from "@/lib/legal-network/scope";
+import { LifecycleActionsPanel } from "./lifecycle/LifecycleActionsPanel";
 
 interface MatterDetailData {
   matter: {
@@ -87,9 +88,6 @@ export function MatterDetail({
   const [data, setData] = useState<MatterDetailData | null>(null);
   const [audit, setAudit] = useState<AuditData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"revoke" | "suspend" | "resume" | null>(
-    null,
-  );
 
   const load = useCallback(async () => {
     try {
@@ -111,45 +109,8 @@ export function MatterDetail({
     load();
   }, [load]);
 
-  async function doRevoke() {
-    const reason = prompt("Grund für Widerruf? (min. 3 Zeichen)");
-    if (!reason || reason.length < 3) return;
-    setBusy("revoke");
-    try {
-      const res = await fetch(`/api/network/matter/${matterId}/revoke`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
-      });
-      if (!res.ok) {
-        const j = await res.json();
-        setError(j.error ?? "Widerruf fehlgeschlagen");
-      } else {
-        await load();
-      }
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function setStatus(nextStatus: "ACTIVE" | "SUSPENDED") {
-    setBusy(nextStatus === "SUSPENDED" ? "suspend" : "resume");
-    try {
-      const res = await fetch(`/api/network/matter/${matterId}/status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nextStatus }),
-      });
-      if (!res.ok) {
-        const j = await res.json();
-        setError(j.error ?? "Status-Änderung fehlgeschlagen");
-      } else {
-        await load();
-      }
-    } finally {
-      setBusy(null);
-    }
-  }
+  // Phase D' moved revoke + suspend/resume into LifecycleActionsPanel.
+  // The panel owns submit + busy state; we just refresh on success.
 
   if (error && !data) {
     return (
@@ -174,10 +135,18 @@ export function MatterDetail({
   const counterparty =
     viewerSide === "ATLAS" ? matter.clientOrg : matter.lawFirmOrg;
 
-  const isOperator = viewerSide === "CAELEX";
-  const canSuspend = isOperator && matter.status === "ACTIVE";
-  const canResume = isOperator && matter.status === "SUSPENDED";
-  const canRevoke = matter.status !== "REVOKED" && matter.status !== "CLOSED";
+  // Pick the most informative timestamp for the LifecycleActionsPanel
+  // header. Schema doesn't track suspension, so SUSPENDED falls
+  // through to whatever last firm point we know (acceptedAt).
+  const lastStatusChange = formatGermanTimestamp(
+    matter.status === "REVOKED"
+      ? matter.revokedAt
+      : matter.status === "ACTIVE"
+        ? matter.acceptedAt
+        : matter.status === "PENDING_INVITE"
+          ? matter.invitedAt
+          : null,
+  );
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
@@ -215,11 +184,11 @@ export function MatterDetail({
             )}
           </div>
           <div className="flex flex-col gap-2 flex-shrink-0">
-            {/* Phase 2: full-screen matter workspace. Only from the
-                Atlas (law-firm) side for now — operator-side workspace
-                is a separate Phase-2b concern. Active matters only —
-                a workspace on a PENDING/REVOKED matter has nothing
-                meaningful to show. */}
+            {/* Header now hosts only the workspace-launch button. The
+                lifecycle controls (pause/resume/revoke) moved to the
+                LifecycleActionsPanel at the bottom of the page so the
+                destructive actions get a "danger zone" treatment with
+                proper confirmation flow instead of a browser prompt. */}
             {viewerSide === "ATLAS" && matter.status === "ACTIVE" && (
               <button
                 onClick={() =>
@@ -228,33 +197,6 @@ export function MatterDetail({
                 className="px-3 py-1.5 text-xs rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-medium hover:opacity-90"
               >
                 → Zum Workspace
-              </button>
-            )}
-            {canSuspend && (
-              <button
-                onClick={() => setStatus("SUSPENDED")}
-                disabled={busy !== null}
-                className="px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                {busy === "suspend" ? "…" : "Pausieren"}
-              </button>
-            )}
-            {canResume && (
-              <button
-                onClick={() => setStatus("ACTIVE")}
-                disabled={busy !== null}
-                className="px-3 py-1.5 text-xs rounded-lg border border-emerald-300 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-              >
-                {busy === "resume" ? "…" : "Fortsetzen"}
-              </button>
-            )}
-            {canRevoke && (
-              <button
-                onClick={doRevoke}
-                disabled={busy !== null}
-                className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                {busy === "revoke" ? "…" : "Widerrufen"}
               </button>
             )}
           </div>
@@ -397,6 +339,36 @@ export function MatterDetail({
           </ol>
         )}
       </section>
+
+      {/* Lifecycle / Danger zone — Phase D'.
+          Last section so it doesn't compete with the data-rich scope
+          and audit views above. The panel handles its own modal flow
+          for revoke + manages busy state internally. */}
+      <LifecycleActionsPanel
+        matterId={matter.id}
+        matterName={matter.name}
+        status={matter.status}
+        viewerSide={viewerSide}
+        lastStatusChange={lastStatusChange}
+        revocationReason={matter.revocationReason}
+        onChanged={load}
+      />
     </div>
   );
+}
+
+/** Renders an ISO date as a German localized string, or null if the
+ *  input is null/invalid. Centralised so the lifecycle panel and
+ *  any future timeline use the same format. */
+function formatGermanTimestamp(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

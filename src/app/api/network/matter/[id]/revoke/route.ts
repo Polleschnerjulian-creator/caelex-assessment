@@ -16,6 +16,7 @@ import {
   revokeMatter,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
+import { logger } from "@/lib/logger";
 import type { NetworkSide } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -78,6 +79,8 @@ export async function POST(
         { status: code },
       );
     }
-    throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Matter revoke failed: ${msg}`);
+    return NextResponse.json({ error: "Revocation failed" }, { status: 500 });
   }
 }
