@@ -43,6 +43,13 @@ import {
 } from "./AtlasEntity";
 import { AtlasMarkdown } from "./AtlasMarkdown";
 import { ContextPanel } from "./ContextPanel";
+import {
+  MattersPanel,
+  InvitePanel,
+  MemoPanel,
+  ComparePanel,
+  type ActionPanelKey,
+} from "./ActionPanels";
 import styles from "./ai-mode.module.css";
 
 // ─── Config ────────────────────────────────────────────────────────────
@@ -61,45 +68,38 @@ const SUGGESTIONS = [
   "Haftung Startstaat erklären",
 ];
 
-// Phase AB — Quick Actions row beneath the pill.
+// Phase AB-2 — Quick Actions row beneath the pill, each toggling
+// a left-side context panel mirroring the right-side ContextPanel.
 //
-// Two semantic kinds:
-//   - "navigate" → close the AI overlay and router.push(target). Used for
-//     workflows that have their own dedicated UI surface (matter list,
-//     invite flow). Fast jump out of the prompt context.
-//   - "prompt"   → setInputValue(fill) + focus the search bar. Used for
-//     workflows that ARE prompts but deserve discoverable buttons rather
-//     than being buried in the ⌘/ palette (memo drafting, jurisdiction
-//     comparison). The user still completes the thought verbally.
+// All four actions open structured panels rather than navigating or
+// injecting raw text. The panels handle their own data + form state;
+// the AI mode just toggles which one is visible. This keeps the
+// lawyer inside Atlas — no page transitions, no lost context.
 //
-// Keyboard shortcuts ⌘1-⌘4 in Linear-style (no browser/OS conflicts).
+// Keyboard shortcuts ⌘1-⌘4 (Linear-style, no browser/OS conflicts).
 const QUICK_ACTIONS = [
   {
     icon: Briefcase,
     label: "Mandate",
-    kind: "navigate" as const,
-    target: "/atlas/network",
+    panel: "matters" as const,
     kbd: "1",
   },
   {
     icon: UserPlus,
     label: "Mandant einladen",
-    kind: "navigate" as const,
-    target: "/atlas/network/invite",
+    panel: "invite" as const,
     kbd: "2",
   },
   {
     icon: PenLine,
     label: "Memo entwerfen",
-    kind: "prompt" as const,
-    fill: "Entwurf für ein Memo zu: ",
+    panel: "memo" as const,
     kbd: "3",
   },
   {
     icon: Scale,
     label: "Jurisdiktionen vergleichen",
-    kind: "prompt" as const,
-    fill: "Jurisdiktionen vergleichen — ",
+    panel: "compare" as const,
     kbd: "4",
   },
 ] as const;
@@ -205,6 +205,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
   const [toastText, setToastText] = useState<string | null>(null);
   const [tokenPulse, setTokenPulse] = useState(0); // changes to retrigger CSS anim
   const [audioLevel, setAudioLevel] = useState(0);
+  const [activePanel, setActivePanel] = useState<ActionPanelKey | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cmdInputRef = useRef<HTMLInputElement>(null);
@@ -231,6 +232,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
       setMessages([]);
       setAttachments([]);
       setCmdOpen(false);
+      setActivePanel(null);
     }
   }, [open]);
 
@@ -718,6 +720,10 @@ export function AIMode({ open, onClose }: AIModeProps) {
       e.preventDefault();
       const text = inputValue.trim();
       if (!text) return;
+      // Close any open action panel — submitting transitions Atlas
+      // from the idle command surface to active conversation, and
+      // a side-panel competing with the answer feed is too noisy.
+      setActivePanel(null);
       // Snapshot current history BEFORE adding the user's message so
       // runResponse can concatenate cleanly without duplicating.
       const historyBeforePrompt = messages;
@@ -814,37 +820,64 @@ export function AIMode({ open, onClose }: AIModeProps) {
     }, 50);
   }, []);
 
-  // Quick action runner — shared by the button row AND the ⌘1-⌘4
-  // keyboard shortcuts below. Closing the overlay first matters for
-  // the "navigate" kind so the destination page mounts cleanly without
-  // the orb still occluding the layout. The 600ms delay used for
-  // tool-driven nav doesn't apply here — the user clicked, no
-  // confirmation animation needed.
+  // Quick action runner — Phase AB-2 toggles a left-side action panel.
+  // Same panel key clicked twice closes it (toggle UX). Different key
+  // swaps content — only one panel visible at a time, no stacking.
   const runQuickAction = useCallback(
     (action: QuickAction) => {
       playSound("click");
-      if (action.kind === "navigate") {
-        onClose();
-        router.push(action.target);
-        return;
-      }
-      // Prompt-injection: same pattern as runCmd, ensures the cursor
-      // sits at the END of the prefill so the lawyer can keep typing.
-      setInputValue(action.fill);
-      setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.setSelectionRange(
-          action.fill.length,
-          action.fill.length,
-        );
-      }, 50);
+      setActivePanel((prev) => (prev === action.panel ? null : action.panel));
     },
-    [onClose, playSound, router],
+    [playSound],
   );
   // Keep the ref-based bridge fresh — the keyboard useEffect (declared
   // earlier in the component body) reads from this ref to fire ⌘1-4
   // without forming a forward reference cycle.
   runQuickActionRef.current = runQuickAction;
+
+  // Helper for MemoPanel + ComparePanel: take their structured form
+  // input, format as a prompt, close the panel, push as a user message,
+  // and run the standard SSE response pipeline. Lets the panels stay
+  // form-shaped while still routing through the existing chat plumbing.
+  const submitPromptFromPanel = useCallback(
+    (prompt: string) => {
+      setActivePanel(null);
+      playSound("click");
+      const userId = `m-${Date.now()}-user`;
+      const historyBeforePrompt = messages;
+      setMessages((prev) => [
+        ...prev,
+        { id: userId, role: "user", text: prompt },
+      ]);
+      const typedTokens = Math.floor(prompt.length / 3.2);
+      setTotalTokens((n) => Math.min(maxTokens, n + typedTokens));
+      setTokenPulse((n) => n + 1);
+      entityHandle.current?.bumpEnergy(0.25);
+      runResponse(prompt, historyBeforePrompt);
+    },
+    [maxTokens, messages, playSound, runResponse],
+  );
+
+  // MattersPanel-row click: deep-link into the matter workspace. Closing
+  // the AI overlay first lets the destination page mount unblocked.
+  const navigateToMatter = useCallback(
+    (matterId: string) => {
+      setActivePanel(null);
+      onClose();
+      router.push(`/atlas/network/${matterId}/workspace`);
+    },
+    [onClose, router],
+  );
+
+  // InvitePanel success → close the panel + toast. We deliberately
+  // do NOT redirect into the matter — the invite is async (counterparty
+  // hasn't accepted yet), so dropping the lawyer onto a non-existent
+  // workspace would be confusing. The toast confirms the send.
+  const handleInviteSuccess = useCallback(() => {
+    setActivePanel(null);
+    toast("Einladung gesendet — Mandant erhält eine E-Mail.");
+    playSound("chime");
+  }, [playSound, toast]);
 
   const handleCmdKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
@@ -881,7 +914,9 @@ export function AIMode({ open, onClose }: AIModeProps) {
           voll-aufgelöst — die skalierung ist rein visuell, damit der
           text-raum in der mitte frei wird. */}
       <div
-        className={`${styles.entityWrapper} ${hasConversation ? styles.entityMinimized : ""}`}
+        className={`${styles.entityWrapper} ${
+          hasConversation ? styles.entityMinimized : ""
+        } ${activePanel && !hasConversation ? styles.entityShifted : ""}`}
       >
         <AtlasEntity
           mode={mode}
@@ -892,6 +927,33 @@ export function AIMode({ open, onClose }: AIModeProps) {
           }}
         />
       </div>
+
+      {/* Phase AB-2 — Left-side action panels. Mirror the ContextPanel
+          on the right; together with the centred orb they form a
+          symmetric 3-column layout. Only one panel is rendered at any
+          time (controlled by activePanel state), but all four mount
+          unconditionally so their open/close transitions animate
+          cleanly without remount flash. */}
+      <MattersPanel
+        open={activePanel === "matters"}
+        onClose={() => setActivePanel(null)}
+        onNavigate={navigateToMatter}
+      />
+      <InvitePanel
+        open={activePanel === "invite"}
+        onClose={() => setActivePanel(null)}
+        onSuccess={handleInviteSuccess}
+      />
+      <MemoPanel
+        open={activePanel === "memo"}
+        onClose={() => setActivePanel(null)}
+        onSubmitPrompt={submitPromptFromPanel}
+      />
+      <ComparePanel
+        open={activePanel === "compare"}
+        onClose={() => setActivePanel(null)}
+        onSubmitPrompt={submitPromptFromPanel}
+      />
 
       {/* Kontext-Panel (rechts) — Transparenz / Anti-Blackbox.
           Zeigt semantische Quellen aus dem Atlas-Corpus, live-

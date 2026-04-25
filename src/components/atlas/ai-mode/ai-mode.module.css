@@ -1413,3 +1413,506 @@
   color: rgba(110, 231, 183, 0.95);
   box-shadow: inset 0 0 0 0.5px rgba(16, 185, 129, 0.35);
 }
+
+/* ── Phase AB-2 — Action Panels (left side) ────────────────────────
+   Mirror the right-side ContextPanel: glass surface, blur, inset
+   shadow. Slide-in from the left edge with a slight scale-up so the
+   panel "lands" rather than slips. The orb shift is handled by
+   .entityShifted on the wrapper to keep the visual centre of mass
+   between the action panel and the context panel.
+
+   Layout:
+     - Anchored fixed to viewport, top: 80px (clear of topbar),
+       bottom: 100px (clear of search bar)
+     - Width 380px on desktop; under 1100px morphs into a centred
+       full-width modal with rounded corners
+     - z-index 30 — sits above the conversation but below the topbar
+       (which is 30 too; equal stacking, panel paints later) */
+
+.actionPanel {
+  position: fixed;
+  left: 24px;
+  top: 80px;
+  bottom: 96px;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background: rgba(13, 13, 16, 0.72);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  transform: translateX(calc(-100% - 32px)) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.actionPanelOpen {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Orb-shift companion class. Translate the entity wrapper rightward
+   so the orb sits visually balanced between the open left panel and
+   the right ContextPanel. Soft cubic curve matches the panel slide. */
+.entityShifted {
+  transform: translateX(180px);
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mobile: morph the panel into a centred modal. ContextPanel hides
+   under 1280px so we don't compete; under 1100px the action panel
+   takes the full width minus 24px gutters. */
+@media (max-width: 1100px) {
+  .actionPanel {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    top: 64px;
+    bottom: 120px;
+  }
+  .entityShifted {
+    transform: translateX(0);
+  }
+}
+
+/* ── Header (icon + title + subtitle + close X) */
+.actionPanelHeader {
+  position: relative;
+  padding: 18px 20px 14px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.actionPanelTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.actionPanelIcon {
+  color: rgba(110, 231, 183, 0.9); /* emerald-300 */
+}
+.actionPanelTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0;
+}
+.actionPanelSubtitle {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.45;
+  padding-right: 28px; /* keep close button clear */
+}
+.actionPanelClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+.actionPanelClose:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ── Body (scrollable region beneath the header) */
+.actionPanelBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 20px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+.actionPanelBody::-webkit-scrollbar {
+  width: 6px;
+}
+.actionPanelBody::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+/* ── Loading / empty / error states */
+.panelLoading {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 12px 4px;
+  text-align: center;
+  animation: panelPulse 1.4s ease-in-out infinite;
+}
+.panelEmpty {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 14px 4px;
+  text-align: center;
+  line-height: 1.5;
+}
+.panelError {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(252, 165, 165, 0.95);
+  background: rgba(239, 68, 68, 0.08);
+  border: 0.5px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+@keyframes panelPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* ── MattersPanel: search + list */
+.panelSearchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+  transition: border-color 0.15s var(--ease);
+}
+.panelSearchRow:focus-within {
+  border-color: rgba(110, 231, 183, 0.4);
+}
+.panelSearchIcon {
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+.panelSearchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-family: inherit;
+}
+.panelSearchInput::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.panelList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.panelMatterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: transparent;
+  border: 0.5px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.13s var(--ease);
+}
+.panelMatterRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.panelMatterStatus {
+  flex-shrink: 0;
+  width: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.panelMatterDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.panelMatterMain {
+  flex: 1;
+  min-width: 0;
+}
+.panelMatterNameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 2px;
+  overflow: hidden;
+}
+.panelMatterName {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panelMatterRef {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  font-family: "SF Mono", ui-monospace, monospace;
+}
+.panelMatterMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.panelMatterMetaDot {
+  opacity: 0.5;
+}
+.panelMatterChev {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+  transition: all 0.15s var(--ease);
+}
+.panelMatterRow:hover .panelMatterChev {
+  color: rgba(110, 231, 183, 0.8);
+  transform: translateX(2px);
+}
+
+/* ── Forms shared (Invite, Memo, Compare) */
+.panelForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.panelFormField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+.panelFormLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.panelFormHint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: 4px;
+}
+.panelFormInput,
+.panelFormTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.13s var(--ease);
+  resize: vertical;
+}
+.panelFormInput:focus,
+.panelFormTextarea:focus {
+  border-color: rgba(110, 231, 183, 0.45);
+  background: rgba(255, 255, 255, 0.05);
+}
+.panelFormInput::placeholder,
+.panelFormTextarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.panelFormTextarea {
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+/* ── Typeahead dropdown (InvitePanel counterparty) */
+.panelTypeahead {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(20, 20, 24, 0.95);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.1),
+    0 8px 20px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 240px;
+  overflow-y: auto;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 5;
+}
+.panelTypeaheadItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s var(--ease);
+}
+.panelTypeaheadItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.panelTypeaheadItem svg {
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+/* Picked counterparty pill */
+.panelChosenOrg {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px 7px 10px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 0.5px solid rgba(16, 185, 129, 0.3);
+  color: rgba(110, 231, 183, 0.95);
+  font-size: 12px;
+  font-weight: 500;
+}
+.panelChosenOrgClear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.13s var(--ease);
+}
+.panelChosenOrgClear:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* ── Submit button (Invite send / Memo / Compare) */
+.panelSubmitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 0.5px solid rgba(16, 185, 129, 0.4);
+  color: rgba(167, 243, 208, 1);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+.panelSubmitBtn:not(:disabled):hover {
+  background: rgba(16, 185, 129, 0.25);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+  transform: translateY(-1px);
+}
+.panelSubmitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── ComparePanel country grid */
+.panelCountryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.panelCountryChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.13s var(--ease);
+  text-align: left;
+}
+.panelCountryChip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.panelCountryChipActive {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: rgba(167, 243, 208, 1);
+}
+.panelCountryChipActive:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.55);
+  color: #fff;
+}
+.panelCountryCode {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+.panelCountryChipActive .panelCountryCode {
+  color: rgba(110, 231, 183, 1);
+}
+.panelCountryLabel {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
