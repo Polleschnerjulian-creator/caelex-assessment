@@ -61,22 +61,35 @@ describe("POST /api/atlas/workspace", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 when org is OPERATOR-only", async () => {
+  it("returns 403 when user has no active membership at all", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "u_1" } });
-    mocks.findFirstMember.mockResolvedValue({
-      organizationId: "op_1",
-      organization: { id: "op_1", orgType: "OPERATOR", isActive: true },
-    });
+    // Both LAW_FIRM-filter and isActive-fallback queries return null.
+    mocks.findFirstMember.mockResolvedValue(null);
     const res = await POST(makeReq());
     expect(res.status).toBe(403);
   });
 
+  it("falls back to any active membership when no LAW_FIRM/BOTH exists", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "u_1" } });
+    // First call (LAW_FIRM/BOTH filter) returns null, second call
+    // (isActive-only fallback) returns the user's only membership.
+    mocks.findFirstMember
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ organizationId: "op_1" });
+    mocks.createSm.mockResolvedValue({ matterId: "m_solo_x" });
+
+    const res = await POST(makeReq());
+    expect(res.status).toBe(201);
+    expect(mocks.createSm).toHaveBeenCalledWith({
+      lawFirmOrgId: "op_1",
+      createdBy: "u_1",
+      name: undefined,
+    });
+  });
+
   it("creates a standalone matter for LAW_FIRM org", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "u_1" } });
-    mocks.findFirstMember.mockResolvedValue({
-      organizationId: "lf_1",
-      organization: { id: "lf_1", orgType: "LAW_FIRM", isActive: true },
-    });
+    mocks.findFirstMember.mockResolvedValue({ organizationId: "lf_1" });
     mocks.createSm.mockResolvedValue({ matterId: "m_solo_1" });
 
     const res = await POST(makeReq({ name: "Test Workspace" }));
