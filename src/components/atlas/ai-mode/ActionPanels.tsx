@@ -45,6 +45,7 @@ import {
   Sparkles,
   Check,
   AlertTriangle,
+  Inbox,
 } from "lucide-react";
 import styles from "./ai-mode.module.css";
 
@@ -186,7 +187,10 @@ export function MattersPanel({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/network/matters", { cache: "no-store" });
+        const res = await fetch(
+          "/api/network/matters?status=STANDALONE,PENDING_INVITE,PENDING_CONSENT,ACTIVE",
+          { cache: "no-store" },
+        );
         const json = await res.json().catch(() => ({}));
         if (cancelled) return;
         if (!res.ok) {
@@ -318,61 +322,112 @@ export function MattersPanel({
       )}
 
       {/* List */}
-      {filtered && filtered.length > 0 && (
-        <ul className={styles.panelList}>
-          {filtered.map((m) => {
-            // Atlas side renders the CLIENT (operator) name as the
-            // counterparty. Caelex side renders the lawFirm. We
-            // shipped this panel for atlas-idle so callerSide=ATLAS,
-            // but defensive code in case it gets reused operator-side.
-            const counterparty = callerSide === "CAELEX" ? m.lawFirm : m.client;
-            return (
-              <li key={m.id}>
-                <button
-                  type="button"
-                  className={styles.panelMatterRow}
-                  onClick={() => onNavigate(m.id)}
-                >
-                  <div className={styles.panelMatterStatus}>
-                    <span
-                      className={`${styles.panelMatterDot} ${
-                        STATUS_DOT[m.status] ?? "bg-slate-400"
-                      }`}
-                    />
-                  </div>
-                  <div className={styles.panelMatterMain}>
-                    <div className={styles.panelMatterNameRow}>
-                      <span className={styles.panelMatterName}>{m.name}</span>
-                      {m.reference && (
-                        <span className={styles.panelMatterRef}>
-                          · {m.reference}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.panelMatterMeta}>
-                      <span>{counterparty.name}</span>
-                      <span className={styles.panelMatterMetaDot}>·</span>
-                      <span>{STATUS_LABEL[m.status] ?? m.status}</span>
-                      <span className={styles.panelMatterMetaDot}>·</span>
-                      <span>
-                        {new Date(m.updatedAt).toLocaleDateString("de-DE", {
-                          day: "2-digit",
-                          month: "short",
-                        })}
+      {filtered &&
+        filtered.length > 0 &&
+        (() => {
+          const standaloneMatters = filtered.filter(
+            (m) => m.status === "STANDALONE",
+          );
+          const activeMatters = filtered.filter(
+            (m) => m.status !== "STANDALONE",
+          );
+          return (
+            <>
+              {/* STANDALONE workspace block — dashed border, no client avatar */}
+              {standaloneMatters.length > 0 && (
+                <div className={styles.matterSection}>
+                  <div className={styles.sectionLabel}>Offene Workspaces</div>
+                  {standaloneMatters.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={styles.standaloneRow}
+                      onClick={() => onNavigate(m.id)}
+                    >
+                      <Inbox size={14} strokeWidth={1.5} />
+                      <span className={styles.matterName}>{m.name}</span>
+                      <span className={styles.matterDate}>
+                        {new Date(m.updatedAt).toLocaleDateString("de-DE")}
                       </span>
-                    </div>
-                  </div>
-                  <ArrowRight
-                    size={12}
-                    strokeWidth={1.7}
-                    className={styles.panelMatterChev}
-                  />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Active mandates block — existing render logic */}
+              {activeMatters.length > 0 && (
+                <div className={styles.matterSection}>
+                  <div className={styles.sectionLabel}>Aktive Mandate</div>
+                  <ul className={styles.panelList}>
+                    {activeMatters.map((m) => {
+                      // Atlas side renders the CLIENT (operator) name as the
+                      // counterparty. Caelex side renders the lawFirm. We
+                      // shipped this panel for atlas-idle so callerSide=ATLAS,
+                      // but defensive code in case it gets reused operator-side.
+                      const counterparty =
+                        callerSide === "CAELEX" ? m.lawFirm : m.client;
+                      return (
+                        <li key={m.id}>
+                          <button
+                            type="button"
+                            className={styles.panelMatterRow}
+                            onClick={() => onNavigate(m.id)}
+                          >
+                            <div className={styles.panelMatterStatus}>
+                              <span
+                                className={`${styles.panelMatterDot} ${
+                                  STATUS_DOT[m.status] ?? "bg-slate-400"
+                                }`}
+                              />
+                            </div>
+                            <div className={styles.panelMatterMain}>
+                              <div className={styles.panelMatterNameRow}>
+                                <span className={styles.panelMatterName}>
+                                  {m.name}
+                                </span>
+                                {m.reference && (
+                                  <span className={styles.panelMatterRef}>
+                                    · {m.reference}
+                                  </span>
+                                )}
+                              </div>
+                              <div className={styles.panelMatterMeta}>
+                                <span>{counterparty.name}</span>
+                                <span className={styles.panelMatterMetaDot}>
+                                  ·
+                                </span>
+                                <span>
+                                  {STATUS_LABEL[m.status] ?? m.status}
+                                </span>
+                                <span className={styles.panelMatterMetaDot}>
+                                  ·
+                                </span>
+                                <span>
+                                  {new Date(m.updatedAt).toLocaleDateString(
+                                    "de-DE",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                    },
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                            <ArrowRight
+                              size={12}
+                              strokeWidth={1.7}
+                              className={styles.panelMatterChev}
+                            />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        })()}
     </ActionPanelShell>
   );
 }
