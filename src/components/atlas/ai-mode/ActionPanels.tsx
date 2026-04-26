@@ -457,11 +457,19 @@ export function InvitePanel({
   open,
   onClose,
   onSuccess,
+  promoteMatterId,
 }: {
   open: boolean;
   onClose: () => void;
-  onSuccess: (matterId: string) => void;
+  onSuccess?: (matterId: string) => void;
+  /** When set the panel acts in promote mode: submits to
+   *  `/api/network/matter/[id]/promote` instead of `/api/network/invite`,
+   *  omits name/reference/description (those live on the matter already),
+   *  and adjusts header + button copy accordingly. */
+  promoteMatterId?: string;
 }) {
+  const isPromoteMode = Boolean(promoteMatterId);
+
   const [counterpartyQuery, setCounterpartyQuery] = useState("");
   const [counterpartyHits, setCounterpartyHits] = useState<OrgHit[]>([]);
   const [counterparty, setCounterparty] = useState<OrgHit | null>(null);
@@ -514,32 +522,58 @@ export function InvitePanel({
     return () => clearTimeout(t);
   }, [counterpartyQuery, counterparty, open]);
 
+  // In promote mode name is not required (it lives on the matter already).
   const canSubmit =
-    counterparty !== null && name.trim().length >= 3 && !submitting;
+    counterparty !== null &&
+    (isPromoteMode || name.trim().length >= 3) &&
+    !submitting;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!counterparty || name.trim().length < 3 || submitting) return;
+    if (
+      !counterparty ||
+      (!isPromoteMode && name.trim().length < 3) ||
+      submitting
+    )
+      return;
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch("/api/network/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          counterpartyOrgId: counterparty.id,
-          name: name.trim(),
-          reference: reference.trim() || undefined,
-          description: description.trim() || undefined,
-          proposedScope: DEFAULT_SCOPE,
-          proposedDurationMonths: duration,
-        }),
-      });
+      let res: Response;
+      if (isPromoteMode) {
+        // Promote mode — POST to the promote endpoint.
+        // Body strictly matches the promote schema: clientOrgId, scope,
+        // durationMonths. No name/reference/description needed.
+        res = await fetch(`/api/network/matter/${promoteMatterId}/promote`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientOrgId: counterparty.id,
+            scope: DEFAULT_SCOPE,
+            durationMonths: duration,
+          }),
+        });
+      } else {
+        // Create mode — existing invite flow.
+        res = await fetch("/api/network/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            counterpartyOrgId: counterparty.id,
+            name: name.trim(),
+            reference: reference.trim() || undefined,
+            description: description.trim() || undefined,
+            proposedScope: DEFAULT_SCOPE,
+            proposedDurationMonths: duration,
+          }),
+        });
+      }
       const json = await res.json();
       if (!res.ok) {
         throw new Error(json.error ?? "Einladung fehlgeschlagen");
       }
-      onSuccess(json.matter?.id ?? json.matterId ?? "");
+      onSuccess?.(json.matter?.id ?? json.matterId ?? "");
+      onClose();
     } catch (err) {
       setSubmitError((err as Error).message);
     } finally {
@@ -547,12 +581,18 @@ export function InvitePanel({
     }
   }
 
+  const headerTag = isPromoteMode ? "Workspace umwandeln" : "Einladen";
+  const headerSub = isPromoteMode ? "Mandant einladen" : "Mandant + Mandat";
+  const headerIntro = isPromoteMode
+    ? "Wähle die Mandanten-Organisation aus. Scope und Laufzeit kannst du nach der Umwandlung verfeinern."
+    : "Voreingestellt: lesender Zugriff auf Übersicht + Dokumente. Scope kannst du später verfeinern.";
+
   return (
     <ActionPanelShell
       open={open}
-      tag="Einladen"
-      sub="Mandant + Mandat"
-      intro="Voreingestellt: lesender Zugriff auf Übersicht + Dokumente. Scope kannst du später verfeinern."
+      tag={headerTag}
+      sub={headerSub}
+      intro={headerIntro}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className={styles.panelForm}>
@@ -608,48 +648,55 @@ export function InvitePanel({
           )}
         </div>
 
-        {/* Matter name */}
-        <div className={styles.panelFormField}>
-          <label className={styles.panelFormLabel}>Mandatsname</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="z.B. Spektrum-Lizenzierung 2026"
-            className={styles.panelFormInput}
-            maxLength={200}
-          />
-        </div>
+        {/* Create-mode-only fields: name, reference, description */}
+        {!isPromoteMode && (
+          <>
+            {/* Matter name */}
+            <div className={styles.panelFormField}>
+              <label className={styles.panelFormLabel}>Mandatsname</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="z.B. Spektrum-Lizenzierung 2026"
+                className={styles.panelFormInput}
+                maxLength={200}
+              />
+            </div>
 
-        {/* Reference */}
-        <div className={styles.panelFormField}>
-          <label className={styles.panelFormLabel}>Referenz (optional)</label>
-          <input
-            type="text"
-            value={reference}
-            onChange={(e) => setReference(e.target.value)}
-            placeholder="Interne Mandatsnummer"
-            className={styles.panelFormInput}
-            maxLength={50}
-          />
-        </div>
+            {/* Reference */}
+            <div className={styles.panelFormField}>
+              <label className={styles.panelFormLabel}>
+                Referenz (optional)
+              </label>
+              <input
+                type="text"
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                placeholder="Interne Mandatsnummer"
+                className={styles.panelFormInput}
+                maxLength={50}
+              />
+            </div>
 
-        {/* Description */}
-        <div className={styles.panelFormField}>
-          <label className={styles.panelFormLabel}>
-            Notiz (optional, sieht der Mandant)
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Kurze Beschreibung für den Mandanten…"
-            className={styles.panelFormTextarea}
-            maxLength={2000}
-            rows={3}
-          />
-        </div>
+            {/* Description */}
+            <div className={styles.panelFormField}>
+              <label className={styles.panelFormLabel}>
+                Notiz (optional, sieht der Mandant)
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Kurze Beschreibung für den Mandanten…"
+                className={styles.panelFormTextarea}
+                maxLength={2000}
+                rows={3}
+              />
+            </div>
+          </>
+        )}
 
-        {/* Duration */}
+        {/* Duration — shown in both modes */}
         <div className={styles.panelFormField}>
           <label className={styles.panelFormLabel}>Laufzeit</label>
           <select
@@ -677,12 +724,14 @@ export function InvitePanel({
           {submitting ? (
             <>
               <Loader2 size={12} strokeWidth={1.8} className="animate-spin" />
-              Sende Einladung…
+              {isPromoteMode ? "Umwandlung läuft…" : "Sende Einladung…"}
             </>
           ) : (
             <>
               <Check size={12} strokeWidth={1.8} />
-              Einladung senden
+              {isPromoteMode
+                ? "Mandant einladen & Token erzeugen"
+                : "Einladung senden"}
             </>
           )}
         </button>

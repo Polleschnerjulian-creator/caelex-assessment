@@ -38,6 +38,7 @@ import {
   MatterStatusBanner,
   shouldShowStatusBanner,
 } from "./MatterStatusBanner";
+import { InvitePanel } from "@/components/atlas/ai-mode/ActionPanels";
 
 interface MatterContext {
   id: string;
@@ -65,6 +66,9 @@ const HERO_SUGGESTIONS = [
 export function WorkspacePinboard({ matterId }: { matterId: string }) {
   const router = useRouter();
   const pinboardRef = useRef<PinboardHandle>(null);
+
+  // ── Promote panel ─────────────────────────────────────────────
+  const [promoteOpen, setPromoteOpen] = useState(false);
 
   // ── Matter context ────────────────────────────────────────────
   const [matter, setMatter] = useState<MatterContext | null>(null);
@@ -443,13 +447,30 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
 
   if (showHero) {
     return (
-      <WorkspaceHero
-        matter={matter}
-        onSubmit={onHeroSubmit}
-        streaming={streaming}
-        matterId={matterId}
-        viewerSide="ATLAS"
-      />
+      <>
+        <WorkspaceHero
+          matter={matter}
+          onSubmit={onHeroSubmit}
+          streaming={streaming}
+          matterId={matterId}
+          viewerSide="ATLAS"
+          onPromoteClick={
+            matter.status === "STANDALONE"
+              ? () => setPromoteOpen(true)
+              : undefined
+          }
+        />
+        {/* Promote panel — shown on top of the hero when triggered */}
+        <InvitePanel
+          open={promoteOpen}
+          onClose={() => setPromoteOpen(false)}
+          onSuccess={() => {
+            setPromoteOpen(false);
+            router.refresh();
+          }}
+          promoteMatterId={matterId}
+        />
+      </>
     );
   }
 
@@ -496,6 +517,11 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
             matterId={matterId}
             counterpartyName={matter.clientOrg.name}
             viewerSide="ATLAS"
+            onPromoteClick={
+              matter.status === "STANDALONE"
+                ? () => setPromoteOpen(true)
+                : undefined
+            }
           />
         </div>
       )}
@@ -524,6 +550,18 @@ export function WorkspacePinboard({ matterId }: { matterId: string }) {
           <Pinboard ref={pinboardRef} matterId={matterId} />
         </main>
       </div>
+
+      {/* Promote panel — slides in from the left, only when
+          the STANDALONE banner button was clicked */}
+      <InvitePanel
+        open={promoteOpen}
+        onClose={() => setPromoteOpen(false)}
+        onSuccess={() => {
+          setPromoteOpen(false);
+          router.refresh();
+        }}
+        promoteMatterId={matterId}
+      />
     </div>
   );
 }
@@ -539,12 +577,14 @@ function WorkspaceHero({
   streaming,
   matterId,
   viewerSide,
+  onPromoteClick,
 }: {
   matter: MatterContext;
   onSubmit: (content: string) => void | Promise<void>;
   streaming: boolean;
   matterId: string;
   viewerSide: "ATLAS" | "CAELEX";
+  onPromoteClick?: () => void;
 }) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -632,6 +672,9 @@ function WorkspaceHero({
                   : matter.lawFirmOrg.name
               }
               viewerSide={viewerSide}
+              onPromoteClick={
+                matter.status === "STANDALONE" ? onPromoteClick : undefined
+              }
             />
           </div>
         )}
