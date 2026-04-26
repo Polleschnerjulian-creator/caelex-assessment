@@ -264,6 +264,7 @@ describe("requireActiveMatter — gate decisions", () => {
     });
     expect(result.matter.id).toBe("m_solo");
     expect(result.matter.status).toBe("STANDALONE");
+    expect(result.scope).toEqual([]);
   });
 
   it("STANDALONE matter rejects non-lawFirm caller with CALLER_NOT_PARTY", async () => {
@@ -285,6 +286,31 @@ describe("requireActiveMatter — gate decisions", () => {
         matterId: "m_solo",
         callerOrgId: "co_1",
         callerSide: "ATLAS",
+        category: "COMPLIANCE_ASSESSMENTS",
+        permission: "READ",
+      }),
+    ).rejects.toMatchObject({ code: "CALLER_NOT_PARTY" });
+  });
+
+  it("STANDALONE matter rejects CAELEX-side caller with CALLER_NOT_PARTY", async () => {
+    mockedPrisma.legalMatter.findUnique.mockResolvedValue(
+      buildMatter({
+        id: "m_solo",
+        status: "STANDALONE",
+        lawFirmOrgId: "lf_1",
+        clientOrgId: null,
+        scope: [],
+        handshakeHash: null,
+        acceptedAt: null,
+        acceptedBy: null,
+      }),
+    );
+
+    await expect(
+      requireActiveMatter({
+        matterId: "m_solo",
+        callerOrgId: "co_1",
+        callerSide: "CAELEX",
         category: "COMPLIANCE_ASSESSMENTS",
         permission: "READ",
       }),

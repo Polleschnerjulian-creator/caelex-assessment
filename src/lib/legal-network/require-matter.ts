@@ -83,10 +83,24 @@ export async function requireActiveMatter(
     throw new MatterAccessError("MATTER_NOT_FOUND", "Matter does not exist");
   }
 
+  // STANDALONE = lawyer-side workspace ohne Mandant. Sofort gegen
+  // lawFirmOrgId prüfen; wenn nicht-Kanzlei → CALLER_NOT_PARTY.
+  // (Diese matters haben kein clientOrgId, also greift die normale
+  // isClient-Logik nicht — STANDALONE braucht eigene Auth-Logik.)
+  if (matter.status === "STANDALONE") {
+    if (input.callerOrgId !== matter.lawFirmOrgId) {
+      throw new MatterAccessError(
+        "CALLER_NOT_PARTY",
+        "Workspace ist privat — nur Kanzlei-Seite hat Zugriff",
+      );
+    }
+    return { matter, scope: [] };
+  }
+
   // Caller must be one of the two parties. A law firm is never
   // allowed to act on behalf of a client it doesn't represent; an
   // operator's access through this path is for introspection (e.g.
-  // the audit-log viewer).
+  // the audit-log viewer). Only applies to non-STANDALONE matters.
   const isFirm =
     input.callerSide === "ATLAS" && matter.lawFirmOrgId === input.callerOrgId;
   const isClient =
@@ -96,21 +110,6 @@ export async function requireActiveMatter(
       "CALLER_NOT_PARTY",
       "Caller organisation is not a party to this matter",
     );
-  }
-
-  // STANDALONE = lawyer-side workspace ohne Mandant. Lawyer hat
-  // Vollzugriff (es gibt keinen anderen Stakeholder), Operator ist
-  // per definitionem nicht eingeladen → CALLER_NOT_PARTY für non-lawFirm-side
-  // (already handled above via isFirm/isClient check since clientOrgId is null,
-  // but guard explicitly here in case call order changes).
-  if (matter.status === "STANDALONE") {
-    if (input.callerOrgId !== matter.lawFirmOrgId) {
-      throw new MatterAccessError(
-        "CALLER_NOT_PARTY",
-        "Workspace ist privat — nur Kanzlei-Seite hat Zugriff",
-      );
-    }
-    return { matter, scope: [] }; // skip the ACTIVE-status gate and scope check below
   }
 
   if (matter.status !== "ACTIVE") {

@@ -11,6 +11,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { $Enums } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
@@ -54,20 +55,21 @@ export async function GET(request: NextRequest) {
           .filter(Boolean)
       : null;
 
-    const validStatuses = [
-      "STANDALONE",
-      "PENDING_INVITE",
-      "PENDING_CONSENT",
-      "ACTIVE",
-      "SUSPENDED",
-      "CLOSED",
-      "REVOKED",
-    ] as const;
-    const safeStatusFilter = statusFilter
-      ? statusFilter.filter((s): s is (typeof validStatuses)[number] =>
-          validStatuses.includes(s as (typeof validStatuses)[number]),
-        )
-      : null;
+    const validStatuses = Object.values($Enums.MatterStatus);
+
+    if (statusFilter) {
+      const invalid = statusFilter.filter(
+        (s) => !validStatuses.includes(s as $Enums.MatterStatus),
+      );
+      if (invalid.length > 0) {
+        return NextResponse.json(
+          { error: "Invalid status values", invalid },
+          { status: 400 },
+        );
+      }
+    }
+
+    const safeStatusFilter = statusFilter as $Enums.MatterStatus[] | null;
 
     const matters = await prisma.legalMatter.findMany({
       where: {
