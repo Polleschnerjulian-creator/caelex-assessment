@@ -180,27 +180,27 @@ export default function AtlasAstraChat() {
 
   return (
     <>
-      {/* ─── Floating Button ───
-          Pill with the mini-orb on the left + "Astra" label. Same orb
-          identity as the AI-Mode entity and the dashboard FAB — Atlas
-          users see the consistent brand-object across surfaces. */}
+      {/* ─── Floating Orb ───
+          Just the orb floating in the corner — no pill, no label, no
+          background disc. Same particle sphere as the AI-Mode entity
+          when it slides into the corner during a conversation. The
+          orb IS the button: hover scales up, click opens the chat. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 pl-3 pr-5 py-2 rounded-full bg-[#0f1320]/95 backdrop-blur-md text-white border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#1a1f2e]/95 hover:border-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 ease-out group"
+          className="group fixed bottom-6 right-6 z-50 flex items-center justify-center transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-full"
           aria-label={t("atlas.astra_open")}
+          title={t("atlas.astra_open")}
+          style={{
+            width: 72,
+            height: 72,
+            background: "transparent",
+            border: 0,
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
-          <span className="h-7 w-7 rounded-full flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-transparent">
-            <span
-              style={{ width: 22, height: 22, display: "inline-block" }}
-              aria-hidden
-            >
-              <AtlasEntityMini ariaLabel="Astra" />
-            </span>
-          </span>
-          <span className="text-[13px] font-medium text-white/90 group-hover:text-white transition-colors tracking-wide">
-            Astra
-          </span>
+          <AtlasEntityMini ariaLabel="Astra" />
         </button>
       )}
 

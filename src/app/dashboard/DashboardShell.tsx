@@ -13,7 +13,6 @@ import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
 import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
-import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
 import GlassSpecular from "@/components/dashboard/GlassSpecular";
 import DemoTour from "@/components/demo/DemoTour";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
@@ -332,39 +331,27 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         onSave={handleProfileSave}
       />
 
-      {/* Floating Astra FAB — hidden when Forge is active or widget is open.
-          The dark navy disc + luminous mini-orb match the AI-Mode aesthetic
-          across products: same orb, scaled down for an entry-point button. */}
+      {/* Floating Astra FAB — just the orb, no pill, no disc. Hidden
+          when Forge is active or widget is open. The orb IS the
+          button — same brand-object as the AI-Mode entity when it
+          slides into the corner. */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
-        <div className="fixed bottom-7 right-7 z-[100] transition-all duration-200 ease-out hover:scale-[1.06] active:scale-95">
-          <GenerationProgressRing size={68}>
-            <button
-              onClick={() => setAstraWidgetOpen(true)}
-              aria-label="Astra öffnen"
-              title="Astra öffnen (⌘K)"
-              className="flex items-center justify-center group"
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 18,
-                background:
-                  "radial-gradient(circle at 30% 25%, rgba(30,41,59,0.95) 0%, rgba(10,15,30,0.98) 60%, rgba(5,8,18,1) 100%)",
-                backdropFilter: "blur(24px) saturate(1.4)",
-                WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow:
-                  "0 4px 16px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
-              }}
-            >
-              <span
-                style={{ width: 30, height: 30, display: "inline-block" }}
-                aria-hidden
-              >
-                <AtlasEntityMini ariaLabel="Astra" />
-              </span>
-            </button>
-          </GenerationProgressRing>
-        </div>
+        <button
+          onClick={() => setAstraWidgetOpen(true)}
+          aria-label="Astra öffnen"
+          title="Astra öffnen (⌘K)"
+          className="fixed bottom-7 right-7 z-[100] transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-full"
+          style={{
+            width: 72,
+            height: 72,
+            background: "transparent",
+            border: 0,
+            padding: 0,
+            cursor: "pointer",
+          }}
+        >
+          <AtlasEntityMini ariaLabel="Astra" />
+        </button>
       )}
 
       {/* Astra Chat Widget */}
