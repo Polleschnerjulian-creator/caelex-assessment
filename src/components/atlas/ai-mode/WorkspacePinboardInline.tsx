@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Plus,
   X,
@@ -24,8 +24,41 @@ import {
   PencilLine,
   BookText,
   User,
+  Search,
+  Globe,
+  Shield,
+  Scale,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
+
+// ─── Corpus search ────────────────────────────────────────────────────
+//
+// The "Quelle" archetype opens a picker that searches the Atlas
+// regulatory corpus (EU Space Act, NIS2, national space laws). Hits
+// are pinned as cards with the proper citation.
+
+interface CorpusHit {
+  id: string;
+  kind: "eu" | "nis2" | "nat";
+  title: string;
+  content: string;
+  citation: string;
+  jurisdiction?: string;
+  officialUrl?: string;
+}
+
+/** Per-kind icon for the result list. Helps the lawyer scan results
+ *  quickly without reading the kind badge text. */
+const KIND_ICON: Record<CorpusHit["kind"], typeof Globe> = {
+  eu: Globe,
+  nis2: Shield,
+  nat: Scale,
+};
+const KIND_LABEL: Record<CorpusHit["kind"], string> = {
+  eu: "EU Space Act",
+  nis2: "NIS2",
+  nat: "National",
+};
 
 // ─── Radial menu options ──────────────────────────────────────────────
 //
@@ -119,6 +152,21 @@ export function WorkspacePinboardInline({
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState<string | null>(null);
 
+  // Corpus picker — used when archetype is "source". Keeps the user-
+  // typed query separate from the title field above (the title is the
+  // pinned card's label, the query is just the search input).
+  const [corpusQuery, setCorpusQuery] = useState("");
+  const [corpusHits, setCorpusHits] = useState<CorpusHit[]>([]);
+  const [corpusLoading, setCorpusLoading] = useState(false);
+  const [corpusError, setCorpusError] = useState<string | null>(null);
+  // Default to all kinds enabled. The chip-row can toggle each.
+  const [corpusKinds, setCorpusKinds] = useState<Set<CorpusHit["kind"]>>(
+    () => new Set(["eu", "nis2", "nat"]),
+  );
+  // Keep the latest in-flight request id so a slow earlier response
+  // doesn't overwrite a faster later one (race condition guard).
+  const corpusReqRef = useRef(0);
+
   // Radial menu — null when closed, {x, y} (viewport coords) when open.
   // Right-click anywhere on the pinboard pops it at the cursor.
   const [radialMenu, setRadialMenu] = useState<{
@@ -151,6 +199,85 @@ export function WorkspacePinboardInline({
     setComposerOpen(true);
     setTitle("");
     setContent("");
+    // Reset corpus state when entering/exiting the picker so old
+    // results don't flash on the next open.
+    setCorpusQuery("");
+    setCorpusHits([]);
+    setCorpusError(null);
+  }, []);
+
+  // Debounced corpus search — only active when the source-archetype
+  // picker is open. 250ms delay keeps roundtrips down without feeling
+  // sluggish; empty query fetches the first page so the user sees
+  // "browse" results immediately on opening.
+  useEffect(() => {
+    if (!composerOpen || composerArchetype !== "source") return;
+    const reqId = ++corpusReqRef.current;
+    const kinds = Array.from(corpusKinds).join(",");
+    const t = setTimeout(async () => {
+      setCorpusLoading(true);
+      setCorpusError(null);
+      try {
+        const url = `/api/atlas/workspace/corpus-search?q=${encodeURIComponent(
+          corpusQuery,
+        )}&kinds=${kinds}&limit=30`;
+        const res = await fetch(url);
+        const json = (await res.json()) as {
+          hits?: CorpusHit[];
+          error?: string;
+        };
+        // Late-arriving response: ignore.
+        if (reqId !== corpusReqRef.current) return;
+        if (!res.ok) {
+          setCorpusError(json.error ?? "Suche fehlgeschlagen");
+          setCorpusHits([]);
+          return;
+        }
+        setCorpusHits(json.hits ?? []);
+      } catch (err) {
+        if (reqId !== corpusReqRef.current) return;
+        setCorpusError(err instanceof Error ? err.message : "Fehler");
+      } finally {
+        if (reqId === corpusReqRef.current) {
+          setCorpusLoading(false);
+        }
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [composerOpen, composerArchetype, corpusQuery, corpusKinds]);
+
+  /** Pin a corpus hit as a user-card. Citation is prepended to the
+   *  content so the card is self-contained — the lawyer can read the
+   *  source without re-opening the picker. */
+  const pinHit = useCallback(
+    (hit: CorpusHit) => {
+      onAddCard({
+        kind: "user",
+        title: hit.title,
+        content: `${hit.citation}\n\n${hit.content}`,
+      });
+      // Close the composer after pinning; user can re-open via radial
+      // menu for the next source.
+      setComposerOpen(false);
+      setCorpusQuery("");
+      setCorpusHits([]);
+    },
+    [onAddCard],
+  );
+
+  /** Toggle a kind chip in the corpus filter row. */
+  const toggleCorpusKind = useCallback((kind: CorpusHit["kind"]) => {
+    setCorpusKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(kind)) {
+        // Don't allow zero-kinds (would always return empty results).
+        if (next.size === 1) return prev;
+        next.delete(kind);
+      } else {
+        next.add(kind);
+      }
+      return next;
+    });
   }, []);
 
   // Outside-click + ESC close the radial menu.
@@ -462,7 +589,120 @@ export function WorkspacePinboardInline({
             <Plus size={18} strokeWidth={2} />
           </button>
         )}
-        {composerOpen && (
+        {composerOpen && composerArchetype === "source" && (
+          // Corpus picker — replaces the freeform composer for the
+          // "Quelle" archetype. Search → filter chips → result list →
+          // click to pin.
+          <div className={`${styles.composer} ${styles.composerPicker}`}>
+            <div className={styles.composerTypeTag}>
+              <activeArchetype.icon size={11} strokeWidth={1.8} />
+              <span>{activeArchetype.label}</span>
+              <span className={styles.composerTypeHint}>
+                · Atlas-Korpus durchsuchen
+              </span>
+            </div>
+
+            <div className={styles.pickerSearch}>
+              <Search
+                size={14}
+                strokeWidth={1.8}
+                className={styles.pickerSearchIcon}
+              />
+              <input
+                type="text"
+                placeholder="z.B. Weltraummuell, Authorisierung, Art. 7..."
+                value={corpusQuery}
+                onChange={(e) => setCorpusQuery(e.target.value)}
+                autoFocus
+                className={styles.pickerSearchInput}
+              />
+              {corpusLoading && (
+                <Loader2
+                  size={13}
+                  strokeWidth={2}
+                  className={`${styles.pickerSearchSpin} ${styles.headerSpin}`}
+                />
+              )}
+            </div>
+
+            <div className={styles.pickerKindRow}>
+              {(["eu", "nis2", "nat"] as const).map((kind) => {
+                const active = corpusKinds.has(kind);
+                const Icon = KIND_ICON[kind];
+                return (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => toggleCorpusKind(kind)}
+                    className={`${styles.pickerKindChip} ${
+                      active ? styles.pickerKindChipActive : ""
+                    }`}
+                  >
+                    <Icon size={10} strokeWidth={1.8} />
+                    <span>{KIND_LABEL[kind]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={styles.pickerResults}>
+              {corpusError && (
+                <div className={styles.pickerError}>{corpusError}</div>
+              )}
+              {!corpusError && corpusHits.length === 0 && !corpusLoading && (
+                <div className={styles.pickerEmpty}>
+                  {corpusQuery
+                    ? "Keine Treffer."
+                    : "Tippe einen Suchbegriff oder waehle Filter."}
+                </div>
+              )}
+              {corpusHits.map((hit) => {
+                const Icon = KIND_ICON[hit.kind];
+                return (
+                  <button
+                    key={hit.id}
+                    type="button"
+                    onClick={() => pinHit(hit)}
+                    className={styles.pickerResult}
+                  >
+                    <div className={styles.pickerResultHead}>
+                      <span className={styles.pickerResultKind}>
+                        <Icon size={10} strokeWidth={1.8} />
+                        {KIND_LABEL[hit.kind]}
+                        {hit.jurisdiction && hit.kind === "nat" && (
+                          <span className={styles.pickerResultJurisdiction}>
+                            {" "}
+                            · {hit.jurisdiction}
+                          </span>
+                        )}
+                      </span>
+                      <span className={styles.pickerResultCite}>
+                        {hit.citation}
+                      </span>
+                    </div>
+                    <div className={styles.pickerResultTitle}>{hit.title}</div>
+                    <div className={styles.pickerResultBody}>{hit.content}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={styles.composerActions}>
+              <button
+                type="button"
+                onClick={() => {
+                  setComposerOpen(false);
+                  setCorpusQuery("");
+                  setCorpusHits([]);
+                }}
+                className={styles.composerCancel}
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+        {composerOpen && composerArchetype !== "source" && (
           <div className={styles.composer}>
             {/* Type-tag at the top so user knows what kind of card
                 they're authoring after picking from the radial menu. */}

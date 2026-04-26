@@ -653,6 +653,211 @@
   text-transform: uppercase;
 }
 
+/* Inline hint inside the type-tag, e.g. "· Atlas-Korpus durchsuchen"
+   appended to the picker variant. Lower-case + lighter weight so it
+   reads as secondary metadata rather than a label. */
+.composerTypeHint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  opacity: 0.65;
+  margin-left: 2px;
+}
+
+/* ───────── Corpus picker ─────────
+   Replaces the freeform textarea when archetype === "source". Wider
+   container, no fixed height — results scroll inside. The picker
+   needs more vertical room than the regular composer because the
+   result list is the whole point. */
+
+.composerPicker {
+  width: 460px;
+  max-height: 480px;
+  bottom: 200px;
+}
+
+.pickerSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 32px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.pickerSearchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(248, 250, 255, 0.45);
+}
+.pickerSearchInput {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--ws-text);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0;
+}
+.pickerSearchInput::placeholder {
+  color: rgba(248, 250, 255, 0.32);
+}
+.pickerSearchSpin {
+  color: rgba(160, 200, 240, 0.85);
+}
+
+.pickerKindRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.pickerKindChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(248, 250, 255, 0.55);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.pickerKindChip:hover {
+  color: rgba(248, 250, 255, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+}
+.pickerKindChipActive {
+  background: linear-gradient(
+    135deg,
+    rgba(80, 200, 160, 0.22) 0%,
+    rgba(120, 200, 220, 0.22) 100%
+  );
+  border-color: rgba(140, 220, 200, 0.36);
+  color: rgba(220, 250, 240, 0.95);
+}
+
+.pickerResults {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 2px;
+  /* Cap the result list so the picker doesn't shoot off-screen on
+     low-resolution monitors. Matches the composer max-height. */
+  max-height: 320px;
+}
+/* Custom scrollbar — subtle, dark, only visible on hover. */
+.pickerResults::-webkit-scrollbar {
+  width: 6px;
+}
+.pickerResults::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+.pickerResults::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.pickerEmpty,
+.pickerError {
+  padding: 14px 10px;
+  font-size: 11.5px;
+  color: rgba(248, 250, 255, 0.42);
+  text-align: center;
+  font-style: italic;
+}
+.pickerError {
+  color: rgba(255, 180, 170, 0.7);
+  font-style: normal;
+}
+
+.pickerResult {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.08s ease;
+  font-family: inherit;
+}
+.pickerResult:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(140, 220, 200, 0.3);
+  transform: translateX(1px);
+}
+.pickerResultHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.pickerResultKind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(180, 220, 210, 0.8);
+}
+.pickerResultJurisdiction {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.pickerResultCite {
+  font-size: 10px;
+  color: rgba(248, 250, 255, 0.42);
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: -0.01em;
+}
+.pickerResultTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ws-text);
+  letter-spacing: -0.01em;
+  /* Cap to two lines so very long titles don't bloat the row. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pickerResultBody {
+  font-size: 11px;
+  color: rgba(248, 250, 255, 0.55);
+  line-height: 1.45;
+  /* Three-line clamp keeps results scannable; the lawyer pins it to
+     read the full content. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ───────── Radial menu ─────────
    Right-click pops this at the cursor. Four arc-positioned buttons
    around a faint center dot. Pop-in animation on mount. */
