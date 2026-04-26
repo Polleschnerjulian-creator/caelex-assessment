@@ -859,6 +859,9 @@ describe("promoteStandaloneMatter", () => {
   });
 
   it("transitions STANDALONE matter to PENDING_INVITE and mints token", async () => {
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      async (cb) => cb(prisma),
+    );
     (
       prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValueOnce({
@@ -867,9 +870,6 @@ describe("promoteStandaloneMatter", () => {
       lawFirmOrgId: "lf_1",
       clientOrgId: null,
     });
-    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementationOnce(
-      async (cb) => cb(prisma),
-    );
     (
       prisma.legalMatter.update as ReturnType<typeof vi.fn>
     ).mockResolvedValueOnce({
@@ -897,9 +897,19 @@ describe("promoteStandaloneMatter", () => {
         status: "PENDING_INVITE",
       }),
     });
+    expect(prisma.legalMatterInvitation.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        matterId: "m_solo_1",
+        proposedDurationMonths: 12,
+        proposedScope: [{ category: "DOCUMENTS", permissions: ["READ"] }],
+      }),
+    });
   });
 
   it("rejects when matter is not in STANDALONE state", async () => {
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      async (cb) => cb(prisma),
+    );
     (
       prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValueOnce({
@@ -913,7 +923,7 @@ describe("promoteStandaloneMatter", () => {
       promoteStandaloneMatter({
         matterId: "m_active",
         clientOrgId: "co_2",
-        scope: [],
+        scope: [{ category: "DOCUMENTS", permissions: ["READ"] }],
         durationMonths: 12,
         invitingUserId: "u_1",
       }),
@@ -923,6 +933,9 @@ describe("promoteStandaloneMatter", () => {
   });
 
   it("rejects when matter does not exist", async () => {
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      async (cb) => cb(prisma),
+    );
     (
       prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValueOnce(null);
@@ -931,7 +944,7 @@ describe("promoteStandaloneMatter", () => {
       promoteStandaloneMatter({
         matterId: "m_missing",
         clientOrgId: "co_1",
-        scope: [],
+        scope: [{ category: "DOCUMENTS", permissions: ["READ"] }],
         durationMonths: 12,
         invitingUserId: "u_1",
       }),

@@ -42,8 +42,7 @@ export type MatterServiceErrorCode =
   | "SCOPE_WIDENED"
   | "NOT_AUTHORIZED"
   | "MATTER_NOT_FOUND"
-  | "INVALID_STATE_FOR_PROMOTE"
-  | "MATTER_NOT_STANDALONE";
+  | "INVALID_STATE_FOR_PROMOTE";
 
 export class MatterServiceError extends Error {
   constructor(
@@ -631,23 +630,37 @@ export async function promoteStandaloneMatter(input: {
   durationMonths: number;
   invitingUserId: string;
 }): Promise<{ rawAcceptToken: string; expiresAt: Date }> {
-  const matter = await prisma.legalMatter.findUnique({
-    where: { id: input.matterId },
-    select: { id: true, status: true, lawFirmOrgId: true, clientOrgId: true },
-  });
-  if (!matter) {
-    throw new MatterServiceError("MATTER_NOT_FOUND", "Matter nicht gefunden");
-  }
-  if (matter.status !== "STANDALONE") {
+  // Scope-validation in service-layer (matches createInvite pattern,
+  // defense-in-depth against direct callers bypassing the API Zod gate).
+  const scopeParse = ScopeSchema.safeParse(input.scope);
+  if (!scopeParse.success) {
     throw new MatterServiceError(
-      "INVALID_STATE_FOR_PROMOTE",
-      `Promote nur aus STANDALONE möglich, aktueller Status: ${matter.status}`,
+      "INVALID_SCOPE",
+      "Proposed scope failed schema validation",
     );
   }
 
+  // Mint token outside the transaction — same pattern as createInvite.
   const token = mintInviteToken();
 
-  await prisma.$transaction(async (tx) => {
+  // Run the state-transition + invitation create as a single atomic unit,
+  // re-checking status inside the transaction to close the race window
+  // between the initial read and the write (parallel promote requests).
+  const result = await prisma.$transaction(async (tx) => {
+    const current = await tx.legalMatter.findUnique({
+      where: { id: input.matterId },
+      select: { id: true, status: true },
+    });
+    if (!current) {
+      throw new MatterServiceError("MATTER_NOT_FOUND", "Matter nicht gefunden");
+    }
+    if (current.status !== "STANDALONE") {
+      throw new MatterServiceError(
+        "INVALID_STATE_FOR_PROMOTE",
+        `Promote nur aus STANDALONE möglich, aktueller Status: ${current.status}`,
+      );
+    }
+
     await tx.legalMatter.update({
       where: { id: input.matterId },
       data: {
@@ -667,7 +680,9 @@ export async function promoteStandaloneMatter(input: {
         proposedDurationMonths: input.durationMonths,
       },
     });
+
+    return { rawAcceptToken: token.raw, expiresAt: token.expiresAt };
   });
 
-  return { rawAcceptToken: token.raw, expiresAt: token.expiresAt };
+  return result;
 }
