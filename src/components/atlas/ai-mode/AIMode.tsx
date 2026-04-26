@@ -979,7 +979,11 @@ export function AIMode({ open, onClose }: AIModeProps) {
         <AtlasEntity
           mode={mode}
           audioLevel={audioLevel}
-          starsHidden={stageMinimized}
+          /* Stars stay visible in workspace mode — the user wants the
+             Atlas stage (black + starfield) to read THROUGH the glass
+             panel, like a pinboard hung in front of the cosmos. They
+             only hide during a chat conversation. */
+          starsHidden={hasConversation}
           onReady={(handle) => {
             entityHandle.current = handle;
           }}
@@ -1296,35 +1300,32 @@ export function AIMode({ open, onClose }: AIModeProps) {
           ))}
         </div>
 
-        {/* Token meter — hidden in workspace mode (no chat input there). */}
-        {!workspaceOpen && (
-          <div className={styles.tokens} aria-hidden="true">
+        {/* Token meter — visible in workspace mode too; the input pill
+            below remains active so the user can still ask Atlas while
+            the pinboard is open. */}
+        <div className={styles.tokens} aria-hidden="true">
+          <div
+            key={tokenPulse}
+            className={`${styles.tokenBar} ${styles.tokenPulse}`}
+          >
             <div
-              key={tokenPulse}
-              className={`${styles.tokenBar} ${styles.tokenPulse}`}
-            >
-              <div
-                className={`${styles.tokenFill} ${tokenCrit ? styles.tokenFillCritical : tokenWarn ? styles.tokenFillWarning : ""}`}
-                style={{ width: `${Math.max(0.6, tokenPct)}%` }}
-              />
-            </div>
-            <div className={styles.tokensLabel}>
-              <span className={styles.tokensCurrent}>
-                {fmtTokens(currentTokens)}
-              </span>
-              <span className={styles.tokensSep}>/</span>
-              <span className={styles.tokensMax}>
-                {MODELS[modelName].label}
-              </span>
-            </div>
+              className={`${styles.tokenFill} ${tokenCrit ? styles.tokenFillCritical : tokenWarn ? styles.tokenFillWarning : ""}`}
+              style={{ width: `${Math.max(0.6, tokenPct)}%` }}
+            />
           </div>
-        )}
+          <div className={styles.tokensLabel}>
+            <span className={styles.tokensCurrent}>
+              {fmtTokens(currentTokens)}
+            </span>
+            <span className={styles.tokensSep}>/</span>
+            <span className={styles.tokensMax}>{MODELS[modelName].label}</span>
+          </div>
+        </div>
 
-        {/* Pill — hidden in workspace mode (workspace has its own
-            composer for adding cards, doesn't need the chat input). */}
+        {/* Pill — chat input. Stays visible in workspace mode so the
+            user can keep asking Atlas while the pinboard is open. */}
         <div
           className={`${styles.pill} ${pillHasText ? styles.pillHasText : ""}`}
-          style={workspaceOpen ? { display: "none" } : undefined}
         >
           <button
             type="button"

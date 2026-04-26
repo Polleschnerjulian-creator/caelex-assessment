@@ -1,30 +1,28 @@
 /* ===================================================================
-   Workspace Pinboard — full-stage liquid glass with orb cutout
+   Workspace Pinboard — pinboard-style overlay over the Atlas stage.
 
-   The orb in entityMinimized state sits at roughly 14% × 17% of the
-   viewport, with a visual radius of ~75px after scale(0.22). The
-   mask-image radial-gradient punches a soft hole at that location
-   so the panel wraps the orb without ever painting over it.
+   Visual concept (final):
+   - Atlas black + starfield stays visible behind the panel.
+   - The panel itself is a barely-tinted glass with a classic dot-grid
+     pattern (radial-gradient repeat) so it reads as a pinboard hung
+     in front of the stage — not a heavy frosted overlay.
+   - Mask-image cutout exposes the minimised orb in the top-left.
+   - Cards pin onto the dot grid; chat input + token meter remain
+     below the panel as part of the overall stage UI.
    ================================================================== */
 
-/* Variables live on the wrapper (.root) so the cascade reaches the
-   sibling glass panel, cutout ring, and content layers.
-   Defining them on `:root` would be a global selector — rejected by
-   CSS-Modules (every selector must contain at least one local class). */
 .root {
   --ws-orb-x: 14%;
   --ws-orb-y: 17%;
   --ws-orb-r: 80px;
   --ws-orb-feather: 28px;
-  /* On a pitch-black Atlas stage, a translucent panel is invisible
-     because there's nothing behind to blur or refract. We need to
-     fake the glass with explicit light: a brighter base, a vivid
-     top sheen, a clear border, and a backlit feel. */
-  --ws-glass-bg: rgba(70, 78, 100, 0.86);
-  --ws-glass-border: rgba(255, 255, 255, 0.28);
+  /* Dot-grid spacing + dot color for the pinboard texture. */
+  --ws-dot-size: 24px;
+  --ws-dot-color: rgba(255, 255, 255, 0.14);
+  --ws-glass-border: rgba(255, 255, 255, 0.1);
   --ws-text: rgba(248, 250, 255, 0.96);
-  --ws-text-mute: rgba(248, 250, 255, 0.7);
-  --ws-text-dim: rgba(248, 250, 255, 0.4);
+  --ws-text-mute: rgba(248, 250, 255, 0.65);
+  --ws-text-dim: rgba(248, 250, 255, 0.36);
 
   position: absolute;
   inset: 0;
@@ -32,7 +30,9 @@
   pointer-events: none;
 }
 
-/* ───────── Liquid-glass panel ───────── */
+/* ───────── Pinboard panel ─────────
+   Dot-grid texture over a barely-there glass wash. Stars + black
+   stage shine through. */
 
 .glassPanel {
   position: absolute;
@@ -40,42 +40,30 @@
   z-index: 4;
   pointer-events: auto;
 
-  /* Layered background — explicit faked-glass since the black stage
-     gives backdrop-filter nothing to work with. Top-down luminous
-     sheen drops off into a richer dark base. */
   background:
-    /* Top sheen — bright reflective band at the upper edge */
+    radial-gradient(
+      circle at 1px 1px,
+      var(--ws-dot-color) 1px,
+      transparent 1.5px
+    ),
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.18) 0%,
-      rgba(255, 255, 255, 0.04) 8%,
-      transparent 22%
-    ),
-    /* Right-to-left ambient glow */
-    radial-gradient(
-        ellipse 90% 60% at 80% 20%,
-        rgba(180, 210, 255, 0.12),
-        transparent 60%
-      ),
-    /* Bottom-left violet accent */
-    radial-gradient(
-        ellipse 100% 70% at 20% 100%,
-        rgba(140, 110, 200, 0.1),
-        transparent 70%
-      ),
-    /* Base panel tint */
-    linear-gradient(
-        135deg,
-        rgba(85, 92, 118, 0.9) 0%,
-        rgba(58, 64, 86, 0.88) 50%,
-        rgba(45, 50, 70, 0.9) 100%
-      );
-  backdrop-filter: blur(36px) saturate(160%);
-  -webkit-backdrop-filter: blur(36px) saturate(160%);
+      rgba(255, 255, 255, 0.025) 0%,
+      rgba(255, 255, 255, 0.012) 100%
+    );
+  background-size:
+    var(--ws-dot-size) var(--ws-dot-size),
+    100% 100%;
+  background-position:
+    12px 12px,
+    0 0;
 
-  /* Mask cutout — the area inside the radial-gradient becomes
-     transparent, the rest stays opaque. The feather between
-     orb-r and (orb-r + feather) gives a soft edge. */
+  /* Light blur — softly diffuses what sits behind without erasing
+     the starfield. The stage MUST read through. */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+
+  /* Mask cutout — exposes the minimised orb with a soft feather. */
   mask-image: radial-gradient(
     circle var(--ws-orb-r) at var(--ws-orb-x) var(--ws-orb-y),
     transparent 0,
@@ -89,24 +77,18 @@
     black var(--ws-orb-r)
   );
 
-  /* Strong rim highlights so the panel reads as a deliberate glass
-     surface. Top edge gets a bright reflection, the border ring
-     stays crisp, bottom edge picks up a faint shadow line. */
+  /* Subtle inset edges only — no heavy borders. The dot grid is
+     the visual anchor. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 0 0 1px var(--ws-glass-border),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    inset 1px 0 0 rgba(255, 255, 255, 0.06),
-    inset -1px 0 0 rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 0 1px var(--ws-glass-border);
 
-  animation: ws-fade-in 320ms ease-out;
+  animation: ws-fade-in 280ms ease-out;
 }
 
 @keyframes ws-fade-in {
   from {
     opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
   }
   to {
     opacity: 1;
@@ -114,8 +96,8 @@
 }
 
 /* ───────── Orb cutout ring ─────────
-   Rendered as a separate element so we get a thin highlight
-   on the cutout boundary without affecting the mask. */
+   Thin rim highlight around the cutout edge so the boundary between
+   panel and orb-pocket is legible. */
 .cutoutRing {
   position: absolute;
   left: var(--ws-orb-x);
@@ -126,13 +108,10 @@
   border-radius: 50%;
   pointer-events: none;
   z-index: 5;
-  /* Pronounced cutout — bright inner rim + cool blue rim glow so
-     the orb pocket reads as a luminous well in the glass. */
   box-shadow:
-    inset 0 0 32px rgba(255, 255, 255, 0.12),
-    0 0 0 1.5px rgba(255, 255, 255, 0.3),
-    0 0 32px -4px rgba(160, 200, 255, 0.25),
-    0 0 60px -16px rgba(180, 220, 255, 0.18);
+    inset 0 0 16px rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 28px -6px rgba(180, 220, 255, 0.18);
 }
 
 /* ───────── Content layer ───────── */
@@ -156,8 +135,8 @@
   gap: 12px;
   padding: 9px 14px 9px 16px;
   border-radius: 999px;
-  background: rgba(15, 15, 18, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 15, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   color: var(--ws-text);
@@ -167,7 +146,7 @@
   font-weight: 500;
   pointer-events: auto;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 8px 24px -8px rgba(0, 0, 0, 0.6);
 }
 .headerIcon {
@@ -202,17 +181,17 @@
 }
 
 /* ───────── Card area ─────────
-   Sits to the right of the orb cutout. Top reserves room for
-   the header pill, bottom for the composer / input bar. */
+   To the right of the orb cutout. Bottom leaves room for the chat
+   input pill (which now stays visible in workspace mode too). */
 
 .cardArea {
   position: absolute;
   top: 96px;
   right: 64px;
-  bottom: 200px;
-  /* Start the card area to the right of the orb cutout — orb is at
-     14% horizontally with ~80px radius, so card area starts at ~30%
-     of viewport so cards never sit on top of the orb. */
+  /* Reserve space at the bottom for the persistent chat-input pill
+     and token meter. The pill sits ~bottom: 100px, token bar above
+     it, plus quick-actions hidden — total clearance ~280px. */
+  bottom: 280px;
   left: max(30vw, 360px);
   overflow-y: auto;
   padding: 4px 8px;
@@ -277,26 +256,26 @@
 
 .card {
   position: relative;
-  background: rgba(28, 28, 32, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 22, 28, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 16px;
-  backdrop-filter: blur(18px) saturate(130%);
-  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   color: var(--ws-text);
   font-size: 12.5px;
   line-height: 1.55;
   letter-spacing: -0.005em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 4px 14px -4px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 24px -8px rgba(0, 0, 0, 0.6);
   transition:
     transform 0.18s ease,
     border-color 0.18s ease;
 }
 .card:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .cardRemove {
   position: absolute;
@@ -327,15 +306,15 @@
 .cardContent {
   margin: 0;
   white-space: pre-wrap;
-  color: rgba(245, 245, 244, 0.7);
+  color: rgba(248, 250, 255, 0.75);
 }
 
-/* ───────── Floating add (FAB) ───────── */
+/* ───────── Floating add (FAB) — sits above the chat input ───────── */
 
 .fab {
   position: absolute;
   right: 64px;
-  bottom: 232px;
+  bottom: 312px;
   width: 46px;
   height: 46px;
   border-radius: 999px;
@@ -364,9 +343,9 @@
 .composer {
   position: absolute;
   right: 64px;
-  bottom: 212px;
+  bottom: 296px;
   width: 400px;
-  background: rgba(15, 15, 18, 0.88);
+  background: rgba(15, 15, 18, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   padding: 14px 14px 10px;
@@ -392,13 +371,13 @@
   font-family: inherit;
 }
 .composerTitle::placeholder {
-  color: rgba(245, 245, 244, 0.32);
+  color: rgba(248, 250, 255, 0.32);
 }
 .composerBody {
   background: transparent;
   border: 0;
   outline: 0;
-  color: rgba(245, 245, 244, 0.78);
+  color: rgba(248, 250, 255, 0.78);
   font-size: 12.5px;
   line-height: 1.5;
   letter-spacing: -0.005em;
@@ -407,7 +386,7 @@
   font-family: inherit;
 }
 .composerBody::placeholder {
-  color: rgba(245, 245, 244, 0.28);
+  color: rgba(248, 250, 255, 0.28);
 }
 .composerActions {
   display: flex;
@@ -457,7 +436,7 @@
   .cardArea {
     left: 24px;
     right: 24px;
-    bottom: 220px;
+    bottom: 280px;
   }
   .composer {
     right: 24px;
