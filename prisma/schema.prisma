@@ -8643,6 +8643,7 @@ enum OrganizationType {
 }
 
 enum MatterStatus {
+  STANDALONE       // solo workspace, kein client, kein handshake
   PENDING_INVITE // token sent, no acceptance yet
   PENDING_CONSENT // token accepted with amendment; awaiting counter-signature
   ACTIVE
@@ -8677,7 +8678,7 @@ model LegalMatter {
 
   // Identities — both sides of the relationship
   lawFirmOrgId String
-  clientOrgId  String
+  clientOrgId  String?  // null im STANDALONE-State (workspace ohne Mandant)
 
   // Human labels
   name        String
@@ -8714,7 +8715,7 @@ model LegalMatter {
   updatedAt DateTime @updatedAt
 
   lawFirmOrg Organization @relation("LegalMatterFirm", fields: [lawFirmOrgId], references: [id], onDelete: Cascade)
-  clientOrg  Organization @relation("LegalMatterClient", fields: [clientOrgId], references: [id], onDelete: Cascade)
+  clientOrg  Organization? @relation("LegalMatterClient", fields: [clientOrgId], references: [id], onDelete: Cascade)
 
   accessLogs  LegalMatterAccessLog[]
   invitations LegalMatterInvitation[]
