@@ -17,13 +17,14 @@
   --ws-orb-r: 80px;
   --ws-orb-feather: 28px;
   /* On a pitch-black Atlas stage, a translucent panel is invisible
-     because there's nothing to blur. Need a noticeable lift via
-     a brighter base + a soft luminous gradient. */
-  --ws-glass-bg: rgba(38, 40, 52, 0.72);
-  --ws-glass-border: rgba(255, 255, 255, 0.14);
-  --ws-text: rgba(245, 245, 244, 0.95);
-  --ws-text-mute: rgba(245, 245, 244, 0.6);
-  --ws-text-dim: rgba(245, 245, 244, 0.36);
+     because there's nothing behind to blur or refract. We need to
+     fake the glass with explicit light: a brighter base, a vivid
+     top sheen, a clear border, and a backlit feel. */
+  --ws-glass-bg: rgba(70, 78, 100, 0.86);
+  --ws-glass-border: rgba(255, 255, 255, 0.28);
+  --ws-text: rgba(248, 250, 255, 0.96);
+  --ws-text-mute: rgba(248, 250, 255, 0.7);
+  --ws-text-dim: rgba(248, 250, 255, 0.4);
 
   position: absolute;
   inset: 0;
@@ -39,29 +40,38 @@
   z-index: 4;
   pointer-events: auto;
 
-  /* Multi-layer background to make the panel actually visible on the
-     pure-black Atlas stage. A faint diagonal gradient gives the glass
-     a sense of depth + light source; a subtle radial fade at the top-
-     right hints at ambient illumination. */
+  /* Layered background — explicit faked-glass since the black stage
+     gives backdrop-filter nothing to work with. Top-down luminous
+     sheen drops off into a richer dark base. */
   background:
-    radial-gradient(
-      ellipse 90% 70% at 75% 20%,
-      rgba(160, 200, 255, 0.05),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 120% 100% at 30% 100%,
-      rgba(80, 60, 100, 0.06),
-      transparent 65%
-    ),
+    /* Top sheen — bright reflective band at the upper edge */
     linear-gradient(
-      135deg,
-      rgba(45, 48, 65, 0.78) 0%,
-      rgba(28, 30, 40, 0.7) 50%,
-      rgba(22, 23, 30, 0.72) 100%
-    );
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
+      180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.04) 8%,
+      transparent 22%
+    ),
+    /* Right-to-left ambient glow */
+    radial-gradient(
+        ellipse 90% 60% at 80% 20%,
+        rgba(180, 210, 255, 0.12),
+        transparent 60%
+      ),
+    /* Bottom-left violet accent */
+    radial-gradient(
+        ellipse 100% 70% at 20% 100%,
+        rgba(140, 110, 200, 0.1),
+        transparent 70%
+      ),
+    /* Base panel tint */
+    linear-gradient(
+        135deg,
+        rgba(85, 92, 118, 0.9) 0%,
+        rgba(58, 64, 86, 0.88) 50%,
+        rgba(45, 50, 70, 0.9) 100%
+      );
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
 
   /* Mask cutout — the area inside the radial-gradient becomes
      transparent, the rest stays opaque. The feather between
@@ -79,12 +89,15 @@
     black var(--ws-orb-r)
   );
 
-  /* Inner glow + outer ring so the panel reads as a clearly bounded
-     glass surface rather than a vague dark wash. */
+  /* Strong rim highlights so the panel reads as a deliberate glass
+     surface. Top edge gets a bright reflection, the border ring
+     stays crisp, bottom edge picks up a faint shadow line. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
     inset 0 0 0 1px var(--ws-glass-border),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 rgba(0, 0, 0, 0.2);
 
   animation: ws-fade-in 320ms ease-out;
 }
@@ -113,12 +126,13 @@
   border-radius: 50%;
   pointer-events: none;
   z-index: 5;
-  /* Faint inner glow + crisp outer ring so the cutout boundary reads
-     as a deliberate edge between glass and orb-pocket. */
+  /* Pronounced cutout — bright inner rim + cool blue rim glow so
+     the orb pocket reads as a luminous well in the glass. */
   box-shadow:
-    inset 0 0 28px rgba(255, 255, 255, 0.05),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 0 24px -4px rgba(160, 200, 255, 0.08);
+    inset 0 0 32px rgba(255, 255, 255, 0.12),
+    0 0 0 1.5px rgba(255, 255, 255, 0.3),
+    0 0 32px -4px rgba(160, 200, 255, 0.25),
+    0 0 60px -16px rgba(180, 220, 255, 0.18);
 }
 
 /* ───────── Content layer ───────── */

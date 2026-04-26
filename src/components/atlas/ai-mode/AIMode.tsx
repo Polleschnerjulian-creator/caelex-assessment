@@ -1040,7 +1040,12 @@ export function AIMode({ open, onClose }: AIModeProps) {
           Zeigt semantische Quellen aus dem Atlas-Corpus, live-
           zitate aus Claudes antwort, und modell-info. Versteckt
           sich unter 1280px screen width. */}
-      <ContextPanel query={contextQuery} assistantText={contextAssistantText} />
+      {!workspaceOpen && (
+        <ContextPanel
+          query={contextQuery}
+          assistantText={contextAssistantText}
+        />
+      )}
 
       {/* ─ Top bar ─ */}
       {/* Brand-label oben-links wurde entfernt — in aktiver conversation
