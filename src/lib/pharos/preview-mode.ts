@@ -5,7 +5,7 @@ import "server-only";
  *
  * Pharos Preview-Mode — TEMPORARY developer convenience.
  *
- * Activated by setting env-var `PHAROS_OPEN_PREVIEW=1`. While active,
+ * Hard-coded ON via the PREVIEW_OPEN constant below. While active,
  * any authenticated visitor to /pharos is auto-provisioned a demo
  * AUTHORITY org + AuthorityProfile (idempotent), so they can poke
  * around the workspace without first running the seed script or
@@ -18,7 +18,7 @@ import "server-only";
  * so all existing pages and APIs work without modification.
  *
  * ⚠️  REMOVE BEFORE PROD:
- *     1. Unset PHAROS_OPEN_PREVIEW in Vercel Project Settings.
+ *     1. Set PREVIEW_OPEN below to `false` (one-line edit).
  *     2. (Optional) Delete the auto-created "Pharos Preview" org from
  *        the DB — or leave it, it's harmless once the flag is off.
  *     3. (Optional) Delete this file once we don't need preview-mode
@@ -37,8 +37,12 @@ const DEMO_ORG_SLUG = "pharos-preview";
 const DEMO_ORG_NAME = "Pharos Preview Authority";
 const EPOCH = new Date(0);
 
+// 🚧 PREVIEW MODE TOGGLE — set to `false` before going to production.
+//    No env-var, no redeploy dance: flip this constant, push, done.
+const PREVIEW_OPEN = true;
+
 export function isPharosPreviewOpen(): boolean {
-  return process.env.PHAROS_OPEN_PREVIEW === "1";
+  return PREVIEW_OPEN;
 }
 
 /**
