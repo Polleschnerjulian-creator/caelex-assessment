@@ -90,6 +90,7 @@ import {
   revokeMatter,
   setMatterStatus,
   createStandaloneMatter,
+  promoteStandaloneMatter,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
 
@@ -847,5 +848,95 @@ describe("createStandaloneMatter", () => {
     expect(callArg.data.name).toMatch(
       /^Neuer Workspace · \d{2}\.\d{2}\.\d{4}$/,
     );
+  });
+});
+
+// ─── promoteStandaloneMatter ──────────────────────────────────────────
+
+describe("promoteStandaloneMatter", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("transitions STANDALONE matter to PENDING_INVITE and mints token", async () => {
+    (
+      prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
+      id: "m_solo_1",
+      status: "STANDALONE",
+      lawFirmOrgId: "lf_1",
+      clientOrgId: null,
+    });
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      async (cb) => cb(prisma),
+    );
+    (
+      prisma.legalMatter.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
+      id: "m_solo_1",
+      status: "PENDING_INVITE",
+    });
+    (
+      prisma.legalMatterInvitation.create as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({ id: "inv_1" });
+
+    const result = await promoteStandaloneMatter({
+      matterId: "m_solo_1",
+      clientOrgId: "co_1",
+      scope: [{ category: "DOCUMENTS", permissions: ["READ"] }],
+      durationMonths: 12,
+      invitingUserId: "u_1",
+    });
+
+    expect(result.rawAcceptToken).toBeTruthy();
+    expect(result.expiresAt).toBeInstanceOf(Date);
+    expect(prisma.legalMatter.update).toHaveBeenCalledWith({
+      where: { id: "m_solo_1" },
+      data: expect.objectContaining({
+        clientOrgId: "co_1",
+        status: "PENDING_INVITE",
+      }),
+    });
+  });
+
+  it("rejects when matter is not in STANDALONE state", async () => {
+    (
+      prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
+      id: "m_active",
+      status: "ACTIVE",
+      lawFirmOrgId: "lf_1",
+      clientOrgId: "co_1",
+    });
+
+    await expect(
+      promoteStandaloneMatter({
+        matterId: "m_active",
+        clientOrgId: "co_2",
+        scope: [],
+        durationMonths: 12,
+        invitingUserId: "u_1",
+      }),
+    ).rejects.toMatchObject({
+      code: "INVALID_STATE_FOR_PROMOTE",
+    });
+  });
+
+  it("rejects when matter does not exist", async () => {
+    (
+      prisma.legalMatter.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce(null);
+
+    await expect(
+      promoteStandaloneMatter({
+        matterId: "m_missing",
+        clientOrgId: "co_1",
+        scope: [],
+        durationMonths: 12,
+        invitingUserId: "u_1",
+      }),
+    ).rejects.toMatchObject({
+      code: "MATTER_NOT_FOUND",
+    });
   });
 });

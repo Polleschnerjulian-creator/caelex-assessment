@@ -40,7 +40,10 @@ export type MatterServiceErrorCode =
   | "TOKEN_EXPIRED"
   | "MATTER_WRONG_STATE"
   | "SCOPE_WIDENED"
-  | "NOT_AUTHORIZED";
+  | "NOT_AUTHORIZED"
+  | "MATTER_NOT_FOUND"
+  | "INVALID_STATE_FOR_PROMOTE"
+  | "MATTER_NOT_STANDALONE";
 
 export class MatterServiceError extends Error {
   constructor(
@@ -608,4 +611,63 @@ export async function createStandaloneMatter(input: {
   });
 
   return { matterId: created.id };
+}
+
+// ─── Promote standalone matter ────────────────────────────────────────
+
+/**
+ * Promotet ein STANDALONE-Matter zum echten Mandat. Mandant + Scope
+ * kommen rein, Status → PENDING_INVITE, accept-token wird geminted.
+ * Ab hier läuft der existing accept-flow.
+ *
+ * Werft INVALID_STATE_FOR_PROMOTE wenn der Matter nicht in STANDALONE
+ * ist — kein silent-overwrite, weil das die scope/handshake-Semantik
+ * eines bereits aktiven Matters zerstören würde.
+ */
+export async function promoteStandaloneMatter(input: {
+  matterId: string;
+  clientOrgId: string;
+  scope: ScopeItem[];
+  durationMonths: number;
+  invitingUserId: string;
+}): Promise<{ rawAcceptToken: string; expiresAt: Date }> {
+  const matter = await prisma.legalMatter.findUnique({
+    where: { id: input.matterId },
+    select: { id: true, status: true, lawFirmOrgId: true, clientOrgId: true },
+  });
+  if (!matter) {
+    throw new MatterServiceError("MATTER_NOT_FOUND", "Matter nicht gefunden");
+  }
+  if (matter.status !== "STANDALONE") {
+    throw new MatterServiceError(
+      "INVALID_STATE_FOR_PROMOTE",
+      `Promote nur aus STANDALONE möglich, aktueller Status: ${matter.status}`,
+    );
+  }
+
+  const token = mintInviteToken();
+
+  await prisma.$transaction(async (tx) => {
+    await tx.legalMatter.update({
+      where: { id: input.matterId },
+      data: {
+        clientOrgId: input.clientOrgId,
+        scope: input.scope as unknown as Prisma.InputJsonValue,
+        status: "PENDING_INVITE",
+        invitedBy: input.invitingUserId,
+        invitedAt: new Date(),
+      },
+    });
+    await tx.legalMatterInvitation.create({
+      data: {
+        matterId: input.matterId,
+        tokenHash: token.hash,
+        expiresAt: token.expiresAt,
+        proposedScope: input.scope as unknown as Prisma.InputJsonValue,
+        proposedDurationMonths: input.durationMonths,
+      },
+    });
+  });
+
+  return { rawAcceptToken: token.raw, expiresAt: token.expiresAt };
 }
