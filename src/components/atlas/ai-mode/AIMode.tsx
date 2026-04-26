@@ -53,6 +53,10 @@ import {
 } from "./ActionPanels";
 import { MorningBrief } from "./MorningBrief";
 import { LibrarySaveButton } from "./LibrarySaveButton";
+import {
+  WorkspacePinboardInline,
+  type WorkspaceCard,
+} from "./WorkspacePinboardInline";
 import styles from "./ai-mode.module.css";
 
 // ─── Config ────────────────────────────────────────────────────────────
@@ -216,6 +220,13 @@ export function AIMode({ open, onClose }: AIModeProps) {
   const [audioLevel, setAudioLevel] = useState(0);
   const [activePanel, setActivePanel] = useState<ActionPanelKey | null>(null);
 
+  // Workspace state — inline Pinboard rendered around the minimised orb
+  // when open. Cards live in-memory for now; persistence (lazy STANDALONE
+  // matter on first pin) wires in once the LegalMatter schema is live
+  // in production.
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [workspaceCards, setWorkspaceCards] = useState<WorkspaceCard[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const cmdInputRef = useRef<HTMLInputElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
@@ -242,6 +253,10 @@ export function AIMode({ open, onClose }: AIModeProps) {
       setAttachments([]);
       setCmdOpen(false);
       setActivePanel(null);
+      setWorkspaceOpen(false);
+      // Workspace cards keep across open/close while the user stays in
+      // the Atlas tab — the cards are session-local so they survive
+      // toggles of the AI overlay but get cleared on tab close.
     }
   }, [open]);
 
@@ -296,6 +311,10 @@ export function AIMode({ open, onClose }: AIModeProps) {
       if (e.key === "Escape") {
         if (cmdOpen) {
           setCmdOpen(false);
+        } else if (workspaceOpen) {
+          // Close workspace before closing the entire overlay so a
+          // single Esc never accidentally drops the user out of Atlas.
+          setWorkspaceOpen(false);
         } else {
           onClose();
         }
@@ -303,7 +322,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open, cmdOpen, onClose]);
+  }, [open, cmdOpen, onClose, workspaceOpen]);
 
   // ── Command palette focus ──────────────────────────────────
   useEffect(() => {
@@ -767,6 +786,9 @@ export function AIMode({ open, onClose }: AIModeProps) {
   // "aktiv"-layout-state: orb schrumpft + wandert oben-links, die
   // konversation bekommt den zentralen platz, der text wird lesbar.
   const hasConversation = messages.length > 0;
+  // Orb minimises whenever there's content around it — chat or
+  // workspace pinboard. Same visual transition for both modes.
+  const stageMinimized = hasConversation || workspaceOpen;
 
   // ── ContextPanel inputs ────────────────────────────────────
   // Die "aktive anfrage" ist die letzte user-message. Der streaming-
@@ -840,27 +862,11 @@ export function AIMode({ open, onClose }: AIModeProps) {
     (action: QuickAction) => {
       playSound("click");
       if (action.panel === "workspace") {
-        // Direkt-navigate — kein Panel
-        void (async () => {
-          try {
-            const res = await fetch("/api/atlas/workspace", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({}),
-            });
-            const json = (await res.json()) as {
-              error?: string;
-              matterId?: string;
-            };
-            if (!res.ok) {
-              toast(json.error ?? "Workspace konnte nicht angelegt werden");
-              return;
-            }
-            router.push(`/atlas/network/${json.matterId}/workspace`);
-          } catch (err) {
-            toast(err instanceof Error ? err.message : "Fehler");
-          }
-        })();
+        // Inline-Workspace: orb shifts to corner like in chat-mode,
+        // a Pinboard panel renders around it. No navigation, no DB
+        // call — pure UI state. (Promote to a real persisted matter
+        // is a separate flow that hooks in once a card is pinned.)
+        setWorkspaceOpen((open) => !open);
         return;
       }
       setActivePanel((prev) => (prev === action.panel ? null : action.panel));
@@ -966,18 +972,41 @@ export function AIMode({ open, onClose }: AIModeProps) {
           text-raum in der mitte frei wird. */}
       <div
         className={`${styles.entityWrapper} ${
-          hasConversation ? styles.entityMinimized : ""
+          stageMinimized ? styles.entityMinimized : ""
         }`}
       >
         <AtlasEntity
           mode={mode}
           audioLevel={audioLevel}
-          starsHidden={hasConversation}
+          starsHidden={stageMinimized}
           onReady={(handle) => {
             entityHandle.current = handle;
           }}
         />
       </div>
+
+      {/* Workspace Pinboard — inline overlay around the minimised orb,
+          same visual stage as a chat conversation but with pinnable
+          cards instead of a chat thread. ⌘5 toggles it. */}
+      {workspaceOpen && (
+        <WorkspacePinboardInline
+          cards={workspaceCards}
+          onAddCard={(c) =>
+            setWorkspaceCards((prev) => [
+              ...prev,
+              {
+                ...c,
+                id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                createdAt: Date.now(),
+              },
+            ])
+          }
+          onRemoveCard={(id) =>
+            setWorkspaceCards((prev) => prev.filter((c) => c.id !== id))
+          }
+          onClose={() => setWorkspaceOpen(false)}
+        />
+      )}
 
       {/* Phase AB-2 — Left-side action panels. Mirror the ContextPanel
           on the right; together with the centred orb they form a
