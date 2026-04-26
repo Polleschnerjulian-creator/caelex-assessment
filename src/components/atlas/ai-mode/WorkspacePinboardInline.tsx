@@ -15,14 +15,21 @@
  */
 
 import { useCallback, useState } from "react";
-import { Plus, X, Inbox } from "lucide-react";
+import { Plus, X, Inbox, Sparkles, Loader2 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
 
 export interface WorkspaceCard {
   id: string;
+  /** "user" — manually authored note. "ai-clause" — synthesised by
+   *  Atlas from other cards on the board. Drives visual style and
+   *  whether the card is included in future synthesis context. */
+  kind?: "user" | "ai-clause";
   title: string;
   content: string;
   createdAt: number;
+  /** For ai-clause: the IDs of the cards Atlas drew from. Lets us
+   *  show "based on cards X, Y" in the UI later. */
+  sourceCardIds?: string[];
 }
 
 interface Props {
@@ -41,16 +48,61 @@ export function WorkspacePinboardInline({
   const [composerOpen, setComposerOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [synthesizing, setSynthesizing] = useState(false);
+  const [synthError, setSynthError] = useState<string | null>(null);
 
   const submit = useCallback(() => {
     const t = title.trim();
     const c = content.trim();
     if (!t && !c) return;
-    onAddCard({ title: t || "Notiz", content: c });
+    onAddCard({ kind: "user", title: t || "Notiz", content: c });
     setTitle("");
     setContent("");
     setComposerOpen(false);
   }, [title, content, onAddCard]);
+
+  // Only user-authored cards seed the synthesis. AI-generated clauses
+  // could go in too in principle, but the first version keeps the
+  // signal clean: synthesise from human-pinned material only.
+  const synthesisInputCards = cards.filter((c) => c.kind !== "ai-clause");
+  const canSynthesize = synthesisInputCards.length >= 2 && !synthesizing;
+
+  const synthesize = useCallback(async () => {
+    setSynthError(null);
+    setSynthesizing(true);
+    try {
+      const res = await fetch("/api/atlas/workspace/synthesize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cards: synthesisInputCards.map((c) => ({
+            id: c.id,
+            title: c.title,
+            content: c.content,
+          })),
+        }),
+      });
+      const json = (await res.json()) as {
+        title?: string;
+        content?: string;
+        error?: string;
+      };
+      if (!res.ok || !json.content) {
+        setSynthError(json.error ?? "Synthese fehlgeschlagen");
+        return;
+      }
+      onAddCard({
+        kind: "ai-clause",
+        title: json.title ?? "Synthetisierte Klausel",
+        content: json.content,
+        sourceCardIds: synthesisInputCards.map((c) => c.id),
+      });
+    } catch (err) {
+      setSynthError(err instanceof Error ? err.message : "Fehler");
+    } finally {
+      setSynthesizing(false);
+    }
+  }, [synthesisInputCards, onAddCard]);
 
   return (
     /* Wrapper carries the CSS-Variables (--ws-orb-x, etc.) so they
@@ -79,6 +131,31 @@ export function WorkspacePinboardInline({
           <span className={styles.headerCount}>
             {cards.length} {cards.length === 1 ? "Karte" : "Karten"}
           </span>
+          {/* Synthesize action — only available with 2+ user cards.
+              Pulls every user card on the board into a synthesis prompt
+              and adds the AI's clause as a new card. */}
+          {synthesisInputCards.length >= 2 && (
+            <button
+              type="button"
+              onClick={synthesize}
+              disabled={!canSynthesize}
+              aria-label="Klausel synthetisieren"
+              className={styles.headerSynthesize}
+            >
+              {synthesizing ? (
+                <Loader2
+                  size={12}
+                  strokeWidth={2}
+                  className={styles.headerSpin}
+                />
+              ) : (
+                <Sparkles size={12} strokeWidth={1.8} />
+              )}
+              <span>
+                {synthesizing ? "Synthetisiere..." : "Klausel synthetisieren"}
+              </span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -88,6 +165,20 @@ export function WorkspacePinboardInline({
             <X size={14} strokeWidth={1.5} />
           </button>
         </div>
+
+        {/* Synthesis error pill */}
+        {synthError && (
+          <div className={styles.synthError} role="alert">
+            <span>{synthError}</span>
+            <button
+              type="button"
+              onClick={() => setSynthError(null)}
+              aria-label="Fehler schliessen"
+            >
+              <X size={12} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
 
         {/* Card area — right of the cutout, leaves room for composer
             at bottom. */}
@@ -113,22 +204,34 @@ export function WorkspacePinboardInline({
             </div>
           ) : (
             <div className={styles.cardGrid}>
-              {cards.map((card) => (
-                <article key={card.id} className={styles.card}>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveCard(card.id)}
-                    aria-label="Karte entfernen"
-                    className={styles.cardRemove}
+              {cards.map((card) => {
+                const isAi = card.kind === "ai-clause";
+                return (
+                  <article
+                    key={card.id}
+                    className={`${styles.card} ${isAi ? styles.cardAi : ""}`}
                   >
-                    <X size={12} strokeWidth={1.5} />
-                  </button>
-                  <h3 className={styles.cardTitle}>{card.title}</h3>
-                  {card.content && (
-                    <p className={styles.cardContent}>{card.content}</p>
-                  )}
-                </article>
-              ))}
+                    {isAi && (
+                      <div className={styles.cardAiBadge}>
+                        <Sparkles size={10} strokeWidth={2} />
+                        <span>Atlas-Klausel</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onRemoveCard(card.id)}
+                      aria-label="Karte entfernen"
+                      className={styles.cardRemove}
+                    >
+                      <X size={12} strokeWidth={1.5} />
+                    </button>
+                    <h3 className={styles.cardTitle}>{card.title}</h3>
+                    {card.content && (
+                      <p className={styles.cardContent}>{card.content}</p>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>
