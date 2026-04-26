@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       name: parsed.data.name,
     });
 
-    return NextResponse.json({ matterId: result.matterId });
+    return NextResponse.json({ matterId: result.matterId }, { status: 201 });
   } catch (err) {
     if (err instanceof MatterServiceError) {
       return NextResponse.json(
