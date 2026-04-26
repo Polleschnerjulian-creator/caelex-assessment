@@ -1255,6 +1255,61 @@ export function AIMode({ open, onClose }: AIModeProps) {
               // ignore
             }
           }}
+          onForkWorkspace={async (id) => {
+            // Server-side clone. We don't try to optimistically build
+            // the cloned cards in the local list — id-remapping would
+            // need to mirror the server logic and that's a future
+            // bug-source. Just wait for the round-trip; it's quick.
+            try {
+              const res = await fetch(`/api/atlas/workspaces/${id}/fork`, {
+                method: "POST",
+              });
+              const json = (await res.json()) as {
+                workspace?: {
+                  id: string;
+                  title: string;
+                  cardCount: number;
+                  updatedAt: string;
+                };
+              };
+              if (!res.ok || !json.workspace) return;
+              setWorkspaces((prev) => [json.workspace!, ...prev]);
+              // Switch to the fork — the lawyer wants to start
+              // mutating the copy immediately.
+              setCurrentWorkspaceId(json.workspace.id);
+            } catch {
+              // Silent — surfaces as no-op. Could add a toast later.
+            }
+          }}
+          onExportWorkspace={async (id) => {
+            // Trigger a browser download by following the export URL.
+            // Authenticated GET — the cookie carries the session, no
+            // extra headers needed. The server sets Content-Disposition
+            // so the browser saves rather than opens.
+            try {
+              const res = await fetch(
+                `/api/atlas/workspaces/${id}/export?format=md`,
+              );
+              if (!res.ok) return;
+              const blob = await res.blob();
+              const cd = res.headers.get("content-disposition") ?? "";
+              const fnMatch = /filename="([^"]+)"/.exec(cd);
+              const filename = fnMatch?.[1] ?? `workspace-${id}.md`;
+              // Standard "create blob URL, click invisible anchor"
+              // pattern — works in every modern browser without a
+              // file-saver dep.
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch {
+              // Silent — could add a toast later.
+            }
+          }}
           onClose={() => setWorkspaceOpen(false)}
         />
       )}

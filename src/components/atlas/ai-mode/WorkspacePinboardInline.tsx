@@ -33,6 +33,8 @@ import {
   ChevronDown,
   Trash2,
   Pencil,
+  Copy,
+  Download,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
 
@@ -174,6 +176,13 @@ interface Props {
   onRenameWorkspace?: (id: string, title: string) => void;
   /** Delete the workspace; cascades to all its cards. */
   onDeleteWorkspace?: (id: string) => void;
+  /** Clone the workspace (server-side) and switch to the copy. Lets
+   *  the lawyer explore "what if FR instead of DE" without losing the
+   *  original board. */
+  onForkWorkspace?: (id: string) => void;
+  /** Trigger a markdown export of the workspace as a deliverable.
+   *  Browser downloads the .md file. */
+  onExportWorkspace?: (id: string) => void;
   onClose: () => void;
 }
 
@@ -188,6 +197,8 @@ export function WorkspacePinboardInline({
   onCreateWorkspace,
   onRenameWorkspace,
   onDeleteWorkspace,
+  onForkWorkspace,
+  onExportWorkspace,
   onClose,
 }: Props) {
   // Switcher dropdown open state. Click outside or pick a workspace
@@ -757,6 +768,21 @@ export function WorkspacePinboardInline({
                 </span>
               </button>
             ))}
+          {/* Export-Button — turns the workspace into a markdown
+              deliverable. Only shown when there's something to export
+              and a current workspace id is in scope. */}
+          {onExportWorkspace && currentWorkspaceId && cards.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onExportWorkspace(currentWorkspaceId)}
+              aria-label="Workspace als Memo exportieren"
+              title="Als Memo exportieren (Markdown)"
+              className={styles.headerExport}
+            >
+              <Download size={12} strokeWidth={1.8} />
+              <span>Export</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -817,6 +843,26 @@ export function WorkspacePinboardInline({
                         className={styles.switcherRowAction}
                       >
                         <Pencil size={11} strokeWidth={1.7} />
+                      </button>
+                    )}
+                    {/* Fork / Klonen — available on any row, not just
+                        the current one. A lawyer might want to fork an
+                        old workspace ("Mandant X — Q3-Briefing") to
+                        kick off a Q4 follow-up board without re-opening
+                        it first. */}
+                    {onForkWorkspace && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onForkWorkspace(w.id);
+                          setSwitcherOpen(false);
+                        }}
+                        aria-label="Workspace klonen (Szenario-Fork)"
+                        title="Klonen — eigenes Szenario aufmachen"
+                        className={styles.switcherRowAction}
+                      >
+                        <Copy size={11} strokeWidth={1.7} />
                       </button>
                     )}
                     {onDeleteWorkspace && workspaces.length > 1 && (
