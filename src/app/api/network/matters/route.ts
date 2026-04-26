@@ -18,7 +18,7 @@ import { logger } from "@/lib/logger";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -45,12 +45,39 @@ export async function GET(_request: NextRequest) {
       );
     }
 
+    const url = new URL(request.url);
+    const statusParam = url.searchParams.get("status");
+    const statusFilter = statusParam
+      ? statusParam
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : null;
+
+    const validStatuses = [
+      "STANDALONE",
+      "PENDING_INVITE",
+      "PENDING_CONSENT",
+      "ACTIVE",
+      "SUSPENDED",
+      "CLOSED",
+      "REVOKED",
+    ] as const;
+    const safeStatusFilter = statusFilter
+      ? statusFilter.filter((s): s is (typeof validStatuses)[number] =>
+          validStatuses.includes(s as (typeof validStatuses)[number]),
+        )
+      : null;
+
     const matters = await prisma.legalMatter.findMany({
       where: {
         OR: [
           { lawFirmOrgId: membership.organizationId },
           { clientOrgId: membership.organizationId },
         ],
+        ...(safeStatusFilter && safeStatusFilter.length > 0
+          ? { status: { in: safeStatusFilter } }
+          : {}),
       },
       include: {
         lawFirmOrg: {

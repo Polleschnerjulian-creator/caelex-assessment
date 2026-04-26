@@ -98,6 +98,21 @@ export async function requireActiveMatter(
     );
   }
 
+  // STANDALONE = lawyer-side workspace ohne Mandant. Lawyer hat
+  // Vollzugriff (es gibt keinen anderen Stakeholder), Operator ist
+  // per definitionem nicht eingeladen → CALLER_NOT_PARTY für non-lawFirm-side
+  // (already handled above via isFirm/isClient check since clientOrgId is null,
+  // but guard explicitly here in case call order changes).
+  if (matter.status === "STANDALONE") {
+    if (input.callerOrgId !== matter.lawFirmOrgId) {
+      throw new MatterAccessError(
+        "CALLER_NOT_PARTY",
+        "Workspace ist privat — nur Kanzlei-Seite hat Zugriff",
+      );
+    }
+    return { matter, scope: [] }; // skip the ACTIVE-status gate and scope check below
+  }
+
   if (matter.status !== "ACTIVE") {
     throw new MatterAccessError(
       "MATTER_NOT_ACTIVE",

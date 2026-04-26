@@ -241,6 +241,56 @@ describe("requireActiveMatter — gate decisions", () => {
     ).rejects.toMatchObject({ code: "SCOPE_INSUFFICIENT" });
   });
 
+  it("STANDALONE matter passes for lawFirm-side caller", async () => {
+    mockedPrisma.legalMatter.findUnique.mockResolvedValue(
+      buildMatter({
+        id: "m_solo",
+        status: "STANDALONE",
+        lawFirmOrgId: "lf_1",
+        clientOrgId: null,
+        scope: [],
+        handshakeHash: null,
+        acceptedAt: null,
+        acceptedBy: null,
+      }),
+    );
+
+    const result = await requireActiveMatter({
+      matterId: "m_solo",
+      callerOrgId: "lf_1",
+      callerSide: "ATLAS",
+      category: "COMPLIANCE_ASSESSMENTS",
+      permission: "READ",
+    });
+    expect(result.matter.id).toBe("m_solo");
+    expect(result.matter.status).toBe("STANDALONE");
+  });
+
+  it("STANDALONE matter rejects non-lawFirm caller with CALLER_NOT_PARTY", async () => {
+    mockedPrisma.legalMatter.findUnique.mockResolvedValue(
+      buildMatter({
+        id: "m_solo",
+        status: "STANDALONE",
+        lawFirmOrgId: "lf_1",
+        clientOrgId: null,
+        scope: [],
+        handshakeHash: null,
+        acceptedAt: null,
+        acceptedBy: null,
+      }),
+    );
+
+    await expect(
+      requireActiveMatter({
+        matterId: "m_solo",
+        callerOrgId: "co_1",
+        callerSide: "ATLAS",
+        category: "COMPLIANCE_ASSESSMENTS",
+        permission: "READ",
+      }),
+    ).rejects.toMatchObject({ code: "CALLER_NOT_PARTY" });
+  });
+
   it("throws SCOPE_INSUFFICIENT when stored scope is malformed JSON", async () => {
     mockedPrisma.legalMatter.findUnique.mockResolvedValue(
       buildMatter({ scope: "this is not a scope object" }),
