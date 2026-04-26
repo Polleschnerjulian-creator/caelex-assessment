@@ -78,15 +78,20 @@ const RADIAL_OPTIONS: RadialOption[] = [
 export interface WorkspaceCard {
   id: string;
   /** "user" — manually authored note. "ai-clause" — synthesised by
-   *  Atlas from other cards on the board. Drives visual style and
-   *  whether the card is included in future synthesis context. */
-  kind?: "user" | "ai-clause";
+   *  Atlas from other cards on the board. "ai-answer" — Atlas's
+   *  reply to a question asked via the radial-menu's "Atlas fragen"
+   *  archetype. Drives visual style and whether the card is included
+   *  in future synthesis context. */
+  kind?: "user" | "ai-clause" | "ai-answer";
   title: string;
   content: string;
   createdAt: number;
-  /** For ai-clause: the IDs of the cards Atlas drew from. Lets us
-   *  show "based on cards X, Y" in the UI later. */
+  /** For ai-clause and ai-answer: the IDs of the cards Atlas drew
+   *  from. Lets us show "based on cards X, Y" in the UI later. */
   sourceCardIds?: string[];
+  /** For ai-answer: the original question the user typed. Lets us
+   *  show "Frage:" inline and allow re-asking later. */
+  question?: string;
 }
 
 interface Props {
@@ -109,6 +114,10 @@ export function WorkspacePinboardInline({
   const [content, setContent] = useState("");
   const [synthesizing, setSynthesizing] = useState(false);
   const [synthError, setSynthError] = useState<string | null>(null);
+  // "Atlas fragen" round-trip is async too — separate state so the
+  // synthesize button + ask-composer don't confuse each other.
+  const [asking, setAsking] = useState(false);
+  const [askError, setAskError] = useState<string | null>(null);
 
   // Radial menu — null when closed, {x, y} (viewport coords) when open.
   // Right-click anywhere on the pinboard pops it at the cursor.
@@ -168,15 +177,69 @@ export function WorkspacePinboardInline({
   const activeArchetype =
     RADIAL_OPTIONS.find((o) => o.id === composerArchetype) ?? RADIAL_OPTIONS[0];
 
-  const submit = useCallback(() => {
+  // User-card branch: title or content suffice. Pins synchronously.
+  // Ask-branch: requires non-empty content (the question itself), and
+  // routes through Atlas-AI to produce an `ai-answer` card.
+  const submit = useCallback(async () => {
     const t = title.trim();
     const c = content.trim();
+    if (composerArchetype === "ask") {
+      // For ask, the question lives in the textarea (`content`). Title
+      // is optional — if missing, Atlas's response title takes over.
+      if (!c) return;
+      setAskError(null);
+      setAsking(true);
+      try {
+        // Send all *other* user-pinned cards along as context. AI cards
+        // are excluded — we don't want Atlas building on top of its own
+        // earlier output unless the user explicitly pinned it as ground.
+        const contextCards = cards
+          .filter((card) => card.kind !== "ai-answer")
+          .map((card) => ({ title: card.title, content: card.content }));
+        const res = await fetch("/api/atlas/workspace/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: c,
+            contextCards: contextCards.length > 0 ? contextCards : undefined,
+          }),
+        });
+        const json = (await res.json()) as {
+          title?: string;
+          content?: string;
+          error?: string;
+        };
+        if (!res.ok || !json.content) {
+          setAskError(json.error ?? "Atlas-Frage fehlgeschlagen");
+          return;
+        }
+        onAddCard({
+          kind: "ai-answer",
+          title: t || json.title || c.slice(0, 80),
+          content: json.content,
+          question: c,
+          sourceCardIds: cards
+            .filter((card) => card.kind !== "ai-answer")
+            .map((card) => card.id),
+        });
+        setTitle("");
+        setContent("");
+        setComposerOpen(false);
+      } catch (err) {
+        setAskError(err instanceof Error ? err.message : "Fehler");
+      } finally {
+        setAsking(false);
+      }
+      return;
+    }
+
+    // Default branch — note / source / client all just pin a user card.
     if (!t && !c) return;
     onAddCard({ kind: "user", title: t || "Notiz", content: c });
     setTitle("");
     setContent("");
     setComposerOpen(false);
-  }, [title, content, onAddCard]);
+  }, [title, content, composerArchetype, cards, onAddCard]);
 
   // Only user-authored cards seed the synthesis. AI-generated clauses
   // could go in too in principle, but the first version keeps the
@@ -297,6 +360,21 @@ export function WorkspacePinboardInline({
           </div>
         )}
 
+        {/* Ask error pill — same visual lane as synth error so the
+            user sees a single "something went wrong" zone. */}
+        {askError && (
+          <div className={styles.synthError} role="alert">
+            <span>{askError}</span>
+            <button
+              type="button"
+              onClick={() => setAskError(null)}
+              aria-label="Fehler schliessen"
+            >
+              <X size={12} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
+
         {/* Card area — right of the cutout, leaves room for composer
             at bottom. */}
         <div className={styles.cardArea}>
@@ -322,16 +400,26 @@ export function WorkspacePinboardInline({
           ) : (
             <div className={styles.cardGrid}>
               {cards.map((card) => {
-                const isAi = card.kind === "ai-clause";
+                const isClause = card.kind === "ai-clause";
+                const isAnswer = card.kind === "ai-answer";
+                const isAi = isClause || isAnswer;
                 return (
                   <article
                     key={card.id}
-                    className={`${styles.card} ${isAi ? styles.cardAi : ""}`}
+                    className={`${styles.card} ${isAi ? styles.cardAi : ""} ${isAnswer ? styles.cardAnswer : ""}`}
                   >
-                    {isAi && (
+                    {isClause && (
                       <div className={styles.cardAiBadge}>
                         <Sparkles size={10} strokeWidth={2} />
                         <span>Atlas-Klausel</span>
+                      </div>
+                    )}
+                    {isAnswer && (
+                      <div
+                        className={`${styles.cardAiBadge} ${styles.cardAnswerBadge}`}
+                      >
+                        <Sparkles size={10} strokeWidth={2} />
+                        <span>Atlas-Antwort</span>
                       </div>
                     )}
                     <button
@@ -343,6 +431,15 @@ export function WorkspacePinboardInline({
                       <X size={12} strokeWidth={1.5} />
                     </button>
                     <h3 className={styles.cardTitle}>{card.title}</h3>
+                    {/* For ai-answer cards, show the original question
+                        before the answer so the lawyer remembers what
+                        was asked without re-reading the title. */}
+                    {isAnswer && card.question && (
+                      <p className={styles.cardQuestion}>
+                        <span className={styles.cardQuestionLabel}>Frage:</span>{" "}
+                        {card.question}
+                      </p>
+                    )}
                     {card.content && (
                       <p className={styles.cardContent}>{card.content}</p>
                     )}
@@ -396,6 +493,7 @@ export function WorkspacePinboardInline({
                   setTitle("");
                   setContent("");
                 }}
+                disabled={asking}
                 className={styles.composerCancel}
               >
                 Abbrechen
@@ -403,10 +501,34 @@ export function WorkspacePinboardInline({
               <button
                 type="button"
                 onClick={submit}
-                disabled={!title.trim() && !content.trim()}
-                className={styles.composerSubmit}
+                disabled={
+                  composerArchetype === "ask"
+                    ? !content.trim() || asking
+                    : !title.trim() && !content.trim()
+                }
+                className={`${styles.composerSubmit} ${
+                  composerArchetype === "ask" ? styles.composerSubmitAsk : ""
+                }`}
               >
-                Anpinnen
+                {composerArchetype === "ask" ? (
+                  asking ? (
+                    <>
+                      <Loader2
+                        size={12}
+                        strokeWidth={2}
+                        className={styles.headerSpin}
+                      />
+                      Atlas denkt...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={12} strokeWidth={1.8} />
+                      Atlas fragen
+                    </>
+                  )
+                ) : (
+                  "Anpinnen"
+                )}
               </button>
             </div>
           </div>

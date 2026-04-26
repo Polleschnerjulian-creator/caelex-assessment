@@ -425,6 +425,62 @@
   text-transform: uppercase;
 }
 
+/* Atlas-Antwort cards — a softer emerald/teal gradient so lawyers can
+   tell at a glance that a card is "Atlas's reply to a question" (the
+   conversational ask-archetype output) versus "a normative clause
+   synthesised from many cards" (the cardAi/cardAiBadge variant). */
+.cardAnswer {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(80, 200, 160, 0.07) 0%,
+      rgba(120, 200, 220, 0.05) 100%
+    ),
+    rgba(18, 22, 24, 0.78);
+  border-color: rgba(140, 220, 200, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 28px -6px rgba(80, 200, 160, 0.18),
+    0 0 0 1px rgba(140, 220, 200, 0.1);
+}
+.cardAnswer:hover {
+  border-color: rgba(140, 220, 200, 0.42);
+}
+
+.cardAnswerBadge {
+  background: linear-gradient(
+    135deg,
+    rgba(80, 200, 160, 0.24) 0%,
+    rgba(120, 200, 220, 0.22) 100%
+  );
+  border: 1px solid rgba(140, 220, 200, 0.28);
+  color: rgba(220, 250, 240, 0.96);
+}
+
+/* "Frage:"-prefix block above the answer — keeps the original
+   question visible so the lawyer remembers what was asked even after
+   coming back to the workspace days later. */
+.cardQuestion {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(220, 232, 230, 0.7);
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid rgba(140, 220, 200, 0.45);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+}
+.cardQuestionLabel {
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 9.5px;
+  color: rgba(180, 220, 210, 0.85);
+  margin-right: 4px;
+}
+
 /* ───────── Floating add (FAB) — sits above the chat input ───────── */
 
 .fab {
@@ -543,6 +599,35 @@
 }
 .composerSubmit:disabled {
   opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Ask-variant submit — emerald-tinted gradient + inline icon so the
+   button visibly says "this triggers Atlas-AI", not "this pins a
+   static card". Sparkles slot in the JSX render via gap+flex. */
+.composerSubmitAsk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(
+    135deg,
+    rgba(80, 200, 160, 0.95) 0%,
+    rgba(120, 200, 220, 0.95) 100%
+  );
+  color: #04140f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 14px -4px rgba(80, 200, 160, 0.5);
+}
+.composerSubmitAsk:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(96, 220, 176, 1) 0%,
+    rgba(140, 220, 240, 1) 100%
+  );
+}
+.composerSubmitAsk:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
