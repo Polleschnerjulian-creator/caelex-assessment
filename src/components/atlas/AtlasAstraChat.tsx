@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { X, ArrowUp, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { AstraMiniOrb } from "@/components/astra/AstraMiniOrb";
+import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
 
 interface Message {
   id: string;
@@ -191,7 +191,12 @@ export default function AtlasAstraChat() {
           aria-label={t("atlas.astra_open")}
         >
           <span className="h-7 w-7 rounded-full flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-transparent">
-            <AstraMiniOrb size={20} ariaLabel="Astra" />
+            <span
+              style={{ width: 22, height: 22, display: "inline-block" }}
+              aria-hidden
+            >
+              <AtlasEntityMini ariaLabel="Astra" />
+            </span>
           </span>
           <span className="text-[13px] font-medium text-white/90 group-hover:text-white transition-colors tracking-wide">
             Astra
@@ -236,7 +241,12 @@ export default function AtlasAstraChat() {
                     "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.35)",
                 }}
               >
-                <AstraMiniOrb size={20} active={loading} />
+                <span
+                  style={{ width: 22, height: 22, display: "inline-block" }}
+                  aria-hidden
+                >
+                  <AtlasEntityMini mode={loading ? "thinking" : "idle"} />
+                </span>
               </div>
               <div>
                 <span className="text-[13px] font-semibold text-white/95 block leading-tight tracking-wider">
@@ -299,7 +309,12 @@ export default function AtlasAstraChat() {
                         "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)",
                     }}
                   >
-                    <AstraMiniOrb size={36} />
+                    <span
+                      style={{ width: 56, height: 56, display: "inline-block" }}
+                      aria-hidden
+                    >
+                      <AtlasEntityMini />
+                    </span>
                   </div>
                 </div>
                 <p className="text-[16px] font-semibold text-white/95 mb-1.5 tracking-tight">
@@ -358,7 +373,14 @@ export default function AtlasAstraChat() {
                         "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
                     }}
                   >
-                    <AstraMiniOrb size={14} active={isLastAssistant} />
+                    <span
+                      style={{ width: 22, height: 22, display: "inline-block" }}
+                      aria-hidden
+                    >
+                      <AtlasEntityMini
+                        mode={isLastAssistant ? "thinking" : "idle"}
+                      />
+                    </span>
                   </div>
                   <div className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.06] border border-white/[0.08] text-white/95 rounded-[18px] rounded-tl-md break-words">
                     <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -378,7 +400,12 @@ export default function AtlasAstraChat() {
                       "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
                   }}
                 >
-                  <AstraMiniOrb size={14} active />
+                  <span
+                    style={{ width: 22, height: 22, display: "inline-block" }}
+                    aria-hidden
+                  >
+                    <AtlasEntityMini mode="thinking" />
+                  </span>
                 </div>
                 <div className="bg-white/[0.06] border border-white/[0.08] px-4 py-3 rounded-[18px] rounded-tl-md">
                   <div className="flex gap-1.5 items-center">

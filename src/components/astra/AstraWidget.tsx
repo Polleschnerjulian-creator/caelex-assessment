@@ -6,7 +6,7 @@ import Link from "next/link";
 import { X, Maximize2, Send, RefreshCw } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMissionBriefing from "./AstraMissionBriefing";
-import { AstraMiniOrb } from "./AstraMiniOrb";
+import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
 
 // ─── Markdown Renderer (light theme) ─────────────────────────────────────────
 
@@ -283,7 +283,16 @@ export default function AstraWidget({
                 {/* Mini orb — pulses when Astra is "thinking" / streaming so
                     the user has a live signal of activity without a separate
                     spinner. Same visual language as the AI-Mode AtlasEntity. */}
-                <AstraMiniOrb size={16} active={isTyping || isStreaming} />
+                <span
+                  style={{ width: 22, height: 22, display: "inline-block" }}
+                  aria-hidden
+                >
+                  <AtlasEntityMini
+                    mode={
+                      isTyping ? "thinking" : isStreaming ? "speaking" : "idle"
+                    }
+                  />
+                </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-[13px] font-semibold tracking-[0.18em] text-gray-900 uppercase">
                     Astra
@@ -366,7 +375,18 @@ export default function AstraWidget({
                               "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.18)",
                           }}
                         >
-                          <AstraMiniOrb size={14} active={showCursor} />
+                          <span
+                            style={{
+                              width: 22,
+                              height: 22,
+                              display: "inline-block",
+                            }}
+                            aria-hidden
+                          >
+                            <AtlasEntityMini
+                              mode={showCursor ? "speaking" : "idle"}
+                            />
+                          </span>
                         </div>
                         {/* Message */}
                         <div className="flex-1 min-w-0 px-4 py-2.5 rounded-2xl rounded-tl-md bg-white border border-gray-200/80 text-[13.5px] leading-[1.6] text-gray-800 break-words shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
@@ -394,7 +414,16 @@ export default function AstraWidget({
                             "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.18)",
                         }}
                       >
-                        <AstraMiniOrb size={14} active />
+                        <span
+                          style={{
+                            width: 22,
+                            height: 22,
+                            display: "inline-block",
+                          }}
+                          aria-hidden
+                        >
+                          <AtlasEntityMini mode="thinking" />
+                        </span>
                       </div>
                       <div className="flex gap-1.5 items-center pt-2.5">
                         <span

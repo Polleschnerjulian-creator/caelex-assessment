@@ -12,7 +12,7 @@ import { OrganizationProvider } from "@/components/providers/OrganizationProvide
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
-import { AstraMiniOrb } from "@/components/astra/AstraMiniOrb";
+import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
 import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
 import GlassSpecular from "@/components/dashboard/GlassSpecular";
 import DemoTour from "@/components/demo/DemoTour";
@@ -356,7 +356,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                   "0 4px 16px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
-              <AstraMiniOrb size={26} ariaLabel="Astra" />
+              <span
+                style={{ width: 30, height: 30, display: "inline-block" }}
+                aria-hidden
+              >
+                <AtlasEntityMini ariaLabel="Astra" />
+              </span>
             </button>
           </GenerationProgressRing>
         </div>
