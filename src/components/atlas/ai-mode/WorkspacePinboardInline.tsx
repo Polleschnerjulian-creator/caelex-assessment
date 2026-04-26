@@ -14,9 +14,66 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useState } from "react";
-import { Plus, X, Inbox, Sparkles, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Plus,
+  X,
+  Inbox,
+  Sparkles,
+  Loader2,
+  PencilLine,
+  BookText,
+  User,
+} from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
+
+// ─── Radial menu options ──────────────────────────────────────────────
+//
+// Four card-add archetypes. Each just opens the composer pre-filled
+// with type-appropriate placeholders for now. Future versions can
+// route source/client to dedicated pickers (Atlas-corpus search,
+// client-profile form), and `ask` to a one-shot AI prompt.
+
+type CardArchetype = "note" | "source" | "client" | "ask";
+
+interface RadialOption {
+  id: CardArchetype;
+  icon: typeof PencilLine;
+  label: string;
+  titlePlaceholder: string;
+  contentPlaceholder: string;
+}
+
+const RADIAL_OPTIONS: RadialOption[] = [
+  {
+    id: "note",
+    icon: PencilLine,
+    label: "Notiz",
+    titlePlaceholder: "Titel",
+    contentPlaceholder: "Notiz, Gedanke, Stichwort...",
+  },
+  {
+    id: "source",
+    icon: BookText,
+    label: "Quelle",
+    titlePlaceholder: "z.B. § 7 EU Space Act",
+    contentPlaceholder: "Wortlaut, Auszug, Fundstelle...",
+  },
+  {
+    id: "client",
+    icon: User,
+    label: "Mandant",
+    titlePlaceholder: "Mandant-Name",
+    contentPlaceholder: "Sitz, Branche, offene Rechtsfragen...",
+  },
+  {
+    id: "ask",
+    icon: Sparkles,
+    label: "Atlas fragen",
+    titlePlaceholder: "Frage an Atlas",
+    contentPlaceholder: "Was soll Atlas zu den anderen Karten beantworten?",
+  },
+];
 
 export interface WorkspaceCard {
   id: string;
@@ -46,10 +103,70 @@ export function WorkspacePinboardInline({
   onClose,
 }: Props) {
   const [composerOpen, setComposerOpen] = useState(false);
+  const [composerArchetype, setComposerArchetype] =
+    useState<CardArchetype>("note");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [synthesizing, setSynthesizing] = useState(false);
   const [synthError, setSynthError] = useState<string | null>(null);
+
+  // Radial menu — null when closed, {x, y} (viewport coords) when open.
+  // Right-click anywhere on the pinboard pops it at the cursor.
+  const [radialMenu, setRadialMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const openRadialMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Only fire when right-clicking the panel surface itself, not
+    // when the user right-clicks an already-pinned card or the
+    // composer (which need their native context menu for
+    // copy/paste).
+    const target = e.target as HTMLElement;
+    if (
+      target.closest(`.${styles.card}`) ||
+      target.closest(`.${styles.composer}`) ||
+      target.closest(`.${styles.headerPill}`)
+    ) {
+      return;
+    }
+    e.preventDefault();
+    setRadialMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const closeRadialMenu = useCallback(() => setRadialMenu(null), []);
+
+  const pickArchetype = useCallback((archetype: CardArchetype) => {
+    setComposerArchetype(archetype);
+    setRadialMenu(null);
+    setComposerOpen(true);
+    setTitle("");
+    setContent("");
+  }, []);
+
+  // Outside-click + ESC close the radial menu.
+  useEffect(() => {
+    if (!radialMenu) return;
+    const handler = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent && e.key !== "Escape") return;
+      // For mouse events, the click on the radial item itself closes
+      // via pickArchetype; this catches clicks elsewhere.
+      if (e instanceof MouseEvent) {
+        const t = e.target as HTMLElement;
+        if (t.closest(`.${styles.radialMenu}`)) return;
+      }
+      setRadialMenu(null);
+    };
+    document.addEventListener("click", handler as EventListener);
+    document.addEventListener("keydown", handler as EventListener);
+    return () => {
+      document.removeEventListener("click", handler as EventListener);
+      document.removeEventListener("keydown", handler as EventListener);
+    };
+  }, [radialMenu]);
+
+  const activeArchetype =
+    RADIAL_OPTIONS.find((o) => o.id === composerArchetype) ?? RADIAL_OPTIONS[0];
 
   const submit = useCallback(() => {
     const t = title.trim();
@@ -110,7 +227,7 @@ export function WorkspacePinboardInline({
        Defining them on `:root` would be a global selector which the
        CSS-Module loader rejects. The wrapper itself is a transparent
        full-stage layer — no visuals beyond the var scope. */
-    <div className={styles.root}>
+    <div className={styles.root} onContextMenu={openRadialMenu}>
       {/* The liquid-glass panel itself — full-stage rect with a radial
           mask cutout for the minimised orb in the top-left. The panel
           visually wraps the orb without painting over it. */}
@@ -195,7 +312,7 @@ export function WorkspacePinboardInline({
               </p>
               <button
                 type="button"
-                onClick={() => setComposerOpen(true)}
+                onClick={() => pickArchetype("note")}
                 className={styles.emptyCta}
               >
                 <Plus size={13} strokeWidth={1.8} />
@@ -250,16 +367,22 @@ export function WorkspacePinboardInline({
         )}
         {composerOpen && (
           <div className={styles.composer}>
+            {/* Type-tag at the top so user knows what kind of card
+                they're authoring after picking from the radial menu. */}
+            <div className={styles.composerTypeTag}>
+              <activeArchetype.icon size={11} strokeWidth={1.8} />
+              <span>{activeArchetype.label}</span>
+            </div>
             <input
               type="text"
-              placeholder="Titel"
+              placeholder={activeArchetype.titlePlaceholder}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
               className={styles.composerTitle}
             />
             <textarea
-              placeholder="Notiz, Zitat, Atlas-Antwort..."
+              placeholder={activeArchetype.contentPlaceholder}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
@@ -286,6 +409,60 @@ export function WorkspacePinboardInline({
                 Anpinnen
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Radial menu — pops at the cursor on right-click. Four arcs
+            distributed evenly, each opens the composer pre-filled
+            with the matching card archetype. */}
+        {radialMenu && (
+          <div
+            className={styles.radialMenu}
+            style={{ left: radialMenu.x, top: radialMenu.y }}
+            onContextMenu={(e) => e.preventDefault()}
+            role="menu"
+          >
+            {/* Center hint dot */}
+            <div className={styles.radialCenter} />
+            {RADIAL_OPTIONS.map((opt, i) => {
+              const total = RADIAL_OPTIONS.length;
+              // Start the first item at 12 o'clock and distribute clockwise.
+              const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
+              const radius = 72;
+              const dx = Math.cos(angle) * radius;
+              const dy = Math.sin(angle) * radius;
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="menuitem"
+                  aria-label={opt.label}
+                  className={styles.radialItem}
+                  style={{
+                    transform: `translate(calc(${dx}px - 50%), calc(${dy}px - 50%))`,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    pickArchetype(opt.id);
+                  }}
+                >
+                  <Icon size={16} strokeWidth={1.7} />
+                  <span className={styles.radialLabel}>{opt.label}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              aria-label="Menü schliessen"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeRadialMenu();
+              }}
+              className={styles.radialClose}
+            >
+              <X size={12} strokeWidth={2} />
+            </button>
           </div>
         )}
       </div>
