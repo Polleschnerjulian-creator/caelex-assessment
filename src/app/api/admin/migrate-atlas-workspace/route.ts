@@ -38,11 +38,58 @@ export async function POST(request: NextRequest) {
 
     const results: Array<{ step: string; ok: boolean; detail?: string }> = [];
 
+    // Step 0: Diagnostic — find the right schema for "LegalMatter".
+    // Prisma queries work fine but raw $executeRaw doesn't see the
+    // table → likely a search_path issue with a non-public schema.
+    let schemaInfo: {
+      currentSchema: string;
+      searchPath: string;
+      legalMatterSchema: string | null;
+      matterStatusSchema: string | null;
+    } | null = null;
+    try {
+      const cs = (
+        await prisma.$queryRawUnsafe<{ current_schema: string }[]>(
+          `SELECT current_schema()`,
+        )
+      )[0];
+      const sp = (
+        await prisma.$queryRawUnsafe<{ search_path: string }[]>(
+          `SHOW search_path`,
+        )
+      )[0];
+      const lm = await prisma.$queryRawUnsafe<{ schemaname: string }[]>(
+        `SELECT schemaname FROM pg_tables WHERE tablename = 'LegalMatter'`,
+      );
+      const ms = await prisma.$queryRawUnsafe<{ nspname: string }[]>(
+        `SELECT n.nspname FROM pg_type t
+         JOIN pg_namespace n ON t.typnamespace = n.oid
+         WHERE t.typname = 'MatterStatus'`,
+      );
+      schemaInfo = {
+        currentSchema: cs.current_schema,
+        searchPath: sp.search_path,
+        legalMatterSchema: lm[0]?.schemaname ?? null,
+        matterStatusSchema: ms[0]?.nspname ?? null,
+      };
+    } catch (err) {
+      results.push({
+        step: "schema diagnostic",
+        ok: false,
+        detail: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    // Use the discovered schema if non-public — fixes the raw-SQL
+    // search_path issue.
+    const schema = schemaInfo?.legalMatterSchema ?? "public";
+    const matterStatusSchema = schemaInfo?.matterStatusSchema ?? schema;
+
     // Step 1: Add STANDALONE to MatterStatus enum (idempotent)
     try {
       await prisma.$executeRawUnsafe(`
         DO $$ BEGIN
-          ALTER TYPE "MatterStatus" ADD VALUE IF NOT EXISTS 'STANDALONE' BEFORE 'PENDING_INVITE';
+          ALTER TYPE "${matterStatusSchema}"."MatterStatus" ADD VALUE IF NOT EXISTS 'STANDALONE' BEFORE 'PENDING_INVITE';
         EXCEPTION
           WHEN duplicate_object THEN null;
         END $$;
@@ -60,7 +107,7 @@ export async function POST(request: NextRequest) {
     // Step 2: Make clientOrgId nullable (idempotent in Postgres)
     try {
       await prisma.$executeRawUnsafe(
-        `ALTER TABLE "LegalMatter" ALTER COLUMN "clientOrgId" DROP NOT NULL`,
+        `ALTER TABLE "${schema}"."LegalMatter" ALTER COLUMN "clientOrgId" DROP NOT NULL`,
       );
       results.push({ step: "clientOrgId nullable", ok: true });
     } catch (err) {
@@ -75,7 +122,7 @@ export async function POST(request: NextRequest) {
     // Step 3: Make handshakeHash nullable (idempotent)
     try {
       await prisma.$executeRawUnsafe(
-        `ALTER TABLE "LegalMatter" ALTER COLUMN "handshakeHash" DROP NOT NULL`,
+        `ALTER TABLE "${schema}"."LegalMatter" ALTER COLUMN "handshakeHash" DROP NOT NULL`,
       );
       results.push({ step: "handshakeHash nullable", ok: true });
     } catch (err) {
@@ -93,7 +140,8 @@ export async function POST(request: NextRequest) {
       enumValues = await prisma.$queryRawUnsafe<{ enumlabel: string }[]>(`
         SELECT e.enumlabel FROM pg_enum e
         JOIN pg_type t ON e.enumtypid = t.oid
-        WHERE t.typname = 'MatterStatus'
+        JOIN pg_namespace n ON t.typnamespace = n.oid
+        WHERE t.typname = 'MatterStatus' AND n.nspname = '${matterStatusSchema}'
         ORDER BY e.enumsortorder
       `);
     } catch (err) {
@@ -107,6 +155,7 @@ export async function POST(request: NextRequest) {
       results,
       enum: enumValues.map((e) => e.enumlabel),
       verified,
+      schemaInfo,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
