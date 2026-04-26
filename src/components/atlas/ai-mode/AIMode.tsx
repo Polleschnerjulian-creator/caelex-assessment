@@ -958,7 +958,8 @@ export function AIMode({ open, onClose }: AIModeProps) {
   // ── Render gate ────────────────────────────────────────────
   if (!open) return null;
 
-  const suggestionsHidden = messages.length > 0 || inputValue.length > 0;
+  const suggestionsHidden =
+    messages.length > 0 || inputValue.length > 0 || workspaceOpen;
   const pillHasText = inputValue.length > 0;
 
   return (
@@ -1290,29 +1291,35 @@ export function AIMode({ open, onClose }: AIModeProps) {
           ))}
         </div>
 
-        {/* Token meter */}
-        <div className={styles.tokens} aria-hidden="true">
-          <div
-            key={tokenPulse}
-            className={`${styles.tokenBar} ${styles.tokenPulse}`}
-          >
+        {/* Token meter — hidden in workspace mode (no chat input there). */}
+        {!workspaceOpen && (
+          <div className={styles.tokens} aria-hidden="true">
             <div
-              className={`${styles.tokenFill} ${tokenCrit ? styles.tokenFillCritical : tokenWarn ? styles.tokenFillWarning : ""}`}
-              style={{ width: `${Math.max(0.6, tokenPct)}%` }}
-            />
+              key={tokenPulse}
+              className={`${styles.tokenBar} ${styles.tokenPulse}`}
+            >
+              <div
+                className={`${styles.tokenFill} ${tokenCrit ? styles.tokenFillCritical : tokenWarn ? styles.tokenFillWarning : ""}`}
+                style={{ width: `${Math.max(0.6, tokenPct)}%` }}
+              />
+            </div>
+            <div className={styles.tokensLabel}>
+              <span className={styles.tokensCurrent}>
+                {fmtTokens(currentTokens)}
+              </span>
+              <span className={styles.tokensSep}>/</span>
+              <span className={styles.tokensMax}>
+                {MODELS[modelName].label}
+              </span>
+            </div>
           </div>
-          <div className={styles.tokensLabel}>
-            <span className={styles.tokensCurrent}>
-              {fmtTokens(currentTokens)}
-            </span>
-            <span className={styles.tokensSep}>/</span>
-            <span className={styles.tokensMax}>{MODELS[modelName].label}</span>
-          </div>
-        </div>
+        )}
 
-        {/* Pill */}
+        {/* Pill — hidden in workspace mode (workspace has its own
+            composer for adding cards, doesn't need the chat input). */}
         <div
           className={`${styles.pill} ${pillHasText ? styles.pillHasText : ""}`}
+          style={workspaceOpen ? { display: "none" } : undefined}
         >
           <button
             type="button"
