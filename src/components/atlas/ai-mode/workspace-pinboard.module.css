@@ -7,8 +7,11 @@
    so the panel wraps the orb without ever painting over it.
    ================================================================== */
 
-:root,
-.glassPanel {
+/* Variables live on the wrapper (.root) so the cascade reaches the
+   sibling glass panel, cutout ring, and content layers.
+   Defining them on `:root` would be a global selector — rejected by
+   CSS-Modules (every selector must contain at least one local class). */
+.root {
   --ws-orb-x: 14%;
   --ws-orb-y: 17%;
   --ws-orb-r: 80px;
@@ -18,6 +21,11 @@
   --ws-text: rgba(245, 245, 244, 0.92);
   --ws-text-mute: rgba(245, 245, 244, 0.55);
   --ws-text-dim: rgba(245, 245, 244, 0.32);
+
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
 }
 
 /* ───────── Liquid-glass panel ───────── */

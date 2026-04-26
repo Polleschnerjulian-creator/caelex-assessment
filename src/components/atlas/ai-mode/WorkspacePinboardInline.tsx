@@ -53,7 +53,12 @@ export function WorkspacePinboardInline({
   }, [title, content, onAddCard]);
 
   return (
-    <>
+    /* Wrapper carries the CSS-Variables (--ws-orb-x, etc.) so they
+       cascade down to the panel + cutout-ring + content children.
+       Defining them on `:root` would be a global selector which the
+       CSS-Module loader rejects. The wrapper itself is a transparent
+       full-stage layer — no visuals beyond the var scope. */
+    <div className={styles.root}>
       {/* The liquid-glass panel itself — full-stage rect with a radial
           mask cutout for the minimised orb in the top-left. The panel
           visually wraps the orb without painting over it. */}
@@ -181,6 +186,6 @@ export function WorkspacePinboardInline({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
