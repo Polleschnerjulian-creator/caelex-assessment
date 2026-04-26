@@ -800,14 +800,15 @@ describe("createStandaloneMatter", () => {
 
     expect(result.matterId).toBe("m_solo_1");
     expect(prisma.legalMatter.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+      data: {
         lawFirmOrgId: "lf_1",
         clientOrgId: null,
-        status: "STANDALONE",
+        name: expect.any(String),
         scope: [],
+        status: "STANDALONE",
         invitedBy: "u_1",
         invitedFrom: "ATLAS",
-      }),
+      },
       select: { id: true },
     });
   });
@@ -827,5 +828,24 @@ describe("createStandaloneMatter", () => {
       data: expect.objectContaining({ name: "Q4 IPO due-diligence" }),
       select: { id: true },
     });
+  });
+
+  it("uses default name when input.name is whitespace-only", async () => {
+    (
+      prisma.legalMatter.create as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({ id: "m_solo_3" });
+
+    await createStandaloneMatter({
+      lawFirmOrgId: "lf_1",
+      createdBy: "u_1",
+      name: "   ",
+    });
+
+    const callArg = (prisma.legalMatter.create as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as { data: { name: string } };
+    // Default name format: "Neuer Workspace · DD.MM.YYYY" (de-DE locale)
+    expect(callArg.data.name).toMatch(
+      /^Neuer Workspace · \d{2}\.\d{2}\.\d{4}$/,
+    );
   });
 });
