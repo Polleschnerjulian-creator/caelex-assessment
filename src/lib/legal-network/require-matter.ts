@@ -163,7 +163,13 @@ export async function emitAccessLog(input: EmitAccessLogInput): Promise<void> {
     orderBy: { createdAt: "desc" },
     select: { entryHash: true },
   });
-  const previousHash = lastEntry?.entryHash ?? input.matter.handshakeHash;
+  // For STANDALONE matters handshakeHash is null until Promote — anchor
+  // the chain at a deterministic per-matter sentinel so `previousHash`
+  // never canonicalises to JSON null.
+  const previousHash =
+    lastEntry?.entryHash ??
+    input.matter.handshakeHash ??
+    `standalone-anchor:${input.matter.id}`;
 
   const createdAt = new Date();
 
