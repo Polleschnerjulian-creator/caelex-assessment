@@ -38,6 +38,10 @@ interface MatterStatusBannerProps {
   /** Which side is viewing the workspace. Affects pronouns + which
    *  party is "the other side". */
   viewerSide: "ATLAS" | "CAELEX";
+  /** Aufgerufen wenn der User „In echtes Mandat umwandeln" klickt.
+   *  Parent öffnet das Promote-Form. Optional — Banner rendert
+   *  Button nur wenn callback gesetzt ist. */
+  onPromoteClick?: () => void;
 }
 
 interface StatusConfig {
@@ -122,7 +126,40 @@ export function MatterStatusBanner({
   matterId,
   counterpartyName,
   viewerSide,
+  onPromoteClick,
 }: MatterStatusBannerProps) {
+  if (status === "STANDALONE") {
+    return (
+      <div className="px-6 pt-5">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-xl">
+          <Inbox
+            size={16}
+            strokeWidth={1.5}
+            className="text-amber-400 flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-[13px] font-medium text-amber-200">
+              Privater Workspace
+            </div>
+            <p className="text-[12px] text-amber-100/70 mt-0.5 leading-relaxed">
+              Dieser Workspace ist nur für dich sichtbar. Mandant einladen →
+              wird zum echten Mandat.
+            </p>
+          </div>
+          {onPromoteClick && (
+            <button
+              type="button"
+              onClick={onPromoteClick}
+              className="text-xs px-3 h-8 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 font-medium flex-shrink-0 transition"
+            >
+              In echtes Mandat umwandeln
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const config = CONFIG[status];
   if (!config) return null;
 
@@ -172,5 +209,5 @@ export function MatterStatusBanner({
 
 /** Helper for the parent to know whether to render the banner at all. */
 export function shouldShowStatusBanner(status: string): boolean {
-  return status !== "ACTIVE" && status in CONFIG;
+  return status === "STANDALONE" || (status !== "ACTIVE" && status in CONFIG);
 }
