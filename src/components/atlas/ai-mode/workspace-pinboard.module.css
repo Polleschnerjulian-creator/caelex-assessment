@@ -245,6 +245,40 @@
   color: var(--ws-text);
 }
 
+/* Share-button — sibling to export. Cooler-blue hover than export's
+   emerald so the lawyer can scan the action-icons by color: emerald
+   = save, blue = collaborate, red = close. */
+.headerShare {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 255, 0.78);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.headerShare:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(120, 160, 255, 0.18) 0%,
+    rgba(180, 200, 255, 0.14) 100%
+  );
+  border-color: rgba(180, 200, 255, 0.36);
+  color: rgba(220, 232, 255, 0.95);
+  transform: translateY(-1px);
+}
+
 /* Export-button — sits in the header pill next to the close button.
    Lower-key visual weight than the synthesise / conflict pills (it's
    a passive "save the result" action, not an AI fire-action). */
@@ -383,6 +417,56 @@
   );
   border-color: rgba(140, 220, 200, 0.36);
   color: rgba(220, 250, 240, 0.95);
+}
+
+/* "Was fehlt?"-Button — Atlas's proactive gap-detection. Yellow/gold
+   tint to distinguish from the amber conflict-pill (different cognitive
+   action: "what should I add" vs "what's already wrong"). */
+.headerSuggest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 255, 0.72);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.headerSuggest:hover:not(:disabled) {
+  background: rgba(255, 220, 130, 0.1);
+  border-color: rgba(255, 220, 130, 0.3);
+  color: rgba(255, 240, 200, 0.95);
+  transform: translateY(-1px);
+}
+.headerSuggest:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.headerSuggestActive {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 220, 130, 0.22) 0%,
+    rgba(255, 200, 100, 0.18) 100%
+  );
+  border-color: rgba(255, 220, 130, 0.42);
+  color: rgba(255, 240, 200, 0.98);
+}
+.headerSuggestActive:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 220, 130, 0.32) 0%,
+    rgba(255, 200, 100, 0.28) 100%
+  );
 }
 
 /* Synthesis-error pill — sits just below the header pill. */
@@ -1527,6 +1611,354 @@
 }
 .switcherCreate:hover {
   background: rgba(140, 220, 200, 0.06);
+}
+
+/* ───────── Suggestion panel ─────────
+   Drawer below the header when the lawyer clicks the lightbulb pill.
+   Each row is a button — click routes to the right composer. */
+
+.suggestPanel {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 96px));
+  max-height: 360px;
+  background: rgba(15, 15, 18, 0.94);
+  border: 1px solid rgba(255, 220, 130, 0.32);
+  border-radius: 14px;
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px -12px rgba(0, 0, 0, 0.7),
+    0 0 32px -10px rgba(255, 220, 130, 0.18);
+  animation: ws-conflict-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1.05);
+  z-index: 12;
+}
+
+.suggestPanelHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 240, 200, 0.95);
+}
+.suggestPanelHead > svg {
+  flex-shrink: 0;
+}
+.suggestPanelHead > span {
+  flex: 1;
+}
+.suggestPanelClose {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 240, 200, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  border-radius: 999px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.suggestPanelClose:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 240, 200, 0.9);
+}
+
+.suggestPanelBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+}
+.suggestPanelBody::-webkit-scrollbar {
+  width: 6px;
+}
+.suggestPanelBody::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.suggestRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.08s ease;
+}
+.suggestRow:hover {
+  background: rgba(255, 220, 130, 0.06);
+  border-color: rgba(255, 220, 130, 0.4);
+  transform: translateX(2px);
+}
+.suggestRow:hover .suggestArrow {
+  transform: translateX(2px);
+  opacity: 1;
+}
+
+.suggestRowHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.suggestKindBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+/* Per-kind badge tints — match the visual language of the radial
+   menu archetypes so suggestions read as the same primitive types. */
+.suggestKind_source {
+  background: rgba(140, 220, 200, 0.15);
+  border: 1px solid rgba(140, 220, 200, 0.28);
+  color: rgba(220, 250, 240, 0.95);
+}
+.suggestKind_question {
+  background: linear-gradient(
+    135deg,
+    rgba(120, 160, 255, 0.18) 0%,
+    rgba(180, 130, 255, 0.18) 100%
+  );
+  border: 1px solid rgba(180, 200, 255, 0.28);
+  color: rgba(220, 232, 255, 0.95);
+}
+.suggestKind_client {
+  background: rgba(255, 200, 100, 0.14);
+  border: 1px solid rgba(255, 200, 100, 0.32);
+  color: rgba(255, 240, 200, 0.95);
+}
+.suggestKind_note {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(248, 250, 255, 0.85);
+}
+.suggestRowTitle {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ws-text);
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+}
+.suggestArrow {
+  color: rgba(255, 220, 130, 0.6);
+  opacity: 0.5;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+  flex-shrink: 0;
+}
+.suggestReason {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: rgba(248, 250, 255, 0.6);
+  line-height: 1.5;
+  padding-left: 50px; /* visual indent under the badge for readability */
+}
+
+/* ───────── Share modal ─────────
+   Pops below the header pill when the user clicks "Teilen". Two
+   states: pre-share (CTA to enable) and post-share (URL + copy +
+   revoke). */
+
+.shareModal {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100vw - 96px));
+  background: rgba(15, 15, 18, 0.96);
+  border: 1px solid rgba(180, 200, 255, 0.32);
+  border-radius: 14px;
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px -12px rgba(0, 0, 0, 0.7),
+    0 0 32px -10px rgba(180, 200, 255, 0.18);
+  animation: ws-conflict-panel-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1.05);
+  z-index: 13;
+}
+.shareModalHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(220, 232, 255, 0.95);
+}
+.shareModalHead > svg {
+  flex-shrink: 0;
+}
+.shareModalHead > span {
+  flex: 1;
+}
+.shareModalClose {
+  background: transparent;
+  border: 0;
+  color: rgba(220, 232, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  border-radius: 999px;
+}
+.shareModalClose:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.shareModalBody {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shareModalDescription {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(248, 250, 255, 0.6);
+}
+.shareModalEnable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(120, 160, 255, 0.95) 0%,
+    rgba(180, 200, 255, 0.95) 100%
+  );
+  color: #07142e;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 6px 18px -6px rgba(120, 160, 255, 0.5);
+}
+.shareModalEnable:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    rgba(140, 180, 255, 1) 0%,
+    rgba(200, 220, 255, 1) 100%
+  );
+}
+.shareModalEnable:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.shareModalUrlRow {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.shareModalUrl {
+  flex: 1;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: rgba(220, 232, 255, 0.92);
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  outline: 0;
+  /* Selecting-on-click is the standard share-input affordance. */
+  cursor: text;
+}
+.shareModalUrl:focus {
+  border-color: rgba(180, 200, 255, 0.5);
+}
+.shareModalCopy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  background: rgba(180, 200, 255, 0.18);
+  border: 1px solid rgba(180, 200, 255, 0.36);
+  border-radius: 6px;
+  color: rgba(220, 232, 255, 0.95);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.shareModalCopy:hover {
+  background: rgba(180, 200, 255, 0.28);
+  border-color: rgba(180, 200, 255, 0.5);
+}
+.shareModalCopied {
+  background: rgba(140, 220, 200, 0.22);
+  border-color: rgba(140, 220, 200, 0.42);
+  color: rgba(220, 250, 240, 0.95);
+}
+.shareModalCopied:hover {
+  background: rgba(140, 220, 200, 0.3);
+}
+.shareModalRevoke {
+  margin-top: 4px;
+  align-self: flex-start;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(248, 250, 255, 0.55);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.shareModalRevoke:hover:not(:disabled) {
+  background: rgba(255, 100, 100, 0.12);
+  border-color: rgba(255, 100, 100, 0.32);
+  color: rgba(255, 200, 200, 0.9);
 }
 
 /* ───────── Responsive — narrow viewports ───────── */

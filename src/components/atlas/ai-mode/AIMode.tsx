@@ -1281,6 +1281,28 @@ export function AIMode({ open, onClose }: AIModeProps) {
               // Silent — surfaces as no-op. Could add a toast later.
             }
           }}
+          onShareWorkspace={async (id, enabled) => {
+            try {
+              const res = await fetch(`/api/atlas/workspaces/${id}/share`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ enabled }),
+              });
+              const json = (await res.json()) as {
+                shareUrl?: string | null;
+                shareEnabledAt?: string | null;
+              };
+              if (!res.ok) {
+                return { url: null, enabledAt: null };
+              }
+              return {
+                url: json.shareUrl ?? null,
+                enabledAt: json.shareEnabledAt ?? null,
+              };
+            } catch {
+              return { url: null, enabledAt: null };
+            }
+          }}
           onExportWorkspace={async (id) => {
             // Trigger a browser download by following the export URL.
             // Authenticated GET — the cookie carries the session, no

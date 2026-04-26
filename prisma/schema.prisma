@@ -9185,6 +9185,16 @@ model AtlasWorkspace {
   /// switcher without losing the cards. Future: an "Archive" tab.
   archived Boolean @default(false)
 
+  /// Read-only share token. When set, anyone with the URL
+  /// /atlas/share/<token> can view the workspace + cards without
+  /// auth. Null = not shared. The lawyer toggles this from the
+  /// share-modal in the header. Cuid keeps it unguessable.
+  shareToken String? @unique
+
+  /// When sharing was enabled — useful for "Vor 2 Tagen freigegeben"
+  /// labelling and future expiry policies.
+  shareEnabledAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

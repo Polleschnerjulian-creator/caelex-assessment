@@ -35,6 +35,11 @@ import {
   Pencil,
   Copy,
   Download,
+  Lightbulb,
+  ArrowRight,
+  Share2,
+  Link as LinkIcon,
+  Check,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
 
@@ -50,6 +55,19 @@ interface Conflict {
   severity: "high" | "medium" | "low";
   summary: string;
   explanation: string;
+}
+
+// ─── AI Suggestions ("Was fehlt noch?") ───────────────────────────────
+//
+// Atlas analyses the current board and proactively suggests missing
+// pieces. Click a suggestion → opens the right composer/picker with
+// the suggestion pre-filled.
+
+interface Suggestion {
+  kind: "source" | "question" | "client" | "note";
+  title: string;
+  reason: string;
+  searchHint?: string | null;
 }
 
 // ─── Corpus search ────────────────────────────────────────────────────
@@ -183,6 +201,11 @@ interface Props {
   /** Trigger a markdown export of the workspace as a deliverable.
    *  Browser downloads the .md file. */
   onExportWorkspace?: (id: string) => void;
+  /** Toggle read-only sharing on/off. Returns the URL when enabled. */
+  onShareWorkspace?: (
+    id: string,
+    enabled: boolean,
+  ) => Promise<{ url: string | null; enabledAt: string | null }>;
   onClose: () => void;
 }
 
@@ -199,6 +222,7 @@ export function WorkspacePinboardInline({
   onDeleteWorkspace,
   onForkWorkspace,
   onExportWorkspace,
+  onShareWorkspace,
   onClose,
 }: Props) {
   // Switcher dropdown open state. Click outside or pick a workspace
@@ -272,6 +296,48 @@ export function WorkspacePinboardInline({
   // Keep the latest in-flight request id so a slow earlier response
   // doesn't overwrite a faster later one (race condition guard).
   const corpusReqRef = useRef(0);
+
+  // Share-modal state. Toggling open + the live URL once sharing is
+  // enabled. The URL stays in component state until the modal closes
+  // so the lawyer can copy it after creation without a re-fetch.
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const toggleShare = useCallback(
+    async (enable: boolean) => {
+      if (!currentWorkspaceId || !onShareWorkspace) return;
+      setShareLoading(true);
+      try {
+        const result = await onShareWorkspace(currentWorkspaceId, enable);
+        setShareUrl(result.url);
+      } finally {
+        setShareLoading(false);
+      }
+    },
+    [currentWorkspaceId, onShareWorkspace],
+  );
+
+  const copyShareUrl = useCallback(async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 1500);
+    } catch {
+      // Older browsers / non-secure contexts: fallback to selecting
+      // the input. The user can manually Cmd+C from there.
+    }
+  }, [shareUrl]);
+
+  // Suggestion-state — Atlas's proactive "was fehlt noch?" picks,
+  // fetched on-demand via the lightbulb button. Same pattern as
+  // conflicts: list + loading + panel-open + error.
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [suggestPanelOpen, setSuggestPanelOpen] = useState(false);
 
   // Konflikt-state — list of detected conflicts plus the in-flight
   // marker for the header button. `conflictsLastRunAt` lets us show
@@ -499,6 +565,71 @@ export function WorkspacePinboardInline({
   const synthesisInputCards = cards.filter((c) => c.kind !== "ai-clause");
   const canSynthesize = synthesisInputCards.length >= 2 && !synthesizing;
 
+  /** Trigger the proactive "Was fehlt noch?" analysis. Atlas reads
+   *  every card on the board and returns up to 5 suggestions. The
+   *  panel auto-opens on success so the lawyer sees the result
+   *  without an extra click. */
+  const runSuggest = useCallback(async () => {
+    if (!currentWorkspaceId) return;
+    setSuggestError(null);
+    setSuggesting(true);
+    try {
+      const res = await fetch(
+        `/api/atlas/workspaces/${currentWorkspaceId}/suggest`,
+        { method: "POST" },
+      );
+      const json = (await res.json()) as {
+        suggestions?: Suggestion[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setSuggestError(json.error ?? "Vorschlaege fehlgeschlagen");
+        return;
+      }
+      setSuggestions(json.suggestions ?? []);
+      setSuggestPanelOpen(true);
+    } catch (err) {
+      setSuggestError(err instanceof Error ? err.message : "Fehler");
+    } finally {
+      setSuggesting(false);
+    }
+  }, [currentWorkspaceId]);
+
+  /** Click handler for individual suggestion rows. Routes to the
+   *  appropriate composer — source → corpus picker pre-loaded,
+   *  question → ask composer, client/note → freeform composer. */
+  const acceptSuggestion = useCallback((s: Suggestion) => {
+    setSuggestPanelOpen(false);
+    // Drop the accepted suggestion from the panel so it doesn't
+    // re-appear after the user pins it. They can re-run "Vorschläge"
+    // for a fresh analysis.
+    setSuggestions((prev) => prev.filter((x) => x !== s));
+    if (s.kind === "source") {
+      setComposerArchetype("source");
+      setComposerOpen(true);
+      setTitle("");
+      setContent("");
+      if (s.searchHint) setCorpusQuery(s.searchHint);
+    } else if (s.kind === "question") {
+      setComposerArchetype("ask");
+      setComposerOpen(true);
+      setTitle("");
+      // Pre-fill the question into the textarea so the lawyer can
+      // refine before submitting.
+      setContent(s.title);
+    } else if (s.kind === "client") {
+      setComposerArchetype("client");
+      setComposerOpen(true);
+      setTitle("");
+      setContent("");
+    } else {
+      setComposerArchetype("note");
+      setComposerOpen(true);
+      setTitle(s.title.slice(0, 200));
+      setContent("");
+    }
+  }, []);
+
   /** Run Atlas conflict-detection over all user cards. AI cards are
    *  excluded because we don't want to flag Atlas's own derivatives
    *  as conflicts with the human inputs they were built from. */
@@ -719,6 +850,45 @@ export function WorkspacePinboardInline({
             </button>
           )}
 
+          {/* Vorschläge — proactive AI gap-detection. Always available
+              (unlike synth/conflict which need 2+ user cards), because
+              even an empty workspace gets a starter set. */}
+          {currentWorkspaceId &&
+            (suggestions.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setSuggestPanelOpen((o) => !o)}
+                aria-label="Atlas-Vorschlaege anzeigen"
+                className={`${styles.headerSuggest} ${styles.headerSuggestActive}`}
+              >
+                <Lightbulb size={12} strokeWidth={1.8} />
+                <span>
+                  {suggestions.length}{" "}
+                  {suggestions.length === 1 ? "Vorschlag" : "Vorschlaege"}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={runSuggest}
+                disabled={suggesting}
+                aria-label="Was fehlt noch? Atlas-Vorschlaege"
+                title="Was fehlt noch?"
+                className={styles.headerSuggest}
+              >
+                {suggesting ? (
+                  <Loader2
+                    size={12}
+                    strokeWidth={2}
+                    className={styles.headerSpin}
+                  />
+                ) : (
+                  <Lightbulb size={12} strokeWidth={1.8} />
+                )}
+                <span>{suggesting ? "Analysiere..." : "Was fehlt?"}</span>
+              </button>
+            ))}
+
           {/* Konflikte prüfen — sibling action to synthesize. Toggles
               a state-variant pill: amber+count when conflicts exist,
               emerald check when board is clean. */}
@@ -768,6 +938,24 @@ export function WorkspacePinboardInline({
                 </span>
               </button>
             ))}
+          {/* Share-Button — toggles read-only public link. Modal opens
+              with the URL + copy button. */}
+          {onShareWorkspace && currentWorkspaceId && (
+            <button
+              type="button"
+              onClick={() => {
+                setShareModalOpen(true);
+                setShareCopied(false);
+              }}
+              aria-label="Workspace teilen"
+              title="Read-Link teilen"
+              className={styles.headerShare}
+            >
+              <Share2 size={12} strokeWidth={1.8} />
+              <span>Teilen</span>
+            </button>
+          )}
+
           {/* Export-Button — turns the workspace into a markdown
               deliverable. Only shown when there's something to export
               and a current workspace id is in scope. */}
@@ -909,6 +1097,102 @@ export function WorkspacePinboardInline({
           </div>
         )}
 
+        {/* Share modal — lightweight popover below the header pill.
+            Toggle on creates the link; copy + revoke buttons inside. */}
+        {shareModalOpen && (
+          <div
+            className={styles.shareModal}
+            role="dialog"
+            aria-label="Workspace teilen"
+          >
+            <div className={styles.shareModalHead}>
+              <Share2 size={13} strokeWidth={1.8} />
+              <span>Workspace teilen</span>
+              <button
+                type="button"
+                onClick={() => setShareModalOpen(false)}
+                aria-label="Modal schliessen"
+                className={styles.shareModalClose}
+              >
+                <X size={12} strokeWidth={1.8} />
+              </button>
+            </div>
+            <div className={styles.shareModalBody}>
+              {!shareUrl ? (
+                <>
+                  <p className={styles.shareModalDescription}>
+                    Erzeuge einen Read-only-Link. Wer ihn hat, sieht den
+                    Workspace ohne Login. Du kannst ihn jederzeit widerrufen.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => toggleShare(true)}
+                    disabled={shareLoading}
+                    className={styles.shareModalEnable}
+                  >
+                    {shareLoading ? (
+                      <Loader2
+                        size={12}
+                        strokeWidth={2}
+                        className={styles.headerSpin}
+                      />
+                    ) : (
+                      <LinkIcon size={12} strokeWidth={1.8} />
+                    )}
+                    <span>
+                      {shareLoading ? "Erzeuge Link..." : "Read-Link erzeugen"}
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className={styles.shareModalDescription}>
+                    Link aktiv. Senden an Senior, Mandant oder Co-Counsel — kein
+                    Account nötig auf der Empfänger- Seite.
+                  </p>
+                  <div className={styles.shareModalUrlRow}>
+                    <input
+                      type="text"
+                      value={shareUrl}
+                      readOnly
+                      onClick={(e) => e.currentTarget.select()}
+                      className={styles.shareModalUrl}
+                    />
+                    <button
+                      type="button"
+                      onClick={copyShareUrl}
+                      className={`${styles.shareModalCopy} ${shareCopied ? styles.shareModalCopied : ""}`}
+                    >
+                      {shareCopied ? (
+                        <>
+                          <Check size={12} strokeWidth={2} />
+                          <span>Kopiert</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={12} strokeWidth={1.8} />
+                          <span>Kopieren</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await toggleShare(false);
+                      setShareUrl(null);
+                    }}
+                    disabled={shareLoading}
+                    className={styles.shareModalRevoke}
+                  >
+                    {shareLoading ? "Widerrufe..." : "Link widerrufen"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Loading overlay shown on first workspace open while AIMode
             fetches the user's workspace list. */}
         {loading && cards.length === 0 && (
@@ -958,6 +1242,74 @@ export function WorkspacePinboardInline({
             >
               <X size={12} strokeWidth={1.8} />
             </button>
+          </div>
+        )}
+
+        {/* Suggestion error pill — same lane. */}
+        {suggestError && (
+          <div className={styles.synthError} role="alert">
+            <span>{suggestError}</span>
+            <button
+              type="button"
+              onClick={() => setSuggestError(null)}
+              aria-label="Fehler schliessen"
+            >
+              <X size={12} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
+
+        {/* Suggestion-detail panel — opens below the header when the
+            user clicks the lightbulb pill. Each row is clickable and
+            routes to the right composer (corpus picker for sources,
+            ask-composer for questions, freeform for client/note). */}
+        {suggestPanelOpen && suggestions.length > 0 && (
+          <div className={styles.suggestPanel} role="dialog">
+            <div className={styles.suggestPanelHead}>
+              <Lightbulb size={13} strokeWidth={1.8} />
+              <span>
+                Atlas schlaegt {suggestions.length} naechste Schritt(e) vor
+              </span>
+              <button
+                type="button"
+                onClick={() => setSuggestPanelOpen(false)}
+                aria-label="Panel schliessen"
+                className={styles.suggestPanelClose}
+              >
+                <X size={12} strokeWidth={1.8} />
+              </button>
+            </div>
+            <div className={styles.suggestPanelBody}>
+              {suggestions.map((s, i) => (
+                <button
+                  key={`${s.kind}-${i}-${s.title}`}
+                  type="button"
+                  onClick={() => acceptSuggestion(s)}
+                  className={`${styles.suggestRow} ${styles[`suggestRow_${s.kind}`] ?? ""}`}
+                >
+                  <div className={styles.suggestRowHead}>
+                    <span
+                      className={`${styles.suggestKindBadge} ${styles[`suggestKind_${s.kind}`] ?? ""}`}
+                    >
+                      {s.kind === "source"
+                        ? "Quelle"
+                        : s.kind === "question"
+                          ? "Frage"
+                          : s.kind === "client"
+                            ? "Mandant"
+                            : "Notiz"}
+                    </span>
+                    <span className={styles.suggestRowTitle}>{s.title}</span>
+                    <ArrowRight
+                      size={12}
+                      strokeWidth={2}
+                      className={styles.suggestArrow}
+                    />
+                  </div>
+                  <p className={styles.suggestReason}>{s.reason}</p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
