@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { Sparkles, X, ArrowUp, Loader2 } from "lucide-react";
+import { X, ArrowUp, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { AstraMiniOrb } from "@/components/astra/AstraMiniOrb";
 
 interface Message {
   id: string;
@@ -179,31 +180,32 @@ export default function AtlasAstraChat() {
 
   return (
     <>
-      {/* ─── Floating Button ─── */}
+      {/* ─── Floating Button ───
+          Pill with the mini-orb on the left + "Astra" label. Same orb
+          identity as the AI-Mode entity and the dashboard FAB — Atlas
+          users see the consistent brand-object across surfaces. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 pl-4 pr-5 py-2.5 rounded-full bg-[#1a1a1a] text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-[#2a2a2a] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 ease-out group"
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 pl-3 pr-5 py-2 rounded-full bg-[#0f1320]/95 backdrop-blur-md text-white border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#1a1f2e]/95 hover:border-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 ease-out group"
           aria-label={t("atlas.astra_open")}
         >
-          <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
-            <Sparkles
-              size={13}
-              strokeWidth={2}
-              aria-hidden="true"
-              className="text-white/80 group-hover:text-white transition-colors"
-            />
-          </div>
-          <span className="text-[13px] font-medium text-white/90 group-hover:text-white transition-colors">
+          <span className="h-7 w-7 rounded-full flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-transparent">
+            <AstraMiniOrb size={20} ariaLabel="Astra" />
+          </span>
+          <span className="text-[13px] font-medium text-white/90 group-hover:text-white transition-colors tracking-wide">
             Astra
           </span>
         </button>
       )}
 
-      {/* ─── Dark Chat Panel ─── */}
+      {/* ─── Dark Chat Panel ───
+          Slightly taller (600px) and a deeper border + subtle inner
+          highlight give the panel more presence on the dark Atlas
+          stage. */}
       {open && (
         <div
-          className="fixed bottom-5 right-5 z-50 w-[400px] h-[560px] flex flex-col rounded-2xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.5)]"
+          className="fixed bottom-5 right-5 z-50 w-[420px] h-[600px] flex flex-col rounded-2xl overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible
@@ -213,25 +215,39 @@ export default function AtlasAstraChat() {
               "opacity 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)",
           }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-3 bg-[#1a1a1a] border-b border-white/[0.06]">
+          {/* Header — navy gradient base + the mini-orb in a glass disc.
+              The orb's `active` prop wires to `loading` so the lawyer
+              sees a live "Astra is thinking" pulse without a separate
+              spinner-icon competing for attention. */}
+          <div
+            className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(20,28,44,0.98) 0%, rgba(15,19,32,0.98) 100%)",
+            }}
+          >
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-white/15 to-white/5 flex items-center justify-center backdrop-blur-sm">
-                  <Sparkles
-                    size={14}
-                    className="text-white/90"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#1a1a1a]" />
+              <div
+                className="h-9 w-9 rounded-xl flex items-center justify-center"
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 25%, rgba(40,52,80,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.35)",
+                }}
+              >
+                <AstraMiniOrb size={20} active={loading} />
               </div>
               <div>
-                <span className="text-[13px] font-semibold text-white/95 block leading-tight tracking-wide">
+                <span className="text-[13px] font-semibold text-white/95 block leading-tight tracking-wider">
                   Astra
                 </span>
-                <span className="text-[10px] text-white/40 leading-tight">
-                  {t("atlas.astra_subtitle")}
+                <span className="text-[10px] text-white/45 leading-tight">
+                  {loading
+                    ? language === "de"
+                      ? "denkt..."
+                      : "thinking..."
+                    : t("atlas.astra_subtitle")}
                 </span>
               </div>
             </div>
@@ -249,21 +265,47 @@ export default function AtlasAstraChat() {
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-[#111111]">
+          {/* Messages — body uses a slight radial-gradient toward
+              the orb so the eye is drawn upward to Astra's presence.
+              Custom scrollbar styled below in scoped CSS. */}
+          <div
+            className="flex-1 overflow-y-auto px-4 py-5 space-y-3 atlas-astra-scroll"
+            style={{
+              background:
+                "radial-gradient(ellipse 600px 400px at 50% -20%, rgba(120,160,255,0.06) 0%, transparent 70%), #0d111c",
+            }}
+          >
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full px-2">
-                <div className="h-14 w-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-4">
-                  <Sparkles
-                    size={22}
-                    className="text-white/30"
-                    aria-hidden="true"
+                {/* Hero-orb — the big version of the same brand-object.
+                    Sits in a soft glow container so it looks like a
+                    spotlight is on it. */}
+                <div className="relative mb-5">
+                  <div
+                    className="absolute inset-0 -m-4 rounded-full"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(140,220,200,0.18) 0%, rgba(120,180,220,0.10) 35%, transparent 70%)",
+                      filter: "blur(8px)",
+                    }}
+                    aria-hidden
                   />
+                  <div
+                    className="relative h-16 w-16 rounded-2xl flex items-center justify-center"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,19,32,1) 70%, rgba(8,12,22,1) 100%)",
+                      boxShadow:
+                        "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    <AstraMiniOrb size={36} />
+                  </div>
                 </div>
-                <p className="text-[15px] font-semibold text-white/90 mb-1">
+                <p className="text-[16px] font-semibold text-white/95 mb-1.5 tracking-tight">
                   {t("atlas.astra_ask_space_law")}
                 </p>
-                <p className="text-[11px] text-white/30 mb-6">
+                <p className="text-[11px] text-white/40 mb-7 tracking-wide">
                   {t("atlas.astra_stats_line")}
                 </p>
                 <div className="space-y-2 w-full">
@@ -274,42 +316,82 @@ export default function AtlasAstraChat() {
                         setInput(s);
                         setTimeout(() => inputRef.current?.focus(), 50);
                       }}
-                      className="w-full text-left px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/60 hover:bg-white/[0.07] hover:border-white/[0.1] hover:text-white/80 transition-all duration-200"
+                      className="group w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12.5px] text-white/65 hover:bg-white/[0.06] hover:border-white/[0.14] hover:text-white/95 hover:translate-x-[2px] transition-all duration-200"
                     >
-                      {s}
+                      <span className="h-1 w-1 rounded-full bg-white/30 group-hover:bg-emerald-300/80 transition-colors flex-shrink-0" />
+                      <span className="flex-1">{s}</span>
+                      <span className="text-white/20 group-hover:text-white/60 transition-colors">
+                        →
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${msg.role === "user" ? "bg-[var(--atlas-bg-surface)] text-[var(--atlas-text-primary)] rounded-[18px] rounded-br-md" : "bg-white/[0.06] border border-white/[0.08] text-white rounded-[18px] rounded-bl-md"}`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+            {messages.map((msg, idx) => {
+              const isUser = msg.role === "user";
+              const isLastAssistant =
+                !isUser && idx === messages.length - 1 && loading;
+              if (isUser) {
+                return (
+                  <div key={msg.id} className="flex justify-end">
+                    <div className="max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.95] text-[#0a0f1e] rounded-[18px] rounded-br-md shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+                      <p className="whitespace-pre-wrap break-words">
+                        {msg.content}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key={msg.id} className="flex gap-2.5 items-start">
+                  {/* Astra avatar — same navy disc + mini-orb as the
+                      header; pulses on the LAST assistant message
+                      while loading to signal "writing now". */}
+                  <div
+                    className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
+                      boxShadow:
+                        "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
+                    }}
+                  >
+                    <AstraMiniOrb size={14} active={isLastAssistant} />
+                  </div>
+                  <div className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.06] border border-white/[0.08] text-white/95 rounded-[18px] rounded-tl-md break-words">
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-white/[0.06] border border-white/[0.08] px-4 py-3 rounded-[18px] rounded-bl-md">
-                  <div className="flex gap-1">
+              <div className="flex gap-2.5 items-start">
+                <div
+                  className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
+                    boxShadow:
+                      "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  <AstraMiniOrb size={14} active />
+                </div>
+                <div className="bg-white/[0.06] border border-white/[0.08] px-4 py-3 rounded-[18px] rounded-tl-md">
+                  <div className="flex gap-1.5 items-center">
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/30 animate-bounce"
+                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     />
                   </div>
@@ -319,9 +401,18 @@ export default function AtlasAstraChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="px-3 pb-3 pt-2 bg-[#111111] border-t border-white/[0.04]">
-            <div className="flex items-end gap-2 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] focus-within:border-white/[0.15] transition-all duration-200">
+          {/* Input — slightly elevated bg + emerald-tinted focus glow
+              so the active state reads as Astra-branded rather than
+              just "another input". The send-button switches to white
+              when something's typed (positive-action affordance). */}
+          <div
+            className="px-3 pb-3 pt-2.5 border-t border-white/[0.05]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(13,17,28,1) 0%, rgba(10,14,24,1) 100%)",
+            }}
+          >
+            <div className="flex items-end gap-2 px-3.5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] focus-within:border-white/[0.18] focus-within:bg-white/[0.07] focus-within:shadow-[0_0_0_3px_rgba(140,220,200,0.08)] transition-all duration-200">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -330,13 +421,17 @@ export default function AtlasAstraChat() {
                 placeholder={t("atlas.astra_input_placeholder")}
                 disabled={loading}
                 rows={1}
-                className="flex-1 resize-none text-[13px] text-white/90 placeholder:text-white/25 bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-1"
+                className="flex-1 resize-none text-[13px] text-white/95 placeholder:text-white/30 bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-0.5"
                 aria-label={t("atlas.astra_input_aria")}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="flex-shrink-0 h-7 w-7 rounded-lg bg-[var(--atlas-bg-surface)] text-[#111] disabled:opacity-20 hover:bg-[var(--atlas-bg-surface)]/90 active:scale-95 flex items-center justify-center transition-all duration-150"
+                className={`flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                  input.trim() && !loading
+                    ? "bg-white text-[#0a0f1e] hover:bg-white/95 hover:-translate-y-px active:scale-95 shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
+                    : "bg-white/[0.06] text-white/25 cursor-default"
+                }`}
                 aria-label={t("common.send")}
               >
                 {loading ? (
@@ -350,7 +445,25 @@ export default function AtlasAstraChat() {
                 )}
               </button>
             </div>
+            <div className="text-center text-[9.5px] text-white/30 mt-2 tracking-wide">
+              {t("atlas.astra_subtitle")} · DSGVO-konform
+            </div>
           </div>
+
+          {/* Scoped scrollbar — subtle white-ish thumb visible only on
+              hover. Matches the dark Atlas aesthetic. */}
+          <style>{`
+            .atlas-astra-scroll::-webkit-scrollbar { width: 5px; }
+            .atlas-astra-scroll::-webkit-scrollbar-track { background: transparent; }
+            .atlas-astra-scroll::-webkit-scrollbar-thumb {
+              background: rgba(255,255,255,0.06);
+              border-radius: 3px;
+              transition: background 0.15s ease;
+            }
+            .atlas-astra-scroll::-webkit-scrollbar-thumb:hover {
+              background: rgba(255,255,255,0.16);
+            }
+          `}</style>
         </div>
       )}
     </>
