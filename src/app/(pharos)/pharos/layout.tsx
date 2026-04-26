@@ -17,7 +17,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ensurePharosPreviewSetup } from "@/lib/pharos/preview-mode";
+import {
+  ensurePharosPreviewSetup,
+  isPharosPreviewOpen,
+} from "@/lib/pharos/preview-mode";
 import PharosShell from "./_components/PharosShell";
 
 export const metadata = {
@@ -33,14 +36,18 @@ export default async function PharosLayout({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
+    // Preview-mode skips the login page entirely — auto-signin route
+    // provisions a demo guest user and signs them in programmatically.
+    if (isPharosPreviewOpen()) {
+      redirect("/pharos-auto-signin?callbackUrl=%2Fpharos");
+    }
     redirect("/pharos-login?callbackUrl=%2Fpharos");
   }
 
-  // Preview-Mode hook (env: PHAROS_OPEN_PREVIEW=1) — auto-attaches
-  // the visitor to a demo AUTHORITY org so they can poke around the
-  // workspace without a manual seed step. Idempotent + no-op when
-  // the flag is unset, so this line is safe to leave in until prod.
-  // See src/lib/pharos/preview-mode.ts for what this provisions.
+  // Preview-Mode hook — auto-attaches the visitor to a demo AUTHORITY
+  // org so they can poke around the workspace without a manual seed
+  // step. Idempotent + no-op when PREVIEW_OPEN is false, so this
+  // line is safe to leave in until prod.
   await ensurePharosPreviewSetup(session.user.id);
 
   // Get caller's org and role. Pharos is gated to AUTHORITY orgs.

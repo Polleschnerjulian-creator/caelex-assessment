@@ -18,7 +18,10 @@ import { redirect } from "next/navigation";
 import { Lightbulb, LogOut } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ensurePharosPreviewSetup } from "@/lib/pharos/preview-mode";
+import {
+  ensurePharosPreviewSetup,
+  isPharosPreviewOpen,
+} from "@/lib/pharos/preview-mode";
 import { LightBars } from "@/components/pharos-stage/LightBars";
 import styles from "@/components/pharos-stage/pharos-stage.module.css";
 
@@ -32,8 +35,12 @@ export default async function PharosNoAccessPage() {
   const session = await auth();
 
   // Defensive: if they somehow ended up here without a session, send
-  // them to the Pharos login.
+  // them to login. In preview mode we skip the login screen entirely
+  // and route through the auto-signin demo flow.
   if (!session?.user?.id) {
+    if (isPharosPreviewOpen()) {
+      redirect("/pharos-auto-signin?callbackUrl=%2Fpharos");
+    }
     redirect("/pharos-login?callbackUrl=%2Fpharos");
   }
 

@@ -30,6 +30,7 @@ import "server-only";
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -41,8 +42,59 @@ const EPOCH = new Date(0);
 //    No env-var, no redeploy dance: flip this constant, push, done.
 const PREVIEW_OPEN = true;
 
+// Demo guest credentials. Hard-coded ON PURPOSE: the auto-signin page
+// needs to know them client-side to call NextAuth's signIn(). Safe
+// because preview mode itself is the bypass — no real data is gated
+// behind this account once PREVIEW_OPEN is false.
+export const PHAROS_PREVIEW_DEMO_EMAIL = "preview-guest@caelex.local";
+export const PHAROS_PREVIEW_DEMO_PASSWORD = "PharosPreviewGuest2026!";
+
 export function isPharosPreviewOpen(): boolean {
   return PREVIEW_OPEN;
+}
+
+/**
+ * Ensure the demo guest user exists. Used by /pharos-auto-signin
+ * before it programmatically signs in. Idempotent.
+ */
+export async function ensurePharosPreviewDemoUser(): Promise<{
+  id: string;
+  email: string;
+}> {
+  const existing = await prisma.user.findUnique({
+    where: { email: PHAROS_PREVIEW_DEMO_EMAIL },
+    select: { id: true, email: true, password: true },
+  });
+
+  if (existing) {
+    // Re-hash if the stored hash doesn't match — keeps the demo
+    // account usable even if someone manually changed the password.
+    const matches = existing.password
+      ? await bcrypt.compare(PHAROS_PREVIEW_DEMO_PASSWORD, existing.password)
+      : false;
+    if (!matches) {
+      const passwordHash = await bcrypt.hash(PHAROS_PREVIEW_DEMO_PASSWORD, 12);
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: { password: passwordHash, isActive: true },
+      });
+    }
+    return { id: existing.id, email: PHAROS_PREVIEW_DEMO_EMAIL };
+  }
+
+  const passwordHash = await bcrypt.hash(PHAROS_PREVIEW_DEMO_PASSWORD, 12);
+  const created = await prisma.user.create({
+    data: {
+      email: PHAROS_PREVIEW_DEMO_EMAIL,
+      name: "Pharos Preview Guest",
+      password: passwordHash,
+      role: "user",
+      isActive: true,
+      emailVerified: new Date(),
+    },
+    select: { id: true, email: true },
+  });
+  return { id: created.id, email: PHAROS_PREVIEW_DEMO_EMAIL };
 }
 
 /**
