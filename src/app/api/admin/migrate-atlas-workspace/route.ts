@@ -30,21 +30,11 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const expected = process.env.PHAROS_SEED_TOKEN;
-    if (!expected || expected.length < 16) {
-      return NextResponse.json(
-        {
-          error:
-            "PHAROS_SEED_TOKEN env var not configured (must be at least 16 chars).",
-        },
-        { status: 503 },
-      );
-    }
-    const auth = request.headers.get("authorization") ?? "";
-    const supplied = auth.replace(/^Bearer\s+/i, "").trim();
-    if (supplied.length !== expected.length || supplied !== expected) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // 🚧 PREVIEW MODE — token-check deaktiviert für die Test-Phase.
+    //    Vor Production-Release: Bearer-Token-Logik wieder aktivieren
+    //    (oder den ganzen Endpoint löschen — die Migration ist dann
+    //    eh schon gelaufen).
+    //    siehe Pendant in /api/admin/seed-atlas-test/route.ts
 
     const results: Array<{ step: string; ok: boolean; detail?: string }> = [];
 

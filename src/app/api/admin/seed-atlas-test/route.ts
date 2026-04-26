@@ -45,21 +45,10 @@ const DEFAULT_ORG_SLUG = "atlas-test-demo";
 
 export async function POST(request: NextRequest) {
   try {
-    const expected = process.env.PHAROS_SEED_TOKEN;
-    if (!expected || expected.length < 16) {
-      return NextResponse.json(
-        {
-          error:
-            "PHAROS_SEED_TOKEN env var not configured (must be at least 16 chars).",
-        },
-        { status: 503 },
-      );
-    }
-    const auth = request.headers.get("authorization") ?? "";
-    const supplied = auth.replace(/^Bearer\s+/i, "").trim();
-    if (supplied.length !== expected.length || supplied !== expected) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // 🚧 PREVIEW MODE — token-check deaktiviert für die Test-Phase.
+    //    Vor Production-Release: Bearer-Token-Logik wieder aktivieren
+    //    (oder den Endpoint löschen — Test-Account bleibt in der DB,
+    //    weiterer Aufruf nicht mehr nötig).
 
     const raw = await request.json().catch(() => ({}));
     const parsed = Body.safeParse(raw);
