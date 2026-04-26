@@ -12,6 +12,7 @@ import { OrganizationProvider } from "@/components/providers/OrganizationProvide
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
+import { AstraMiniOrb } from "@/components/astra/AstraMiniOrb";
 import { GenerationProgressRing } from "@/components/generate2/GenerationProgressRing";
 import GlassSpecular from "@/components/dashboard/GlassSpecular";
 import DemoTour from "@/components/demo/DemoTour";
@@ -331,34 +332,31 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         onSave={handleProfileSave}
       />
 
-      {/* Floating Astra FAB — hidden when Forge is active or widget is open */}
+      {/* Floating Astra FAB — hidden when Forge is active or widget is open.
+          The dark navy disc + luminous mini-orb match the AI-Mode aesthetic
+          across products: same orb, scaled down for an entry-point button. */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
-        <div className="fixed bottom-7 right-7 z-[100] transition-all duration-200 ease-out hover:scale-[1.08] active:scale-95">
+        <div className="fixed bottom-7 right-7 z-[100] transition-all duration-200 ease-out hover:scale-[1.06] active:scale-95">
           <GenerationProgressRing size={68}>
             <button
               onClick={() => setAstraWidgetOpen(true)}
-              aria-label="Open Astra AI Assistant"
-              className="flex items-center justify-center"
+              aria-label="Astra öffnen"
+              title="Astra öffnen (⌘K)"
+              className="flex items-center justify-center group"
               style={{
                 width: 56,
                 height: 56,
                 borderRadius: 18,
-                background: "rgba(255,255,255,0.85)",
+                background:
+                  "radial-gradient(circle at 30% 25%, rgba(30,41,59,0.95) 0%, rgba(10,15,30,0.98) 60%, rgba(5,8,18,1) 100%)",
                 backdropFilter: "blur(24px) saturate(1.4)",
                 WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-                border: "1px solid rgba(0,0,0,0.08)",
+                border: "1px solid rgba(255,255,255,0.08)",
                 boxShadow:
-                  "0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
+                  "0 4px 16px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logo-black.png"
-                alt=""
-                width={30}
-                height={30}
-                style={{ objectFit: "contain" }}
-              />
+              <AstraMiniOrb size={26} ariaLabel="Astra" />
             </button>
           </GenerationProgressRing>
         </div>
