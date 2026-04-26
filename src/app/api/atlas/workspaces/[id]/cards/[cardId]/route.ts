@@ -1,16 +1,17 @@
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
- *   DELETE /api/atlas/workspaces/[id]/cards/[cardId]
+ *   PATCH  /api/atlas/workspaces/[id]/cards/[cardId]   edit a card
+ *   DELETE /api/atlas/workspaces/[id]/cards/[cardId]   remove a card
  *
- * Removes a single card from a workspace. Idempotent — re-deleting a
- * non-existent card returns 200 rather than 404 because the lawyer
- * may have multiple tabs open and only one needs to "win" the delete.
+ * Both ownership-checked via a nested where on the parent workspace
+ * (single query, no race window).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
@@ -18,6 +19,114 @@ import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ─── PATCH: edit card ────────────────────────────────────────────────
+
+const PatchBody = z.object({
+  title: z.string().min(1).max(200).optional(),
+  content: z.string().max(8000).optional(),
+});
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string; cardId: string }> },
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(
+      "astra_chat",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded", retryAfterMs: rl.reset - Date.now() },
+        { status: 429 },
+      );
+    }
+
+    const { id: workspaceId, cardId } = await context.params;
+    const card = await prisma.atlasWorkspaceCard.findFirst({
+      where: {
+        id: cardId,
+        workspace: { id: workspaceId, userId: session.user.id },
+      },
+      select: { id: true, workspaceId: true },
+    });
+    if (!card) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const raw = await request.json().catch(() => ({}));
+    const parsed = PatchBody.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid", issues: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+    if (parsed.data.title === undefined && parsed.data.content === undefined) {
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 },
+      );
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const next = await tx.atlasWorkspaceCard.update({
+        where: { id: card.id },
+        data: {
+          ...(parsed.data.title !== undefined && {
+            title: parsed.data.title,
+          }),
+          ...(parsed.data.content !== undefined && {
+            content: parsed.data.content,
+          }),
+        },
+        select: {
+          id: true,
+          kind: true,
+          title: true,
+          content: true,
+          question: true,
+          sourceCardIds: true,
+          createdAt: true,
+        },
+      });
+      // Bump parent updatedAt — same logic as add/delete so the
+      // workspace list stays sorted by activity.
+      await tx.atlasWorkspace.update({
+        where: { id: card.workspaceId },
+        data: { updatedAt: new Date() },
+      });
+      return next;
+    });
+
+    return NextResponse.json({
+      card: {
+        id: updated.id,
+        kind: updated.kind,
+        title: updated.title,
+        content: updated.content,
+        question: updated.question,
+        sourceCardIds: updated.sourceCardIds,
+        createdAt: updated.createdAt.getTime(),
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(
+      `PATCH /api/atlas/workspaces/[id]/cards/[cardId] failed: ${msg}`,
+    );
+    return NextResponse.json(
+      { error: "Failed to update card" },
+      { status: 500 },
+    );
+  }
+}
 
 export async function DELETE(
   request: NextRequest,

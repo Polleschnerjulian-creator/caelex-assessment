@@ -279,6 +279,89 @@
   transform: translateY(-1px);
 }
 
+/* Export-group — wraps the primary PDF button + the chevron-arrow
+   that opens the format dropdown. Group is positioned-relative so
+   the dropdown can absolute-position underneath. */
+.headerExportGroup {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  margin-left: 4px;
+}
+.headerExportGroup > .headerExport {
+  margin-left: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+.headerExportArrow {
+  padding: 0 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  color: rgba(248, 250, 255, 0.55);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.headerExportArrow:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(248, 250, 255, 0.95);
+}
+
+/* Format dropdown — small, anchored to the export group. */
+.exportMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: rgba(15, 15, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 28px -8px rgba(0, 0, 0, 0.6);
+  z-index: 14;
+  animation: ws-conflict-panel-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1.05);
+}
+.exportMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 0;
+  color: rgba(248, 250, 255, 0.85);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+.exportMenuItem:hover {
+  background: rgba(140, 220, 200, 0.08);
+  color: rgba(220, 250, 240, 0.98);
+}
+.exportMenuItem > svg {
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
 /* Export-button — sits in the header pill next to the close button.
    Lower-key visual weight than the synthesise / conflict pills (it's
    a passive "save the result" action, not an AI fire-action). */
@@ -1388,6 +1471,109 @@
   font-size: 11px;
   color: rgba(248, 250, 255, 0.65);
   line-height: 1.5;
+}
+
+/* Card-edit affordances — pencil-button on hover (top-right), and
+   inline title/textarea/save-cancel inside the card when editing. */
+
+.cardEditAction {
+  position: absolute;
+  top: 8px;
+  right: 32px; /* leave room for the close X */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 0;
+  color: rgba(248, 250, 255, 0.35);
+  cursor: pointer;
+  border-radius: 6px;
+  opacity: 0;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease;
+}
+.card:hover .cardEditAction {
+  opacity: 1;
+}
+.cardEditAction:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(248, 250, 255, 0.95);
+}
+
+.cardEditTitle {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ws-text);
+  outline: 0;
+  margin-bottom: 8px;
+}
+.cardEditTitle:focus {
+  border-color: rgba(140, 220, 200, 0.5);
+}
+.cardEditBody {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(248, 250, 255, 0.85);
+  outline: 0;
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+.cardEditBody:focus {
+  border-color: rgba(140, 220, 200, 0.5);
+}
+.cardEditActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+.cardEditCancel,
+.cardEditSave {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.cardEditCancel {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 255, 0.65);
+}
+.cardEditCancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 250, 255, 0.9);
+}
+.cardEditSave {
+  background: rgba(245, 245, 244, 0.94);
+  color: #0a0a0b;
+  border-color: rgba(245, 245, 244, 0.94);
+}
+.cardEditSave:hover {
+  background: white;
 }
 
 /* ───────── Conflict-state on cards ─────────

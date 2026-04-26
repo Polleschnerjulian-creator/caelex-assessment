@@ -1175,6 +1175,40 @@ export function AIMode({ open, onClose }: AIModeProps) {
               // simply not appear; the lawyer can retry.
             }
           }}
+          onEditCard={async (cardId, patch) => {
+            if (!currentWorkspaceId) return;
+            // Optimistic — apply the edit locally so the UI snaps to
+            // the new state. Server PATCH races behind; on failure the
+            // card looks edited until next reload, which is fine
+            // because the user will notice via the refresh.
+            setWorkspaceCards((prev) =>
+              prev.map((c) =>
+                c.id === cardId
+                  ? {
+                      ...c,
+                      ...(patch.title !== undefined && {
+                        title: patch.title,
+                      }),
+                      ...(patch.content !== undefined && {
+                        content: patch.content,
+                      }),
+                    }
+                  : c,
+              ),
+            );
+            try {
+              await fetch(
+                `/api/atlas/workspaces/${currentWorkspaceId}/cards/${cardId}`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(patch),
+                },
+              );
+            } catch {
+              // ignore
+            }
+          }}
           onRemoveCard={async (id) => {
             if (!currentWorkspaceId) return;
             // Optimistic — remove from local state first, then call
@@ -1303,20 +1337,20 @@ export function AIMode({ open, onClose }: AIModeProps) {
               return { url: null, enabledAt: null };
             }
           }}
-          onExportWorkspace={async (id) => {
+          onExportWorkspace={async (id, format) => {
             // Trigger a browser download by following the export URL.
             // Authenticated GET — the cookie carries the session, no
             // extra headers needed. The server sets Content-Disposition
             // so the browser saves rather than opens.
             try {
               const res = await fetch(
-                `/api/atlas/workspaces/${id}/export?format=md`,
+                `/api/atlas/workspaces/${id}/export?format=${format}`,
               );
               if (!res.ok) return;
               const blob = await res.blob();
               const cd = res.headers.get("content-disposition") ?? "";
               const fnMatch = /filename="([^"]+)"/.exec(cd);
-              const filename = fnMatch?.[1] ?? `workspace-${id}.md`;
+              const filename = fnMatch?.[1] ?? `workspace-${id}.${format}`;
               // Standard "create blob URL, click invisible anchor"
               // pattern — works in every modern browser without a
               // file-saver dep.

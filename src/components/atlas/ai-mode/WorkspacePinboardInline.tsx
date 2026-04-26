@@ -186,6 +186,12 @@ interface Props {
   currentWorkspaceId?: string | null;
   onAddCard: (card: Omit<WorkspaceCard, "id" | "createdAt">) => void;
   onRemoveCard: (id: string) => void;
+  /** Edit a card inline. Title and/or content can change; AI-card
+   *  metadata (question, sourceCardIds) is preserved as-is. */
+  onEditCard?: (
+    id: string,
+    patch: { title?: string; content?: string },
+  ) => void;
   /** Switch to a different workspace; AIMode will load its cards. */
   onSwitchWorkspace?: (id: string) => void;
   /** Create a fresh workspace (server-side) and switch to it. */
@@ -198,9 +204,9 @@ interface Props {
    *  the lawyer explore "what if FR instead of DE" without losing the
    *  original board. */
   onForkWorkspace?: (id: string) => void;
-  /** Trigger a markdown export of the workspace as a deliverable.
-   *  Browser downloads the .md file. */
-  onExportWorkspace?: (id: string) => void;
+  /** Trigger an export of the workspace as a deliverable. Format
+   *  selects md (paste-into-Word) vs pdf (drop-in legal memo). */
+  onExportWorkspace?: (id: string, format: "md" | "pdf") => void;
   /** Toggle read-only sharing on/off. Returns the URL when enabled. */
   onShareWorkspace?: (
     id: string,
@@ -216,6 +222,7 @@ export function WorkspacePinboardInline({
   currentWorkspaceId,
   onAddCard,
   onRemoveCard,
+  onEditCard,
   onSwitchWorkspace,
   onCreateWorkspace,
   onRenameWorkspace,
@@ -228,6 +235,45 @@ export function WorkspacePinboardInline({
   // Switcher dropdown open state. Click outside or pick a workspace
   // closes it.
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  // Export-format dropdown open state. Click outside / Esc closes.
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  // Currently-editing card id + draft fields. Single-card-at-a-time
+  // editing — opening edit on card B auto-commits whatever's in the
+  // draft for card A (or discards if untouched).
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [editTitleDraft, setEditTitleDraft] = useState("");
+  const [editContentDraft, setEditContentDraft] = useState("");
+
+  const startEditCard = useCallback((card: WorkspaceCard) => {
+    setEditingCardId(card.id);
+    setEditTitleDraft(card.title);
+    setEditContentDraft(card.content);
+  }, []);
+
+  const commitEditCard = useCallback(() => {
+    if (!editingCardId || !onEditCard) {
+      setEditingCardId(null);
+      return;
+    }
+    const card = cards.find((c) => c.id === editingCardId);
+    if (!card) {
+      setEditingCardId(null);
+      return;
+    }
+    const patch: { title?: string; content?: string } = {};
+    const t = editTitleDraft.trim();
+    const c = editContentDraft;
+    if (t.length > 0 && t !== card.title) patch.title = t;
+    if (c !== card.content) patch.content = c;
+    if (Object.keys(patch).length > 0) {
+      onEditCard(editingCardId, patch);
+    }
+    setEditingCardId(null);
+  }, [editingCardId, editTitleDraft, editContentDraft, cards, onEditCard]);
+
+  const cancelEditCard = useCallback(() => {
+    setEditingCardId(null);
+  }, []);
   // Inline title-editing state — when the lawyer double-clicks the
   // current workspace title in the header, we swap to an input.
   const [editingTitle, setEditingTitle] = useState(false);
@@ -255,6 +301,32 @@ export function WorkspacePinboardInline({
       document.removeEventListener("keydown", handler as EventListener);
     };
   }, [switcherOpen]);
+
+  // Outside-click for the export-format menu — same pattern as the
+  // switcher. Closes on Esc or any click that's not on the menu or
+  // its trigger arrow.
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const handler = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent && e.key !== "Escape") return;
+      if (e instanceof MouseEvent) {
+        const t = e.target as HTMLElement;
+        if (
+          t.closest(`.${styles.exportMenu}`) ||
+          t.closest(`.${styles.headerExportArrow}`)
+        ) {
+          return;
+        }
+      }
+      setExportMenuOpen(false);
+    };
+    document.addEventListener("click", handler as EventListener);
+    document.addEventListener("keydown", handler as EventListener);
+    return () => {
+      document.removeEventListener("click", handler as EventListener);
+      document.removeEventListener("keydown", handler as EventListener);
+    };
+  }, [exportMenuOpen]);
 
   // Submit title rename. Called on blur or Enter.
   const commitRename = useCallback(() => {
@@ -956,20 +1028,59 @@ export function WorkspacePinboardInline({
             </button>
           )}
 
-          {/* Export-Button — turns the workspace into a markdown
-              deliverable. Only shown when there's something to export
-              and a current workspace id is in scope. */}
+          {/* Export-Group — primary button defaults to PDF (the real
+              deliverable lawyers want) and a chevron-arrow opens a
+              tiny dropdown for the alternative markdown export. */}
           {onExportWorkspace && currentWorkspaceId && cards.length > 0 && (
-            <button
-              type="button"
-              onClick={() => onExportWorkspace(currentWorkspaceId)}
-              aria-label="Workspace als Memo exportieren"
-              title="Als Memo exportieren (Markdown)"
-              className={styles.headerExport}
-            >
-              <Download size={12} strokeWidth={1.8} />
-              <span>Export</span>
-            </button>
+            <div className={styles.headerExportGroup}>
+              <button
+                type="button"
+                onClick={() => onExportWorkspace(currentWorkspaceId, "pdf")}
+                aria-label="Workspace als PDF-Memo exportieren"
+                title="Als PDF-Memo exportieren"
+                className={styles.headerExport}
+              >
+                <Download size={12} strokeWidth={1.8} />
+                <span>PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExportMenuOpen((o) => !o);
+                }}
+                aria-label="Andere Exportformate"
+                className={styles.headerExportArrow}
+              >
+                <ChevronDown size={11} strokeWidth={2} />
+              </button>
+              {exportMenuOpen && (
+                <div className={styles.exportMenu} role="menu">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onExportWorkspace(currentWorkspaceId, "pdf");
+                      setExportMenuOpen(false);
+                    }}
+                    className={styles.exportMenuItem}
+                  >
+                    <Download size={11} strokeWidth={1.8} />
+                    <span>PDF (Legal Memo)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onExportWorkspace(currentWorkspaceId, "md");
+                      setExportMenuOpen(false);
+                    }}
+                    className={styles.exportMenuItem}
+                  >
+                    <Download size={11} strokeWidth={1.8} />
+                    <span>Markdown (.md)</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           <button
             type="button"
@@ -1452,6 +1563,20 @@ export function WorkspacePinboardInline({
                         <span>Konflikt</span>
                       </div>
                     )}
+                    {/* Edit-button — appears on hover. Click flips the
+                        card into inline-edit mode. AI-cards get an
+                        edit too because lawyers want to refine
+                        Atlas-output before exporting. */}
+                    {onEditCard && editingCardId !== card.id && (
+                      <button
+                        type="button"
+                        onClick={() => startEditCard(card)}
+                        aria-label="Karte bearbeiten"
+                        className={styles.cardEditAction}
+                      >
+                        <Pencil size={11} strokeWidth={1.7} />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => onRemoveCard(card.id)}
@@ -1460,18 +1585,70 @@ export function WorkspacePinboardInline({
                     >
                       <X size={12} strokeWidth={1.5} />
                     </button>
-                    <h3 className={styles.cardTitle}>{card.title}</h3>
-                    {/* For ai-answer cards, show the original question
-                        before the answer so the lawyer remembers what
-                        was asked without re-reading the title. */}
-                    {isAnswer && card.question && (
-                      <p className={styles.cardQuestion}>
-                        <span className={styles.cardQuestionLabel}>Frage:</span>{" "}
-                        {card.question}
-                      </p>
-                    )}
-                    {card.content && (
-                      <p className={styles.cardContent}>{card.content}</p>
+                    {editingCardId === card.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editTitleDraft}
+                          onChange={(e) => setEditTitleDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") cancelEditCard();
+                          }}
+                          autoFocus
+                          className={styles.cardEditTitle}
+                        />
+                        <textarea
+                          value={editContentDraft}
+                          onChange={(e) => setEditContentDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            // Cmd/Ctrl+Enter saves; Esc cancels.
+                            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                              commitEditCard();
+                            }
+                            if (e.key === "Escape") cancelEditCard();
+                          }}
+                          rows={Math.min(
+                            8,
+                            Math.max(3, editContentDraft.split("\n").length),
+                          )}
+                          className={styles.cardEditBody}
+                        />
+                        <div className={styles.cardEditActions}>
+                          <button
+                            type="button"
+                            onClick={cancelEditCard}
+                            className={styles.cardEditCancel}
+                          >
+                            Abbrechen
+                          </button>
+                          <button
+                            type="button"
+                            onClick={commitEditCard}
+                            className={styles.cardEditSave}
+                          >
+                            Speichern
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className={styles.cardTitle}>{card.title}</h3>
+                        {/* For ai-answer cards, show the original
+                            question before the answer so the lawyer
+                            remembers what was asked without re-reading
+                            the title. */}
+                        {isAnswer && card.question && (
+                          <p className={styles.cardQuestion}>
+                            <span className={styles.cardQuestionLabel}>
+                              Frage:
+                            </span>{" "}
+                            {card.question}
+                          </p>
+                        )}
+                        {card.content && (
+                          <p className={styles.cardContent}>{card.content}</p>
+                        )}
+                      </>
                     )}
                   </article>
                 );
