@@ -573,3 +573,39 @@ export async function setMatterStatus(input: {
 
   return updated;
 }
+
+// ─── Create standalone matter ─────────────────────────────────────────
+
+/**
+ * Erstellt ein leeres STANDALONE-Matter („Quick-Pinboard"). Kein
+ * Mandant, kein Scope, kein Invite-Token. Lawyer-side-only.
+ *
+ * Wird über die 5. Quick-Action im Atlas AI Mode (⌘5) aufgerufen.
+ * Aus dem Status STANDALONE kann das Matter via promoteStandaloneMatter
+ * zum echten Mandat werden — siehe dortige Doku.
+ */
+export async function createStandaloneMatter(input: {
+  lawFirmOrgId: string;
+  createdBy: string;
+  name?: string;
+}): Promise<{ matterId: string }> {
+  const defaultName = `Neuer Workspace · ${new Date().toLocaleDateString(
+    "de-DE",
+    { day: "2-digit", month: "2-digit", year: "numeric" },
+  )}`;
+
+  const created = await prisma.legalMatter.create({
+    data: {
+      lawFirmOrgId: input.lawFirmOrgId,
+      clientOrgId: null,
+      name: input.name?.trim() || defaultName,
+      scope: [] as unknown as Prisma.InputJsonValue,
+      status: "STANDALONE",
+      invitedBy: input.createdBy,
+      invitedFrom: "ATLAS",
+    },
+    select: { id: true },
+  });
+
+  return { matterId: created.id };
+}

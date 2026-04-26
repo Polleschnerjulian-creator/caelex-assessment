@@ -89,6 +89,7 @@ import {
   rejectInvite,
   revokeMatter,
   setMatterStatus,
+  createStandaloneMatter,
   MatterServiceError,
 } from "@/lib/legal-network/matter-service";
 
@@ -764,5 +765,67 @@ describe("matter-service / setMatterStatus", () => {
         actorSide: "CAELEX",
       }),
     ).rejects.toMatchObject({ code: "MATTER_WRONG_STATE" });
+  });
+});
+
+// ─── createStandaloneMatter ───────────────────────────────────────────
+
+describe("createStandaloneMatter", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("creates a STANDALONE matter with null clientOrgId and empty scope", async () => {
+    const created = {
+      id: "m_solo_1",
+      lawFirmOrgId: "lf_1",
+      clientOrgId: null,
+      name: "Neuer Workspace · 26.04.2026",
+      reference: null,
+      description: null,
+      scope: [],
+      status: "STANDALONE",
+      invitedBy: "u_1",
+      invitedFrom: "ATLAS",
+      invitedAt: new Date(),
+    };
+    (
+      prisma.legalMatter.create as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce(created);
+
+    const result = await createStandaloneMatter({
+      lawFirmOrgId: "lf_1",
+      createdBy: "u_1",
+    });
+
+    expect(result.matterId).toBe("m_solo_1");
+    expect(prisma.legalMatter.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        lawFirmOrgId: "lf_1",
+        clientOrgId: null,
+        status: "STANDALONE",
+        scope: [],
+        invitedBy: "u_1",
+        invitedFrom: "ATLAS",
+      }),
+      select: { id: true },
+    });
+  });
+
+  it("uses the provided name when given", async () => {
+    (
+      prisma.legalMatter.create as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
+      id: "m_solo_2",
+    });
+    await createStandaloneMatter({
+      lawFirmOrgId: "lf_1",
+      createdBy: "u_1",
+      name: "Q4 IPO due-diligence",
+    });
+    expect(prisma.legalMatter.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ name: "Q4 IPO due-diligence" }),
+      select: { id: true },
+    });
   });
 });
