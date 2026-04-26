@@ -43,14 +43,30 @@ export async function POST(request: NextRequest) {
     // table → likely a search_path issue with a non-public schema.
     let schemaInfo: {
       currentSchema: string;
+      currentDatabase: string;
+      currentUser: string;
       searchPath: string;
       legalMatterSchema: string | null;
       matterStatusSchema: string | null;
+      tableSamples: Array<{ schemaname: string; tablename: string }>;
+      enumSamples: Array<{ nspname: string; typname: string }>;
+      organizationCount: number | null;
+      legalMatterCount: number | null;
     } | null = null;
     try {
       const cs = (
         await prisma.$queryRawUnsafe<{ current_schema: string }[]>(
           `SELECT current_schema()`,
+        )
+      )[0];
+      const cdb = (
+        await prisma.$queryRawUnsafe<{ current_database: string }[]>(
+          `SELECT current_database()`,
+        )
+      )[0];
+      const cu = (
+        await prisma.$queryRawUnsafe<{ current_user: string }[]>(
+          `SELECT current_user`,
         )
       )[0];
       const sp = (
@@ -59,18 +75,56 @@ export async function POST(request: NextRequest) {
         )
       )[0];
       const lm = await prisma.$queryRawUnsafe<{ schemaname: string }[]>(
-        `SELECT schemaname FROM pg_tables WHERE tablename = 'LegalMatter'`,
+        `SELECT schemaname FROM pg_tables WHERE tablename = 'LegalMatter' OR tablename = 'legal_matter' OR tablename ILIKE 'legalmatter%'`,
       );
       const ms = await prisma.$queryRawUnsafe<{ nspname: string }[]>(
         `SELECT n.nspname FROM pg_type t
          JOIN pg_namespace n ON t.typnamespace = n.oid
-         WHERE t.typname = 'MatterStatus'`,
+         WHERE t.typname ILIKE 'matterstatus%' OR t.typname = 'MatterStatus'`,
       );
+      // Sample tables — show what tables we CAN see, to confirm we're
+      // looking at the right DB at all.
+      const ts = await prisma.$queryRawUnsafe<
+        { schemaname: string; tablename: string }[]
+      >(
+        `SELECT schemaname, tablename FROM pg_tables
+         WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+         ORDER BY schemaname, tablename LIMIT 30`,
+      );
+      const es = await prisma.$queryRawUnsafe<
+        { nspname: string; typname: string }[]
+      >(
+        `SELECT n.nspname, t.typname FROM pg_type t
+         JOIN pg_namespace n ON t.typnamespace = n.oid
+         WHERE t.typtype = 'e' AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+         ORDER BY n.nspname, t.typname LIMIT 30`,
+      );
+
+      // Try Prisma's own model — does it agree the table exists?
+      let orgCount: number | null = null;
+      let lmCount: number | null = null;
+      try {
+        orgCount = await prisma.organization.count();
+      } catch {
+        orgCount = -1;
+      }
+      try {
+        lmCount = await prisma.legalMatter.count();
+      } catch {
+        lmCount = -1;
+      }
+
       schemaInfo = {
         currentSchema: cs.current_schema,
+        currentDatabase: cdb.current_database,
+        currentUser: cu.current_user,
         searchPath: sp.search_path,
         legalMatterSchema: lm[0]?.schemaname ?? null,
         matterStatusSchema: ms[0]?.nspname ?? null,
+        tableSamples: ts,
+        enumSamples: es,
+        organizationCount: orgCount,
+        legalMatterCount: lmCount,
       };
     } catch (err) {
       results.push({
