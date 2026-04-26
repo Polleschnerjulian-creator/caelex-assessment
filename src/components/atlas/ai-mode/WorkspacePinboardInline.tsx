@@ -28,8 +28,24 @@ import {
   Globe,
   Shield,
   Scale,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
+
+// ─── Konflikt-Detection ───────────────────────────────────────────────
+//
+// "Konflikte prüfen" runs Atlas-AI over all user-pinned cards and
+// surfaces real contradictions / scope mismatches / gaps. Returned
+// conflicts are stored locally — no DB persistence yet.
+
+interface Conflict {
+  cardAId: string;
+  cardBId: string;
+  severity: "high" | "medium" | "low";
+  summary: string;
+  explanation: string;
+}
 
 // ─── Corpus search ────────────────────────────────────────────────────
 //
@@ -166,6 +182,25 @@ export function WorkspacePinboardInline({
   // Keep the latest in-flight request id so a slow earlier response
   // doesn't overwrite a faster later one (race condition guard).
   const corpusReqRef = useRef(0);
+
+  // Konflikt-state — list of detected conflicts plus the in-flight
+  // marker for the header button. `conflictsLastRunAt` lets us show
+  // "vor 2 min geprüft" so the lawyer knows the result is fresh.
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [checkingConflicts, setCheckingConflicts] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
+  const [conflictsLastRunAt, setConflictsLastRunAt] = useState<number | null>(
+    null,
+  );
+  // Whether the conflict-detail panel is expanded. Starts collapsed
+  // even when there are conflicts — the count pill is enough at a
+  // glance, the lawyer expands when ready.
+  const [conflictPanelOpen, setConflictPanelOpen] = useState(false);
+  // Highlighted card id (from clicking a conflict in the panel).
+  // Triggers a yellow flash on the matching card and scrolls it into
+  // view. Cleared after the flash animation.
+  const [flashCardId, setFlashCardId] = useState<string | null>(null);
+  const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   // Radial menu — null when closed, {x, y} (viewport coords) when open.
   // Right-click anywhere on the pinboard pops it at the cursor.
@@ -374,6 +409,92 @@ export function WorkspacePinboardInline({
   const synthesisInputCards = cards.filter((c) => c.kind !== "ai-clause");
   const canSynthesize = synthesisInputCards.length >= 2 && !synthesizing;
 
+  /** Run Atlas conflict-detection over all user cards. AI cards are
+   *  excluded because we don't want to flag Atlas's own derivatives
+   *  as conflicts with the human inputs they were built from. */
+  const checkConflicts = useCallback(async () => {
+    setConflictError(null);
+    setCheckingConflicts(true);
+    try {
+      const inputCards = cards
+        .filter((c) => c.kind !== "ai-clause" && c.kind !== "ai-answer")
+        .map((c) => ({ id: c.id, title: c.title, content: c.content }));
+      if (inputCards.length < 2) {
+        setConflicts([]);
+        setConflictsLastRunAt(Date.now());
+        return;
+      }
+      const res = await fetch("/api/atlas/workspace/conflicts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cards: inputCards }),
+      });
+      const json = (await res.json()) as {
+        conflicts?: Conflict[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setConflictError(json.error ?? "Konflikt-Pruefung fehlgeschlagen");
+        return;
+      }
+      setConflicts(json.conflicts ?? []);
+      setConflictsLastRunAt(Date.now());
+      // Auto-open the panel only when conflicts are found; if Atlas
+      // came back clean, the green pill is enough — no need to push
+      // an empty drawer at the lawyer.
+      if ((json.conflicts ?? []).length > 0) {
+        setConflictPanelOpen(true);
+      }
+    } catch (err) {
+      setConflictError(err instanceof Error ? err.message : "Fehler");
+    } finally {
+      setCheckingConflicts(false);
+    }
+  }, [cards]);
+
+  /** Scroll a card into view and trigger the flash animation. Used
+   *  when the user clicks a conflict-row in the detail panel. */
+  const focusCard = useCallback((id: string) => {
+    const el = cardRefs.current.get(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    setFlashCardId(id);
+    // Clear after the flash animation completes so re-clicking the
+    // same card re-triggers the highlight.
+    window.setTimeout(() => setFlashCardId(null), 1200);
+  }, []);
+
+  // Invalidate previous conflict results when the card set changes.
+  // The lawyer adds/removes a card — old conflicts may no longer
+  // apply, so we drop them and the lawyer re-runs the check.
+  // We track card-id-set as a stable string key so we don't fire on
+  // unrelated re-renders.
+  const cardIdSetKey = cards
+    .filter((c) => c.kind !== "ai-clause" && c.kind !== "ai-answer")
+    .map((c) => c.id)
+    .sort()
+    .join("|");
+  const lastCardIdSetRef = useRef<string>(cardIdSetKey);
+  useEffect(() => {
+    if (lastCardIdSetRef.current !== cardIdSetKey) {
+      lastCardIdSetRef.current = cardIdSetKey;
+      // Only invalidate if conflicts were actually loaded — don't
+      // clobber the panel state on every keystroke during composer.
+      setConflicts((prev) => (prev.length > 0 ? [] : prev));
+      setConflictsLastRunAt(null);
+      setConflictPanelOpen(false);
+    }
+  }, [cardIdSetKey]);
+
+  // Build a Set of card ids that are involved in any conflict — used
+  // to mark cards visually with a red border + warning badge.
+  const conflictedCardIds = new Set<string>();
+  for (const c of conflicts) {
+    conflictedCardIds.add(c.cardAId);
+    conflictedCardIds.add(c.cardBId);
+  }
+
   const synthesize = useCallback(async () => {
     setSynthError(null);
     setSynthesizing(true);
@@ -463,6 +584,56 @@ export function WorkspacePinboardInline({
               </span>
             </button>
           )}
+
+          {/* Konflikte prüfen — sibling action to synthesize. Toggles
+              a state-variant pill: amber+count when conflicts exist,
+              emerald check when board is clean. */}
+          {synthesisInputCards.length >= 2 &&
+            (conflicts.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setConflictPanelOpen((o) => !o)}
+                aria-label="Konfliktdetails anzeigen"
+                className={`${styles.headerConflict} ${styles.headerConflictActive}`}
+              >
+                <AlertTriangle size={12} strokeWidth={1.8} />
+                <span>
+                  {conflicts.length}{" "}
+                  {conflicts.length === 1 ? "Konflikt" : "Konflikte"}
+                </span>
+              </button>
+            ) : conflictsLastRunAt && !checkingConflicts ? (
+              <button
+                type="button"
+                onClick={checkConflicts}
+                aria-label="Konflikte erneut pruefen"
+                className={`${styles.headerConflict} ${styles.headerConflictClean}`}
+              >
+                <CheckCircle2 size={12} strokeWidth={1.8} />
+                <span>Konfliktfrei</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={checkConflicts}
+                disabled={checkingConflicts}
+                aria-label="Konflikte pruefen"
+                className={styles.headerConflict}
+              >
+                {checkingConflicts ? (
+                  <Loader2
+                    size={12}
+                    strokeWidth={2}
+                    className={styles.headerSpin}
+                  />
+                ) : (
+                  <AlertTriangle size={12} strokeWidth={1.8} />
+                )}
+                <span>
+                  {checkingConflicts ? "Pruefe..." : "Konflikte pruefen"}
+                </span>
+              </button>
+            ))}
           <button
             type="button"
             onClick={onClose}
@@ -502,6 +673,87 @@ export function WorkspacePinboardInline({
           </div>
         )}
 
+        {/* Conflict error pill — same lane as synth/ask. */}
+        {conflictError && (
+          <div className={styles.synthError} role="alert">
+            <span>{conflictError}</span>
+            <button
+              type="button"
+              onClick={() => setConflictError(null)}
+              aria-label="Fehler schliessen"
+            >
+              <X size={12} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
+
+        {/* Conflict-detail panel — opens below the header when the
+            user clicks the conflict-count pill. Each row is clickable
+            and scrolls/flashes the involved cards. */}
+        {conflictPanelOpen && conflicts.length > 0 && (
+          <div className={styles.conflictPanel} role="dialog">
+            <div className={styles.conflictPanelHead}>
+              <AlertTriangle size={13} strokeWidth={1.8} />
+              <span>Atlas hat {conflicts.length} Konflikt(e) erkannt</span>
+              <button
+                type="button"
+                onClick={() => setConflictPanelOpen(false)}
+                aria-label="Panel schliessen"
+                className={styles.conflictPanelClose}
+              >
+                <X size={12} strokeWidth={1.8} />
+              </button>
+            </div>
+            <div className={styles.conflictPanelBody}>
+              {conflicts.map((conflict, i) => {
+                const cardA = cards.find((c) => c.id === conflict.cardAId);
+                const cardB = cards.find((c) => c.id === conflict.cardBId);
+                return (
+                  <div
+                    key={`${conflict.cardAId}-${conflict.cardBId}-${i}`}
+                    className={`${styles.conflictRow} ${
+                      styles[`conflictRow_${conflict.severity}`] ?? ""
+                    }`}
+                  >
+                    <div className={styles.conflictRowHead}>
+                      <span
+                        className={`${styles.conflictSeverityDot} ${
+                          styles[`conflictSeverity_${conflict.severity}`] ?? ""
+                        }`}
+                      />
+                      <span className={styles.conflictRowSummary}>
+                        {conflict.summary}
+                      </span>
+                    </div>
+                    <div className={styles.conflictPair}>
+                      <button
+                        type="button"
+                        onClick={() => focusCard(conflict.cardAId)}
+                        className={styles.conflictCardLink}
+                        title={cardA?.content}
+                      >
+                        {cardA?.title ?? "Karte (entfernt)"}
+                      </button>
+                      <span className={styles.conflictPairArrow}>↔</span>
+                      <button
+                        type="button"
+                        onClick={() => focusCard(conflict.cardBId)}
+                        className={styles.conflictCardLink}
+                        title={cardB?.content}
+                      >
+                        {cardB?.title ?? "Karte (entfernt)"}
+                      </button>
+                    </div>
+                    <p className={styles.conflictExplanation}>
+                      {conflict.explanation}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Card area — right of the cutout, leaves room for composer
             at bottom. */}
         <div className={styles.cardArea}>
@@ -530,10 +782,26 @@ export function WorkspacePinboardInline({
                 const isClause = card.kind === "ai-clause";
                 const isAnswer = card.kind === "ai-answer";
                 const isAi = isClause || isAnswer;
+                const inConflict = conflictedCardIds.has(card.id);
+                const isFlashing = flashCardId === card.id;
                 return (
                   <article
                     key={card.id}
-                    className={`${styles.card} ${isAi ? styles.cardAi : ""} ${isAnswer ? styles.cardAnswer : ""}`}
+                    ref={(el) => {
+                      // Track DOM nodes so focusCard() can scroll to the
+                      // exact card when the lawyer clicks a conflict
+                      // row. Cleanup on unmount removes the entry.
+                      if (el) {
+                        cardRefs.current.set(card.id, el);
+                      } else {
+                        cardRefs.current.delete(card.id);
+                      }
+                    }}
+                    className={`${styles.card} ${isAi ? styles.cardAi : ""} ${
+                      isAnswer ? styles.cardAnswer : ""
+                    } ${inConflict ? styles.cardConflict : ""} ${
+                      isFlashing ? styles.cardFlash : ""
+                    }`}
                   >
                     {isClause && (
                       <div className={styles.cardAiBadge}>
@@ -547,6 +815,15 @@ export function WorkspacePinboardInline({
                       >
                         <Sparkles size={10} strokeWidth={2} />
                         <span>Atlas-Antwort</span>
+                      </div>
+                    )}
+                    {/* Konflikt-Badge — sits above the title when this
+                        card is in any conflict. The detail panel above
+                        shows what the conflict is. */}
+                    {inConflict && (
+                      <div className={styles.cardConflictBadge}>
+                        <AlertTriangle size={10} strokeWidth={2} />
+                        <span>Konflikt</span>
                       </div>
                     )}
                     <button

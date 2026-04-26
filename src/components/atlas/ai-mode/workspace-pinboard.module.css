@@ -227,6 +227,65 @@
   }
 }
 
+/* Konflikte-prüfen button — sibling of headerSynthesize. Three
+   visual states: idle (subtle slate), active (amber count), clean
+   (emerald check). The active variant doesn't dim on hover because
+   it's primarily a panel-toggle, not a fire-action. */
+.headerConflict {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 255, 0.72);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.headerConflict:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.headerConflict:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.headerConflictActive {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 170, 80, 0.22) 0%,
+    rgba(255, 130, 110, 0.22) 100%
+  );
+  border-color: rgba(255, 180, 100, 0.42);
+  color: rgba(255, 230, 200, 0.98);
+}
+.headerConflictActive:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 170, 80, 0.32) 0%,
+    rgba(255, 130, 110, 0.32) 100%
+  );
+}
+.headerConflictClean {
+  background: linear-gradient(
+    135deg,
+    rgba(80, 200, 160, 0.18) 0%,
+    rgba(120, 200, 220, 0.18) 100%
+  );
+  border-color: rgba(140, 220, 200, 0.36);
+  color: rgba(220, 250, 240, 0.95);
+}
+
 /* Synthesis-error pill — sits just below the header pill. */
 .synthError {
   position: absolute;
@@ -971,6 +1030,243 @@
   background: rgba(80, 30, 30, 0.85);
   border-color: rgba(255, 100, 100, 0.32);
   color: rgba(255, 220, 220, 0.95);
+}
+
+/* ───────── Conflict-panel (drawer below header) ─────────
+   Slides down when the lawyer clicks the conflict-count pill. Lists
+   each detected conflict with a click-to-focus card-pair link. */
+
+.conflictPanel {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, calc(100vw - 96px));
+  max-height: 320px;
+  background: rgba(15, 15, 18, 0.94);
+  border: 1px solid rgba(255, 180, 100, 0.32);
+  border-radius: 14px;
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px -12px rgba(0, 0, 0, 0.7),
+    0 0 32px -10px rgba(255, 180, 100, 0.18);
+  animation: ws-conflict-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1.05);
+}
+@keyframes ws-conflict-panel-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.conflictPanelHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 230, 200, 0.95);
+}
+.conflictPanelHead > svg {
+  flex-shrink: 0;
+}
+.conflictPanelHead > span {
+  flex: 1;
+}
+.conflictPanelClose {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 230, 200, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  border-radius: 999px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.conflictPanelClose:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 230, 200, 0.9);
+}
+
+.conflictPanelBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+}
+.conflictPanelBody::-webkit-scrollbar {
+  width: 6px;
+}
+.conflictPanelBody::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.conflictRow {
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* Per-severity left border accent so the lawyer can scan urgency. */
+.conflictRow_high {
+  border-left: 3px solid rgba(255, 100, 100, 0.6);
+}
+.conflictRow_medium {
+  border-left: 3px solid rgba(255, 180, 100, 0.6);
+}
+.conflictRow_low {
+  border-left: 3px solid rgba(255, 220, 130, 0.5);
+}
+.conflictRowHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ws-text);
+  font-weight: 600;
+}
+.conflictSeverityDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.conflictSeverity_high {
+  background: rgba(255, 100, 100, 0.85);
+  box-shadow: 0 0 8px rgba(255, 100, 100, 0.5);
+}
+.conflictSeverity_medium {
+  background: rgba(255, 180, 100, 0.85);
+  box-shadow: 0 0 6px rgba(255, 180, 100, 0.4);
+}
+.conflictSeverity_low {
+  background: rgba(255, 220, 130, 0.7);
+}
+.conflictRowSummary {
+  flex: 1;
+  letter-spacing: -0.005em;
+}
+.conflictPair {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  flex-wrap: wrap;
+}
+.conflictCardLink {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(248, 250, 255, 0.85);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.conflictCardLink:hover {
+  background: rgba(255, 180, 100, 0.18);
+  border-color: rgba(255, 180, 100, 0.36);
+  color: rgba(255, 230, 200, 0.98);
+}
+.conflictPairArrow {
+  color: rgba(248, 250, 255, 0.4);
+  font-size: 12px;
+}
+.conflictExplanation {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: rgba(248, 250, 255, 0.65);
+  line-height: 1.5;
+}
+
+/* ───────── Conflict-state on cards ─────────
+   When a card is involved in any conflict, paint a red ring + corner
+   badge so the lawyer can spot it at-a-glance even without opening
+   the conflict panel. */
+
+.cardConflict {
+  border-color: rgba(255, 130, 100, 0.42) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 28px -6px rgba(255, 100, 80, 0.22),
+    0 0 0 1px rgba(255, 130, 100, 0.32) !important;
+}
+.cardConflict:hover {
+  border-color: rgba(255, 130, 100, 0.6) !important;
+}
+
+.cardConflictBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 170, 80, 0.26) 0%,
+    rgba(255, 130, 110, 0.24) 100%
+  );
+  border: 1px solid rgba(255, 180, 100, 0.4);
+  color: rgba(255, 230, 200, 0.98);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Flash animation when a conflict-row is clicked — yellow halo
+   pulse to draw the eye to the freshly-scrolled card. */
+.cardFlash {
+  animation: ws-card-flash 1.1s ease-out;
+}
+@keyframes ws-card-flash {
+  0% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 28px -6px rgba(255, 200, 80, 0.7),
+      0 0 0 3px rgba(255, 200, 80, 0.65);
+  }
+  60% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 28px -6px rgba(255, 200, 80, 0.35),
+      0 0 0 2px rgba(255, 200, 80, 0.32);
+  }
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 28px -6px rgba(0, 0, 0, 0.5),
+      0 0 0 1px transparent;
+  }
 }
 
 /* ───────── Responsive — narrow viewports ───────── */
