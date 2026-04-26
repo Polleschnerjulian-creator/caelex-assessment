@@ -50,7 +50,12 @@ import styles from "./ai-mode.module.css";
 
 // ─── Types ────────────────────────────────────────────────────────
 
-export type ActionPanelKey = "matters" | "invite" | "memo" | "compare";
+export type ActionPanelKey =
+  | "matters"
+  | "invite"
+  | "memo"
+  | "compare"
+  | "workspace";
 
 interface PanelShellProps {
   open: boolean;

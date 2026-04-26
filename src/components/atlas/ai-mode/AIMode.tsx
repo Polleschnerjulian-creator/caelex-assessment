@@ -35,7 +35,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Briefcase, UserPlus, PenLine, Scale } from "lucide-react";
+import { Briefcase, UserPlus, PenLine, Scale, Inbox } from "lucide-react";
 import type { Citation } from "@/lib/atlas/citations";
 import {
   AtlasEntity,
@@ -104,6 +104,12 @@ const QUICK_ACTIONS = [
     label: "Jurisdiktionen vergleichen",
     panel: "compare" as const,
     kbd: "4",
+  },
+  {
+    icon: Inbox,
+    label: "Workspace öffnen",
+    panel: "workspace" as const,
+    kbd: "5",
   },
 ] as const;
 type QuickAction = (typeof QUICK_ACTIONS)[number];
@@ -257,9 +263,10 @@ export function AIMode({ open, onClose }: AIModeProps) {
   // ── Keyboard shortcuts ─────────────────────────────────────
   // ⌘K  — focus search bar
   // ⌘/  — open command palette
-  // ⌘1..⌘4 — quick actions (Phase AB). Linear-style number shortcuts
+  // ⌘1..⌘5 — quick actions (Phase AB). Linear-style number shortcuts
   //         deliberately avoid letter keys that collide with browser
   //         (⌘N new window, ⌘I dev tools italic) or OS (⌘M minimise).
+  //         ⌘5 opens a new standalone workspace (direct navigate).
   // The action handler is captured via a ref so this useEffect can
   // be declared early without a circular dependency on runQuickAction
   // (which itself depends on playSound declared further below).
@@ -280,7 +287,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
       // Quick actions — ignore when the command palette is open so
       // ⌘1-4 don't fight palette navigation.
       if (metaKey && !cmdOpen) {
-        const idx = ["1", "2", "3", "4"].indexOf(e.key);
+        const idx = ["1", "2", "3", "4", "5"].indexOf(e.key);
         if (idx !== -1) {
           e.preventDefault();
           runQuickActionRef.current?.(QUICK_ACTIONS[idx]);
@@ -826,12 +833,39 @@ export function AIMode({ open, onClose }: AIModeProps) {
   // Quick action runner — Phase AB-2 toggles a left-side action panel.
   // Same panel key clicked twice closes it (toggle UX). Different key
   // swaps content — only one panel visible at a time, no stacking.
+  // ⌘5 / workspace is a direct-navigate action — it POSTs to
+  // /api/atlas/workspace, creates a standalone matter, then pushes
+  // to the workspace page. No side panel is opened.
   const runQuickAction = useCallback(
     (action: QuickAction) => {
       playSound("click");
+      if (action.panel === "workspace") {
+        // Direkt-navigate — kein Panel
+        void (async () => {
+          try {
+            const res = await fetch("/api/atlas/workspace", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            });
+            const json = (await res.json()) as {
+              error?: string;
+              matterId?: string;
+            };
+            if (!res.ok) {
+              toast(json.error ?? "Workspace konnte nicht angelegt werden");
+              return;
+            }
+            router.push(`/atlas/network/${json.matterId}/workspace`);
+          } catch (err) {
+            toast(err instanceof Error ? err.message : "Fehler");
+          }
+        })();
+        return;
+      }
       setActivePanel((prev) => (prev === action.panel ? null : action.panel));
     },
-    [playSound],
+    [playSound, router, toast],
   );
   // Keep the ref-based bridge fresh — the keyboard useEffect (declared
   // earlier in the component body) reads from this ref to fire ⌘1-4
