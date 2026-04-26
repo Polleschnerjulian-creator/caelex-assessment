@@ -173,6 +173,14 @@ interface WorkspaceSummary {
   updatedAt: string;
 }
 
+interface WorkspaceTemplateSummary {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  cardCount: number;
+}
+
 interface Props {
   cards: WorkspaceCard[];
   /** Initial-load indicator — shown while AIMode is fetching the
@@ -194,8 +202,9 @@ interface Props {
   ) => void;
   /** Switch to a different workspace; AIMode will load its cards. */
   onSwitchWorkspace?: (id: string) => void;
-  /** Create a fresh workspace (server-side) and switch to it. */
-  onCreateWorkspace?: (title?: string) => void;
+  /** Create a fresh workspace (server-side) and switch to it. Pass
+   *  a templateId to seed the workspace with starter cards. */
+  onCreateWorkspace?: (opts?: { title?: string; templateId?: string }) => void;
   /** Rename the workspace with id. */
   onRenameWorkspace?: (id: string, title: string) => void;
   /** Delete the workspace; cascades to all its cards. */
@@ -237,6 +246,38 @@ export function WorkspacePinboardInline({
   const [switcherOpen, setSwitcherOpen] = useState(false);
   // Export-format dropdown open state. Click outside / Esc closes.
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  // Template-picker modal: shown when the user clicks "+ Neuer
+  // Workspace" in the switcher. Templates are loaded once on first
+  // open and cached for the session.
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [templates, setTemplates] = useState<WorkspaceTemplateSummary[]>([]);
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
+
+  // Lazy-load templates the first time the picker opens. No reload
+  // even if templates change server-side until the user hard-refreshes
+  // — they're stable enough that staleness within a single session
+  // is fine.
+  useEffect(() => {
+    if (!templatePickerOpen || templatesLoaded) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/atlas/workspaces/templates");
+        if (!res.ok) return;
+        const json = (await res.json()) as {
+          templates?: WorkspaceTemplateSummary[];
+        };
+        if (cancelled) return;
+        setTemplates(json.templates ?? []);
+        setTemplatesLoaded(true);
+      } catch {
+        // ignore — picker will show "Leerer Workspace" only.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [templatePickerOpen, templatesLoaded]);
   // Currently-editing card id + draft fields. Single-card-at-a-time
   // editing — opening edit on card B auto-commits whatever's in the
   // draft for card A (or discards if untouched).
@@ -1196,7 +1237,10 @@ export function WorkspacePinboardInline({
               <button
                 type="button"
                 onClick={() => {
-                  onCreateWorkspace();
+                  // Open the template-picker rather than creating a
+                  // blank workspace right away. Empty board is still
+                  // an option *inside* the picker.
+                  setTemplatePickerOpen(true);
                   setSwitcherOpen(false);
                 }}
                 className={styles.switcherCreate}
@@ -1300,6 +1344,96 @@ export function WorkspacePinboardInline({
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Template picker — full-screen overlay when the user clicks
+            "+ Neuer Workspace". Shows starter templates + always-
+            available "Leerer Workspace" fallback. */}
+        {templatePickerOpen && (
+          <div
+            className={styles.templatePickerBackdrop}
+            onClick={() => setTemplatePickerOpen(false)}
+          >
+            <div
+              className={styles.templatePicker}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-label="Workspace-Vorlage waehlen"
+            >
+              <div className={styles.templatePickerHead}>
+                <span>Workspace anlegen</span>
+                <button
+                  type="button"
+                  onClick={() => setTemplatePickerOpen(false)}
+                  aria-label="Picker schliessen"
+                  className={styles.templatePickerClose}
+                >
+                  <X size={14} strokeWidth={1.8} />
+                </button>
+              </div>
+              <p className={styles.templatePickerHint}>
+                Starte mit einer Vorlage oder einem leeren Workspace. Vorlagen
+                pinnen typische Quellen + Mandanten-Stub vorausgefüllt — sofort
+                produktiv.
+              </p>
+              <div className={styles.templateGrid}>
+                {/* Always-available "blank workspace" option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCreateWorkspace?.();
+                    setTemplatePickerOpen(false);
+                  }}
+                  className={`${styles.templateCard} ${styles.templateCardBlank}`}
+                >
+                  <div className={styles.templateCardHead}>
+                    <Plus size={14} strokeWidth={1.8} />
+                    <span className={styles.templateCardTitle}>
+                      Leerer Workspace
+                    </span>
+                  </div>
+                  <p className={styles.templateCardDescription}>
+                    Frische, leere Pinboard. Pinne Quellen und Notizen selbst
+                    über das Radial-Menü.
+                  </p>
+                </button>
+                {templates.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      onCreateWorkspace?.({ templateId: t.id });
+                      setTemplatePickerOpen(false);
+                    }}
+                    className={styles.templateCard}
+                  >
+                    <div className={styles.templateCardHead}>
+                      <span
+                        className={`${styles.templateCategoryBadge} ${styles[`templateCategory_${t.category}`] ?? ""}`}
+                      >
+                        {t.category === "license"
+                          ? "Lizenz"
+                          : t.category === "compliance"
+                            ? "Compliance"
+                            : t.category === "comparison"
+                              ? "Vergleich"
+                              : t.category === "incident"
+                                ? "Incident"
+                                : "Vertrag"}
+                      </span>
+                      <span className={styles.templateCardCount}>
+                        {t.cardCount} Karten
+                      </span>
+                    </div>
+                    <h3 className={styles.templateCardTitle}>{t.title}</h3>
+                    <p className={styles.templateCardDescription}>
+                      {t.description}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

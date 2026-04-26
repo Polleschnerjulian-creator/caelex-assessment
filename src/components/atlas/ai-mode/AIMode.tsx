@@ -1236,12 +1236,15 @@ export function AIMode({ open, onClose }: AIModeProps) {
             }
           }}
           onSwitchWorkspace={(id) => setCurrentWorkspaceId(id)}
-          onCreateWorkspace={async (title) => {
+          onCreateWorkspace={async (opts) => {
             try {
+              const body: { title?: string; templateId?: string } = {};
+              if (opts?.title) body.title = opts.title;
+              if (opts?.templateId) body.templateId = opts.templateId;
               const res = await fetch("/api/atlas/workspaces", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(title ? { title } : {}),
+                body: JSON.stringify(body),
               });
               const json = (await res.json()) as {
                 workspace?: {

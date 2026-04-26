@@ -20,6 +20,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { getTemplateById } from "@/data/atlas-workspace-templates";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -120,6 +121,9 @@ export async function GET(request: NextRequest) {
 
 const CreateBody = z.object({
   title: z.string().trim().min(1).max(120).optional(),
+  /** Pre-fill the workspace from a template. The template's cards
+   *  are inserted in one transaction with the workspace creation. */
+  templateId: z.string().min(1).max(60).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -157,27 +161,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ws = await prisma.atlasWorkspace.create({
-      data: {
-        userId: session.user.id,
-        organizationId: orgId,
-        title: parsed.data.title ?? "Workspace",
-      },
-      select: {
-        id: true,
-        title: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    // Look up the template if one was specified. If templateId is set
+    // but unknown, we silently fall through to creating a blank
+    // workspace — better UX than 400-ing on a stale client cache.
+    const template = parsed.data.templateId
+      ? getTemplateById(parsed.data.templateId)
+      : undefined;
+
+    // Create + (optionally) seed cards in one transaction so a partial
+    // failure can't leave a workspace with half its template cards.
+    const ws = await prisma.$transaction(async (tx) => {
+      const created = await tx.atlasWorkspace.create({
+        data: {
+          userId: session.user.id!,
+          organizationId: orgId,
+          title: parsed.data.title ?? template?.workspaceTitle ?? "Workspace",
+        },
+        select: {
+          id: true,
+          title: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (template && template.cards.length > 0) {
+        // createMany is faster than sequential creates here because
+        // the template cards don't reference each other (no
+        // sourceCardIds remapping needed — that's only for the
+        // fork endpoint).
+        await tx.atlasWorkspaceCard.createMany({
+          data: template.cards.map((c) => ({
+            workspaceId: created.id,
+            kind: c.kind,
+            title: c.title,
+            content: c.content,
+            sourceCardIds: [],
+          })),
+        });
+      }
+
+      return { ws: created, cardCount: template?.cards.length ?? 0 };
     });
 
     return NextResponse.json({
       workspace: {
-        id: ws.id,
-        title: ws.title,
-        createdAt: ws.createdAt.toISOString(),
-        updatedAt: ws.updatedAt.toISOString(),
-        cardCount: 0,
+        id: ws.ws.id,
+        title: ws.ws.title,
+        createdAt: ws.ws.createdAt.toISOString(),
+        updatedAt: ws.ws.updatedAt.toISOString(),
+        cardCount: ws.cardCount,
       },
     });
   } catch (err) {
