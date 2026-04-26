@@ -866,6 +866,96 @@ export function WorkspacePinboardInline({
     }
   }, [synthesisInputCards, onAddCard]);
 
+  // ─── Workspace keyboard shortcuts ──────────────────────────────────
+  //
+  // Power-user shortcuts. All gated behind Cmd/Ctrl + Shift to avoid
+  // collisions with the broader AIMode chord-table (⌘1-⌘5 already
+  // mean quick-actions). Shift-modifier is the Linear-style escape
+  // hatch for "workspace-context only" actions.
+  //
+  //   ⌘⇧E  → Export PDF
+  //   ⌘⇧M  → Export Markdown
+  //   ⌘⇧N  → Open template picker (new workspace)
+  //   ⌘⇧S  → Open share modal
+  //   ⌘⇧B  → Toggle workspace switcher
+  //   ⌘⇧F  → Fork current workspace
+  //   ⌘⇧L  → Run "Was fehlt noch?" suggestions
+  //   ⌘⇧K  → Run conflict-check
+  //   ⌘⇧Y  → Synthesize clause
+  //
+  // Only fire when no input/textarea has focus — typing in the
+  // composer or title-rename should not trigger workspace shortcuts.
+  // Placed AFTER all callbacks are declared so the dep array doesn't
+  // hit a TDZ on first render.
+  useEffect(() => {
+    const handler = (e: globalThis.KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return;
+      const active = document.activeElement;
+      if (active) {
+        const tag = active.tagName.toLowerCase();
+        if (
+          tag === "input" ||
+          tag === "textarea" ||
+          (active as HTMLElement).isContentEditable
+        ) {
+          return;
+        }
+      }
+      const k = e.key.toLowerCase();
+      if (k === "e" && currentWorkspaceId && cards.length > 0) {
+        e.preventDefault();
+        onExportWorkspace?.(currentWorkspaceId, "pdf");
+      } else if (k === "m" && currentWorkspaceId && cards.length > 0) {
+        e.preventDefault();
+        onExportWorkspace?.(currentWorkspaceId, "md");
+      } else if (k === "n") {
+        e.preventDefault();
+        setTemplatePickerOpen(true);
+      } else if (k === "s" && currentWorkspaceId && onShareWorkspace) {
+        e.preventDefault();
+        setShareModalOpen(true);
+      } else if (k === "b" && workspaces && workspaces.length > 0) {
+        e.preventDefault();
+        setSwitcherOpen((o) => !o);
+      } else if (k === "f" && currentWorkspaceId && onForkWorkspace) {
+        e.preventDefault();
+        onForkWorkspace(currentWorkspaceId);
+      } else if (k === "l" && currentWorkspaceId) {
+        e.preventDefault();
+        runSuggest();
+      } else if (
+        k === "k" &&
+        synthesisInputCards.length >= 2 &&
+        !checkingConflicts
+      ) {
+        e.preventDefault();
+        checkConflicts();
+      } else if (
+        k === "y" &&
+        synthesisInputCards.length >= 2 &&
+        !synthesizing
+      ) {
+        e.preventDefault();
+        synthesize();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [
+    currentWorkspaceId,
+    cards.length,
+    workspaces,
+    onExportWorkspace,
+    onShareWorkspace,
+    onForkWorkspace,
+    runSuggest,
+    checkConflicts,
+    synthesize,
+    checkingConflicts,
+    synthesizing,
+    synthesisInputCards.length,
+  ]);
+
   return (
     /* Wrapper carries the CSS-Variables (--ws-orb-x, etc.) so they
        cascade down to the panel + cutout-ring + content children.
@@ -946,6 +1036,7 @@ export function WorkspacePinboardInline({
               onClick={synthesize}
               disabled={!canSynthesize}
               aria-label="Klausel synthetisieren"
+              title="Klausel synthetisieren (⌘⇧Y)"
               className={styles.headerSynthesize}
             >
               {synthesizing ? (
@@ -986,7 +1077,7 @@ export function WorkspacePinboardInline({
                 onClick={runSuggest}
                 disabled={suggesting}
                 aria-label="Was fehlt noch? Atlas-Vorschlaege"
-                title="Was fehlt noch?"
+                title="Was fehlt noch? (⌘⇧L)"
                 className={styles.headerSuggest}
               >
                 {suggesting ? (
@@ -1035,6 +1126,7 @@ export function WorkspacePinboardInline({
                 onClick={checkConflicts}
                 disabled={checkingConflicts}
                 aria-label="Konflikte pruefen"
+                title="Konflikte pruefen (⌘⇧K)"
                 className={styles.headerConflict}
               >
                 {checkingConflicts ? (
@@ -1061,7 +1153,7 @@ export function WorkspacePinboardInline({
                 setShareCopied(false);
               }}
               aria-label="Workspace teilen"
-              title="Read-Link teilen"
+              title="Read-Link teilen (⌘⇧S)"
               className={styles.headerShare}
             >
               <Share2 size={12} strokeWidth={1.8} />
@@ -1078,7 +1170,7 @@ export function WorkspacePinboardInline({
                 type="button"
                 onClick={() => onExportWorkspace(currentWorkspaceId, "pdf")}
                 aria-label="Workspace als PDF-Memo exportieren"
-                title="Als PDF-Memo exportieren"
+                title="Als PDF-Memo exportieren (⌘⇧E)"
                 className={styles.headerExport}
               >
                 <Download size={12} strokeWidth={1.8} />
@@ -1199,7 +1291,7 @@ export function WorkspacePinboardInline({
                           setSwitcherOpen(false);
                         }}
                         aria-label="Workspace klonen (Szenario-Fork)"
-                        title="Klonen — eigenes Szenario aufmachen"
+                        title="Klonen — eigenes Szenario aufmachen (⌘⇧F)"
                         className={styles.switcherRowAction}
                       >
                         <Copy size={11} strokeWidth={1.7} />
@@ -1244,9 +1336,11 @@ export function WorkspacePinboardInline({
                   setSwitcherOpen(false);
                 }}
                 className={styles.switcherCreate}
+                title="Neuer Workspace (⌘⇧N)"
               >
                 <Plus size={12} strokeWidth={1.8} />
                 <span>Neuer Workspace</span>
+                <span className={styles.switcherKbd}>⌘⇧N</span>
               </button>
             )}
           </div>

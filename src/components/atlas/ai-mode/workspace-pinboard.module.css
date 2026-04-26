@@ -1799,6 +1799,21 @@
   background: rgba(140, 220, 200, 0.06);
 }
 
+/* Kbd-hint chip — small inline reminder of the keyboard shortcut.
+   Shown right of the label, doesn't push other content around. */
+.switcherKbd {
+  margin-left: auto;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: rgba(248, 250, 255, 0.4);
+}
+
 /* ───────── Suggestion panel ─────────
    Drawer below the header when the lawyer clicks the lightbulb pill.
    Each row is a button — click routes to the right composer. */
