@@ -8707,9 +8707,10 @@ model LegalMatter {
   effectiveUntil DateTime?
 
   // Mutual consent proof — SHA-256 of the canonical handshake bundle.
+  // null for STANDALONE matters (no handshake until promote).
   // Recomputed from stored fields at verification time; any drift
   // fails the integrity check.
-  handshakeHash String
+  handshakeHash String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
