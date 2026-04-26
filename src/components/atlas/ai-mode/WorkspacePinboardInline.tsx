@@ -30,6 +30,9 @@ import {
   Scale,
   AlertTriangle,
   CheckCircle2,
+  ChevronDown,
+  Trash2,
+  Pencil,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
 
@@ -143,19 +146,95 @@ export interface WorkspaceCard {
   question?: string;
 }
 
+interface WorkspaceSummary {
+  id: string;
+  title: string;
+  cardCount: number;
+  updatedAt: string;
+}
+
 interface Props {
   cards: WorkspaceCard[];
+  /** Initial-load indicator — shown while AIMode is fetching the
+   *  workspace list / creating the first one. */
+  loading?: boolean;
+  /** All non-archived workspaces for this user, used to build the
+   *  switcher dropdown. */
+  workspaces?: WorkspaceSummary[];
+  /** Currently-active workspace id. Drives the title shown in the
+   *  switcher and which workspace receives new cards. */
+  currentWorkspaceId?: string | null;
   onAddCard: (card: Omit<WorkspaceCard, "id" | "createdAt">) => void;
   onRemoveCard: (id: string) => void;
+  /** Switch to a different workspace; AIMode will load its cards. */
+  onSwitchWorkspace?: (id: string) => void;
+  /** Create a fresh workspace (server-side) and switch to it. */
+  onCreateWorkspace?: (title?: string) => void;
+  /** Rename the workspace with id. */
+  onRenameWorkspace?: (id: string, title: string) => void;
+  /** Delete the workspace; cascades to all its cards. */
+  onDeleteWorkspace?: (id: string) => void;
   onClose: () => void;
 }
 
 export function WorkspacePinboardInline({
   cards,
+  loading,
+  workspaces,
+  currentWorkspaceId,
   onAddCard,
   onRemoveCard,
+  onSwitchWorkspace,
+  onCreateWorkspace,
+  onRenameWorkspace,
+  onDeleteWorkspace,
   onClose,
 }: Props) {
+  // Switcher dropdown open state. Click outside or pick a workspace
+  // closes it.
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  // Inline title-editing state — when the lawyer double-clicks the
+  // current workspace title in the header, we swap to an input.
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+
+  const currentWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId);
+
+  // Close the switcher on outside-click. ESC also closes — a Linear-
+  // style escape hatch since the switcher takes over input focus
+  // when it's open.
+  useEffect(() => {
+    if (!switcherOpen) return;
+    const handler = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent && e.key !== "Escape") return;
+      if (e instanceof MouseEvent) {
+        const t = e.target as HTMLElement;
+        if (t.closest(`.${styles.switcher}`)) return;
+      }
+      setSwitcherOpen(false);
+    };
+    document.addEventListener("click", handler as EventListener);
+    document.addEventListener("keydown", handler as EventListener);
+    return () => {
+      document.removeEventListener("click", handler as EventListener);
+      document.removeEventListener("keydown", handler as EventListener);
+    };
+  }, [switcherOpen]);
+
+  // Submit title rename. Called on blur or Enter.
+  const commitRename = useCallback(() => {
+    setEditingTitle(false);
+    const next = titleDraft.trim();
+    if (
+      currentWorkspace &&
+      next &&
+      next !== currentWorkspace.title &&
+      onRenameWorkspace
+    ) {
+      onRenameWorkspace(currentWorkspace.id, next);
+    }
+  }, [currentWorkspace, titleDraft, onRenameWorkspace]);
+
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerArchetype, setComposerArchetype] =
     useState<CardArchetype>("note");
@@ -555,7 +634,51 @@ export function WorkspacePinboardInline({
         {/* Header pill (top-center) */}
         <div className={styles.headerPill}>
           <Inbox size={14} strokeWidth={1.5} className={styles.headerIcon} />
-          <span className={styles.headerLabel}>Workspace</span>
+          {/* Workspace title — double-click to rename. Switcher opens
+              from the chevron-button to the right of the title. */}
+          {editingTitle && currentWorkspace ? (
+            <input
+              type="text"
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitRename();
+                if (e.key === "Escape") setEditingTitle(false);
+              }}
+              autoFocus
+              className={styles.headerTitleInput}
+            />
+          ) : (
+            <button
+              type="button"
+              onDoubleClick={() => {
+                if (!currentWorkspace) return;
+                setTitleDraft(currentWorkspace.title);
+                setEditingTitle(true);
+              }}
+              onClick={() =>
+                workspaces &&
+                workspaces.length > 0 &&
+                setSwitcherOpen((s) => !s)
+              }
+              className={styles.headerLabelButton}
+              aria-label="Workspace wechseln"
+            >
+              <span className={styles.headerLabel}>
+                {currentWorkspace?.title ?? "Workspace"}
+              </span>
+              {workspaces && workspaces.length > 0 && (
+                <ChevronDown
+                  size={11}
+                  strokeWidth={2}
+                  className={`${styles.headerChevron} ${
+                    switcherOpen ? styles.headerChevronOpen : ""
+                  }`}
+                />
+              )}
+            </button>
+          )}
           <span className={styles.headerCount}>
             {cards.length} {cards.length === 1 ? "Karte" : "Karten"}
           </span>
@@ -643,6 +766,111 @@ export function WorkspacePinboardInline({
             <X size={14} strokeWidth={1.5} />
           </button>
         </div>
+
+        {/* Workspace switcher dropdown — opens below the header pill,
+            shows all of the user's workspaces with quick rename/delete
+            affordances and a "+ Neuer Workspace" footer. */}
+        {switcherOpen && workspaces && (
+          <div className={styles.switcher} role="menu">
+            <div className={styles.switcherHead}>
+              <span>Workspaces</span>
+              <span className={styles.switcherHint}>{workspaces.length}</span>
+            </div>
+            <div className={styles.switcherList}>
+              {workspaces.map((w) => {
+                const isCurrent = w.id === currentWorkspaceId;
+                return (
+                  <div
+                    key={w.id}
+                    className={`${styles.switcherRow} ${
+                      isCurrent ? styles.switcherRowActive : ""
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isCurrent) onSwitchWorkspace?.(w.id);
+                        setSwitcherOpen(false);
+                      }}
+                      className={styles.switcherRowMain}
+                    >
+                      <Inbox size={11} strokeWidth={1.6} />
+                      <span className={styles.switcherRowTitle}>{w.title}</span>
+                      <span className={styles.switcherRowCount}>
+                        {w.cardCount}
+                      </span>
+                    </button>
+                    {/* Inline rename — only for the active workspace
+                        because non-active rename means switching first
+                        anyway, and reducing affordances keeps the row
+                        clean. */}
+                    {isCurrent && onRenameWorkspace && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTitleDraft(w.title);
+                          setEditingTitle(true);
+                          setSwitcherOpen(false);
+                        }}
+                        aria-label="Umbenennen"
+                        className={styles.switcherRowAction}
+                      >
+                        <Pencil size={11} strokeWidth={1.7} />
+                      </button>
+                    )}
+                    {onDeleteWorkspace && workspaces.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Confirm only if there are cards to lose;
+                          // empty workspaces vanish silently.
+                          if (
+                            w.cardCount > 0 &&
+                            !window.confirm(
+                              `"${w.title}" mit ${w.cardCount} Karte(n) endgueltig loeschen?`,
+                            )
+                          ) {
+                            return;
+                          }
+                          onDeleteWorkspace(w.id);
+                          setSwitcherOpen(false);
+                        }}
+                        aria-label="Loeschen"
+                        className={`${styles.switcherRowAction} ${styles.switcherRowDelete}`}
+                      >
+                        <Trash2 size={11} strokeWidth={1.7} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {onCreateWorkspace && (
+              <button
+                type="button"
+                onClick={() => {
+                  onCreateWorkspace();
+                  setSwitcherOpen(false);
+                }}
+                className={styles.switcherCreate}
+              >
+                <Plus size={12} strokeWidth={1.8} />
+                <span>Neuer Workspace</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Loading overlay shown on first workspace open while AIMode
+            fetches the user's workspace list. */}
+        {loading && cards.length === 0 && (
+          <div className={styles.loadingPill}>
+            <Loader2 size={12} strokeWidth={2} className={styles.headerSpin} />
+            <span>Lade Workspace...</span>
+          </div>
+        )}
 
         {/* Synthesis error pill */}
         {synthError && (

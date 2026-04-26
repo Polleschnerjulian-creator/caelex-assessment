@@ -67,6 +67,7 @@ model User {
   whatIfScenarios          WhatIfScenario[] // Digital Twin: saved what-if scenarios
   atlasBookmarks           AtlasBookmark[] // Atlas: per-user bookmarks
   atlasResearchEntries     AtlasResearchEntry[] // Atlas: personal research library (Phase 5)
+  atlasWorkspaces          AtlasWorkspace[] // Atlas: per-user pinboard workspaces (AI-Mode)
   ncaDocuments             NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages           NCADocPackage[] // Generate 2.0: NCA submission packages
   // Assure: created share links and DD packages
@@ -2631,6 +2632,7 @@ model Organization {
   complianceEvidence     ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
   regulatoryRequirements RegulatoryRequirement[] // ACE: org-scoped regulatory requirements
   astraConversations     AstraConversation[] // ASTRA AI conversations
+  atlasWorkspaces        AtlasWorkspace[] // Atlas: pinboard workspaces (AI-Mode)
   generatedDocuments     GeneratedDocument[] // AI-generated compliance documents
   healthScore            CustomerHealthScore? // CEO Analytics: customer health
   submissionPackages     SubmissionPackage[] // NCA Portal: document packages
@@ -9154,4 +9156,83 @@ enum OversightAccessAction {
   OVERSIGHT_RESUMED
   OVERSIGHT_CLOSED
   OVERSIGHT_REVOKED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ATLAS WORKSPACE (AI-MODE PINBOARD)
+// Per-user free-floating pinboards for the Atlas AI-Mode workspace.
+// Distinct from MatterArtifact (which is matter-scoped); these are
+// lightweight side-boards a lawyer opens via ⌘5 to gather notes,
+// regulatory sources from the Atlas corpus picker, client snippets,
+// AI-synthesised clauses, and AI answers.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// A named pinboard owned by a single user inside an organisation. The
+/// per-user scope (rather than matter-scope or org-scope) keeps each
+/// lawyer's strategy boards private — sharing comes later as an
+/// explicit gesture.
+model AtlasWorkspace {
+  id             String @id @default(cuid())
+  userId         String
+  organizationId String
+
+  /// Display title — defaults to "Workspace" but the lawyer can rename
+  /// it ("Mandant XYZ — Klausel-Entwurf"). Used in the workspace
+  /// switcher dropdown.
+  title String @default("Workspace")
+
+  /// Soft-archive flag. Lets lawyers hide old workspaces from the
+  /// switcher without losing the cards. Future: an "Archive" tab.
+  archived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cards        AtlasWorkspaceCard[]
+
+  @@index([userId, archived, updatedAt])
+  @@index([organizationId])
+}
+
+/// A single pinned card on a workspace. Mirrors the in-memory shape
+/// the WorkspacePinboardInline component used during the prototype
+/// phase. Kind drives the visual treatment ("user" / "ai-clause" /
+/// "ai-answer") and whether the card is included in synthesis or
+/// conflict-detection inputs.
+model AtlasWorkspaceCard {
+  id          String @id @default(cuid())
+  workspaceId String
+
+  /// "user" — manually authored note or pinned source.
+  /// "ai-clause" — synthesised by Atlas from other cards on the board.
+  /// "ai-answer" — Atlas's reply to a question asked via the radial-
+  /// menu's "Atlas fragen" archetype.
+  kind String @default("user")
+
+  title   String
+  content String @db.Text
+
+  /// For ai-answer cards: the original question the user typed, so we
+  /// can render "Frage: ..." above the answer body without re-deriving.
+  question String? @db.Text
+
+  /// For ai-clause / ai-answer: the ids of the cards Atlas drew from.
+  /// Stored as String[] (Postgres native array) so we can later show
+  /// "based on cards X, Y" without a join-table.
+  sourceCardIds String[]
+
+  /// Future: drag-and-drop positioning. Nullable for now — cards lay
+  /// out in a flow grid until the lawyer drags one, at which point we
+  /// snap all cards to coordinates and persist them. Float lets us
+  /// avoid integer-snap glitches during drag.
+  positionX Float?
+  positionY Float?
+
+  createdAt DateTime @default(now())
+
+  workspace AtlasWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
 }

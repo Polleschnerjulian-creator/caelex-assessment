@@ -221,11 +221,24 @@ export function AIMode({ open, onClose }: AIModeProps) {
   const [activePanel, setActivePanel] = useState<ActionPanelKey | null>(null);
 
   // Workspace state — inline Pinboard rendered around the minimised orb
-  // when open. Cards live in-memory for now; persistence (lazy STANDALONE
-  // matter on first pin) wires in once the LegalMatter schema is live
-  // in production.
+  // when open. Cards persist via /api/atlas/workspaces (per-user
+  // pinboards, AtlasWorkspace + AtlasWorkspaceCard models). Multiple
+  // workspaces per user; the most-recently-updated is loaded by
+  // default. When a user has zero workspaces, we lazily create one.
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [workspaceCards, setWorkspaceCards] = useState<WorkspaceCard[]>([]);
+  const [workspaces, setWorkspaces] = useState<
+    Array<{
+      id: string;
+      title: string;
+      cardCount: number;
+      updatedAt: string;
+    }>
+  >([]);
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | null>(
+    null,
+  );
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cmdInputRef = useRef<HTMLInputElement>(null);
@@ -254,11 +267,113 @@ export function AIMode({ open, onClose }: AIModeProps) {
       setCmdOpen(false);
       setActivePanel(null);
       setWorkspaceOpen(false);
-      // Workspace cards keep across open/close while the user stays in
-      // the Atlas tab — the cards are session-local so they survive
-      // toggles of the AI overlay but get cleared on tab close.
+      // Workspace state stays loaded across open/close — the lawyer
+      // returns to the same board they left, persisted per-user.
     }
   }, [open]);
+
+  // ── Workspace bootstrap ────────────────────────────────────
+  // First time the workspace is opened, fetch the user's existing
+  // workspaces. If they have at least one, load the most-recent.
+  // If they have zero, create a fresh one. Subsequent opens reuse
+  // whatever currentWorkspaceId is set.
+  useEffect(() => {
+    if (!workspaceOpen) return;
+    if (currentWorkspaceId) return; // already loaded
+    let cancelled = false;
+    setWorkspaceLoading(true);
+    (async () => {
+      try {
+        const res = await fetch("/api/atlas/workspaces");
+        if (!res.ok) return;
+        const json = (await res.json()) as {
+          workspaces?: Array<{
+            id: string;
+            title: string;
+            cardCount: number;
+            updatedAt: string;
+          }>;
+        };
+        if (cancelled) return;
+        const list = json.workspaces ?? [];
+        if (list.length > 0) {
+          setWorkspaces(list);
+          setCurrentWorkspaceId(list[0].id);
+        } else {
+          // Lazy-create the first workspace so the lawyer sees the
+          // pinboard immediately rather than an empty switcher.
+          const createRes = await fetch("/api/atlas/workspaces", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          if (!createRes.ok) return;
+          const createJson = (await createRes.json()) as {
+            workspace?: {
+              id: string;
+              title: string;
+              cardCount: number;
+              updatedAt: string;
+            };
+          };
+          if (cancelled || !createJson.workspace) return;
+          setWorkspaces([createJson.workspace]);
+          setCurrentWorkspaceId(createJson.workspace.id);
+        }
+      } catch {
+        // Surface as no-op; pinboard will render empty until next
+        // open. Better than blocking the whole UI on a network blip.
+      } finally {
+        if (!cancelled) setWorkspaceLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceOpen, currentWorkspaceId]);
+
+  // ── Load cards when current workspace changes ──────────────
+  useEffect(() => {
+    if (!currentWorkspaceId) {
+      setWorkspaceCards([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/atlas/workspaces/${currentWorkspaceId}`);
+        if (!res.ok) return;
+        const json = (await res.json()) as {
+          cards?: Array<{
+            id: string;
+            kind?: string;
+            title: string;
+            content: string;
+            question?: string | null;
+            sourceCardIds?: string[];
+            createdAt: number;
+          }>;
+        };
+        if (cancelled) return;
+        setWorkspaceCards(
+          (json.cards ?? []).map((c) => ({
+            id: c.id,
+            kind: (c.kind as WorkspaceCard["kind"]) ?? "user",
+            title: c.title,
+            content: c.content,
+            question: c.question ?? undefined,
+            sourceCardIds: c.sourceCardIds ?? undefined,
+            createdAt: c.createdAt,
+          })),
+        );
+      } catch {
+        // Silent — leave cards as-is on transient failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentWorkspaceId]);
 
   // ── Return to idle after typing pause ──────────────────────
   // The "typing" mode re-energises the entity, but if the user
@@ -992,23 +1107,154 @@ export function AIMode({ open, onClose }: AIModeProps) {
 
       {/* Workspace Pinboard — inline overlay around the minimised orb,
           same visual stage as a chat conversation but with pinnable
-          cards instead of a chat thread. ⌘5 toggles it. */}
+          cards instead of a chat thread. ⌘5 toggles it. Cards persist
+          via /api/atlas/workspaces. */}
       {workspaceOpen && (
         <WorkspacePinboardInline
           cards={workspaceCards}
-          onAddCard={(c) =>
-            setWorkspaceCards((prev) => [
-              ...prev,
-              {
-                ...c,
-                id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-                createdAt: Date.now(),
-              },
-            ])
-          }
-          onRemoveCard={(id) =>
-            setWorkspaceCards((prev) => prev.filter((c) => c.id !== id))
-          }
+          loading={workspaceLoading}
+          workspaces={workspaces}
+          currentWorkspaceId={currentWorkspaceId}
+          onAddCard={async (c) => {
+            if (!currentWorkspaceId) return;
+            try {
+              const res = await fetch(
+                `/api/atlas/workspaces/${currentWorkspaceId}/cards`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    kind: c.kind ?? "user",
+                    title: c.title,
+                    content: c.content,
+                    question: c.question ?? null,
+                    sourceCardIds: c.sourceCardIds ?? [],
+                  }),
+                },
+              );
+              const json = (await res.json()) as {
+                card?: {
+                  id: string;
+                  kind?: string;
+                  title: string;
+                  content: string;
+                  question?: string | null;
+                  sourceCardIds?: string[];
+                  createdAt: number;
+                };
+              };
+              if (!res.ok || !json.card) return;
+              setWorkspaceCards((prev) => [
+                ...prev,
+                {
+                  id: json.card!.id,
+                  kind: (json.card!.kind as WorkspaceCard["kind"]) ?? "user",
+                  title: json.card!.title,
+                  content: json.card!.content,
+                  question: json.card!.question ?? undefined,
+                  sourceCardIds: json.card!.sourceCardIds ?? undefined,
+                  createdAt: json.card!.createdAt,
+                },
+              ]);
+              // Bump the local switcher list so the active workspace
+              // floats to the top after a pin.
+              setWorkspaces((prev) =>
+                prev.map((w) =>
+                  w.id === currentWorkspaceId
+                    ? {
+                        ...w,
+                        cardCount: w.cardCount + 1,
+                        updatedAt: new Date().toISOString(),
+                      }
+                    : w,
+                ),
+              );
+            } catch {
+              // Swallow — caller already has UI for transient errors
+              // through the synth/ask error pills. A failed add will
+              // simply not appear; the lawyer can retry.
+            }
+          }}
+          onRemoveCard={async (id) => {
+            if (!currentWorkspaceId) return;
+            // Optimistic — remove from local state first, then call
+            // the API. A delete failure is rare and the idempotent
+            // endpoint makes a stale local view self-correcting on
+            // next reload.
+            setWorkspaceCards((prev) => prev.filter((c) => c.id !== id));
+            setWorkspaces((prev) =>
+              prev.map((w) =>
+                w.id === currentWorkspaceId
+                  ? {
+                      ...w,
+                      cardCount: Math.max(0, w.cardCount - 1),
+                    }
+                  : w,
+              ),
+            );
+            try {
+              await fetch(
+                `/api/atlas/workspaces/${currentWorkspaceId}/cards/${id}`,
+                { method: "DELETE" },
+              );
+            } catch {
+              // ignore
+            }
+          }}
+          onSwitchWorkspace={(id) => setCurrentWorkspaceId(id)}
+          onCreateWorkspace={async (title) => {
+            try {
+              const res = await fetch("/api/atlas/workspaces", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(title ? { title } : {}),
+              });
+              const json = (await res.json()) as {
+                workspace?: {
+                  id: string;
+                  title: string;
+                  cardCount: number;
+                  updatedAt: string;
+                };
+              };
+              if (!res.ok || !json.workspace) return;
+              setWorkspaces((prev) => [json.workspace!, ...prev]);
+              setCurrentWorkspaceId(json.workspace.id);
+            } catch {
+              // ignore
+            }
+          }}
+          onRenameWorkspace={async (id, newTitle) => {
+            // Optimistic rename — the switcher dropdown shows the new
+            // label immediately, server-side update lands silently.
+            setWorkspaces((prev) =>
+              prev.map((w) => (w.id === id ? { ...w, title: newTitle } : w)),
+            );
+            try {
+              await fetch(`/api/atlas/workspaces/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: newTitle }),
+              });
+            } catch {
+              // ignore
+            }
+          }}
+          onDeleteWorkspace={async (id) => {
+            // Optimistic remove from list. If the deleted workspace
+            // was the current one, switch to the next available
+            // before the cards prop becomes stale.
+            const remaining = workspaces.filter((w) => w.id !== id);
+            setWorkspaces(remaining);
+            if (currentWorkspaceId === id) {
+              setCurrentWorkspaceId(remaining[0]?.id ?? null);
+            }
+            try {
+              await fetch(`/api/atlas/workspaces/${id}`, { method: "DELETE" });
+            } catch {
+              // ignore
+            }
+          }}
           onClose={() => setWorkspaceOpen(false)}
         />
       )}

@@ -155,6 +155,71 @@
 .headerLabel {
   color: var(--ws-text);
 }
+
+/* Title-button — clickable area that opens the switcher AND accepts
+   double-click for inline rename. Resets default button cosmetics so
+   it sits in the pill like the original static label did. */
+.headerLabelButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.12s ease;
+}
+.headerLabelButton:hover {
+  opacity: 0.85;
+}
+.headerChevron {
+  opacity: 0.5;
+  transition: transform 0.18s ease;
+}
+.headerChevronOpen {
+  transform: rotate(180deg);
+  opacity: 0.85;
+}
+.headerTitleInput {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--ws-text);
+  outline: 0;
+  width: 180px;
+  text-transform: none;
+}
+.headerTitleInput:focus {
+  border-color: rgba(140, 220, 200, 0.5);
+}
+
+/* Pill shown during initial workspace load — tucked below header. */
+.loadingPill {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(15, 15, 18, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--ws-text-mute);
+  font-size: 11px;
+  letter-spacing: -0.005em;
+  pointer-events: auto;
+}
 .headerCount {
   opacity: 0.4;
   font-size: 10px;
@@ -1267,6 +1332,167 @@
       0 8px 28px -6px rgba(0, 0, 0, 0.5),
       0 0 0 1px transparent;
   }
+}
+
+/* ───────── Workspace switcher dropdown ─────────
+   Slides down from the header pill when the lawyer clicks the
+   chevron. Lists all of the user's workspaces with rename/delete
+   row-actions and a "+ Neuer Workspace" footer. */
+
+.switcher {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100vw - 96px));
+  max-height: 400px;
+  background: rgba(15, 15, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px -12px rgba(0, 0, 0, 0.7);
+  animation: ws-conflict-panel-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1.05);
+  z-index: 12;
+}
+
+.switcherHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 255, 0.55);
+}
+.switcherHint {
+  font-size: 10px;
+  letter-spacing: 0;
+  color: rgba(248, 250, 255, 0.4);
+}
+
+.switcherList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.switcherList::-webkit-scrollbar {
+  width: 6px;
+}
+.switcherList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.switcherRow {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+.switcherRow:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.switcherRowActive {
+  background: rgba(140, 220, 200, 0.08);
+}
+.switcherRowActive:hover {
+  background: rgba(140, 220, 200, 0.12);
+}
+
+.switcherRowMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  color: var(--ws-text);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: -0.005em;
+}
+.switcherRowMain > svg {
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+.switcherRowTitle {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.switcherRowCount {
+  font-size: 10px;
+  color: rgba(248, 250, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+.switcherRowActive .switcherRowMain > svg {
+  opacity: 1;
+  color: rgba(140, 220, 200, 0.9);
+}
+
+.switcherRowAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  background: transparent;
+  border: 0;
+  color: rgba(248, 250, 255, 0.4);
+  cursor: pointer;
+  border-radius: 6px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.switcherRowAction:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(248, 250, 255, 0.85);
+}
+.switcherRowDelete:hover {
+  background: rgba(255, 100, 100, 0.14);
+  color: rgba(255, 180, 180, 0.95);
+}
+
+.switcherCreate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(140, 220, 200, 0.95);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+.switcherCreate:hover {
+  background: rgba(140, 220, 200, 0.06);
 }
 
 /* ───────── Responsive — narrow viewports ───────── */
