@@ -168,14 +168,16 @@ export default function AtlasShell({
               for above-the-fold logo. priority=true so the logo doesn't
               LCP-shift. */}
           {!expanded ? (
-            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a]">
+            // Larger pill in collapsed state — gives the brand mark
+            // the same presence as the navigation pills below it.
+            <div className="flex items-center justify-center h-11 w-11 rounded-2xl bg-[#1a1a1a]">
               <Image
                 src="/caelex-logo-white.png"
                 alt="Caelex"
-                width={20}
-                height={20}
+                width={28}
+                height={28}
                 priority
-                className="h-5 w-5 object-contain"
+                className="h-7 w-7 object-contain"
               />
             </div>
           ) : (

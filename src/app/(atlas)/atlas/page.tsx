@@ -2,7 +2,16 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Scale, Building2, Globe2, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Scale,
+  Building2,
+  Globe2,
+  Sparkles,
+  PlaneLanding,
+  BookMarked,
+  ListChecks,
+} from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useAtlasSemanticSearch } from "@/hooks/useAtlasSemanticSearch";
 import { AIMode } from "@/components/atlas/ai-mode/AIMode";
@@ -514,7 +523,7 @@ export default function CommandCenterPage() {
               text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)]
               font-light tracking-[-0.02em] leading-none
               transition-all duration-500
-              ${hasAnyResults ? "text-[28px] lg:text-[36px] py-4" : "text-[40px] lg:text-[52px] py-5"}
+              ${hasAnyResults ? "text-[28px] lg:text-[36px] py-4 px-5 lg:px-6" : "text-[40px] lg:text-[52px] py-5 px-6 lg:px-8"}
             `}
             style={{ caretColor: "#111", outline: "none", boxShadow: "none" }}
           />
@@ -632,7 +641,7 @@ export default function CommandCenterPage() {
           {/* Legal Sources */}
           {results.sources.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Scale
                   size={13}
                   className="text-[var(--atlas-text-faint)]"
@@ -643,7 +652,7 @@ export default function CommandCenterPage() {
                   {t("atlas.legal_sources")}
                 </h2>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2.5">
                 {(showAllSources
                   ? results.sources
                   : results.sources.slice(0, 10)
@@ -653,7 +662,7 @@ export default function CommandCenterPage() {
                     <button
                       key={source.id}
                       onClick={() => router.push(`/atlas/sources/${source.id}`)}
-                      className="w-full flex items-start gap-4 px-5 py-3.5 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
+                      className="w-full flex items-start gap-5 px-6 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] hover:shadow-sm transition-all duration-200 group"
                     >
                       {/* Relevance dot */}
                       <span
@@ -765,6 +774,12 @@ export default function CommandCenterPage() {
           {results.landingRightsProfiles.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
+                <PlaneLanding
+                  size={13}
+                  className="text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Profiles
                 </h2>
@@ -795,6 +810,12 @@ export default function CommandCenterPage() {
           {results.landingRightsCaseStudies.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
+                <BookMarked
+                  size={13}
+                  className="text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Case Studies
                 </h2>
@@ -823,6 +844,12 @@ export default function CommandCenterPage() {
           {results.landingRightsConduct.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-2">
+                <ListChecks
+                  size={13}
+                  className="text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
                   Landing Rights — Conduct Conditions
                 </h2>

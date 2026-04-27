@@ -78,7 +78,7 @@ export default function CountrySelector({
               className="
                 flex items-center gap-1.5 rounded px-2 py-1
                 bg-[var(--atlas-bg-inset)] border-0
-                text-[11px] font-medium text-[var(--atlas-text-secondary)]
+                text-[11px] font-medium text-[var(--atlas-text-primary)]
                 hover:bg-[var(--atlas-bg-inset)] transition-colors duration-150
                 group
               "
@@ -99,7 +99,7 @@ export default function CountrySelector({
             ${
               selected.length >= MAX_SELECTIONS
                 ? "text-[var(--atlas-text-faint)] cursor-not-allowed bg-[var(--atlas-bg-surface-muted)]"
-                : "text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] hover:bg-[var(--atlas-bg-inset)] cursor-pointer"
+                : "text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] bg-[var(--atlas-bg-surface-muted)] hover:bg-[var(--atlas-bg-inset)] cursor-pointer"
             }
           `}
         >
@@ -119,7 +119,7 @@ export default function CountrySelector({
             onClick={selectAllEU}
             className="
               px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]
+              text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]
               transition-colors duration-150
             "
           >
@@ -129,7 +129,7 @@ export default function CountrySelector({
             onClick={clearAll}
             className="
               px-2 py-1 text-[10px] font-medium tracking-wider uppercase
-              text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]
+              text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]
               transition-colors duration-150
             "
           >

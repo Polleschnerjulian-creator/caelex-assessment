@@ -16,14 +16,22 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
  *   0.45 inset highlight + layered 0_8px_40px shadow.
  * Surface feels like frosted sapphire over the content below.
  */
+/**
+ * Sticky controls bar styling. Was hard-coded white-72% which is
+ * fine on the light Atlas page but invisible on the dark page —
+ * gray text on near-white panel on a near-black bg becomes a
+ * gray-on-gray smudge in dark mode. We switch to the Atlas-theme
+ * tokens (`--atlas-bg-surface` is white-ish in light, navy in dark)
+ * so the panel reads correctly in both themes.
+ */
 const stickyGlass: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.72)",
+  background: "var(--atlas-bg-surface)",
   backdropFilter: "blur(24px) saturate(1.4)",
   WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-  border: "1px solid rgba(255, 255, 255, 0.45)",
+  border: "1px solid var(--atlas-border)",
   borderRadius: 16,
   boxShadow:
-    "0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+    "0 8px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
 };
 
 const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
@@ -115,7 +123,7 @@ export default function ComparatorPage() {
           className="sticky top-3 z-30 px-4 py-3 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-5"
         >
           <div className="flex-1 min-w-0 flex items-center gap-3">
-            <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-muted)] uppercase flex-shrink-0">
+            <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-secondary)] uppercase flex-shrink-0">
               {t("atlas.jurisdictions")}
             </span>
             <div className="flex-1 min-w-0">
@@ -123,7 +131,7 @@ export default function ComparatorPage() {
             </div>
           </div>
           <div
-            className="hidden lg:block h-8 w-px bg-gray-200/80"
+            className="hidden lg:block h-8 w-px bg-[var(--atlas-border)]"
             aria-hidden="true"
           />
           <div className="flex-1 min-w-0">
