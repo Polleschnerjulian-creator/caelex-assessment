@@ -135,12 +135,141 @@ Style after calling:
       required: ["query", "action"],
     },
   },
+
+  // ───────────────────────────────────────────────────────────────────
+  // Legal-source navigation tools — added 2026-04 to give Astra explicit
+  // ID-routing across the catalogue rather than relying on vector recall
+  // for cross-cutting sources (sanctions, standards, ITU, insurance,
+  // sectoral, EU programmes). The tools complement library-recall: when
+  // the lawyer asks something specific ("show me ITU coordination
+  // procedure"), Astra invokes get_legal_source_by_id directly; for
+  // open-ended questions Astra still falls back on vector recall over
+  // the embedded library.
+  // ───────────────────────────────────────────────────────────────────
+
+  {
+    name: "search_legal_sources",
+    description: `Searches the Atlas legal-source catalogue (treaties, statutes, regulations, technical standards, policy documents, draft legislation) by free-text query. Returns up to 10 matches ranked by relevance, each with id, jurisdiction, type, status, title, and one-line scope_description.
+
+Use this when the user asks discovery-style questions like:
+  - "Welche EU-Sanktionen gegen Russland gelten für Raumfahrt-Hardware?"
+  - "Show me the ITU coordination rules"
+  - "What's in the Critical Raw Materials Act?"
+  - "Find all sources about debris mitigation in Japan"
+
+After calling, paraphrase the matches and offer to drill into a specific source via get_legal_source_by_id.
+
+Filters: jurisdiction (ISO code or "INT"/"EU"), type (international_treaty | federal_law | federal_regulation | technical_standard | eu_regulation | eu_directive | policy_document | draft_legislation), compliance_area (licensing | registration | liability | insurance | cybersecurity | export_control | data_security | frequency_spectrum | environmental | debris_mitigation | space_traffic_management | human_spaceflight | military_dual_use). Combine filters as needed — narrow searches return better results than broad ones.
+
+Score 0-1 per match (substring + title-position). Min returned score is 0.05.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Free-text query string. 2-200 characters. Tokens, abbreviations, and case-insensitive. E.g. 'NIS2 transposition Germany', 'WRC-23', 'Lloyd's space insurance'.",
+        },
+        jurisdiction: {
+          type: "string",
+          description:
+            "Optional jurisdiction filter — ISO alpha-2/3 code (DE, FR, UK, US, ...), 'INT' for international treaties, 'EU' for EU instruments. Omit to search all.",
+        },
+        type: {
+          type: "string",
+          enum: [
+            "international_treaty",
+            "federal_law",
+            "federal_regulation",
+            "technical_standard",
+            "eu_regulation",
+            "eu_directive",
+            "policy_document",
+            "draft_legislation",
+          ],
+          description: "Optional source-type filter. Omit to search all types.",
+        },
+        compliance_area: {
+          type: "string",
+          enum: [
+            "licensing",
+            "registration",
+            "liability",
+            "insurance",
+            "cybersecurity",
+            "export_control",
+            "data_security",
+            "frequency_spectrum",
+            "environmental",
+            "debris_mitigation",
+            "space_traffic_management",
+            "human_spaceflight",
+            "military_dual_use",
+          ],
+          description:
+            "Optional compliance-area filter. Omit to search all areas.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+
+  {
+    name: "get_legal_source_by_id",
+    description: `Retrieves a single Atlas legal-source entry by its canonical id. Returns the full record: title, scope_description, all key_provisions with summaries and complianceImplications, related_sources, amends/amended_by chain, and notes. Use this AFTER search_legal_sources has identified the source the user wants to drill into, OR when the user mentions an ID directly (e.g. "tell me about INT-WASSENAAR" or "Atlas-ID DE-VVG").
+
+Prefer this over vector recall when the user names a specific instrument. Returns isError=true with a 'NOT_FOUND' code if the id does not resolve — then offer search_legal_sources as fallback.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        source_id: {
+          type: "string",
+          description:
+            "Canonical Atlas source id (e.g. 'INT-OST-1967', 'DE-SATDSIG-2007', 'EU-NIS2-2022', 'INT-WASSENAAR'). Format: jurisdiction prefix + hyphen + identifier.",
+        },
+      },
+      required: ["source_id"],
+    },
+  },
+
+  {
+    name: "list_workspace_templates",
+    description: `Lists the available Atlas workspace templates. Each template is a pre-seeded Pinboard with 3-7 source cards covering a common mandate type — DE Satelliten-Lizenz, NIS2-Compliance, Cross-Border DE-FR, Sanctions-Diligence, ITU-Filing, Insurance-Placement.
+
+Use this when the user describes a mandate type and asks "wo fange ich an?", "welche Vorlage passt?", or starts a new mandate. Returns id, title, description, category (license | compliance | comparison | incident | contract), and card count for each. After calling, recommend the best-fit template — the user clicks it in the UI to seed a new workspace.`,
+    input_schema: {
+      type: "object",
+      properties: {},
+    },
+  },
+
+  {
+    name: "list_jurisdiction_authorities",
+    description: `Lists the regulatory authorities for a single jurisdiction — name, abbreviation, mandate, applicable areas, and contact info. Use this when the user asks "welche Behörden sind in Frankreich für Raumfahrt zuständig?" or "who licenses launches in Australia?".
+
+For ISO-2/3 country codes the response covers the national regulatory landscape; for "INT"/"EU" returns the multilateral institutions (UNOOSA, ITU, EUSPA, ENISA, EC, etc.).`,
+    input_schema: {
+      type: "object",
+      properties: {
+        jurisdiction: {
+          type: "string",
+          description:
+            "Jurisdiction code (ISO alpha-2/3, 'INT', or 'EU'). E.g. 'DE', 'FR', 'UK', 'US', 'JP', 'IN', 'AU', 'INT', 'EU'.",
+        },
+      },
+      required: ["jurisdiction"],
+    },
+  },
 ];
 
 export type AtlasToolName =
   | "find_or_open_matter"
   | "find_operator_organization"
-  | "create_matter_invite";
+  | "create_matter_invite"
+  | "search_legal_sources"
+  | "get_legal_source_by_id"
+  | "list_workspace_templates"
+  | "list_jurisdiction_authorities";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

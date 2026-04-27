@@ -29,6 +29,14 @@ import {
 import { SCOPE_LEVELS, type ScopeLevel } from "@/lib/legal-network/scope";
 import { logger } from "@/lib/logger";
 import type { AtlasToolName } from "./atlas-tools";
+import {
+  ALL_SOURCES,
+  getLegalSourceById,
+  getAuthoritiesByJurisdiction,
+  type LegalSourceType,
+  type ComplianceArea,
+} from "@/data/legal-sources";
+import { listTemplateSummaries } from "@/data/atlas-workspace-templates";
 
 // ─── Shared result shape ─────────────────────────────────────────────
 
@@ -524,6 +532,294 @@ async function dispatchInviteEmailBestEffort(input: {
   }
 }
 
+// ─── search_legal_sources ───────────────────────────────────────────
+
+const VALID_TYPES: LegalSourceType[] = [
+  "international_treaty",
+  "federal_law",
+  "federal_regulation",
+  "technical_standard",
+  "eu_regulation",
+  "eu_directive",
+  "policy_document",
+  "draft_legislation",
+];
+
+const VALID_AREAS: ComplianceArea[] = [
+  "licensing",
+  "registration",
+  "liability",
+  "insurance",
+  "cybersecurity",
+  "export_control",
+  "data_security",
+  "frequency_spectrum",
+  "environmental",
+  "debris_mitigation",
+  "space_traffic_management",
+  "human_spaceflight",
+  "military_dual_use",
+];
+
+const SearchSourcesInput = z.object({
+  query: z.string().min(2).max(200),
+  jurisdiction: z.string().max(5).optional(),
+  type: z
+    .enum(VALID_TYPES as [LegalSourceType, ...LegalSourceType[]])
+    .optional(),
+  compliance_area: z
+    .enum(VALID_AREAS as [ComplianceArea, ...ComplianceArea[]])
+    .optional(),
+});
+
+const SOURCE_HIT_LIMIT = 10;
+const MIN_HIT_SCORE = 0.05;
+
+function searchLegalSources(args: { input: unknown }): AtlasToolResult {
+  const parsed = SearchSourcesInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid tool input",
+        code: "INVALID_INPUT",
+        issues: parsed.error.issues.map((i) => i.path.join(".")),
+      }),
+      isError: true,
+    };
+  }
+
+  const { query, jurisdiction, type, compliance_area } = parsed.data;
+  const q = query.trim().toLowerCase();
+  const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
+
+  type Hit = {
+    id: string;
+    jurisdiction: string;
+    type: string;
+    status: string;
+    title: string;
+    scope_description: string;
+    score: number;
+  };
+
+  // Pre-filter by jurisdiction/type/area; then score remaining by token
+  // overlap on title + scope_description + key_provision titles.
+  const candidates = ALL_SOURCES.filter((s) => {
+    if (jurisdiction && s.jurisdiction !== jurisdiction.toUpperCase()) {
+      return false;
+    }
+    if (type && s.type !== type) return false;
+    if (compliance_area && !s.compliance_areas.includes(compliance_area)) {
+      return false;
+    }
+    return true;
+  });
+
+  const scored: Hit[] = [];
+  for (const s of candidates) {
+    const haystack = (
+      s.title_en +
+      " " +
+      (s.title_local ?? "") +
+      " " +
+      (s.scope_description ?? "") +
+      " " +
+      s.key_provisions.map((p) => p.title + " " + p.summary).join(" ")
+    ).toLowerCase();
+    const titleLc = s.title_en.toLowerCase();
+
+    let score = 0;
+    for (const tok of tokens) {
+      const titleIdx = titleLc.indexOf(tok);
+      if (titleIdx === 0) score += 0.5;
+      else if (titleIdx > 0) score += 0.25;
+      else if (haystack.includes(tok)) score += 0.1;
+    }
+    // Substring of full query (tight match)
+    if (titleLc.includes(q)) score += 0.3;
+    else if (haystack.includes(q)) score += 0.15;
+
+    // Normalise to 0-1 and clamp
+    score = Math.min(score, 1);
+
+    if (score >= MIN_HIT_SCORE) {
+      scored.push({
+        id: s.id,
+        jurisdiction: s.jurisdiction,
+        type: s.type,
+        status: s.status,
+        title: s.title_en,
+        scope_description:
+          s.scope_description?.slice(0, 220) ?? "(no scope description)",
+        score: Math.round(score * 100) / 100,
+      });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  const hits = scored.slice(0, SOURCE_HIT_LIMIT);
+
+  return {
+    content: JSON.stringify({
+      query,
+      filters: { jurisdiction, type, compliance_area },
+      hit_count: hits.length,
+      hits,
+      hint:
+        hits.length === 0
+          ? "No matches. Try a broader query or remove filters."
+          : "Drill into a specific source via get_legal_source_by_id with its `id`.",
+    }),
+    isError: false,
+  };
+}
+
+// ─── get_legal_source_by_id ─────────────────────────────────────────
+
+const GetSourceByIdInput = z.object({
+  source_id: z
+    .string()
+    .min(2)
+    .max(80)
+    .regex(/^[A-Z0-9][A-Za-z0-9-]+$/, {
+      message: "source_id must be uppercase-prefixed alphanumeric with hyphens",
+    }),
+});
+
+function getLegalSourceByIdTool(args: { input: unknown }): AtlasToolResult {
+  const parsed = GetSourceByIdInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid source_id format",
+        code: "INVALID_INPUT",
+      }),
+      isError: true,
+    };
+  }
+  const source = getLegalSourceById(parsed.data.source_id);
+  if (!source) {
+    return {
+      content: JSON.stringify({
+        error: `Source not found: ${parsed.data.source_id}`,
+        code: "NOT_FOUND",
+        hint: "Use search_legal_sources to discover the correct id.",
+      }),
+      isError: true,
+    };
+  }
+
+  // Return a compact projection — full key_provisions, but trimmed
+  // sub-arrays so the model isn't drowned in noise.
+  return {
+    content: JSON.stringify({
+      id: source.id,
+      jurisdiction: source.jurisdiction,
+      type: source.type,
+      status: source.status,
+      title: source.title_en,
+      title_local: source.title_local,
+      official_reference: source.official_reference,
+      source_url: source.source_url,
+      issuing_body: source.issuing_body,
+      competent_authorities: source.competent_authorities,
+      relevance_level: source.relevance_level,
+      applicable_to: source.applicable_to,
+      compliance_areas: source.compliance_areas,
+      scope_description: source.scope_description,
+      key_provisions: source.key_provisions,
+      related_sources: source.related_sources.slice(0, 12),
+      amends: source.amends,
+      amended_by: source.amended_by?.slice(0, 8),
+      implements: source.implements,
+      superseded_by: source.superseded_by,
+      applies_to_jurisdictions: source.applies_to_jurisdictions?.slice(0, 32),
+      signed_by_jurisdictions: source.signed_by_jurisdictions?.slice(0, 32),
+      notes: source.notes?.slice(0, 8),
+      last_verified: source.last_verified,
+    }),
+    isError: false,
+  };
+}
+
+// ─── list_workspace_templates ───────────────────────────────────────
+
+function listWorkspaceTemplates(): AtlasToolResult {
+  const summaries = listTemplateSummaries();
+  return {
+    content: JSON.stringify({
+      template_count: summaries.length,
+      templates: summaries,
+      hint: "Recommend the best-fit template by id. The user clicks it in the UI to seed a new workspace pre-loaded with the relevant Atlas sources.",
+    }),
+    isError: false,
+  };
+}
+
+// ─── list_jurisdiction_authorities ──────────────────────────────────
+
+const ListAuthInput = z.object({
+  jurisdiction: z
+    .string()
+    .min(2)
+    .max(5)
+    .regex(/^[A-Z]{2,3}$/, {
+      message: "jurisdiction must be 2-3 uppercase letters",
+    }),
+});
+
+function listJurisdictionAuthorities(args: {
+  input: unknown;
+}): AtlasToolResult {
+  const raw = args.input as { jurisdiction?: unknown };
+  const normalized = {
+    jurisdiction:
+      typeof raw?.jurisdiction === "string"
+        ? raw.jurisdiction.toUpperCase()
+        : raw?.jurisdiction,
+  };
+  const parsed = ListAuthInput.safeParse(normalized);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid jurisdiction code",
+        code: "INVALID_INPUT",
+      }),
+      isError: true,
+    };
+  }
+  const code = parsed.data.jurisdiction;
+  const authorities = getAuthoritiesByJurisdiction(code);
+  if (authorities.length === 0) {
+    return {
+      content: JSON.stringify({
+        jurisdiction: code,
+        authority_count: 0,
+        authorities: [],
+        hint: "No authorities catalogued for this jurisdiction code. Try a different code or 'INT'/'EU'.",
+      }),
+      isError: false,
+    };
+  }
+  return {
+    content: JSON.stringify({
+      jurisdiction: code,
+      authority_count: authorities.length,
+      authorities: authorities.map((a) => ({
+        id: a.id,
+        name: a.name_en,
+        name_local: a.name_local,
+        abbreviation: a.abbreviation,
+        parent_ministry: a.parent_ministry,
+        website: a.website,
+        space_mandate: a.space_mandate,
+        applicable_areas: a.applicable_areas,
+      })),
+    }),
+    isError: false,
+  };
+}
+
 // ─── Dispatcher ─────────────────────────────────────────────────────
 
 export async function executeAtlasTool(args: {
@@ -539,6 +835,14 @@ export async function executeAtlasTool(args: {
       return findOperatorOrganization(args);
     case "create_matter_invite":
       return createMatterInviteTool(args);
+    case "search_legal_sources":
+      return searchLegalSources(args);
+    case "get_legal_source_by_id":
+      return getLegalSourceByIdTool(args);
+    case "list_workspace_templates":
+      return listWorkspaceTemplates();
+    case "list_jurisdiction_authorities":
+      return listJurisdictionAuthorities(args);
     default: {
       const _never: never = args.name;
       return {

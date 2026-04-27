@@ -74,6 +74,33 @@ export function formatAtlasToolInput(
       return `${verb}: ${quote(matter)} · ${scopeLabel} · ${months}M`;
     }
 
+    case "search_legal_sources": {
+      const query = asString(args.query);
+      const filters: string[] = [];
+      const jur = asString(args.jurisdiction);
+      if (jur) filters.push(jur);
+      const type = asString(args.type);
+      if (type) filters.push(type.replace(/_/g, " "));
+      const area = asString(args.compliance_area);
+      if (area) filters.push(area.replace(/_/g, " "));
+      const filterStr = filters.length ? ` · ${filters.join(", ")}` : "";
+      return `Atlas-Suche: ${quote(query)}${filterStr}`;
+    }
+
+    case "get_legal_source_by_id": {
+      const sid = asString(args.source_id, "?");
+      return `Quelle: ${sid}`;
+    }
+
+    case "list_workspace_templates": {
+      return "Workspace-Vorlagen abrufen";
+    }
+
+    case "list_jurisdiction_authorities": {
+      const jur = asString(args.jurisdiction, "?").toUpperCase();
+      return `Behörden: ${jur}`;
+    }
+
     default: {
       // Unknown tool — show a truncated JSON of the input as a
       // last-resort fallback. Better than blank.
