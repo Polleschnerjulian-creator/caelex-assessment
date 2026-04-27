@@ -5852,6 +5852,244 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CROSS-CUTTING SOURCES (added 2026-04 — sanctions, standards, ITU, insurance,
+  // sectoral, EU programmes, multilateral export regimes)
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "INT-EU-SANCTIONS-RU-833",
+    {
+      title:
+        "Verordnung (EU) Nr. 833/2014 — Russland-Sektorensanktionen (mit den Eskalationen ab 2022 für den Raumfahrtsektor)",
+      scopeDescription:
+        "Operative EU-Sanktionsverordnung gegen Russland, seit Februar 2022 mehrfach verschärft (zuletzt 16. Sanktionspaket Dezember 2024). Anhang VII (Hochtechnologie) und Anhang XXIII (Industriegüter) erfassen Raumfahrzeuge, GNSS-Empfänger, INS, Sternensensoren und zahlreiche Bodensegment-Komponenten. Anhang IV listet sanktionierte Endempfänger. Unmittelbar in allen EU-Mitgliedstaaten anwendbar — überlagert jede vertragliche Vereinbarung und kann durch Rechtswahl nicht verdrängt werden.",
+      provisions: {
+        "Art. 2 + Anhang VII": {
+          title: "Ausfuhrverbot für Hochtechnologie",
+          summary:
+            "Verbietet den unmittelbaren oder mittelbaren Verkauf, die Lieferung, Verbringung oder Ausfuhr von Hochtechnologiegütern und -technologie an Personen in Russland oder zur Verwendung in Russland — einschließlich Raumfahrzeugen, GNSS, INS, Sternensensoren.",
+        },
+        "Art. 12g": {
+          title: "Umgehungsverbot — Sorgfaltspflicht",
+          summary:
+            "Operatoren müssen aktive Maßnahmen ergreifen, um eine Drittlandsumlenkung nach Russland zu verhindern. Umlenkung über Belarus, Zentralasien oder den Kaukasus ist die häufigste Compliance-Falle.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-WASSENAAR",
+    {
+      title:
+        "Wassenaar-Arrangement über Exportkontrollen für konventionelle Waffen sowie Güter und Technologien mit doppeltem Verwendungszweck",
+      scopeDescription:
+        "Plurilaterales Exportkontrollregime von 42 Teilnehmerstaaten mit gemeinsamen Kontrolllisten (Munitionsliste und Dual-Use-Liste). Die Listen der EU-Dual-Use-Verordnung 2021/821, US EAR, UK ECO 2008, JP FEFTA und AU DSGL leiten ihre Struktur direkt aus den Wassenaar-Listen ab. Jährliche Plenar-Aktualisierungen fließen mit 6–18 Monaten Verzögerung in die nationalen Listen ein.",
+      provisions: {
+        "Liste der Güter mit doppeltem Verwendungszweck": {
+          title: "Jährliche Aktualisierungen der Kontrollliste",
+          summary:
+            "Kategorien 1–9 erfassen Materialien, Chemikalien, Elektronik, Computer, Telekommunikation, Sensoren und Luft- und Raumfahrt-/Antriebstechnik. Aktualisierung jeweils im Dezember-Plenar; nationale Anpassungen folgen im Q1–Q2 des Folgejahres.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-MTCR",
+    {
+      title:
+        "Trägertechnologie-Kontrollregime (MTCR) — Anhang Kategorien I und II",
+      scopeDescription:
+        "Freiwilliges plurilaterales Regime zwischen 35 Partnerstaaten zur Verhinderung der Verbreitung von Trägersystemen, die mindestens 500 kg über 300 km tragen können. Kategorie I (komplette Trägersysteme und Hauptsubsysteme) unterliegt einer Versagensvermutung; Kategorie II (Dual-Use-Komponenten, Technologie, Materialien) wird einzelfallbezogen genehmigt. Erfasst die meisten Trägerraketen, Antriebssysteme, INS/Sternensensoren oberhalb der Schwellenwerte sowie Raumfahrzeug-Subsysteme mit Raketenanwendung.",
+      provisions: {
+        "Anhang Kategorie I": {
+          title: "Versagensvermutung",
+          summary:
+            "Komplette Raketensysteme, vollständige unbemannte Luftfahrzeuge sowie Hauptsubsysteme (Raketenmotoren, Wiedereintrittskörper, GNC-Sätze) unterliegen einer Versagensvermutung, sofern keine außerordentliche politische Rechtfertigung besteht.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ISO-24113",
+    {
+      title:
+        "ISO 24113 — Raumfahrtsysteme: Anforderungen zur Vermeidung von Weltraumtrümmern",
+      scopeDescription:
+        "Top-Level-ISO-Standard zur Trümmerminderung, der von praktisch jeder nationalen Genehmigungsbehörde als technische Grundlage für nicht-staatliche Raumfahrtaktivitäten übernommen wurde. Spezifiziert quantitative Anforderungen zur Lebensdauer im Orbit (LEO ≤ 25 Jahre), Passivierung, End-of-Life-Disposal, Casualty-Risk-Schwellenwerte und Design-for-Disposal. Wird vom französischen RTF-2011, australischen SLR Rules 2019, japanischen Space Activities Act sowie der US-FCC-5-Jahres-PMD-Regel zitiert.",
+      provisions: {
+        "Cl. 6.3 — LEO post-mission disposal": {
+          title: "25-Jahres-Lebensdauer-Obergrenze",
+          summary:
+            "Raumfahrzeuge und Oberstufen im LEO müssen innerhalb von 25 Jahren nach Missionsende aus dem geschützten Bereich entfernt werden — durch Wiedereintritt, Verbringung in eine Friedhofsumlaufbahn oder aktive Beseitigung.",
+        },
+        "Cl. 6.6 — Casualty risk": {
+          title: "1-zu-10.000-Schadenrisiko-Obergrenze",
+          summary:
+            "Der unkontrollierte Wiedereintritt von Raumfahrzeugen und Trägerraketen muss ein Casualty-Risk von weniger als 1 zu 10.000 pro Ereignis erreichen — eine quantitative Schwelle, die in Genehmigungsregeln aller Jurisdiktionen übernommen wurde.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ITU-RR",
+    {
+      title: "ITU Radio Regulations (Vollzugsordnung für den Funkdienst)",
+      scopeDescription:
+        "Völkerrechtsverbindliches internationales Instrument zur Frequenzzuteilung und zur Nutzung des geostationären Orbits. Bindet 194 ITU-Mitgliedstaaten und liegt oberhalb jeder nationalen Frequenz-Lizenzregelung. Artikel 5 (Frequenzzuteilung), Artikel 9 (Koordinierung), Artikel 11 (Anmeldung) und Artikel 22 (Weltraumdienste) sind die operativen Bestimmungen für jedes kommerzielle Satellitensystem.",
+      provisions: {
+        "Art. 9 — Koordinierung": {
+          title: "API, CR/C und bilaterale Koordinierung",
+          summary:
+            "Verfahren zur Koordinierung eines Satellitennetzes mit potenziell betroffenen Verwaltungen. API (Advance Publication Information) eröffnet das Verfahren; CR/C (Coordination Request) löst die bilateralen Koordinierungspflichten aus; Vorlaufzeiten betragen typischerweise 2–7 Jahre für GEO-Netze.",
+        },
+        "Art. 22": {
+          title: "Weltraumdienste — PFD- und EPFD-Konstellationsgrenzen",
+          summary:
+            "Legt PFD-Grenzen für Weltraum-zu-Erde-Übertragungen sowie EPFD-Grenzen für Nicht-GSO-Konstellationen in geteilten Bändern fest. Bestimmt die technische Hülle, die ein Konstellationsbetreiber einhalten muss.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-IOS-ADR-FRAMEWORK",
+    {
+      title:
+        "In-Orbit-Servicing und aktive Trümmerbeseitigung — Vergleichsregulatorischer Rahmen",
+      scopeDescription:
+        "Referenzeintrag für die Regulierungslandschaft zu Rendezvous-and-Proximity-Operationen, Betankung im Orbit, robotischem Servicing und aktiver Trümmerbeseitigung. Es gibt kein globales Vertragsregime — Operatoren navigieren ein Patchwork nationaler Rahmenwerke. Erfasst FCC-IOSSA-Rahmen, japanischen CRD2-Präzedenzfall, ESA-ClearSpace-1-Vertragsmodell, NASA-OSAM-Vertragsstrukturen und die offene Frage der Haftungsverteilung bei physischer Interaktion zwischen Raumfahrzeugen verschiedener Operatoren.",
+      provisions: {
+        "Regulatorische Pfade": {
+          title: "Lizenzwege je Jurisdiktion",
+          summary:
+            "FCC: Part 25 + IOSSA-Framework (Anzeigeregime). FAA: Part-450-Mission-Licensing. UK CAA: SIA-2018 Orbital-Operator-Lizenz + Mission-Management-Lizenz. JP Cabinet Office: Spacecraft-Management-Permit (Art. 20-23 SAA 2016). ESA: ClearSpace-1-Vertragsinstrument unter Space Safety Programme.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-SPACE-RESOURCES-COMPARATOR",
+    {
+      title:
+        "Weltraumressourcen — Vergleichendes Eigentumsregime (US, LU, AE, JP)",
+      scopeDescription:
+        "Vergleichseintrag für die vier Jurisdiktionen, die kommerzielle Eigentumsrechte an Weltraumressourcen gesetzlich geregelt haben, plus die COPUOS-Arbeitsgruppe zu rechtlichen Aspekten von Space-Resource-Aktivitäten (seit 2021 aktiv). Alle vier Gesetzesregime interpretieren das Nichtaneignungsprinzip von Art. II OST so, dass es Privateigentum an extrahierten Ressourcen nicht ausschließt — zum Teil mit unterschiedlichen Souveränitätsimplikationen. China und Russland lehnen diese Auslegung ab; die EU hat (noch) nicht legislativ gehandelt.",
+      provisions: {
+        "USA — CSLCA Title IV (2015)": {
+          title: "First-Mover-Statut",
+          summary:
+            "51 USC §51303: Ein US-Bürger, der an der kommerziellen Gewinnung einer Asteroidenressource oder Weltraumressource beteiligt ist, hat Anspruch auf jede so erlangte Ressource — einschließlich Besitz, Eigentum, Transport, Nutzung und Verkauf.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EU-IRIS2-CONCESSION-2024",
+    {
+      title:
+        "Verordnung (EU) 2023/588 — IRIS² Programm für sichere Konnektivität",
+      scopeDescription:
+        "Etabliert das IRIS²-Programm (Infrastructure for Resilience, Interconnection and Security by Satellite) — eine Dual-Use-Konstellation für Regierungs- und kommerzielle Nutzung in MEO/LEO. Der 2024 vergebene IRIS²-Konzessionsvertrag an das SpaceRISE-Konsortium operationalisiert die staatliche Beschaffung sicherer Konnektivität bis 2040, mit ausdrücklichen Pflichten zu Cybersicherheit, Lieferkettensicherheit und ITAR-freier Konstruktion.",
+      provisions: {
+        "Art. 9": {
+          title: "Konzessionsbasierte Beschaffung",
+          summary:
+            "Die EU beschafft den IRIS²-Sicherheitsdienst über einen Konzessionsvertrag mit einem Konsortium (SpaceRISE: Eutelsat-OneWeb / SES / Hispasat / Airbus / Thales / OHB). Konzessionshorizont 2024–2040 mit meilensteingebundenen Zahlungen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "DE-VVG",
+    {
+      title: "Versicherungsvertragsgesetz (VVG)",
+      scopeDescription:
+        "Grundlegendes deutsches Vertragsrechtsgesetz für jeden nach deutschem Recht abgeschlossenen Versicherungsvertrag — einschließlich Haftpflichtdeckungen für ein zukünftiges Weltraumgesetz, NIS2-getriebene Cyberdeckungen und operatorseitig beschaffte Launch- und In-Orbit-Versicherungen. Definiert vorvertragliche Anzeigepflichten (§§ 19–22), Schadenregulierungsregeln (§§ 100–115) und das Verbraucherschutzregime, das deutsche Policen von Londoner Marktwordings unterscheidet.",
+      provisions: {
+        "§§ 19-22": {
+          title: "Vorvertragliche Anzeigepflichten",
+          summary:
+            "Der Versicherungsnehmer hat alle ihm bekannten gefahrerheblichen Umstände anzuzeigen. Anders als das englische Uberrima-fides-Konzept unterscheidet das deutsche Regime zwischen fahrlässigem, grob fahrlässigem und arglistigem Verstoß mit verhältnismäßigen Rechtsfolgen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "UK-INSURANCE-ACT-2015",
+    {
+      title: "Insurance Act 2015 (UK)",
+      scopeDescription:
+        "Modernisiert das englische Versicherungsvertragsrecht und ist die rechtliche Grundlage für nahezu jede in Lloyd's platzierte Raumfahrtversicherung — Launch, In-Orbit, Drittpersonen-Haftung und Political-Risk-Deckungen, die routinemäßig im Londoner Markt für globale Operatoren gezeichnet werden. Ersetzt den strengen Anzeigemaßstab des Marine Insurance Act 1906 durch eine 'duty of fair presentation' (§ 3) und reformiert die Rechtsfolgen von Verstoß, Garantien und betrügerischen Schadensanzeigen.",
+      provisions: {
+        "§ 3": {
+          title: "Pflicht zur fairen Darstellung",
+          summary:
+            "Ersetzt den Vor-2015-Maßstab der äußersten Treue durch eine Pflicht zur fairen Darstellung, die die Offenlegung wesentlicher Umstände entweder ausdrücklich oder in einer für den Versicherer angemessen recherchierbaren Weise verlangt. Entscheidend bei der Platzierung jedes Weltraumrisikos.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-SPACE-INSURANCE-MARKET",
+    {
+      title:
+        "Globaler Weltraumversicherungsmarkt — Lloyd's-Syndikate, Mutuals und Captives",
+      scopeDescription:
+        "Referenzeintrag, der die tatsächliche Marktstruktur abbildet, mit der Operatoren bei der Beschaffung von Raumfahrtdeckungen konfrontiert sind — getrennt von den gesetzlichen Vorgaben in den nationalen Vertragsrechtseinträgen (DE-VVG, FR-CODE-ASSURANCES-SPACE, UK-INSURANCE-ACT-2015). Katalogisiert die wesentlichen Kapazitätsgeber (Lloyd's-Syndikate, kontinentale Europäer, Mutuals), die typische Schichtstruktur (Pre-Launch, Launch, In-Orbit, Drittpersonen-Haftung, Political Risk) und die Wording-Lineage, der jede Raumfahrtversicherungs-Platzierung begegnet.",
+      provisions: {
+        Standardschichtung: {
+          title: "Pre-Launch, Launch, In-Orbit, Drittpersonen",
+          summary:
+            "Typische Platzierungsstruktur: Pre-Launch (Transport und Integration), Launch (gewollte Zündung bis Trennung), In-Orbit-Lebensdauer (Inbetriebnahme bis EOL) und Drittpersonen-Haftung (gesetzliche Haftung gegenüber Nicht-Passagieren). Jede Schicht hat eigenen Markt, eigene Wording-Lineage und eigene Preisdynamik.",
+        },
+      },
+    },
+  ],
+
+  [
+    "JP-SPACE-ACTIVITIES-ACT-2016",
+    {
+      title:
+        "Gesetz über den Start von Raumfahrzeugen und die Kontrolle von Raumfahrzeugen (Japan)",
+      scopeDescription:
+        "Operatives Genehmigungsstatut für japanische kommerzielle Start- und On-Orbit-Management-Aktivitäten. Etabliert ein Kabinettsbüro-Genehmigungsregime, eine zwingende Drittpersonen-Haftpflichtversicherung (derzeit 20 Mrd. JPY), staatliche Indemnifikation oberhalb der Versicherungsobergrenze sowie ausdrückliche Trümmerminderungs- und End-of-Life-Disposal-Pflichten für Satellitenbetreiber.",
+      provisions: {
+        "Art. 35-43": {
+          title: "Haftung und staatliche Indemnifikation",
+          summary:
+            "Verschuldensunabhängige Operatorhaftung für Oberflächenschäden; zwingende Drittpersonen-Haftpflicht in Höhe von 20 Mrd. JPY; staatliche Indemnifikation oberhalb der Versicherungsobergrenze bis zu einer durch den Diet festgesetzten Höchstgrenze.",
+        },
+      },
+    },
+  ],
+
+  [
+    "AE-DECREE-12-2019",
+    {
+      title:
+        "Bundesverordnungsgesetz Nr. 12 von 2019 zur Regulierung des Weltraumsektors (UAE)",
+      scopeDescription:
+        "Primäres Weltraumgesetz der VAE. Etabliert die UAESA als nationale Lizenzbehörde, verlangt Genehmigungen für jede Raumfahrtaktivität durch UAE-flagged oder UAE-territoriale Operatoren, regelt Haftung und Versicherung und autorisiert ausdrücklich die Gewinnung von Weltraumressourcen (UAE war nach US und Luxemburg die dritte Jurisdiktion mit gesetzlich geregeltem Eigentum an Weltraumressourcen).",
+      provisions: {
+        "Art. 18": {
+          title: "Weltraumressourcen-Aktivitäten",
+          summary:
+            "Autorisiert und reguliert Erforschung und Nutzung von Weltraumressourcen durch genehmigte Operatoren. Detaillierter Rahmen durch Kabinettsbeschluss festgelegt.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
@@ -7658,6 +7896,131 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
       name: "NASK — CSIRT NASK",
       mandate:
         "Nationales CSIRT. NIS2-Umsetzung ausstehend. Weltraum als kritischer Sektor.",
+    },
+  ],
+
+  // ───────────────────────────────────────────────────────────────────
+  // STRATEGIC NON-EU/UK ACTORS (added 2026-04)
+  // ───────────────────────────────────────────────────────────────────
+
+  [
+    "JP-CABINET-OFFICE",
+    {
+      name: "Kabinettsbüro — Büro für nationale Weltraumpolitik",
+      mandate:
+        "Hauptbehörde für Lizenzierungen unter dem Space Activities Act 2016. Erteilt Start- und Satellitenmanagement-Genehmigungen, betreut das Register nach dem Space Resources Act und betreibt das ressortübergreifende Strategic Headquarters for Space Policy.",
+    },
+  ],
+  [
+    "JP-METI",
+    {
+      name: "Ministerium für Wirtschaft, Handel und Industrie (METI, Japan)",
+      mandate:
+        "Industriepolitik für den Raumfahrtsektor sowie Dual-Use-Exportlizenzierung nach dem Foreign Exchange and Foreign Trade Act. Mitverwalter des Space Resources Act zusammen mit dem Kabinettsbüro.",
+    },
+  ],
+  [
+    "JP-JAXA",
+    {
+      name: "Japan Aerospace Exploration Agency (JAXA)",
+      mandate:
+        "Nationale Raumfahrtagentur, die Erkundungs-, Wissenschafts- sowie H3-/Epsilon-Startfähigkeiten ausführt. Technischer Berater des Kabinettsbüros bei der Prüfung des Space Activities Act.",
+    },
+  ],
+  [
+    "IN-SPACE",
+    {
+      name: "Indian National Space Promotion and Authorization Centre (IN-SPACe)",
+      mandate:
+        "Single-Window-Genehmigungs-, Aufsichts- und Förderbehörde für nicht-staatliche Raumfahrtaktivitäten in Indien. Erteilt Genehmigungen unter den Norms, Guidelines and Procedures (NGP) und der Indian Space Policy 2023. Berichtet an den Premierminister über das Department of Space.",
+    },
+  ],
+  [
+    "IN-ISRO",
+    {
+      name: "Indian Space Research Organisation (ISRO)",
+      mandate:
+        "Nationale Raumfahrtagentur, die PSLV-/GSLV-/LVM3-Starts, das Chandrayaan-/Aditya-/Gaganyaan-Programm und die indische Satellitenflotte betreibt. Liefert technische Beratung an IN-SPACe für Genehmigungsanträge.",
+    },
+  ],
+  [
+    "AU-ASA",
+    {
+      name: "Australian Space Agency (ASA)",
+      mandate:
+        "Nationale Raumfahrtagentur seit 2018 und Aufsichtsbehörde, die Start-, Rückführungs-, Auslandsstart- und Hochleistungsraketen-Lizenzen unter dem Space (Launches and Returns) Act 2018 erteilt. Betreibt das Australische Register für Weltraumobjekte.",
+    },
+  ],
+  [
+    "AU-ACMA",
+    {
+      name: "Australian Communications and Media Authority (ACMA)",
+      mandate:
+        "Frequenzzuteilung, Lizenzierung von Satellitenbodenstationen und ITU-Koordinierungsfilings für australische Satellitensysteme. Verwaltet den Radiocommunications Act 1992.",
+    },
+  ],
+  [
+    "CA-CSA",
+    {
+      name: "Canadian Space Agency (CSA / Agence spatiale canadienne)",
+      mandate:
+        "Nationale Raumfahrtagentur. Zivile Raumfahrtprogramme (RADARSAT, ISS-Canadarm, Mondexploration) sowie Politikberater von ISED zur Regulierung des Raumfahrtsektors.",
+    },
+  ],
+  [
+    "AE-UAESA",
+    {
+      name: "UAE Space Agency (UAESA)",
+      mandate:
+        "Nationale Raumfahrtagentur und Lizenzbehörde nach Bundesverordnungsgesetz Nr. 12 von 2019 und seiner Durchführungsverordnung. Erteilt Genehmigungen für Raumfahrtaktivitäten, betreut das nationale Register für Weltraumobjekte und überwacht Genehmigungen zur Gewinnung von Weltraumressourcen.",
+    },
+  ],
+  [
+    "KR-KASA",
+    {
+      name: "Korea AeroSpace Administration (KASA)",
+      mandate:
+        "Nationale Raumfahrtagentur, gegründet am 27. Mai 2024 — Nachfolgebehörde für zivile Raumfahrtprogramme und primäre Aufsichtsbehörde für Genehmigungen nach dem Space Development Promotion Act und dem Space Liability Act. Ersetzte die zuvor von MSIT geführte Struktur.",
+    },
+  ],
+  [
+    "IL-DECA",
+    {
+      name: "Defence Export Controls Agency (DECA, Israel)",
+      mandate:
+        "Hauptbehörde für die israelische Verteidigungs- und Dual-Use-Exportlizenzierung nach dem Defense Export Control Law 2007. Erfasst die meisten Trägerraketen und viele Raumfahrzeug-Komponenten. Streng kontrolliert — israelische Raumfahrt-Hardware ist überwiegend verteidigungsklassifiziert.",
+    },
+  ],
+  [
+    "CN-SASTIND",
+    {
+      name: "Staatliche Verwaltung für Wissenschaft, Technologie und Industrie für die Landesverteidigung (SASTIND, China)",
+      mandate:
+        "Hauptregulator für zivile und Dual-Use-Raumfahrtprogramme. Erteilt Lizenzen für Starts und On-Orbit-Management bei nicht-militärischen Raumfahrtaktivitäten, beaufsichtigt die Exportkontrolle von Dual-Use-Raumfahrtgütern und koordiniert mit PLA-SSF bei militärischen Überschneidungen.",
+    },
+  ],
+  [
+    "RU-ROSCOSMOS",
+    {
+      name: "Staatskorporation für Raumfahrtaktivitäten — Roscosmos",
+      mandate:
+        "Staatskorporation seit 2015 (Nachfolger der vormaligen Bundesagentur). Sowohl Regulator als auch Hauptoperator: Lizenzierung russischer Raumfahrtaktivitäten nach Bundesgesetz Nr. 5663-1 von 1993, Verwaltung der Starts von Baikonur und Plesetsk/Vostochny sowie Aufsicht über das russische ISS-Segment.",
+    },
+  ],
+  [
+    "BR-AEB",
+    {
+      name: "Brasilianische Weltraumagentur (Agência Espacial Brasileira, AEB)",
+      mandate:
+        "Zivile Raumfahrtagentur seit 1994. Mit-Genehmigungsbehörde mit DECEA für Starts von Alcântara und anderen brasilianischen Standorten; Hauptansprechpartner für internationale Raumfahrtkooperation einschließlich des US-Brasilien-Technologieschutzabkommens.",
+    },
+  ],
+  [
+    "ZA-SACOUNCIL",
+    {
+      name: "Südafrikanischer Rat für Weltraumangelegenheiten (SACSA)",
+      mandate:
+        "Statutarischer Lizenzrat nach dem Space Affairs Act 84 von 1993. Erteilt Lizenzen für Starts und den Betrieb von Weltraumobjekten und führt das südafrikanische Register für Weltraumobjekte.",
     },
   ],
 ]);

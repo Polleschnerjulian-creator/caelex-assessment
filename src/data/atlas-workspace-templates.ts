@@ -262,6 +262,277 @@ Mandatory third-party liability insurance: minimum €60M. Französische Regieru
   ],
 };
 
+// ─── Sanctions Diligence Pack ─────────────────────────────────────────
+//
+// Cross-border transactions touching Russian, Chinese, or sanctioned
+// counterparties. Pre-loaded with the four canonical sanctions
+// instruments + the EU Dual-Use Regulation as the dual-track screening
+// frame.
+
+const SANCTIONS_DILIGENCE: WorkspaceTemplate = {
+  id: "sanctions-diligence-pack",
+  title: "Sanktions-Diligence",
+  description:
+    "Cross-Border-Screening — EU 833/2014, UK Russia Regs, OFAC, PRC Export Law, Dual-Use VO",
+  workspaceTitle: "[Mandant] — Sanctions Diligence",
+  category: "compliance",
+  cards: [
+    {
+      kind: "user",
+      title: "Mandant + Zielmarkt",
+      content: `Mandant: [Name]
+Sektor: [Hardware-Hersteller / Operator / Servicer]
+Zielmarkt(e): [RU / CN / IR / DPRK / sonstige]
+Konkrete Transaktion: [Export / Investment / Datenfluss]
+Endkunden bekannt? [Ja/Nein]
+US-Origin-Anteil im Produkt: [%]
+EU-Origin-Anteil: [%]
+Zeithorizont: [...]`,
+    },
+    {
+      kind: "user",
+      title: "EU-Sanktion: VO 833/2014",
+      content: `Council Regulation (EU) No 833/2014 — RU-Sektorensanktionen.
+
+- Anhang VII (Hochtechnologie): erfasst Raumfahrzeuge, GNSS-Empfänger, INS, Sternensensoren.
+- Anhang XXIII (Industriegüter): Antriebskomponenten, rad-hard Elektronik.
+- Anhang IV (Endempfängerliste): direkt geblockt.
+- Art. 12g: Best-Efforts-Sorgfaltspflicht gegen Drittlandsumlenkung (Belarus, Zentralasien, Kaukasus).
+
+→ Atlas-ID: INT-EU-SANCTIONS-RU-833`,
+    },
+    {
+      kind: "user",
+      title: "UK-Sanktion: SI 2019/855",
+      content: `The Russia (Sanctions) (EU Exit) Regulations 2019 — Post-Brexit UK-Regime.
+
+- Part 5 (Trade): Verbote für Dual-Use, Kritische Infrastruktur.
+- Reg. 19A-19F: Asset-Freeze-Designations (OFSI Consolidated List).
+- Achtung: UK ≠ EU seit Brexit — beide Regime separat screenen.
+
+→ Atlas-ID: INT-UK-RUSSIA-REGS-2019`,
+    },
+    {
+      kind: "user",
+      title: "US-Sanktion: OFAC SDN + BIS Entity List",
+      content: `OFAC SDN (E.O. 14024 RU, OFAC Iran/DPRK, BIS Entity List).
+
+- 50%-Rule: jede ≥50%-Tochter eines Designated ist selbst geblockt.
+- Sekundärsanktionen: erfassen Nicht-US-Operatoren bei US-Origin-Content (de minimis).
+- Foreign Direct Product Rule: erfasst auch nicht-US-Hardware aus US-Technologie.
+
+→ Atlas-IDs: INT-OFAC-SDN-SPACE, US-EAR, US-ITAR`,
+    },
+    {
+      kind: "user",
+      title: "PRC Exportkontrollgesetz 2020",
+      content: `Export Control Law of the PRC + 2024 Dual-Use Items Regulations.
+
+- MIIT-Permit für Items im Catalogue.
+- Art. 18: Catch-all + Unverified End-User List (analog BIS).
+- Art. 48: Counter-measures gegen "diskriminierende" Drittlandsmaßnahmen → Reziproke Beschränkungen für US-Counterparties.
+
+→ Atlas-ID: INT-CN-EXPORT-LAW-2020`,
+    },
+    {
+      kind: "user",
+      title: "EU Dual-Use VO 2021/821",
+      content: `EU-VO 2021/821 — direkt anwendbar in DE/FR/IT/etc., kein nationaler Transponderakt.
+
+- Anhang I Cat. 7: Navigation/Avionik (GNSS, INS, Star Trackers).
+- Anhang I Cat. 9: Aerospace + Propulsion (komplette Satelliten, Antriebe, Reaktionsräder).
+- Art. 4: Catch-all → screen jede Transaktion, nicht nur gelistete Items.
+
+→ Atlas-ID: DE-DUALUSE-2021`,
+    },
+    {
+      kind: "user",
+      title: "Diligence-Workflow",
+      content: `Empfohlene Reihenfolge:
+
+1. Lieferketten-Mapping: Welche Komponenten? Welcher Origin (US/EU/CN/RU)?
+2. End-User-Screening: OFSI Consolidated + OFAC SDN + EU Annex IV + BIS Entity List.
+3. End-Use-Screening: Militärisch? Dual-Use? WMD?
+4. License-Klassifikation: Einzeln je Jurisdiktion (BAFA/SBDU/BIS/DDTC/MIIT/FSTEC).
+5. Vertragliche Kondicionen: Diversion-Klausel, Compliance-Reps, Audit-Rechte.
+
+⚠ EU-Sanktionen sind unmittelbar anwendbar — Rechtswahl kann sie nicht verdrängen.`,
+    },
+  ],
+};
+
+// ─── ITU Filing Pack ──────────────────────────────────────────────────
+//
+// Operator preparing a satellite-network coordination filing. Pre-loaded
+// with the ITU framework + national filing-administration entry points
+// for the major regulators that operators actually go through.
+
+const ITU_FILING: WorkspaceTemplate = {
+  id: "itu-filing-pack",
+  title: "ITU Filing Pack",
+  description:
+    "Satellite-Spectrum Coordination — ITU RR + WRC-23 + nationale Frequenzbehörden",
+  workspaceTitle: "[Operator] — ITU Filing",
+  category: "compliance",
+  cards: [
+    {
+      kind: "user",
+      title: "Mission + Frequenzplan",
+      content: `Operator: [Name]
+Mission: [GEO / LEO / MEO / NGSO]
+Konstellation? [Ja, N=... / Einzelsatellit]
+Frequenzbänder: [Ku / Ka / Q/V / S / X / L]
+TT&C: [Band, Modulation]
+Payload: [Band, Service-Klasse]
+Zielmarkt: [global / EU / regional]
+Filing-Administration: [BNetzA / Ofcom / FCC / ARCEP / TDRA / sonstige]`,
+    },
+    {
+      kind: "user",
+      title: "ITU Radio Regulations 2024",
+      content: `ITU-RR 2024-Edition (post WRC-23). Treaty-rang, bindet 194 Mitgliedstaaten.
+
+- Art. 5: Frequenzzuteilungstabelle (Region 1/2/3).
+- Art. 9: Coordination — API → CR/C → bilaterale Coordination.
+- Art. 11: Notification + Recording im MIFR.
+- Art. 22: PFD/EPFD-Limits für Weltraumdienste.
+
+GEO-Coordination: typisch 2–7 Jahre. NGSO: deutlich kürzer aber EPFD-Constraints.
+
+→ Atlas-IDs: INT-ITU-RR, INT-ITU-WRC-23`,
+    },
+    {
+      kind: "user",
+      title: "WRC-23 Outcomes (anwendbar 2024+)",
+      content: `WRC-23 Final Acts — neue Regeln für Mega-Konstellationen + IMT-2030.
+
+- AI 1.16: NGSO FSS in Ka + Q/V — neue EPFD-Vorgaben für Starlink/Kuiper-2.
+- AI 1.18: 6G/IMT-2030 — Direct-to-Device-Allokationen vorbereiten.
+- WRC-27 (geplant 2027): wird mehrere WRC-23-Kompromisse revidieren — CPM-Zyklus ab 2025 monitoren.
+
+→ Atlas-ID: INT-ITU-WRC-23`,
+    },
+    {
+      kind: "user",
+      title: "Nationale Filing-Pfade (Auswahl)",
+      content: `BNetzA (DE): TKG §§ 91 ff. — DE-Operator filed über BNetzA.
+ARCEP (FR): CPCE — Code des postes et communications électroniques.
+Ofcom (UK): WTA 2006 — UK-Operator-Filing.
+FCC (US): Communications Act + 47 CFR Part 25 — US-Filing + Market-Access für non-US Networks.
+TDRA (UAE): Spektrumkoordination + UAE-Satelliten-Network-Filings.
+ANATEL (BR): General Telecommunications Law — BR-Filing.
+ANFR (FR): Frequenzkoordinationsstelle, arbeitet mit ARCEP.
+ACMA (AU): Radiocommunications Act 1992.
+MSIT (KR): Radio Waves Act.
+ANATEL/MIIT (CN): MIIT für Spectrum + ITU-Coordination für CN-Filings.
+
+Achtung: Coordination muss VOR Launch eingeleitet werden — unfiled Networks haben keinen MIFR-Schutz.`,
+    },
+    {
+      kind: "user",
+      title: "Worst-Case-Szenarien",
+      content: `Häufige Stolpersteine:
+
+1. API-Veröffentlichung verfehlt → Network-Status verloren.
+2. Coordination mit Nachbar-Operator blockiert → 18+ Monate Verzögerung.
+3. PFD/EPFD-Verstoß im Betrieb → Notification entzogen.
+4. Two-Step-Filing: Network angefordert aber nicht in Betrieb → "bringing into use"-Frist verpasst (7 Jahre nach Notification).
+5. Übergangsregeln WRC-23 nicht eingehalten → grandfathered nur unter strikten Bedingungen.
+
+→ Recovery: Regulärer Filing-Refresh, BNetzA-Liaison, ggf. ITU-Koordination via Re-Submission.`,
+    },
+  ],
+};
+
+// ─── Insurance Placement Pack ─────────────────────────────────────────
+//
+// Operator placing a launch + in-orbit cover. Brings together the
+// contract-law + market + prudential layers across the relevant
+// jurisdictions.
+
+const INSURANCE_PLACEMENT: WorkspaceTemplate = {
+  id: "insurance-placement-pack",
+  title: "Insurance Placement",
+  description:
+    "Launch + In-Orbit Cover — DE-VVG, UK-IA-2015, INT-Markt, Solvency II, IDD",
+  workspaceTitle: "[Operator] — Insurance Placement",
+  category: "contract",
+  cards: [
+    {
+      kind: "user",
+      title: "Mission + Risikoprofil",
+      content: `Operator: [Name]
+Mission: [Vehicle / Satellitentyp / TRL]
+Versicherter Wert: [Pre-Launch / Launch / In-Orbit / Third-Party-Liability]
+Limit pro Layer: [...]
+Selbstbehalt: [...]
+Launch-Site: [CSG / KSC / Vandenberg / Plesetsk / Wenchang]
+Operator-Sitz: [DE / FR / UK / US / sonstige]
+Choice of Law im Wording: [English / German / French / sonstige]
+Broker: [...]`,
+    },
+    {
+      kind: "user",
+      title: "UK Insurance Act 2015 (London-Wording)",
+      content: `Insurance Act 2015 — substanzielle Grundlage für Lloyd's-Wordings.
+
+- § 3: Duty of fair presentation (löst Marine Insurance Act 1906 utmost good faith ab).
+- §§ 8-11: Verhältnismäßige Rechtsfolgen statt Avoidance ab initio.
+- § 9-11: Basis-of-contract-Klauseln abgeschafft; Garantie-Verstoß suspendiert nicht terminiert.
+- § 12: Fraudulent Claims → Vertrag ab Tat als beendet.
+
+→ Atlas-ID: UK-INSURANCE-ACT-2015`,
+    },
+    {
+      kind: "user",
+      title: "DE VVG (Choice-of-Law-Trap für DE-Risiken)",
+      content: `Versicherungsvertragsgesetz — wenn deutsches Recht gewählt.
+
+- §§ 19-22: Anzeigepflichten — fahrlässig/grob fahrlässig/arglistig differenziert.
+- §§ 100-115: Direktanspruch des Geschädigten + Insurer's Duty to Defend.
+- § 32: zwingende Versicherungsnehmer-Schutzbestimmungen — Londoner Wordings können nicht 1:1 unter DE-Recht abgebildet werden.
+
+→ Choice-of-Law-Analyse routinemäßig nötig.
+
+→ Atlas-ID: DE-VVG`,
+    },
+    {
+      kind: "user",
+      title: "Markt-Struktur",
+      content: `Lloyd's leads (Beazley, Hiscox, AEGIS London, Brit, Tokio Marine Kiln). Continental followers: Allianz, Munich Re, SCOR. Asian capacity: Mitsui Sumitomo, Tokio Marine, Mapfre.
+
+Mutuals: Galactic Re (SES/Eutelsat-aligned), Operator Captives.
+
+Standard-Layering:
+  1. Pre-Launch (Transit + Integration).
+  2. Launch (Zündung bis Trennung).
+  3. In-Orbit-Lebensdauer (Commissioning bis EOL).
+  4. Third-Party Liability.
+
+Wording-Basis: LSW (Lloyd's Space Insurance Wording), Joint Hull, Munich Re Benchmark.
+
+Markt 2026: hardened nach Verlust-Zyklus 2023-24 (Viasat-3, Inmarsat-6 F2 Anomalien, mehrere LEO-Failures).
+
+→ Atlas-ID: INT-SPACE-INSURANCE-MARKET`,
+    },
+    {
+      kind: "user",
+      title: "EU Solvency II + IDD (für EU-Insurer)",
+      content: `Solvency II Directive 2009/138/EC (recast 2025/2):
+- SCR/MCR-Kapitalanforderungen, Standardformel oder Internal Model.
+- Cross-border-Lizenz: EU-zugelassener Versicherer kann EU-weit zeichnen.
+- Solvency II 2.0 (2025): reduzierte Kapitalanforderung für Long-Term-Equity.
+
+IDD (Reg. 2016/97):
+- Art. 17-20: Conduct of Business + Demands-and-Needs.
+- Art. 25: POG (Product Oversight and Governance).
+
+→ Relevant für EU-domizilierte Versicherer (Allianz, Munich Re, SCOR).
+→ Atlas-IDs: EU-SOLVENCY-II, EU-IDD`,
+    },
+  ],
+};
+
 // ─── Master List ──────────────────────────────────────────────────────
 //
 // Exports stay flat (array, not Map) so the template-picker can
@@ -271,6 +542,9 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
   DE_LICENSE,
   NIS2_COMPLIANCE,
   CROSS_BORDER_DE_FR,
+  SANCTIONS_DILIGENCE,
+  ITU_FILING,
+  INSURANCE_PLACEMENT,
 ];
 
 export function getTemplateById(id: string): WorkspaceTemplate | undefined {

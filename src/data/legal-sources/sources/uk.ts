@@ -1656,6 +1656,40 @@ const SPACEPORTS_UK: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
+
+  {
+    id: "UK-DEVOLVED-SCOTLAND",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Scottish Devolved Space Framework — Scotland's Space Strategy and Spaceport Hosting",
+    date_published: "2024-09-01",
+    source_url: "https://www.gov.scot/publications/scotland-space-strategy/",
+    issuing_body: "Scottish Government",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Reference for Scotland's devolved policy and infrastructure context. Space-licensing competence remains reserved to Westminster (CAA under SIA 2018), but planning consents, environmental review, and economic-development incentives sit with the Scottish Government and devolved agencies (Scottish Enterprise, Highlands and Islands Enterprise). SaxaVord (Unst, Shetland), Space Hub Sutherland, and Glasgow's small-satellite cluster (Spire, AAC Clyde Space, Alba Orbital, Skyrora) operate within this devolved economic-development frame.",
+    key_provisions: [
+      {
+        section: "Scotland Space Strategy 2024",
+        title: "Scottish space-economy targets",
+        summary:
+          "Glasgow is the largest small-satellite manufacturing centre in Europe; Scottish Government targets £4bn industrial value by 2030, with Highlands and Islands Enterprise investment in spaceport infrastructure (Sutherland, SaxaVord).",
+      },
+      {
+        section: "Devolved competence boundary",
+        title: "Westminster vs. Holyrood",
+        summary:
+          "Space licensing under SIA 2018 is reserved (CAA-administered). Planning, environmental impact assessment under Scotland's Town and Country Planning regime, and Crown Estate Scotland marine licensing are devolved — operators face parallel UK + Scottish review tracks for any Scottish spaceport development.",
+      },
+    ],
+    related_sources: ["UK-SPACEPORTS", "UK-SI-2021-792"],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Sustainability + Orbital-Liability Instruments (2) ───────────
