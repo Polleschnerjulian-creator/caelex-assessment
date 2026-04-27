@@ -1266,6 +1266,58 @@ const LIABILITY_UK: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
+
+  {
+    id: "UK-INSURANCE-ACT-2015",
+    jurisdiction: "UK",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Insurance Act 2015",
+    title_local: "Insurance Act 2015",
+    date_enacted: "2015-02-12",
+    date_in_force: "2016-08-12",
+    official_reference: "2015 c. 4",
+    source_url: "https://www.legislation.gov.uk/ukpga/2015/4/contents",
+    issuing_body: "Parliament of the United Kingdom",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "Modernises English insurance contract law and is the substantive backdrop for almost every Lloyd's-placed space policy — launch, in-orbit, third-party-liability, and political-risk covers commonly written in the London market for global operators. Replaces the strict Marine Insurance Act 1906 disclosure standard with a 'duty of fair presentation' (§ 3) and reforms the consequences of breach, warranties, and fraudulent claims.",
+    key_provisions: [
+      {
+        section: "§ 3",
+        title: "Duty of fair presentation",
+        summary:
+          "Replaces the pre-2015 utmost-good-faith standard with a duty of fair presentation that requires disclosure of material circumstances either explicitly or in a reasonably-clear-to-search manner. Critical at placement of every space risk.",
+      },
+      {
+        section: "§§ 8-11",
+        title: "Remedies for breach",
+        summary:
+          "Proportionate remedies depending on whether the breach was deliberate/reckless, careless, or innocent — replaces the harsh avoid-ab-initio remedy of the 1906 Act.",
+      },
+      {
+        section: "§§ 9-11",
+        title: "Warranties and basis-of-contract clauses",
+        summary:
+          "Basis-of-contract clauses are abolished. Breach of a warranty suspends rather than terminates cover, and is automatically remedied once the breach is rectified — important for ongoing operational warranties (e.g., bond conditions, debris-mitigation undertakings) in long-tail space policies.",
+      },
+      {
+        section: "§ 12",
+        title: "Fraudulent claims",
+        summary:
+          "An insurer may treat the contract as terminated from the time of a fraudulent act. Critical for operators making post-incident claims with imperfect documentation.",
+      },
+    ],
+    related_sources: [
+      "UK-LIABILITY-ARCHITECTURE",
+      "UK-SIA-INDEMNITIES-2025",
+      "INT-SPACE-INSURANCE-MARKET",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── CAA Guidance Documents (3) ─────────────────────────────────────

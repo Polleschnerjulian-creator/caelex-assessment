@@ -2041,4 +2041,62 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-04-21",
   },
+
+  {
+    id: "INT-SPACE-INSURANCE-MARKET",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Global Space Insurance Market — Lloyd's Syndicates, Mutuals, and Captives",
+    date_published: "2026-04-22",
+    source_url: "https://www.lloyds.com/about-lloyds/who-we-are/our-market",
+    issuing_body:
+      "Lloyd's of London / IUMI / industry mutuals (composite reference)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "Reference entry mapping the actual market structure operators face when placing space cover — distinct from the statutory rules in the national-jurisdiction entries (DE-VVG, FR-CODE-ASSURANCES-SPACE, UK-INSURANCE-ACT-2015). Catalogues the principal capacity providers (Lloyd's syndicates, continental Europeans, mutuals), the typical layered structure (pre-launch, launch, in-orbit, third-party liability, political risk), and the wording lineage every space-insurance placement encounters.",
+    key_provisions: [
+      {
+        section: "Capacity providers",
+        title: "Lloyd's syndicates and continental followers",
+        summary:
+          "The London market — Lloyd's of London syndicates including specialist space writers (Beazley, Hiscox, AEGIS London, Brit, Tokio Marine Kiln) — leads global space-risk pricing, with continental Europeans (Allianz, Munich Re, SCOR) and Asian capacity (Mitsui Sumitomo, Tokio Marine, Mapfre) following or leading regional placements. Capacity has tightened materially after the 2023-2024 loss years.",
+      },
+      {
+        section: "Mutuals and captives",
+        title: "Operator-owned alternatives",
+        summary:
+          "Industry mutuals (notably Galactic Re, the SES/Eutelsat-aligned facility) and operator captives provide capacity for risks that the commercial market prices punitively or refuses outright — typically EOL retirement, in-orbit-collision low-probability layers, and constellation-fleet aggregations.",
+      },
+      {
+        section: "Standard layering",
+        title: "Pre-launch, launch, in-orbit, third-party",
+        summary:
+          "Typical placement structure: pre-launch (transit and integration), launch (intentional ignition through separation), in-orbit-life (commissioning to EOL), and third-party-liability (legal liability to non-passengers). Each layer has its own market, wording lineage, and pricing dynamic.",
+      },
+      {
+        section: "Wording lineage",
+        title: "London Joint Hull, Lloyd's space wordings",
+        summary:
+          "Standard wordings include the Lloyd's Space Insurance Wording (LSW), Joint Hull Committee clauses, and the Munich Re benchmark forms. Operators should map the chosen national insurance-contract law (DE-VVG, FR Code des assurances, UK Insurance Act 2015) onto whichever wording is placed — choice-of-law conflict is the most common drafting trap.",
+      },
+    ],
+    related_sources: [
+      "DE-VVG",
+      "FR-CODE-ASSURANCES-SPACE",
+      "UK-INSURANCE-ACT-2015",
+      "UK-LIABILITY-ARCHITECTURE",
+      "INT-LIABILITY-1972",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Reference entry rather than a statute — included because the practical insurance question on every space mandate cannot be answered from the national statute alone; the operator's actual cover sits in a London-placed policy backed by global reinsurance.",
+      "Loss environment: the 2023-24 in-orbit-loss cycle (Viasat-3, Inmarsat-6 F2 anomalies, multiple LEO failures) tightened capacity and pricing markedly. Premium markets remain hardened through 2026.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];

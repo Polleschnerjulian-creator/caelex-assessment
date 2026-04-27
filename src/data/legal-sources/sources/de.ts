@@ -1105,6 +1105,52 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     ],
     last_verified: "2026-04-22",
   },
+
+  {
+    id: "DE-VVG",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "German Insurance Contract Act",
+    title_local: "Versicherungsvertragsgesetz (VVG)",
+    date_enacted: "2007-11-23",
+    date_in_force: "2008-01-01",
+    date_last_amended: "2024-03-22",
+    official_reference: "BGBl. I 2007 S. 2631 (as amended)",
+    source_url: "https://www.gesetze-im-internet.de/vvg_2008/",
+    issuing_body: "Bundestag",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "Foundational German contract-law statute governing every insurance contract concluded under German law — including third-party-liability covers held to satisfy a future Weltraumgesetz, NIS2-driven cyber covers, and operator-procured launch and in-orbit insurance. Defines pre-contractual disclosure duties (§§ 19-22), claims-handling rules (§§ 100-115), and the consumer-protection regime that distinguishes German policies from London-market wordings.",
+    key_provisions: [
+      {
+        section: "§§ 19-22",
+        title: "Pre-contractual disclosure duties",
+        summary:
+          "The policyholder must disclose all circumstances known to be material to the insurer's risk assessment. Misrepresentation rules differ from English-law uberrima fides — the German regime distinguishes between negligent, grossly-negligent, and fraudulent breach with proportionate remedies.",
+      },
+      {
+        section: "§§ 100-115",
+        title: "Liability-insurance rules",
+        summary:
+          "Direct-action rights of injured third parties, the insurer's duty to defend, and the allocation of settlement-authority between insurer and policyholder. Critical for operator policies covering launch and in-orbit liability.",
+      },
+      {
+        section: "§ 32",
+        title: "Mandatory provisions",
+        summary:
+          "Many VVG provisions are mandatory in favour of the policyholder — operators procuring liability cover under German law cannot fully replicate London-market terms by contract. Choice-of-law shopping is a recurring drafting issue.",
+      },
+    ],
+    related_sources: ["DE-PRODHAFTG", "INT-SPACE-INSURANCE-MARKET"],
+    notes: [
+      "Operators with German legal seat or German-based risk often procure space cover under English law to avoid the consumer-protective overlay; the choice-of-law analysis is routine on every space-insurance placement involving a German party.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── BSI Technical Standards (6) ─────────────────────────────────────
