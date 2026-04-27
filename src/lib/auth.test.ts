@@ -44,17 +44,28 @@ const { capturedConfig, mockPrisma, mockVerifySignedToken } = vi.hoisted(() => {
 
 // ─── Module mocks ───
 
-vi.mock("next-auth", () => ({
-  default: vi.fn().mockImplementation((config: Record<string, unknown>) => {
-    capturedConfig.value = config;
-    return {
-      handlers: { GET: vi.fn(), POST: vi.fn() },
-      signIn: vi.fn(),
-      signOut: vi.fn(),
-      auth: vi.fn(),
-    };
-  }),
-}));
+vi.mock("next-auth", () => {
+  // CredentialsSignin needs to be a real Error subclass so our
+  // lib/auth-errors.ts subclasses can extend it. Defined inline
+  // because vi.mock factories are hoisted above any module-level
+  // declarations.
+  class MockCredentialsSignin extends Error {
+    code = "CredentialsSignin";
+    type = "CredentialsSignin";
+  }
+  return {
+    default: vi.fn().mockImplementation((config: Record<string, unknown>) => {
+      capturedConfig.value = config;
+      return {
+        handlers: { GET: vi.fn(), POST: vi.fn() },
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        auth: vi.fn(),
+      };
+    }),
+    CredentialsSignin: MockCredentialsSignin,
+  };
+});
 
 vi.mock("next-auth/providers/google", () => ({
   default: vi.fn().mockReturnValue({ id: "google", name: "Google" }),

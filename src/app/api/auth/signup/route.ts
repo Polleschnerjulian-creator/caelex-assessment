@@ -44,7 +44,15 @@ export async function POST(request: Request) {
       organization,
       acceptAnalytics,
       inviteToken,
+      intent,
     } = validation.data;
+
+    // Atlas-funnel signups create a LAW_FIRM org so `(atlas)/atlas/layout`
+    // (which requires orgType IN ("LAW_FIRM","BOTH")) lets the user in.
+    // Caelex-funnel signups stay OPERATOR — the dashboard expects that.
+    // Ignored on the invite path because the org already exists.
+    const orgTypeForNewOrg: "OPERATOR" | "LAW_FIRM" =
+      intent === "atlas" ? "LAW_FIRM" : "OPERATOR";
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
@@ -149,6 +157,7 @@ export async function POST(request: Request) {
             plan: "FREE",
             maxUsers: 1,
             maxSpacecraft: 1,
+            orgType: orgTypeForNewOrg,
           },
         });
         orgId = org.id;

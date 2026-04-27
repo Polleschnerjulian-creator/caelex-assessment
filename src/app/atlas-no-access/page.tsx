@@ -33,13 +33,21 @@ export default async function NoAccessPage() {
 
   // Re-check active-membership so a user who got invited between the
   // redirect and the page load is bounced straight into Atlas.
-  const activeMembership = await prisma.organizationMember.findFirst({
+  //
+  // CRITICAL: must mirror the layout's gate (orgType IN LAW_FIRM/BOTH).
+  // Earlier this only checked `isActive`, which let an OPERATOR-org
+  // user pass — they then bounced back to /atlas-no-access from the
+  // layout, creating an infinite redirect loop.
+  const atlasMembership = await prisma.organizationMember.findFirst({
     where: {
       userId: session.user.id,
-      organization: { isActive: true },
+      organization: {
+        isActive: true,
+        orgType: { in: ["LAW_FIRM", "BOTH"] },
+      },
     },
   });
-  if (activeMembership) {
+  if (atlasMembership) {
     redirect("/atlas");
   }
 
@@ -83,10 +91,13 @@ export default async function NoAccessPage() {
           </Link>
           {/* Signout is an API route, not a page — Next's app-router
               Link won't route through it correctly, and the lint rule
-              can't tell API routes from pages. Plain anchor is right. */}
+              can't tell API routes from pages. Plain anchor is right.
+              callbackUrl points back at /atlas-login so the brand
+              context is preserved (the previous /login target dropped
+              the user back into the Caelex compliance funnel). */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/api/auth/signout?callbackUrl=%2Flogin"
+            href="/api/auth/signout?callbackUrl=%2Fatlas-login"
             className="inline-flex items-center justify-center gap-1.5 text-[12px] text-gray-500 hover:text-gray-700 transition-colors py-2"
           >
             <LogOut size={12} strokeWidth={1.5} />

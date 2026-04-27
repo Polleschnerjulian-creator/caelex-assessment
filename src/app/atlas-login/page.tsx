@@ -7,7 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { analytics } from "@/lib/analytics";
-import { safeInternalUrl } from "@/lib/safe-redirect";
+import { safeAtlasUrl } from "@/lib/safe-redirect";
+import { translateAuthError } from "@/lib/auth-errors";
 import styles from "./atlas-login.module.css";
 
 /**
@@ -152,16 +153,22 @@ function LoginForm() {
   // keeps us safe from `?callbackUrl=https://evil.com` since
   // router.push with an absolute URL would do a full-document
   // navigation that middleware can't intercept.
-  const callbackUrl = safeInternalUrl(
-    searchParams.get("callbackUrl"),
-    "/atlas",
-  );
+  // safeAtlasUrl rejects callbacks outside the Atlas surface (e.g.
+  // ?callbackUrl=/dashboard) so we can't accidentally smuggle a user
+  // into Caelex from the Atlas login.
+  const callbackUrl = safeAtlasUrl(searchParams.get("callbackUrl"), "/atlas");
   const prefilledEmail = searchParams.get("email") ?? "";
 
   const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  // Pre-fill from server-side error redirects (OAuth rejection,
+  // deactivated account, etc.) — see translateAuthError in
+  // src/lib/auth-errors.ts for the code → message mapping.
+  const initialError = translateAuthError(
+    searchParams.get("code") || searchParams.get("error"),
+  );
+  const [error, setError] = useState(initialError);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,7 +184,14 @@ function LoginForm() {
       })) as SignInResult | undefined;
 
       if (result?.error) {
-        setError("Invalid email or password");
+        // result.code is the static `code` from the CredentialsSignin
+        // subclass thrown in authorize(). Falls back to the generic
+        // type so unknown errors still get the canonical message.
+        const code =
+          (result as { code?: string }).code ??
+          result.error ??
+          "CredentialsSignin";
+        setError(translateAuthError(code));
         setLoading(false);
         return;
       }
@@ -196,7 +210,10 @@ function LoginForm() {
           `/auth/mfa-challenge?callbackUrl=${encodeURIComponent(callbackUrl)}`,
         );
       } else {
-        router.push(callbackUrl);
+        // Hard nav — same fix as /login. router.push races the cookie
+        // write on slow connections and leaves the user stuck on
+        // /atlas-login with a valid session they can't see.
+        window.location.assign(callbackUrl);
       }
     } catch {
       setError("Something went wrong");

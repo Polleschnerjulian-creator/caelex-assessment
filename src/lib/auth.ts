@@ -23,6 +23,11 @@ import bcrypt from "bcryptjs";
 import * as Sentry from "@sentry/nextjs";
 import { logger } from "@/lib/logger";
 import { verifySignedToken } from "@/lib/signed-token";
+import {
+  AccountDeactivatedError,
+  AccountLockedError,
+  TooManyAttemptsError,
+} from "@/lib/auth-errors";
 
 // ─── Auth availability check ───
 
@@ -128,6 +133,19 @@ const authResult = isAuthConfigured
       },
 
       // ─── Secure Cookie Settings ───
+      //
+      // Cookie domain — set via AUTH_COOKIE_DOMAIN env var. When the
+      // app runs on a single host (caelex.eu) leave it unset; when
+      // Atlas moves to a subdomain (e.g. atlas.caelex.eu) set the var
+      // to ".caelex.eu" so the session cookie is shared across all
+      // subdomains and the user stays logged in when crossing brands.
+      //
+      // CSRF token uses the __Host- prefix in production which forbids
+      // a Domain attribute by spec — we deliberately omit `domain` for
+      // the csrfToken cookie regardless of the env var. That's also
+      // why csrf-token uses __Host- instead of __Secure-: __Host-
+      // cookies are origin-bound and can't be set by a sibling domain,
+      // which is exactly what we want for CSRF.
       cookies: {
         sessionToken: {
           name: isProduction
@@ -138,6 +156,9 @@ const authResult = isAuthConfigured
             sameSite: "lax",
             path: "/",
             secure: isProduction,
+            ...(process.env.AUTH_COOKIE_DOMAIN && {
+              domain: process.env.AUTH_COOKIE_DOMAIN,
+            }),
           },
         },
         callbackUrl: {
@@ -149,6 +170,9 @@ const authResult = isAuthConfigured
             sameSite: "lax",
             path: "/",
             secure: isProduction,
+            ...(process.env.AUTH_COOKIE_DOMAIN && {
+              domain: process.env.AUTH_COOKIE_DOMAIN,
+            }),
           },
         },
         csrfToken: {
@@ -158,14 +182,20 @@ const authResult = isAuthConfigured
             sameSite: "lax",
             path: "/",
             secure: isProduction,
+            // No domain attribute — __Host- prefix forbids it.
           },
         },
       },
 
       // ─── Custom Pages ───
+      // No `?error=true` querystring on the error path — NextAuth v5
+      // already appends `?error=<Type>&code=<code>` itself when a
+      // CredentialsSignin subclass is thrown. Hardcoding `?error=true`
+      // collided with v5's own querystring (the second `?error=` would
+      // overwrite the first), erasing the actual reason.
       pages: {
         signIn: "/login",
-        error: "/login?error=true",
+        error: "/login",
       },
 
       // ─── Callbacks ───
@@ -289,20 +319,25 @@ const authResult = isAuthConfigured
               });
 
               if (existing) {
-                if (!existing.isActive) return false;
+                if (!existing.isActive) {
+                  // String redirect — NextAuth v5 treats the returned
+                  // string as a redirect URL. Encodes the same
+                  // ACCOUNT_DEACTIVATED code the Credentials provider
+                  // throws, so the login page renders one consistent
+                  // message regardless of whether the user clicked
+                  // "Continue with Google" or submitted the form.
+                  return "/login?error=CredentialsSignin&code=ACCOUNT_DEACTIVATED";
+                }
                 // If the user has a password, only permit oauth login
                 // when that specific provider account has been linked.
                 // The link is handled out-of-band (dedicated /api/user/
                 // link-oauth-account endpoint) to force explicit consent.
                 if (existing.password) {
-                  // heuristic: forbid first-time oauth for credentials
-                  // users. the explicit link flow should set a flag
-                  // we can read here; until that flow exists, reject.
                   logger.warn(
                     "[auth] OAuth sign-in rejected: credentials user must link first",
                     { provider: account?.provider, email },
                   );
-                  return false;
+                  return "/login?error=CredentialsSignin&code=OAUTH_LINK_REQUIRED";
                 }
               }
 
@@ -398,9 +433,7 @@ const authResult = isAuthConfigured
                 },
               });
 
-              throw new Error(
-                "Too many login attempts. Please try again in 15 minutes.",
-              );
+              throw new TooManyAttemptsError();
             }
 
             // ─── Log Attempt ───
@@ -438,16 +471,12 @@ const authResult = isAuthConfigured
 
             // Account deactivated
             if (!user.isActive) {
-              throw new Error(
-                "Account has been deactivated. Please contact support.",
-              );
+              throw new AccountDeactivatedError();
             }
 
             // Account locked (user-level lockout)
             if (user.lockedUntil && user.lockedUntil > new Date()) {
-              throw new Error(
-                "Account is temporarily locked due to too many failed attempts. Please try again later.",
-              );
+              throw new AccountLockedError(user.lockedUntil);
             }
 
             // ─── Verify Password ───

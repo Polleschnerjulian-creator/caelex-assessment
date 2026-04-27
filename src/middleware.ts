@@ -14,6 +14,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import {
@@ -133,10 +134,23 @@ function getAuthRateLimiter(): Ratelimit | null {
 }
 
 // Routes exempt from middleware rate limiting (webhooks, cron jobs, public API)
+//
+// `/api/auth/session` and `/api/auth/csrf` are NextAuth's required
+// polling endpoints — useSession() hits /session every few seconds in
+// every browser tab, and /csrf is fetched on every state-changing
+// form. Including them in the auth-limiter's 5/min budget meant a
+// legitimate user with three open tabs would self-DOS in seconds and
+// see "rate limit exceeded" mid-session. They are NextAuth-internal
+// reads (no credentials, no destructive action) so the broader IP
+// rate limit elsewhere is sufficient defence.
 const RATE_LIMIT_EXEMPT_ROUTES = [
   "/api/v1/webhooks",
   "/api/cron/",
   "/api/auth/callback/", // Only NextAuth OAuth callbacks are exempt; login/signup/mfa use auth limiter
+  "/api/auth/session", // NextAuth session polling (every active tab hits this)
+  "/api/auth/csrf", // NextAuth CSRF-token fetch (called before each POST)
+  "/api/auth/providers", // NextAuth providers list (called on /login mount)
+  "/api/auth/_log", // NextAuth client-side logger
   "/api/public/", // Public API handles its own rate limiting
 ];
 
@@ -494,7 +508,13 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Protected routes — check for session cookie and MFA status
+  // Protected routes — check for session cookie and MFA status.
+  // Critically, the MFA gate decodes the JWT here. The previous
+  // version only checked cookie presence, which let any user with a
+  // partial session (mfaRequired=true, mfaVerified=false) walk into
+  // /dashboard by typing the URL directly — bypassing the MFA
+  // challenge. Now we read the token's `mfaVerified` flag and force
+  // the user back through /auth/mfa-challenge if it's missing.
   if (pathname.startsWith("/dashboard")) {
     const hasSession =
       req.cookies.has("__Secure-authjs.session-token") ||
@@ -516,6 +536,49 @@ export default async function middleware(req: NextRequest) {
         pathname,
         nonce,
       );
+    }
+
+    // MFA gate — only when AUTH_SECRET is set (otherwise getToken throws).
+    if (process.env.AUTH_SECRET) {
+      try {
+        const token = await getToken({
+          req,
+          secret: process.env.AUTH_SECRET,
+          // NextAuth v5 cookie name pattern matches our auth.ts config.
+          cookieName:
+            process.env.NODE_ENV === "production"
+              ? "__Secure-authjs.session-token"
+              : "authjs.session-token",
+          salt:
+            process.env.NODE_ENV === "production"
+              ? "__Secure-authjs.session-token"
+              : "authjs.session-token",
+        });
+        // Token can be null on edge cases (corrupt cookie, key rotation).
+        // Treat as "not authenticated" → bounce to login.
+        if (!token) {
+          const loginUrl = new URL("/login", req.url);
+          loginUrl.searchParams.set("callbackUrl", pathname);
+          return applySecurityHeaders(
+            NextResponse.redirect(loginUrl),
+            pathname,
+            nonce,
+          );
+        }
+        if (token.mfaRequired && !token.mfaVerified) {
+          const mfaUrl = new URL("/auth/mfa-challenge", req.url);
+          mfaUrl.searchParams.set("callbackUrl", pathname);
+          return applySecurityHeaders(
+            NextResponse.redirect(mfaUrl),
+            pathname,
+            nonce,
+          );
+        }
+      } catch {
+        // getToken can throw if the cookie is malformed — fall through
+        // and let the page-level auth() call handle it. Don't block
+        // the user just because the JWT decoder hiccupped.
+      }
     }
   }
 
@@ -580,8 +643,27 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Auth routes — redirect if already logged in
-  if (["/login", "/signup"].includes(pathname)) {
+  // Auth routes — redirect if already logged in. Includes both Caelex
+  // and Atlas surfaces so a user with an active session can't get stuck
+  // on a login form (and accidentally rate-limit themselves out).
+  // Atlas surfaces redirect to /atlas; Caelex to /dashboard.
+  const CAELEX_AUTH_ROUTES = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ];
+  const ATLAS_AUTH_ROUTES = [
+    "/atlas-login",
+    "/atlas-signup",
+    "/atlas-forgot-password",
+    "/atlas-reset-password",
+    "/atlas-access",
+  ];
+  const isCaelexAuth = CAELEX_AUTH_ROUTES.includes(pathname);
+  const isAtlasAuth = ATLAS_AUTH_ROUTES.includes(pathname);
+
+  if (isCaelexAuth || isAtlasAuth) {
     const hasSession =
       req.cookies.has("__Secure-authjs.session-token") ||
       req.cookies.has("authjs.session-token");
@@ -589,13 +671,14 @@ export default async function middleware(req: NextRequest) {
     if (hasSession) {
       const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
       // Validate callbackUrl is a safe relative path (prevent open redirect)
+      const fallback = isAtlasAuth ? "/atlas" : "/dashboard";
       const safeUrl =
         callbackUrl &&
         callbackUrl.startsWith("/") &&
         !callbackUrl.startsWith("//") &&
         !callbackUrl.includes("://")
           ? callbackUrl
-          : "/dashboard";
+          : fallback;
       return applySecurityHeaders(
         NextResponse.redirect(new URL(safeUrl, req.url)),
         pathname,

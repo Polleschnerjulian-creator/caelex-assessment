@@ -125,7 +125,7 @@ export default function AtlasForgotPasswordPage() {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, intent: "atlas" }),
       });
       if (!res.ok && res.status !== 200) {
         // Surface-level failures only — server logic always returns 200

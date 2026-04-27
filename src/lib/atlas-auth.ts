@@ -65,18 +65,34 @@ export async function getAtlasAuth(
         slug: true,
         logoUrl: true,
         isActive: true,
+        orgType: true,
       },
     },
     user: { select: { name: true, email: true, language: true } },
   } as const;
 
+  // Atlas is gated to LAW_FIRM and BOTH org types — see (atlas)/atlas/
+  // layout.tsx for the page-level gate. Without filtering here, a user
+  // who's a member of both an OPERATOR org and a LAW_FIRM org would be
+  // resolved to whichever joined first — potentially scoping data calls
+  // to the OPERATOR org while the layout believed they were in the
+  // LAW_FIRM (cross-org data leak risk).
+  const ATLAS_ORG_TYPES = ["LAW_FIRM", "BOTH"] as const;
+
   const membership = targetOrgId
     ? await prisma.organizationMember.findFirst({
-        where: { userId: session.user.id, organizationId: targetOrgId },
+        where: {
+          userId: session.user.id,
+          organizationId: targetOrgId,
+          organization: { orgType: { in: [...ATLAS_ORG_TYPES] } },
+        },
         include,
       })
     : await prisma.organizationMember.findFirst({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          organization: { orgType: { in: [...ATLAS_ORG_TYPES] } },
+        },
         orderBy: { joinedAt: "asc" }, // deterministic: oldest first
         include,
       });

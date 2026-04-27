@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { safeInternalUrl } from "@/lib/safe-redirect";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -336,14 +337,14 @@ function MfaChallengeContent() {
             the normal Caelex /login. Derived from callbackUrl so the
             two brand flows don't cross. */}
         <div className="mt-6 text-center">
-          <a
+          <Link
             href={callbackUrl.startsWith("/atlas") ? "/atlas-login" : "/login"}
             className="inline-flex items-center gap-1.5 text-small text-slate-400 dark:text-white/25
               hover:text-slate-600 dark:hover:text-white/50 transition-colors duration-200"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to login
-          </a>
+          </Link>
         </div>
       </motion.div>
     </div>

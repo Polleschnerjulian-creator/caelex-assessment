@@ -5,12 +5,19 @@ import { redirect } from "next/navigation";
 /**
  * Server-side subscription gate for the dashboard.
  *
- * Checks that the authenticated user belongs to an organization with an active,
- * paid subscription. Users on the FREE plan or without any organization are
- * redirected to /get-started so they can contact sales.
+ * Blocks /dashboard access for users on the FREE plan, inactive orgs, or
+ * suspended/canceled subscriptions — those land on `/get-started` to contact
+ * sales. Allows everyone else through.
  *
- * This component wraps the client-side DashboardLayout and runs entirely on the
- * server -- no "use client" directive.
+ * Bypasses:
+ *   - `User.role === "admin"` — internal staff (HUB, analytics, support)
+ *     never need a paid subscription on their own user record.
+ *   - Org has paid plan but no `Subscription` row — manually provisioned
+ *     accounts (early customers, partners) pre-Stripe.
+ *
+ * Server component — no "use client". Single `prisma.user.findUnique`
+ * fetches role + first membership in one round-trip; the previous version
+ * issued two queries (auth() + organizationMember.findFirst).
  */
 export default async function SubscriptionGate({
   children,
@@ -23,34 +30,39 @@ export default async function SubscriptionGate({
     redirect("/get-started");
   }
 
-  // Check if user has an active subscription via their organization
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId: session.user.id },
-    include: {
-      organization: {
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      role: true,
+      organizationMemberships: {
+        take: 1,
+        orderBy: { joinedAt: "asc" },
         select: {
-          plan: true,
-          isActive: true,
-          subscription: {
-            select: { status: true },
+          organization: {
+            select: {
+              plan: true,
+              isActive: true,
+              subscription: { select: { status: true } },
+            },
           },
         },
       },
     },
   });
 
-  const plan = membership?.organization?.plan;
-  const isActive = membership?.organization?.isActive;
-  const subStatus = membership?.organization?.subscription?.status;
+  // Internal staff bypass — admins manage the platform itself, not their
+  // own subscription. Without this, seeded admin users (no paid plan)
+  // were trapped on /get-started forever.
+  if (user?.role === "admin") {
+    return <>{children}</>;
+  }
 
-  // Block access if no org, no plan, FREE plan, or inactive
-  // Allow "ACTIVE" and "TRIALING" subscription statuses
-  // If there is no Subscription record at all but the org has a paid plan and is
-  // active (e.g. manually provisioned), still allow access.
+  const org = user?.organizationMemberships[0]?.organization;
+  const subStatus = org?.subscription?.status;
   const hasAccess =
-    isActive &&
-    plan &&
-    plan !== "FREE" &&
+    org?.isActive &&
+    org.plan &&
+    org.plan !== "FREE" &&
     (!subStatus || ["ACTIVE", "TRIALING"].includes(subStatus));
 
   if (!hasAccess) {

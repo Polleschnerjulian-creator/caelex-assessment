@@ -210,6 +210,7 @@ function SignupForm() {
           acceptTerms,
           acceptAnalytics,
           inviteToken: isInvite ? inviteToken : undefined,
+          intent: "atlas",
         }),
       });
       const data = await res.json();
@@ -233,7 +234,11 @@ function SignupForm() {
         setLoading(false);
         return;
       }
-      router.push(isInvite ? "/atlas" : "/atlas");
+      // Hard nav so the freshly written session cookie is included in the
+      // GET that follows. router.push races the cookie write on slow
+      // connections and the user gets stuck on /atlas-signup with a
+      // valid cookie they can't see.
+      window.location.assign("/atlas");
     } catch {
       setError("Something went wrong");
       setLoading(false);

@@ -29,6 +29,11 @@ export const runtime = "nodejs";
 
 const Schema = z.object({
   email: z.string().email().max(254).toLowerCase(),
+  /// Which surface launched the reset. Drives both the link target
+  /// (caelex → /reset-password, atlas → /atlas-reset-password) and the
+  /// email branding. Defaults to atlas for backwards compat with
+  /// existing /atlas-forgot-password requests that don't send it.
+  intent: z.enum(["caelex", "atlas"]).optional().default("atlas"),
 });
 
 const TOKEN_TTL_MINUTES = 60;
@@ -52,6 +57,11 @@ export async function POST(request: NextRequest) {
   }
 
   const email = parsed.data.email;
+  const intent = parsed.data.intent;
+  const isAtlas = intent === "atlas";
+  const productLabel = isAtlas ? "Caelex ATLAS" : "Caelex";
+  const productLabelShort = isAtlas ? "ATLAS" : "Caelex";
+  const resetPath = isAtlas ? "/atlas-reset-password" : "/reset-password";
 
   try {
     const user = await prisma.user.findUnique({
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
       process.env.NEXTAUTH_URL ||
       process.env.AUTH_URL ||
       "https://www.caelex.eu";
-    const resetUrl = `${appUrl.replace(/\/+$/, "")}/atlas-reset-password?token=${encodeURIComponent(rawToken)}`;
+    const resetUrl = `${appUrl.replace(/\/+$/, "")}${resetPath}?token=${encodeURIComponent(rawToken)}`;
 
     // Send via Resend directly so we can stamp the Caelex ATLAS
     // sender + hi@caelex.eu reply-to (matches the invite flow).
@@ -99,18 +109,18 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const greeting = user.name ? `Hi ${user.name.split(" ")[0]},` : "Hi,";
       await resend.emails.send({
-        from: "Caelex ATLAS <noreply@caelex.eu>",
+        from: `${productLabel} <noreply@caelex.eu>`,
         to: email,
         replyTo: "hi@caelex.eu",
-        subject: "Reset your Caelex ATLAS password",
+        subject: `Reset your ${productLabel} password`,
         html: `
           <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 560px; margin: 0 auto; color: #111;">
             <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 20px 0;">
-              Reset your ATLAS password
+              Reset your ${productLabelShort} password
             </h2>
             <p style="line-height: 1.6; margin: 0 0 16px 0;">${greeting}</p>
             <p style="line-height: 1.6; margin: 0 0 16px 0;">
-              We got a request to reset the password for your Caelex ATLAS
+              We got a request to reset the password for your ${productLabel}
               account. Click the button below to set a new one — the link
               is valid for 60 minutes and can only be used once.
             </p>
@@ -131,7 +141,11 @@ export async function POST(request: NextRequest) {
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="font-size: 12px; color: #9ca3af;">
-              Caelex ATLAS — the searchable space-law database for law firms.<br />
+              ${
+                isAtlas
+                  ? "Caelex ATLAS — the searchable space-law database for law firms."
+                  : "Caelex — the regulatory compliance platform for satellite operators."
+              }<br />
               <a href="https://www.caelex.eu" style="color: #9ca3af;">caelex.eu</a>
             </p>
           </div>

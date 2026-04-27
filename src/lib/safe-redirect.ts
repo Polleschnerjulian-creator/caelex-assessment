@@ -26,3 +26,30 @@ export function safeInternalUrl(
   if (!raw.startsWith("/")) return fallback;
   return raw;
 }
+
+/**
+ * Atlas-scoped variant — only accepts paths that live inside the
+ * Atlas brand surface. Rejects `/dashboard`, `/assure`, etc. so a
+ * `?callbackUrl=/dashboard` on /atlas-login can't smuggle the user
+ * into the Caelex dashboard mid-Atlas-flow (brand-isolation breach).
+ */
+export function safeAtlasUrl(
+  raw: string | null | undefined,
+  fallback = "/atlas",
+): string {
+  if (!raw) return fallback;
+  if (raw.startsWith("//")) return fallback;
+  if (raw.includes("://")) return fallback;
+  if (!raw.startsWith("/")) return fallback;
+  // Allow /atlas, /atlas/*, and the Atlas auth surfaces themselves so
+  // a sign-out → re-login flow keeps the user inside Atlas. Anything
+  // else falls through to the fallback.
+  if (
+    raw === "/atlas" ||
+    raw.startsWith("/atlas/") ||
+    raw.startsWith("/atlas-")
+  ) {
+    return raw;
+  }
+  return fallback;
+}

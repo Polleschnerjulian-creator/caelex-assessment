@@ -109,6 +109,14 @@ export const RegisterSchema = z.object({
   /// validates the token server-side and rejects the signup if the
   /// email doesn't match the invitation.
   inviteToken: z.string().min(1).max(500).optional(),
+
+  /// Which surface launched the signup. Drives the new organization's
+  /// `orgType`: caelex → OPERATOR (default), atlas → LAW_FIRM. Passing
+  /// the wrong intent (or omitting it on /atlas-signup) was the reason
+  /// every Atlas signup landed in /atlas-no-access — the layout requires
+  /// orgType IN (LAW_FIRM, BOTH) but the default was OPERATOR.
+  /// Ignored when `inviteToken` is present (org already exists).
+  intent: z.enum(["caelex", "atlas"]).optional(),
 });
 
 /**

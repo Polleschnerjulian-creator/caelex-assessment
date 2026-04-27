@@ -8,6 +8,7 @@ import { analytics } from "@/lib/analytics";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { safeInternalUrl } from "@/lib/safe-redirect";
+import { translateAuthError } from "@/lib/auth-errors";
 
 /**
  * /login — the canonical Caelex compliance-platform sign-in.
@@ -36,7 +37,14 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  // Pre-fill from server-side redirects: NextAuth (and our signIn callback)
+  // append `?error=<Type>&code=<code>` when an OAuth or callback failure
+  // bounces the user back here. Without this read the page would render
+  // blank after a real error, leaving the user with no clue what went wrong.
+  const initialError = translateAuthError(
+    searchParams.get("code") || searchParams.get("error"),
+  );
+  const [error, setError] = useState(initialError);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,18 +60,18 @@ function LoginForm() {
       });
 
       if (!result || result.error || result.ok === false) {
-        const raw = result?.error ?? "Sign-in failed";
-        // Surface the actual reason from authorize() (deactivated, locked,
-        // rate-limited, etc.) instead of a flat "Invalid email or password".
-        // CredentialsSignin is the generic "wrong creds" code — translate
-        // that one but pass everything else through so debugging is sane.
-        setError(
-          raw === "CredentialsSignin"
-            ? "Invalid email or password"
-            : raw === "Configuration"
-              ? "Authentication is misconfigured. Contact support."
-              : raw,
-        );
+        // NextAuth v5 redacts thrown error messages by design. The only
+        // public surface is `result.code` (set by our CredentialsSignin
+        // subclasses in lib/auth-errors.ts) and `result.error` (the
+        // generic "CredentialsSignin"/"Configuration"/etc type).
+        // Prefer the structured code; fall back to the type so a fresh
+        // unknown error still shows the generic-credentials message.
+        const code = result?.code ?? result?.error ?? "CredentialsSignin";
+        if (code === "Configuration") {
+          setError("Authentication is misconfigured. Contact support.");
+        } else {
+          setError(translateAuthError(code));
+        }
         setLoading(false);
         return;
       }

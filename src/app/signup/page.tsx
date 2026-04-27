@@ -99,6 +99,7 @@ function SignupForm() {
           acceptTerms,
           acceptAnalytics,
           inviteToken: isInvite ? inviteToken : undefined,
+          intent: "caelex",
         }),
       });
 
