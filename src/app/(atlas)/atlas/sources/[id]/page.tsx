@@ -14,6 +14,7 @@ import {
   Link2,
   Info,
   Cpu,
+  Gavel,
 } from "lucide-react";
 import SourceNotes from "@/components/atlas/SourceNotes";
 import { SourceHistoryPanel } from "@/components/atlas/SourceHistoryPanel";
@@ -26,6 +27,7 @@ import {
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
+import { getCasesApplyingSource } from "@/data/legal-cases";
 import type {
   LegalSource,
   LegalSourceType,
@@ -175,6 +177,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
 
   const source = getLegalSourceById(id);
   const related = getRelatedSources(id);
+  const casesApplyingThis = getCasesApplyingSource(id);
 
   // ── Not found ──
   if (!source) {
@@ -699,6 +702,54 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {/* ─── Cases applying this source ─── */}
+      {casesApplyingThis.length > 0 && (
+        <section
+          aria-labelledby="cases-heading"
+          className="mt-8 pt-6 border-t border-[var(--atlas-border)]"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Gavel
+              size={15}
+              className="text-[var(--atlas-text-muted)]"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <h2
+              id="cases-heading"
+              className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
+            >
+              Cases applying this source
+              <span className="ml-2 normal-case tracking-normal text-[10px] text-[var(--atlas-text-muted)]/70">
+                ({casesApplyingThis.length})
+              </span>
+            </h2>
+          </div>
+          <div className="space-y-0 max-w-3xl">
+            {casesApplyingThis.map((c) => (
+              <Link
+                key={c.id}
+                href={`/atlas/cases/${encodeURIComponent(c.id)}`}
+                className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--atlas-bg-surface)] hover:shadow-sm transition-all duration-150 group"
+              >
+                <span className="text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40 text-violet-700 dark:text-violet-300">
+                  {c.forum.replace(/_/g, " ")}
+                </span>
+                <span className="text-[13px] text-[var(--atlas-text-primary)] truncate flex-1 min-w-0">
+                  {c.title}
+                </span>
+                <span className="text-[11px] text-[var(--atlas-text-muted)] flex-shrink-0 font-mono">
+                  {c.date_decided.slice(0, 4)}
+                </span>
+                <span className="text-[10px] text-[var(--atlas-text-muted)] flex-shrink-0">
+                  {JURISDICTION_FLAGS[c.jurisdiction] ?? c.jurisdiction}
+                </span>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
