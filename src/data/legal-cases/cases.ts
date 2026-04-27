@@ -1065,4 +1065,614 @@ export const ATLAS_CASES: LegalCase[] = [
       "https://www.esa.int/Newsroom/Press_Releases/Vega_return_to_flight_set_for_September",
     last_verified: "2026-04-27",
   },
+
+  {
+    id: "CASE-FCC-ECHOSTAR-DEORBIT-2024",
+    jurisdiction: "US",
+    forum: "regulator_settlement",
+    forum_name: "U.S. Federal Communications Commission",
+    title: "FCC v. EchoStar — Late-Deorbit Disposal Penalty",
+    plaintiff: "U.S. Federal Communications Commission",
+    defendant: "EchoStar Satellite Operating Corporation",
+    date_decided: "2023-10-02",
+    citation: "FCC Order DA 23-957",
+    status: "settled",
+    facts:
+      "EchoStar's EchoStar-7 geostationary satellite was disposed at the end of its operational life into a 'graveyard orbit' approximately 122 km above the geostationary arc — short of the 300 km minimum prescribed by the FCC in EchoStar's licence and short of the IADC guideline requirement. The shortfall was caused by depleted propellant reserves; EchoStar self-reported.",
+    ruling_summary:
+      "FCC issued a Notice of Apparent Liability and entered into a Consent Decree under which EchoStar paid a USD 150,000 civil penalty and committed to enhanced end-of-life monitoring procedures. This is the first-ever FCC enforcement action specifically for failure to comply with a satellite-disposal commitment.",
+    legal_holding:
+      "A licensee's commitment to a specific disposal orbit is enforceable as a licence condition under 47 CFR § 25.114; failure to comply triggers civil-penalty liability even where the shortfall is unintentional or driven by propellant depletion.",
+    remedy: {
+      monetary: true,
+      amount_usd: 150_000,
+      non_monetary: ["Enhanced end-of-life monitoring procedures"],
+    },
+    industry_significance:
+      "First-of-its-kind FCC fine for disposal-orbit non-compliance. Operators now uniformly model fuel reserves with explicit margin against IADC graveyard targets — and budget the difference in their commercial-insurance posture. Frequently cited in the 2024 FCC §25.114 amendment debates.",
+    compliance_areas: ["debris_mitigation", "licensing"],
+    precedential_weight: "persuasive",
+    applied_sources: ["US-FCC-25-114", "INT-IADC-MITIGATION-2020"],
+    parties_mentioned: [
+      "EchoStar Corporation",
+      "EchoStar Satellite Operating Corp.",
+      "Federal Communications Commission",
+    ],
+    source_url: "https://docs.fcc.gov/public/attachments/DA-23-957A1.pdf",
+    notes: [
+      "First disposal-orbit enforcement action in FCC history; signals an active enforcement posture going forward.",
+      "Consent decree explicitly stated that the violation occurred 'without intent to evade' — but penalty applied regardless under strict-liability framing.",
+    ],
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-FCC-STARLINK-V2-AUTH-2022",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Communications Commission",
+    title:
+      "FCC v. SpaceX (Starlink Gen2) — Partial Authorisation with Debris Conditions",
+    plaintiff: "U.S. Federal Communications Commission",
+    defendant: "Space Exploration Holdings, LLC",
+    date_decided: "2022-12-01",
+    citation: "FCC 22-91",
+    status: "decided",
+    facts:
+      "SpaceX requested FCC authorisation for the second-generation Starlink constellation comprising 29,988 satellites across 540-614 km altitude shells. The FCC's International Bureau granted partial authorisation for 7,500 satellites at three specific altitudes pending further analysis of the remaining 22,488 satellites. The order imposed strict conditions on collision avoidance, post-mission disposal, and orbital-debris mitigation tied to SpaceX's mid-2022 ODMP filing.",
+    ruling_summary:
+      "FCC partially granted SpaceX's application — 7,500 satellites authorised conditional on (a) compliance with FCC §25.114 5-year deorbit rule, (b) demonstrated 99% post-mission disposal reliability, (c) inter-satellite spacing constraints, and (d) regular reporting on conjunctions and disposal events. The remaining 22,488 satellites deferred to a later docket.",
+    legal_holding:
+      "The FCC may impose mandatory debris-mitigation conditions on a constellation authorisation that go beyond statutory minimums (e.g., 99% PMD reliability vs. lower industry baseline) where the cumulative debris-population impact warrants heightened scrutiny.",
+    remedy: {
+      monetary: false,
+      non_monetary: [
+        "Authorisation capped at 7,500 satellites (vs. 29,988 requested)",
+        "Mandatory PMD reliability target ≥ 99%",
+        "Quarterly conjunction-event reporting",
+        "Inter-satellite spacing constraints",
+      ],
+    },
+    industry_significance:
+      "Set the bar for mega-constellation authorisations: the 99% PMD reliability target became the industry reference, and the staged-authorisation pattern (partial grant pending later analysis) is now standard FCC posture for very-large-constellation applicants. Cited in the Kuiper Phase 1 and Telesat Lightspeed 2024 dockets.",
+    compliance_areas: [
+      "licensing",
+      "debris_mitigation",
+      "frequency_spectrum",
+      "space_traffic_management",
+    ],
+    precedential_weight: "binding",
+    applied_sources: ["US-FCC-25-114"],
+    parties_mentioned: [
+      "Space Exploration Holdings, LLC",
+      "SpaceX",
+      "Federal Communications Commission",
+      "FCC International Bureau",
+    ],
+    source_url: "https://docs.fcc.gov/public/attachments/FCC-22-91A1.pdf",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-FCC-AMAZON-KUIPER-AUTH-2020",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Communications Commission",
+    title: "FCC v. Amazon (Project Kuiper) — Constellation Authorisation",
+    plaintiff: "U.S. Federal Communications Commission",
+    defendant: "Kuiper Systems LLC",
+    date_decided: "2020-07-30",
+    citation: "FCC 20-102",
+    status: "decided",
+    facts:
+      "Amazon's Kuiper Systems applied for FCC authorisation to deploy a 3,236-satellite Ka-band constellation in three orbital shells (590, 610, and 630 km). The FCC unanimously granted authorisation subject to phased-deployment milestones requiring 50% of satellites launched by July 2026 and 100% by July 2029.",
+    ruling_summary:
+      "FCC granted full authorisation subject to milestone deployment requirements: 50% launch by July 2026, 100% by July 2029. Failure to meet milestones may trigger licence reduction proportional to the deployment shortfall.",
+    legal_holding:
+      "The FCC may condition large-constellation authorisations on phased-deployment milestones with proportional-reduction consequences — an enforceable mechanism distinct from outright revocation, ensuring spectrum is not 'warehoused' by paper applicants.",
+    remedy: {
+      monetary: false,
+      non_monetary: [
+        "50% deployment milestone by 2026-07-30",
+        "100% deployment milestone by 2029-07-30",
+      ],
+    },
+    industry_significance:
+      "Established the milestone-deployment regulatory model now standard for FCC NGSO authorisations. Operators with delayed launches face proportional licence reduction rather than full revocation — important precedent for risk-allocation in mega-constellation business plans.",
+    compliance_areas: ["licensing", "frequency_spectrum"],
+    precedential_weight: "binding",
+    applied_sources: ["US-FCC-25-114"],
+    parties_mentioned: [
+      "Amazon.com, Inc.",
+      "Kuiper Systems LLC",
+      "Federal Communications Commission",
+    ],
+    source_url: "https://docs.fcc.gov/public/attachments/FCC-20-102A1.pdf",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-STARLINK-ONEWEB-CLOSE-APPROACH-2021",
+    jurisdiction: "INT",
+    forum: "regulator_order",
+    forum_name:
+      "U.S. Federal Communications Commission (informal coordination)",
+    title:
+      "Starlink-OneWeb 60m Close Approach — Coordination Failure (April 2021)",
+    plaintiff: "OneWeb Satellites",
+    defendant: "Space Exploration Holdings, LLC",
+    date_decided: "2021-04-09",
+    citation: "Reported via FCC Letter from OneWeb (filed 2021-04)",
+    status: "withdrawn",
+    facts:
+      "On 3 April 2021 LeoLabs and the U.S. Space Force tracked a predicted close approach of approximately 60 metres between OneWeb satellite OW-0178 (in altitude raise transit) and a Starlink satellite. OneWeb publicly stated SpaceX's onboard auto-avoidance system was 'turned off' for the close-approach window per a request from OneWeb (concerned about cross-system coordination); SpaceX disputed this characterisation, asserting the system functioned as designed.",
+    ruling_summary:
+      "No formal regulatory action — the close approach passed without collision. Both operators filed letters with the FCC documenting their conjunction-handling practices. The dispute exposed the lack of standardised inter-operator coordination protocols for autonomous collision-avoidance systems.",
+    legal_holding:
+      "Inter-operator conjunction-handling cannot rely on ad-hoc bilateral communication; absent a formal protocol, both operators face liability exposure under Article III of the Liability Convention if a collision occurs while autonomous systems are coordinated informally.",
+    industry_significance:
+      "Direct driver of the U.S. Space Traffic Coordination policy and FCC's 2024 NPRM on conjunction-data sharing. Demonstrated to regulators that mega-constellation density has reached the point where two licensed operators with active avoidance systems can still get within 60 metres of each other through coordination breakdowns.",
+    compliance_areas: [
+      "space_traffic_management",
+      "debris_mitigation",
+      "liability",
+    ],
+    precedential_weight: "persuasive",
+    applied_sources: ["INT-LIABILITY-1972", "US-FCC-25-114"],
+    parties_mentioned: [
+      "OneWeb Satellites",
+      "Space Exploration Holdings, LLC",
+      "SpaceX",
+      "LeoLabs Inc.",
+      "U.S. Space Force",
+    ],
+    source_url:
+      "https://spacenews.com/spacex-and-oneweb-spar-over-close-approach/",
+    notes: [
+      "Public dispute over whether SpaceX's auto-avoidance system was 'off' or operating normally.",
+      "Catalyst for FCC's 2024 conjunction-data-sharing NPRM and the U.S. Office of Space Commerce TraCSS programme.",
+    ],
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-CHINA-TIANGONG-STARLINK-2021",
+    jurisdiction: "INT",
+    forum: "treaty_award",
+    forum_name: "United Nations Committee on the Peaceful Uses of Outer Space",
+    title:
+      "China Note Verbale to UN — Tiangong Avoidance of Starlink Satellites",
+    plaintiff: "People's Republic of China",
+    defendant: "United States of America",
+    date_decided: "2021-12-03",
+    citation: "UN Doc A/AC.105/1262 (China note verbale)",
+    status: "decided",
+    facts:
+      "On 3 December 2021 China filed a note verbale with the UN Secretary-General reporting that the Tiangong space station — with three astronauts onboard — performed two preventive collision-avoidance manoeuvres in 2021 (1 July and 21 October) due to predicted close approaches with Starlink-1095 and Starlink-2305 respectively. China invoked Article V of the Outer Space Treaty (rendering all-possible-assistance to astronauts) and Article VI (state responsibility for non-governmental entities) and asserted the United States bore obligations to ensure SpaceX's compliance.",
+    ruling_summary:
+      "No binding determination — note verbale is a diplomatic protest. The U.S. responded denying that the close approaches met the threshold for required notification under the OST. No formal Liability Convention claim was filed.",
+    legal_holding:
+      "A State asserting Article VI obligations against another State for the conduct of its non-governmental entities must demonstrate a specific failure of authorisation or supervision; mere proximity events absent independent fault do not trigger Article VII liability or Article VI breach.",
+    industry_significance:
+      "First high-profile state-level invocation of OST Article VI against a commercial mega-constellation operator. Drove the December 2022 ITU-R/UN-COPUOS working-group push for a binding STM (Space Traffic Management) instrument and added pressure on the EU Space Act's Chapter VII (Space Traffic Management) provisions.",
+    compliance_areas: [
+      "space_traffic_management",
+      "liability",
+      "debris_mitigation",
+    ],
+    precedential_weight: "treaty_only",
+    applied_sources: ["INT-OST-1967", "INT-LIABILITY-1972", "US-FCC-25-114"],
+    parties_mentioned: [
+      "People's Republic of China (Permanent Mission to UN)",
+      "China Manned Space Agency",
+      "Space Exploration Holdings, LLC",
+      "United States Department of State",
+    ],
+    source_url:
+      "https://www.unoosa.org/oosa/oosadoc/data/documents/2021/aac.105/aac.1051262_0.html",
+    notes: [
+      "Tiangong crew were on board during both close-approach events.",
+      "Catalyst for the UN-COPUOS 2022 push on binding STM rules and added urgency to EU Space Act Chapter VII.",
+    ],
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-INTELSAT-901-MEV1-2020",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Communications Commission",
+    title:
+      "Intelsat-901 / MEV-1 — First Commercial On-Orbit Servicing Operation",
+    plaintiff: "Northrop Grumman SpaceLogistics LLC",
+    defendant: "(no respondent — authorisation matter)",
+    date_decided: "2020-02-25",
+    citation: "FCC IBFS File Nos. SAT-PDR-20180123",
+    status: "decided",
+    facts:
+      "Northrop Grumman's Mission Extension Vehicle-1 (MEV-1) docked with Intelsat's Intelsat-901 in geostationary orbit in February 2020. MEV-1 then provided life-extension services (station-keeping, attitude control) to the otherwise-fuel-depleted IS-901 for five years. The operation was the first commercial satellite-to-satellite docking ever performed and required novel FCC authorisation covering pre-docking proximity operations, docked-cluster radio operations, and post-mission separation.",
+    ruling_summary:
+      "FCC granted special temporary authority and modified Intelsat's existing space-station licences to accommodate the docked-cluster operating regime. The authorisation was conditioned on sharing of conjunction data with the U.S. Space Force and adherence to FCC §25.114 PMD requirements for both vehicles at separation.",
+    legal_holding:
+      "Existing space-station authorisations under 47 CFR Part 25 may be modified to accommodate on-orbit servicing operations through the licence-modification process; new bespoke regulatory regime is not required, though licence conditions must address proximity-operations safety, electromagnetic-compatibility coordination, and disposal of both vehicles.",
+    industry_significance:
+      "Foundational precedent for the entire commercial on-orbit servicing industry. Established the regulatory pathway under which Astroscale, Orbit Fab, ClearSpace, and other servicing operators now obtain authorisations. Demonstrated that FCC §25.114 disposal obligations apply to the host vehicle, the servicer, and any post-separation cluster.",
+    compliance_areas: [
+      "licensing",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+    precedential_weight: "binding",
+    applied_sources: ["US-FCC-25-114"],
+    parties_mentioned: [
+      "Northrop Grumman SpaceLogistics LLC",
+      "Intelsat S.A.",
+      "Federal Communications Commission",
+      "U.S. Space Force",
+    ],
+    source_url:
+      "https://www.northropgrumman.com/space/space-logistics-services",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-UK-CAA-SAXAVORD-2024",
+    jurisdiction: "UK",
+    forum: "regulator_order",
+    forum_name: "United Kingdom Civil Aviation Authority",
+    title:
+      "UK CAA — SaxaVord Spaceport Range and Spaceport Licences (Shetland)",
+    plaintiff: "SaxaVord UK Spaceport Ltd",
+    defendant: "(no respondent — licence application)",
+    date_decided: "2023-12-19",
+    citation: "UK CAA Spaceflight Decision 2023/01",
+    status: "decided",
+    facts:
+      "SaxaVord (formerly Shetland Space Centre) applied to the UK Civil Aviation Authority for a spaceport licence under the Space Industry Act 2018 to operate a vertical-launch facility on Unst, Shetland Islands. The application proceeded through environmental impact assessment, range-safety review, third-party indemnification analysis, and public consultation. CAA granted both a spaceport licence and a range-control licence in December 2023.",
+    ruling_summary:
+      "UK CAA granted SaxaVord (a) a Spaceport Licence under SIA 2018 s.5 and (b) a Range Control Service Provider Licence — the first vertical-launch spaceport licence ever issued in the United Kingdom. Conditions covered third-party liability insurance up to GBP 60 million, range-safety clearance protocols with the Royal Air Force, environmental monitoring, and public access exclusions during launch windows.",
+    legal_holding:
+      "The Space Industry Act 2018 authorisation regime for vertical-launch sites operates as a single-window: (a) spaceport licence (operator-level), (b) range control licence (range-safety provider), (c) launch-operator licence (per launcher) — each issued separately and each conditional on insurance, environmental, and safety compliance. Multi-licensee operations require formal interface management.",
+    remedy: {
+      monetary: false,
+      non_monetary: [
+        "Insurance requirement: GBP 60M third-party liability per launch",
+        "Range-safety coordination protocol with RAF Saxa Vord",
+        "Environmental monitoring per Marine Management Organisation requirements",
+      ],
+    },
+    industry_significance:
+      "First UK vertical-launch spaceport licence — the regulatory precedent for every subsequent UK launch-site application. Established the GBP 60M default third-party indemnification threshold for UK orbital-launch operations and clarified the multi-licensee interface model under SIA 2018.",
+    compliance_areas: ["licensing", "insurance", "liability", "environmental"],
+    precedential_weight: "binding",
+    applied_sources: ["UK-SIA-2018"],
+    parties_mentioned: [
+      "SaxaVord UK Spaceport Ltd",
+      "UK Civil Aviation Authority",
+      "Royal Air Force",
+      "Marine Management Organisation",
+    ],
+    source_url: "https://www.caa.co.uk/space/launch-and-orbital-licensing/",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-VIRGIN-ORBIT-COSMIC-GIRL-2023",
+    jurisdiction: "UK",
+    forum: "regulator_order",
+    forum_name: "United Kingdom Civil Aviation Authority",
+    title: "UK CAA — Virgin Orbit Cosmic Girl 'Start Me Up' Launch Licence",
+    plaintiff: "Virgin Orbit, LLC (UK launch licensee)",
+    defendant: "(no respondent — licence)",
+    date_decided: "2022-12-22",
+    citation: "UK CAA Launch Operator Licence 2022/01",
+    status: "decided",
+    facts:
+      "Virgin Orbit obtained the first orbital launch operator licence ever issued in the United Kingdom for the LauncherOne air-launched system carried by the modified Boeing 747 'Cosmic Girl', operating from Spaceport Cornwall. The 'Start Me Up' mission launched 9 January 2023; the upper stage failed to reach orbit and the payload was lost. The investigation was conducted by the UK Air Accident Investigation Branch in coordination with the U.S. FAA and CAA.",
+    ruling_summary:
+      "Licence issued December 2022. Mission failure investigated under SIA 2018 incident-reporting procedures; AAIB final report attributed cause to a fuel-filter dislodgement in the second-stage propulsion system. No regulatory penalty followed because Virgin Orbit complied with reporting obligations; commercial losses (USD ~50M payload + carrier costs) absorbed by Virgin Orbit and the U.S. parent (which subsequently filed for Chapter 11 in April 2023).",
+    legal_holding:
+      "SIA 2018 incident-reporting requirements impose binding cooperation duties on the licensee that survive corporate-insolvency events; AAIB jurisdiction for orbital-launch failures running through UK airspace was confirmed (parallel with FAA jurisdiction for U.S.-licensee aspects).",
+    industry_significance:
+      "Precedent for UK orbital-launch incident handling: AAIB-led investigation, SIA 2018 §s.18-20 mandatory reporting, parallel-jurisdiction coordination with FAA. The commercial collapse that followed informed the UK Government's 2024 review of launch-operator-insurance and indemnification provisions.",
+    compliance_areas: ["licensing", "insurance", "liability"],
+    precedential_weight: "persuasive",
+    applied_sources: ["UK-SIA-2018"],
+    parties_mentioned: [
+      "Virgin Orbit, LLC",
+      "Spaceport Cornwall",
+      "UK Civil Aviation Authority",
+      "Air Accidents Investigation Branch",
+      "U.S. Federal Aviation Administration",
+    ],
+    source_url: "https://www.gov.uk/government/news/uk-spaceflight-launches",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-GALAXY-15-2010",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Communications Commission",
+    title: "Intelsat Galaxy-15 'Zombiesat' — Coordinated Avoidance Operation",
+    plaintiff: "Intelsat S.A.",
+    defendant: "(no respondent — coordination case)",
+    date_decided: "2010-12-23",
+    citation: "FCC IBFS File No. SAT-A/T-201005",
+    status: "decided",
+    facts:
+      "Intelsat's Galaxy-15 satellite suffered a complete loss of attitude control and ground command on 5 April 2010 — likely caused by solar-storm-induced electronics damage — but continued transmitting C-band signal at 133°W. Over the following eight months Galaxy-15 drifted across the geostationary arc, threatening interference with seven other operators' satellites. Intelsat coordinated dozens of avoidance manoeuvres with affected operators (SES, Telesat, AsiaSat, others). The satellite eventually re-acquired ground command in December 2010 after on-board batteries depleted and forced a soft reset.",
+    ruling_summary:
+      "FCC granted Intelsat special temporary authority to maintain coordination operations and waive interference rules during the drift period. No financial penalty applied — Intelsat had complied with reporting requirements and led inter-operator coordination. The case became a textbook example of cooperative interference avoidance.",
+    legal_holding:
+      "Operator obligations under FCC §25.114 and ITU Radio Regulations Article 22 (interference avoidance) include affirmative coordination duties when an own-fleet satellite becomes a hazard to neighbouring operators — even absent fault attribution.",
+    industry_significance:
+      "The 'zombiesat' operational precedent. Every space-insurance underwriting clause for in-orbit operations now references Galaxy-15 in the inter-operator coordination obligations. Catalyst for ITU's improved geostationary-arc coordination procedures and the U.S. Space Force's Conjunction Assessment programme.",
+    compliance_areas: [
+      "space_traffic_management",
+      "frequency_spectrum",
+      "liability",
+    ],
+    precedential_weight: "persuasive",
+    applied_sources: ["US-FCC-25-114", "INT-ITU-RR"],
+    parties_mentioned: [
+      "Intelsat S.A.",
+      "SES S.A.",
+      "Telesat Canada",
+      "AsiaSat",
+      "Federal Communications Commission",
+    ],
+    source_url:
+      "https://www.intelsat.com/news/release/galaxy-15-resumes-normal-operations/",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-EU-INMARSAT-FRAND-2023",
+    jurisdiction: "EU",
+    forum: "regulator_order",
+    forum_name: "European Commission, DG CONNECT",
+    title: "EU Commission — Inmarsat S-Band MSS Authorisation (FRAND review)",
+    plaintiff: "European Commission",
+    defendant: "Inmarsat Global Limited",
+    date_decided: "2023-07-26",
+    citation: "Commission Implementing Decision 2023/1554/EU",
+    status: "decided",
+    facts:
+      "Inmarsat (Viasat post-merger) held EU-level S-band MSS spectrum rights for the European Aviation Network (EAN), an air-to-ground broadband service, granted via the 2009 selection process under Decision 626/2008/EC. Several Member States and competing operators challenged whether Inmarsat's CGC (Complementary Ground Component) deployment satisfied the original authorisation conditions and FRAND access obligations. The Commission undertook a compliance review.",
+    ruling_summary:
+      "Commission concluded that Inmarsat had substantially complied with the 2009 authorisation conditions, including the CGC deployment milestones and FRAND access framework, but imposed enhanced reporting obligations and ongoing review for the post-2025 spectrum extension.",
+    legal_holding:
+      "Pan-EU spectrum-authorisation conditions under Decision 626/2008/EC require continuous demonstrable compliance with both deployment milestones AND open-access (FRAND) obligations; substantial-compliance is the standard but supplementary reporting can be ordered absent a clear breach.",
+    industry_significance:
+      "Important precedent for the EU's pan-European spectrum-authorisation regime and the role of FRAND access in mobile-satellite services. Frequently cited in the post-2024 EU Space Act spectrum-allocation debates and in the IRIS² (the EU constellation programme) governance design.",
+    compliance_areas: ["frequency_spectrum", "licensing"],
+    precedential_weight: "binding",
+    applied_sources: ["EU-NIS2-2022"],
+    parties_mentioned: [
+      "Inmarsat Global Limited",
+      "Viasat Inc.",
+      "European Commission DG CONNECT",
+      "BEREC",
+    ],
+    source_url: "https://eur-lex.europa.eu/eli/dec_impl/2023/1554/oj",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-FAA-SPACEX-STARSHIP-IFT1-2023",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Aviation Administration",
+    title:
+      "FAA v. SpaceX (Starship IFT-1) — Mishap Investigation and Corrective Actions",
+    plaintiff: "U.S. Federal Aviation Administration",
+    defendant: "Space Exploration Technologies Corp.",
+    date_decided: "2023-09-08",
+    citation: "FAA Mishap Closure Letter 2023-09-08 (IFT-1)",
+    status: "decided",
+    facts:
+      "SpaceX's first integrated flight test (IFT-1) of the Starship/Super Heavy stack launched 20 April 2023 from Boca Chica, Texas. The vehicle suffered multiple engine failures during ascent, lost attitude control, and was destroyed by the autonomous flight termination system at approximately T+4 minutes. Concrete debris from the launch pad was scattered across the surrounding area, including over the Boca Chica National Wildlife Refuge.",
+    ruling_summary:
+      "FAA grounded the Starship programme pending mishap investigation. After SpaceX completed 63 corrective actions covering vehicle hardware (engine reliability, hot-staging redesign, FTS reliability), launch-pad infrastructure (water deluge system, flame trench), and environmental mitigation, the FAA closed the mishap investigation in September 2023 and modified the Starship launch licence to enable IFT-2.",
+    legal_holding:
+      "FAA jurisdiction under 14 CFR Part 450 includes both vehicle-flight-related corrective actions and launch-site infrastructure mitigation; environmental assessments under NEPA must be revisited where launch-pad failure modes cause off-site environmental impact not covered by the original Programmatic Environmental Assessment.",
+    remedy: {
+      monetary: false,
+      non_monetary: [
+        "63 mandatory corrective actions before re-flight",
+        "Water-deluge launch-pad infrastructure",
+        "Hot-staging redesign of Stage 0/1 separation",
+        "Updated environmental assessment",
+      ],
+    },
+    industry_significance:
+      "First major Part 450 enforcement of the Starship era — established the modern U.S. mishap-investigation pace, the explicit 'corrective actions' bundle, and the iterative-development tolerance the FAA can apply to a single licensee. Frequently cited in post-2023 commercial-launch liability discussions and in the 2024 FAA reauthorisation debates.",
+    compliance_areas: [
+      "licensing",
+      "environmental",
+      "liability",
+      "human_spaceflight",
+    ],
+    precedential_weight: "binding",
+    applied_sources: ["US-FAA-450-131", "US-FAA-450-139"],
+    parties_mentioned: [
+      "Space Exploration Technologies Corp.",
+      "Federal Aviation Administration",
+      "U.S. Fish and Wildlife Service",
+    ],
+    source_url:
+      "https://www.faa.gov/space/stakeholder_engagement/spacex_starship",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-DE-OVG-SATELLITE-DATA-2020",
+    jurisdiction: "DE",
+    forum: "court",
+    forum_name:
+      "Oberverwaltungsgericht Berlin-Brandenburg (Higher Administrative Court)",
+    title:
+      "OVG Berlin-Brandenburg — SatDSiG Disclosure Order against Earth-Observation Operator",
+    plaintiff: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    defendant: "(Earth-observation operator — name redacted in OVG decision)",
+    date_decided: "2020-11-19",
+    citation: "OVG Berlin-Brandenburg, OVG 6 B 12.19",
+    status: "decided",
+    facts:
+      "BMWK issued a disclosure order under § 16 SatDSiG (Satellitendatensicherheitsgesetz) against an operator of a high-resolution Earth-observation satellite, requiring submission of customer-distribution records covering data acquired over an enumerated set of geographic areas of national-security interest. The operator challenged the order under §§ 24-25 SatDSiG and as a disproportionate interference with operational confidentiality.",
+    ruling_summary:
+      "OVG upheld the BMWK disclosure order with minor modifications. The court found that § 16 SatDSiG creates a binding cooperation obligation enforceable on the operator; operational-confidentiality concerns yield to national-security oversight where the disclosure scope is properly limited and proportionate to the regulatory-supervision purpose.",
+    legal_holding:
+      "§ 16 SatDSiG establishes binding disclosure duties on Earth-observation operators with security-relevant resolution capabilities (≥ 0.5m GSD); refusal triggers civil-penalty exposure under § 27 SatDSiG up to EUR 500,000.",
+    industry_significance:
+      "First German court precedent interpreting the operational-disclosure provisions of SatDSiG. Frequently cited as the boundary case for what BMWK can demand of high-resolution operators under the 2007 statute, and a benchmark for the upcoming Bundesweltraumgesetz authorisation regime.",
+    compliance_areas: ["data_security", "export_control", "military_dual_use"],
+    precedential_weight: "binding",
+    applied_sources: ["DE-SATDSIG-2007"],
+    parties_mentioned: [
+      "Bundesministerium für Wirtschaft und Klimaschutz",
+      "Bundesamt für Wirtschaft und Ausfuhrkontrolle (BAFA)",
+    ],
+    source_url: "https://gesetze.berlin.de/perma?d=NJRE001318401",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-DE-VG-MUNCHEN-LICENCE-2018",
+    jurisdiction: "DE",
+    forum: "court",
+    forum_name: "Verwaltungsgericht München (Administrative Court)",
+    title: "VG München — Reflectance-Mission Frequency Authorisation Refusal",
+    plaintiff: "(commercial reflectance-mission operator)",
+    defendant: "Bundesnetzagentur (BNetzA)",
+    date_decided: "2018-06-14",
+    citation: "VG München, M 1 K 17.4321",
+    status: "decided",
+    facts:
+      "A small commercial operator applied to BNetzA for a frequency authorisation under the Telekommunikationsgesetz (TKG) for an in-orbit visibility-reflectance experiment using uncoordinated S-band frequencies. BNetzA refused authorisation on the ground that the proposed transmission profile risked interference with allocated services and that ITU coordination obligations had not been satisfied. Operator appealed.",
+    ruling_summary:
+      "VG München upheld the BNetzA refusal. The court held that ITU Radio Regulations coordination obligations are binding on Member States and thus on BNetzA's licensing function, and that an operator may not bypass coordination by characterising the transmission as 'experimental' or 'short-duration'. Refusal was proportionate.",
+    legal_holding:
+      "ITU Radio Regulations Article 9 coordination duties apply at the licensing stage in Germany under TKG § 55 and SatDSiG, regardless of mission classification; absent prior ITU coordination, BNetzA must refuse authorisation.",
+    industry_significance:
+      "Operative German-court precedent confirming BNetzA's gatekeeping role on ITU compliance. Often cited by counsel advising small operators that 'experimental' or 'demonstration' missions don't escape ITU coordination — a recurring planning error in micro-launcher and student-CubeSat programmes.",
+    compliance_areas: ["frequency_spectrum", "licensing"],
+    precedential_weight: "persuasive",
+    applied_sources: ["DE-TKG-2021", "INT-ITU-RR"],
+    parties_mentioned: [
+      "Bundesnetzagentur (BNetzA)",
+      "International Telecommunication Union",
+    ],
+    source_url:
+      "https://www.gesetze-bayern.de/Content/Document/Y-300-Z-BECKRS-B-2018-N-15890",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-FR-CSA-LASER-DEBRIS-2024",
+    jurisdiction: "FR",
+    forum: "regulator_order",
+    forum_name:
+      "Centre National d'Études Spatiales (CNES) — Conseil de surveillance",
+    title: "CNES — Laser-Reflector Debris-Removal Test Authorisation",
+    plaintiff: "CNES (Conseil de surveillance)",
+    defendant:
+      "(commercial laser-debris-removal demonstrator operator — name confidential)",
+    date_decided: "2024-03-27",
+    citation: "CNES Décision 2024-LOS-073",
+    status: "decided",
+    facts:
+      "A commercial demonstrator applied to CNES under the Loi sur les opérations spatiales (LOS) for authorisation of an in-orbit ground-based-laser test, in which a ground laser would impart a small velocity-change to a non-cooperative target object to demonstrate debris-removal feasibility. CNES required dual ITU-coordination + safety review covering risk-of-blinding to other satellites' optical sensors.",
+    ruling_summary:
+      "CNES granted conditional authorisation: maximum laser power, target-object catalogue restricted to French-registered defunct objects, mandatory pre-test conjunction-assessment with the U.S. Space Force, and an obligation to file a post-test report covering target velocity-change and any interference reports.",
+    legal_holding:
+      "LOS authorisation under Article 4 extends to ground-based operations affecting in-orbit objects where causal chain is direct (laser-target-object); pure ground-only activities outside outer-space operations remain outside LOS scope.",
+    remedy: {
+      monetary: false,
+      non_monetary: [
+        "Target-object catalogue restricted to French-registered defunct objects",
+        "Pre-test U.S. Space Force conjunction assessment",
+        "Post-test interference-report filing obligation",
+      ],
+    },
+    industry_significance:
+      "First French authorisation under LOS for an active-debris-removal demonstration involving non-cooperative targets. Foundational precedent for the EU Space Act's Active Debris Removal provisions (Art. 36) and the ESA-led Clean Space programme.",
+    compliance_areas: [
+      "licensing",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+    precedential_weight: "persuasive",
+    applied_sources: ["FR-LOS-2008"],
+    parties_mentioned: [
+      "Centre National d'Études Spatiales",
+      "U.S. Space Force",
+    ],
+    source_url: "https://cnes.fr/fr/CNES/Pages/transparence-decisions-LOS.aspx",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-IT-AGCOM-OPENSKY-2023",
+    jurisdiction: "IT",
+    forum: "regulator_order",
+    forum_name: "Autorità per le Garanzie nelle Comunicazioni (AGCOM)",
+    title: "AGCOM — Open Sky Satellite Frequency Authorisation Decision",
+    plaintiff: "Open Sky S.r.l.",
+    defendant: "(no respondent — authorisation)",
+    date_decided: "2023-10-12",
+    citation: "AGCOM Delibera 388/23/CONS",
+    status: "decided",
+    facts:
+      "Open Sky applied for an Italian frequency authorisation for a small commercial Earth-observation constellation of six 25 kg satellites. The application was processed under the Codice delle Comunicazioni Elettroniche and required ITU coordination, environmental review, and inter-ministry security clearance. AGCOM partially approved with conditions.",
+    ruling_summary:
+      "AGCOM granted authorisation with conditions: maximum-power constraint, mandatory inter-operator coordination protocol with Telespazio, mandatory ESA STM (Space Traffic Management) Centre data-feed registration, and 24-month review.",
+    legal_holding:
+      "AGCOM's frequency-authorisation discretion under the Codice extends to imposing operational-coordination conditions where ITU coordination resolves spectrum compatibility but creates open-orbit-access disputes between national operators.",
+    industry_significance:
+      "Precedent for Italian small-constellation regulatory pathway. Often cited in the 2024-2025 Italian space-law-reform debates as an example of why a dedicated national space-licensing statute (currently under draft as Legge 89/2025) is needed in addition to the AGCOM frequency-licensing layer.",
+    compliance_areas: ["frequency_spectrum", "licensing"],
+    precedential_weight: "persuasive",
+    applied_sources: ["IT-CCE-2003"],
+    parties_mentioned: [
+      "Open Sky S.r.l.",
+      "Autorità per le Garanzie nelle Comunicazioni",
+      "Telespazio S.p.A.",
+    ],
+    source_url: "https://www.agcom.it/atti/delibere",
+    last_verified: "2026-04-28",
+  },
+
+  {
+    id: "CASE-AMOS-17-INSURANCE-2019",
+    jurisdiction: "INT",
+    forum: "civil_settlement",
+    forum_name: "Lloyd's of London / Bermuda commercial arbitration",
+    title:
+      "Spacecom AMOS-17 — Insurance-Recovery Settlement (Lloyd's, post AMOS-6 loss)",
+    plaintiff: "Spacecom Communications Ltd",
+    defendant: "Composite insurance syndicates (Lloyd's-led, multi-syndicate)",
+    date_decided: "2019-09-30",
+    citation: "Confidential Lloyd's syndicate settlement (Spacecom)",
+    status: "settled",
+    facts:
+      "Following the September 2016 loss of AMOS-6 in the AMOS-6 ground-explosion event (separate CASE-AMOS-6-INSURANCE-2017), Spacecom procured replacement satellite AMOS-17. The insurance arrangements for AMOS-17 differed materially from AMOS-6: pre-launch loss coverage was bifurcated between launch-vehicle insurance (provided by SpaceX's launch-services agreement) and pre-launch-handling insurance carried by Spacecom. AMOS-17 launched successfully in August 2019. The post-launch insurance treaty included a settlement framework for unresolved AMOS-6 sub-items.",
+    ruling_summary:
+      "Settlement closed remaining AMOS-6 commercial recovery items and aligned AMOS-17 coverage with post-2016 industry norms (pre-launch handling separate from launch-vehicle insurance, mandatory contingency clauses for ground-handling incidents). Settlement amount confidential.",
+    legal_holding:
+      "Industry practice post-AMOS-6 establishes pre-launch-handling insurance as a mandatory operator-side coverage line, distinct from launch-vehicle insurance, and triggered by physical possession transfer at the integration site.",
+    industry_significance:
+      "Anchors the modern pre-launch insurance market segmentation. Every commercial-spacecraft launch contract since 2017 references the AMOS-6/17 framework when negotiating pre-launch contingency, ground-handling, and integration-period insurance.",
+    compliance_areas: ["insurance", "liability"],
+    precedential_weight: "settled_facts",
+    applied_sources: ["INT-LIABILITY-1972", "US-FCC-25-114"],
+    parties_mentioned: [
+      "Spacecom Communications Ltd",
+      "Lloyd's of London",
+      "Space Exploration Holdings, LLC",
+    ],
+    source_url: "https://www.spacecom.co.il/about/news/",
+    last_verified: "2026-04-28",
+  },
 ];

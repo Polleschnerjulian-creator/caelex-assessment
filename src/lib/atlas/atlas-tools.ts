@@ -462,6 +462,37 @@ Returns the comparison as a structured payload the agent renders as a markdown t
   },
 
   {
+    name: "summarize_changes_since",
+    description: `Returns regulatory changes that have occurred since a given date. Three buckets: (a) amendments to legal sources (statute changes, regulation revisions), (b) lifecycle events (regulations entering force, transition windows starting, supersession), and (c) regulatory-feed updates (admin-published AtlasUpdate entries — official notices, market guidance, enforcement signals).
+
+Use when the user asks ANY "what's changed" question — "what's new since my last visit?", "any updates on UK SIA in the last 6 months?", "what amendments hit the EU Space Act this year?", "summarize this quarter's regulatory developments". The agent supplies the 'since' date based on conversational context (date the user mentions, "last week" → 7 days ago, "last quarter" → 90 days ago, etc.).
+
+Returns ISO-dated entries grouped by source/jurisdiction with [ATLAS-…] citations. Render as a chronologically-sorted list grouped by month, NOT a generic table.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        since: {
+          type: "string",
+          description:
+            "ISO-8601 date (YYYY-MM-DD) — the cutoff. Returns events strictly after this date. REQUIRED. The agent should infer this from the user's question (e.g. 'since my last visit on March 1' → 2026-03-01; 'last 30 days' → today minus 30).",
+        },
+        jurisdiction: {
+          type: "string",
+          description:
+            "Optional. ISO alpha-2 jurisdiction (DE, FR, UK, US, EU, INT) — narrows results to amendments and updates targeting this jurisdiction.",
+        },
+        source_ids: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional. Specific ATLAS source IDs to scope the delta to (e.g. ['UK-SIA-2018', 'EU-NIS2-2022']). When supplied, returns ONLY changes affecting these sources.",
+        },
+      },
+      required: ["since"],
+    },
+  },
+
+  {
     name: "get_filing_deadlines",
     description: `Returns upcoming regulatory filing windows + recurring deadlines an operator must hit. Three buckets: (a) recurring deadlines (annual reports, quarterly data submissions, ITU filings), (b) launch-anchored windows (X days before / after launch), (c) regulatory-lifecycle events (EU Space Act effective dates, FCC rule changes, transition windows).
 
@@ -516,7 +547,8 @@ export type AtlasToolName =
   | "draft_authorization_application"
   | "draft_compliance_brief"
   | "compare_jurisdictions_for_filing"
-  | "get_filing_deadlines";
+  | "get_filing_deadlines"
+  | "summarize_changes_since";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

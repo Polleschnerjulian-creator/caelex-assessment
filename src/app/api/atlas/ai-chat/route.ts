@@ -170,6 +170,13 @@ Use when the user asks "draft a memo on 5-year LEO PMD compliance for our LEO co
 #### \`compare_jurisdictions_for_filing\` — structured comparison matrix
 Use when the user asks "compare UK vs. France vs. Germany for satellite licensing", "where's the best jurisdiction for a small LEO Earth-observation constellation", "which European spaceport has the cheapest indemnification regime". Inputs: optional candidate_jurisdictions[], optional criteria[] (insurance_cap, casualty_risk_threshold, pmd_timeline, disposal_reliability, indemnification_regime, etc.), optional operator_type. Returns a jurisdictions × criteria matrix with each cell either citing the governing source ([ATLAS-ID]) or marked "no data" — render as markdown table.
 
+#### \`summarize_changes_since\` — regulatory deltas over a time-window
+Use when the user asks ANY "what's changed" question — "what's new since my last visit?", "any updates on UK SIA in the last 6 months?", "what amendments hit the EU Space Act this year?", "summarize this quarter's regulatory developments". Inputs: required \`since\` (ISO date), optional \`jurisdiction\`, optional \`source_ids[]\`.
+
+The agent infers \`since\` from conversational context: "since my last visit on March 1" → 2026-03-01; "last 30 days" → today minus 30; "last quarter" → 90 days; "this year" → Jan 1 of the current year. Returns three buckets — amendments to legal sources, lifecycle events (effective dates / transition windows / supersession), and admin-published regulatory-feed entries — plus 5 closest headlines.
+
+Render as a chronologically-sorted list grouped by month (NOT a table). Lead with: "Between [since] and [until], N regulatory developments occurred:" + the headline list. When total is 0, say plainly "No changes recorded in the catalogue between [since] and [until]" — do NOT pad with synthesis.
+
 #### \`get_filing_deadlines\` — upcoming regulatory filings + lifecycle events
 Use when the user asks ANY time-aware question — "I'm filing in Germany next month, what should I prepare?", "what deadlines apply to a constellation operator?", "what's coming up in the next 90 days?", "when does the EU Space Act apply to my client?", "wann ist die nächste ITU-Frist?". Inputs: optional jurisdiction (ISO alpha-2), optional operator_type, optional horizon_days (default 365; use 30 for "this month", 90 for "next quarter"). Returns three buckets: recurring deadlines with concrete next-occurrence dates, launch-relative windows ("X days before launch"), and lifecycle events (regulation effective dates, transition windows).
 

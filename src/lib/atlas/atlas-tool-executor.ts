@@ -2133,6 +2133,231 @@ function getFilingDeadlines(args: { input: unknown }): AtlasToolResult {
   return { content: JSON.stringify(payload), isError: false };
 }
 
+// ─── summarize_changes_since ────────────────────────────────────────
+//
+// "What's changed?" — the agent's stateful counterpart. Pulls deltas
+// from THREE existing data sources without per-user tracking:
+//   (a) LegalSource.amendments[] — statute / regulation revisions
+//   (b) REGULATION_TIMELINE — lifecycle events (effective dates,
+//       transition windows, supersession)
+//   (c) AtlasUpdate (DB) — admin-published regulatory feed entries
+//
+// Agent supplies the 'since' date from conversational context
+// ("since my last visit on March 1" → 2026-03-01).
+
+const ChangesInput = z.object({
+  since: z.string().regex(/^\d{4}-\d{2}-\d{2}/, "must be ISO date YYYY-MM-DD"),
+  jurisdiction: z.string().min(2).max(5).optional(),
+  source_ids: z.array(z.string().min(2).max(80)).max(20).optional(),
+});
+
+interface AmendmentEntry {
+  source_id: string;
+  source_title: string;
+  jurisdiction: string;
+  date: string;
+  reference: string;
+  summary: string;
+  affected_sections?: string[];
+  source_url?: string;
+}
+
+interface LifecycleEntry {
+  id: string;
+  regulation: string;
+  status: RegulationPhase["status"];
+  effective_date: string;
+  transition_end_date: string | null;
+  superseded_by: string | null;
+  applicable_to: string[];
+}
+
+async function summarizeChangesSince(args: {
+  input: unknown;
+}): Promise<AtlasToolResult> {
+  const parsed = ChangesInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid tool input",
+        code: "INVALID_INPUT",
+        issues: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+
+  const sinceDate = new Date(parsed.data.since);
+  if (Number.isNaN(sinceDate.getTime())) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid date",
+        code: "INVALID_INPUT",
+      }),
+      isError: true,
+    };
+  }
+  const sinceMs = sinceDate.getTime();
+  const targetJur = parsed.data.jurisdiction?.toUpperCase();
+  const idScope = parsed.data.source_ids?.length
+    ? new Set(parsed.data.source_ids)
+    : null;
+
+  // ── (a) Amendments across the corpus ──
+  const amendments: AmendmentEntry[] = [];
+  for (const source of ALL_SOURCES) {
+    if (idScope && !idScope.has(source.id)) continue;
+    if (targetJur && source.jurisdiction !== targetJur) {
+      // Keep cross-cutting INT/EU instruments when the user scoped
+      // to a Member State — Member-State counsel cares about EU
+      // amendments too.
+      if (source.jurisdiction !== "INT" && source.jurisdiction !== "EU") {
+        continue;
+      }
+    }
+    if (!source.amendments) continue;
+    for (const a of source.amendments) {
+      const t = new Date(a.date).getTime();
+      if (Number.isNaN(t) || t <= sinceMs) continue;
+      amendments.push({
+        source_id: source.id,
+        source_title: source.title_en,
+        jurisdiction: source.jurisdiction,
+        date: a.date,
+        reference: a.reference,
+        summary: a.summary,
+        affected_sections: a.affected_sections,
+        source_url: a.source_url,
+      });
+    }
+  }
+
+  // ── (b) Lifecycle events from REGULATION_TIMELINE ──
+  const lifecycle: LifecycleEntry[] = REGULATION_TIMELINE.filter((p) => {
+    const t = new Date(p.effectiveDate).getTime();
+    if (Number.isNaN(t)) return false;
+    if (t <= sinceMs) return false;
+    if (t > Date.now()) return false; // only past events; future deadlines belong to get_filing_deadlines
+    if (targetJur) {
+      const text = `${p.regulation} ${p.applicableTo.join(" ")}`.toLowerCase();
+      if (text.includes("eu ") || p.applicableTo.includes("all_eu_operators")) {
+        // keep — EU events cross-apply
+      } else if (!text.includes(targetJur.toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
+  }).map((p: RegulationPhase) => ({
+    id: p.id,
+    regulation: p.regulation,
+    status: p.status,
+    effective_date: p.effectiveDate,
+    transition_end_date: p.transitionEndDate ?? null,
+    superseded_by: p.supersededBy ?? null,
+    applicable_to: p.applicableTo,
+  }));
+
+  // ── (c) AtlasUpdate (DB-published regulatory feed) ──
+  // Best-effort — if Prisma table is empty or the migration isn't
+  // applied (test env), we return [] and the agent narrates only
+  // amendments + lifecycle.
+  let updates: Array<{
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    jurisdiction: string | null;
+    sourceId: string | null;
+    publishedAt: string;
+  }> = [];
+  try {
+    const dbUpdates = await prisma.atlasUpdate.findMany({
+      where: {
+        isPublished: true,
+        publishedAt: { gt: sinceDate },
+        ...(targetJur && { jurisdiction: targetJur }),
+        ...(idScope && {
+          sourceId: { in: Array.from(idScope) },
+        }),
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 50,
+    });
+    updates = dbUpdates.map((u) => ({
+      id: u.id,
+      title: u.title,
+      description: u.description,
+      category: u.category,
+      jurisdiction: u.jurisdiction,
+      sourceId: u.sourceId,
+      publishedAt: u.publishedAt.toISOString().slice(0, 10),
+    }));
+  } catch (err) {
+    logger.warn("[atlas] summarize_changes_since: AtlasUpdate query failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  const totalEntries = amendments.length + lifecycle.length + updates.length;
+
+  type Headline = {
+    kind: "amendment" | "lifecycle" | "update";
+    title: string;
+    date: string;
+    source_id?: string;
+  };
+  const allHeadlines: Headline[] = [
+    ...amendments.map((a) => ({
+      kind: "amendment" as const,
+      title: `${a.source_id} — ${a.summary}`,
+      date: a.date,
+      source_id: a.source_id,
+    })),
+    ...lifecycle.map((l) => ({
+      kind: "lifecycle" as const,
+      title: l.regulation,
+      date: l.effective_date,
+      source_id: l.id,
+    })),
+    ...updates.map((u) => ({
+      kind: "update" as const,
+      title: u.title,
+      date: u.publishedAt,
+      source_id: u.sourceId ?? undefined,
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+
+  const payload = {
+    since: parsed.data.since,
+    until: new Date().toISOString().slice(0, 10),
+    scope: {
+      jurisdiction: targetJur ?? null,
+      source_ids: parsed.data.source_ids ?? null,
+    },
+    headlines: allHeadlines,
+    counts: {
+      amendments: amendments.length,
+      lifecycle: lifecycle.length,
+      updates: updates.length,
+      total: totalEntries,
+    },
+    amendments,
+    lifecycle,
+    updates,
+    drafting_directives: [
+      "Lead with: 'Between [since] and [until], N regulatory developments occurred:' followed by the headline list.",
+      "Group full payload by month, most-recent-first.",
+      "Cite each amendment with the source's [ATLAS-ID] and quote the reference verbatim.",
+      "When totalEntries is 0, say plainly 'No changes recorded in the catalogue between [since] and [until]' — do NOT pad with synthesis.",
+      "Wrap the final answer with the legal-review disclaimer.",
+    ],
+  };
+
+  return { content: JSON.stringify(payload), isError: false };
+}
+
 // ─── Dispatcher ─────────────────────────────────────────────────────
 
 export async function executeAtlasTool(args: {
@@ -2168,6 +2393,8 @@ export async function executeAtlasTool(args: {
       return compareJurisdictionsForFiling(args);
     case "get_filing_deadlines":
       return getFilingDeadlines(args);
+    case "summarize_changes_since":
+      return summarizeChangesSince(args);
     default: {
       const _never: never = args.name;
       return {

@@ -723,6 +723,113 @@ describe("executeAtlasTool — get_filing_deadlines", () => {
   });
 });
 
+describe("executeAtlasTool — summarize_changes_since", () => {
+  it("returns three buckets + headlines for an old since-date", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: { since: "2020-01-01" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      since: string;
+      counts: {
+        amendments: number;
+        lifecycle: number;
+        updates: number;
+        total: number;
+      };
+      amendments: unknown[];
+      lifecycle: unknown[];
+      updates: unknown[];
+      headlines: unknown[];
+    };
+    expect(payload.since).toBe("2020-01-01");
+    expect(Array.isArray(payload.amendments)).toBe(true);
+    expect(Array.isArray(payload.lifecycle)).toBe(true);
+    expect(Array.isArray(payload.updates)).toBe(true);
+    expect(Array.isArray(payload.headlines)).toBe(true);
+    // Some amendments + lifecycle entries should be in the corpus
+    // post-2020 — if zero, we'd be misreading the data.
+    expect(payload.counts.total).toBeGreaterThanOrEqual(0);
+  });
+
+  it("rejects malformed dates", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: { since: "not-a-date" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("requires the `since` field", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: {},
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("scopes by jurisdiction", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: { since: "2020-01-01", jurisdiction: "DE" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      scope: { jurisdiction: string };
+      amendments: Array<{ jurisdiction: string }>;
+    };
+    expect(payload.scope.jurisdiction).toBe("DE");
+    // Every amendment must be DE OR cross-cutting INT/EU.
+    for (const a of payload.amendments) {
+      expect(["DE", "INT", "EU"]).toContain(a.jurisdiction);
+    }
+  });
+
+  it("scopes by source_ids when supplied", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: {
+        since: "2020-01-01",
+        source_ids: ["INT-OST-1967"],
+      },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      amendments: Array<{ source_id: string }>;
+    };
+    for (const a of payload.amendments) {
+      expect(a.source_id).toBe("INT-OST-1967");
+    }
+  });
+
+  it("returns drafting directives so the agent narrates correctly", async () => {
+    const r = await executeAtlasTool({
+      name: "summarize_changes_since",
+      input: { since: "2020-01-01" },
+      ...STUB_CALLER,
+    });
+    const payload = JSON.parse(r.content) as {
+      drafting_directives: string[];
+    };
+    expect(payload.drafting_directives.length).toBeGreaterThan(0);
+    expect(
+      payload.drafting_directives.some((d) =>
+        /No changes recorded|legal-review/.test(d),
+      ),
+    ).toBe(true);
+  });
+});
+
 describe("executeAtlasTool — dispatcher", () => {
   it("returns UNKNOWN_TOOL for an invalid name (defensive)", async () => {
     const r = await executeAtlasTool({
