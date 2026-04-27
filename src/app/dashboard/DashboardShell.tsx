@@ -331,10 +331,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         onSave={handleProfileSave}
       />
 
-      {/* Floating Astra FAB — just the orb, no pill, no disc. Hidden
-          when Forge is active or widget is open. The orb IS the
-          button — same brand-object as the AI-Mode entity when it
-          slides into the corner. */}
+      {/* Floating Astra FAB — just the orb, no pill, no disc. The
+          CSS box-shadow halo extends the bloom beyond the canvas-clip
+          so the orb reads as glowing rather than as a black disc. */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
         <button
           onClick={() => setAstraWidgetOpen(true)}
@@ -348,6 +347,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             border: 0,
             padding: 0,
             cursor: "pointer",
+            borderRadius: "50%",
+            boxShadow:
+              "0 0 24px rgba(180, 200, 255, 0.18), 0 0 48px rgba(120, 160, 220, 0.12), 0 8px 32px rgba(0, 0, 0, 0.4)",
           }}
         >
           <AtlasEntityMini ariaLabel="Astra" />

@@ -181,10 +181,12 @@ export default function AtlasAstraChat() {
   return (
     <>
       {/* ─── Floating Orb ───
-          Just the orb floating in the corner — no pill, no label, no
-          background disc. Same particle sphere as the AI-Mode entity
-          when it slides into the corner during a conversation. The
-          orb IS the button: hover scales up, click opens the chat. */}
+          Just the orb floating in the corner — no pill, no label.
+          The orb IS the button: hover scales up, click opens the
+          chat. Same particle sphere as AI-Mode when it slides into
+          the corner during a conversation. The CSS box-shadow halo
+          extends the bloom beyond the canvas-clip edge so the orb
+          reads as glowing rather than as a black disc. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -198,6 +200,9 @@ export default function AtlasAstraChat() {
             border: 0,
             padding: 0,
             cursor: "pointer",
+            borderRadius: "50%",
+            boxShadow:
+              "0 0 24px rgba(180, 200, 255, 0.18), 0 0 48px rgba(120, 160, 220, 0.12), 0 8px 32px rgba(0, 0, 0, 0.4)",
           }}
         >
           <AtlasEntityMini ariaLabel="Astra" />

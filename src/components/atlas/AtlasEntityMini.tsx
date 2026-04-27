@@ -86,9 +86,16 @@ export function AtlasEntityMini({
     );
 
     const scene = new THREE.Scene();
-    // Transparent background so the orb floats on whatever the parent
-    // is — black stage, light card, navy disc, doesn't matter.
-    scene.background = null;
+    // Opaque black background — same as the full AtlasEntity. The
+    // mini orb gets clipped to a circle by its parent CSS, so the
+    // black square becomes a black "mini stage" in the corner that
+    // visually matches the AI-Mode orb-in-its-stage look.
+    //
+    // We tried alpha:true earlier but UnrealBloomPass + EffectComposer
+    // don't propagate alpha reliably at small canvas sizes — the
+    // result is a solid white block instead of a transparent
+    // background. Opaque-black + parent-clip is the robust path.
+    scene.background = new THREE.Color(0x000000);
 
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
     // Tighter than the full entity (z=8) so the orb fills the small
@@ -97,8 +104,7 @@ export function AtlasEntityMini({
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true,
-      premultipliedAlpha: false,
+      alpha: false, // opaque — see scene.background note above
       powerPreference: "low-power",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -106,7 +112,6 @@ export function AtlasEntityMini({
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.LinearToneMapping;
     renderer.toneMappingExposure = 1.0;
-    renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
     renderer.domElement.style.width = "100%";
@@ -320,7 +325,12 @@ export function AtlasEntityMini({
         height: "100%",
         aspectRatio: "1 / 1",
         position: "relative",
-        overflow: "visible",
+        // Clip the canvas to a circle. The Three.js canvas is opaque-
+        // black square; the round clip turns it into a "stage circle"
+        // matching the AI-Mode look. Without this you'd see a black
+        // square corner.
+        borderRadius: "50%",
+        overflow: "hidden",
       }}
     />
   );
