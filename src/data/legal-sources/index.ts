@@ -77,6 +77,17 @@ import { LEGAL_SOURCES_US, AUTHORITIES_US } from "./sources/us";
 import { LEGAL_SOURCES_NZ, AUTHORITIES_NZ } from "./sources/nz";
 import { LEGAL_SOURCES_INT, AUTHORITIES_INT } from "./sources/intl";
 import { LEGAL_SOURCES_EU, AUTHORITIES_EU } from "./sources/eu";
+import { LEGAL_SOURCES_JP, AUTHORITIES_JP } from "./sources/jp";
+import { LEGAL_SOURCES_IN, AUTHORITIES_IN } from "./sources/in";
+import { LEGAL_SOURCES_AU, AUTHORITIES_AU } from "./sources/au";
+import { LEGAL_SOURCES_CA, AUTHORITIES_CA } from "./sources/ca";
+import { LEGAL_SOURCES_AE, AUTHORITIES_AE } from "./sources/ae";
+import { LEGAL_SOURCES_KR, AUTHORITIES_KR } from "./sources/kr";
+import { LEGAL_SOURCES_IL, AUTHORITIES_IL } from "./sources/il";
+import { LEGAL_SOURCES_CN, AUTHORITIES_CN } from "./sources/cn";
+import { LEGAL_SOURCES_RU, AUTHORITIES_RU } from "./sources/ru";
+import { LEGAL_SOURCES_BR, AUTHORITIES_BR } from "./sources/br";
+import { LEGAL_SOURCES_ZA, AUTHORITIES_ZA } from "./sources/za";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -115,6 +126,17 @@ export const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_LI,
   ...LEGAL_SOURCES_US,
   ...LEGAL_SOURCES_NZ,
+  ...LEGAL_SOURCES_JP,
+  ...LEGAL_SOURCES_IN,
+  ...LEGAL_SOURCES_AU,
+  ...LEGAL_SOURCES_CA,
+  ...LEGAL_SOURCES_AE,
+  ...LEGAL_SOURCES_KR,
+  ...LEGAL_SOURCES_IL,
+  ...LEGAL_SOURCES_CN,
+  ...LEGAL_SOURCES_RU,
+  ...LEGAL_SOURCES_BR,
+  ...LEGAL_SOURCES_ZA,
 ];
 
 export const ALL_AUTHORITIES: Authority[] = [
@@ -152,6 +174,17 @@ export const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_LI,
   ...AUTHORITIES_US,
   ...AUTHORITIES_NZ,
+  ...AUTHORITIES_JP,
+  ...AUTHORITIES_IN,
+  ...AUTHORITIES_AU,
+  ...AUTHORITIES_CA,
+  ...AUTHORITIES_AE,
+  ...AUTHORITIES_KR,
+  ...AUTHORITIES_IL,
+  ...AUTHORITIES_CN,
+  ...AUTHORITIES_RU,
+  ...AUTHORITIES_BR,
+  ...AUTHORITIES_ZA,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -425,6 +458,94 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       jurisdiction: "NZ",
       sources: LEGAL_SOURCES_NZ,
       authorities: AUTHORITIES_NZ,
+    },
+  ],
+  [
+    "JP",
+    {
+      jurisdiction: "JP",
+      sources: LEGAL_SOURCES_JP,
+      authorities: AUTHORITIES_JP,
+    },
+  ],
+  [
+    "IN",
+    {
+      jurisdiction: "IN",
+      sources: LEGAL_SOURCES_IN,
+      authorities: AUTHORITIES_IN,
+    },
+  ],
+  [
+    "AU",
+    {
+      jurisdiction: "AU",
+      sources: LEGAL_SOURCES_AU,
+      authorities: AUTHORITIES_AU,
+    },
+  ],
+  [
+    "CA",
+    {
+      jurisdiction: "CA",
+      sources: LEGAL_SOURCES_CA,
+      authorities: AUTHORITIES_CA,
+    },
+  ],
+  [
+    "AE",
+    {
+      jurisdiction: "AE",
+      sources: LEGAL_SOURCES_AE,
+      authorities: AUTHORITIES_AE,
+    },
+  ],
+  [
+    "KR",
+    {
+      jurisdiction: "KR",
+      sources: LEGAL_SOURCES_KR,
+      authorities: AUTHORITIES_KR,
+    },
+  ],
+  [
+    "IL",
+    {
+      jurisdiction: "IL",
+      sources: LEGAL_SOURCES_IL,
+      authorities: AUTHORITIES_IL,
+    },
+  ],
+  [
+    "CN",
+    {
+      jurisdiction: "CN",
+      sources: LEGAL_SOURCES_CN,
+      authorities: AUTHORITIES_CN,
+    },
+  ],
+  [
+    "RU",
+    {
+      jurisdiction: "RU",
+      sources: LEGAL_SOURCES_RU,
+      authorities: AUTHORITIES_RU,
+    },
+  ],
+  [
+    "BR",
+    {
+      jurisdiction: "BR",
+      sources: LEGAL_SOURCES_BR,
+      authorities: AUTHORITIES_BR,
+    },
+  ],
+  [
+    "ZA",
+    {
+      jurisdiction: "ZA",
+      sources: LEGAL_SOURCES_ZA,
+      authorities: AUTHORITIES_ZA,
     },
   ],
 ]);

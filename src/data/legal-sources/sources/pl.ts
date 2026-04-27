@@ -393,6 +393,52 @@ const PRIMARY_LEGISLATION_PL: LegalSource[] = [
     related_sources: ["PL-SPACE-ACT-2026"],
     last_verified: "2026-04-15",
   },
+
+  {
+    id: "PL-NIS2-TRANSPOSITION",
+    jurisdiction: "PL",
+    type: "draft_legislation",
+    status: "draft",
+    title_en:
+      "Amendment to the Act on the National Cybersecurity System — Polish NIS2 Transposition",
+    title_local:
+      "Ustawa o zmianie ustawy o krajowym systemie cyberbezpieczeństwa (KSC) — wdrożenie NIS2",
+    date_published: "2024-09-15",
+    parliamentary_reference: "Druk sejmowy (in legislative process 2024-2026)",
+    source_url:
+      "https://www.gov.pl/web/cyfryzacja/projekt-ustawy-o-zmianie-ustawy-o-krajowym-systemie-cyberbezpieczenstwa",
+    issuing_body: "Ministerstwo Cyfryzacji",
+    competent_authorities: ["PL-NASK"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Polish draft amendment to the 2018 ustawa o krajowym systemie cyberbezpieczeństwa (KSC) transposing NIS2. Poland missed the October 2024 deadline; the amendment is in parliamentary process with several rounds of inter-ministerial consultation. Once adopted, space-sector operators meeting NIS2 thresholds become 'kluczowi' (essential) or 'ważni' (important) entities supervised by the sectoral CSIRT and the Ministry of Digital Affairs.",
+    key_provisions: [
+      {
+        section: "Art. 21 NIS2 (transposition)",
+        title: "Risk management for essential and important entities",
+        summary:
+          "Aligns Polish KSC duties with NIS2 Art. 21: risk-management measures, supply-chain security, multi-factor authentication, business continuity. Designations expected to capture satellite-operator and ground-segment entities meeting NIS2 size criteria.",
+      },
+      {
+        section: "Art. 23 NIS2 (transposition)",
+        title: "24h/72h incident reporting",
+        summary:
+          "Significant cybersecurity incidents must be early-warned within 24 hours and fully reported within 72 hours to the sectoral CSIRT, with a final report within one month.",
+      },
+    ],
+    implements: "EU-NIS2-2022",
+    related_sources: ["EU-NIS2-2022", "PL-SPACE-ACT-2026"],
+    notes: [
+      "Poland received an EC reasoned opinion in May 2025 for missing the October 2024 NIS2 transposition. CSIRT NASK has begun preparatory engagement with critical-infrastructure operators ahead of statute adoption.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Telecommunications (1) ─────────────────────────────────────

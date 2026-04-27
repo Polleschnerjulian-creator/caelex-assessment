@@ -294,6 +294,49 @@ const SECTORAL_EE: LegalSource[] = [
     related_sources: ["EE-OST-ACCESSION"],
     last_verified: "2026-04-20",
   },
+
+  {
+    id: "EE-NIS2-TRANSPOSITION",
+    jurisdiction: "EE",
+    type: "draft_legislation",
+    status: "draft",
+    title_en:
+      "Cybersecurity Act Amendment — NIS2 Transposition (Küberturvalisuse seaduse muutmise seadus)",
+    title_local: "Küberturvalisuse seaduse muutmise seadus (NIS2)",
+    date_published: "2024-11-15",
+    source_url: "https://eelnoud.valitsus.ee/main/mount/docList/",
+    issuing_body: "Majandus- ja Kommunikatsiooniministeerium (MKM)",
+    competent_authorities: ["EE-RIA", "EE-MKM"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Estonian draft amending the 2018 Küberturvalisuse seadus to transpose NIS2 (Directive (EU) 2022/2555). Estonia missed the October 2024 transposition deadline; the draft passed the eelnõu consultation phase in 2024 but full Riigikogu adoption is pending. Until enacted, satellite-sector entities meeting NIS2 size/sector criteria continue under the original NIS regime under RIA supervision.",
+    key_provisions: [
+      {
+        section: "Art. 21 NIS2 / draft §",
+        title: "Risk management for essential and important entities",
+        summary:
+          "Transposes NIS2 Art. 21 risk-management duties (incident handling, supply-chain security, encryption, multi-factor authentication, business-continuity) into Estonian law for satellite-sector entities meeting the NIS2 thresholds.",
+      },
+      {
+        section: "Art. 23 NIS2 / draft §",
+        title: "24h/72h incident reporting to RIA",
+        summary:
+          "Significant cybersecurity incidents must be early-warned to RIA within 24 hours and fully notified within 72 hours, with a final report within one month.",
+      },
+    ],
+    implements: "EU-NIS2-2022",
+    related_sources: ["EU-NIS2-2022"],
+    notes: [
+      "Estonia received an EC reasoned opinion in May 2025 for missing the October 2024 NIS2 transposition deadline. Operators planning EE deployments should track Riigikogu adoption.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Policy / Strategy (1) ─────────────────────────────────────────

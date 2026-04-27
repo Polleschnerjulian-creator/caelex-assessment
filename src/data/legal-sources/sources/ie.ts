@@ -289,6 +289,49 @@ const APPLICABLE_LEGISLATION_IE: LegalSource[] = [
     ],
     last_verified: "2026-04-14",
   },
+
+  {
+    id: "IE-NIS2-TRANSPOSITION",
+    jurisdiction: "IE",
+    type: "draft_legislation",
+    status: "draft",
+    title_en: "National Cyber Security Bill 2024 — Irish NIS2 Transposition",
+    title_local: "National Cyber Security Bill 2024",
+    date_published: "2024-08-30",
+    parliamentary_reference: "Bill No. 89 of 2024",
+    source_url: "https://www.oireachtas.ie/en/bills/bill/2024/89/",
+    issuing_body: "Department of the Environment, Climate and Communications",
+    competent_authorities: ["IE-NCSC"],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Irish primary legislation transposing NIS2 (Directive (EU) 2022/2555). Ireland missed the October 2024 NIS2 deadline; the EC issued a reasoned opinion in May 2025. The Bill creates the National Cyber Security Centre on a statutory footing and applies risk-management and incident-reporting duties to essential and important entities, including space-sector operators meeting Annex I criteria.",
+    key_provisions: [
+      {
+        section: "Part 4 (essential and important entities)",
+        title: "Risk management and incident reporting",
+        summary:
+          "Establishes risk-management measures aligned with NIS2 Art. 21 and the 24h/72h/one-month incident-reporting cascade to NCSC for designated entities.",
+      },
+      {
+        section: "Part 6",
+        title: "Enforcement and administrative fines",
+        summary:
+          "Provides administrative fines up to €10m or 2 % of global turnover for essential entities; €7m or 1.4 % for important entities, mirroring NIS2 Art. 34.",
+      },
+    ],
+    implements: "EU-NIS2-2022",
+    related_sources: ["EU-NIS2-2022"],
+    notes: [
+      "Bill published Aug 2024; Dáil Éireann second-stage debate ongoing. Operators with IE nexus should monitor enactment given EC infringement pressure.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Policy (1) ─────────────────────────────────────────────────

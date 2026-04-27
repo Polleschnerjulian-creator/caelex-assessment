@@ -53,7 +53,7 @@ export const AUTHORITIES_US: Authority[] = [
     parent_ministry: "Department of Transportation",
     website: "https://faa.gov/space",
     space_mandate:
-      "Primary licensing authority for commercial launch, reentry, and launch-site operations under the Commercial Space Launch Act (51 USC Ch. 509) and 14 CFR Parts 400-450. Issues launch licences, reentry licences, experimental permits, and launch-site operator licences. Administers the government third-party liability indemnification regime (up to $3.1B above Maximum Probable Loss; scheduled to sunset 30 Sep 2025 absent reauthorisation). Houses the Commercial Space Transportation Advisory Committee (COMSTAC).",
+      "Primary licensing authority for commercial launch, reentry, and launch-site operations under the Commercial Space Launch Act (51 USC Ch. 509) and 14 CFR Parts 400-450. Issues launch licences, reentry licences, experimental permits, and launch-site operator licences. Administers the government third-party liability indemnification regime (51 USC §50914) — historically capped at $3.1B above Maximum Probable Loss. The §50914 indemnification authority was previously authorised through 30 September 2025; operators should treat the post-sunset status as actively unsettled and confirm current reauthorisation before relying on federal indemnification in launch contracts. Houses the Commercial Space Transportation Advisory Committee (COMSTAC).",
     legal_basis: "51 USC Ch. 509; 14 CFR Parts 400-450",
     applicable_areas: ["licensing", "liability", "insurance"],
   },
@@ -362,9 +362,9 @@ const FEDERAL_LAWS_US: LegalSource[] = [
         section: "51 USC §50914",
         title: "Financial responsibility + government indemnification",
         summary:
-          "Three-tier liability regime: (1) operator maintains insurance for the Maximum Probable Loss (MPL, typically $100M–$500M), (2) government indemnifies above MPL up to $3.1B (2023 cap), (3) unlimited US sovereign liability above that. Indemnification is authorised through 30 September 2025 absent reauthorisation.",
+          "Three-tier liability regime: (1) operator maintains insurance for the Maximum Probable Loss (MPL, typically $100M–$500M), (2) government indemnifies above MPL up to $3.1B (2023 cap), (3) unlimited US sovereign liability above that. The §50914 indemnification authority was authorised through 30 September 2025 — its post-sunset status is unsettled and must be re-checked for any launch contract relying on federal indemnification.",
         complianceImplication:
-          "FAA calculates MPL per licence. Government indemnification is not automatic — operators must comply with launch conditions. The $3.1B cap and sunset date are active Congressional issues; commercial operators should monitor reauthorisation bills.",
+          "FAA calculates MPL per licence. Government indemnification is not automatic — operators must comply with launch conditions. As of April 2026 the $3.1B/§50914 indemnification reauthorisation status should be treated as a live diligence item, not as 'in force' by default; pull the current statute text or a recent CRS/FAA update before contracting.",
       },
       {
         section: "51 USC §50919(g)",
