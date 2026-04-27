@@ -543,3 +543,37 @@ describe("Legal Sources — content quality heuristics", () => {
     expect(average).toBeGreaterThan(40);
   });
 });
+
+// ─── Invariant: cross-file ID uniqueness ─────────────────────────────
+// Catches the regression where the same Source ID is defined in two
+// different jurisdiction files, which silently breaks ID-based lookup
+// (the second definition wins under spread-merge but is invisible).
+describe("Legal Sources — global ID uniqueness", () => {
+  it("every Source ID appears in exactly one definition across all files", () => {
+    const counts = new Map<string, number>();
+    for (const s of UNIQUE_SOURCES) {
+      counts.set(s.id, (counts.get(s.id) ?? 0) + 1);
+    }
+    const duplicates = [...counts.entries()]
+      .filter(([, n]) => n > 1)
+      .map(([id, n]) => `${id} (${n}×)`);
+    expect(
+      duplicates,
+      `duplicate Source IDs: ${duplicates.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("every Authority ID appears in exactly one definition across all files", () => {
+    const counts = new Map<string, number>();
+    for (const a of UNIQUE_AUTHORITIES) {
+      counts.set(a.id, (counts.get(a.id) ?? 0) + 1);
+    }
+    const duplicates = [...counts.entries()]
+      .filter(([, n]) => n > 1)
+      .map(([id, n]) => `${id} (${n}×)`);
+    expect(
+      duplicates,
+      `duplicate Authority IDs: ${duplicates.join(", ")}`,
+    ).toEqual([]);
+  });
+});

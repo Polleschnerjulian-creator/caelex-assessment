@@ -2,6 +2,7 @@
 
 import { describe, it, expect } from "vitest";
 import {
+  ALL_SOURCES,
   getLegalSourcesByJurisdiction,
   getLegalSourcesByComplianceArea,
   getLegalSourcesByType,
@@ -56,7 +57,9 @@ import type { LegalSource, Authority } from "@/data/legal-sources";
 // ─── Dataset sanity checks ────────────────────────────────────────────
 describe("Legal Sources — dataset sanity", () => {
   it("DE has at least 30 legal sources", () => {
-    expect(LEGAL_SOURCES_DE.length).toBeGreaterThanOrEqual(30);
+    expect(getLegalSourcesByJurisdiction("DE").length).toBeGreaterThanOrEqual(
+      30,
+    );
   });
 
   it("DE has exactly 8 authorities", () => {
@@ -121,7 +124,7 @@ describe("Legal Sources — dataset sanity", () => {
   });
 
   it("all related_sources IDs map to existing legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_DE.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_DE) {
       for (const relId of s.related_sources) {
         expect(
@@ -136,26 +139,28 @@ describe("Legal Sources — dataset sanity", () => {
 // ─── Type coverage ────────────────────────────────────────────────────
 describe("Legal Sources — type coverage", () => {
   it("includes international treaties", () => {
-    const treaties = LEGAL_SOURCES_DE.filter(
+    const treaties = getLegalSourcesByJurisdiction("DE").filter(
       (s) => s.type === "international_treaty",
     );
     expect(treaties.length).toBeGreaterThanOrEqual(5);
   });
 
   it("includes federal laws", () => {
-    const laws = LEGAL_SOURCES_DE.filter((s) => s.type === "federal_law");
+    const laws = getLegalSourcesByJurisdiction("DE").filter(
+      (s) => s.type === "federal_law",
+    );
     expect(laws.length).toBeGreaterThanOrEqual(5);
   });
 
   it("includes technical standards", () => {
-    const standards = LEGAL_SOURCES_DE.filter(
+    const standards = getLegalSourcesByJurisdiction("DE").filter(
       (s) => s.type === "technical_standard",
     );
     expect(standards.length).toBeGreaterThanOrEqual(4);
   });
 
   it("includes EU regulations and directives", () => {
-    const eu = LEGAL_SOURCES_DE.filter(
+    const eu = getLegalSourcesByJurisdiction("DE").filter(
       (s) => s.type === "eu_regulation" || s.type === "eu_directive",
     );
     expect(eu.length).toBeGreaterThanOrEqual(4);
@@ -172,11 +177,14 @@ describe("Legal Sources — German regulatory accuracy", () => {
     expect(satdsig.competent_authorities).toContain("DE-BAFA");
   });
 
-  it("Outer Space Treaty has correct BGBl reference", () => {
-    const ost = getLegalSourceById("INT-OST-1967")!;
+  it("Outer Space Treaty resolves and is fundamental, with DE listed as a Party", () => {
+    // Canonical entry lives in intl.ts; per-jurisdiction BGBl/JORF/USC references
+    // sit on the matching jurisdiction-specific ratification records (e.g.
+    // FR-INT-OST-RATIFICATION, US-OST-1967), not on the canonical INT-OST-1967.
+    const ost = getLegalSourceById("INT-OST-1967");
     expect(ost).toBeDefined();
-    expect(ost.official_reference).toContain("BGBl. 1969 II S. 1967");
-    expect(ost.relevance_level).toBe("fundamental");
+    expect(ost!.relevance_level).toBe("fundamental");
+    expect(ost!.applies_to_jurisdictions ?? []).toContain("DE");
   });
 
   it("Liability Convention is marked as critical", () => {
@@ -228,7 +236,17 @@ describe("Legal Sources — lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns DE sources", () => {
     const sources = getLegalSourcesByJurisdiction("DE");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_DE.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_DE.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("DE"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getLegalSourcesByJurisdiction returns empty for unknown code", () => {
@@ -331,7 +349,9 @@ describe("Legal Sources — authority accuracy", () => {
 // ─── French dataset sanity checks ────────────────────────────────────
 describe("Legal Sources — FR dataset sanity", () => {
   it("FR has at least 30 legal sources", () => {
-    expect(LEGAL_SOURCES_FR.length).toBeGreaterThanOrEqual(30);
+    expect(getLegalSourcesByJurisdiction("FR").length).toBeGreaterThanOrEqual(
+      30,
+    );
   });
 
   it("FR has exactly 15 authorities", () => {
@@ -396,7 +416,7 @@ describe("Legal Sources — FR dataset sanity", () => {
   });
 
   it("all FR related_sources IDs map to existing FR legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_FR.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_FR) {
       for (const relId of s.related_sources) {
         expect(
@@ -434,13 +454,13 @@ describe("Legal Sources — French regulatory accuracy", () => {
     expect(firstNote).toContain("ratify");
   });
 
-  it("Moon Agreement marked as signed but not_ratified for FR", () => {
-    const moon = getLegalSourceById("FR-INT-MOON-1979")!;
+  it("Moon Agreement marked as signed but not ratified by FR (canonical INT-MOON-1979)", () => {
+    // FR-INT-MOON-1979 was de-duplicated against the canonical INT-MOON-1979 in intl.ts.
+    // FR is recorded as a signatory-without-ratification via signed_by_jurisdictions.
+    const moon = getLegalSourceById("INT-MOON-1979");
     expect(moon).toBeDefined();
-    expect(moon.status).toBe("not_ratified");
-    const notes = moon.notes!.join(" ");
-    expect(notes).toContain("signed");
-    expect(notes).toContain("never ratified");
+    expect(moon!.signed_by_jurisdictions ?? []).toContain("FR");
+    expect((moon!.applies_to_jurisdictions ?? []).includes("FR")).toBe(false);
   });
 
   it("Technical Regulations (Arrêté 2011) is marked critical", () => {
@@ -470,7 +490,17 @@ describe("Legal Sources — FR lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns FR sources", () => {
     const sources = getLegalSourcesByJurisdiction("FR");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_FR.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_FR.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("FR"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns FR authorities", () => {
@@ -528,7 +558,9 @@ describe("Legal Sources — FR authority accuracy", () => {
 // ─── UK dataset sanity checks ───────────────────────────────────────
 describe("Legal Sources — UK dataset sanity", () => {
   it("UK has at least 35 legal sources", () => {
-    expect(LEGAL_SOURCES_UK.length).toBeGreaterThanOrEqual(35);
+    expect(getLegalSourcesByJurisdiction("UK").length).toBeGreaterThanOrEqual(
+      35,
+    );
   });
 
   it("UK has at least 12 authorities", () => {
@@ -593,7 +625,7 @@ describe("Legal Sources — UK dataset sanity", () => {
   });
 
   it("all UK related_sources IDs map to existing UK legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_UK.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_UK) {
       for (const relId of s.related_sources) {
         expect(
@@ -675,7 +707,17 @@ describe("Legal Sources — UK lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns UK sources", () => {
     const sources = getLegalSourcesByJurisdiction("UK");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_UK.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_UK.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("UK"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns UK authorities", () => {
@@ -736,7 +778,9 @@ describe("Legal Sources — UK authority accuracy", () => {
 // ─── Italian dataset sanity checks ─────────────────────────────────
 describe("Legal Sources — IT dataset sanity", () => {
   it("IT has at least 30 legal sources", () => {
-    expect(LEGAL_SOURCES_IT.length).toBeGreaterThanOrEqual(30);
+    expect(getLegalSourcesByJurisdiction("IT").length).toBeGreaterThanOrEqual(
+      30,
+    );
   });
 
   it("IT has exactly 14 authorities", () => {
@@ -801,7 +845,7 @@ describe("Legal Sources — IT dataset sanity", () => {
   });
 
   it("all IT related_sources IDs map to existing IT legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_IT.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_IT) {
       for (const relId of s.related_sources) {
         expect(
@@ -892,7 +936,17 @@ describe("Legal Sources — IT lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns IT sources", () => {
     const sources = getLegalSourcesByJurisdiction("IT");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_IT.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_IT.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("IT"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns IT authorities", () => {
@@ -957,7 +1011,9 @@ describe("Legal Sources — IT authority accuracy", () => {
 // ─── Luxembourg dataset sanity checks ─────────────────────────────
 describe("Legal Sources — LU dataset sanity", () => {
   it("LU has at least 20 legal sources", () => {
-    expect(LEGAL_SOURCES_LU.length).toBeGreaterThanOrEqual(20);
+    expect(getLegalSourcesByJurisdiction("LU").length).toBeGreaterThanOrEqual(
+      20,
+    );
   });
 
   it("LU has exactly 11 authorities", () => {
@@ -1022,7 +1078,7 @@ describe("Legal Sources — LU dataset sanity", () => {
   });
 
   it("all LU related_sources IDs map to existing LU legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_LU.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_LU) {
       for (const relId of s.related_sources) {
         expect(
@@ -1113,7 +1169,17 @@ describe("Legal Sources — LU lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns LU sources", () => {
     const sources = getLegalSourcesByJurisdiction("LU");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_LU.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_LU.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("LU"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns LU authorities", () => {
@@ -1175,7 +1241,9 @@ describe("Legal Sources — LU authority accuracy", () => {
 // ─── Netherlands dataset sanity checks ────────────────────────────
 describe("Legal Sources — NL dataset sanity", () => {
   it("NL has at least 20 legal sources", () => {
-    expect(LEGAL_SOURCES_NL.length).toBeGreaterThanOrEqual(20);
+    expect(getLegalSourcesByJurisdiction("NL").length).toBeGreaterThanOrEqual(
+      20,
+    );
   });
 
   it("NL has exactly 15 authorities", () => {
@@ -1240,7 +1308,7 @@ describe("Legal Sources — NL dataset sanity", () => {
   });
 
   it("all NL related_sources IDs map to existing NL legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_NL.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_NL) {
       for (const relId of s.related_sources) {
         expect(
@@ -1340,7 +1408,17 @@ describe("Legal Sources — NL lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns NL sources", () => {
     const sources = getLegalSourcesByJurisdiction("NL");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_NL.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_NL.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("NL"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns NL authorities", () => {
@@ -1429,7 +1507,9 @@ describe("Legal Sources — NL authority accuracy", () => {
 // ─── Belgium dataset sanity checks ───────────────────────────────
 describe("Legal Sources — BE dataset sanity", () => {
   it("BE has at least 20 legal sources", () => {
-    expect(LEGAL_SOURCES_BE.length).toBeGreaterThanOrEqual(20);
+    expect(getLegalSourcesByJurisdiction("BE").length).toBeGreaterThanOrEqual(
+      20,
+    );
   });
 
   it("BE has exactly 15 authorities", () => {
@@ -1494,7 +1574,7 @@ describe("Legal Sources — BE dataset sanity", () => {
   });
 
   it("all BE related_sources IDs map to existing BE legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_BE.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_BE) {
       for (const relId of s.related_sources) {
         expect(
@@ -1600,7 +1680,17 @@ describe("Legal Sources — BE lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns BE sources", () => {
     const sources = getLegalSourcesByJurisdiction("BE");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_BE.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_BE.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("BE"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns BE authorities", () => {
@@ -1686,7 +1776,9 @@ describe("Legal Sources — BE authority accuracy", () => {
 // ─── Spain dataset sanity checks ─────────────────────────────────
 describe("Legal Sources — ES dataset sanity", () => {
   it("ES has at least 20 legal sources", () => {
-    expect(LEGAL_SOURCES_ES.length).toBeGreaterThanOrEqual(20);
+    expect(getLegalSourcesByJurisdiction("ES").length).toBeGreaterThanOrEqual(
+      20,
+    );
   });
 
   it("ES has exactly 13 authorities", () => {
@@ -1751,7 +1843,7 @@ describe("Legal Sources — ES dataset sanity", () => {
   });
 
   it("all ES related_sources IDs map to existing ES legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_ES.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_ES) {
       for (const relId of s.related_sources) {
         expect(
@@ -1834,7 +1926,17 @@ describe("Legal Sources — ES lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns ES sources", () => {
     const sources = getLegalSourcesByJurisdiction("ES");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_ES.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_ES.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("ES"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns ES authorities", () => {
@@ -1892,7 +1994,9 @@ describe("Legal Sources — ES authority accuracy", () => {
 // ─── Norway dataset sanity checks ────────────────────────────────
 describe("Legal Sources — NO dataset sanity", () => {
   it("NO has at least 15 legal sources", () => {
-    expect(LEGAL_SOURCES_NO.length).toBeGreaterThanOrEqual(15);
+    expect(getLegalSourcesByJurisdiction("NO").length).toBeGreaterThanOrEqual(
+      15,
+    );
   });
 
   it("NO has exactly 13 authorities", () => {
@@ -1957,7 +2061,7 @@ describe("Legal Sources — NO dataset sanity", () => {
   });
 
   it("all NO related_sources IDs map to existing NO legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_NO.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_NO) {
       for (const relId of s.related_sources) {
         expect(
@@ -2028,7 +2132,17 @@ describe("Legal Sources — NO lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns NO sources", () => {
     const sources = getLegalSourcesByJurisdiction("NO");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_NO.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_NO.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("NO"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns NO authorities", () => {
@@ -2086,7 +2200,9 @@ describe("Legal Sources — NO authority accuracy", () => {
 // ─── Sweden dataset sanity checks ────────────────────────────────
 describe("Legal Sources — SE dataset sanity", () => {
   it("SE has at least 14 legal sources", () => {
-    expect(LEGAL_SOURCES_SE.length).toBeGreaterThanOrEqual(14);
+    expect(getLegalSourcesByJurisdiction("SE").length).toBeGreaterThanOrEqual(
+      14,
+    );
   });
 
   it("SE has exactly 14 authorities", () => {
@@ -2138,7 +2254,7 @@ describe("Legal Sources — SE dataset sanity", () => {
   });
 
   it("all SE related_sources IDs map to existing SE legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_SE.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_SE) {
       for (const relId of s.related_sources) {
         expect(
@@ -2206,7 +2322,17 @@ describe("Legal Sources — SE lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns SE sources", () => {
     const sources = getLegalSourcesByJurisdiction("SE");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_SE.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_SE.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("SE"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns SE authorities", () => {
@@ -2256,7 +2382,9 @@ describe("Legal Sources — SE authority accuracy", () => {
 // ─── Finland dataset sanity checks ───────────────────────────────
 describe("Legal Sources — FI dataset sanity", () => {
   it("FI has at least 10 legal sources", () => {
-    expect(LEGAL_SOURCES_FI.length).toBeGreaterThanOrEqual(10);
+    expect(getLegalSourcesByJurisdiction("FI").length).toBeGreaterThanOrEqual(
+      10,
+    );
   });
 
   it("FI has exactly 13 authorities", () => {
@@ -2300,7 +2428,7 @@ describe("Legal Sources — FI dataset sanity", () => {
   });
 
   it("all FI related_sources IDs map to existing FI legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_FI.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_FI) {
       for (const relId of s.related_sources) {
         expect(
@@ -2365,7 +2493,17 @@ describe("Legal Sources — FI lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns FI sources", () => {
     const sources = getLegalSourcesByJurisdiction("FI");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_FI.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_FI.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("FI"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns FI authorities", () => {
@@ -2411,7 +2549,9 @@ describe("Legal Sources — FI authority accuracy", () => {
 // ─── Denmark dataset sanity checks ──────────────────────────────────
 describe("Legal Sources — DK dataset sanity", () => {
   it("DK has at least 12 legal sources", () => {
-    expect(LEGAL_SOURCES_DK.length).toBeGreaterThanOrEqual(12);
+    expect(getLegalSourcesByJurisdiction("DK").length).toBeGreaterThanOrEqual(
+      12,
+    );
   });
 
   it("DK has exactly 11 authorities", () => {
@@ -2463,7 +2603,7 @@ describe("Legal Sources — DK dataset sanity", () => {
   });
 
   it("all DK related_sources IDs map to existing DK legal source entries", () => {
-    const sourceIds = new Set(LEGAL_SOURCES_DK.map((s) => s.id));
+    const sourceIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_DK) {
       for (const relId of s.related_sources) {
         expect(
@@ -2531,7 +2671,17 @@ describe("Legal Sources — DK lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns DK sources", () => {
     const sources = getLegalSourcesByJurisdiction("DK");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_DK.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_DK.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("DK"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 11 DK authorities", () => {
@@ -2576,7 +2726,9 @@ describe("Legal Sources — DK authority accuracy", () => {
 // ─── Austria dataset sanity checks ──────────────────────────────────
 describe("Legal Sources — AT dataset sanity", () => {
   it("AT has at least 10 legal sources", () => {
-    expect(LEGAL_SOURCES_AT.length).toBeGreaterThanOrEqual(10);
+    expect(getLegalSourcesByJurisdiction("AT").length).toBeGreaterThanOrEqual(
+      10,
+    );
   });
 
   it("AT has exactly 10 authorities", () => {
@@ -2673,7 +2825,17 @@ describe("Legal Sources — AT lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns AT sources", () => {
     const sources = getLegalSourcesByJurisdiction("AT");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_AT.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_AT.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("AT"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 10 AT authorities", () => {
@@ -2712,7 +2874,9 @@ describe("Legal Sources — AT authority accuracy", () => {
 // ─── Switzerland dataset sanity checks ────────────────────────────────
 describe("Legal Sources — CH dataset sanity", () => {
   it("CH has at least 8 legal sources", () => {
-    expect(LEGAL_SOURCES_CH.length).toBeGreaterThanOrEqual(8);
+    expect(getLegalSourcesByJurisdiction("CH").length).toBeGreaterThanOrEqual(
+      8,
+    );
   });
 
   it("CH has exactly 10 authorities", () => {
@@ -2807,7 +2971,17 @@ describe("Legal Sources — CH lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns CH sources", () => {
     const sources = getLegalSourcesByJurisdiction("CH");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_CH.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_CH.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("CH"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 10 CH authorities", () => {
@@ -2851,7 +3025,9 @@ describe("Legal Sources — CH authority accuracy", () => {
 // ─── PT dataset sanity ──────────────────────────────────────────────────
 describe("Legal Sources — PT dataset sanity", () => {
   it("PT has at least 8 legal sources", () => {
-    expect(LEGAL_SOURCES_PT.length).toBeGreaterThanOrEqual(8);
+    expect(getLegalSourcesByJurisdiction("PT").length).toBeGreaterThanOrEqual(
+      8,
+    );
   });
 
   it("PT has exactly 10 authorities", () => {
@@ -2943,7 +3119,17 @@ describe("Legal Sources — PT lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns PT sources", () => {
     const sources = getLegalSourcesByJurisdiction("PT");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_PT.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_PT.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("PT"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 10 PT authorities", () => {
@@ -2986,7 +3172,9 @@ describe("Legal Sources — PT authority accuracy", () => {
 // ─── IE dataset sanity ─────────────────────────────────────────────────
 describe("Legal Sources — IE dataset sanity", () => {
   it("IE has at least 5 legal sources", () => {
-    expect(LEGAL_SOURCES_IE.length).toBeGreaterThanOrEqual(5);
+    expect(getLegalSourcesByJurisdiction("IE").length).toBeGreaterThanOrEqual(
+      5,
+    );
   });
 
   it("IE has exactly 8 authorities", () => {
@@ -3080,7 +3268,17 @@ describe("Legal Sources — IE lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns IE sources", () => {
     const sources = getLegalSourcesByJurisdiction("IE");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_IE.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_IE.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("IE"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 8 IE authorities", () => {
@@ -3124,7 +3322,9 @@ describe("Legal Sources — IE authority accuracy", () => {
 // ─── GR dataset sanity ─────────────────────────────────────────────────
 describe("Legal Sources — GR dataset sanity", () => {
   it("GR has at least 8 legal sources", () => {
-    expect(LEGAL_SOURCES_GR.length).toBeGreaterThanOrEqual(8);
+    expect(getLegalSourcesByJurisdiction("GR").length).toBeGreaterThanOrEqual(
+      8,
+    );
   });
 
   it("GR has exactly 8 authorities", () => {
@@ -3213,7 +3413,17 @@ describe("Legal Sources — GR lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns GR sources", () => {
     const sources = getLegalSourcesByJurisdiction("GR");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_GR.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_GR.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("GR"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 8 GR authorities", () => {
@@ -3257,7 +3467,9 @@ describe("Legal Sources — GR authority accuracy", () => {
 // ─── CZ dataset sanity ─────────────────────────────────────────────────
 describe("Legal Sources — CZ dataset sanity", () => {
   it("CZ has at least 8 legal sources", () => {
-    expect(LEGAL_SOURCES_CZ.length).toBeGreaterThanOrEqual(8);
+    expect(getLegalSourcesByJurisdiction("CZ").length).toBeGreaterThanOrEqual(
+      8,
+    );
   });
 
   it("CZ has exactly 9 authorities", () => {
@@ -3344,7 +3556,17 @@ describe("Legal Sources — CZ lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns CZ sources", () => {
     const sources = getLegalSourcesByJurisdiction("CZ");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_CZ.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_CZ.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("CZ"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 9 CZ authorities", () => {
@@ -3384,7 +3606,9 @@ describe("Legal Sources — CZ authority accuracy", () => {
 // ─── PL dataset sanity ─────────────────────────────────────────────────
 describe("Legal Sources — PL dataset sanity", () => {
   it("PL has at least 8 legal sources", () => {
-    expect(LEGAL_SOURCES_PL.length).toBeGreaterThanOrEqual(8);
+    expect(getLegalSourcesByJurisdiction("PL").length).toBeGreaterThanOrEqual(
+      8,
+    );
   });
 
   it("PL has exactly 10 authorities", () => {
@@ -3427,10 +3651,12 @@ describe("Legal Sources — PL dataset sanity", () => {
   });
 
   it("PL related_sources reference IDs that exist in the dataset", () => {
-    const allIds = new Set(LEGAL_SOURCES_PL.map((s) => s.id));
+    // Cross-jurisdictional refs are valid (e.g. PL → EU-NIS2-2022, INT-OST-1967),
+    // so check resolution against the global ID set rather than only LEGAL_SOURCES_PL.
+    const allIds = new Set(ALL_SOURCES.map((s) => s.id));
     for (const s of LEGAL_SOURCES_PL) {
       for (const relId of s.related_sources) {
-        expect(allIds.has(relId)).toBe(true);
+        expect(allIds.has(relId), `${s.id} → ${relId}`).toBe(true);
       }
     }
   });
@@ -3475,7 +3701,17 @@ describe("Legal Sources — PL lookup functions", () => {
   it("getLegalSourcesByJurisdiction returns PL sources", () => {
     const sources = getLegalSourcesByJurisdiction("PL");
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.length).toBe(LEGAL_SOURCES_PL.length);
+    // Aggregated count: national + applicable EU/INT instruments
+
+    const expectedLen =
+      LEGAL_SOURCES_PL.length +
+      ALL_SOURCES.filter(
+        (s) =>
+          (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
+          s.applies_to_jurisdictions?.includes("PL"),
+      ).length;
+
+    expect(sources.length).toBe(expectedLen);
   });
 
   it("getAuthoritiesByJurisdiction returns 10 PL authorities", () => {
