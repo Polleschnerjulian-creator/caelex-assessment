@@ -773,6 +773,7 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     official_reference: "JORF n° 0133 du 10 juin 2009",
     source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000020714590",
     issuing_body: "Premier ministre",
+    amended_by: ["FR-DECRET-2024-625"],
     competent_authorities: ["FR-CNES"],
     relevance_level: "high",
     applicable_to: ["all"],

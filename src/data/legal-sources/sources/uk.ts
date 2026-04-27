@@ -666,6 +666,7 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
     date_enacted: "2015-03-26",
     date_in_force: "2015-10-01",
     official_reference: "2015 c.20, s.12",
+    amended_by: ["UK-SIA-INDEMNITIES-2025"],
     source_url: "https://www.legislation.gov.uk/ukpga/2015/20/section/12",
     issuing_body: "Parliament of the United Kingdom",
     competent_authorities: ["UK-CAA"],

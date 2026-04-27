@@ -172,6 +172,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     official_reference: "Verordnung (EU) 2021/696",
     source_url: "https://eur-lex.europa.eu/eli/reg/2021/696/oj",
     issuing_body: "European Parliament and Council",
+    amended_by: ["EU-IRIS2-CONCESSION-2024"],
     competent_authorities: [],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -758,6 +759,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     official_reference: "Regulation (EU) 2023/588",
     source_url: "https://eur-lex.europa.eu/eli/reg/2023/588/oj",
     issuing_body: "European Parliament and Council",
+    amends: "EU-SPACE-PROG-2021",
     competent_authorities: ["EU-EC", "EU-EUSPA"],
     relevance_level: "high",
     applicable_to: ["satellite_operator", "constellation_operator"],
@@ -828,6 +830,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     official_reference: "Decision No 541/2014/EU (now Reg. 2021/696 Title V)",
     source_url: "https://eur-lex.europa.eu/eli/dec/2014/541/oj",
     issuing_body: "European Parliament and Council",
+    superseded_by: "EU-SPACE-PROG-2021",
     competent_authorities: ["EU-EUSPA"],
     relevance_level: "medium",
     applicable_to: [

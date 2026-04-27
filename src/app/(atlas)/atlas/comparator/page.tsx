@@ -7,6 +7,7 @@ import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
 import ComparatorExport from "@/components/atlas/ComparatorExport";
 import ForecastTimelineSlider from "@/components/atlas/ForecastTimelineSlider";
+import CrossBorderQuickRef from "@/components/atlas/CrossBorderQuickRef";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
@@ -176,6 +177,17 @@ export default function ComparatorPage() {
             targetDate={targetDate}
           />
         </div>
+
+        {/* ─── Extended-jurisdictions quick reference ───
+            The deep ComparisonTable above only renders jurisdictions
+            with full JurisdictionLaw entries (insurance, debris,
+            timeline thresholds). The 11 strategic non-EU/non-UK
+            jurisdictions added in 2026-04 don't have those — they're
+            catalogue-only. Quick-ref surfaces them as cards with
+            source counts, key authorities, and top compliance areas
+            so cross-border lawyers can navigate to a JD's full
+            Atlas page in one click. */}
+        <CrossBorderQuickRef />
       </div>
 
       {/* ─── Print-only export view ─── */}

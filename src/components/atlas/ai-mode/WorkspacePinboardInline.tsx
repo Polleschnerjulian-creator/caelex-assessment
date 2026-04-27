@@ -42,6 +42,7 @@ import {
   Check,
 } from "lucide-react";
 import styles from "./workspace-pinboard.module.css";
+import AtlasMessageRenderer from "@/components/atlas/AtlasMessageRenderer";
 
 // ─── Konflikt-Detection ───────────────────────────────────────────────
 //
@@ -1874,7 +1875,16 @@ export function WorkspacePinboardInline({
                           </p>
                         )}
                         {card.content && (
-                          <p className={styles.cardContent}>{card.content}</p>
+                          // Pinboard cards routinely cite Atlas-IDs the
+                          // lawyer or Astra has anchored to source text
+                          // ("…compare with [INT-EU-SANCTIONS-RU-833]").
+                          // AtlasMessageRenderer turns each into a
+                          // hover-preview pill with click-through to the
+                          // source-detail page — same UX as the chat.
+                          <AtlasMessageRenderer
+                            content={card.content}
+                            className={styles.cardContent}
+                          />
                         )}
                       </>
                     )}

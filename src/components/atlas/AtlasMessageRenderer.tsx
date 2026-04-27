@@ -15,12 +15,12 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import Link from "next/link";
 import { Fragment } from "react";
 import {
   tokenizeAtlasMessage,
   atlasIdToHref,
 } from "@/lib/atlas/render-message";
+import { CitationPill } from "@/components/atlas/CitationPill";
 
 interface AtlasMessageRendererProps {
   content: string;
@@ -48,16 +48,7 @@ export default function AtlasMessageRenderer({
           // tokenizer regex already requires the canonical shape).
           return <Fragment key={idx}>{tok.raw}</Fragment>;
         }
-        return (
-          <Link
-            key={idx}
-            href={href}
-            className="atlas-citation-link inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[12px] font-mono no-underline transition-colors"
-            title={`Atlas-Quelle ${tok.id}`}
-          >
-            {tok.id}
-          </Link>
-        );
+        return <CitationPill key={idx} id={tok.id} href={href} />;
       })}
     </p>
   );

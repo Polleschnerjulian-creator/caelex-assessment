@@ -432,6 +432,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "Gesetz über das Bundesamt für Sicherheit in der Informationstechnik (BSI-Gesetz — BSIG), geändert durch NIS2UmsuCG",
     date_last_amended: "2025-03-01",
     official_reference: "BGBl. I, zuletzt geändert durch NIS2UmsuCG",
+    amended_by: ["DE-NIS2UMSUCG-DRAFT"],
     source_url: "https://www.gesetze-im-internet.de/bsig_2009/",
     issuing_body: "Bundestag",
     competent_authorities: ["DE-BSI"],
@@ -840,6 +841,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     parliamentary_reference: "BT-Drs. 20/13367 (Regierungsentwurf, 2024)",
     source_url: "https://dserver.bundestag.de/btd/20/133/2013367.pdf",
     issuing_body: "Bundesministerium des Innern (BMI)",
+    amends: "DE-BSIG-NIS2",
     competent_authorities: ["DE-BSI"],
     relevance_level: "high",
     applicable_to: [
