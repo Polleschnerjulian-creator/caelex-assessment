@@ -197,11 +197,16 @@ const TOOL_LABEL: Record<string, string> = {
 interface AIModeProps {
   open: boolean;
   onClose: () => void;
+  /** Optional prompt to seed the input on open. Used by the
+   *  /atlas/drafting tiles to deep-link the user into AI Mode with a
+   *  pre-filled drafting brief. The user still has to press Enter
+   *  themselves — the agent doesn't fire on mount. */
+  initialPrompt?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────
 
-export function AIMode({ open, onClose }: AIModeProps) {
+export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
   const router = useRouter();
   const [mode, setMode] = useState<AtlasMode>("idle");
   const [inputValue, setInputValue] = useState("");
@@ -257,7 +262,21 @@ export function AIMode({ open, onClose }: AIModeProps) {
   // ── Reset when overlay closes ──────────────────────────────
   useEffect(() => {
     if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 350);
+      // Seed the input from initialPrompt if a deep-link supplied one
+      // (e.g. /atlas/drafting tile click). The user still has to hit
+      // Enter — we don't auto-fire the agent.
+      if (initialPrompt) {
+        setInputValue(initialPrompt);
+      }
+      const t = setTimeout(() => {
+        inputRef.current?.focus();
+        // Move caret to the end of the prefilled text so the user can
+        // continue typing rather than overwriting.
+        if (initialPrompt && inputRef.current) {
+          const len = initialPrompt.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      }, 350);
       return () => clearTimeout(t);
     } else {
       setMode("idle");
@@ -270,7 +289,7 @@ export function AIMode({ open, onClose }: AIModeProps) {
       // Workspace state stays loaded across open/close — the lawyer
       // returns to the same board they left, persisted per-user.
     }
-  }, [open]);
+  }, [open, initialPrompt]);
 
   // ── Workspace bootstrap ────────────────────────────────────
   // First time the workspace is opened, fetch the user's existing

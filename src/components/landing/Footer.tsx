@@ -55,7 +55,12 @@ const solutionLinks = [
   { label: "Jurisdiction Comparator", href: "/atlas/comparator" },
   { label: "Regulatory Updates Feed", href: "/atlas/updates" },
   { label: "Landing Rights Database", href: "/atlas/landing-rights" },
-  { label: "Regulatory Map", href: "/atlas/map" },
+  // Was "/atlas/map" which 404s — that route doesn't exist. The
+  // jurisdictions page is the de-facto regulatory map (country tiles,
+  // regime status, comparator entry-point), which is what users
+  // expected to find at /atlas/map.
+  { label: "Jurisdiction Map", href: "/atlas/jurisdictions" },
+  { label: "Caselaw Database", href: "/atlas/cases" },
 ];
 
 const industryLinks = [

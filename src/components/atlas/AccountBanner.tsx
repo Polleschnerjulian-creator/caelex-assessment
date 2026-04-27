@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Building2, Copy, CheckCircle2, ShieldCheck } from "lucide-react";
+import { OrgSwitcher } from "./OrgSwitcher";
 
 /**
  * Atlas account banner — persistent identity panel at the top of the
@@ -183,6 +184,10 @@ export function AccountBanner() {
             <span className="text-[14px] font-semibold text-[var(--atlas-text-primary)] truncate">
               {ctx.organization.name}
             </span>
+            {/* Org-switcher dropdown — without this the active-org
+                cookie was read by the auth helper but never written;
+                multi-membership users couldn't change scope. */}
+            <OrgSwitcher currentOrgName={ctx.organization.name} />
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span

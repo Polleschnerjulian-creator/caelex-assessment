@@ -23,6 +23,11 @@ import {
   Building2,
   ArrowRight,
   ScrollText,
+  Gavel,
+  Library,
+  ShieldCheck,
+  Key,
+  PenSquare,
   type LucideIcon,
 } from "lucide-react";
 import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
@@ -32,6 +37,10 @@ import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
 import { ALL_SOURCES, ALL_AUTHORITIES } from "@/data/legal-sources";
 import { slugForTreatyId } from "@/data/treaties";
 import { ALL_LANDING_RIGHTS_PROFILES } from "@/data/landing-rights";
+// Caselaw + the index pages were previously absent from the palette,
+// making the 28-case dataset and 937-source corpus discoverable only
+// via deep-link or homepage search.
+import { ATLAS_CASES } from "@/data/legal-cases";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -39,6 +48,7 @@ type ItemGroup =
   | "Navigation"
   | "Treaties"
   | "Sources"
+  | "Cases"
   | "Authorities"
   | "Countries"
   | "Landing Rights";
@@ -96,6 +106,35 @@ const NAV_ITEMS: Item[] = [
     haystack: "international un treaty copuos itu unoosa",
   },
   {
+    id: "nav-sources",
+    group: "Navigation",
+    title: "Sources",
+    subtitle: "Browse the full statutory corpus",
+    href: "/atlas/sources",
+    icon: Library,
+    haystack: "sources statuten quellen catalogue corpus laws",
+  },
+  {
+    id: "nav-cases",
+    group: "Navigation",
+    title: "Caselaw",
+    subtitle: "Court rulings, settlements, regulator orders",
+    href: "/atlas/cases",
+    icon: Gavel,
+    haystack:
+      "cases rechtsprechung caselaw urteile settlements precedent gerichte",
+  },
+  {
+    id: "nav-drafting",
+    group: "Navigation",
+    title: "Drafting Studio",
+    subtitle: "Authorization application, compliance brief, comparison matrix",
+    href: "/atlas/drafting",
+    icon: PenSquare,
+    haystack:
+      "drafting studio anträge brief comparison memo draft scaffold filing",
+  },
+  {
     id: "nav-eu",
     group: "Navigation",
     title: "EU Law",
@@ -103,6 +142,34 @@ const NAV_ITEMS: Item[] = [
     href: "/atlas/eu",
     icon: Landmark,
     haystack: "eu european union space act nis2 cra dora",
+  },
+  {
+    id: "nav-eu-space-act",
+    group: "Navigation",
+    title: "EU Space Act — chapter overview",
+    subtitle: "COM(2025) 335 chapter structure",
+    href: "/atlas/eu-space-act",
+    icon: ScrollText,
+    haystack: "eu space act space-act com 2025 335 chapter overview deep-dive",
+  },
+  {
+    id: "nav-cra",
+    group: "Navigation",
+    title: "Cyber Resilience Act",
+    subtitle: "Regulation (EU) 2024/2847 — chapter structure & key dates",
+    href: "/atlas/cra",
+    icon: ShieldCheck,
+    haystack:
+      "cra cyber resilience act 2024 2847 chapter dates eu cybersecurity",
+  },
+  {
+    id: "nav-api-access",
+    group: "Navigation",
+    title: "API Access",
+    subtitle: "Manage API keys for programmatic Atlas access",
+    href: "/atlas/api-access",
+    icon: Key,
+    haystack: "api access keys integration token developer",
   },
   {
     id: "nav-landing-rights",
@@ -209,11 +276,27 @@ const LANDING_RIGHTS_ITEMS: Item[] = ALL_LANDING_RIGHTS_PROFILES.map((p) => ({
     `${p.jurisdiction} landing rights market access ${p.overview.regime_type} ${p.overview.summary}`.toLowerCase(),
 }));
 
+// Caselaw — every entry in the 28-case database becomes a palette
+// hit so a free-text query like "Cosmos", "Iridium", "FCC Swarm"
+// jumps straight to /atlas/cases/[id]. Without this the only way to
+// reach a case was via a source-detail backlink or an Astra pill.
+const CASE_ITEMS: Item[] = ATLAS_CASES.map((c) => ({
+  id: `case-${c.id}`,
+  group: "Cases" as const,
+  title: c.title,
+  subtitle: `${c.id} · ${c.jurisdiction} · ${c.date_decided.slice(0, 4)} · ${c.forum_name}`,
+  href: `/atlas/cases/${encodeURIComponent(c.id)}`,
+  icon: Gavel,
+  haystack:
+    `${c.id} ${c.title} ${c.plaintiff} ${c.defendant} ${c.forum_name} ${c.citation ?? ""} ${c.jurisdiction} ${c.industry_significance} ${(c.parties_mentioned ?? []).join(" ")} ${c.compliance_areas.join(" ")}`.toLowerCase(),
+}));
+
 const ALL_ITEMS: Item[] = [
   ...NAV_ITEMS,
   ...TREATY_ITEMS,
   ...COUNTRY_ITEMS,
   ...SOURCE_ITEMS,
+  ...CASE_ITEMS,
   ...AUTHORITY_ITEMS,
   ...LANDING_RIGHTS_ITEMS,
 ];
@@ -223,6 +306,7 @@ const GROUP_ORDER: ItemGroup[] = [
   "Treaties",
   "Countries",
   "Sources",
+  "Cases",
   "Authorities",
   "Landing Rights",
 ];
@@ -352,6 +436,8 @@ export default function CommandPaletteModal({
         return t("atlas.palette_group_authorities");
       case "Treaties":
         return "Treaties";
+      case "Cases":
+        return t("atlas.cases") ?? "Caselaw";
       case "Landing Rights":
         return "Landing Rights";
     }

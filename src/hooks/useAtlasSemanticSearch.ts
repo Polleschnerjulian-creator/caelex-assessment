@@ -28,6 +28,7 @@ export type SemanticStatus =
   | "loading"
   | "ready"
   | "not_indexed"
+  | "disabled"
   | "rate_limited"
   | "error";
 
@@ -114,7 +115,7 @@ export function useAtlasSemanticSearch(
         const data = (await res.json()) as {
           matches: SemanticMatch[];
           corpus: number;
-          reason?: "not_indexed" | "embedding_failed";
+          reason?: "not_indexed" | "embedding_failed" | "disabled";
           tookMs: number;
         };
 
@@ -125,6 +126,18 @@ export function useAtlasSemanticSearch(
           // branch where the JSON isn't committed yet). Silently
           // disable the section — UI already has the exact-match path.
           setStatus("not_indexed");
+          setMatches([]);
+          setTookMs(null);
+          return;
+        }
+
+        if (data.reason === "disabled") {
+          // Cost gate (ATLAS_SEMANTIC_ENABLED !== "true"). Surfaces
+          // explicitly so the UI can render a small "off" badge —
+          // without this the section silently rendered as "ready"
+          // with zero matches and users couldn't tell whether
+          // semantic search was off or just unhelpful for the query.
+          setStatus("disabled");
           setMatches([]);
           setTookMs(null);
           return;

@@ -20,7 +20,10 @@ import {
   Monitor,
   RotateCcw,
   XCircle,
+  Key,
+  ArrowRight,
 } from "lucide-react";
+import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Language } from "@/lib/i18n";
 import {
@@ -978,6 +981,44 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Integrations — links to /atlas/api-access. The page was
+                previously orphaned (no inbound link from anywhere); the
+                Firm tab is the right home because API keys are firm-
+                scoped, not personal. */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Key
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
+                  {t("atlas.settings_integrations") ?? "Integrations"}
+                </h2>
+              </div>
+              <Link
+                href="/atlas/api-access"
+                className="group flex items-center gap-4 p-4 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] hover:border-emerald-300 hover:shadow transition"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 flex-shrink-0">
+                  <Key className="h-4 w-4" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
+                    API Access
+                  </div>
+                  <p className="text-[11px] text-[var(--atlas-text-muted)] mt-0.5">
+                    {t("atlas.settings_api_access_desc") ??
+                      "Manage API keys for programmatic access to Atlas data."}
+                  </p>
+                </div>
+                <ArrowRight
+                  className="h-4 w-4 text-[var(--atlas-text-faint)] group-hover:text-emerald-600 transition-colors flex-shrink-0"
+                  strokeWidth={1.5}
+                />
+              </Link>
             </section>
           </div>
         )}

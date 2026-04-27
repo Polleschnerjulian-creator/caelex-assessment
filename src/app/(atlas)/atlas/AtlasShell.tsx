@@ -19,9 +19,13 @@ import {
   Menu,
   X,
   Briefcase,
+  Library,
+  Gavel,
+  PenSquare,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
+import { AIModeLauncher } from "@/components/atlas/AIModeLauncher";
 import { CommandPalette } from "./_components/CommandPalette";
 import { useAtlasTheme } from "./_components/AtlasThemeProvider";
 import { useAtlasUnreadCount } from "@/hooks/useAtlasUnreadCount";
@@ -41,6 +45,20 @@ const MAIN_NAV = [
     icon: Globe2,
   },
   { labelKey: "atlas.treaties", href: "/atlas/treaties", icon: ScrollText },
+  // Sources index — primary discovery surface for the 937-source
+  // corpus. Without this entry the catalogue was browsable only via
+  // free-text search, which hid the depth of the dataset.
+  { labelKey: "atlas.sources", href: "/atlas/sources", icon: Library },
+  // Cases index — surfaces the 28-case caselaw database that was
+  // previously only reachable via source-detail backlinks or Astra
+  // citation pills. Distinct icon (Gavel) to read as adjudication-
+  // outcomes vs the statutory text under "sources".
+  { labelKey: "atlas.cases", href: "/atlas/cases", icon: Gavel },
+  // Drafting Studio — dedicated entry-point for the three drafting
+  // tools (authorization application, compliance brief, jurisdictional
+  // comparison). Without this nav item the tools could only be reached
+  // by stumbling into AI Mode and typing the right command.
+  { labelKey: "atlas.drafting", href: "/atlas/drafting", icon: PenSquare },
   { labelKey: "atlas.eu", href: "/atlas/eu", icon: Landmark },
   {
     labelKey: "atlas.landing_rights",
@@ -393,6 +411,11 @@ export default function AtlasShell({
 
       {/* ─── Astra Chat (floating on all ATLAS pages) ─── */}
       <AtlasAstraChat />
+
+      {/* ─── AI Mode Launcher (floating Sparkles pill, all pages) ─── */}
+      {/* The homepage sets `body[data-atlas-ai-mode-owner="homepage"]` so
+          its inline launcher wins; this one renders on every other page. */}
+      <AIModeLauncher />
 
       {/* ─── Cmd+K Command Palette ─── */}
       <CommandPalette />

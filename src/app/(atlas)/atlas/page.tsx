@@ -11,10 +11,13 @@ import {
   PlaneLanding,
   BookMarked,
   ListChecks,
+  Gavel,
+  Loader2,
 } from "lucide-react";
+import type { SemanticStatus } from "@/hooks/useAtlasSemanticSearch";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useAtlasSemanticSearch } from "@/hooks/useAtlasSemanticSearch";
-import { AIMode } from "@/components/atlas/ai-mode/AIMode";
+// AIMode now mounted globally via AtlasShell → AIModeLauncher.
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
   // Single source of truth — barrel aggregates every jurisdiction
@@ -45,6 +48,11 @@ import {
   type CaseStudy,
   type ConductCondition,
 } from "@/data/landing-rights";
+import {
+  ATLAS_CASES,
+  getTranslatedCase,
+  type LegalCase,
+} from "@/data/legal-cases";
 import { foldText, escapeRegex } from "@/lib/atlas/search-normalize";
 
 // Discriminated union for the render layer. Keeps each branch's
@@ -204,6 +212,7 @@ interface SearchResults {
   landingRightsProfiles: LandingRightsProfile[];
   landingRightsCaseStudies: CaseStudy[];
   landingRightsConduct: ConductCondition[];
+  cases: LegalCase[];
 }
 
 function performSearch(query: string): SearchResults | null {
@@ -263,13 +272,41 @@ function performSearch(query: string): SearchResults | null {
     (c) => foldText(c.title).includes(q) || foldText(c.requirement).includes(q),
   );
 
+  // Caselaw search — folds title, parties, citation, jurisdiction,
+  // and EN+DE translations into one haystack so a German-language
+  // query matches German case captions. Sorts most-recent-first.
+  const cases = ATLAS_CASES.filter((c) => {
+    const trDe = getTranslatedCase(c.id, "de");
+    const haystack = foldText(
+      [
+        c.id,
+        c.title,
+        c.plaintiff,
+        c.defendant,
+        c.forum_name,
+        c.citation ?? "",
+        c.jurisdiction,
+        c.industry_significance,
+        ...(c.parties_mentioned ?? []),
+        ...c.compliance_areas,
+        trDe?.title ?? "",
+        trDe?.industry_significance ?? "",
+      ].join(" "),
+    );
+    return haystack.includes(q);
+  }).sort(
+    (a, b) =>
+      new Date(b.date_decided).getTime() - new Date(a.date_decided).getTime(),
+  );
+
   if (
     jurisdictions.length === 0 &&
     sources.length === 0 &&
     authorities.length === 0 &&
     landingRightsProfiles.length === 0 &&
     landingRightsCaseStudies.length === 0 &&
-    landingRightsConduct.length === 0
+    landingRightsConduct.length === 0 &&
+    cases.length === 0
   ) {
     return null;
   }
@@ -281,7 +318,84 @@ function performSearch(query: string): SearchResults | null {
     landingRightsProfiles,
     landingRightsCaseStudies,
     landingRightsConduct,
+    cases,
   };
+}
+
+// ─── Semantic-search status badge ────────────────────────────────────
+//
+// Tiny pill in the homepage stats line showing whether the semantic-
+// search backend is currently active for the user's query. Off when
+// the env flag (ATLAS_SEMANTIC_ENABLED) isn't set; "indexing pending"
+// when the corpus JSON hasn't been generated yet; "active" once a
+// successful response (with or without matches) lands.
+//
+// Without this badge users couldn't tell whether their query simply
+// had no good semantic neighbours or whether the feature was turned
+// off — the section just silently disappeared.
+
+function SemanticSearchBadge({
+  status,
+  tookMs,
+}: {
+  status: SemanticStatus;
+  tookMs: number | null;
+}) {
+  // Only render when the badge has something useful to communicate.
+  if (status === "idle") return null;
+  if (status === "rate_limited" || status === "error") return null;
+
+  if (status === "loading") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-[10px] text-[var(--atlas-text-muted)]"
+        title="Semantic search in progress"
+      >
+        <Loader2 size={10} className="animate-spin" strokeWidth={1.5} />
+        Semantic
+      </span>
+    );
+  }
+
+  if (status === "ready") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-300"
+        title={
+          tookMs !== null
+            ? `Semantic search active (${tookMs} ms)`
+            : "Semantic search active"
+        }
+      >
+        <Sparkles size={10} strokeWidth={1.5} />
+        Semantic
+      </span>
+    );
+  }
+
+  if (status === "not_indexed") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-[10px] text-amber-700 dark:text-amber-300"
+        title="Semantic index hasn't been generated yet — exact-match search still works."
+      >
+        <Sparkles size={10} strokeWidth={1.5} className="opacity-50" />
+        Indexing pending
+      </span>
+    );
+  }
+
+  // disabled — the env flag is off. Show as a subtle "off" pill so users
+  // realise the section's absence is intentional, not a bug.
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[10px] text-[var(--atlas-text-faint)]"
+      title="Semantic search is off — exact-match results only."
+    >
+      <Sparkles size={10} strokeWidth={1.5} className="opacity-40" />
+      Semantic off
+    </span>
+  );
 }
 
 // ─── Page ───────────────────────────────────────────────────────────
@@ -422,10 +536,6 @@ export default function CommandCenterPage() {
   // narrower meaning — "exact-match hits exist".
   const hasAnyResults = hasResults || hasSemanticSection || semanticLoading;
   const [showAllSources, setShowAllSources] = useState(false);
-  // AI Mode toggle. When true, the full-screen Singularity overlay
-  // mounts above the normal search UI. Purely visual prototype for
-  // now — no real agent dispatch, no AI cost.
-  const [aiModeOpen, setAiModeOpen] = useState(false);
 
   useEffect(() => {
     setShowAllSources(false);
@@ -460,35 +570,15 @@ export default function CommandCenterPage() {
       results.authorities.length +
       results.landingRightsProfiles.length +
       results.landingRightsCaseStudies.length +
-      results.landingRightsConduct.length
+      results.landingRightsConduct.length +
+      results.cases.length
     : 0;
 
   return (
     <div className="min-h-screen bg-[var(--atlas-bg-page)] px-8 lg:px-16">
-      {/* ─── AI Mode Toggle (top-right corner) ─── */}
-      {/* The entry-point to the Singularity overlay. When clicked, the
-          whole page fades behind a dark stage and the orb appears.
-          Prototyp — keine AI-Kosten, kein Backend. */}
-      {/* Entry-Button bewusst minimal: dunkles Glas auf hellem Atlas-BG,
-          Sparkles-Icon subtil in Weiß. Gleiche Typo wie die bestehenden
-          Atlas-UI-Buttons (11px, tracking +0.02). */}
-      <button
-        onClick={() => setAiModeOpen(true)}
-        aria-label="Enter AI Mode"
-        className="fixed top-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full
-          bg-[#0f0f12] text-white/90
-          text-[11px] font-medium tracking-[0.08em] uppercase
-          hover:bg-[#1a1a1f] hover:text-white
-          transition-colors duration-200
-          border border-white/[0.06]
-          shadow-[0_1px_2px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(255,255,255,0.04)_inset]"
-      >
-        <Sparkles size={13} strokeWidth={1.8} className="opacity-80" />
-        <span>AI Mode</span>
-      </button>
-
-      {/* ─── AI Mode overlay ─── */}
-      <AIMode open={aiModeOpen} onClose={() => setAiModeOpen(false)} />
+      {/* AI Mode launcher + overlay are now mounted globally from
+          AtlasShell (see AIModeLauncher.tsx), so every Atlas page —
+          not just the homepage — gets the Sparkles pill. */}
 
       {/* ─── Centered search area ─── */}
       <div
@@ -552,8 +642,36 @@ export default function CommandCenterPage() {
             &#9679;
           </span>
           <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
+            {t("atlas.cases_count", { count: ATLAS_CASES.length })}
+          </span>
+          <span
+            className="text-[4px] text-[var(--atlas-text-faint)]"
+            aria-hidden="true"
+          >
+            &#9679;
+          </span>
+          <span className="text-[11px] text-[var(--atlas-text-muted)]  tracking-wide">
             {t("atlas.jurisdictions_count", { count: 19 })}
           </span>
+          {/* Semantic-search status badge — visible only when the user
+              is actually searching, so it doesn't clutter the empty
+              landing state. ATLAS_SEMANTIC_ENABLED unset → "off"
+              (subtle); enabled but unindexed → "indexing pending";
+              enabled + ready → "🪄 active". */}
+          {query.trim().length >= 4 && (
+            <>
+              <span
+                className="text-[4px] text-[var(--atlas-text-faint)]"
+                aria-hidden="true"
+              >
+                &#9679;
+              </span>
+              <SemanticSearchBadge
+                status={semantic.status}
+                tookMs={semantic.tookMs}
+              />
+            </>
+          )}
         </div>
 
         {/* Result count */}
@@ -874,6 +992,56 @@ export default function CommandCenterPage() {
                     </div>
                   </button>
                 ))}
+              </div>
+            </section>
+          )}
+
+          {results.cases.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <Gavel
+                  size={13}
+                  className="text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
+                  {language === "de" ? "Rechtsprechung" : "Caselaw"}
+                </h2>
+              </div>
+              <div className="space-y-1">
+                {results.cases.slice(0, 10).map((c) => {
+                  const tr = getTranslatedCase(c.id, language);
+                  const title = tr?.title ?? c.title;
+                  const plaintiff = tr?.plaintiff ?? c.plaintiff;
+                  const defendant = tr?.defendant ?? c.defendant;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() =>
+                        router.push(`/atlas/cases/${encodeURIComponent(c.id)}`)
+                      }
+                      className="w-full flex items-center gap-4 px-5 py-3 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-transparent hover:border-[var(--atlas-border)] transition"
+                    >
+                      <span className="text-[11px] font-bold text-[var(--atlas-text-muted)] w-10">
+                        {c.jurisdiction}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] block truncate">
+                          {title}
+                        </span>
+                        <span className="text-[11px] text-[var(--atlas-text-muted)] truncate block">
+                          {plaintiff} v. {defendant}
+                          {" · "}
+                          {c.date_decided.slice(0, 4)}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-violet-600 dark:text-violet-400 flex-shrink-0">
+                        {c.id}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           )}

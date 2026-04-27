@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Landmark, ExternalLink, ArrowLeft } from "lucide-react";
+import {
+  Landmark,
+  ExternalLink,
+  ArrowLeft,
+  ShieldCheck,
+  ScrollText,
+  ArrowRight,
+} from "lucide-react";
 import {
   getLegalSourcesByJurisdiction,
   getAuthoritiesByJurisdiction,
@@ -47,6 +54,62 @@ export default async function EUPage() {
           Programme Regulation. Each entry lists the Member State coverage.
         </p>
       </header>
+
+      {/* Featured chapter deep-dives — link the curated /atlas/eu-space-act
+          (proposed regulation chapter overview) and /atlas/cra (Cyber
+          Resilience Act chapter structure + key dates) cards. These two
+          pages were previously orphaned (no inbound link from anywhere),
+          so the curated chapter content was effectively invisible. */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl mb-10">
+        <Link
+          href="/atlas/eu-space-act"
+          className="group flex flex-col gap-2 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] hover:border-blue-300 hover:shadow transition"
+        >
+          <div className="flex items-center gap-2">
+            <ScrollText className="h-4 w-4 text-blue-600" strokeWidth={1.5} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
+              Featured deep-dive
+            </span>
+          </div>
+          <h3 className="text-[16px] font-semibold text-[var(--atlas-text-primary)]">
+            EU Space Act — chapter overview
+          </h3>
+          <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
+            COM(2025) 335 chapter structure (I–VII), article ranges, and
+            draft-vs-final status flags. The fastest way to orient yourself in
+            the proposed regulation.
+          </p>
+          <span className="inline-flex items-center gap-1 mt-1 text-[12px] font-medium text-blue-700 group-hover:gap-2 transition-all">
+            Open <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+          </span>
+        </Link>
+
+        <Link
+          href="/atlas/cra"
+          className="group flex flex-col gap-2 p-5 rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] hover:border-emerald-300 hover:shadow transition"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck
+              className="h-4 w-4 text-emerald-600"
+              strokeWidth={1.5}
+            />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
+              Featured deep-dive
+            </span>
+          </div>
+          <h3 className="text-[16px] font-semibold text-[var(--atlas-text-primary)]">
+            Cyber Resilience Act — chapter overview
+          </h3>
+          <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
+            Regulation (EU) 2024/2847 — chapter structure (I–VIII) and the
+            Article 71 application timeline. Sourced from the official
+            consolidated text.
+          </p>
+          <span className="inline-flex items-center gap-1 mt-1 text-[12px] font-medium text-emerald-700 group-hover:gap-2 transition-all">
+            Open <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+          </span>
+        </Link>
+      </section>
 
       <section className="space-y-3 max-w-4xl mb-10">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--atlas-text-muted)] mb-3">
