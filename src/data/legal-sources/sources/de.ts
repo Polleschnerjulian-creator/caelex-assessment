@@ -733,7 +733,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     ],
     scope_description:
       "Technical implementing regulation for SatDSiG. Defines the resolution thresholds that determine whether an EO system is in scope of the Act at all, and maintains country/area restriction lists used in data-distribution sensitivity assessments.",
-    related_sources: ["DE-SATDSIG-2007", "DE-BSI-TR-03140", "DE-BAFA"],
+    related_sources: ["DE-SATDSIG-2007", "DE-BSI-TR-03140"],
     amends: "DE-SATDSIG-2007",
     caelex_data_file_mapping: ["national-space-laws.ts"],
     notes: [

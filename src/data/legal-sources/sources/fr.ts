@@ -1027,6 +1027,52 @@ const TECHNICAL_FR: LegalSource[] = [
     ],
     last_verified: "2026-04-13",
   },
+
+  {
+    id: "FR-RTF-2011",
+    jurisdiction: "FR",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Technical Regulation for the Loi sur les Opérations Spatiales (RTF — quantitative safety thresholds)",
+    title_local:
+      "Arrêté du 31 mars 2011 relatif à la réglementation technique en application du décret n° 2009-643 du 9 juin 2009",
+    date_enacted: "2011-03-31",
+    date_in_force: "2011-04-01",
+    official_reference: "JORF n° 0083 du 8 avril 2011, NOR: ESRR1106355A",
+    source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000023815719/",
+    issuing_body: "Ministère chargé de l'espace",
+    competent_authorities: ["FR-CNES"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "in_orbit_services",
+    ],
+    compliance_areas: [
+      "licensing",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "Quantitative safety regulation implementing Article 4 of decree 2009-643 under the LOS framework. Sets the casualty-risk thresholds, end-of-life disposal requirements (25-year LEO clearance, post-mission passivation) and ground-segment robustness standards used to assess LOS authorisation files. Reissued unchanged on key thresholds in subsequent updates.",
+    key_provisions: [
+      {
+        section: "Art. 22-25",
+        title: "Casualty risk thresholds",
+        summary:
+          "Casualty risk from uncontrolled re-entry must not exceed 1 in 10 000 per event (collective) and 1 in 1 000 000 per individual on the ground.",
+      },
+      {
+        section: "Art. 30-34",
+        title: "Post-mission disposal",
+        summary:
+          "LEO objects must be removed from the protected region within 25 years of end of mission; passivation required before disposal to prevent fragmentation events.",
+      },
+    ],
+    related_sources: ["FR-LOS-2008", "FR-DECRET-2009-643"],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── CNES Legal Framework (1) ───────────────────────────────────────
@@ -1770,7 +1816,7 @@ const FOUNDATIONAL_FR: LegalSource[] = [
     ],
     scope_description:
       "The French transposition and complement to the GDPR. French space operators processing imagery, customer data, or ground-station user data are subject to CNIL enforcement under this statute — distinct from but parallel to the LOS licensing regime. Matters especially at resolution levels where individuals become identifiable in the imagery itself.",
-    related_sources: ["FR-CNIL", "FR-DECRET-2009-640", "EU-GDPR-2016"],
+    related_sources: ["FR-DECRET-2009-640", "EU-GDPR-2016"],
     implements: "EU-GDPR-2016",
     notes: [
       "2018 was the substantive refoundation — Loi 2018-493 (20 June 2018) and Ord. 2018-1125 (12 December 2018) rewrote LIL to align with GDPR while preserving French-specific derogations (e.g. journalism, research).",
@@ -1849,7 +1895,7 @@ const FOUNDATIONAL_FR: LegalSource[] = [
     ],
     scope_description:
       "Cross-cutting national security regime protecting sensitive French scientific and technical capability. Overlaps with but is legally distinct from export control (CIEEMG for munitions, SBDU for dual-use) — PPST is about controlling access to the *research environment*, not about controlling the export of the *output*. Space operators interact with PPST primarily through visitor authorisation processes at ZRR-designated facilities.",
-    related_sources: ["FR-CIEEMG", "FR-SBDU-DUALUSE", "FR-SGDSN"],
+    related_sources: ["FR-CIEEMG", "FR-SBDU-DUALUSE"],
     notes: [
       "PPST compliance failure is under-appreciated as a risk in international space collaboration. A foreign engineer entering a ZRR without prior clearance is a criminal offence under Art. 413-7 — on the part of both the visitor AND the establishment that admitted them.",
       "For French primes, the « Correspondant PPST » (internal security coordinator) role is the operational counterparty for visitor/hiring authorisations.",

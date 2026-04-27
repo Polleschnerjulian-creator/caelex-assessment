@@ -709,7 +709,7 @@ const DEBRIS_RULES_US: LegalSource[] = [
       "https://www.federalregister.gov/documents/2023/09/20/2023-20275/mitigation-of-orbital-debris-in-the-new-space-age",
     issuing_body:
       "Federal Aviation Administration (FAA), Office of Commercial Space Transportation (AST)",
-    competent_authorities: ["US-FAA"],
+    competent_authorities: ["US-FAA-AST"],
     relevance_level: "high",
     applicable_to: ["launch_provider"],
     compliance_areas: [
