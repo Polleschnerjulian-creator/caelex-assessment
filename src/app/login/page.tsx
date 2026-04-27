@@ -51,8 +51,19 @@ function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
-        setError("Invalid email or password");
+      if (!result || result.error || result.ok === false) {
+        const raw = result?.error ?? "Sign-in failed";
+        // Surface the actual reason from authorize() (deactivated, locked,
+        // rate-limited, etc.) instead of a flat "Invalid email or password".
+        // CredentialsSignin is the generic "wrong creds" code — translate
+        // that one but pass everything else through so debugging is sane.
+        setError(
+          raw === "CredentialsSignin"
+            ? "Invalid email or password"
+            : raw === "Configuration"
+              ? "Authentication is misconfigured. Contact support."
+              : raw,
+        );
         setLoading(false);
         return;
       }
@@ -63,18 +74,29 @@ function LoginForm() {
         { category: "conversion" },
       );
 
-      // MFA-required accounts pass through the challenge first,
-      // carrying the callbackUrl so the final destination is preserved.
       const session = await getSession();
-      if (session?.user?.mfaRequired && !session?.user?.mfaVerified) {
+      if (!session) {
+        // signIn said ok but no session was minted — almost always a JWT
+        // callback rejection (e.g. account became inactive between
+        // authorize() and JWT). Hard-reload so the next request hits the
+        // server with fresh cookies and middleware can decide.
+        window.location.assign(callbackUrl);
+        return;
+      }
+
+      if (session.user?.mfaRequired && !session.user?.mfaVerified) {
         router.push(
           `/auth/mfa-challenge?callbackUrl=${encodeURIComponent(callbackUrl)}`,
         );
       } else {
-        router.push(callbackUrl);
+        // Hard navigation guarantees the new session cookie is sent on the
+        // next request — router.push keeps client state and occasionally
+        // races the cookie write on slow connections, leaving the user
+        // stuck on /login with a valid session they can't see.
+        window.location.assign(callbackUrl);
       }
-    } catch {
-      setError("Something went wrong");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
     }
   };
