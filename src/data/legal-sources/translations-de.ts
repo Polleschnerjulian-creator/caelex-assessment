@@ -8215,6 +8215,2763 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VERVOLLSTÄNDIGUNGS-TRANCHE — high/medium/low Sources
+  // 175 Quellen, jeweils Titel + 1-3 Provisions ins Deutsche übertragen.
+  // EN-scope_description bleibt als Fallback erhalten und wird hier nicht
+  // dupliziert, um den Datei-Footprint überschaubar zu halten.
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "AE-EXECREG-2020",
+    {
+      title:
+        "Durchführungsverordnung zum Bundes-Dekret-Gesetz 12/2019 — Kabinettsbeschluss 57/2020",
+      provisions: {
+        "Titel 2": {
+          title: "Antragsinhalt der Genehmigungen",
+          summary:
+            "Detaillierte Nachweis-Vorlagen je Genehmigungsklasse: Start, Satellitenbetrieb, Bodenstation, In-Orbit-Services und Weltraum-Ressourcen-Tätigkeiten — einschließlich technischer, Sicherheits-, Finanz- und Endnutzer-Screening-Nachweise.",
+        },
+        "Titel 4": {
+          title: "Trümmer-Vermeidungs-Anforderungen",
+          summary:
+            "Ausgerichtet an den IADC-Trümmer-Vermeidungs-Leitlinien: 25-Jahres-LEO-Räumung, Post-Mission-Passivierung, vor Genehmigung geprüfter End-of-Life-Entsorgungs-Plan.",
+        },
+      },
+    },
+  ],
+  [
+    "AE-MBRSC-LICENSING",
+    {
+      title: "UAESA-Genehmigungsklassen — Antragsverfahren und Gebührenordnung",
+      provisions: {
+        "Klasse — Start": {
+          title: "Inhalt eines Start-Genehmigungsantrags",
+          summary:
+            "Trägerqualifikation, Range-Koordination mit der Luftwaffe, Drittpartie-Haftpflicht-Versicherung sowie Endnutzer-/End-Use-Diligence.",
+        },
+        "Klasse — Weltraum-Ressourcen": {
+          title: "Inhalt einer Ressourcen-Extraktions-Genehmigung",
+          summary:
+            "Missionsprofil, In-Situ-Resource-Utilisation-Plan, Umweltschutz und Planetary-Protection-Compliance sowie Downstream-Kommerzialisierungs-Rahmen.",
+        },
+      },
+    },
+  ],
+  [
+    "AE-CYBERLAW-2021",
+    {
+      title:
+        "Bundes-Dekret-Gesetz 34/2021 zur Bekämpfung von Gerüchten und Cyberkriminalität",
+      provisions: {
+        "Art. 2-5": {
+          title: "Tatbestände unautorisierten Zugriffs",
+          summary:
+            "Verschuldensunabhängige Cybercrime-Tatbestände mit extraterritorialer Reichweite für Handlungen gegen VAE-Infrastruktur.",
+        },
+      },
+    },
+  ],
+  [
+    "AE-DUBAI-DSO-2024",
+    {
+      title: "Dubai Space Strategy 2030 / VAE Nationale Weltraum-Strategie",
+      provisions: {
+        "Pillar 1": {
+          title: "Industrielle Lokalisierung",
+          summary:
+            "60 % VAE-Wertschöpfungs-Anteil bei Regierungs-Weltraum-Programmen bis 2030; Partnerschaftsbasierte Satellitenfertigung mit ausländischen Primes.",
+        },
+      },
+    },
+  ],
+  [
+    "AE-ITU-COORDINATION",
+    {
+      title:
+        "TDRA-Spektrum-Koordination — VAE-ITU-Anmeldungen für Satellitennetze",
+      provisions: {
+        "Spektrum-Lizenzierung": {
+          title: "TDRA-Genehmigung Satellitenspektrum",
+          summary:
+            "TDRA koordiniert ITU-API/CR/C-Anmeldungen für VAE-geflaggte Satellitennetze; ITU-koordinierte Netze erhalten eine TDRA-Spektrumslizenz unter laufenden Betriebsbedingungen.",
+        },
+      },
+    },
+  ],
+  [
+    "AE-PDPA",
+    {
+      title: "Bundes-Dekret-Gesetz 45/2021 zum Schutz personenbezogener Daten",
+      provisions: {
+        "Art. 22": {
+          title: "Grenzüberschreitende Übermittlungen",
+          summary:
+            "Übermittlungen sind in Jurisdiktionen mit angemessenem Schutzniveau zulässig; Ausnahmen bei expliziter Einwilligung und Vertragserfüllung.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-ASA-OPERATING-CONDITIONS",
+    {
+      title:
+        "Australian Space Agency — Standard Operating Conditions Schedule 1 (Trümmer-Vermeidung)",
+      provisions: {
+        "Sched. 1 §3": {
+          title: "Technische Basis — ISO 24113",
+          summary:
+            "Alle lizenzierten Missionen müssen die Konformität mit ISO 24113:2023 in der technischen Einreichung nachweisen.",
+        },
+        "Sched. 1 §6": {
+          title: "5-Jahres-LEO-PMD",
+          summary:
+            "Im LEO operierende Raumfahrzeuge sind innerhalb von 5 Jahren nach Missionsende zu entsorgen (Rev. 3, 2024).",
+        },
+        "Sched. 1 §8": {
+          title: "Konjunktions-Datenteilung",
+          summary:
+            "Operatoren beteiligen sich am ADF-Space-Surveillance-CDM-Austausch.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-DTC-ACT-2012",
+    {
+      title: "Defence Trade Controls Act 2012",
+      provisions: {
+        "Part 2": {
+          title: "Genehmigungen für kontrollierte Lieferungen",
+          summary:
+            "Materielle und immaterielle Lieferungen von DSGL-Items — einschließlich Übermittlung technischer Daten — erfordern eine DEC-Genehmigung. Die Pflicht für immaterielle Übermittlungen erfasst grenzüberschreitende Engineering-Kooperation.",
+        },
+        "Part 3": {
+          title: "Vermittlungs-Kontrollen",
+          summary:
+            "Selbst eine in Australien ansässige Person, die als Vermittler in einer Drittland-zu-Drittland-Transaktion mit DSGL-Items auftritt, kann eine Vermittlungs-Genehmigung benötigen.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-RADIOCOM-ACT-1992",
+    {
+      title: "Radiocommunications Act 1992",
+      provisions: {
+        "Part 3.1": {
+          title: "Spektrumlizenzen",
+          summary:
+            "Von der ACMA erteilte Spektrumlizenzen verleihen ausschließliche Rechte an Frequenzbändern; Satelliten-Erdfunkstellen-Lizenzen werden gesondert für einzelne Anlagen erteilt.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-SLR-RULES-2019",
+    {
+      title: "Space (Launches and Returns) (General) Rules 2019",
+      provisions: {
+        "Part 4": {
+          title: "Antragsinhalt für Start-Genehmigungen",
+          summary:
+            "Detaillierte Nachweis-Anforderungen: Trägerqualifikation, Flugsicherheits-Analyse, Range-Koordination, Umweltbewertung, Drittpartie-Haftpflicht-Versicherung.",
+        },
+        "Part 7": {
+          title: "Trümmer-Vermeidungs-Anforderungen",
+          summary:
+            "Ausgerichtet an den IADC-Trümmer-Vermeidungs-Leitlinien: 25-Jahres-LEO-Räumung, Post-Mission-Passivierung, mit dem Antrag eingereichter End-of-Life-Entsorgungs-Plan.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-CIVIL-AVIATION-ACT-1988",
+    {
+      title: "Civil Aviation Act 1988 — Luftraum-Koordination für Starts",
+      provisions: {
+        "Part III": {
+          title: "Aktivierung von Sperrgebieten",
+          summary:
+            "Die CASA aktiviert Sperrgebiete für Start- und Wiedereintritts-Fenster und koordiniert mit AirServices Australia die Luftraum-Verkehrsumlenkung.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-PRIVACY-ACT",
+    {
+      title: "Privacy Act 1988 (mit Privacy-Reform-Änderungen 2024)",
+      provisions: {
+        "APP 8": {
+          title: "Grenzüberschreitende Datenübermittlung",
+          summary:
+            "Eine grenzüberschreitende Offenlegung personenbezogener Informationen ist nur zulässig, wenn der Empfänger an im Wesentlichen vergleichbare Schutzmaßnahmen gebunden ist oder die betroffene Person ausdrücklich eingewilligt hat.",
+        },
+      },
+    },
+  ],
+  [
+    "AU-SPACEPORTS-2026",
+    {
+      title:
+        "Australische Spaceports — Bowen Orbital Spaceport / Whalers Way / Arnhem Space Centre",
+      provisions: {
+        Bowen: {
+          title: "Gilmour-Space-Operationen",
+          summary:
+            "Tropisch gelegener Standort, ideal für niedrig-inklinierte LEO-Starts; ASA-Spaceport-Lizenz von Gilmour Space; erster Orbital-Startversuch mit Eris 2024.",
+        },
+        "Whalers Way": {
+          title: "Southern-Launch-Operationen",
+          summary:
+            "Süd-australischer Standort mit freiem südlichem Azimut-Korridor für Polar- und SSO-Starts; lizenziert für sub-orbitale und orbitale Operationen.",
+        },
+        "Arnhem Space Centre": {
+          title: "NASA-Partner-Startgelände",
+          summary:
+            "Erster kommerzieller Spaceport außerhalb der USA, der eine NASA-Suborbital-Kampagne hostet (Juni 2022); ASA-lizenziert für ELAs kommerzielles Geschäft.",
+        },
+      },
+    },
+  ],
+  [
+    "BR-AEB-LAW-1994",
+    {
+      title:
+        "Gesetz Nr. 8854 von 1994 — Errichtung der Brasilianischen Weltraumagentur",
+      provisions: {
+        "Art. 2-4": {
+          title: "Struktur und Mandat der AEB",
+          summary:
+            "Die AEB erhält Zuständigkeit für die Planung und Koordination ziviler Weltraumtätigkeiten, einschließlich Genehmigungs-Verantwortlichkeiten, die später in AEB-Resolutionen und im Luftfahrtgesetz konkretisiert werden.",
+        },
+      },
+    },
+  ],
+  [
+    "BR-DECREE-91040-1985",
+    {
+      title:
+        "Dekret Nr. 91.040 von 1985 — Brasilianische Komplette Weltraummission",
+      provisions: {
+        "Art. 2": {
+          title: "Programmziele MECB",
+          summary:
+            "Setzt das ursprüngliche Ziel einer eigenständigen brasilianischen Startfähigkeit und einer Erdbeobachtungs-Satelliten-Reihe, gemeinsam ausgeführt durch AEB-Vorgänger, INPE und Luftwaffe.",
+        },
+      },
+    },
+  ],
+  [
+    "CA-CISSIA-1999",
+    {
+      title: "Civil International Space Station Agreement Implementation Act",
+      provisions: {
+        "§ 5-6": {
+          title: "Kanadische Hoheitsgewalt über kanadische Flight Elements",
+          summary:
+            "Verleiht Kanada Hoheitsgewalt und Kontrolle über kanadische Flight Elements (Canadarm2, Dextre) und kanadische Crew an Bord der ISS, konsistent mit dem IGA.",
+        },
+      },
+    },
+  ],
+  [
+    "CA-CSA-DEBRIS-POLICY",
+    {
+      title:
+        "Kanadische Weltraumagentur — Politik zur Vermeidung von Weltraumtrümmern",
+      provisions: {
+        "§4": {
+          title: "Technische Basis — ISO 24113",
+          summary:
+            "Alle CSA-finanzierten und CSA-lizenzierten Missionen müssen die Konformität mit ISO 24113:2023 in der technischen Einreichung nachweisen.",
+        },
+        "§6": {
+          title: "Konstellations-Bestimmungen",
+          summary:
+            "Operatoren von Konstellationen >100 Satelliten müssen ein flotten-weites Katastrophen-Kollisions-Risiko-Modell und einen aggregierten End-of-Life-Kadenzplan einreichen.",
+        },
+      },
+    },
+  ],
+  [
+    "CA-RADIOCOM-ACT",
+    {
+      title: "Radiocommunication Act",
+      provisions: {
+        "§ 4-5": {
+          title: "Funkstationen- und Spektrumslizenzen",
+          summary:
+            "Der Betrieb von Funkanlagen — einschließlich Satelliten-TT&C und Erdfunkstellen — erfordert eine ISED-Lizenz; ausländische Satellitensysteme, die kanadische Kunden bedienen, benötigen typisch eine kanadische Gateway-Lizenz.",
+        },
+      },
+    },
+  ],
+  [
+    "CN-DRAFT-SPACE-LAW",
+    {
+      title: "Entwurf eines Weltraumgesetzes der Volksrepublik China",
+      provisions: {
+        "Entwurf Kap. III": {
+          title: "Statutarisches Genehmigungs-Regime",
+          summary:
+            "Würde die Start- und On-Orbit-Management-Genehmigungs-Regime auf gesetzliche Grundlage stellen, mit straf- und ordnungsrechtlichen Sanktionen.",
+        },
+      },
+    },
+  ],
+  [
+    "CN-REGISTRATION-2001",
+    {
+      title:
+        "Maßnahmen zur Registrierung von in den Weltraum gestarteten Objekten",
+      provisions: {
+        "Art. 3-7": {
+          title: "Innerstaatliches Register und UN-Register",
+          summary:
+            "Von chinesischen Stellen oder vom chinesischen Territorium gestartete Weltraumobjekte werden in das nationale Register eingetragen und gemäß Registrierungsübereinkommen an den UN-Generalsekretär gemeldet.",
+        },
+      },
+    },
+  ],
+  [
+    "DE-DLR-DEBRIS-POLICY",
+    {
+      title:
+        "DLR-Richtlinie zur Vermeidung von Weltraumtrümmern — Umsetzung ECSS-U-AS-10C in bundesgeförderten Missionen",
+      provisions: {
+        "§3": {
+          title: "ECSS-Übernahme",
+          summary:
+            "DLR-finanzierte Missionen müssen die Konformität mit ECSS-U-AS-10C Rev.2 und ISO 24113:2023 erfüllen.",
+        },
+        "§5": {
+          title: "Passivierungs-Telemetrie",
+          summary:
+            "Operatoren liefern als Teil der Projekt-Abschluss-Dokumentation On-Orbit-Telemetrie zur Bestätigung der Tank-Druck-Equilibrierung und der Aktivierung des Batterie-Isolations-Schaltkreises.",
+        },
+      },
+    },
+  ],
+  [
+    "DE-LAENDER-SPACE-CLUSTERS",
+    {
+      title:
+        "Deutsche Länder-Weltraum-Cluster — Bremen, Bayern, Baden-Württemberg, Mecklenburg-Vorpommern",
+      provisions: {
+        "Bremen — Raumfahrtland": {
+          title: "Bremen als Bundesland-Zentrum",
+          summary:
+            "Der Bremer Senat hat mehrere Raumfahrtstrategien (zuletzt 2024) zur Koordination von Land-FuE-Förderung, ESA-Beschaffungs-Positionierung und Cluster-Unterstützung herausgegeben.",
+        },
+        Bayern: {
+          title: "München/Augsburg-Ökosystem",
+          summary:
+            "Das bayerische Wirtschaftsministerium betreibt den Bavarian Aerospace Cluster (BavAIRia / BavSpace) zur Koordination der Münchner NewSpace-Start-ups (Rocket Factory Augsburg, Isar Aerospace, Mynaric).",
+        },
+        MV: {
+          title: "GSM-Seehafen-Konzept",
+          summary:
+            "Das MV-Wirtschaftsministerium hat ein See-basiertes Start-Konzept vor Rostock geprüft; Status: Machbarkeitsstudie, kein operativer Genehmigungsrahmen Stand 2026.",
+        },
+      },
+    },
+  ],
+  [
+    "EE-CYBERSEC-2018",
+    {
+      title:
+        "Cybersicherheitsgesetz (Estland, NIS-Umsetzung; NIS2-Transposition ausstehend)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Cybersicherheits-Basis aus der NIS-Ära",
+          summary:
+            "Setzt die ursprüngliche NIS-Richtlinie (EU 2016/1148) um. RIA ist die nationale zuständige Behörde. Weltraumsektor-Einrichtungen, die wesentliche Dienste erbringen, fallen unter das Regime für wesentliche/wichtige Einrichtungen.",
+        },
+      },
+    },
+  ],
+  [
+    "EE-ECA-2004",
+    {
+      title: "Gesetz über elektronische Kommunikation (Estland)",
+      provisions: {
+        "§§ 9–19": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung, einschließlich Satelliten-Erdfunkstellen und -Uplink-Diensten. Die TTJA ist die ausstellende Behörde und verwaltet Estlands Position bei ITU-Anmeldungen.",
+        },
+      },
+    },
+  ],
+  [
+    "EE-ESA-ACCESSION-2015",
+    {
+      title: "ESA-Konvention — Estnische Vollmitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Vollmitgliedschaft",
+          summary:
+            "Estland wurde am 2. Februar 2015 21. Vollmitglied der ESA. Estland trägt jährlich rund 3 Mio. EUR zu ESA-Programmen bei.",
+        },
+      },
+    },
+  ],
+  [
+    "EE-SGA-2011",
+    {
+      title: "Gesetz über strategische Güter (Estland)",
+      provisions: {
+        "§§ 1–10": {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Ergänzt die EU-Verordnung 2021/821. Die Strategic Goods Commission unter dem Verteidigungsministerium erteilt Ausfuhrlizenzen für Kategorie 9 (Aerospace/Propulsion). Estland ist Mitglied von Wassenaar, MTCR, NSG und Australia Group.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-CER-2022",
+    {
+      title:
+        "CER-Richtlinie — Resilienz kritischer Einrichtungen (physische Resilienz, NIS2-Pendant)",
+      provisions: {
+        "Art. 6": {
+          title: "Erfasste Sektoren und Untersektoren",
+          summary:
+            "Anhang listet elf kritische-Einrichtungen-Sektoren. Sektor 10 'Weltraum' erfasst Betreiber von Boden-Infrastruktur, die die Bereitstellung weltraumbasierter Dienste unterstützt — im Eigentum, Management oder Betrieb von Mitgliedstaaten oder privaten Akteuren.",
+        },
+        "Art. 13": {
+          title: "Risikobewertung und Resilienzmaßnahmen",
+          summary:
+            "Jede benannte kritische Einrichtung muss mindestens alle vier Jahre eine Risikobewertung durchführen und angemessene technische, sicherheitsbezogene und organisatorische Maßnahmen zur Resilienz gegen Vorfälle treffen.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-COPERNICUS-DATA-POLICY",
+    {
+      title:
+        "Delegierte Verordnung (EU) Nr. 1159/2013 — Copernicus-Daten- und -Informationspolitik",
+      provisions: {
+        "Art. 3": {
+          title: "Freier, voller und offener Zugang",
+          summary:
+            "Sentinel-Daten und Copernicus-Informationsprodukte werden allen Nutzern unentgeltlich zur Verfügung gestellt, vorbehaltlich Quellenangabe und der Sicherheitsrestriktions-Architektur.",
+        },
+        "Art. 12": {
+          title: "Sicherheits-Restriktionen",
+          summary:
+            "Die Kommission kann in Konsultation mit Mitgliedstaaten den Zugang zu bestimmten Copernicus-Daten oder -Produkten aus Gründen der nationalen Sicherheit beschränken.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-GALILEO-PRS-2011",
+    {
+      title:
+        "Beschluss Nr. 1104/2011/EU über den Galileo Public Regulated Service (PRS)",
+      provisions: {
+        "Art. 3-5": {
+          title: "Autorisierte PRS-Nutzer",
+          summary:
+            "PRS-Zugang ist Regierungs-Nutzern (Verteidigung, Zivilschutz, Zoll) vorbehalten, die von einer Mitgliedstaaten-Competent-PRS-Authority benannt wurden. Kommerzielle Wiederverkaufsmodelle sind verboten.",
+        },
+        "Art. 8 + Anhang": {
+          title: "Gemeinsame Mindeststandards",
+          summary:
+            "Mitgliedstaaten müssen gemeinsame Mindest-Sicherheitsstandards (Schlüssel-Management, Equipment-Zertifizierung, Personal-Clearance) übernehmen, bevor sie PRS-Nutzung autorisieren.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-GDPR-2016",
+    {
+      title: "Datenschutz-Grundverordnung",
+      provisions: {
+        "Art. 5": {
+          title: "Grundsätze der Verarbeitung",
+          summary:
+            "Personenbezogene Daten sind rechtmäßig, fair und transparent zu verarbeiten; für festgelegte Zwecke zu erheben; angemessen, relevant und auf das notwendige Maß beschränkt; richtig; nicht länger als erforderlich aufzubewahren; sicher zu verarbeiten.",
+        },
+        "Art. 32": {
+          title: "Sicherheit der Verarbeitung",
+          summary:
+            "Verantwortliche und Auftragsverarbeiter müssen geeignete technische und organisatorische Maßnahmen treffen, einschließlich Verschlüsselung und Pseudonymisierung, um ein dem Risiko angemessenes Schutzniveau zu gewährleisten.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-CRMA-2024",
+    {
+      title: "Critical Raw Materials Act — Verordnung (EU) 2024/1252",
+      provisions: {
+        "Anhang I": {
+          title: "Liste strategischer Rohstoffe",
+          summary:
+            "34 kritische und 17 strategische Rohstoffe einschließlich Seltener Erden (Nd, Dy, Pr, Tb), Gallium, Germanium, Lithium, Platin-Gruppen-Metalle, Magnesium und Silizium-Metall — alle stark in Raumfahrzeug-Elektronik und -Strukturen genutzt.",
+        },
+        "Art. 6": {
+          title: "Strategische Projekte",
+          summary:
+            "Mitgliedstaaten und Kommission benennen Strategische Projekte mit prioritärer Genehmigung und Finanzierungs-Zugang. Weltraum-Lieferketten-Projekte qualifizieren sich.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-ESA-FFPA-2024",
+    {
+      title:
+        "EU-ESA-Finanzrahmen-Partnerschafts-Vereinbarung (FFPA) — Erneuerung 2024",
+      provisions: {
+        "Beschaffungs-Regeln": {
+          title: "EU-finanzierte ESA-Ausschreibungen",
+          summary:
+            "Tender-Regeln für EU-finanzierte ESA-Programme folgen dem ESA-Industrie-Politik-Rahmen mit EU-spezifischen Überlagerungen zu geographischer Verteilung, Sicherheits-Akkreditierung und IP-Erhalt.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-FSR-2022",
+    {
+      title: "EU-Verordnung über drittstaatliche Subventionen (FSR)",
+      provisions: {
+        "Art. 19-23": {
+          title: "Notifikation von Zusammenschlüssen",
+          summary:
+            "Erwerbe von EU-Unternehmen mit EU-Umsatz über 500 Mio. EUR und Foreign-Financial-Contributions des Erwerbers über 50 Mio. EUR erfordern Ex-ante-Notifikation. Erfasst Private-Equity-getriebene Konsolidierung im Weltraumsektor.",
+        },
+        "Art. 28-29": {
+          title: "Notifikation öffentlicher Vergabe",
+          summary:
+            "Gebote in EU-Vergabeverfahren über 250 Mio. EUR erfordern Notifikation drittstaatlicher Finanzbeiträge. Trifft ESA- und Mitgliedstaaten-Beschaffung auf Hauptauftragnehmer-Ebene.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-GOVSATCOM-DEC",
+    {
+      title:
+        "EU Governmental Satellite Communications (GOVSATCOM) — Programmkomponente unter VO 2021/696",
+      provisions: {
+        "Titel VIII": {
+          title: "Pool autorisierter Regierungs-Nutzer",
+          summary:
+            "Autorisierte Regierungs-Nutzer aus Mitgliedstaaten greifen über EUSPA-geführte Beschaffung auf gepoolte GOVSATCOM-Kapazität zu; Kapazität bereitgestellt von Mitgliedstaaten-Kommerz-Operatoren (Eutelsat, SES, Hispasat) unter einheitlichen Sicherheits-Akkreditierungs-Bedingungen.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-IDD",
+    {
+      title:
+        "Versicherungsvertriebsrichtlinie — Wohlverhaltensregeln für Versicherungsvermittler",
+      provisions: {
+        "Art. 17-20": {
+          title: "Information und Wohlverhalten",
+          summary:
+            "Vermittler müssen stets ehrlich, redlich und professionell im besten Interesse des Kunden handeln. Vorvertragliche Informationspflichten umfassen Produktmerkmale, Vermittler-Vergütung und potenzielle Interessenkonflikte.",
+        },
+        "Art. 25": {
+          title: "Product Oversight and Governance (POG)",
+          summary:
+            "Hersteller müssen ein Produkt-Genehmigungsverfahren unterhalten; Vermittler müssen das Produkt verstehen und den Vertrieb am Zielmarkt ausrichten.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-SOLVENCY-II",
+    {
+      title:
+        "Solvency-II-Richtlinie — aufsichtsrechtliche Regulierung von EU-Versicherungs- und Rückversicherungs-Unternehmen",
+      provisions: {
+        "Titel I, Kap. VI": {
+          title: "Solvency Capital Requirement (SCR)",
+          summary:
+            "Risikobasierte Eigenkapital-Anforderung, die Markt-, Kredit-, Lebens-, Nicht-Lebens- und operationelles Risiko abdeckt. Weltraum-Versicherungs-Underwriting fällt unter das Nicht-Lebens-Modul.",
+        },
+        "Titel I, Kap. III": {
+          title: "Grenzüberschreitende Aufsicht",
+          summary:
+            "Single-Licence-Rahmen, unter dem ein EU-zugelassener Versicherer im gesamten EU-/EWR-Raum tätig sein darf.",
+        },
+      },
+    },
+  ],
+  [
+    "EU-SST-DECISION",
+    {
+      title:
+        "Beschluss (EU) 2014/541 — Rahmen zur Unterstützung der EU-Space-Surveillance-and-Tracking (SST)",
+      provisions: {
+        "VO 2021/696 Art. 53-58": {
+          title: "EU-SST-Konsortium und Dienste",
+          summary:
+            "Das EU-SST-Konsortium (FR/DE/IT/ES/PL/RO/PT) liefert autorisierten Nutzern Katalogpflege, Kollisionsvermeidungs-Warnungen, Wiedereintritts-Warnungen und Fragmentierungsanalyse.",
+        },
+      },
+    },
+  ],
+  [
+    "FR-RTF-2011",
+    {
+      title:
+        "Technische Verordnung zur Loi sur les Opérations Spatiales (RTF — quantitative Sicherheits-Schwellwerte)",
+      provisions: {
+        "Art. 22-25": {
+          title: "Casualty-Risk-Schwellwerte",
+          summary:
+            "Casualty-Risk bei unkontrolliertem Wiedereintritt darf 1 von 10.000 je Ereignis (kollektiv) und 1 von 1.000.000 je Individuum am Boden nicht überschreiten.",
+        },
+        "Art. 30-34": {
+          title: "End-of-Life-Entsorgung",
+          summary:
+            "LEO-Objekte müssen innerhalb von 25 Jahren nach Missionsende aus der geschützten Region entfernt werden; Passivierung vor Entsorgung erforderlich.",
+        },
+      },
+    },
+  ],
+  [
+    "HR-CYBERSEC-2024",
+    {
+      title: "Cybersicherheitsgesetz (Kroatien, NIS2-Transposition)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition — Weltraumsektor als High-Criticality",
+          summary:
+            "Setzt die NIS2-Richtlinie (EU 2022/2555) um. Die ZSIS ist die nationale zuständige Behörde. Der Weltraumsektor wird unter Anhang I als High-Criticality klassifiziert.",
+        },
+      },
+    },
+  ],
+  [
+    "HR-ECA-2022",
+    {
+      title: "Gesetz über elektronische Kommunikation (Kroatien)",
+      provisions: {
+        "Kapitel VI": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung, einschließlich Satelliten-Erdfunkstellen und -Uplink-Diensten. HAKOM ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "HR-ESA-2018",
+    {
+      title: "ESA European Cooperating State / PECS-Vereinbarung — Kroatien",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-European-Cooperating-State-Status",
+          summary:
+            "Kroatien unterzeichnete die ESA-European-Cooperating-State-Vereinbarung am 19. Februar 2018 und stieg am 7. Dezember 2022 in den PECS-Status auf.",
+        },
+      },
+    },
+  ],
+  [
+    "HR-EXPORT-2018",
+    {
+      title: "Gesetz über die Ausfuhr von Dual-Use-Gütern (Kroatien)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Das Wirtschaftsministerium erteilt Ausfuhrlizenzen für Kategorie 9. Kroatien ist Mitglied von Wassenaar, MTCR, NSG und Australia Group.",
+        },
+      },
+    },
+  ],
+  [
+    "HU-ARTEMIS-2024",
+    {
+      title: "Artemis Accords — Ungarischer Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraum-Ressourcen",
+          summary:
+            "Ungarn unterzeichnete die Artemis Accords am 18. Dezember 2024 als 53. Unterzeichner — eine Ausrichtung an den NASA-geführten Grundsätzen zur friedlichen Nutzung des Weltraums.",
+        },
+      },
+    },
+  ],
+  [
+    "HU-CYBERSEC-2023",
+    {
+      title:
+        "Gesetz über Cybersicherheits-Zertifizierung und -Aufsicht (Ungarn, NIS2)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition — Weltraumsektor als High-Criticality",
+          summary:
+            "Setzt die NIS2-Richtlinie (EU 2022/2555) um. SZTFH (Aufsichtsbehörde für regulatorische Angelegenheiten) ist die nationale zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "HU-ECA-2003",
+    {
+      title: "Gesetz über elektronische Kommunikation (Ungarn)",
+      provisions: {
+        "Kapitel X–XI": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung, einschließlich Satelliten-Erdfunkstellen und -Uplink-Diensten. NMHH ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "HU-ESA-2015",
+    {
+      title: "ESA-Konvention — Ungarische Vollmitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Vollmitgliedschaft",
+          summary:
+            "Ungarn wurde am 24. Februar 2015 22. Vollmitglied der ESA. Die HSO (innerhalb des KKM) ist die nationale Delegationsstelle.",
+        },
+      },
+    },
+  ],
+  [
+    "HU-EXPORT-2011",
+    {
+      title: "Exportkontrollgesetz (Dual-Use-Güter, Ungarn)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Die Trade Control Department (KVI) der SZTNH erteilt Ausfuhrlizenzen für Kategorie 9. Ungarn ist Mitglied von Wassenaar, MTCR, NSG und Australia Group.",
+        },
+      },
+    },
+  ],
+  [
+    "IL-COMMS-LAW-1982",
+    {
+      title: "Telekommunikations- und Rundfunkgesetz, 5742-1982",
+      provisions: {
+        "§ 4-6": {
+          title: "Telekommunikations-Lizenzen",
+          summary:
+            "Der Betrieb von Telekommunikations-Infrastruktur oder -Diensten ohne Lizenz des Kommunikationsministeriums ist untersagt; Satellitennetze, die israelische oder Israel-bestimmte Dienste anbieten, fallen unter dieses Regime.",
+        },
+      },
+    },
+  ],
+  [
+    "IL-CYBERSECURITY-LAW-2017",
+    {
+      title:
+        "Cybersicherheits- und National-Cyber-Directorate-Gesetz (Entwurf) und Regierungsbeschlüsse 2444 / 3270",
+      provisions: {
+        "GovRes 3270": {
+          title: "Cyber-Verteidigung kritischer Infrastrukturen",
+          summary:
+            "Benannte Betreiber kritischer Infrastrukturen (zu denen Satellitenoperatoren gehören können) müssen die vom INCD vorgegebenen Sicherheits-Basislinien umsetzen und Vorfälle binnen 72 Stunden melden.",
+        },
+      },
+    },
+  ],
+  [
+    "IL-PRIVACY-LAW-1981",
+    {
+      title: "Gesetz zum Schutz der Privatsphäre, 5741-1981",
+      provisions: {
+        "§ 36": {
+          title: "Grenzüberschreitende Datenübermittlungen",
+          summary:
+            "Übermittlungen in Nicht-Adäquanz-Länder erfordern entweder Einwilligung oder einen vorgesehenen Mechanismus; die EU-Adäquanz-Entscheidung erlaubt EU-IL-Datenflüsse ohne zusätzliche Garantien.",
+        },
+      },
+    },
+  ],
+  [
+    "IL-SPACE-AGENCY-RES",
+    {
+      title: "ISA-Errichtungs-Beschluss und Update 2024",
+      provisions: {
+        "Update 2024": {
+          title: "NewSpace-Ökosystem-Mandat",
+          summary:
+            "Erweitertes ISA-Mandat erfasst SpaceIL, IAI, Rafael, Elbit und aufkommende israelische Space-Tech-Start-ups; staatliche FuE-Matching-Grants über die ISA verwaltet.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-ANTRIX-NSIL",
+    {
+      title:
+        "Antrix-NSIL-Reform — Kommerzielle Weltraum-Beschaffung und Vermarktung",
+      provisions: {
+        "Demand-driven model": {
+          title: "End-to-End-Kommerz-Vertragsabschluss",
+          summary:
+            "NSIL schließt Verträge mit privaten Satellitenoperatoren (in- und ausländisch) für Build-Launch-and-Operate-Missionen — Umsatz und Risiko wechseln zu einer kommerziellen Einheit statt direkt bei der ISRO zu liegen.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-FEMA-FDI-SPACE",
+    {
+      title:
+        "FEMA Foreign Direct Investment Rules — Weltraumsektor (Änderung 2024)",
+      provisions: {
+        "FDI Schedule": {
+          title: "Schwellwerte automatischer Pfad",
+          summary:
+            "Bis 74 % automatisch für Satellitenfertigung, -betrieb und -daten; bis 49 % automatisch für Trägerraketen und zugehörige Systeme; bis 100 % automatisch für Komponenten und Sub-Systeme. Oberhalb erfordern Investitionen Government-Route.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-ISRO-DEBRIS-POLICY",
+    {
+      title: "ISRO IS4OM — Trümmer-Vermeidungs-Rahmen",
+      provisions: {
+        "§3 — Debris Free Space Mission": {
+          title: "Zero-Debris bis 2030",
+          summary:
+            "Alle ISRO- und indisch-kommerziellen Missionen, die nach dem 1. Januar 2030 starten, sollen für End-of-Life-De-Orbiting innerhalb von 5 Jahren nach Missionsende ausgelegt sein, ohne Trümmer-Freisetzung im Betrieb.",
+        },
+        "§5": {
+          title: "Konjunktions-Warndienst",
+          summary:
+            "IS4OM stellt täglich CDM-formatierte Konjunktions-Warnungen für indische Raumfahrzeuge und Operatoren indisch lizenzierter Missionen bereit; Operatoren müssen auf hoch-Pc-Ereignisse binnen 24 Stunden reagieren.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-ITU-TRAI-SPACE",
+    {
+      title:
+        "Telecommunications Act 2023 + TRAI-Empfehlungen zu Satellitenspektrum",
+      provisions: {
+        "§ 6": {
+          title: "Administrative Zuteilung von Satellitenspektrum",
+          summary:
+            "Spektrum für definierte Satellitendienst-Anwendungen wird administrativ unter Government-Regeln zugeteilt — vorbehaltlich Bedingungen. Beendet eine langjährige Debatte zwischen Satelliten- und terrestrischer Spektrum-Allokation.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-SPACE-ACTIVITIES-BILL",
+    {
+      title: "Indischer Space Activities Bill (Entwurf)",
+      provisions: {
+        "Entwurf Kap. II": {
+          title: "Statutarisches Genehmigungs-Regime",
+          summary:
+            "Würde das IN-SPACe-Genehmigungs-Regime auf gesetzliche Grundlage stellen — mit Tatbeständen, Sanktionen und Tribunal-Pfad.",
+        },
+      },
+    },
+  ],
+  [
+    "IN-DPDP-2023",
+    {
+      title: "Digital Personal Data Protection Act 2023",
+      provisions: {
+        "§ 16": {
+          title: "Grenzüberschreitende Datenübermittlungen",
+          summary:
+            "Übermittlungen in alle Jurisdiktionen zulässig, sofern diese nicht von der Zentralregierung als beschränkt notifiziert sind — ein permissives Regime im Vergleich zur EU-GDPR-Adäquanz-Architektur.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-AIAA-IOS-STDS",
+    {
+      title:
+        "AIAA-Standards für In-Orbit-Servicing (IOS) — einschließlich S-143 Servicing-Satellite-Interface-Standard",
+      provisions: {
+        "S-143 §4": {
+          title: "Grapple-Fixture-Geometrie",
+          summary:
+            "Standardisierte mechanische Grapple-Fixture-Maße und Toleranzen für Klienten-Satelliten, die für späteres Servicing ausgelegt sind.",
+        },
+        "S-143 §7": {
+          title: "Treibstoff-Transfer-Schnittstelle",
+          summary:
+            "Standard-Kupplungen, Drücke und Sicherheits-Verriegelungen für Treibstoff-Transfer-IOS-Missionen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-CCSDS",
+    {
+      title:
+        "CCSDS — Consultative Committee for Space Data Systems (Empfohlene Standards)",
+      provisions: {
+        "CCSDS 401.0-B": {
+          title: "RF- und Modulations-Blue-Book",
+          summary:
+            "Referenzstandard für Raumfahrzeug-RF-Schnittstellen-Design — koordiniert mit den ITU Radio Regulations für Spektrum-Allokationen und in Behörden-übergreifend genutzte Modulationsverfahren.",
+        },
+        "CCSDS 232.0-B / 132.0-B": {
+          title: "TC- und TM-Space-Data-Link-Protokolle",
+          summary:
+            "Operative Protokolle für Telekommando und Telemetrie zwischen Raumfahrzeug und Bodensegment.",
+        },
+        "CCSDS 350.x / 35x.0-B": {
+          title: "Space Data Link Security und Krypto-Suiten",
+          summary:
+            "Definiert authentifizierte und verschlüsselte Spacecraft-Kommandierung (SDLS) sowie die für den Weltraum freigegebenen kryptografischen Algorithmen-Suiten. Zunehmend in NIS2- und BSI-TR-03184-Konformitäts-Bewertungen zitiert.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-CCSDS-NDM",
+    {
+      title:
+        "CCSDS Navigation Data Standards Family (B-Series) — OEM, OPM, OMM, OCM, TDM",
+      provisions: {
+        "OEM (502.0-B-2)": {
+          title: "Orbit Ephemeris Message",
+          summary:
+            "Zeitgestempelte Zustandsvektoren in nutzerdefinierter Kadenz; Standard-Format für Ephemeriden-Austausch zwischen Operatoren und SSA-Anbietern.",
+        },
+        "OCM (505.0-B-1)": {
+          title: "Orbit Comprehensive Message",
+          summary:
+            "Neueste Ergänzung (2018) — kombiniert OEM + OPM + OMM in einer einzigen Nachricht mit Kovarianz, Manöverhistorie und physikalischen Parametern.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-CONFERS-RDOP-2018",
+    {
+      title:
+        "CONFERS Recommended Design and Operational Practices for In-Orbit Servicing (RDOP)",
+      provisions: {
+        "§3": {
+          title: "Missions-Phasen",
+          summary:
+            "Definiert die kanonischen Phasen — Far-Rendezvous, Close-Rendezvous, Proximity-Operations, Capture/Docking, Joint-Operations, Departure — und die jeweils geltenden Sicherheitsanforderungen.",
+        },
+        "§4": {
+          title: "Kommunikation und Koordination",
+          summary:
+            "Operatoren von Resident-Space-Objects, die für Servicing avisiert sind, müssen mindestens 30 Tage vor Beginn der Annäherungs-Operationen benachrichtigt werden; bei nicht-kooperativen RPO ist Zustimmung erforderlich.",
+        },
+        "§5": {
+          title: "Trümmer-Erzeugung",
+          summary:
+            "Capture-Mechanismen sollen so ausgelegt sein, dass keine Fragmente entstehen; im Vakuum bei missions-relevanten Relativ-Geschwindigkeiten end-to-end getestet.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-COPUOS-CONSTELLATION-REG",
+    {
+      title:
+        "Empfehlungen zur Übermittlung von Registrierungs-Informationen für Weltraumobjekte einer Satellitenkonstellation",
+      provisions: {
+        "Empfehlung 1": {
+          title: "Pro-Objekt-Registrierung auch innerhalb von Konstellationen",
+          summary:
+            "Jeder Satellit innerhalb einer Konstellation soll in den Registrierungs-Einreichungen einzeln identifiziert werden.",
+        },
+        "Empfehlung 2": {
+          title:
+            "Zeitgerechte Einreichung für schnelle Inbetriebnahme-Kadenzen",
+          summary:
+            "Operatoren, die viele Satelliten in kurzer Folge starten, sollen Batch-Einreichungen mit konsistenten Formaten nutzen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-DIRECT-BROADCASTING-1982",
+    {
+      title:
+        "Grundsätze für die Nutzung künstlicher Erdsatelliten durch Staaten für internationales Direkt-TV-Broadcasting",
+      provisions: {
+        "Principle J": {
+          title: "Vorabkonsultation und Vereinbarung",
+          summary:
+            "Ein Staat, der einen DTH-Dienst einrichten will, soll betroffene Empfangs-Staaten unverzüglich benachrichtigen und mit jedem Staat, der dies wünscht, in Konsultation treten.",
+        },
+        "Principle I": {
+          title: "Friedliche Streitbeilegung",
+          summary:
+            "Streitigkeiten sollen nach den etablierten Verfahren der UN-Charta beigelegt werden.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ECSS-Q-ST-80C",
+    {
+      title:
+        "ECSS-Q-ST-80C — Software Product Assurance (und der ECSS-Standards-Stack)",
+      provisions: {
+        "ECSS-Q-ST-80C": {
+          title: "Software-PA-Basis für Weltraum-Produkte",
+          summary:
+            "Definiert Prozesse, Dokumentation und Verifikations-Standards für Spacecraft-Software-Entwicklung. Konformität ist faktisch verbindlich in jedem ESA-Vertrag und den meisten Prime-geführten Satellitenfertigungs-Programmen.",
+        },
+        "ECSS-U-AS-10C": {
+          title: "Übernahme von ISO 24113",
+          summary:
+            "Übernimmt ISO 24113 (Trümmer-Vermeidung) als ECSS-Sustainability-Basis, mit europaspezifischen Erweiterungen zu Casualty-Risk-Reporting und Konjunktions-Koordinations-Verhalten.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ESA-CPO-GUIDELINES",
+    {
+      title: "ESA Clean Space Programme — Clean-Production-Office-Leitlinien",
+      provisions: {
+        "CPO-LCA-01": {
+          title: "Verpflichtende Lebenszyklus-Bewertung",
+          summary:
+            "Alle ESA-beauftragten Missionen müssen eine Cradle-to-Grave-LCA einreichen, die Rohstoff-Extraktion, Fertigung, Start, Betrieb und End-of-Life abdeckt.",
+        },
+        "CPO-MAT-03": {
+          title: "Green Procurement von Materialien",
+          summary:
+            "ESA-Primes müssen die Substitution REACH-beschränkter Stoffe und die Bevorzugung recyclefähiger oder demisbarer Materialien im Missions-Design nachweisen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ESA-ZERO-DEBRIS-CHARTER",
+    {
+      title:
+        "Zero Debris Charter — industriegetragene Verpflichtung zu Zero-Debris-Operationen bis 2030",
+      provisions: {
+        "Verpflichtung 1": {
+          title: "Keine langlebigen Trümmer ab 2030",
+          summary:
+            "Unterzeichner verpflichten sich, ihre Missionen so zu betreiben, dass nach 2030 keine langlebigen Trümmer in den geschützten Regionen LEO oder GEO verbleiben.",
+        },
+        "Verpflichtung 3": {
+          title: "Transparenz und Verifikation",
+          summary:
+            "Operatoren veröffentlichen jährliche Fortschrittsberichte gegen die Charter-Verpflichtungen und unterziehen sich unabhängiger Verifikation.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-EUTELSAT-1982",
+    {
+      title:
+        "Übereinkommen zur Errichtung der Europäischen Fernmeldesatelliten-Organisation (EUTELSAT)",
+      provisions: {
+        "Art. III": {
+          title: "Art. III",
+          summary:
+            "Ursprünglicher Zweck: Konstruktion, Errichtung, Betrieb und Erhalt des Weltraum-Segments des europäischen Telekommunikations-Satellitensystems für internationale öffentliche Telekommunikations-Dienste in Europa.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-HUMAN-SPACEFLIGHT-FRAMEWORK",
+    {
+      title:
+        "Bemannte orbitale Raumfahrt — Astronauten- und Spaceflight-Participant-Regime",
+      provisions: {
+        "ISS IGA Art. 5 + 11": {
+          title: "Hoheitsgewalt und Crew-Sorgfaltspflicht",
+          summary:
+            "Partnerstaaten üben Hoheitsgewalt über ihre Flight Elements und ihr Personal aus; der Cross-Waiver of Liability nach Art. 16 immunisiert Partner-Stellen gegen ISS-aktivitätsbezogene Ansprüche, mit Carve-outs für Vorsatz.",
+        },
+        "Commercial-participant access": {
+          title: "Axiom-Style Mission Gating",
+          summary:
+            "Kommerzielle Teilnehmer, die über das NASA-Commercial-Crew-System zur ISS fliegen, benötigen ISS-IGA-Partner-Government-Akzeptanz, NASA-Crew-Operations-Vereinbarung und operatorseitige Informed-Consent-Verträge.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-IMSO-1976",
+    {
+      title:
+        "Übereinkommen über die Internationale Mobile-Satelliten-Organisation (IMSO)",
+      provisions: {
+        "Art. 3": {
+          title: "Art. 3 (Zwecke)",
+          summary:
+            "Sicherstellung der fortlaufenden Bereitstellung globaler maritimer Notfall- und Sicherheits-Satelliten-Kommunikations-Dienste sowie Aufsicht über die Public-Service-Verpflichtungen des kommerziellen Inmarsat-Nachfolgers.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ISO-16127",
+    {
+      title:
+        "ISO 16127:2014 — Vermeidung des Auseinanderbrechens unbemannter Raumfahrzeuge",
+      provisions: {
+        "§5.2": {
+          title: "Treibstoff-Passivierung",
+          summary:
+            "Resttreibstoff ist über nominale Triebwerksventile zu entlüften, bis der Tankdruck dem Vakuum entspricht oder das Explosionsrisiko nachweislich < 10⁻³ ist.",
+        },
+        "§5.3": {
+          title: "Batterie-Passivierung",
+          summary:
+            "Batteriezellen sind elektrisch zu isolieren und unter den Gas-Erzeugungs-Schwellwert zu entladen; der Tiefentladungsschutz ist am Missionsende dauerhaft zu deaktivieren.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ISO-23339",
+    {
+      title:
+        "ISO 23339:2010 — Schätzung des Resttreibstoffs in Spacecraft-Tanks",
+      provisions: {
+        "§6": {
+          title: "PVT-Methode",
+          summary:
+            "Druck-Volumen-Temperatur-Methode als Standard für Blow-Down-Treibstoffsysteme, mit Anforderungen an Tankdruck- und Tanktemperatur-Instrumentierungs-Genauigkeit.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ISO-24330-2022",
+    {
+      title:
+        "ISO 24330:2022 — Programmatische Grundsätze und Praktiken für Rendezvous-Proximity-Operations und On-Orbit-Servicing",
+      provisions: {
+        "Clause 4": {
+          title: "Missions-Phasen für RPO/OOS",
+          summary:
+            "Definiert sechs standardisierte Missions-Phasen (Planung, Start, Inbetriebnahme, Pre-RPO, RPO-aktiv, Post-Mission) und die in jeder Phase zu erstellenden Artefakte.",
+        },
+        "Clause 6": {
+          title: "Safety-by-Design-Grundsätze",
+          summary:
+            "Servicer-Spacecraft müssen an jedem Abbruch-Punkt mit passiver Sicherheit ausgelegt sein; kein einzelner Fehler darf eine Kollision mit dem Klienten verursachen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ISO-27852",
+    {
+      title: "ISO 27852:2016 — Schätzung der Bahn-Lebensdauer",
+      provisions: {
+        "§5": {
+          title: "Erforderliche Atmosphären-Modelle",
+          summary:
+            "Bahn-Lebensdauer-Berechnungen müssen NRLMSISE-00 oder JB2008-Atmosphäre mit solarem F10.7-Fluss aus einem Referenz-Solarzyklus-Szenario verwenden.",
+        },
+        "§7": {
+          title: "Monte-Carlo-Unsicherheit",
+          summary:
+            "Lebensdauer-Vorhersagen für Compliance-Nachweise sind Monte-Carlo mit ≥ 100 Läufen, wobei initialer Zustand, Drag-Koeffizient, Atmosphärendichte und Solarfluss innerhalb ihrer 1σ-Unsicherheiten variiert werden.",
+        },
+        "Annex A": {
+          title: "Drag-Augmentation-Devices",
+          summary:
+            "Methodik zur Berücksichtigung von Drag-Sails, Terminator-Tapes und elektrodynamischen Tethers in Lebensdauer-Berechnungen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ITU-WRC-23",
+    {
+      title:
+        "ITU World Radiocommunication Conference 2023 — Final Acts (WRC-23)",
+      provisions: {
+        "AI 1.16": {
+          title: "Non-GSO FSS in Ka-/Q-/V-Bändern — Mega-Konstellations-Regeln",
+          summary:
+            "Neue regulatorische Bestimmungen für Non-GSO-Fixed-Satellite-Service-Systeme in Ka-, Q- und V-Bändern — erfasst Starlink, Kuiper, OneWeb-Gen-2 und aufkommende europäische Konstellationen.",
+        },
+        "AI 1.18": {
+          title: "IMT-2030 und 6G — Mobile-Satellite-Service",
+          summary:
+            "Allokationen, die das Spektrum-Umfeld für 6G-/IMT-2030-Satellite-Direct-to-Device-Dienste vorbereiten.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-REMOTE-SENSING-1986",
+    {
+      title: "Grundsätze zur Fernerkundung der Erde aus dem Weltraum",
+      provisions: {
+        "Principle IV": {
+          title: "Nutzung zum Wohle aller Staaten",
+          summary:
+            "Fernerkundungs-Tätigkeiten sind zum Nutzen und im Interesse aller Staaten durchzuführen.",
+        },
+        "Principle XII": {
+          title: "Datenzugang für betroffene Staaten",
+          summary:
+            "Sobald Roh- und verarbeitete Daten zum Hoheitsgebiet eines erfassten Staates erzeugt werden, sind sie diesem auf nicht-diskriminierender Basis und zu vernünftigen Kosten zur Verfügung zu stellen.",
+        },
+        "Principle XIII": {
+          title: "Daten für Katastrophen-Management",
+          summary:
+            "Daten sollen umgehend an Staaten übermittelt werden, die von Naturkatastrophen betroffen sind.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-SDA",
+    {
+      title:
+        "Space Data Association (SDA) — Branchen-Best-Practices und Operations-Verfahren",
+      provisions: {
+        "SDC service": {
+          title: "Bilateraler Konjunktions-Daten-Austausch",
+          summary:
+            "Mitglieder teilen Präzisions-Bahndaten über das Space Data Center; Konjunktionsanalysen nutzen Mitglieder-gelieferte Daten statt öffentliche Katalog-Daten.",
+        },
+        "RFI service": {
+          title: "Berichterstattung zu Funkfrequenz-Interferenzen",
+          summary:
+            "Mitglieder melden RFI-Ereignisse; SDA koordiniert Untersuchung und Quellen-Identifikation über Operator-Grenzen hinweg.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-SUBORBITAL-FRAMEWORK",
+    {
+      title:
+        "Suborbitale Raumfahrt — Vergleichender regulatorischer Rahmen (USA, UK, NM, AU)",
+      provisions: {
+        USA: {
+          title: "Lernperiode — FAA Part 460 + CSLA §50919(g)",
+          summary:
+            "Die FAA darf Spaceflight-Participants gegenüber keine preskriptiven Sicherheits-Vorschriften verhängen, außer nach einem auslösenden Vorfall. Operatoren stützen sich auf Informed-Consent + State-Tort-Schutz (NM, FL, TX). Lernperiode bis Oktober 2025 verlängert.",
+        },
+        UK: {
+          title: "SIA 2018 + Spaceflight Activities Regs Operator-Lizenz",
+          summary:
+            "Das UK-Regime adressiert Spaceflight-Participants ausdrücklich in SIA 2018 und SI 2021/792-815. Die CAA erteilt Operator-Lizenzen mit preskriptiven Participant-Sicherheits-Bedingungen.",
+        },
+        "AU + NZ": {
+          title: "SLR Act / OSHAA orbitale und suborbitale Abdeckung",
+          summary:
+            "Australien deckt suborbital unter Part 4-5 des SLR Act 2018; Neuseeland unter den OSHAA-2017-Hochhöhen-Bestimmungen. Beide Regime wenden Start-Genehmigungs-Regeln auf suborbitale Operationen an.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-UNGA-1721B-1961",
+    {
+      title:
+        "Internationale Zusammenarbeit bei der friedlichen Nutzung des Weltraums — Resolution 1721 B (XVI)",
+      provisions: {
+        "Para. 1": {
+          title: "Übermittlung von Start-Informationen an den Generalsekretär",
+          summary:
+            "Fordert Staaten, die Objekte in den Orbit oder darüber hinaus starten, auf, Informationen umgehend an COPUOS über den Generalsekretär zur Registrierung zu übermitteln.",
+        },
+        "Para. 2": {
+          title: "Einrichtung des UN-Registers",
+          summary:
+            "Bittet den Generalsekretär, ein öffentliches Register der so übermittelten Informationen zu führen — daraus entstand das UN Register of Objects Launched into Outer Space.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-UNGA-59-115-2004",
+    {
+      title: "Anwendung des Konzepts des 'Startstaats' — Resolution 59/115",
+      provisions: {
+        "Para. 1": {
+          title:
+            "Nationale Gesetzgebung zur Umsetzung der Startstaats-Pflichten",
+          summary:
+            "Empfiehlt Staaten, die Verabschiedung und Umsetzung nationaler Gesetze zur Genehmigung und fortlaufenden Aufsicht der Tätigkeiten nichtstaatlicher Stellen unter ihrer Hoheitsgewalt zu erwägen.",
+        },
+        "Para. 2": {
+          title: "Vereinbarungen zwischen mehreren Startstaaten",
+          summary:
+            "Ermutigt Staaten, im Einklang mit dem Registrierungsübereinkommen Vereinbarungen über Hoheitsgewalt und Kontrolle über Weltraumobjekte und Personal sowie über die Aufteilung der Schadenshaftung zu schließen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-UNGA-62-101-2007",
+    {
+      title:
+        "Empfehlungen zur Verbesserung der Praxis bei der Registrierung von Weltraumobjekten — Resolution 62/101",
+      provisions: {
+        "Para. 2(a)": {
+          title: "Zusätzliche freiwillige Registrierungs-Informationen",
+          summary:
+            "Empfiehlt Staaten, freiwillig zu liefern: GEO-Slot-Position; Status-Änderung im Betrieb; ungefähres De-Orbit-Datum; physische Bedingungen und Bahnparameter-Änderungen.",
+        },
+        "Para. 3": {
+          title: "Eigentums-Übertragung und On-Orbit-Transfer",
+          summary:
+            "Empfiehlt Transparenz bei Eigentums-Übertragungen von Weltraumobjekten im Orbit, einschließlich Notifikation an die UN.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-UNOOSA-REG-TOOLKIT-2025",
+    {
+      title:
+        "Toolkit on Good Registration Practices for Objects Launched into Outer Space (ST/SPACE/95)",
+      provisions: {
+        "Pillar ESTABLISH": {
+          title: "Grundlagen eines nationalen Registers",
+          summary:
+            "Sieben Kern-Elemente, die ein nationales Register erfassen sollte (Registrierungsübereinkommen Art. IV-Basis), plus freiwillige Ergänzungen aus Res. 62/101.",
+        },
+        "Pillar EVOLVE": {
+          title:
+            "Moderne Szenarien: Konstellationen, Eigentums-Übertragung, ADR",
+          summary:
+            "Leitlinie für Mega-Konstellations-Registrierung, Register-Übertragung zwischen Staaten, On-Orbit-Deployment von der ISS und Active Debris Removal.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-BRS-1974",
+    {
+      title:
+        "Übereinkommen über die Verbreitung programmtragender Signale per Satellit (Brüsseler Übereinkommen)",
+      provisions: {
+        Hauptpflicht: {
+          title: "Hauptpflicht",
+          summary:
+            "Art. 2: Vertragsstaaten verpflichten sich, die Verbreitung programmtragender Signale auf oder von ihrem Territorium durch Verteiler zu verhindern, für die die Signale nicht bestimmt sind.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-COPUOS-BENEFITS-GUIDANCE",
+    {
+      title:
+        "Bringing the benefits of space to all countries — Guidance Document on the Legal Framework",
+      provisions: {
+        "Kapitel zur nationalen Umsetzung": {
+          title: "Auslegung der fünf UN-Weltraumverträge",
+          summary:
+            "Liefert eine harmonisierte Auslegung wesentlicher Vertragskonzepte — Startstaat, Weltraumobjekt, Hoheitsgewalt und Kontrolle, völkerrechtliche Verantwortung — basierend auf 50+ Jahren Staatenpraxis.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ESSI-MEMORANDUM",
+    {
+      title:
+        "ESSI Memorandum of Principles — Earth & Space Sustainability Initiative",
+      provisions: {
+        "Principle 1": {
+          title: "Transparente orbitale Nachhaltigkeits-Offenlegungen",
+          summary:
+            "Unterzeichner veröffentlichen Nachhaltigkeits-Metriken (Trümmer-Erzeugungs-Ereignisse, Ausweich-Manöver, PMD-Erfolg) in ihren Jahresberichten.",
+        },
+        "Principle 3": {
+          title: "Versicherungs-gekoppelte Nachhaltigkeits-Anreize",
+          summary:
+            "Unterzeichner unterstützen und übernehmen Versicherungs-Policen, die Prämien anhand von Nachhaltigkeits-Scoring differenzieren.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-EUMETSAT-1983",
+    {
+      title:
+        "Übereinkommen zur Errichtung der Europäischen Organisation für die Nutzung meteorologischer Satelliten (EUMETSAT)",
+      provisions: {
+        "Art. 2": {
+          title: "Art. 2",
+          summary:
+            "Zweck: Errichtung, Erhalt und Betrieb europäischer Systeme operativer meteorologischer Satelliten in enger Zusammenarbeit mit den nationalen meteorologischen Diensten.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ITSO-1971",
+    {
+      title:
+        "Übereinkommen über die Internationale Telekommunikations-Satelliten-Organisation (ITSO)",
+      provisions: {
+        "Art. III": {
+          title: "Art. III",
+          summary:
+            "Kernprinzipien: globale Abdeckung, Nicht-Diskriminierung, Effizienz und gemeinsamer Nutzen. Rahmen auch nach der Intelsat-Privatisierung 2001 erhalten.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-LEGAL-PRINCIPLES-1963",
+    {
+      title:
+        "Erklärung der Rechtsgrundsätze für die Tätigkeiten von Staaten bei der Erforschung und Nutzung des Weltraums",
+      provisions: {
+        "Principle 5": {
+          title: "Staatenverantwortung für nationale Tätigkeiten",
+          summary:
+            "Staaten tragen die völkerrechtliche Verantwortung für nationale Tätigkeiten im Weltraum, gleich ob durch staatliche oder nichtstaatliche Stellen ausgeführt. Tätigkeiten nichtstaatlicher Stellen erfordern Genehmigung und fortlaufende Aufsicht.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-NATO-SPACE-POLICY-2022",
+    {
+      title: "NATO-Weltraum-Politik und Madrider Strategisches Konzept",
+      provisions: {
+        "Madrid Strategic Concept": {
+          title: "Weltraum als operative Domäne",
+          summary:
+            "Die Konzepte zur Abschreckung und Verteidigung nach Art. 5 erstrecken sich auf Angriffe auf oder aus dem Weltraum. Der Schutz alliierter militärischer Weltraum-Assets wird Teil der NATO-Bündnisverteidigungs-Kalkulation.",
+        },
+        "NATO AJP-3.3": {
+          title: "Joint Air and Space Operations",
+          summary:
+            "Alliierte Doktrin zur Integration von Weltraum-Effekten (PNT, SatCom, ISR) in NATO-Joint-Operations.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-NPS-1992",
+    {
+      title:
+        "Grundsätze über die Nutzung von Nuklearen Energiequellen im Weltraum",
+      provisions: {
+        "Principle 3": {
+          title: "Leitlinien und Kriterien für sichere Nutzung",
+          summary:
+            "NPS dürfen nur in Missionen genutzt werden, in denen nicht-nukleare Energiequellen die Mission nicht in vernünftiger Weise erfüllen können.",
+        },
+        "Principle 4": {
+          title: "Sicherheitsbewertung",
+          summary:
+            "Vor jedem Start ist eine umfassende Sicherheitsbewertung einschließlich probabilistischer Risikoanalyse durchzuführen.",
+        },
+        "Principle 5": {
+          title: "Notifikation bei Wiedereintritt",
+          summary:
+            "Bei einem Fehler, der zu einem Wiedereintritt führen könnte, hat der Startstaat betroffene Staaten zu informieren und auf Informations- oder Hilfeersuchen umgehend zu reagieren.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-ARABSAT-1976",
+    {
+      title:
+        "Übereinkommen der Arabischen Gesellschaft für Weltraumkommunikation (ARABSAT)",
+      provisions: {
+        "Art. 1": {
+          title: "Art. 1",
+          summary:
+            "Errichtung der Arabischen Gesellschaft für Weltraumkommunikation als kommerzielle Anbieterin von Weltraum-Telekommunikations-Diensten für die Arabische Welt.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-AUSTRALIA-GROUP",
+    {
+      title:
+        "Australia Group Common Control Lists — Chemische und biologische Items",
+      provisions: {
+        "Common Control List — Biological": {
+          title: "Bio-Payload-Diligence",
+          summary:
+            "Operatoren biologischer Nutzlast-Missionen müssen gegen die Common Control Lists (humane und tierische Pathogene, Pflanzen-Pathogene, Dual-Use-Bio-Equipment) screenen.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-INTERCOSMOS-1976",
+    {
+      title:
+        "Übereinkommen über die Zusammenarbeit bei der Erforschung und friedlichen Nutzung des Weltraums (INTERCOSMOS)",
+      provisions: {
+        "Art. 1": {
+          title: "Art. 1",
+          summary:
+            "Rahmen für die Weltraumforschungs-Zusammenarbeit unter den ursprünglichen Unterzeichnerstaaten (Ostblock und einige nicht-allierte Staaten).",
+        },
+      },
+    },
+  ],
+  [
+    "INT-INTERSPUTNIK-1971",
+    {
+      title: "Übereinkommen über die Errichtung des INTERSPUTNIK",
+      provisions: {
+        "Art. 1": {
+          title: "Art. 1",
+          summary:
+            "Errichtung von Intersputnik als kommerzielle Satellitenkommunikations-Organisation, die ursprünglich den sowjetischen Einflussbereich abdeckte. Nach 1991 für internationale Mitglieder geöffnet.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-NSG",
+    {
+      title:
+        "Nuclear Suppliers Group Guidelines — Trigger List und Dual-Use List",
+      provisions: {
+        "INFCIRC/254 Part 2": {
+          title: "Dual-Use-Katalog",
+          summary:
+            "Erfasst nuklearbezogene Dual-Use-Items, einschließlich einiger Materialien und Technologien, die für nukleare Energieerzeugung im Weltraum relevant sind.",
+        },
+      },
+    },
+  ],
+  [
+    "IS-ECA-2022",
+    {
+      title: "Gesetz über elektronische Kommunikation (Island)",
+      provisions: {
+        "Kapitel V": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung, einschließlich Satelliten-Erdfunkstellen und -Uplink-Diensten. Fjarskiptastofa ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "IS-EEA-1994",
+    {
+      title: "EWR-Abkommen — Isländische Mitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "EWR-Mitgliedschaft — EU-Recht gilt über Joint-Committee",
+          summary:
+            "Island ist seit 1. Januar 1994 EWR-Mitglied. Atlas-relevante EU-Instrumente — EU Space Act, NIS2, CRA, GDPR, Electronic Communications Code — gelten für Island über EWR-Joint-Committee-Beschlüsse.",
+        },
+      },
+    },
+  ],
+  [
+    "IS-GDPR-2018",
+    {
+      title:
+        "Gesetz über Datenschutz und Verarbeitung personenbezogener Daten (Island)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "GDPR-Transposition über EWR",
+          summary:
+            "Setzt die EU-GDPR via EWR-Joint-Committee-Beschluss Nr. 154/2018 in isländisches Recht um. Persónuvernd setzt Compliance durch.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-CCE-2003",
+    {
+      title: "Gesetzbuch für elektronische Kommunikation — D.Lgs. 259/2003",
+      provisions: {
+        "Art. 11": {
+          title: "Allgemeine Genehmigung für Satellitendienste",
+          summary:
+            "Anbieter von Satellitendiensten müssen eine allgemeine Genehmigung der AGCOM erhalten.",
+        },
+        "Art. 27": {
+          title: "Spektrum-Allokation und -Management",
+          summary:
+            "AGCOM verwaltet die Spektrum-Allokation für Satellitendienste. Koordiniert mit der ITU für Orbital-Slot- und Frequenz-Anmeldungen.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-CCE-REFORM-2021",
+    {
+      title:
+        "Reform des Gesetzbuchs für elektronische Kommunikation — D.Lgs. 207/2021",
+      provisions: {
+        Transposition: {
+          title: "Umsetzung des EU Electronic Communications Code",
+          summary:
+            "Setzt die EU-Richtlinie 2018/1972 in italienisches Recht um. Modernisiert D.Lgs. 259/2003 mit aktualisierten Spektrum-Management-, Netz-Zugangs- und Genehmigungs-Bestimmungen.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-CODICE-AMBIENTE",
+    {
+      title: "Umweltgesetzbuch — D.Lgs. 152/2006",
+      provisions: {
+        "Teil II": {
+          title: "Rahmen der Umweltverträglichkeitsprüfung",
+          summary:
+            "Etabliert VIA, VAS und AIA. Startstandorte und Treibstoff-Handhabungs-Anlagen unterliegen der VIA. Avios Colleferro-Anlagen unterliegen der AIA.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-DLGS-66-2010-SPACE",
+    {
+      title: "Militärgesetzbuch — Weltraum-Bestimmungen (D.Lgs. 66/2010)",
+      provisions: {
+        "Art. 88": {
+          title: "Aero-Spatial Domain",
+          summary:
+            "Definiert die militärische Zuständigkeit in der aero-spatialen Domäne. Etabliert die Rechtsgrundlage für das Comando delle Operazioni Spaziali (COS).",
+        },
+        "Art. 798-bis": {
+          title: "Aeronautica Militare Weltraum-Verantwortlichkeiten",
+          summary:
+            "Weist der Aeronautica Militare die Weltraum-Operations-Verantwortlichkeiten zu.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-DSPSN-2019",
+    {
+      title: "Documento Strategico di Politica Spaziale Nazionale (DSPSN) 2019",
+      provisions: {
+        "Strategische Prioritäten": {
+          title: "Nationaler Weltraum-Politik-Rahmen",
+          summary:
+            "Definiert Italiens Weltraum-Politik-Prioritäten: Erdbeobachtung, Telekommunikation, Navigation, Erforschung und Weltraum-Wirtschaftsentwicklung.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-IRIS2",
+    {
+      title: "IRIS²-Verordnung — (EU) 2023/588",
+      provisions: {
+        "Art. 1-3": {
+          title: "EU-Souveräne Satellitennetz-Konstellation",
+          summary:
+            "Etabliert das IRIS²-Programm für souveräne EU-Satellitennetz-Konnektivität. €6 Mrd. Budget. Telespazio (Leonardo) ist Schlüssel-Mitglied des SpaceRISE-Konsortiums.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-MANIFESTO-2024",
+    {
+      title: "Nationales Manifest für Space Economy 2024",
+      provisions: {
+        "8 Säulen": {
+          title: "Space-Economy-Vision bis 2034",
+          summary:
+            "Acht strategische Säulen für die italienische Space Economy bis 2034: Erdbeobachtung, Telekommunikation, Navigation, Exploration, Weltraumtransport, In-Orbit-Services, Anwendungen, Workforce-Entwicklung.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-PNRR-SPACE",
+    {
+      title:
+        "PNRR-Weltraum-Komponenten — Nationaler Wiederaufbau- und Resilienz-Plan",
+      provisions: {
+        "Weltraum-Investitionen": {
+          title: "PNRR-Weltraum-Programmkomponenten",
+          summary:
+            "Etwa 2,3 Mrd. EUR an Weltraum-Investitionen. Schlüssel-Programme: IRIDE-Konstellation (34+ Erdbeobachtungs-Satelliten), SatCom-Infrastruktur, Space Factory 4.0.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-PRIVACY-CODE",
+    {
+      title:
+        "Datenschutzgesetzbuch — D.Lgs. 196/2003 (geändert durch D.Lgs. 101/2018)",
+      provisions: {
+        "Art. 2-bis ff.": {
+          title: "GDPR-Anpassung und nationale Bestimmungen",
+          summary:
+            "Italienische GDPR-Anpassung. Garante-Beschluss 467/2018 etabliert spezifische DPIA-Anforderungen für hochriskante Verarbeitung — direkt anwendbar auf Satelliten-Erdbeobachtung.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-SEVESO-SPACE",
+    {
+      title:
+        "Seveso-III-Umsetzung — D.Lgs. 105/2015 (weltraumbezogene Bestimmungen)",
+      provisions: {
+        "Art. 3-6": {
+          title: "Major-Accident-Hazard-Kontrollen für Weltraum-Anlagen",
+          summary:
+            "Avios Colleferro-Solid-Rocket-Motor-Fertigungsanlage ist Seveso-Upper-Tier. Treibstoff-Handhabung an Startstandorten löst Seveso-Pflichten aus.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-STRATEGIA-SICUREZZA-2019",
+    {
+      title: "Nationale Weltraum-Sicherheits-Strategie 2019",
+      provisions: {
+        "Strategie-Rahmen": {
+          title: "Nationale Weltraum-Sicherheits-Strategie",
+          summary:
+            "Definiert Italiens Ansatz zur Weltraum-Sicherheit: Space Situational Awareness, Weltraum-Verteidigung, Cybersicherheit von Weltraum-Systemen und Resilienz der Weltraum-Infrastruktur.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-DLGS-221-2017",
+    {
+      title: "Dual-Use-Exportkontrolle — D.Lgs. 221/2017",
+      provisions: {
+        "Art. 1-4": {
+          title: "UAMA-Behörde und Lizenzierung",
+          summary:
+            "UAMA als zuständige Behörde für Dual-Use-Exportkontrolle. Lizenzierung für Ausfuhren von Dual-Use-Gütern und -Technologie, einschließlich Spacecraft-Komponenten und Satelliten-Subsystemen.",
+        },
+        "Art. 9": {
+          title: "Catch-All-Klausel",
+          summary:
+            "Erlaubt UAMA, Ausfuhrgenehmigung für nicht im EU-Anhang I gelistete Items zu verlangen, sofern Anhaltspunkte bestehen, dass die Items für WMD oder militärische Endnutzung verwendet werden.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-LEGGE-185-1990",
+    {
+      title: "Militärische Rüstungs-Exportkontrolle — Legge 185/1990",
+      provisions: {
+        "Art. 1": {
+          title: "Anwendungsbereich",
+          summary:
+            "Umfassendes Regime für Export, Import und Transit militärischen Materials. Erfasst militärische Satelliten, Satelliten-Komponenten mit militärischen Anwendungen und COSMO-SkyMed-System-Komponenten.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-SASO-2023",
+    {
+      title:
+        "ENAC-SASO-Verordnungen 2023 — Suborbitale und Weltraumzugangs-Operationen",
+      provisions: {
+        "Teil I": {
+          title: "Suborbitale und Weltraumzugangs-Lizenzierung",
+          summary:
+            "Etabliert den ENAC-Lizenzierungs-Rahmen für suborbitale Raumfahrt und Weltraumzugangs-Operationen vom italienischen Territorium. Speziell für den Spaceport Grottaglie konzipiert.",
+        },
+        "Teil II": {
+          title: "Spaceport-Betriebs-Anforderungen",
+          summary:
+            "Technische und Sicherheits-Anforderungen für Spaceport-Operationen, einschließlich Luftraum-Koordination, Bodensicherheit und Notfallverfahren.",
+        },
+      },
+    },
+  ],
+  [
+    "IT-KENYA-BROGLIO",
+    {
+      title: "Italien-Kenia-Abkommen über das Broglio Space Centre (San Marco)",
+      provisions: {
+        Rahmen: {
+          title: "Bilaterales Broglio-Space-Centre-Abkommen",
+          summary:
+            "Bilaterales Italien-Kenia-Abkommen über das Broglio Space Centre in Malindi, Kenia. Italien war die dritte Nation (nach USA und UdSSR), die einen Satelliten startete (San Marco 1, 1964).",
+        },
+      },
+    },
+  ],
+  [
+    "JP-CYBERSECURITY-BASIC-ACT",
+    {
+      title: "Cybersecurity Basic Act (Japan)",
+      provisions: {
+        "Art. 11-13": {
+          title: "Rahmen für kritische Infrastrukturen",
+          summary:
+            "Sektorspezifische Cybersicherheits-Leitlinien gelten für benannte Betreiber kritischer Infrastrukturen. Weltraum-Sektor-Benennungen wurden seit 2022 erweitert auf Satelliten-Bodensegmente und TT&C-Anlagen.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-ISS-AGREEMENT-IMPL",
+    {
+      title:
+        "Gesetz zur Förderung der internationalen zivilen Nutzung des Weltraums",
+      provisions: {
+        "Art. 3-5": {
+          title: "Kibo-Hoheitsgewalt und japanische Flight Elements",
+          summary:
+            "Japan übt Hoheitsgewalt und Kontrolle über das japanische Experimentmodul Kibo und über japanische Flight Elements aus.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-NEW-SPACE-VISION-2024",
+    {
+      title: "Japan Space Industrial Vision 2024",
+      provisions: {
+        "Pillar 1": {
+          title: "Inländische Start-Resilienz",
+          summary:
+            "Ziel: anhaltende H3-Produktions-Kadenz von 6+ Starts/Jahr bis 2030 plus wettbewerbsfähige Small-Launch-Fähigkeit über Space One und IST.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-FEFTA",
+    {
+      title: "Foreign Exchange and Foreign Trade Act (Japan)",
+      provisions: {
+        "Art. 25 / 48": {
+          title: "Genehmigungspflicht für kontrollierte Güter und Technologie",
+          summary:
+            "Ausfuhren von Items auf der Strategic Goods List oder Übermittlung der zugehörigen Technologie erfordern eine METI-Genehmigung. Catch-All-Klauseln erfassen nicht gelistete Items, die für WMD oder militärische Endnutzung bestimmt sind.",
+        },
+        "Art. 53": {
+          title: "Endnutzer-Erklärung und Audit",
+          summary:
+            "Genehmigungs-Inhaber müssen Endnutzer-Aufzeichnungen führen und METI-Inspektionen vor Ort dulden.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-APPI",
+    {
+      title: "Gesetz zum Schutz personenbezogener Informationen (Japan)",
+      provisions: {
+        "Art. 28": {
+          title: "Beschränkungen grenzüberschreitender Übermittlungen",
+          summary:
+            "Übermittlungen personenbezogener Daten an Empfänger in Drittländern erfordern entweder ausdrückliche Einwilligung, einen Mechanismus auf Niveau von Binding Corporate Rules oder Übermittlung in ein von der PPC als angemessen anerkanntes Land.",
+        },
+        "Art. 26-27": {
+          title: "Meldung von Datenschutzverletzungen",
+          summary:
+            "Erhebliche Datenschutzverletzungen sind der PPC und betroffenen Personen zu melden.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-CABINET-DEBRIS-GUIDELINE-2024",
+    {
+      title:
+        "Cabinet-Office-Leitlinie zur Trümmer-Vermeidung für kommerzielle Operatoren",
+      provisions: {
+        "§3": {
+          title: "Lizenz-Bedingungen",
+          summary:
+            "Kommerzielle Operatoren müssen JMR-003-Konformität in der technischen Einreichung des Lizenz-Antrags unter dem Space Activities Act nachweisen.",
+        },
+        "§5": {
+          title: "Konjunktions-Datenteilung",
+          summary:
+            "Operatoren japanisch-lizenzierter Raumfahrzeuge müssen Manöver-Pläne und Ephemeriden mit dem JAXA-SSA-Center via CCSDS-formatiertem Austausch teilen.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-RADIO-ACT",
+    {
+      title: "Funkgesetz (Japan)",
+      provisions: {
+        "Art. 4": {
+          title: "Funkstation-Lizenz erforderlich",
+          summary:
+            "Alle Funkstationen einschließlich Satelliten-TT&C und Payload-Links erfordern eine MIC-Lizenz.",
+        },
+      },
+    },
+  ],
+  [
+    "JP-SPACE-RESOURCES-2021",
+    {
+      title:
+        "Gesetz zur Förderung von Geschäftstätigkeiten zur Erforschung und Entwicklung von Weltraum-Ressourcen",
+      provisions: {
+        "Art. 5": {
+          title: "Anerkennung von Eigentum an extrahierten Ressourcen",
+          summary:
+            "Ein Operator, der eine Cabinet-Office-Genehmigung erhalten und erfolgreich Weltraum-Ressourcen extrahiert hat, erwirbt das Eigentum an diesen Ressourcen.",
+        },
+      },
+    },
+  ],
+  [
+    "KR-KASA-SPECIAL-ACT",
+    {
+      title:
+        "Sondergesetz zur Errichtung und zum Betrieb der Korea AeroSpace Administration",
+      provisions: {
+        "Art. 4-9": {
+          title: "KASA-Mandat und Befugnisse",
+          summary:
+            "KASA erhält Politik-Koordinations-, Lizenzierungs- und internationale Kooperations-Kompetenzen für zivile Weltraumtätigkeiten; ersetzt MSIT in der Weltraum-Lizenzierung.",
+        },
+      },
+    },
+  ],
+  [
+    "KR-KASA-DEBRIS-GUIDELINE",
+    {
+      title: "KASA-Leitlinie zur Vermeidung von Weltraumtrümmern",
+      provisions: {
+        "§3": {
+          title: "Technische Basis",
+          summary:
+            "Lizenzantragsteller müssen die Konformität mit ISO 24113:2023 und IADC-2025-Leitlinien nachweisen.",
+        },
+        "§5": {
+          title: "5-Jahres-LEO-PMD",
+          summary:
+            "Neue LEO-Missionen sind innerhalb von 5 Jahren nach Missionsende zu entsorgen.",
+        },
+      },
+    },
+  ],
+  [
+    "KR-NARO-SPACE-CENTRE",
+    {
+      title:
+        "Naro Space Center — Koreanische Startgelände-Genehmigungs-Referenz",
+      provisions: {
+        Standortzugang: {
+          title: "Koreanische Regierungs- und Partner-Missionen",
+          summary:
+            "Das Naro Space Center hostet koreanische Regierungs-Starts; kommerzieller Drittpartie-Zugang ist im Aufbau, aber Stand April 2026 nicht operativ.",
+        },
+      },
+    },
+  ],
+  [
+    "KR-RADIO-WAVES-ACT",
+    {
+      title: "Radio Waves Act (Korea)",
+      provisions: {
+        "Art. 19-20": {
+          title: "Funkstation-Lizenz erforderlich",
+          summary:
+            "Alle Funkstationen einschließlich Satelliten-TT&C, Bodenstationen und Gateway-Terminals erfordern eine MSIT-Lizenz.",
+        },
+      },
+    },
+  ],
+  [
+    "KR-PIPA-2011",
+    {
+      title: "Personal Information Protection Act (Korea)",
+      provisions: {
+        "Art. 17-18": {
+          title: "Grenzüberschreitende Übermittlungen",
+          summary:
+            "Übermittlungen mit Einwilligung oder in als angemessen anerkannte Jurisdiktionen durch die koreanische PIPC zulässig.",
+        },
+      },
+    },
+  ],
+  [
+    "LI-DSG-2018",
+    {
+      title: "Datenschutzgesetz (Liechtenstein, GDPR via EWR)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "GDPR-Transposition über EWR",
+          summary:
+            "Setzt die EU-GDPR via EWR-Joint-Committee-Beschluss Nr. 154/2018 in liechtensteinisches Recht um. DSS setzt Compliance durch.",
+        },
+      },
+    },
+  ],
+  [
+    "LI-EEA-1995",
+    {
+      title: "EWR-Abkommen — Liechtensteinische Mitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "EWR-Mitgliedschaft — EU-Recht gilt über Joint-Committee",
+          summary:
+            "Liechtenstein ist seit 1. Mai 1995 EWR-Mitglied. Atlas-relevante EU-Instrumente gelten für Liechtenstein über EWR-Joint-Committee-Beschlüsse.",
+        },
+      },
+    },
+  ],
+  [
+    "LT-ARTEMIS-2024",
+    {
+      title: "Artemis Accords — Litauischer Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraum-Ressourcen",
+          summary:
+            "Litauen unterzeichnete die Artemis Accords am 13. Mai 2024 als 40. Unterzeichner.",
+        },
+      },
+    },
+  ],
+  [
+    "LT-CYBERSEC",
+    {
+      title: "Cybersicherheitsgesetz (Litauen, NIS2-Transposition)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition",
+          summary:
+            "Ursprünglich 2014 als NIS-Transposition erlassen, im Oktober 2024 substantiell zur Umsetzung der NIS2-Richtlinie geändert. NKSC ist die nationale zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "LT-ECA-2004",
+    {
+      title: "Gesetz über elektronische Kommunikation (Litauen)",
+      provisions: {
+        "Kapitel III": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. RRT ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "LT-ESA-2021",
+    {
+      title: "ESA-Vereinbarung über die Assoziierte Mitgliedschaft — Litauen",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Assoziierte-Mitgliedschaft",
+          summary:
+            "Litauen wurde am 21. Mai 2021 ESA-Assoziiertes Mitglied. Die Assoziierte Mitgliedschaft gewährt vollere Beteiligung an ESA-Programmen und Stimmrechte.",
+        },
+      },
+    },
+  ],
+  [
+    "LT-EXPORT",
+    {
+      title: "Gesetz über die Kontrolle strategischer Güter (Litauen)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Das Verteidigungsministerium erteilt Ausfuhrlizenzen für Kategorie 9 in Koordination mit dem Außenministerium.",
+        },
+      },
+    },
+  ],
+  [
+    "LV-CYBERSEC-2024",
+    {
+      title: "Cybersicherheitsgesetz (Lettland, NIS2-Transposition)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition",
+          summary:
+            "Setzt die NIS2-Richtlinie um. CERT.LV (unter dem Verteidigungsministerium) ist die nationale zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "LV-ECA-2004",
+    {
+      title: "Gesetz über elektronische Kommunikation (Lettland)",
+      provisions: {
+        "Kapitel V": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. VAS ESD ist der technische Administrator.",
+        },
+      },
+    },
+  ],
+  [
+    "LV-ESA-2020",
+    {
+      title: "ESA-Vereinbarung über die Assoziierte Mitgliedschaft — Lettland",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Assoziierte-Mitgliedschaft",
+          summary: "Lettland wurde am 27. Juli 2020 ESA-Assoziiertes Mitglied.",
+        },
+      },
+    },
+  ],
+  [
+    "LV-EXPORT-2007",
+    {
+      title:
+        "Gesetz über den Verkehr mit Gütern strategischer Bedeutung (Lettland)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Die Strategic Goods Control Committee (SPKK) im Außenministerium erteilt Ausfuhrlizenzen für Kategorie 9.",
+        },
+      },
+    },
+  ],
+  [
+    "NZ-ADR-IOS-POLICY-2023",
+    {
+      title:
+        "NZ-Weltraumagentur-Politik zu Active Debris Removal (ADR) und In-Orbit-Servicing (IOS)",
+      provisions: {
+        "Principle 1": {
+          title:
+            "Klienten-Zustimmungs-Anforderung für nicht-kooperative Annäherung",
+          summary:
+            "Jede ADR- oder IOS-Mission, die einen Klienten ansteuert, der nicht im Eigentum des Servicer-Operators steht, erfordert dokumentierte Zustimmung des Klienten-Lizenzstaates.",
+        },
+        "Principle 3": {
+          title: "Sicherheits-Margen-Schwellwerte",
+          summary:
+            "Annäherungs-Operationen müssen definierte Stand-off-Distanzen in jeder Missionsphase einhalten. Abbruch-Trajektorien dürfen die Trümmerlage unter keinem Single-Failure-Mode verschlechtern.",
+        },
+        "Principle 5": {
+          title: "End-of-Life-Verantwortung für Servicer",
+          summary:
+            "Der Servicer selbst muss einen glaubwürdigen End-of-Life-Plan haben, der den OSHAA-2017-Standards entspricht.",
+        },
+        "Principle 7": {
+          title: "Cross-Recognition mit alliierten Regimen",
+          summary:
+            "NZSA wird Genehmigungen unter US FAA Part 450, UK CAA und ESA Clean Space in ihrer Genehmigungs-Bewertung berücksichtigen.",
+        },
+      },
+    },
+  ],
+  [
+    "NZ-RESCUE-1969",
+    {
+      title: "Rettungsübereinkommen — Neuseeländischer Beitritt",
+      provisions: {
+        "Art. 2": {
+          title: "Hilfe für Astronauten",
+          summary:
+            "Neuseeland ist verpflichtet, in seinem Hoheitsgebiet oder in Bereichen unter NZ-Kontrolle Astronauten in Not zu helfen. Koordination über MFAT mit Search-and-Rescue-Behörden.",
+        },
+      },
+    },
+  ],
+  [
+    "RO-CYBERSEC-2023",
+    {
+      title: "Cybersicherheits-Rahmengesetz (Rumänien, NIS2-Transposition)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition",
+          summary:
+            "Setzt die NIS2-Richtlinie um. DNSC (Romanian Cybersecurity Directorate) ist die nationale zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "RO-ECC-2023",
+    {
+      title: "Electronic Communications Code (Rumänien)",
+      provisions: {
+        "Titlul III": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. ANCOM ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "RO-ESA-2011",
+    {
+      title: "ESA-Konvention — Rumänische Vollmitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Vollmitgliedschaft",
+          summary:
+            "Rumänien wurde am 22. Dezember 2011 19. Vollmitglied der ESA. ROSA ist die nationale Delegationsstelle.",
+        },
+      },
+    },
+  ],
+  [
+    "RO-EXPORT-2018",
+    {
+      title: "Strategic Goods Export Control Act (Rumänien)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. ANCEX (innerhalb des Außenministeriums) erteilt Genehmigungen für Kategorie 9.",
+        },
+      },
+    },
+  ],
+  [
+    "RU-EXPORT-CONTROL-1999",
+    {
+      title: "Bundesgesetz über Exportkontrollen (Russland)",
+      provisions: {
+        "Art. 6": {
+          title: "Genehmigungspflicht für kontrollierte Items",
+          summary:
+            "Ausfuhren von Items auf den russischen Kontroll-Listen erfordern eine FSTEC-Genehmigung; immaterielle Technologie-Übermittlungen und Vermittlung sind ausdrücklich erfasst.",
+        },
+      },
+    },
+  ],
+  [
+    "SI-ARTEMIS-2024",
+    {
+      title: "Artemis Accords — Slowenischer Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraum-Ressourcen",
+          summary:
+            "Slowenien unterzeichnete die Artemis Accords am 19. April 2024 als 39. Unterzeichner.",
+        },
+      },
+    },
+  ],
+  [
+    "SI-ESA-2022",
+    {
+      title: "ESA-Konvention — Slowenische Vollmitgliedschaft",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Vollmitgliedschaft",
+          summary: "Slowenien wurde am 5. Juli 2022 23. Vollmitglied der ESA.",
+        },
+      },
+    },
+  ],
+  [
+    "SI-ZEKOM-2023",
+    {
+      title: "Gesetz über elektronische Kommunikation (Slowenien, ZEKom-2)",
+      provisions: {
+        "Poglavje VII": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. AKOS ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "SI-ZINFV1",
+    {
+      title: "Informationssicherheitsgesetz (Slowenien, NIS2-Transposition)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition",
+          summary:
+            "Setzt die NIS2-Richtlinie um. URSIV (Information Security Administration) ist die nationale zuständige Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "SI-ZNIBD-2018",
+    {
+      title: "Strategic-Goods-Regime-Gesetz (Slowenien, Dual-Use-Güter)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Die MKNIB (unter dem Wirtschaftsministerium) erteilt Genehmigungen für Kategorie 9.",
+        },
+      },
+    },
+  ],
+  [
+    "SK-CYBERSEC-2018",
+    {
+      title: "Cybersicherheitsgesetz (Slowakei, NIS2-Transpositions-Rahmen)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NIS2-Transposition",
+          summary:
+            "Ursprünglich 2018 als erste slowakische NIS-Transposition erlassen. 2024 zur Umsetzung von NIS2 geändert. NBÚ ist die nationale zuständige Behörde via SK-CERT.",
+        },
+      },
+    },
+  ],
+  [
+    "SK-ECA-2021",
+    {
+      title: "Gesetz über elektronische Kommunikation (Slowakei)",
+      provisions: {
+        "§§ 27–42": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. RÚ ist die ausstellende Behörde.",
+        },
+      },
+    },
+  ],
+  [
+    "SK-ESA-2022",
+    {
+      title: "ESA-Vereinbarung über die Assoziierte Mitgliedschaft — Slowakei",
+      provisions: {
+        Gesamtinstrument: {
+          title: "ESA-Assoziierte-Mitgliedschaft",
+          summary:
+            "Die Slowakei wurde am 30. September 2022 ESA-Assoziiertes Mitglied.",
+        },
+      },
+    },
+  ],
+  [
+    "SK-EXPORT-2011",
+    {
+      title: "Außenhandelsgesetz (Slowakei, Dual-Use-Güter)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "Exportkontrolle für Dual-Use-Weltraumtechnologie",
+          summary:
+            "Setzt die EU-Verordnung 2021/821 um. Die Lizenzierungs-Abteilung des Wirtschaftsministeriums erteilt Ausfuhrlizenzen für Kategorie 9.",
+        },
+      },
+    },
+  ],
+  [
+    "TR-ARTEMIS-2024",
+    {
+      title: "Artemis Accords — Türkischer Unterzeichner (2024)",
+      provisions: {
+        "Section 10": {
+          title: "Weltraum-Ressourcen und internationale Kooperation",
+          summary:
+            "Die Türkei unterzeichnete die Artemis Accords am 13. April 2024 (36. Unterzeichner). Unterstützt die 10-Jahres-Nationale-Weltraum-Strategie der Türkei.",
+        },
+      },
+    },
+  ],
+  [
+    "TR-ECL-2008",
+    {
+      title: "Gesetz über elektronische Kommunikation (Türkei)",
+      provisions: {
+        "Art. 36–45": {
+          title: "Funkfrequenz-Genehmigungen",
+          summary:
+            "Reguliert die Erteilung individueller Genehmigungen zur Funkfrequenz-Nutzung. BTK ist die ausstellende Behörde und verwaltet die Türkei-Position bei ITU-Satelliten-Anmeldungen.",
+        },
+      },
+    },
+  ],
+  [
+    "TR-KVK-2016",
+    {
+      title: "Datenschutzgesetz (Türkei)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "GDPR-angrenzendes Datenschutz-Regime",
+          summary:
+            "Türkische GDPR-angrenzende Architektur — ähnliche Grundsätze, aber keine vollständige GDPR-Äquivalenz. Die Türkei steht nicht auf der EU-Adäquanz-Liste.",
+        },
+      },
+    },
+  ],
+  [
+    "UK-EIA-REGS-2017",
+    {
+      title:
+        "Town and Country Planning (Environmental Impact Assessment) Regulations 2017",
+      provisions: {
+        "Reg. 5": {
+          title: "Vorprüfung",
+          summary:
+            "Die örtliche Planungsbehörde entscheidet, ob das Vorhaben EIA-pflichtig ist — unter Verweis auf Schedule 1 (zwingende EIA) und Schedule 2 (Einzelfall-Vorprüfung).",
+        },
+        "Reg. 14-15": {
+          title: "Umweltbericht und Konsultation",
+          summary:
+            "Der Vorhabenträger erstellt einen Umweltbericht; die zuständige Behörde und gesetzliche Konsultationsstellen sind anzuhören.",
+        },
+        "Reg. 26": {
+          title: "Begründete Schlussfolgerung",
+          summary:
+            "Die begründete Schlussfolgerung der zuständigen Behörde zu den erheblichen Auswirkungen ist in die Genehmigungsentscheidung zu integrieren.",
+        },
+      },
+    },
+  ],
+  [
+    "UK-NSPOC-CDM-PROTOCOL",
+    {
+      title: "NSpOC Conjunction Data Message Protocol",
+      provisions: {
+        "§3": {
+          title: "CDM-Format",
+          summary:
+            "Alle Konjunktions-Warnungen werden im CCSDS-Format 508.0-B-1 ausgegeben; ergänzende Briefings für High-Criticality-Ereignisse.",
+        },
+        "§5": {
+          title: "Operator-Reaktions-Zeitlinie",
+          summary:
+            "Operatoren müssen jede CDM mit Pc ≥ 1e-4 binnen 12 Stunden bestätigen und NSpOC zum Zeitpunkt der Ausführung über jedes geplante Ausweichmanöver informieren.",
+        },
+      },
+    },
+  ],
+  [
+    "UK-SPACE-SUSTAINABILITY-STD-2024",
+    {
+      title:
+        "UK Space Sustainability Standard — freiwilliges Nachhaltigkeits-Rating",
+      provisions: {
+        "Pillar 1": {
+          title: "Kollisionsvermeidung und Datenteilung",
+          summary:
+            "Operatoren weisen Beteiligung an Konjunktions-Screening-Diensten nach und veröffentlichen Statistiken zu Ausweichmanövern.",
+        },
+        "Pillar 3": {
+          title: "End-of-Life-Entsorgungs-Plan",
+          summary:
+            "Bewertete Operatoren dokumentieren ihre PMD-Strategie mit probabilistischer Erfolgsanalyse — ausgerichtet am < 5-Jahres-LEO-Ziel.",
+        },
+        "Pillar 5": {
+          title: "Beitrag zu Active Debris Removal",
+          summary:
+            "Bewertete Operatoren tragen finanziell oder technisch zu ADR-Missionen für Legacy-Trümmer bei.",
+        },
+      },
+    },
+  ],
+  [
+    "UK-DEVOLVED-SCOTLAND",
+    {
+      title: "Schottischer Devolved-Weltraum-Rahmen",
+      provisions: {
+        "Scotland Space Strategy 2024": {
+          title: "Schottische Weltraum-Wirtschaftsziele",
+          summary:
+            "Glasgow ist Europas größtes Small-Satellite-Fertigungszentrum; die schottische Regierung zielt auf 4 Mrd. GBP industriellen Wert bis 2030 ab, mit Investitionen der Highlands and Islands Enterprise in Spaceport-Infrastruktur (Sutherland, SaxaVord).",
+        },
+        "Devolved-Kompetenz-Grenze": {
+          title: "Westminster vs. Holyrood",
+          summary:
+            "Weltraum-Lizenzierung unter SIA 2018 ist reserviert (CAA-administriert). Planung, Umweltverträglichkeitsprüfung sowie Crown Estate Scotland Marine Licensing sind devolved — Operatoren stehen parallelen UK- + schottischen Verfahren gegenüber.",
+        },
+      },
+    },
+  ],
+  [
+    "UK-HABITATS-REGS-2017",
+    {
+      title: "Conservation of Habitats and Species Regulations 2017 (UK)",
+      provisions: {
+        "Reg. 63": {
+          title: "Angemessene Prüfung",
+          summary:
+            "Pläne oder Projekte, die ein europäisches Schutzgebiet erheblich beeinträchtigen könnten, sind einer angemessenen Prüfung zu unterziehen — die zuständige Behörde darf nur zustimmen, nachdem sie sicher ist, dass die Integrität des Gebiets nicht beeinträchtigt wird.",
+        },
+      },
+    },
+  ],
+  [
+    "US-CA-CEQA-SPACE",
+    {
+      title:
+        "California Environmental Quality Act — Anwendung auf Weltraum-Operationen",
+      provisions: {
+        "§ 21080-21082": {
+          title: "CEQA-Anwendbarkeit",
+          summary:
+            "Jedes 'Project' im Sinne von CEQA (das die meisten Weltraum-Infrastruktur-Entwicklungen erfasst) erfordert entweder eine kategorische Ausnahme, eine Negative Declaration oder einen vollständigen Environmental Impact Report.",
+        },
+        "§ 21167": {
+          title: "Klagefrist",
+          summary:
+            "Strenge (oft 30-tägige) Verjährungsfrist für rechtliche Anfechtungen — das Volumen der CEQA-Klagen gegen kalifornische Projekte ist jedoch hoch.",
+        },
+      },
+    },
+  ],
+  [
+    "US-FAA-450-139",
+    {
+      title: "14 CFR § 450.139 — Entsorgung von Trägerraketen-Komponenten",
+      provisions: {
+        "(a)": {
+          title: "Entsorgungs-Erklärung",
+          summary:
+            "Der Operator hat die Entsorgung jeder Trägerraketen-Stufe und jedes verworfenen Bauteils zu beschreiben — einschließlich Zeit, Ort und Methode der Entsorgung.",
+        },
+        "(b)": {
+          title: "Casualty-Risk-Schwellwert — 1:10.000",
+          summary:
+            "Aggregiertes menschliches Casualty-Risk bei unkontrolliertem Wiedereintritt darf 1 von 10.000 nicht überschreiten.",
+        },
+        "(c)": {
+          title: "Zuverlässigkeits-Nachweis",
+          summary:
+            "Der Operator hat die Zuverlässigkeit des Entsorgungs-Manövers durch Test, Analyse oder Flughistorie nachzuweisen.",
+        },
+      },
+    },
+  ],
+  [
+    "US-FAA-NPRM-UPPER-STAGES-2023",
+    {
+      title: "FAA NPRM — Trümmer-Vermeidung bei Trägerraketen-Oberstufen",
+      provisions: {
+        "§ 450.139(b) Vorschlag": {
+          title: "Fünf Entsorgungs-Pfade für Oberstufen",
+          summary:
+            "Startanbieter müssen einen von fünf vorgeschlagenen Entsorgungs-Pfaden für jede Oberstufe wählen und seine Tragfähigkeit im Lizenzantrag nachweisen.",
+        },
+        "§ 450.139(c) Vorschlag": {
+          title: "Rückwirkende Erfassung",
+          summary:
+            "Bestehende aktive Lizenzen müssen binnen 24 Monaten an die neuen Oberstufen-Regeln angepasst werden.",
+        },
+      },
+    },
+  ],
+  [
+    "US-FCC-1-1306",
+    {
+      title:
+        "47 CFR § 1.1306 — Kategorische FCC-NEPA-Ausnahme für Satelliten-Lizenzierung",
+      provisions: {
+        "§ 1.1306(a)": {
+          title: "Kategorische Ausnahme",
+          summary:
+            "Maßnahmen, die unter diese Bestimmung fallen, sind kategorisch von NEPA-Analyse-Anforderungen ausgenommen, sofern die Maßnahme nicht unter die § 1.1307-Ausnahmen fällt.",
+        },
+        "§ 1.1307": {
+          title: "Ausgenommene Kategorien",
+          summary:
+            "Maßnahmen, die erhebliche RF-Exposition verursachen, historische Stätten verändern, gefährdete Arten betreffen oder sehr-große-Konstellations-Maßnahmen darstellen (post-2024), erfordern Umweltprüfung.",
+        },
+      },
+    },
+  ],
+  [
+    "US-FCC-OSAM-ORDER-2024",
+    {
+      title:
+        "FCC Report and Order — Förderung von In-Space-Servicing, Assembly and Manufacturing (OSAM)",
+      provisions: {
+        "§ III.A": {
+          title: "OSAM-spezifischer Antrags-Pfad",
+          summary:
+            "Operatoren können den gestrafften OSAM-Pfad nutzen, wenn die Mission Refuelling, Reparatur, Lebensverlängerung, Trümmer-Beseitigung oder Assembly gewidmet ist.",
+        },
+        "§ III.C": {
+          title: "Custody-Transfer-Offenlegung",
+          summary:
+            "Der Antrag muss den rechtlichen Operator jedes gewarteten Satelliten in jeder Phase gemeinsamer Operationen identifizieren; FCC behält die Lizenz-Zuständigkeit über beide Raumfahrzeuge.",
+        },
+        "§ IV": {
+          title: "Sicherheit der Annäherungs-Operationen",
+          summary:
+            "Sichere RPO muss anhand der CONFERS-RDOP-technischen Basis nachgewiesen werden; Konjunktions-Risiko während RPO < 10⁻⁵ je Ereignis.",
+        },
+      },
+    },
+  ],
+  [
+    "US-FL-SPACE-FLORIDA",
+    {
+      title: "Florida Statutes Chapter 331 — Space Florida Act",
+      provisions: {
+        "§ 331.302": {
+          title: "Space-Florida-Gründung und Befugnisse",
+          summary:
+            "Schafft Space Florida als unabhängigen Sonderbezirk mit den Befugnissen einer Hafenbehörde — gibt Anleihen aus, hält Vermögen, schließt Konzessionsvereinbarungen und tritt als FAA-Spaceport-Operator unter Part 420 / 450 auf.",
+        },
+        "§ 331.367": {
+          title: "Spaceflight-Informed-Consent-Regime",
+          summary:
+            "Florida-spezifisches Informed-Consent-Statut, das die Haftung von Startanbietern gegenüber Spaceflight-Participants begrenzt.",
+        },
+      },
+    },
+  ],
+  [
+    "US-LRSPA-1992",
+    {
+      title: "Land Remote Sensing Policy Act",
+      provisions: {
+        "51 USC §60121": {
+          title: "NOAA-Fernerkundungs-Lizenz erforderlich",
+          summary:
+            "US-Personen, die private Erd-Fernerkundungs-Weltraumsysteme betreiben, benötigen eine NOAA-Lizenz. Die Reform 2020 etablierte einen risikoabgestuften Rahmen: Tier 1 (unbeschränkt), Tier 2 (begrenzte Bedingungen), Tier 3 (zeitweise Bedingungen möglich).",
+        },
+      },
+    },
+  ],
+  [
+    "US-MOON-NON-PARTY",
+    {
+      title: "Mond-Übereinkommen — Vereinigte Staaten (NICHT-PARTEI)",
+      provisions: {
+        Gesamtinstrument: {
+          title: "NICHT ratifiziert — bewusste US-Politik",
+          summary:
+            "Die Vereinigten Staaten haben das Mond-Übereinkommen 1979 weder unterzeichnet noch ratifiziert. Die Charakterisierung von Himmelskörper-Ressourcen als 'gemeinsames Erbe der Menschheit' (Art. 11) ist unvereinbar mit dem US-Recht — insbesondere mit dem CSLCA 2015 (Title IV) und den Artemis Accords 2020.",
+        },
+      },
+    },
+  ],
+  [
+    "US-NOAA-CRSRA-DEBRIS",
+    {
+      title:
+        "15 CFR Part 960 — NOAA Verordnungen für kommerzielle Fernerkundung (Trümmer-Mitigations-Bedingungen)",
+      provisions: {
+        "§ 960.6(c)": {
+          title: "Trümmer-Mitigations-Erklärung",
+          summary:
+            "Der Antrag muss die Konformität mit dem US-Government ODMSP nachweisen — einschließlich PMD-Zuverlässigkeit und Casualty-Risk-Schwellwerten.",
+        },
+        "§ 960.13": {
+          title: "End-of-Life-Datenhandhabung",
+          summary:
+            "Der Operator muss Bilder und Daten am End-of-Life sicher unzugänglich machen, koordiniert mit den Entsorgungs-Manövern.",
+        },
+      },
+    },
+  ],
+  [
+    "US-OFFICE-SPACE-COMMERCE",
+    {
+      title: "51 U.S.C. § 60101 ff. — Office of Space Commerce",
+      provisions: {
+        "§ 60101": {
+          title: "Errichtung des Office",
+          summary:
+            "Errichtet das Office of Space Commerce als zentrale Stelle für die Koordination weltraumbezogener Themen, Programme und Initiativen innerhalb des Department of Commerce.",
+        },
+        "§ 60102 (post-2024)": {
+          title: "TraCSS-Rolle",
+          summary:
+            "Ermächtigt das Office, ein Traffic Coordination System for Space zu betreiben, das SSA-Daten, Konjunktions-Bewertungs-Mitteilungen und grundlegende STM-Dienste für Operatoren bereitstellt.",
+        },
+      },
+    },
+  ],
+  [
+    "US-TX-SLIA",
+    {
+      title: "Texas Spaceflight Liability and Immunity Act",
+      provisions: {
+        "§ 100A.002": {
+          title: "Haftungs-Beschränkung — Informed Consent",
+          summary:
+            "Eine Spaceflight-Entity haftet einem Teilnehmer nicht für Verletzung oder Tod aus den inhärenten Risiken der Raumfahrt, sofern der Teilnehmer die gesetzlich vorgesehene Warnung und Einwilligung unterzeichnet.",
+        },
+      },
+    },
+  ],
+  [
+    "US-TX-SPACEPORT",
+    {
+      title:
+        "Texas Local Government Code Chapter 507 — Spaceport Development Corporations",
+      provisions: {
+        "§ 507.012": {
+          title: "Befugnisse einer Spaceport Development Corporation",
+          summary:
+            "Counties können eine Corporation gründen, um Spaceport-Infrastruktur zu erwerben, zu entwickeln, zu betreiben und zu finanzieren.",
+        },
+      },
+    },
+  ],
+  [
+    "US-NM-SPACEPORT",
+    {
+      title: "New Mexico Spaceport Development Act",
+      provisions: {
+        "§ 58-31-9": {
+          title: "Spaceport-Authority-Befugnisse",
+          summary:
+            "Die New Mexico Spaceport Authority ist die Staats-Stelle, die die FAA-Spaceport-Operator-Lizenz hält; betreibt Spaceport America samt Einnahmen- und Steuer-Anreiz-Paket.",
+        },
+      },
+    },
+  ],
+  [
+    "US-RESCUE-1969",
+    {
+      title: "Rettungsübereinkommen — Ratifikation der Vereinigten Staaten",
+      provisions: {
+        "Art. 5": {
+          title: "Rückgabe von Weltraumobjekten — US-Praxis",
+          summary:
+            "Die USA sind verpflichtet, fremde Weltraumobjekte, die auf ihrem Territorium gefunden werden, an die zuständige Stelle zurückzugeben. NASA und State Department koordinieren die Rückgabe.",
+        },
+      },
+    },
+  ],
+  [
+    "ZA-SANSA-ACT-2008",
+    {
+      title: "South African National Space Agency Act",
+      provisions: {
+        "§ 5": {
+          title: "SANSA-Mandat",
+          summary:
+            "SANSA fördert die friedliche Nutzung des Weltraums, berät die Regierung und betreibt nationale zivile Weltraum-Infrastruktur einschließlich der Hartebeesthoek-Deep-Space-Tracking-Anlage.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
