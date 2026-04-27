@@ -57,6 +57,19 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Surface the FIRST verbatim provision (when backfilled) so the
+  // citation-pill hover-preview can show real statutory text instead
+  // of a Caelex paraphrase. Trimmed to ~280 chars for tooltip-fit;
+  // the source-detail page renders the full passage. Verbatim text
+  // is the biggest "is Atlas real?" lever — without it, the partner
+  // clicks a pill and never sees the law's own words.
+  const firstVerbatim = source.key_provisions.find((p) => p.paragraph_text);
+  const verbatimSnippet = firstVerbatim?.paragraph_text
+    ? firstVerbatim.paragraph_text.length > 280
+      ? `${firstVerbatim.paragraph_text.slice(0, 277).trimEnd()}…`
+      : firstVerbatim.paragraph_text
+    : null;
+
   return NextResponse.json(
     {
       title: source.title_en,
@@ -64,6 +77,9 @@ export async function GET(
       jurisdiction: source.jurisdiction,
       type: source.type,
       status: source.status,
+      verbatim_section: firstVerbatim?.section ?? null,
+      verbatim_snippet: verbatimSnippet,
+      verbatim_url: firstVerbatim?.paragraph_url ?? source.source_url ?? null,
     },
     {
       headers: {

@@ -34,6 +34,12 @@ interface SourcePreview {
   jurisdiction: string;
   type: string;
   status: string;
+  /** First backfilled verbatim provision (≤280 chars). When present
+   *  the tooltip shows the law's own words instead of the scope
+   *  description — the strongest "is Atlas real?" signal we ship. */
+  verbatim_section?: string | null;
+  verbatim_snippet?: string | null;
+  verbatim_url?: string | null;
 }
 
 interface CasePreview {
@@ -155,11 +161,32 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
               <span className="block font-semibold text-white mb-1.5">
                 {preview.title}
               </span>
-              <span className="block text-white/70 text-[11.5px]">
-                {preview.scope_description.length > 320
-                  ? preview.scope_description.slice(0, 320) + "…"
-                  : preview.scope_description}
-              </span>
+              {preview.verbatim_snippet ? (
+                <>
+                  {preview.verbatim_section && (
+                    <span className="block text-[10.5px] text-emerald-300/80 font-mono mb-1">
+                      {preview.verbatim_section} —{" "}
+                      <span className="italic text-white/40">
+                        verbatim text
+                      </span>
+                    </span>
+                  )}
+                  <span
+                    className="block text-white/85 text-[11.5px] leading-relaxed"
+                    style={{
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                    }}
+                  >
+                    “{preview.verbatim_snippet}”
+                  </span>
+                </>
+              ) : (
+                <span className="block text-white/70 text-[11.5px]">
+                  {preview.scope_description.length > 320
+                    ? preview.scope_description.slice(0, 320) + "…"
+                    : preview.scope_description}
+                </span>
+              )}
               <span className="block mt-2 text-[10.5px] text-white/40">
                 {t("atlas.pill_click_opens_source")}
               </span>

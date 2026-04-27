@@ -71,6 +71,36 @@ export interface KeyProvision {
   title: string;
   summary: string;
   complianceImplication?: string;
+
+  /**
+   * Verbatim statutory text — the actual paragraph as enacted, with
+   * minimal editorial intervention (paragraph numbers preserved,
+   * footnote markers stripped). Optional because backfilling 5 000+
+   * provisions is a content-sprint job; we ship the lawyer-facing
+   * "show me the law's own words" affordance for the top-citation
+   * provisions and grow coverage from there.
+   *
+   * When present, the source-detail page renders an "Original-
+   * Wortlaut" expandable section, and the [ATLAS-…] citation pill
+   * hover-card shows the first ~300 characters with an "Open
+   * official text" deep-link.
+   *
+   * Provenance contract: ALWAYS quote from the official consolidated
+   * text linked at `paragraph_url` (or the parent `source_url`).
+   * Never paraphrase. If a paragraph is too long for inline display,
+   * include the canonical opening sentence(s) plus an ellipsis and
+   * keep `paragraph_url` populated so the partner can read on.
+   */
+  paragraph_text?: string;
+
+  /**
+   * Deep-link to the official text of THIS specific paragraph
+   * (preferred) or to the section anchor on the consolidated act.
+   * Falls back to `LegalSource.source_url` at render time when
+   * absent. Examples: an EUR-Lex article anchor, a CFR section URL,
+   * a Bundestag-PDF page-anchor.
+   */
+  paragraph_url?: string;
 }
 
 /**

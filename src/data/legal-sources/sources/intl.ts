@@ -104,12 +104,20 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
         title: "Freedom of exploration and use",
         summary:
           "Outer space shall be free for exploration and use by all States on a basis of equality and in accordance with international law.",
+        paragraph_text:
+          "The exploration and use of outer space, including the moon and other celestial bodies, shall be carried out for the benefit and in the interests of all countries, irrespective of their degree of economic or scientific development, and shall be the province of all mankind. Outer space, including the moon and other celestial bodies, shall be free for exploration and use by all States without discrimination of any kind, on a basis of equality and in accordance with international law, and there shall be free access to all areas of celestial bodies. There shall be freedom of scientific investigation in outer space, including the moon and other celestial bodies, and States shall facilitate and encourage international co-operation in such investigation.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
       {
         section: "Art. II",
         title: "Non-appropriation principle",
         summary:
           "Outer space and celestial bodies are not subject to national appropriation by claim of sovereignty, use, occupation, or any other means.",
+        paragraph_text:
+          "Outer space, including the moon and other celestial bodies, is not subject to national appropriation by claim of sovereignty, by means of use or occupation, or by any other means.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
       {
         section: "Art. VI",
@@ -118,6 +126,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "States bear international responsibility for national space activities including by non-governmental entities. Activities of non-governmental entities require authorization and continuing supervision by the appropriate State.",
         complianceImplication:
           "This is the legal foundation for ALL national licensing regimes. Every German space operator must be authorized because Germany bears responsibility under Art. VI for their activities.",
+        paragraph_text:
+          "States Parties to the Treaty shall bear international responsibility for national activities in outer space, including the moon and other celestial bodies, whether such activities are carried on by governmental agencies or by non-governmental entities, and for assuring that national activities are carried out in conformity with the provisions set forth in the present Treaty. The activities of non-governmental entities in outer space, including the moon and other celestial bodies, shall require authorization and continuing supervision by the appropriate State Party to the Treaty. When activities are carried on in outer space, including the moon and other celestial bodies, by an international organization, responsibility for compliance with this Treaty shall be borne both by the international organization and by the States Parties to the Treaty participating in such organization.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
       {
         section: "Art. VII",
@@ -126,6 +138,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "A State that launches or procures the launch of an object into outer space, and a State from whose territory or facility an object is launched, is internationally liable for damage to another State or its natural or juridical persons.",
         complianceImplication:
           "Germany is liable as 'launching State' for damage caused by objects launched from its territory or by its nationals. This drives insurance and liability requirements.",
+        paragraph_text:
+          "Each State Party to the Treaty that launches or procures the launching of an object into outer space, including the moon and other celestial bodies, and each State Party from whose territory or facility an object is launched, is internationally liable for damage to another State Party to the Treaty or to its natural or juridical persons by such object or its component parts on the Earth, in air space or in outer space, including the moon and other celestial bodies.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
       {
         section: "Art. VIII",
@@ -134,6 +150,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "A State Party on whose registry an object launched into outer space is carried shall retain jurisdiction and control over such object and over any personnel thereof.",
         complianceImplication:
           "Registration determines which State has jurisdiction. German-registered satellites are under German jurisdiction regardless of their orbital position.",
+        paragraph_text:
+          "A State Party to the Treaty on whose registry an object launched into outer space is carried shall retain jurisdiction and control over such object, and over any personnel thereof, while in outer space or on a celestial body. Ownership of objects launched into outer space, including objects landed or constructed on a celestial body, and of their component parts, is not affected by their presence in outer space or on a celestial body or by their return to the Earth. Such objects or component parts found beyond the limits of the State Party to the Treaty on whose registry they are carried shall be returned to that State Party, which shall, upon request, furnish identifying data prior to their return.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
       {
         section: "Art. IX",
@@ -142,6 +162,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "States shall conduct exploration so as to avoid harmful contamination and adverse changes in the environment of Earth. Consultation required if activities would cause potentially harmful interference.",
         complianceImplication:
           "Legal basis for debris mitigation and environmental requirements.",
+        paragraph_text:
+          "In the exploration and use of outer space, including the moon and other celestial bodies, States Parties to the Treaty shall be guided by the principle of co-operation and mutual assistance and shall conduct all their activities in outer space, including the moon and other celestial bodies, with due regard to the corresponding interests of all other States Parties to the Treaty. States Parties to the Treaty shall pursue studies of outer space, including the moon and other celestial bodies, and conduct exploration of them so as to avoid their harmful contamination and also adverse changes in the environment of the Earth resulting from the introduction of extraterrestrial matter and, where necessary, shall adopt appropriate measures for this purpose. If a State Party to the Treaty has reason to believe that an activity or experiment planned by it or its nationals in outer space, including the moon and other celestial bodies, would cause potentially harmful interference with activities of other States Parties in the peaceful exploration and use of outer space, including the moon and other celestial bodies, it shall undertake appropriate international consultations before proceeding with any such activity or experiment.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
       },
     ],
     related_sources: [
@@ -252,6 +276,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "A launching State shall be absolutely liable to pay compensation for damage caused by its space object on the surface of the Earth or to aircraft in flight.",
         complianceImplication:
           "Launching States face strict (no-fault) liability for ground damage. This drives mandatory insurance requirements in national space laws — operators must carry coverage because the State is ultimately liable.",
+        paragraph_text:
+          "A launching State shall be absolutely liable to pay compensation for damage caused by its space object on the surface of the earth or to aircraft in flight.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/liability-convention.html",
       },
       {
         section: "Art. III",
@@ -260,6 +288,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "Damage caused in outer space to a space object of another State is compensated only if the damage is due to fault of the launching State or its agents.",
         complianceImplication:
           "In-orbit collisions require proof of fault. This is less burdensome than surface liability but still drives collision avoidance obligations.",
+        paragraph_text:
+          "In the event of damage being caused elsewhere than on the surface of the earth to a space object of one launching State or to persons or property on board such a space object by a space object of another launching State, the latter shall be liable only if the damage is due to its fault or the fault of persons for whom it is responsible.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/liability-convention.html",
       },
       {
         section: "Art. V",
@@ -316,6 +348,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "Each launching State shall maintain a registry of space objects launched into Earth orbit or beyond and shall inform the UN Secretary-General of the establishment of such a registry.",
         complianceImplication:
           "Germany must maintain a national space object registry. Currently managed informally via DLR; a formal registry is planned under EU Space Act and the future Weltraumgesetz.",
+        paragraph_text:
+          "When a space object is launched into earth orbit or beyond, the launching State shall register the space object by means of an entry in an appropriate registry which it shall maintain. Each launching State shall inform the Secretary-General of the United Nations of the establishment of such a registry. Where there are two or more launching States in respect of any such space object, they shall jointly determine which one of them shall register the object in accordance with paragraph 1 of this article, bearing in mind the provisions of article VIII of the Treaty on Principles Governing the Activities of States in the Exploration and Use of Outer Space, including the Moon and Other Celestial Bodies, and without prejudice to appropriate agreements concluded or to be concluded among the launching States on jurisdiction and control over the space object and over any personnel thereof. The contents of each registry and the conditions under which it is maintained shall be determined by the State of registry concerned.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/registration-convention.html",
       },
       {
         section: "Art. IV",
@@ -324,6 +360,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "Each State must furnish to the UN: name of launching State(s), designator/registration number, date and territory of launch, basic orbital parameters, general function of the space object.",
         complianceImplication:
           "Operators must provide launch and orbit data to enable registration.",
+        paragraph_text:
+          "Each State of registry shall furnish to the Secretary-General of the United Nations, as soon as practicable, the following information concerning each space object carried on its registry: (a) Name of launching State or States; (b) An appropriate designator of the space object or its registration number; (c) Date and territory or location of launch; (d) Basic orbital parameters, including: (i) Nodal period, (ii) Inclination, (iii) Apogee, (iv) Perigee; (e) General function of the space object.",
+        paragraph_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/registration-convention.html",
       },
     ],
     related_sources: ["INT-OST-1967"],

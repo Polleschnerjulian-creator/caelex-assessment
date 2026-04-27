@@ -22,6 +22,7 @@ import {
   Library,
   Gavel,
   PenSquare,
+  Columns,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
@@ -38,6 +39,13 @@ const MAIN_NAV = [
     exact: true,
   },
   { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
+  // Side-by-side article reader — table comparator gives cells-per-criterion;
+  // this gives the law's own words in 2-4 columns, the deepest research move.
+  {
+    labelKey: "atlas.compare_articles",
+    href: "/atlas/compare-articles",
+    icon: Columns,
+  },
   { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
   {
     labelKey: "atlas.international",

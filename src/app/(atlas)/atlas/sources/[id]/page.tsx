@@ -22,6 +22,7 @@ import { BookmarkButton } from "../../_components/BookmarkButton";
 import { WatchButton } from "@/components/atlas/WatchButton";
 import { CiteThisButton } from "@/components/atlas/CiteThisButton";
 import { QuoteProvisionButton } from "@/components/atlas/QuoteProvisionButton";
+import { VerbatimProvisionText } from "@/components/atlas/VerbatimProvisionText";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -536,6 +537,17 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                       </p>
                     </div>
                   )}
+
+                  {/* Verbatim statutory text — collapsed by default,
+                      expand to read the actual paragraph as enacted.
+                      Falls back to a "Open official text" link when
+                      the verbatim text hasn't been backfilled yet. */}
+                  <VerbatimProvisionText
+                    paragraphText={provision.paragraph_text}
+                    paragraphUrl={provision.paragraph_url}
+                    fallbackUrl={source.source_url}
+                    language={language}
+                  />
                 </div>
               );
             })}

@@ -88,6 +88,16 @@ const NAV_ITEMS: Item[] = [
     haystack: "comparator vergleich",
   },
   {
+    id: "nav-compare-articles",
+    group: "Navigation",
+    title: "Side-by-side articles",
+    subtitle: "Read 2-4 statutory provisions next to each other",
+    href: "/atlas/compare-articles",
+    icon: BarChart3,
+    haystack:
+      "compare articles side-by-side artikel vergleich verbatim wortlaut paragraph",
+  },
+  {
     id: "nav-jurisdictions",
     group: "Navigation",
     title: "Jurisdictions",
