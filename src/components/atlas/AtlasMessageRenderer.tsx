@@ -1,0 +1,64 @@
+"use client";
+
+/**
+ * Copyright 2026 Caelex GmbH. All rights reserved.
+ *
+ * Renders an Astra answer with inline Atlas-ID deep-links. Each
+ * `[INT-WASSENAAR]`, `[DE-VVG]`, etc. token becomes a clickable link
+ * to the source-detail page; the rest of the message is preserved as
+ * `whitespace-pre-wrap` plain text so multi-line formatting from the
+ * model survives.
+ *
+ * Used inside the AtlasAstraChat assistant-message bubble. Pure
+ * presentation — the segmentation is done by tokenizeAtlasMessage().
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import Link from "next/link";
+import { Fragment } from "react";
+import {
+  tokenizeAtlasMessage,
+  atlasIdToHref,
+} from "@/lib/atlas/render-message";
+
+interface AtlasMessageRendererProps {
+  content: string;
+  /** Optional class for the wrapping <p>. Defaults to the chat-bubble
+   *  whitespace-pre-wrap pattern used today in AtlasAstraChat. */
+  className?: string;
+}
+
+export default function AtlasMessageRenderer({
+  content,
+  className = "whitespace-pre-wrap",
+}: AtlasMessageRendererProps) {
+  const tokens = tokenizeAtlasMessage(content);
+  return (
+    <p className={className}>
+      {tokens.map((tok, idx) => {
+        if (tok.kind === "text") {
+          // Use a Fragment so React keeps the keyed slot but we don't
+          // wrap a span around every text run (cheaper DOM).
+          return <Fragment key={idx}>{tok.value}</Fragment>;
+        }
+        const href = atlasIdToHref(tok.id);
+        if (!href) {
+          // ID-shaped but didn't survive the validator (defensive — the
+          // tokenizer regex already requires the canonical shape).
+          return <Fragment key={idx}>{tok.raw}</Fragment>;
+        }
+        return (
+          <Link
+            key={idx}
+            href={href}
+            className="atlas-citation-link inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[12px] font-mono no-underline transition-colors"
+            title={`Atlas-Quelle ${tok.id}`}
+          >
+            {tok.id}
+          </Link>
+        );
+      })}
+    </p>
+  );
+}

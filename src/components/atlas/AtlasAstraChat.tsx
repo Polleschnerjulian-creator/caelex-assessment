@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { X, ArrowUp, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
+import AtlasMessageRenderer from "@/components/atlas/AtlasMessageRenderer";
 
 interface Message {
   id: string;
@@ -358,7 +359,13 @@ export default function AtlasAstraChat() {
                     </span>
                   </div>
                   <div className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.06] border border-white/[0.08] text-white/95 rounded-[18px] rounded-tl-md break-words">
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {/* Assistant messages are rendered through
+                        AtlasMessageRenderer so that [ATLAS-ID] citations
+                        injected by the system prompt become clickable
+                        deep-links to the source-detail page. User
+                        messages stay as plain text — no parsing of
+                        their input is desired. */}
+                    <AtlasMessageRenderer content={msg.content} />
                   </div>
                 </div>
               );
