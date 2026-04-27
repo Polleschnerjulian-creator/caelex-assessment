@@ -1822,6 +1822,95 @@ const SUSTAINABILITY_UK: LegalSource[] = [
     ],
     last_verified: "2026-04-21",
   },
+
+  // ─── Additional UK debris/STM stack — 2026 audit additions ──────────
+
+  {
+    id: "UK-CAA-CAP2589",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "CAP 2589 — UK Civil Aviation Authority Space Debris Mitigation and Sustainability Policy",
+    date_published: "2024-11-15",
+    official_reference: "CAP 2589",
+    source_url:
+      "https://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=11&mode=detail&id=12089",
+    issuing_body: "UK Civil Aviation Authority (CAA)",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "CAA's binding debris-mitigation policy under the Space Industry Act 2018 framework. Sets the technical baseline (ISO 24113:2023) for licensing and applies a 'two-tier' approach: standard licensing for missions complying with ISO 24113, enhanced scrutiny for missions deviating. The first revision of CAP 2589 in November 2024 introduced a 5-year LEO post-mission disposal preference, aligning UK with FCC and IADC 2025.",
+    key_provisions: [
+      {
+        section: "§4.2",
+        title: "ISO 24113 baseline",
+        summary:
+          "All licence applicants must demonstrate compliance with ISO 24113:2023 in the technical submission.",
+      },
+      {
+        section: "§4.3",
+        title: "PMD preference — 5 years",
+        summary:
+          "From 2025 onwards, post-mission-disposal manoeuvre target shifts from 25 years to 5 years for new LEO missions; 25-year fallback only with documented justification.",
+      },
+      {
+        section: "§5",
+        title: "Manoeuvre data-sharing",
+        summary:
+          "Operators must share operational manoeuvre plans with NSpOC at least 24 hours before execution, except in collision-avoidance manoeuvres where post-event reporting is acceptable.",
+      },
+      {
+        section: "§6",
+        title: "Active debris removal readiness",
+        summary:
+          "Spacecraft launched after 1 Jan 2027 should be designed to facilitate active debris removal (capture interfaces, beacon-grade tracking aids).",
+      },
+    ],
+    related_sources: [
+      "UK-SIA-2018",
+      "INT-ISO-24113-2023",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "UK-NSPOC-CDM-PROTOCOL",
+    jurisdiction: "UK",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "NSpOC Conjunction Data Message Protocol",
+    date_published: "2023-04-01",
+    official_reference: "NSpOC-PROTO-CDM-2023",
+    source_url:
+      "https://www.gov.uk/government/organisations/national-space-operations-centre",
+    issuing_body: "National Space Operations Centre (NSpOC)",
+    competent_authorities: ["UK-NSPOC", "UK-SPACECOMMAND"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "Operating protocol for UK NSpOC conjunction-warning service. Operators of UK-licensed satellites are auto-enrolled in the NSpOC CDM feed; the protocol sets timeliness, format (CCSDS CDM 508.0-B-1), and operator-response expectations. Failure to acknowledge a high-Pc CDM within 12 hours can trigger licence-condition review.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "CDM format",
+        summary:
+          "All conjunction warnings issued in CCSDS 508.0-B-1 format; supplementary briefing for high-criticality events.",
+      },
+      {
+        section: "§5",
+        title: "Operator-response timeline",
+        summary:
+          "Operator shall acknowledge any CDM with Pc ≥ 1e-4 within 12 hours and notify NSpOC of any planned avoidance manoeuvre at the moment of execution.",
+      },
+    ],
+    related_sources: ["INT-CCSDS-CDM-508", "UK-CAA-CAP2589"],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ──────────────────────────────────────────────

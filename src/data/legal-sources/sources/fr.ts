@@ -2025,6 +2025,113 @@ const FOUNDATIONAL_FR: LegalSource[] = [
     ],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ────────
+
+  {
+    id: "FR-CNES-DEBRIS-RTE-2024",
+    jurisdiction: "FR",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "CNES Référentiel Technique d'Exigence — Space Debris Mitigation",
+    title_local:
+      "CNES — Référentiel Technique d'Exigence sur la mitigation des débris spatiaux",
+    date_published: "2024-02-15",
+    official_reference: "CNES RNC-CNES-Q-40-512 Rev. C",
+    source_url: "https://cnes.fr/fr/normes-et-reglementation",
+    issuing_body: "Centre National d'Études Spatiales (CNES)",
+    competent_authorities: ["FR-CNES"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Référentiel technique CNES, technical baseline applied by ANFR/CNES experts under LOS Art. 4 technical-regulation review. Implements ISO 24113 with French specifics: a stricter casualty-risk threshold (10⁻⁵ for controlled re-entry over French territory), a mandatory CNES-conducted PMD-reliability review for missions with ≥ 0.95 reliability claims, and a binding 5-year LEO disposal target since the 2024 revision.",
+    key_provisions: [
+      {
+        section: "§4",
+        title: "5-year LEO PMD target",
+        summary:
+          "Le référentiel impose une durée de vie résiduelle ≤ 5 ans en LEO après fin de mission pour les nouvelles missions soumises depuis 2025.",
+      },
+      {
+        section: "§7",
+        title: "Casualty risk over French territory",
+        summary:
+          "Risque de casualty individuelle ≤ 10⁻⁵ pour toute rentrée contrôlée passant au-dessus du territoire français ou de ses outre-mers.",
+      },
+      {
+        section: "§9",
+        title: "Réplique automatique des manœuvres",
+        summary:
+          "Toute manœuvre de prévention de collision doit être notifiée au CIE (Centre d'Information sur l'Environnement) dans l'heure de son exécution.",
+      },
+    ],
+    related_sources: [
+      "FR-LOS-2008",
+      "INT-ISO-24113-2023",
+      "INT-ECSS-U-AS-10C",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "FR-DECRET-LOS-DEBRIS-IMPLEMENT",
+    jurisdiction: "FR",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Décret n° 2009-643 — Implementation of LOS Article 4 (debris-mitigation technical regulation)",
+    title_local:
+      "Décret n° 2009-643 du 9 juin 2009 relatif aux autorisations délivrées en application de la loi n° 2008-518",
+    date_published: "2009-06-09",
+    date_in_force: "2010-12-10",
+    date_last_amended: "2024-09-12",
+    official_reference: "Décret n° 2009-643 (consolidé 2024)",
+    source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000020719298/",
+    issuing_body: "Premier ministre (Décret en Conseil d'État)",
+    competent_authorities: ["FR-CNES", "FR-MESR"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Décret d'application of the LOS, providing the binding technical regulation for debris mitigation in French space activities. Articles 14–17 lay out the PMD obligations, passivation requirements, and casualty-risk thresholds; the 2024 amendment introduced the 5-year LEO disposal target by reference to ISO 24113:2023.",
+    key_provisions: [
+      {
+        section: "Art. 14",
+        title: "Évacuation post-mission",
+        summary:
+          "Tout objet placé en LEO doit être désorbité dans les 5 ans suivant sa fin de mission (modifié 2024).",
+      },
+      {
+        section: "Art. 16",
+        title: "Risque de casualty",
+        summary:
+          "Risque humain global de toute rentrée non contrôlée ≤ 10⁻⁴; rentrée contrôlée obligatoire si dépassé.",
+      },
+      {
+        section: "Art. 17",
+        title: "Passivation",
+        summary:
+          "Toutes les sources d'énergie embarquées doivent être désactivées en fin de mission ; preuves opérationnelles à fournir au CNES.",
+      },
+    ],
+    amendments: [
+      {
+        date: "2024-09-12",
+        reference: "Décret n° 2024-815",
+        summary:
+          "Articles 14 et 17 modifiés pour aligner le délai post-mission sur l'IADC 2025 (5 ans en LEO) et exiger la conformité ISO 24113:2023.",
+        affected_sections: ["Art. 14", "Art. 17"],
+      },
+    ],
+    related_sources: [
+      "FR-LOS-2008",
+      "FR-CNES-DEBRIS-RTE-2024",
+      "INT-ISO-24113-2023",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ──────────────────────────────────────────────

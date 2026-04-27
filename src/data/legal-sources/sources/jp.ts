@@ -380,4 +380,88 @@ export const LEGAL_SOURCES_JP: LegalSource[] = [
     related_sources: ["JP-SPACE-ACTIVITIES-ACT-2016"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "JP-JAXA-SED-STD",
+    jurisdiction: "JP",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "JAXA Space Debris Mitigation Standard (JMR-003)",
+    title_local: "宇宙航空研究開発機構 デブリ発生防止標準 JMR-003",
+    date_published: "2014-11-30",
+    date_last_amended: "2023-04-01",
+    official_reference: "JMR-003D (Rev. D, 2023)",
+    source_url: "https://sma.jaxa.jp/en/TechDoc/Docs/JAXA-JMR-003D_E.pdf",
+    issuing_body: "Japan Aerospace Exploration Agency (JAXA)",
+    competent_authorities: ["JP-JAXA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "JAXA's binding internal debris-mitigation standard, applied to all JAXA missions and to commercial spacecraft launched on JAXA-procured launchers. Implements the IADC guidelines with a Japan-specific 1×10⁻⁶ casualty-risk target — the world's strictest re-entry casualty threshold — driven by the high population density along potential disposal ground-tracks. Rev. D (April 2023) added a 5-year LEO PMD preference consistent with IADC 2025.",
+    key_provisions: [
+      {
+        section: "§5.4",
+        title: "Casualty risk — 1:1,000,000",
+        summary:
+          "Aggregate human-casualty risk for any uncontrolled re-entry shall not exceed 1×10⁻⁶ — ten times stricter than the international 10⁻⁴ baseline.",
+        complianceImplication:
+          "Effectively forces controlled re-entry for all spacecraft with surviving fragments > 0.1 kg. Cited by JAXA as the reason for design choices (e.g. fully-burning materials, pre-emptive demisability analysis) on missions like ETS-9 and ALOS-4.",
+      },
+      {
+        section: "§5.6",
+        title: "PMD reliability ≥ 0.95",
+        summary:
+          "Probability of successful post-mission disposal ≥ 0.95; redundant disposal mechanisms required for missions exceeding 100 kg.",
+      },
+    ],
+    related_sources: [
+      "JP-SPACE-ACTIVITIES-ACT-2016",
+      "INT-IADC-MITIGATION-2025",
+      "INT-ISO-24113-2023",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "JP-CABINET-DEBRIS-GUIDELINE-2024",
+    jurisdiction: "JP",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Cabinet Office Guideline on Space Debris Mitigation for Commercial Operators",
+    title_local: "民間事業者向け 宇宙デブリ発生防止に関するガイドライン",
+    date_published: "2024-08-15",
+    official_reference: "Cabinet Office Notice No. 2024-08",
+    source_url: "https://www8.cao.go.jp/space/policy/debris/",
+    issuing_body: "Cabinet Office of Japan — Office of National Space Policy",
+    competent_authorities: ["JP-CABINET-OFFICE"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Cabinet Office guideline binding on commercial operators applying for licences under the 2016 Space Activities Act. References JMR-003 as the technical standard and aligns the licence-condition language with FCC 2022 / IADC 2025: 5-year LEO PMD, 0.95 disposal-reliability, and active conjunction-data-sharing with JAXA Space Situational Awareness Centre.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "Licence conditions",
+        summary:
+          "Commercial operators must demonstrate JMR-003 compliance in the technical submission under the Space Activities Act licence application.",
+      },
+      {
+        section: "§5",
+        title: "Conjunction-data sharing",
+        summary:
+          "Operators of Japan-licensed spacecraft must share manoeuvre plans and ephemerides with JAXA SSA Centre via CCSDS-formatted exchange.",
+      },
+    ],
+    related_sources: [
+      "JP-SPACE-ACTIVITIES-ACT-2016",
+      "JP-JAXA-SED-STD",
+      "INT-CCSDS-CDM-508",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];

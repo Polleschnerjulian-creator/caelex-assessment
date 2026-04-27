@@ -317,4 +317,46 @@ export const LEGAL_SOURCES_IN: LegalSource[] = [
     related_sources: ["INT-ITU-RR", "IN-SPACE-POLICY-2023"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "IN-ISRO-DEBRIS-POLICY",
+    jurisdiction: "IN",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "ISRO System for Safe and Sustainable Operations Management (IS4OM) — Debris Mitigation Framework",
+    date_published: "2022-07-27",
+    date_last_amended: "2024-12-01",
+    official_reference: "IS4OM-DEBRIS-2022",
+    source_url: "https://www.isro.gov.in/IS4OM.html",
+    issuing_body: "Indian Space Research Organisation (ISRO)",
+    competent_authorities: ["IN-ISRO"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "ISRO's debris-mitigation framework operated by the IS4OM (System for Safe and Sustainable Operations Management) centre at ISRO Bengaluru. Provides conjunction-warning service to all Indian spacecraft and commercial operators of Indian-licensed missions; references IADC guidelines and ISO 24113 as technical baseline. After India's 'Debris Free Space Mission' commitment (announced 2024), ISRO is targeting zero-debris operations for all post-2030 missions.",
+    key_provisions: [
+      {
+        section: "§3 — Debris Free Space Mission",
+        title: "Zero-debris by 2030",
+        summary:
+          "All ISRO and Indian-commercial missions launched after 1 Jan 2030 shall be designed for end-of-life de-orbiting within 5 years of mission completion, with no debris release during operations.",
+      },
+      {
+        section: "§5",
+        title: "Conjunction warning service",
+        summary:
+          "IS4OM provides daily CDM-format conjunction warnings for Indian spacecraft and commercial operators of Indian-licensed missions; operators must respond to high-Pc events within 24 hours.",
+      },
+    ],
+    related_sources: [
+      "IN-SPACE-POLICY-2023",
+      "INT-IADC-MITIGATION-2025",
+      "INT-CCSDS-CDM-508",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];

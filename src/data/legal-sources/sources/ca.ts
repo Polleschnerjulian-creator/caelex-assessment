@@ -180,4 +180,43 @@ export const LEGAL_SOURCES_CA: LegalSource[] = [
     related_sources: ["INT-OST-1967", "INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "CA-CSA-DEBRIS-POLICY",
+    jurisdiction: "CA",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Canadian Space Agency Space Debris Mitigation Policy",
+    title_local:
+      "Politique d'atténuation des débris spatiaux de l'Agence spatiale canadienne",
+    date_published: "2018-06-01",
+    date_last_amended: "2024-04-15",
+    official_reference: "CSA-DEBRIS-POL-2018-R2",
+    source_url: "https://www.asc-csa.gc.ca/eng/programs-and-priorities/",
+    issuing_body: "Canadian Space Agency (CSA) / Agence spatiale canadienne",
+    competent_authorities: ["CA-CSA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "CSA's binding debris-mitigation policy for federally-funded missions and a reference for licence applications under the Remote Sensing Space Systems Act. Implements IADC guidelines and ISO 24113 as technical baseline. The 2024 revision aligned PMD targets with IADC 2025 (5-year LEO disposal) and added a Telesat-driven constellation-specific section addressing fleet-level catastrophic-collision risk modelling.",
+    key_provisions: [
+      {
+        section: "§4",
+        title: "Technical baseline — ISO 24113",
+        summary:
+          "All CSA-funded and CSA-licensed missions shall comply with ISO 24113:2023 in their technical submission.",
+      },
+      {
+        section: "§6",
+        title: "Constellation provisions",
+        summary:
+          "Operators of constellations >100 satellites must submit a fleet-level catastrophic-collision risk model and aggregate end-of-life cadence plan.",
+      },
+    ],
+    related_sources: ["INT-IADC-MITIGATION-2025", "INT-ISO-24113-2023"],
+    last_verified: "2026-04-27",
+  },
 ];

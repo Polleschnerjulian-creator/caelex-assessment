@@ -946,6 +946,337 @@ const DEBRIS_RULES_US: LegalSource[] = [
     ],
     last_verified: "2026-04-21",
   },
+
+  // ─── Additional US debris/STM stack — 2026 audit additions ──────────
+
+  {
+    id: "US-NASA-STD-8719-14B",
+    jurisdiction: "US",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "NASA-STD-8719.14B — Process for Limiting Orbital Debris (with Change 1)",
+    date_published: "2021-04-26",
+    official_reference: "NASA-STD-8719.14B Change 1",
+    source_url: "https://standards.nasa.gov/standard/NASA/NASA-STD-871914",
+    issuing_body: "National Aeronautics and Space Administration (NASA)",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "NASA's binding internal debris-mitigation standard, applied to all NASA-funded missions and binding on contractors and partners. Implements the US Government Orbital Debris Mitigation Standard Practices (ODMSP, 2019 update) and is referenced by FAA, FCC, NOAA, and the Department of Defense as the gold-standard methodology for the supporting analyses (DAS — Debris Assessment Software — runs against this standard).",
+    key_provisions: [
+      {
+        section: "§4.3",
+        title: "Operational debris limits",
+        summary:
+          "Mission-related debris ≥ 1 mm released into LEO shall be eliminated to the extent practicable.",
+      },
+      {
+        section: "§4.4",
+        title: "Accidental break-up probability",
+        summary:
+          "Probability of accidental explosion during operational phases shall be < 0.001.",
+      },
+      {
+        section: "§4.5",
+        title: "Post-mission disposal — LEO 25 years (transitioning to 5)",
+        summary:
+          "LEO post-mission disposal within 25 years; aligned with FCC 2022 5-year rule for new spacecraft via mission-specific waivers and the 2024 ODMSP update.",
+      },
+      {
+        section: "§4.6",
+        title: "Casualty risk on re-entry — 1:10,000",
+        summary:
+          "Aggregate human-casualty risk on uncontrolled re-entry shall not exceed 1 in 10,000 (10⁻⁴).",
+      },
+    ],
+    related_sources: [
+      "US-FCC-5YR-PMD-2022",
+      "US-FAA-NPRM-UPPER-STAGES-2023",
+      "INT-IADC-MITIGATION-2025",
+      "INT-ISO-24113-2023",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-ODMSP-2019",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "US Government Orbital Debris Mitigation Standard Practices (ODMSP) — 2019 Update",
+    date_published: "2019-12-01",
+    official_reference: "ODMSP 2019",
+    source_url:
+      "https://orbitaldebris.jsc.nasa.gov/library/usg_orbital_debris_mitigation_standard_practices_november_2019.pdf",
+    issuing_body:
+      "Office of Science and Technology Policy (OSTP) — Inter-agency",
+    competent_authorities: ["US-NASA", "US-FAA-AST", "US-FCC", "US-NOAA-CRSRA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Inter-agency US Government policy implementing IADC guidelines. The ODMSP is the harmonised baseline that NASA-STD-8719.14B, FAA 14 CFR Part 450, FCC §25.114, and NOAA-CRSRA all reference. The 2019 update introduced quantitative collision-risk and reliability metrics for operations and large constellations.",
+    key_provisions: [
+      {
+        section: "§1",
+        title: "Limit operational-debris release",
+        summary:
+          "Programs shall design spacecraft and orbital stages not to release debris during normal operations (mission-related debris > 1 mm).",
+      },
+      {
+        section: "§3",
+        title: "Disposal-reliability target",
+        summary:
+          "Probability of successful post-mission disposal manoeuvre shall be ≥ 0.9 (raised to 0.99 for proposed 2024 update for large constellations).",
+      },
+      {
+        section: "§4-B",
+        title: "Constellations — additional requirements",
+        summary:
+          "Large constellations (>100 satellites) must publish aggregate collision-risk statistics and demonstrate that fleet-level catastrophic-collision probability over the constellation lifetime is < 10⁻⁴.",
+      },
+    ],
+    related_sources: [
+      "US-NASA-STD-8719-14B",
+      "US-FCC-5YR-PMD-2022",
+      "INT-IADC-MITIGATION-2020",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FCC-25-114",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "47 CFR § 25.114 — Application requirements for satellite space stations (debris-mitigation showing)",
+    date_published: "2004-06-21",
+    official_reference: "47 CFR § 25.114(d)(14)",
+    source_url:
+      "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-25/subpart-B/section-25.114",
+    issuing_body: "Federal Communications Commission (FCC)",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["debris_mitigation", "licensing", "frequency_spectrum"],
+    scope_description:
+      "Section of the FCC Part 25 satellite-licensing regulation that imposes the orbital-debris showing on every space-station application. Operators must demonstrate compliance with §25.283 (PMD), §25.281 (operational practices), and the 5-year disposal rule (added 2022). Failure to provide the §25.114(d)(14) showing is grounds for application return.",
+    key_provisions: [
+      {
+        section: "(d)(14)(i)",
+        title: "Spacecraft hardware design",
+        summary:
+          "Demonstrate steps taken to limit debris release during normal operations and to minimize collision probability with large debris.",
+      },
+      {
+        section: "(d)(14)(ii)",
+        title: "Minimising potential break-ups",
+        summary:
+          "Demonstrate passivation procedures for stored energy at end-of-life and assessment of accidental-break-up probability.",
+      },
+      {
+        section: "(d)(14)(iii)",
+        title: "Disposal showing",
+        summary:
+          "Disposal plan compliant with § 25.283 — controlled re-entry, atmospheric burn-up within 5 years (post-2022), or transfer to disposal orbit.",
+      },
+    ],
+    related_sources: [
+      "US-FCC-5YR-PMD-2022",
+      "US-NASA-STD-8719-14B",
+      "US-CSLA-1984",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FCC-OSAM-ORDER-2024",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "FCC Report and Order — Facilitating Capabilities for In-Space Servicing, Assembly, and Manufacturing (OSAM)",
+    date_published: "2024-09-26",
+    official_reference: "FCC 24-103",
+    source_url: "https://docs.fcc.gov/public/attachments/FCC-24-103A1.pdf",
+    issuing_body: "Federal Communications Commission (FCC)",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services", "satellite_operator"],
+    compliance_areas: [
+      "debris_mitigation",
+      "space_traffic_management",
+      "licensing",
+    ],
+    scope_description:
+      "FCC's first dedicated rulemaking for in-orbit servicing, assembly, and manufacturing (OSAM). Establishes a streamlined application process for OSAM missions, recognises CONFERS RDOP as the technical baseline, and adds explicit licensing-condition language for proximity-operations safety, fleet-level debris attribution, and end-of-mission custody transfer of serviced satellites.",
+    key_provisions: [
+      {
+        section: "§ III.A",
+        title: "OSAM-specific application track",
+        summary:
+          "Operators may file under the streamlined OSAM track if the mission is dedicated to refuelling, repair, life-extension, debris removal, or assembly.",
+      },
+      {
+        section: "§ III.C",
+        title: "Custody-transfer disclosure",
+        summary:
+          "Application must identify the legal operator of any serviced satellite at every phase of joint operations; FCC retains licensing jurisdiction over both spacecraft.",
+      },
+      {
+        section: "§ IV",
+        title: "Proximity-operations safety",
+        summary:
+          "Safe-RPO design must be demonstrated against the CONFERS RDOP technical baseline; conjunction risk during RPO shall be < 10⁻⁵ per event.",
+      },
+    ],
+    related_sources: [
+      "US-FCC-25-114",
+      "INT-CONFERS-RDOP-2018",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FCC-25-283",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "47 CFR § 25.283 — Post-mission disposal of space stations (5-year rule)",
+    date_published: "2022-09-29",
+    date_in_force: "2023-09-29",
+    official_reference: "47 CFR § 25.283",
+    source_url:
+      "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-25/subpart-C/section-25.283",
+    issuing_body: "Federal Communications Commission (FCC)",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Codifies the FCC 5-year post-mission disposal rule — the operational text behind FCC 22-74. New space stations granted authorisation after 29 Sept 2024 must be disposed of within 5 years of end-of-mission. Disposal pathways: controlled re-entry, atmospheric burn-up via natural decay, or transfer to a disposal orbit demonstrably outside the LEO protected region.",
+    key_provisions: [
+      {
+        section: "(a)",
+        title: "5-year LEO post-mission disposal",
+        summary:
+          "Space stations terminating operations in or passing through LEO (≤ 2000 km altitude) shall be disposed of within 5 years after end-of-mission.",
+        complianceImplication:
+          "First binding national-level departure from the IADC 25-year guideline. Effectively forces propulsion or aerodynamic-augmentation devices on all post-2024 LEO missions, except in altitudes < 600 km where natural decay alone may satisfy the rule.",
+      },
+      {
+        section: "(b)",
+        title: "Disposal-reliability ≥ 0.9",
+        summary:
+          "Operator shall demonstrate at least a 0.9 probability of successful post-mission disposal manoeuvre, consistent with the US Government ODMSP.",
+      },
+      {
+        section: "(c)",
+        title: "GEO graveyard",
+        summary:
+          "GEO disposal via re-orbit ≥ 235 km + 1000·CR·A/m above GEO; disposal-reliability ≥ 0.9 applies.",
+      },
+    ],
+    related_sources: [
+      "US-FCC-5YR-PMD-2022",
+      "US-FCC-25-114",
+      "US-NASA-STD-8719-14B",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    implements: "US-FCC-5YR-PMD-2022",
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FAA-450-139",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "14 CFR § 450.139 — Disposal of launch vehicle components",
+    date_published: "2020-12-10",
+    date_in_force: "2021-03-10",
+    official_reference: "14 CFR § 450.139",
+    source_url:
+      "https://www.ecfr.gov/current/title-14/chapter-III/subchapter-C/part-450/subpart-C/section-450.139",
+    issuing_body:
+      "Federal Aviation Administration (FAA), Office of Commercial Space Transportation (AST)",
+    competent_authorities: ["US-FAA-AST"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Disposal-of-launch-components rule under the consolidated FAA Part 450 launch-licence regulation. Sets requirements for upper-stage and discarded-component disposal, casualty-risk thresholds for atmospheric re-entry, and reliability of disposal manoeuvres. The 2023 NPRM (US-FAA-NPRM-UPPER-STAGES-2023) proposes to substantially tighten this section.",
+    key_provisions: [
+      {
+        section: "(a)",
+        title: "Disposal showing",
+        summary:
+          "Operator shall describe the disposal of every launch-vehicle stage and discarded component, including the time, location, and method of disposal.",
+      },
+      {
+        section: "(b)",
+        title: "Casualty-risk threshold — 1:10,000",
+        summary:
+          "Aggregate human-casualty risk for any uncontrolled re-entry shall not exceed 1 in 10,000.",
+      },
+      {
+        section: "(c)",
+        title: "Reliability demonstration",
+        summary:
+          "Operator shall demonstrate the reliability of the disposal manoeuvre via test, analysis, or flight-history data.",
+      },
+    ],
+    related_sources: [
+      "US-14CFR-PART-450",
+      "US-FAA-NPRM-UPPER-STAGES-2023",
+      "US-NASA-STD-8719-14B",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-NOAA-CRSRA-DEBRIS",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "15 CFR Part 960 — NOAA Commercial Remote Sensing Regulations (debris-mitigation conditions)",
+    date_published: "2020-05-19",
+    official_reference: "15 CFR § 960.6 + § 960.13",
+    source_url:
+      "https://www.ecfr.gov/current/title-15/subtitle-B/chapter-IX/part-960",
+    issuing_body:
+      "National Oceanic and Atmospheric Administration (NOAA), Commercial Remote Sensing Regulatory Affairs (CRSRA)",
+    competent_authorities: ["US-NOAA-CRSRA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["debris_mitigation", "data_security", "licensing"],
+    scope_description:
+      "NOAA-CRSRA's commercial remote-sensing licence rules incorporate the US Government ODMSP by reference. Earth-observation operators must include a debris-mitigation showing (consistent with NASA-STD-8719.14B / ODMSP) as part of the §960.6 application. Additionally, end-of-life data-imagery handling provisions intersect with debris-mitigation timelines (encryption-key destruction tied to spacecraft passivation).",
+    key_provisions: [
+      {
+        section: "§ 960.6(c)",
+        title: "Debris-mitigation showing",
+        summary:
+          "Application must demonstrate compliance with US Government ODMSP, including PMD reliability and casualty-risk thresholds.",
+      },
+      {
+        section: "§ 960.13",
+        title: "End-of-life data handling",
+        summary:
+          "Operator must securely render imagery and data inaccessible at end-of-life, coordinated with disposal manoeuvres.",
+      },
+    ],
+    related_sources: ["US-LRSPA-1992", "US-NASA-STD-8719-14B", "US-ODMSP-2019"],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ────────────────────────────────────────────

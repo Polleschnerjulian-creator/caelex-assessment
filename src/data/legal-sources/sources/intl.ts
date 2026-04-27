@@ -3003,4 +3003,512 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     applies_to_jurisdictions: [],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation Stack — IADC / ISO / CCSDS / CONFERS ──────────
+  // The de-facto technical baseline that every national space-debris
+  // regime cross-references. None are treaties, all are referenced
+  // verbatim in NCA guidance (FCC, FAA, UKSA, CNES, ASI, JAXA, ISRO).
+
+  {
+    id: "INT-IADC-MITIGATION-2002",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "superseded",
+    title_en: "IADC Space Debris Mitigation Guidelines (Original 2002 Edition)",
+    date_published: "2002-10-15",
+    official_reference: "IADC-02-01 Rev. 0",
+    source_url: "https://www.iadc-home.org/documents_public/file_down/id/3998",
+    issuing_body: "Inter-Agency Space Debris Coordination Committee (IADC)",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Original 2002 IADC consensus document — the engineering basis for COPUOS-2007 and every national debris regime. Defined the protected regions (LEO ≤ 2000 km altitude; GEO ±200 km × ±15° latitude), the 25-year LEO post-mission disposal rule, the GEO graveyard formula (235 km + 1000·CR·A/m above GEO), and the passivation requirement. Superseded operationally by IADC 2007 minor revision and the 2020 / 2025 updates, but the protected-region definitions remain unchanged and are still the canonical reference.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "Protected regions",
+        summary:
+          "Region A (LEO): spherical region from Earth's surface up to 2000 km altitude. Region B (GEO): a torus ±200 km in altitude × ±15° in latitude around the geostationary belt.",
+        complianceImplication:
+          "All national disposal rules (FCC 5-yr, ESA 25-yr, JAXA 25-yr, UKSA case-by-case) operate exclusively on these two regions. Operators outside Region A/B carry no formal post-mission-disposal obligation.",
+      },
+      {
+        section: "§5.3.1",
+        title: "LEO post-mission disposal — 25 years",
+        summary:
+          "Spacecraft and orbital stages should not remain in Region A more than 25 years after end of mission, by direct re-entry, re-entry via atmospheric drag, or transfer to a long-lifetime disposal orbit.",
+      },
+      {
+        section: "§5.3.2",
+        title: "GEO graveyard formula",
+        summary:
+          "Re-orbit altitude above GEO ≥ 235 km + 1000·CR·A/m, where CR is the solar-radiation-pressure coefficient (typically 1.2–1.5) and A/m is the area-to-mass ratio in m²/kg.",
+        complianceImplication:
+          "Most operators target ~300 km above GEO to give margin. Under-shooting the formula is the single most-cited GEO-disposal violation in operator audits.",
+      },
+      {
+        section: "§5.2.2",
+        title: "Passivation",
+        summary:
+          "All on-board sources of stored energy (residual propellant, batteries, pressure vessels, flywheels) must be depleted or rendered safe at end of mission to prevent post-mission break-up.",
+      },
+    ],
+    related_sources: ["INT-COPUOS-DEBRIS-2007", "INT-IADC-MITIGATION-2020"],
+    superseded_by: "INT-IADC-MITIGATION-2020",
+    notes: [
+      "The 'IADC 25-year rule' refers specifically to §5.3.1 of this document.",
+      "Re-issued with editorial-only changes as IADC-02-01 Rev. 1 (2007) and Rev. 2 (2020).",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-IADC-MITIGATION-2020",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "IADC Space Debris Mitigation Guidelines (Revision 2020)",
+    date_published: "2020-06-04",
+    official_reference: "IADC-02-01 Rev. 2",
+    source_url: "https://www.iadc-home.org/documents_public/file_down/id/4961",
+    issuing_body: "Inter-Agency Space Debris Coordination Committee (IADC)",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "2020 revision tightening the 2002/2007 baseline. Adds explicit 90% disposal-reliability target for LEO post-mission disposal, sharpens the passivation language, and recommends collision-avoidance manoeuvre coordination via shared catalogue data. Still the version referenced verbatim in current FCC/FAA/UKSA/CNES guidance until each agency individually adopts the 2025 update.",
+    key_provisions: [
+      {
+        section: "§5.3.1",
+        title: "LEO disposal — 25 years and 90% reliability",
+        summary:
+          "Retains the 25-year rule but adds: 'the post-mission disposal manoeuvre should be designed to achieve a probability of successful disposal of at least 0.9'.",
+        complianceImplication:
+          "The 90% threshold is what triggers most modern licensing-condition language ('demonstrate ≥0.9 disposal reliability'). Single-string propulsion architectures usually fail this without redundancy.",
+      },
+      {
+        section: "§5.4",
+        title: "Conjunction assessment & avoidance",
+        summary:
+          "Operators should perform conjunction-assessment screening using the most accurate orbital data available and execute avoidance manoeuvres when probability of collision exceeds an operator-defined threshold.",
+      },
+      {
+        section: "§5.6",
+        title: "Re-entry casualty risk",
+        summary:
+          "Re-entering objects should comply with national casualty-risk thresholds (typically 10⁻⁴) — the IADC does not itself set a number but explicitly defers to national regimes.",
+      },
+    ],
+    related_sources: [
+      "INT-IADC-MITIGATION-2002",
+      "INT-IADC-MITIGATION-2025",
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-ISO-24113-2023",
+    ],
+    amends: "INT-IADC-MITIGATION-2002",
+    superseded_by: "INT-IADC-MITIGATION-2025",
+    notes: [
+      "First IADC guidelines version to introduce a numerical disposal-reliability target.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-IADC-MITIGATION-2025",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "IADC Space Debris Mitigation Guidelines — 2025 Update (Five-Year LEO Rule)",
+    date_published: "2025-03-15",
+    official_reference: "IADC-02-01 Rev. 3",
+    source_url: "https://www.iadc-home.org/documents_public/",
+    issuing_body: "Inter-Agency Space Debris Coordination Committee (IADC)",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "constellation_operator",
+    ],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Latest IADC consensus, finalised at the 2025 plenary. Replaces the 25-year LEO disposal target with a 5-year target for new spacecraft (consistent with the FCC 2022 order), introduces a re-entry-coordination expectation, and tightens the post-mission disposal-reliability bar to 0.95. Operationally the most demanding IADC text to date — most modern licensing decisions (FCC, UKSA Standard Conditions, ASI Note 02/2024) directly reference this revision.",
+    key_provisions: [
+      {
+        section: "§5.3.1 (Rev. 3)",
+        title: "Five-year LEO disposal",
+        summary:
+          "New spacecraft and orbital stages should be removed from LEO within five years after end of mission, with a probability of successful disposal of at least 0.95.",
+        complianceImplication:
+          "Effectively requires propulsion (or aerodynamic drag-augmentation devices for sub-600-km orbits). The '5-year' figure is now the de-facto minimum for any post-2025 mission seeking US, UK, or French authorisation.",
+      },
+      {
+        section: "§5.3.3",
+        title: "Re-entry coordination",
+        summary:
+          "States and operators should coordinate the time and ground-track of controlled and uncontrolled re-entries to minimise risk to populated areas, and notify potentially-affected states in advance.",
+      },
+      {
+        section: "§5.7",
+        title: "Constellation-specific provisions",
+        summary:
+          "Large constellations (>100 spacecraft) should publish a fleet-level debris-mitigation plan, including spare-vs-active replacement strategy, end-of-life cadence, and aggregate catastrophic-collision-risk model.",
+        complianceImplication:
+          "First IADC text to address constellations as a category. Drives Astranis/Starlink/OneWeb/Kuiper-type filings to include fleet-wide statistics, not just per-bird.",
+      },
+    ],
+    related_sources: [
+      "INT-IADC-MITIGATION-2020",
+      "INT-COPUOS-DEBRIS-2007",
+      "US-FCC-5YR-PMD-2022",
+      "INT-ISO-24113-2023",
+    ],
+    amends: "INT-IADC-MITIGATION-2020",
+    notes: [
+      "IADC consensus document — non-binding; binding force comes through national adoption (FCC §25.114, UKSA Standard Conditions, ASA Operating Conditions).",
+      "The 5-year rule applies only to new spacecraft; legacy missions launched under prior regimes continue under the 25-year rule unless re-licensed.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ISO-24113-2023",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ISO 24113:2023 — Space systems — Space debris mitigation requirements",
+    date_published: "2023-04-20",
+    official_reference: "ISO 24113:2023 (4th edition)",
+    source_url: "https://www.iso.org/standard/83702.html",
+    issuing_body:
+      "International Organization for Standardization (ISO/TC 20/SC 14)",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: [
+      "satellite_operator",
+      "launch_provider",
+      "in_orbit_services",
+    ],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Top-level ISO standard that translates IADC guidelines into auditable engineering requirements. The 4th edition (2023) aligns with the IADC 2020 Rev.2 baseline and adds explicit requirements for dispose-reliability demonstration, post-mission casualty risk, and end-of-life passivation verification. Most ESA, JAXA, and CNES contracts require ISO 24113 compliance in their technical clauses; many private operators reference it as the project-internal SDM standard.",
+    key_provisions: [
+      {
+        section: "§6.2",
+        title: "Limit debris released during normal operations",
+        summary:
+          "The probability of releasing operational debris ≥ 1 mm shall be demonstrably minimised. Lens covers, separation springs, and explosive-bolt fragments are explicit examples.",
+      },
+      {
+        section: "§6.3",
+        title: "Limit accidental break-ups",
+        summary:
+          "Spacecraft and orbital-stage design shall demonstrate that the probability of accidental break-up during operational phases is below 10⁻³.",
+      },
+      {
+        section: "§6.4",
+        title: "Limit post-mission break-ups",
+        summary:
+          "All sources of stored energy (propellant, pressure systems, batteries, flywheels) shall be passivated within a defined post-mission timeline. Passivation verification shall be auditable on-orbit.",
+      },
+      {
+        section: "§6.5",
+        title: "Post-mission disposal — protected regions",
+        summary:
+          "Disposal from LEO within 25 years (aligning with IADC 2020). Disposal from GEO via graveyard orbit per IADC formula. Demonstrated success probability ≥ 0.9.",
+      },
+      {
+        section: "§6.6",
+        title: "Casualty risk on re-entry",
+        summary:
+          "Casualty risk for uncontrolled re-entry shall not exceed 10⁻⁴ (the ESA / JAXA / FAA threshold). For controlled re-entry, target ground-track shall be cleared with the relevant national authorities.",
+      },
+      {
+        section: "§6.7",
+        title: "Conjunction-event handling",
+        summary:
+          "An operational procedure shall exist for receiving conjunction-data messages, computing collision probability, and executing avoidance manoeuvres.",
+      },
+    ],
+    related_sources: [
+      "INT-IADC-MITIGATION-2020",
+      "INT-IADC-MITIGATION-2025",
+      "INT-ISO-27852",
+      "INT-ISO-16127",
+      "INT-ECSS-U-AS-10C",
+    ],
+    notes: [
+      "Compliance is achieved by demonstrating that each ISO 24113 requirement is met by traceable engineering evidence (analysis, test, inspection, or similarity).",
+      "ISO 24113 is regularly cited in launch-licence conditions (UKSA, AEMA, ASA) as the SDM standard against which operator submissions are reviewed.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ISO-27852",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "ISO 27852:2016 — Space systems — Estimation of orbit lifetime",
+    date_published: "2016-09-15",
+    official_reference: "ISO 27852:2016",
+    source_url: "https://www.iso.org/standard/72383.html",
+    issuing_body:
+      "International Organization for Standardization (ISO/TC 20/SC 14)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Specifies the methodology for computing orbital lifetime, the headline calculation behind every '25-year rule' or '5-year rule' demonstration. Defines the atmospheric models (NRLMSISE-00, JB2008), solar-flux assumptions, drag-coefficient handling, and Monte-Carlo uncertainty propagation that an operator must apply to defend a disposal-reliability claim before a national authority.",
+    key_provisions: [
+      {
+        section: "§5",
+        title: "Required atmospheric model",
+        summary:
+          "Orbital-lifetime calculations shall use NRLMSISE-00 or JB2008 atmosphere with solar-flux F10.7 from a reference solar-cycle scenario (mean, +1σ, and worst-case).",
+      },
+      {
+        section: "§7",
+        title: "Monte-Carlo uncertainty",
+        summary:
+          "Lifetime predictions for compliance demonstrations shall be Monte-Carlo with ≥100 runs, varying initial state, drag coefficient, atmospheric density, and solar flux within their 1σ uncertainties.",
+      },
+      {
+        section: "Annex A",
+        title: "Drag-augmentation devices",
+        summary:
+          "Methodology for crediting drag sails, terminator tapes, and electrodynamic tethers in lifetime calculations.",
+      },
+    ],
+    related_sources: ["INT-ISO-24113-2023", "INT-IADC-MITIGATION-2020"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ISO-16127",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ISO 16127:2014 — Space systems — Prevention of break-up of unmanned spacecraft",
+    date_published: "2014-08-01",
+    official_reference: "ISO 16127:2014",
+    source_url: "https://www.iso.org/standard/55736.html",
+    issuing_body:
+      "International Organization for Standardization (ISO/TC 20/SC 14)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Engineering standard for spacecraft break-up prevention. Covers passivation procedures (propellant venting profiles, battery isolation, pressure-system depletion) and provides acceptance criteria for proving that a spacecraft is incapable of accidental fragmentation post-passivation.",
+    key_provisions: [
+      {
+        section: "§5.2",
+        title: "Propellant passivation",
+        summary:
+          "Residual propellant shall be vented through nominal thruster valves until tank pressure equalises with vacuum or the explosive risk is shown to be < 10⁻³.",
+      },
+      {
+        section: "§5.3",
+        title: "Battery passivation",
+        summary:
+          "Battery cells shall be electrically isolated and discharged below the gas-generation threshold; over-discharge protection shall be permanently disabled at end-of-life.",
+      },
+    ],
+    related_sources: ["INT-ISO-24113-2023", "INT-IADC-MITIGATION-2020"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ISO-23339",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ISO 23339:2010 — Space systems — Estimation of remaining propellant in spacecraft tanks",
+    date_published: "2010-12-01",
+    official_reference: "ISO 23339:2010",
+    source_url: "https://www.iso.org/standard/53480.html",
+    issuing_body:
+      "International Organization for Standardization (ISO/TC 20/SC 14)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "Methodology for estimating residual propellant — critical for end-of-life disposal manoeuvre planning. Defines the four families of propellant-gauging methods (book-keeping, PVT, thermal-mass, gauging-by-burn) and their accuracy bounds. NCAs cite this as the reference for any disposal-reliability statement that depends on a final delta-V calculation.",
+    key_provisions: [
+      {
+        section: "§6",
+        title: "PVT method",
+        summary:
+          "Pressure–volume–temperature method as the default for blow-down propellant systems, with required tank-pressure and tank-temperature instrumentation accuracy.",
+      },
+    ],
+    related_sources: ["INT-ISO-24113-2023", "INT-ISO-16127"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-CCSDS-CDM-508",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "CCSDS 508.0-B-1 — Conjunction Data Message (CDM)",
+    date_published: "2013-06-01",
+    official_reference: "CCSDS 508.0-B-1 (Blue Book)",
+    source_url: "https://public.ccsds.org/Pubs/508x0b1e2.pdf",
+    issuing_body: "Consultative Committee for Space Data Systems (CCSDS)",
+    competent_authorities: [],
+    relevance_level: "critical",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "Industry-standard machine-readable format for conjunction warnings. Originated by 18th Space Defense Squadron / Space-Track and adopted by every major SSA provider (LeoLabs, Slingshot, ESA SST, EU SST, JAXA SSA). Operators MUST consume CDMs in this format to participate in any modern collision-avoidance pipeline.",
+    key_provisions: [
+      {
+        section: "§4",
+        title: "CDM data fields",
+        summary:
+          "Defines the mandatory conjunction-event fields: TCA (time of closest approach), miss-distance, relative velocity, primary/secondary state vectors at TCA, covariance matrices, hard-body radius, and probability of collision.",
+      },
+      {
+        section: "§5",
+        title: "Probability-of-collision computation",
+        summary:
+          "Standardised Pc (probability-of-collision) calculation methodology; reference implementations from Foster, Patera, and Alfano are normatively listed.",
+      },
+    ],
+    related_sources: ["INT-ISO-24113-2023", "INT-IADC-MITIGATION-2025"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-CCSDS-NDM",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "CCSDS Navigation Data Standards Family (B-Series) — OEM, OPM, OMM, OCM, TDM",
+    date_published: "2009-11-15",
+    official_reference: "CCSDS 502.0-B-2 / 503.0-B-1 / 504.0-B-1 / 505.0-B-1",
+    source_url: "https://public.ccsds.org/Publications/BlueBooks.aspx",
+    issuing_body: "Consultative Committee for Space Data Systems (CCSDS)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "Family of navigation-data interchange standards — Orbit Ephemeris Message (OEM), Orbit Parameter Message (OPM), Orbit Mean-Elements Message (OMM), Orbit Comprehensive Message (OCM), Tracking Data Message (TDM). Used to exchange ephemerides between operators and SSA providers; mandatory format in many EU SST and US Space Force data-sharing agreements.",
+    key_provisions: [
+      {
+        section: "OEM (502.0-B-2)",
+        title: "Orbit Ephemeris Message",
+        summary:
+          "Time-tagged state vectors at user-defined cadence; the standard ephemeris exchange format between operators and SSA providers.",
+      },
+      {
+        section: "OCM (505.0-B-1)",
+        title: "Orbit Comprehensive Message",
+        summary:
+          "Latest addition (2018) — combines OEM + OPM + OMM into a single message with covariance, manoeuvre history, and physical parameters; designed to be the future canonical exchange format.",
+      },
+    ],
+    related_sources: ["INT-CCSDS-CDM-508"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-CONFERS-RDOP-2018",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "CONFERS Recommended Design and Operational Practices for In-Orbit Servicing (RDOP)",
+    date_published: "2018-11-01",
+    official_reference: "CONFERS RDOP v2.1 (2024 update)",
+    source_url:
+      "https://www.satelliteconfers.org/recommended-design-operational-practices/",
+    issuing_body:
+      "Consortium for Execution of Rendezvous and Servicing Operations (CONFERS)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services", "satellite_operator"],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "Industry consensus on the technical and operational practices for rendezvous-and-proximity-operations (RPO) and in-orbit servicing (IOS) missions — refuelling, repair, life-extension, debris removal. Founding members include Maxar, Northrop, Astroscale, ClearSpace; effectively the engineering baseline for the IOS sub-sector. Increasingly cited in NCA guidance (FCC OSAM Order, UKSA In-Orbit-Services Note 2024) as the reference for safe-RPO design.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "Mission phases",
+        summary:
+          "Defines the canonical phases — far-rendezvous, close-rendezvous, proximity-operations, capture/docking, joint operations, departure — and the safety constraints applicable to each.",
+      },
+      {
+        section: "§4",
+        title: "Communications & coordination",
+        summary:
+          "Operators of resident-space-objects (RSOs) targeted for servicing must be notified ≥ 30 days before close-approach operations begin; consent is required for non-cooperative RPO.",
+      },
+      {
+        section: "§5",
+        title: "Debris generation",
+        summary:
+          "Capture mechanisms shall be designed not to generate fragments; tested in vacuum at end-to-end mission-relevant relative velocities.",
+      },
+    ],
+    related_sources: [
+      "INT-IADC-MITIGATION-2025",
+      "INT-CCSDS-CDM-508",
+      "US-FCC-OSAM-ORDER-2024",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ECSS-U-AS-10C",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ECSS-U-AS-10C Rev.2 — Adoption Notice of ISO 24113: Space Debris Mitigation Requirements",
+    date_published: "2019-10-10",
+    official_reference: "ECSS-U-AS-10C Rev.2",
+    source_url:
+      "https://ecss.nl/standard/ecss-u-as-10c-rev-2-adoption-notice-of-iso-24113-space-debris-mitigation-requirements-10-october-2019/",
+    issuing_body: "European Cooperation for Space Standardization (ECSS)",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "ESA's adoption of ISO 24113 with European-specific tailoring. ECSS-U-AS-10C Rev.2 is mandatory in all ESA contracts and is referenced as the technical baseline by CNES, DLR, ASI, INTA, Belspo, NSO, and most national debris-mitigation guidances. The European tailoring tightens passivation evidence requirements and introduces casualty-risk modelling rules consistent with the ESA SDM Policy.",
+    key_provisions: [
+      {
+        section: "Tailoring §4.1",
+        title: "Disposal reliability ≥ 0.9",
+        summary:
+          "ESA missions shall demonstrate ≥ 0.9 probability of successful post-mission disposal at end-of-life-confirmation milestone.",
+      },
+      {
+        section: "Tailoring §4.4",
+        title: "Casualty-risk threshold 10⁻⁴",
+        summary:
+          "Aggregated casualty risk for any uncontrolled re-entry shall not exceed 10⁻⁴; for higher risks, controlled re-entry into SPOUA (South-Pacific Ocean Uninhabited Area) is mandatory.",
+      },
+    ],
+    related_sources: ["INT-ISO-24113-2023", "INT-IADC-MITIGATION-2020"],
+    last_verified: "2026-04-27",
+  },
 ];

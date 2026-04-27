@@ -355,4 +355,53 @@ export const LEGAL_SOURCES_AU: LegalSource[] = [
     related_sources: ["AU-SLR-ACT-2018"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "AU-ASA-OPERATING-CONDITIONS",
+    jurisdiction: "AU",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Australian Space Agency — Standard Operating Conditions Schedule 1 (Debris Mitigation)",
+    date_published: "2019-08-31",
+    date_last_amended: "2024-11-12",
+    official_reference: "ASA-OC-Sched-1-Rev3",
+    source_url:
+      "https://www.industry.gov.au/science-technology-and-innovation/space",
+    issuing_body: "Australian Space Agency (ASA)",
+    competent_authorities: ["AU-ASA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "Schedule 1 of the standard operating conditions attached to launch and overseas-payload permits under the Space (Launches and Returns) Act 2018. Establishes binding debris-mitigation conditions: ISO 24113 as technical baseline, 5-year LEO PMD target (Rev. 3, 2024), passivation evidence, and CDM-format conjunction-data sharing with the Australian Defence Force Space Surveillance.",
+    key_provisions: [
+      {
+        section: "Sched. 1 §3",
+        title: "Technical baseline — ISO 24113",
+        summary:
+          "All licensed missions shall comply with ISO 24113:2023 in technical submission.",
+      },
+      {
+        section: "Sched. 1 §6",
+        title: "5-year LEO PMD",
+        summary:
+          "Spacecraft operating in LEO shall be disposed of within 5 years of end of mission (Rev. 3, 2024).",
+      },
+      {
+        section: "Sched. 1 §8",
+        title: "Conjunction-data sharing",
+        summary:
+          "Operators shall participate in the ADF Space Surveillance CDM exchange.",
+      },
+    ],
+    related_sources: [
+      "AU-SLR-ACT-2018",
+      "INT-ISO-24113-2023",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];

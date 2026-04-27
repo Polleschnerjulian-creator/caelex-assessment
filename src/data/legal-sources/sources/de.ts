@@ -1561,6 +1561,100 @@ const POLICY_DE: LegalSource[] = [
     related_sources: ["DE-RAUMFAHRTSTRATEGIE-2023"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "DE-DLR-DEBRIS-POLICY",
+    jurisdiction: "DE",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "DLR Debris Mitigation Policy — Implementation of ECSS-U-AS-10C in Federal Funded Missions",
+    title_local:
+      "DLR-Richtlinie zur Vermeidung von Weltraumtrümmern — Umsetzung ECSS-U-AS-10C in bundesgeförderten Missionen",
+    date_published: "2022-09-30",
+    official_reference: "DLR-RL-7320-01",
+    source_url: "https://www.dlr.de/raumfahrt/de/space-debris",
+    issuing_body:
+      "Deutsches Zentrum für Luft- und Raumfahrt (DLR) — Raumfahrtmanagement",
+    competent_authorities: ["DE-DLR"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "DLR's binding internal debris-mitigation policy for all federally-funded German space missions. References ECSS-U-AS-10C Rev.2 as the technical baseline and adds a stricter passivation-evidence requirement (verifiable on-orbit telemetry confirming tank-pressure equalisation). Federal funding decisions condition on policy compliance — a project-internal Critical Design Review milestone explicitly checks PMD reliability ≥ 0.9.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "ECSS adoption",
+        summary:
+          "DLR-funded missions shall comply with ECSS-U-AS-10C Rev.2 and ISO 24113:2023.",
+      },
+      {
+        section: "§5",
+        title: "Passivation telemetry",
+        summary:
+          "Operators shall provide on-orbit telemetry evidence of tank-pressure equalisation and battery-isolation circuit activation as part of project closure documentation.",
+      },
+    ],
+    related_sources: [
+      "INT-ECSS-U-AS-10C",
+      "INT-ISO-24113-2023",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "DE-WELTRAUMG-DEBRIS-OBLIGATIONS",
+    jurisdiction: "DE",
+    type: "draft_legislation",
+    status: "draft",
+    title_en:
+      "Draft German Space Activities Act — Debris Mitigation Obligations (Title IV)",
+    title_local:
+      "Entwurf Bundes-Weltraumgesetz — Vermeidung von Weltraumtrümmern (Titel IV)",
+    date_published: "2024-07-15",
+    official_reference: "BMWK Referentenentwurf 2024",
+    source_url: "https://www.bmwk.de/Redaktion/DE/Pressemitteilungen/2024",
+    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    competent_authorities: ["DE-BMWK", "DE-DLR"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing", "liability"],
+    scope_description:
+      "Title IV of the draft federal Space Activities Act (Weltraumgesetz, expected enactment 2026/2027) introduces, for the first time, statutory PMD and passivation requirements at the federal level for German operators. The draft references ISO 24113:2023 by name and binds licence holders to a 5-year LEO disposal target (consistent with FCC and IADC 2025).",
+    key_provisions: [
+      {
+        section: "§ 24 Entwurf",
+        title: "Auflagen zur Vermeidung von Trümmern",
+        summary:
+          "Genehmigungspflichtige Tätigkeiten sind mit Auflagen zu versehen, die der ISO 24113:2023 sowie ECSS-U-AS-10C Rev.2 entsprechen.",
+      },
+      {
+        section: "§ 25 Entwurf",
+        title: "End-of-Life-Verpflichtungen",
+        summary:
+          "Betreiber müssen Wahrscheinlichkeit der erfolgreichen End-of-Life-Manöver ≥ 0,9 nachweisen; LEO-Verweildauer max. 5 Jahre nach Missionsende.",
+      },
+      {
+        section: "§ 26 Entwurf",
+        title: "Passivierung",
+        summary:
+          "Alle Energiequellen (Treibstoff, Druckbehälter, Batterien) müssen am Missionsende deaktiviert werden; Nachweis durch Telemetrie.",
+      },
+    ],
+    related_sources: [
+      "DE-DLR-DEBRIS-POLICY",
+      "INT-ISO-24113-2023",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    notes: [
+      "Status as of 2026-04: Referentenentwurf published 2024; Bundeskabinett vote expected Q3 2026; in-force target 2027.",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ───────────────────────────────────────────────

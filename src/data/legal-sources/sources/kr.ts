@@ -275,4 +275,45 @@ export const LEGAL_SOURCES_KR: LegalSource[] = [
     related_sources: ["KR-SPACE-DEV-PROMO-ACT", "KR-SPACE-LIABILITY-ACT"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Debris-Mitigation national stack — 2026 audit additions ───────
+
+  {
+    id: "KR-KASA-DEBRIS-GUIDELINE",
+    jurisdiction: "KR",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "KASA Space Debris Mitigation Guideline",
+    title_local: "한국항공우주청 우주잔해물 발생방지 지침",
+    date_published: "2024-05-27",
+    official_reference: "KASA Notice 2024-08",
+    source_url: "https://www.kasa.go.kr/eng/",
+    issuing_body: "Korea AeroSpace Administration (KASA)",
+    competent_authorities: ["KR-KASA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation", "licensing"],
+    scope_description:
+      "First debris-mitigation guideline issued by the newly-established Korea AeroSpace Administration (KASA, operational since May 2024). References IADC guidelines, ISO 24113, and the FCC 5-year rule as technical baseline. Binding on operators applying for launch authorisations and satellite registration under the Space Development Promotion Act.",
+    key_provisions: [
+      {
+        section: "§3",
+        title: "Technical baseline",
+        summary:
+          "Licence applicants shall demonstrate compliance with ISO 24113:2023 and IADC 2025 guidelines.",
+      },
+      {
+        section: "§5",
+        title: "5-year LEO PMD",
+        summary:
+          "New LEO missions shall be disposed of within 5 years of mission completion.",
+      },
+    ],
+    related_sources: [
+      "KR-SPACE-DEV-PROMO-ACT",
+      "INT-IADC-MITIGATION-2025",
+      "INT-ISO-24113-2023",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];
