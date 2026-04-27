@@ -27,19 +27,12 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import {
   type AtlasMode,
   SHELL_VERT,
   SHELL_FRAG,
   HALO_VERT,
   HALO_FRAG,
-  CA_VERT,
-  CA_FRAG,
   makeSphereBuffer,
   modeIndex,
 } from "./ai-mode/atlas-entity-shaders";
@@ -190,37 +183,21 @@ export function AtlasEntityMini({
     const haloPts = new THREE.Points(haloGeo, haloMat);
     entityGroup.add(haloPts);
 
-    // ── Post-processing — UnrealBloomPass + chromatic-aberration
-    // ShaderPass + OutputPass. THIS is what gives the AI-Mode orb its
-    // luminous "lit-from-inside" look. Without it the particles just
-    // sit there — with it, they bleed into a soft glow.
-    const composer = new EffectComposer(renderer);
-    composer.setSize(initialSize, initialSize);
-    composer.setPixelRatio(PR);
-    composer.addPass(new RenderPass(scene, camera));
-
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(initialSize, initialSize),
-      0.78, // strength — same as full version
-      0.7, // radius
-      0.18, // threshold
-    );
-    composer.addPass(bloomPass);
-
-    const finalPass = new ShaderPass({
-      uniforms: {
-        tDiffuse: { value: null },
-        uTime: { value: 0 },
-        uResolution: {
-          value: new THREE.Vector2(initialSize, initialSize),
-        },
-        uCA: { value: 0.0008 },
-      },
-      vertexShader: CA_VERT,
-      fragmentShader: CA_FRAG,
-    });
-    composer.addPass(finalPass);
-    composer.addPass(new OutputPass());
+    // ── No post-processing here ─────────────────────────────────
+    // The full AtlasEntity uses UnrealBloomPass + chromatic-
+    // aberration to add the luminous glow. We tried that on the
+    // mini orb but UnrealBloomPass progressively downsamples the
+    // canvas to ~5 mip levels, and at 72px (×PR=2 → 144px effective)
+    // the smallest mip is ~4px which produces artifacts including a
+    // solid-white output instead of the actual scene render.
+    //
+    // Compensation: a CSS box-shadow halo on the wrapper button
+    // (defined in the consumer JSX) replicates the bloom outside the
+    // canvas-clip edge. The particle particles still glow internally
+    // via additive blending, just without the post-process bloom.
+    //
+    // Net effect at small sizes: visually 90% identical to the full
+    // version, with reliable rendering.
 
     // ── Container resize tracking ─────────────────────────────────
     const observer = new ResizeObserver(() => {
@@ -230,9 +207,6 @@ export function AtlasEntityMini({
         Math.min(container.clientWidth, container.clientHeight) || 64,
       );
       renderer.setSize(size, size, false);
-      composer.setSize(size, size);
-      bloomPass.resolution.set(size, size);
-      finalPass.uniforms.uResolution.value.set(size, size);
     });
     observer.observe(container);
 
@@ -279,18 +253,9 @@ export function AtlasEntityMini({
       camera.position.z = 4.6 + Math.sin(t * 0.25) * 0.05;
       camera.lookAt(0, 0, 0);
 
-      // Bloom strength reactive to mode + energy — same formula as
-      // the full version.
-      bloomPass.strength =
-        0.78 +
-        runtime.current.energy * 0.5 +
-        (m === "thinking" ? 0.25 : 0) +
-        (m === "speaking" ? 0.15 : 0);
-
-      finalPass.uniforms.uTime.value = t;
-      finalPass.uniforms.uCA.value = 0.0008 + runtime.current.energy * 0.0006;
-
-      composer.render();
+      // Direct render — no post-processing. See note above about why
+      // bloom isn't viable at this size.
+      renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);
     };
     animate();
@@ -301,11 +266,7 @@ export function AtlasEntityMini({
       observer.disconnect();
 
       [shellGeo, coreGeo, haloGeo].forEach((g) => g.dispose());
-      [shellMat, coreMat, haloMat, finalPass.material].forEach((m) =>
-        m.dispose(),
-      );
-      bloomPass.dispose();
-      composer.dispose();
+      [shellMat, coreMat, haloMat].forEach((m) => m.dispose());
       renderer.dispose();
       if (renderer.domElement.parentElement === container) {
         container.removeChild(renderer.domElement);
