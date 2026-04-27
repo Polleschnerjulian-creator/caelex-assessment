@@ -331,25 +331,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         onSave={handleProfileSave}
       />
 
-      {/* Floating Astra FAB — just the orb, no pill, no disc. The
-          CSS box-shadow halo extends the bloom beyond the canvas-clip
-          so the orb reads as glowing rather than as a black disc. */}
+      {/* Floating Astra FAB — just the orb, no disc, no halo.
+          mix-blend-mode: difference on the canvas auto-tints the
+          particles for both light and dark page bg. */}
       {!isAstraPage && !forgeActive && !astraWidgetOpen && (
         <button
           onClick={() => setAstraWidgetOpen(true)}
           aria-label="Astra öffnen"
           title="Astra öffnen (⌘K)"
-          className="fixed bottom-7 right-7 z-[100] transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-full"
+          className="fixed bottom-7 right-7 z-[100] transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none rounded-full"
           style={{
-            width: 72,
-            height: 72,
+            width: 80,
+            height: 80,
             background: "transparent",
             border: 0,
             padding: 0,
             cursor: "pointer",
-            borderRadius: "50%",
-            boxShadow:
-              "0 0 24px rgba(180, 200, 255, 0.18), 0 0 48px rgba(120, 160, 220, 0.12), 0 8px 32px rgba(0, 0, 0, 0.4)",
           }}
         >
           <AtlasEntityMini ariaLabel="Astra" />

@@ -110,6 +110,18 @@ export function AtlasEntityMini({
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.display = "block";
+    // ── Theme-adaptive blend ────────────────────────────────────
+    // The canvas is rendered with an opaque black background and
+    // additive-blended white particles. With mix-blend-mode:
+    // difference, both effects auto-adapt to the page bg:
+    //
+    //   • Black canvas-bg vs page-bg → |0 - page| = page (invisible)
+    //   • White particles vs light page → |255 - light| = dark gray (visible)
+    //   • White particles vs dark page → |255 - dark| = light/white (visible)
+    //
+    // No black disc framing the orb on light pages, no white wash
+    // ruining dark pages. One blend rule, both themes covered.
+    renderer.domElement.style.mixBlendMode = "difference";
 
     const entityGroup = new THREE.Group();
     scene.add(entityGroup);
@@ -286,12 +298,10 @@ export function AtlasEntityMini({
         height: "100%",
         aspectRatio: "1 / 1",
         position: "relative",
-        // Clip the canvas to a circle. The Three.js canvas is opaque-
-        // black square; the round clip turns it into a "stage circle"
-        // matching the AI-Mode look. Without this you'd see a black
-        // square corner.
-        borderRadius: "50%",
-        overflow: "hidden",
+        // No border-radius clip needed — the canvas's black background
+        // is rendered invisible by mix-blend-mode: difference on the
+        // canvas itself. The orb floats freely on whatever the page
+        // bg is.
       }}
     />
   );

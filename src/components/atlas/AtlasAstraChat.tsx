@@ -181,28 +181,24 @@ export default function AtlasAstraChat() {
   return (
     <>
       {/* ─── Floating Orb ───
-          Just the orb floating in the corner — no pill, no label.
-          The orb IS the button: hover scales up, click opens the
-          chat. Same particle sphere as AI-Mode when it slides into
-          the corner during a conversation. The CSS box-shadow halo
-          extends the bloom beyond the canvas-clip edge so the orb
-          reads as glowing rather than as a black disc. */}
+          Just the orb floating in the corner — no pill, no label, no
+          disc. mix-blend-mode: difference on the canvas means the
+          black background is invisible and particles auto-tint to
+          match the page (gray on light pages, white on dark). The
+          orb IS the button: hover scales up, click opens the chat. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="group fixed bottom-6 right-6 z-50 flex items-center justify-center transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-full"
+          className="group fixed bottom-6 right-6 z-50 flex items-center justify-center transition-transform duration-300 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none rounded-full"
           aria-label={t("atlas.astra_open")}
           title={t("atlas.astra_open")}
           style={{
-            width: 72,
-            height: 72,
+            width: 80,
+            height: 80,
             background: "transparent",
             border: 0,
             padding: 0,
             cursor: "pointer",
-            borderRadius: "50%",
-            boxShadow:
-              "0 0 24px rgba(180, 200, 255, 0.18), 0 0 48px rgba(120, 160, 220, 0.12), 0 8px 32px rgba(0, 0, 0, 0.4)",
           }}
         >
           <AtlasEntityMini ariaLabel="Astra" />
