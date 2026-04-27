@@ -6951,6 +6951,1270 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
   // ═══════════════════════════════════════════════════════════════════
   // ENDE VERIFIZIERTE ÜBERSETZUNGSTRANCHE
   // ═══════════════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VOLLSTÄNDIGKEITS-TRANCHE — alle verbleibenden fundamental/critical
+  // Sources mit DE-Übersetzung versehen. Schwerpunkt: OST/Liability/
+  // Registration-Ratifikationen sowie Nicht-EU Weltraumgesetze.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── US — Treaty-Ratifikationen + Major Acts ────────────────────────
+
+  [
+    "US-OST-1967",
+    {
+      title: "Weltraumvertrag — Ratifikation der Vereinigten Staaten",
+      scopeDescription:
+        "Ratifikationsurkunde der USA zum Weltraumvertrag von 1967. Verankert die US-Verpflichtung aus Art. VI zur Genehmigung und fortlaufenden Aufsicht nichtstaatlicher US-Weltraumtätigkeiten — die verfassungsrechtliche Grundlage, unter der CSLA, FCC Part 25, NOAA CRSRA und ITAR/EAR operieren.",
+      provisions: {
+        "Art. VI": {
+          title:
+            "Staatenverantwortlichkeit — umgesetzt durch CSLA + Sektorgesetze",
+          summary:
+            "Die Vereinigten Staaten tragen die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten einschließlich derer nichtstaatlicher Stellen. Die Umsetzung von Art. VI ist verteilt: FAA/AST lizenziert Start/Wiedereintritt (CSLA), FCC reguliert Spektrum (Communications Act), NOAA Fernerkundung (LRSPA), DDTC/BIS Exportkontrolle (ITAR/EAR).",
+        },
+        "Art. VII": {
+          title: "Haftung des Startstaats — CSLA-Indemnifikations-Regime",
+          summary:
+            "Die USA haften völkerrechtlich als Startstaat für Schäden, die ihre Staatsangehörigen oder von ihrem Territorium verursachen. Der Commercial Space Launch Act § 50914 sieht ein dreistufiges Finanz-Verantwortungs-Regime vor (Operator-Versicherung bis MPL; Bundes-Indemnifikation darüber bis Diet-festgelegter Obergrenze; Operator-Eigenrisiko jenseits dessen).",
+        },
+        "Art. VIII": {
+          title: "Registrierung und Hoheitsgewalt",
+          summary:
+            "Die USA behalten die Hoheitsgewalt über Objekte in ihrem Register. Die Registrierung erfolgt durch das State Department via UNOOSA gemäß Registrierungsübereinkommen 1975.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-LIABILITY-1972",
+    {
+      title: "Haftungsübereinkommen — Ratifikation der Vereinigten Staaten",
+      scopeDescription:
+        "Ratifikation des Haftungsübereinkommens durch die USA. Begründet die absolute Haftung der USA für Erdoberflächen-Schäden und die Verschuldenshaftung für Schäden im Orbit durch US-registrierte Weltraumobjekte — treibt das CSLA-§ 50914-Indemnifikations-Regime an, unter dem die US-Regierung die Drittpartie-Haftung über die Operator-Versicherungs-Obergrenze hinaus trägt.",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — umgesetzt durch CSLA § 50914",
+          summary:
+            "Die USA haften absolut für Erdoberflächen-Schäden, die durch US-Weltraumobjekte verursacht werden. Die innerstaatliche Umsetzung der Haftungs-Exposition läuft über die CSLA-§ 50914-Cross-Waiver- und Indemnifikations-Architektur.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-REGISTRATION-1976",
+    {
+      title:
+        "Registrierungsübereinkommen — Ratifikation der Vereinigten Staaten",
+      scopeDescription:
+        "US-Ratifikation des Registrierungsübereinkommens. Innerstaatlich umgesetzt durch das State Department / Registry of Space Objects, das bei jedem CSLA-lizenzierten Start und jedem operativen US-Satelliten aktualisiert wird.",
+      provisions: {
+        "Art. II": {
+          title: "Nationales Register — geführt vom State Department",
+          summary:
+            "Das US-Registry of Space Objects wird vom State Department (Bureau of Oceans and International Environmental and Scientific Affairs) geführt und an UNOOSA übermittelt. Registrierungs-Trigger: jeder Start einer CSLA-lizenzierten Mission und jeder operative US-Satellit.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-14CFR-PART-450",
+    {
+      title:
+        "14 CFR Part 450 — Anforderungen für Start- und Wiedereintritts-Lizenzen",
+      scopeDescription:
+        "Performance-basierte modulare FAA-Verordnung zur kommerziellen Start- und Wiedereintritts-Lizenzierung — ersetzt das vormalige preskriptive Regime aus Part 415/431/435. Operatoren maßschneidern einen Sicherheitsfall an ihr Missionsprofil, statt Checklisten abzuhaken; das operative Dokument ist die Mission Operations and Safety Plan.",
+      provisions: {
+        "14 CFR 450.101": {
+          title: "Performance-basierte Sicherheits-Kriterien",
+          summary:
+            "Konsolidierte Start- und Wiedereintritts-Lizenz, die die früheren Parts 415, 417, 431, 435 ersetzt. Performance-basierte Public-Safety-Kriterien: kollektives Risiko (Ec ≤ 1×10⁻⁴), individuelles Risiko (Pc ≤ 1×10⁻⁶), Luftfahrt-Risiko-Schwellwerte und Trajektorien-Sicherheits-Constraints.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-ARTEMIS-2020",
+    {
+      title:
+        "Artemis Accords — Vereinigte Staaten (1. Unterzeichner / Initiator)",
+      scopeDescription:
+        "USA als Initiator und 1. Unterzeichner der Artemis Accords. Formuliert die operativen Grundsätze, die US-Partner für die Teilnahme an der NASA-geführten Mond-Erforschung akzeptieren müssen — friedliche Zwecke, Transparenz, Registrierung, Teilen wissenschaftlicher Daten, Interoperabilität, Notfallhilfe, Erhaltung des Weltraum-Erbes, Trümmer-Vermeidung, Konflikt-Vermeidung, Weltraum-Ressourcen-Koordination.",
+      provisions: {
+        "Section 10": {
+          title: "Weltraum-Ressourcen — Koordinations-Rahmen",
+          summary:
+            "Unverbindliche Grundsätze für friedliche Nutzung des Weltraums und Koordination bei Mond- und Asteroiden-Erforschung. Section 10 erkennt an, dass Ressourcen-Extraktion im Einklang mit dem Weltraumvertrag 1967 stattfinden kann (mit dem Hinweis, dass dies keine Aneignung im Sinne von Art. II OST darstellt).",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-CSLCA-2015",
+    {
+      title: "Commercial Space Launch Competitiveness Act (SPACE Act of 2015)",
+      scopeDescription:
+        "Änderungsgesetz von 2015 (der SPACE Act), das den CSLA modernisiert: erweitert das Indemnifikations-Regime, kodifiziert das Recht auf In-Space-Resource-Utilisation (Title IV), eröffnet Bundesanlagen für kommerzielle Nutzer und etabliert den FAA-Lernperioden-Rahmen für Human-Spaceflight-Operationen.",
+      provisions: {
+        "51 USC § 51303": {
+          title: "Weltraum-Ressourcen — Eigentumsrechte für US-Bürger",
+          summary:
+            "Ein US-Bürger, der an der kommerziellen Bergung einer Asteroiden- oder Weltraumressource beteiligt ist, hat Anspruch auf jede so gewonnene Ressource — einschließlich des Rechts, sie zu besitzen, zu eigentumsmäßig innezuhaben, zu transportieren, zu nutzen und im Einklang mit anwendbarem Recht zu verkaufen.",
+        },
+        "51 USC § 50902(10)": {
+          title: "Erweiterte Definition des 'Starts'",
+          summary:
+            "Bezieht den 'Wiedereintritt' in das CSLA-Definitionsschema ein, verlängert das Operator-Haftungsregime bis 2025 und erweitert die FAA-Zuständigkeit über kommerzielle Weltraumtätigkeiten.",
+        },
+      },
+    },
+  ],
+
+  // ─── INTL — Sanctions, UNGA Recommendations, ESA Zero Debris ────────
+
+  [
+    "INT-ESA-ZERO-DEBRIS-STD",
+    {
+      title:
+        "ESA Zero Debris Standard und Politik (ESSB-ST-U-006) — Anforderungen für ESA-beauftragte Missionen ab 2030",
+      scopeDescription:
+        "Institutioneller Zero-Debris-Standard der ESA, verbindlich für ESA-beauftragte Missionen mit Start ab 2030. Verlangt eine End-of-Life-Versagens-Wahrscheinlichkeit < 1/1000, Bereitstellung für Active Debris Removal bei nicht-konformen Legacy-Assets sowie Demisability-Anforderungen — alle eine Größenordnung strenger als die IADC-Basis.",
+      provisions: {
+        "§4 PMD Success": {
+          title: "Erfolgswahrscheinlichkeit der End-of-Life-Entsorgung",
+          summary:
+            "Missionen müssen ≥ 99,9 % Erfolgswahrscheinlichkeit der End-of-Life-Entsorgung nachweisen — eine Größenordnung strenger als die IADC-90 %-Basis.",
+        },
+        "§5 Protected Regions": {
+          title: "Keine langlebigen Trümmer in LEO/GEO geschützten Regionen",
+          summary:
+            "Operative Bruchstücke, Explosions-Trümmer und freigesetzte Hardware müssen unter einem definierten Verweildauer-Schwellwert für die LEO- (< 5 Jahre) und GEO-geschützten Regionen liegen.",
+        },
+        "§6 Casualty Risk": {
+          title:
+            "Casualty-Risk auf der Erdoberfläche ≤ 1×10⁻⁴ je Wiedereintritt",
+          summary:
+            "Aggregiertes Casualty-Risk aus unkontrolliertem und kontrolliertem Wiedereintritt darf die COPUOS-Basis von 1 in 10.000 nicht überschreiten.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-OFAC-SDN-SPACE",
+    {
+      title:
+        "US OFAC SDN-Liste und sektorale Sanktionen — Weltraumsektor-Entitäten",
+      scopeDescription:
+        "Referenz-Eintrag zu den wesentlichen US-Sanktionsinstrumenten mit Bezug zum Weltraumsektor: Executive Orders zur Sanktionierung russischer Weltraum-Verteidigungs-Entitäten (E.O. 14024 plus Änderungen), Iran/DPRK-Sanktionen, Cuba-Restriktionen sowie die SDN-Listen-übergreifende Reichweite.",
+      provisions: {
+        "E.O. 14024 (April 2021, geändert 2022+)": {
+          title: "Russland-Befugnisse für 'harmful foreign activities'",
+          summary:
+            "Primäre US-Befugnis, unter der Roscosmos-Tochtergesellschaften, russische Weltraum-Verteidigungs-Entitäten und unterstützende Drittland-Netzwerke gelistet wurden. Listungen umfassen Asset-Freeze und Verbote für US-Personen.",
+        },
+        "31 CFR Part 510 (DPRK) und 31 CFR Part 560 (Iran)": {
+          title: "Umfassende Länder-Sanktionen",
+          summary:
+            "DPRK- und Iran-Sanktionen sind nahezu umfassend: praktisch jede Weltraumsektor-Transaktion erfordert eine OFAC-General- oder Spezial-Lizenz, mit extraterritorialer Reichweite für US-Origin-Komponenten.",
+        },
+        "BIS Entity List (15 CFR Part 744 Supp. 4)": {
+          title: "Exportkontroll-Listungen jenseits OFAC",
+          summary:
+            "Die BIS Entity List erfasst chinesische Weltraum-Verteidigungs-Entitäten, russische Weltraum-Liefer-Netzwerke und weitere Endnutzer, für die EAR-Lizenzanforderungen über die Standard-Kontrollliste hinaus gelten. Wird kontinuierlich aktualisiert.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-UK-RUSSIA-REGS-2019",
+    {
+      title:
+        "Russia (Sanctions) (EU Exit) Regulations 2019 — Russland-Sanktionen nach dem Brexit",
+      scopeDescription:
+        "Eigenständiges britisches Russland-Sanktions-Regime nach dem Brexit unter dem Sanctions and Anti-Money Laundering Act 2018. Reguliert Handels-, Finanz-, Einwanderungs-, Luftfahrzeug- und Schiff-Sanktionen gegen Russland. Seit Februar 2022 deutlich erweitert auf Weltraumsektor-spezifische Listungen.",
+      provisions: {
+        "Part 5 (Trade)": {
+          title: "Handelssanktionen für Dual-Use- und Militärgüter",
+          summary:
+            "Verbietet Export, Re-Export, Lieferung, technische Hilfe und Vermittlung von Militär-, Dual-Use-, kritischen Industrie- und Infrastruktur-Items nach Russland. Erfasst die meisten Startfahrzeug- und Satelliten-Komponenten.",
+        },
+        "Reg. 19A-19F": {
+          title: "Finanzsanktionen und Vermögenseinfrierungen",
+          summary:
+            "Vermögenseinfrierungs-Listungen umfassen Weltraumsektor-Entitäten und Personen. Operatoren müssen Vertragspartner gegen die OFSI Consolidated List der gelisteten Personen screenen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-UNGA-68-74-2013",
+    {
+      title:
+        "Empfehlungen zur nationalen Gesetzgebung im Hinblick auf die friedliche Erforschung und Nutzung des Weltraums — Resolution 68/74",
+      scopeDescription:
+        "Legt die sieben Schlüsselelemente fest, die jedes nationale Weltraumgesetz adressieren sollte: (1) Anwendungsbereich; (2) Genehmigung und Lizenzierung; (3) fortlaufende Aufsicht; (4) Registrierung von Weltraumobjekten; (5) Haftung und Versicherung; (6) Sicherheit; (7) Eigentums- und Kontroll-Übertragung.",
+      provisions: {
+        "Anhang, Para. 2": {
+          title: "Sieben Schlüsselelemente nationaler Weltraumgesetzgebung",
+          summary:
+            "(a) Anwendungsbereich; (b) Genehmigung; (c) fortlaufende Aufsicht; (d) Registrierung; (e) Haftung und Versicherung; (f) Sicherheit; (g) Übertragung von Eigentum und Kontrolle.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-CN-EXPORT-LAW-2020",
+    {
+      title:
+        "Exportkontrollgesetz der Volksrepublik China (mit den Dual-Use-Items-Exportkontroll-Verordnungen 2024)",
+      scopeDescription:
+        "Erstes umfassendes chinesisches Exportkontroll-Statut, teilweise an US-EAR orientiert. Erfasst Dual-Use-Items, Militärgüter, Nukleargüter und 'sonstige Güter, Technologien und Dienstleistungen' mit Bezug zur nationalen Sicherheit — ausdrücklich auf Raumfahrzeug- und verwandte Komponenten ausgedehnt.",
+      provisions: {
+        "Art. 12-15": {
+          title: "Genehmigungspflicht und End-User/End-Use-Screening",
+          summary:
+            "Vom MIIT verwaltete Genehmigungen für die Ausfuhr von Items des Dual-Use-Items-Katalogs erforderlich. End-User- und End-Use-Erklärungen sind Pflicht; Falschaussagen sind eine Straftat.",
+        },
+        "Art. 18": {
+          title: "Catch-all- und Unverified-End-User-Kontrollen",
+          summary:
+            "Items außerhalb des Katalogs benötigen dennoch eine Genehmigung, wenn der Exporteur weiß oder wissen sollte, dass sie für WMD, militärische Endnutzung in Restriktions-Ländern oder durch gelistete Endnutzer verwendet werden. Die Unverified-End-User-Liste erweitert die Reichweite.",
+        },
+        "Art. 48": {
+          title: "Gegenmaßnahmen-Klausel",
+          summary:
+            "Ermächtigt zu retaliatorischen Exportkontroll-Maßnahmen gegen Jurisdiktionen, die 'diskriminierende' Kontrollen gegen chinesische Personen verhängen — die rechtliche Grundlage für Chinas reziproke Beschränkungen gegen US-Weltraumsektor-Pendants.",
+        },
+      },
+    },
+  ],
+
+  // ─── Nicht-EU Weltraumgesetze ───────────────────────────────────────
+
+  [
+    "AU-SLR-ACT-2018",
+    {
+      title: "Space (Launches and Returns) Act 2018",
+      scopeDescription:
+        "Operatives australisches Start- und Rückführungs-Lizenzierungs-Statut. Ersetzte den Space Activities Act 1998; führte eine flexible Vier-Genehmigungs-Taxonomie ein (Australian Launch Facility, Launch, Return, Overseas Payload), ein Rückkehr-Regime und einen Hochleistungs-Raketen-Genehmigungspfad. Drittpartie-Haftungs-Indemnifikation gespiegelt am CSLA § 50914.",
+      provisions: {
+        "Part 3": {
+          title: "Australian Launch Facility Licence",
+          summary:
+            "Der Betreiber einer australischen Startanlage benötigt eine ASA-Anlage-Lizenz mit Sicherheitsfall, der die Fähigkeit zur Aufnahme von Starts ohne unzumutbares Risiko für die Öffentlichkeit nachweist.",
+        },
+        "Part 4-5": {
+          title: "Launch und Return Permits",
+          summary:
+            "Jeder Start und jede Rückkehr erfordert eine eigene ASA-Genehmigung, einschließlich Drittpartie-Haftpflicht-Versicherung, Trümmer-Vermeidungs-Analyse und CASA-koordinierter Luftraum-Freigabe.",
+        },
+        "Part 6": {
+          title: "Overseas-Payload-Permit",
+          summary:
+            "Eine australisch kontrollierte Nutzlast, die von einer ausländischen Anlage gestartet wird, erfordert eine ASA-Overseas-Payload-Permit — erfasst australische Operatoren, die ausländische Trägerraketen nutzen.",
+        },
+        "Part 7": {
+          title: "Haftung und Versicherung",
+          summary:
+            "Verpflichtende Drittpartie-Haftpflicht-Versicherung bis zur Maximum Probable Loss; Commonwealth-Indemnifikation oberhalb der Obergrenze, gespiegelt an der CSLA-§-50914-Architektur.",
+        },
+      },
+    },
+  ],
+
+  [
+    "CA-RSSSA-2005",
+    {
+      title: "Remote Sensing Space Systems Act",
+      scopeDescription:
+        "Kanadas primäres Statut für kommerzielle Weltraumtätigkeiten — eng zugeschnitten: deckt nur kommerzielle Erdbeobachtungs-Systeme oberhalb definierter Schwellwerte ab. Verhängt ein Lizenzierungs-Regime durch Global Affairs Canada, eine Shutter-Control-Befugnis aus nationalen Sicherheitsgründen und Endnutzer-Garantien für die Datenverteilung. Außerhalb der RSSSA-Reichweite (z.B. Kommunikation, Start) hat Kanada kein einheitliches Statut.",
+      provisions: {
+        "§ 8": {
+          title: "Lizenzpflicht für Betrieb oder Verteilung",
+          summary:
+            "Niemand darf ein Fernerkundungs-Weltraumsystem betreiben oder Roh- oder verarbeitete Daten daraus verteilen ohne Lizenz des Außenministers.",
+        },
+        "§ 14": {
+          title: "Bedingungen zur Datenverteilung",
+          summary:
+            "Lizenzen tragen Bedingungen zu Kunden-Screening, Area-of-Interest-Restriktionen, Auflösungs-Schwellwerten für den Export und einem Shutter-Control-Mechanismus, den der Minister aus Gründen der nationalen Sicherheit auslösen kann.",
+        },
+      },
+    },
+  ],
+
+  [
+    "CN-LAUNCH-REG-2002",
+    {
+      title:
+        "Vorläufige Maßnahmen zur Verwaltung von Genehmigungen für zivile Starts",
+      scopeDescription:
+        "Operative zivile Start-Genehmigungs-Verordnung, herausgegeben vom Vorgänger der SASTIND. Bis zum Inkrafttreten eines umfassenden Weltraumgesetzes ist dieses Regelwerk von 2002 zusammen mit den Registrations-Maßnahmen (2001) und dem analogisch angewandten Zivilluftfahrtgesetz die primäre regulatorische Schicht.",
+      provisions: {
+        "Art. 5": {
+          title: "Genehmigungspflicht für zivile Starts",
+          summary:
+            "Zivile Starts vom chinesischen Territorium oder durch chinesisch kontrollierte Startanbieter erfordern eine SASTIND-Genehmigung mit Bedingungen zu Sicherheit, finanzieller Verantwortung und Endnutzer-Screening.",
+        },
+      },
+    },
+  ],
+
+  [
+    "JP-BASIC-SPACE-LAW-2008",
+    {
+      title: "Basic Space Law",
+      scopeDescription:
+        "Verfassungsrechtlicher Anker des modernen japanischen Weltraumgesetz-Rahmens. Etabliert die Kabinetts-geführte Weltraumpolitik-Governance, öffnet die Tür zu Verteidigungs-orientierten Weltraumnutzungen (ein Bruch mit der vorherigen 'peaceful-purposes-only'-Doktrin von 2008) und mandatiert die Regierung, ein Space Activities Act zu erlassen — erfüllt durch das Space Activities Act 2016.",
+      provisions: {
+        "Art. 14": {
+          title: "Mandat zum Erlass eines Space Activities Act",
+          summary:
+            "Verlangt von der Regierung, das Lizenzierungs-, Haftungs-, Versicherungs- und Trümmer-Vermeidungs-Regime für nichtstaatliche Weltraumtätigkeiten zu legifizieren — erfüllt durch das Space Activities Act 2016.",
+        },
+        "Art. 25-30": {
+          title: "Strategisches Hauptquartier für Weltraumpolitik",
+          summary:
+            "Etabliert das Kabinetts-Strategisches-Hauptquartier unter Vorsitz des Premierministers, mit dem Office of National Space Policy als Sekretariat.",
+        },
+      },
+    },
+  ],
+
+  [
+    "KR-SPACE-DEV-PROMO-ACT",
+    {
+      title: "Space Development Promotion Act",
+      scopeDescription:
+        "Foundational koreanisches Weltraum-Förderungs-Statut, das das Lizenzierungs-Regime für Starts und On-Orbit-Operationen vom koreanischen Territorium oder durch koreanische Operatoren schafft. Etabliert das National Space Committee, das nationale Weltraumobjekt-Register und den technischen Prüfungsrahmen, den KASA von der vorherigen MSIT-Architektur übernimmt.",
+      provisions: {
+        "Art. 11": {
+          title: "Genehmigung für Starts",
+          summary:
+            "Personen, die einen Weltraumobjekt-Start aus der Republik Korea oder eines koreanischen Weltraumobjekts von ausländischem Territorium beabsichtigen, müssen eine KASA-Genehmigung einholen. Bedingungen umfassen Sicherheit, technische Fähigkeit und Indemnifikations-Vereinbarungen.",
+        },
+        "Art. 8": {
+          title: "Register von Weltraumobjekten",
+          summary:
+            "Verpflichtende Registrierung aller koreanisch gestarteten Weltraumobjekte im nationalen Register, in Erfüllung der koreanischen Verpflichtungen aus dem Registrierungsübereinkommen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "KR-SPACE-LIABILITY-ACT",
+    {
+      title: "Space Liability Act",
+      scopeDescription:
+        "Innerstaatliche Umsetzung des Haftungsübereinkommens für koreanische Weltraumtätigkeiten. Etabliert ein verschuldensunabhängiges Haftungs-Regime für Startpersonen, eine verpflichtende Drittpartie-Haftpflicht-Versicherung bis zu einer vom Kabinett festgelegten Obergrenze und ein staatliches Indemnifikations-Rahmenwerk oberhalb dieser Grenze.",
+      provisions: {
+        "Art. 3": {
+          title: "Verschuldensunabhängige Haftung für Erdoberflächen-Schäden",
+          summary:
+            "Startpersonen haften absolut für Schäden, die durch koreanische Weltraumobjekte auf der Erdoberfläche oder an Luftfahrzeugen im Flug verursacht werden — gespiegelt am Haftungsübereinkommen.",
+        },
+        "Art. 6-8": {
+          title: "Versicherung und staatliche Indemnifikation",
+          summary:
+            "Verpflichtende Drittpartie-Haftpflicht-Versicherung bis zur kabinetts-festgelegten Obergrenze; staatliche Indemnifikation oberhalb der Versicherungs-Obergrenze, vorbehaltlich der Einhaltung der Bedingungen des Space Development Promotion Act.",
+        },
+      },
+    },
+  ],
+
+  [
+    "RU-SPACE-LAW-1993",
+    {
+      title: "Bundesgesetz über Raumfahrttätigkeit",
+      scopeDescription:
+        "Russlands primäres Statut für Raumfahrttätigkeiten. Etabliert das von Roscosmos verwaltete Lizenzierungs-Regime, mandatiert eine Drittpartie-Haftpflicht-Versicherung, regelt die staatliche Indemnifikation, führt das nationale Register von Weltraumobjekten und definiert den rechtlichen Status von Kosmonauten.",
+      provisions: {
+        "Art. 9-11": {
+          title: "Lizenzierung von Raumfahrttätigkeiten",
+          summary:
+            "Roscosmos erteilt Lizenzen für Konstruktion, Herstellung, Tests, Start und Betrieb von Weltraumobjekten durch russische Stellen oder vom russischen Territorium aus. Lizenzen tragen Sicherheits-, Technik- und Finanz-Bedingungen.",
+        },
+        "Art. 25-29": {
+          title: "Haftung und Versicherung",
+          summary:
+            "Verschuldensunabhängige Operator-Haftung für Erdoberflächen-Schäden; verpflichtende Drittpartie-Haftpflicht-Versicherung; staatliche Indemnifikation oberhalb der Operator-Versicherungs-Obergrenze.",
+        },
+        "Art. 18": {
+          title: "Register von Weltraumobjekten",
+          summary:
+            "Verpflichtendes nationales Register russisch gestarteter Weltraumobjekte mit Notifikation an den UN-Generalsekretär gemäß Registrierungsübereinkommen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ZA-SPACE-AFFAIRS-ACT-1993",
+    {
+      title: "Space Affairs Act",
+      scopeDescription:
+        "Südafrikas primäres Statut für Weltraumtätigkeiten. Etabliert den SACSA-Council, das Lizenzierungs-Regime für Starts und On-Orbit-Operationen, das nationale Register und den Indemnifikations-Rahmen. Südafrika ist einer der wenigen afrikanischen Staaten mit einem dedizierten Weltraumgesetz.",
+      provisions: {
+        "§ 5-9": {
+          title: "Lizenzpflicht für Weltraumtätigkeiten",
+          summary:
+            "Starts vom südafrikanischen Territorium und der Betrieb südafrikanisch kontrollierter Weltraumobjekte erfordern eine SACSA-Lizenz; der Council prüft technische, Sicherheits- und Finanz-Kriterien.",
+        },
+        "§ 13": {
+          title: "Haftung und Versicherung",
+          summary:
+            "Verschuldensunabhängige Operator-Haftung für Erdoberflächen-Schäden; verpflichtende Drittpartie-Haftpflicht-Versicherung in vom Minister festgesetzter Höhe; staatliche Indemnifikation oberhalb der Versicherungs-Obergrenze.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-OSHAA-2017",
+    {
+      title: "Outer Space and High-altitude Activities Act 2017 (OSHAA)",
+      scopeDescription:
+        "Dediziertes nationales Weltraumgesetz Neuseelands, das sowohl orbitale (Weltraum-) als auch sub-orbitale (Hochhöhen-) Tätigkeiten erfasst. Schafft fünf Lizenzkategorien — Payload Permit, Launch Licence, Overseas Launch Licence, Facility Licence, Return Licence — und gibt der MBIE umfassende Befugnisse.",
+      provisions: {
+        "Part 2 (ss. 7–24)": {
+          title: "Genehmigungs-Regime",
+          summary:
+            "Schafft die fünf OSHAA-Genehmigungen. Jede erfordert Operator-Eignungsprüfung, Risiko-/Sicherheits-Analyse, Trümmer-Vermeidungs-Plan, Versicherung/Indemnifikation und nationale-Interesse-Prüfung. Der Minister kann aus nationalen Sicherheitsgründen ablehnen.",
+        },
+        "s. 15 — Liability and indemnity": {
+          title: "Crown-Indemnifikation mit Regress gegen Operatoren",
+          summary:
+            "Die NZ-Krone leistet internationale Haftungs-Übereinkommens-Ansprüche, hat aber Regress gegen den autorisierten Operator bis zur Versicherungs-Obergrenze in der jeweiligen Lizenz. Versicherungs-Schwellwerte werden typisch im Lizenzdokument festgelegt.",
+        },
+        "s. 30 — National interest grounds": {
+          title: "Nationale-Sicherheits-Ablehnungs-Befugnis",
+          summary:
+            "Der Minister kann jede Genehmigung aus Gründen des nationalen Interesses ablehnen — ausdrücklich einschließlich Trümmer-Generierungs-Risiko, ausländischer Staats-Verbindung und Dual-Use-Technologie-Exposition.",
+        },
+        "s. 54 — High-altitude activities": {
+          title: "Hochhöhen-Aktivitäts-Genehmigungs-Regime",
+          summary:
+            "Eigener Genehmigungspfad für stratosphärische Plattformen, sub-orbitale Fahrzeuge und Hochhöhen-Ballons. Ko-reguliert mit der CAA für die Luftraum-Integration.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-OSHAA-REGS-2017",
+    {
+      title:
+        "Outer Space and High-altitude Activities (Authorisations) Regulations 2017",
+      scopeDescription:
+        "Durchführungs-Verordnungen unter OSHAA 2017 § 112. Spezifiziert Dokumentation, Gebühren und Verfahrensschritte für jede der fünf OSHAA-Genehmigungen. Definiert die Methodik der Missions-Risiko-Bewertung, den Inhalt des Trümmer-Vermeidungs-Plans und die Form der Versicherungs-Erklärungen.",
+      provisions: {
+        "Reg. 9": {
+          title: "Payload-Permit-Dokumentation",
+          summary:
+            "Antragsteller müssen technische Nutzlast-Spezifikation, Bahnparameter, Spektrum-Nutzung, End-of-Life-Entsorgungs-Plan und ITU-Koordinations-Status liefern.",
+        },
+        "Reg. 14": {
+          title: "Launch-Licence-Risiko-Analyse",
+          summary:
+            "Antragsteller reicht Failure-Mode-and-Effects-Analyse, Abbruch-Trajektorien, Casualty-Risk-Berechnung (Ziel ≤ 1×10⁻⁴) und Range-Safety-Koordination mit NZDF (wo anwendbar) ein.",
+        },
+        "Reg. 22": {
+          title: "Trümmer-Vermeidungs-Plan",
+          summary:
+            "Jede Genehmigung muss von einem Trümmer-Vermeidungs-Plan begleitet sein, der mit COPUOS-Leitlinien (2007) und LTS-21 (2019) im Einklang steht. End-of-Life-Entsorgungs-Verpflichtungen sind lizenzbindend.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-TSA-2016",
+    {
+      title: "Neuseeland–USA Technology Safeguards Agreement (TSA)",
+      scopeDescription:
+        "Bilaterale Vereinbarung zwischen Neuseeland und den USA über die Behandlung US-ITAR-kontrollierter Weltraum-Technologie auf neuseeländischem Boden. Unterzeichnet am 3. Juni 2016 zur Unterstützung der Electron-Trägerraketen-Operationen von Rocket Lab (Rocket Lab ist US-domiziliert, startet aber von Neuseeland).",
+      provisions: {
+        "Art. 3": {
+          title: "Anlagen-Zugangs-Kontrollen",
+          summary:
+            "Zugangs-beschränkte Zonen am Launch Complex 1 und in den Auckland-Rocket-Lab-Anlagen, mit gemeinsam von NZ/US verwalteten Freigabe-Listen.",
+        },
+        "Art. 7": {
+          title: "Vorfall-Berichterstattung",
+          summary:
+            "Jede potenzielle ITAR-Kompromittierung wird gemeinsam von NZ MFAT-EC und US State DDTC innerhalb von 72 Stunden gemeldet und untersucht.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IL-DEC-LAW-2007",
+    {
+      title: "Defense Export Control Law, 5767-2007",
+      scopeDescription:
+        "Primäres Statut zur Regulierung israelischer Verteidigungs- und Dual-Use-Exporte — erfasst Trägerraketen, raketen-fähige Antriebe, Satellitentechnologie und viele Raumfahrzeug-Komponenten. Operieren ohne DECA-Genehmigung für Items auf der Defense Export Control List ist eine Straftat.",
+      provisions: {
+        "§ 7-9": {
+          title: "Genehmigungspflicht für kontrollierte Ausfuhren",
+          summary:
+            "Materielle und immaterielle Ausfuhren von Items auf den Defense- oder Dual-Use-Listen erfordern eine DECA-Genehmigung. Vermittlung, Technologie-Transfer und immaterielle Hilfeleistung sind ausdrücklich erfasst.",
+        },
+        "§ 17-22": {
+          title: "Endnutzer-Zusicherungen",
+          summary:
+            "Genehmigungen enthalten Endnutzer-, Endnutzungs- und Re-Export-Bedingungen; DECA setzt fortlaufende Compliance durch Audits und Post-Shipment-Checks durch.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IN-SPACE-POLICY-2023",
+    {
+      title: "Indische Weltraum-Politik 2023",
+      scopeDescription:
+        "Foundational-Politik, die End-to-End-Beteiligung nichtstaatlicher Stellen (NGEs) an indischen Weltraumtätigkeiten ermöglicht. Setzt IN-SPACe als Single-Window-Genehmigungsbehörde, definiert Rollen für ISRO (F&E), NSIL (kommerziell) und DOS (Politik) und öffnet den Weltraum für privates Kapital.",
+      provisions: {
+        "§ 4-5": {
+          title: "Genehmigungs-Regime für NGEs",
+          summary:
+            "Alle nichtstaatlichen Weltraumtätigkeiten — Start, Satellitenfertigung und -betrieb, Bodenstationen, Downstream-Dienste — erfordern IN-SPACe-Genehmigung. IN-SPACe erteilt Norms, Guidelines and Procedures (NGP) als Anwendungs-Schicht.",
+        },
+        "§ 6": {
+          title: "Ausländische Direktinvestitionen im Weltraumsektor",
+          summary:
+            "100 % FDI für Satelliten-Komponenten-Fertigung; 74 % automatischer Pfad für Satellitenfertigung/-betrieb/-daten; 49 % automatischer Pfad für Trägerraketen. Oberhalb dieser Schwellwerte ist Regierungsfreigabe erforderlich.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IN-NGP-2024",
+    {
+      title:
+        "IN-SPACe Norms, Guidelines and Procedures for Authorisation of Space Activities",
+      scopeDescription:
+        "Operatives Regelwerk, das die Politik 2023 in antragsreife Verfahren überführt. Definiert Genehmigungs-Klassen (Start, Satellitenbetrieb, Bodenstation, Kontrollübertragung etc.), Nachweis-Standards, Gebühren-Schedule, Indemnifikations-Schwellwerte und einen Genehmigungs-Compliance-Trail.",
+      provisions: {
+        "Part B": {
+          title: "Genehmigungs-Klassen und Nachweise",
+          summary:
+            "Acht Genehmigungs-Klassen für Start, Satellitenbetrieb, Bodenstationen, In-Orbit-Services, Eigentums-/Kontroll-Übertragungen und Downstream-Anwendungen. Jede mit Nachweis-Vorlage, Gebühren und Verfahrens-Schritten.",
+        },
+        "Part D": {
+          title: "Indemnifikation und Versicherung",
+          summary:
+            "Operator-Staats-Indemnifikations-Vorlage für Erdoberflächen-Schäden. Verpflichtende Drittpartie-Haftpflicht-Versicherung skaliert mit Missions-Risiko; IN-SPACe akzeptiert äquivalente Staats-zu-Staats-Garantie für partner-staatliche Missionen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "TR-TUA-DECREE-2018",
+    {
+      title: "Präsidialdekret zur Errichtung der Türkischen Weltraumagentur",
+      scopeDescription:
+        "Etabliert die Türkische Weltraumagentur (TUA) und überträgt ihr die Koordinationsbefugnis über nationale Weltraumtätigkeiten. In Ermangelung eines dedizierten nationalen Weltraumgesetzes dient das dekret-basierte Mandat der TUA als quasi-regulatorische Funktion.",
+      provisions: {
+        Gesamtinstrument: {
+          title:
+            "TUA-Mandat — quasi-regulatorische Funktion ohne Weltraumgesetz",
+          summary:
+            "Etabliert die TUA und gibt ihr Koordinationsbefugnis über nationale Weltraumtätigkeiten. Ohne dediziertes nationales Weltraumgesetz dient das dekretbasierte Mandat als regulatorischer Ersatz, ergänzt durch sektorale Verordnungen aus Telekommunikation und Verteidigung.",
+        },
+      },
+    },
+  ],
+
+  // ─── EU-Mitgliedstaaten — NIS2-Transpositionen ──────────────────────
+
+  [
+    "EE-NIS2-TRANSPOSITION",
+    {
+      title:
+        "Cybersecurity-Gesetz-Änderung — NIS2-Transposition (Küberturvalisuse seaduse muutmise seadus)",
+      scopeDescription:
+        "Estnischer Entwurf zur Änderung des Küberturvalisuse seadus 2018 zur Umsetzung von NIS2 (Richtlinie (EU) 2022/2555). Estland verfehlte die Transpositionsfrist Oktober 2024; der Entwurf passierte 2024 die eelnõu-Konsultation, die vollständige Riigikogu-Annahme steht aus.",
+      provisions: {
+        "Art. 21 NIS2 / Entwurfs-§": {
+          title: "Risikomanagement für wesentliche und wichtige Einrichtungen",
+          summary:
+            "Setzt die Risikomanagement-Pflichten aus NIS2 Art. 21 (Vorfallbehandlung, Lieferketten-Sicherheit, Verschlüsselung, Multi-Faktor-Authentifizierung, Geschäftskontinuität) für Satellitensektor-Einrichtungen in estnisches Recht um.",
+        },
+        "Art. 23 NIS2 / Entwurfs-§": {
+          title: "24h/72h-Vorfallmeldung an RIA",
+          summary:
+            "Erhebliche Cybersicherheits-Vorfälle sind binnen 24 Stunden vorab und binnen 72 Stunden vollständig an die RIA zu melden, mit Abschlussbericht binnen eines Monats.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IE-NIS2-TRANSPOSITION",
+    {
+      title: "National Cyber Security Bill 2024 — Irische NIS2-Transposition",
+      scopeDescription:
+        "Irisches Primärrecht zur Umsetzung von NIS2 (Richtlinie (EU) 2022/2555). Irland verfehlte die NIS2-Frist Oktober 2024; die EK gab im Mai 2025 eine begründete Stellungnahme ab. Der Bill schafft das National Cyber Security Centre auf statutarischer Grundlage und wendet NIS2-Pflichten auf benannte essential und important entities an.",
+      provisions: {
+        "Part 4 (essential and important entities)": {
+          title: "Risikomanagement und Vorfallmeldung",
+          summary:
+            "Etabliert Risikomanagement-Maßnahmen entsprechend NIS2 Art. 21 und die 24h/72h/Ein-Monats-Meldekaskade an das NCSC für benannte Einrichtungen.",
+        },
+        "Part 6": {
+          title: "Vollzug und Verwaltungsbußen",
+          summary:
+            "Sieht Verwaltungsbußen bis zu 10 Mio. EUR oder 2 % des globalen Umsatzes für essential entities vor; 7 Mio. EUR oder 1,4 % für important entities — gespiegelt an NIS2 Art. 34.",
+        },
+      },
+    },
+  ],
+
+  [
+    "PL-NIS2-TRANSPOSITION",
+    {
+      title:
+        "Änderung des Gesetzes über das Nationale Cybersicherheits-System — Polnische NIS2-Transposition",
+      scopeDescription:
+        "Polnischer Entwurf einer Änderung der ustawa o krajowym systemie cyberbezpieczeństwa (KSC) von 2018 zur Umsetzung von NIS2. Polen verfehlte die Frist Oktober 2024; die Änderung befindet sich im parlamentarischen Verfahren mit mehreren Runden interministerieller Konsultation.",
+      provisions: {
+        "Art. 21 NIS2 (Transposition)": {
+          title: "Risikomanagement für wesentliche und wichtige Einrichtungen",
+          summary:
+            "Richtet die polnischen KSC-Pflichten an NIS2 Art. 21 aus: Risikomanagement-Maßnahmen, Lieferketten-Sicherheit, Multi-Faktor-Authentifizierung, Geschäftskontinuität. Listungen werden voraussichtlich Satelliten-Operatoren und Bodensegment-Betreiber erfassen.",
+        },
+        "Art. 23 NIS2 (Transposition)": {
+          title: "24h/72h-Vorfallmeldung",
+          summary:
+            "Erhebliche Cybersicherheits-Vorfälle sind binnen 24 Stunden vorab und binnen 72 Stunden vollständig an das sektorale CSIRT zu melden, mit Abschlussbericht binnen eines Monats.",
+        },
+      },
+    },
+  ],
+
+  // ─── UK Konsultation Orbital Liability ──────────────────────────────
+
+  [
+    "UK-ORBITAL-LIABILITY-CONSULT-2023",
+    {
+      title:
+        "UK-Konsultation zu Orbital-Haftungen, Versicherung, Gebühren und Weltraum-Nachhaltigkeit",
+      scopeDescription:
+        "UK-Regierungs-Konsultation zu Reformen der Haftungsregime des Outer Space Act 1986 und des Space Industry Act 2018. Vier Reform-Säulen: (1) variable Haftungs-Obergrenzen je Missions-Risiko, (2) modulierte Versicherungsanforderungen je Bahnklasse und Missionsprofil, (3) Charging-Modelle für CAA-Lizenzdienste, (4) verbindliche Sustainability-Lizenz-Kriterien.",
+      provisions: {
+        "Säule 1": {
+          title: "Variable Haftungs-Obergrenzen",
+          summary:
+            "Ersetzt die aktuelle einheitliche Drittpartie-Haftungs-Obergrenze von 60 Mio. GBP durch variable Obergrenzen, die am Missions-Risikoprofil kalibriert sind (Bahn-Höhe, Konstellationsgröße, IOS vs. passiv).",
+        },
+        "Säule 2": {
+          title: "Risiko-basierte Versicherungsanforderungen",
+          summary:
+            "Versicherungsanforderungen abgestuft nach Kollisionswahrscheinlichkeit, End-of-Life-Zuverlässigkeit und Active-Debris-Removal-Zusage.",
+        },
+        "Säule 4": {
+          title: "Verbindliche Nachhaltigkeits-Lizenz-Kriterien",
+          summary:
+            "Operative Nachhaltigkeits-Metriken (Manöver-Datenteilung, End-of-Life-Zeitlinie, ADR-Bereitschaft) wechseln von der CAA-Leitlinien-Ebene auf verbindliche Lizenz-Bedingungen.",
+        },
+      },
+    },
+  ],
+
+  // ─── FR Technische Regulierungs-Konsultation 2024 ───────────────────
+
+  [
+    "FR-TECHREG-CONSULT-2024",
+    {
+      title:
+        "Französische Konsultation zur Aktualisierung der technischen Weltraum-Verordnung (RTF — Réglementation Technique Française)",
+      scopeDescription:
+        "Französische öffentliche Konsultation zu einer umfassenden Aktualisierung des Arrêté Technique 2011 zur Umsetzung des LOS 2008. Vorgeschlagene Reformen richten die französischen technischen Anforderungen am ESA Zero Debris Standard aus, führen ein verkürztes End-of-Life-Entsorgungs-Fenster ein und setzen konstellations-spezifische Verpflichtungen.",
+      provisions: {
+        "Section PMD": {
+          title: "5-Jahres-End-of-Life-Entsorgung für LEO",
+          summary:
+            "Vorgeschlagene Verkürzung des LEO-End-of-Life-Entsorgungs-Fensters von 25 Jahren (Arrêté 2011) auf 5 Jahre — ausgerichtet an FCC 2022 und ESA Zero Debris Standard.",
+        },
+        "Section Constellations": {
+          title: "Konstellations-spezifische Verpflichtungen",
+          summary:
+            "Neue Lizenzierungs-Schwellwerte und Zuverlässigkeits-Anforderungen für Konstellationen über 100 Satelliten; verpflichtende Offenlegung der Pro-Satelliten-Versagens-Rate.",
+        },
+        "Section IOS": {
+          title: "Genehmigungsregime für In-Orbit-Servicing",
+          summary:
+            "Führt einen dedizierten technischen Rahmen für IOS-Operationen ein: Sicherheitsabstands-Anforderungen, Abbruch-Protokoll-Nachweis, Klienten-Zustimmungs-Dokumentation.",
+        },
+        "Section Ré-entrée": {
+          title: "Casualty-Risk auf der Erde ≤ 1×10⁻⁴",
+          summary:
+            "Ausrichtung an COPUOS- und ESA-Schwellwerten: Casualty-Risk aus unkontrolliertem Wiedereintritt darf 1 von 10.000 je Ereignis nicht überschreiten.",
+        },
+      },
+    },
+  ],
+
+  // ─── Treaty-Ratifikationen — kompakte Stub-Einträge ─────────────────
+  // Jeder dieser Einträge spiegelt das gleiche Muster: Art. VI Staaten-
+  // verantwortlichkeit / Art. II absolute Haftung / Art. II nationales
+  // Register, jeweils mit jurisdiktions-spezifischer Implementierungs-
+  // Notiz aus dem englischen Original.
+
+  [
+    "AE-OST-2000",
+    {
+      title:
+        "Weltraumvertrag — Ratifikation der Vereinigten Arabischen Emirate",
+      scopeDescription:
+        "Die VAE ratifizierten den OST im Jahr 2000. Staaten-Verantwortlichkeits- und Registrierungs-Pflichten werden durch das Bundes-Dekret-Gesetz 12/2019 und das UAESA-Genehmigungs-Regime erfüllt. Die VAE sind außerdem Unterzeichner der Artemis Accords (Oktober 2020).",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Die VAE tragen die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten — erfüllt durch das UAESA-Genehmigungs-Rahmenwerk.",
+        },
+      },
+    },
+  ],
+
+  [
+    "AU-OST-1967",
+    {
+      title: "Weltraumvertrag — Australische Ratifikation",
+      scopeDescription:
+        "Australische Ratifikation des Weltraumvertrags 1967. Verankert die Staaten-Verantwortlichkeits- und Registrierungs-Pflichten, die das SLR Act 2018 innerstaatlich erfüllt. Australien ist außerdem Unterzeichner der Artemis Accords (2020).",
+      provisions: {
+        "Art. VI / VII": {
+          title: "Staaten-Verantwortlichkeit und Haftung",
+          summary:
+            "Australien ist völkerrechtlich verantwortlich und haftbar für Schäden durch australisch gestartete Weltraumobjekte — erfüllt durch den Indemnifikations-Rahmen des SLR Act 2018.",
+        },
+      },
+    },
+  ],
+
+  [
+    "BR-OST-1969",
+    {
+      title: "Weltraumvertrag — Brasilianische Ratifikation",
+      scopeDescription:
+        "Brasilianische Ratifikation des OST. Die Pflichten aus Art. VI werden mangels eines umfassenden Primärgesetzes über inter-departementale Genehmigungs-Verfahren (AEB + DECEA) erfüllt. Brasilien unterzeichnete die Artemis Accords 2021.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Brasilien ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten. Die innerstaatliche Genehmigung läuft über AEB und DECEA, ergänzt durch Verpflichtungen aus dem US-Brasilien-Technology-Safeguards-Agreement.",
+        },
+      },
+    },
+  ],
+
+  [
+    "CA-OST-1967",
+    {
+      title: "Weltraumvertrag — Kanadische Ratifikation",
+      scopeDescription:
+        "Kanadische Ratifikation des Weltraumvertrags 1967. Die Verpflichtung aus Art. VI wird teils durch das RSSSA (kommerzielle Erdbeobachtung) und teils durch Crown-Prerogative-Genehmigung für andere Weltraumtätigkeiten erfüllt — mangels eines umfassenden Statuts.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Kanada ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten — Grundlage des RSSSA-Lizenzierungs-Regimes und der inter-departementalen Genehmigung außerhalb der RSSSA-Reichweite.",
+        },
+      },
+    },
+  ],
+
+  [
+    "CN-OST-1983",
+    {
+      title: "Weltraumvertrag — Chinesischer Beitritt",
+      scopeDescription:
+        "China trat dem OST 1983 bei. Die Pflichten aus Art. VI werden über die Maßnahmen 2001/2002 und (perspektivisch) das Entwurf-Weltraumgesetz erfüllt. China ist KEIN Unterzeichner der Artemis Accords und hat den Ressourcen-Extraktions-Rahmen der Accords abgelehnt.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "China ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten — erfüllt über SASTIND/CNSA-Genehmigungs-Verfahren und (in Vorbereitung) das Entwurf-Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EE-OST-ACCESSION",
+    {
+      title: "Weltraumvertrag — Estnischer Beitritt",
+      scopeDescription:
+        "Estland ist dem OST beigetreten. Es trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten, hat aber kein dediziertes nationales Weltraumgesetz — der regulatorische Rahmen stützt sich auf MKM-Verwaltungspraxis und allgemeines Verwaltungsrecht.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Estland trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Estland hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EE-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Estnischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Estland haftet absolut für Erdoberflächen-Schäden durch estnische Weltraumobjekte. Es gibt keinen dedizierten Weltraum-Versicherungs-Rahmen oder Regress-Obergrenze nach estnischem Recht. Private Operatoren tragen das Versicherungs-Risiko vertraglich.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EE-REGISTRATION",
+    {
+      title: "Registrierungsübereinkommen — Estnischer Rahmen",
+      provisions: {
+        "Art. II": {
+          title: "Nationales Register — über MKM, kein eigenständiges Statut",
+          summary:
+            "Estland führt sein nationales Register für Weltraumobjekte über MKM-Verwaltungspraxis statt durch ein dediziertes Registrierungs-Statut. ESTCube-1 (gestartet 7. Mai 2013, 1U CubeSat, Universität Tartu) ist das erste registrierte estnische Weltraumobjekt.",
+        },
+      },
+    },
+  ],
+
+  [
+    "HR-OST",
+    {
+      title: "Weltraumvertrag — Kroatische Sukzession / Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Kroatien trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Kroatien hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "HR-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Kroatische Sukzession / Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Kroatien haftet absolut für Erdoberflächen-Schäden durch kroatische Weltraumobjekte. Kein dedizierter Weltraum-Haftungs- oder -Versicherungs-Rahmen nach kroatischem Recht; allgemeine Gefährdungshaftungs-Bestimmungen der Civil Obligations Act greifen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "HU-OST",
+    {
+      title: "Weltraumvertrag — Ungarische Ratifikation",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Ungarn trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Ungarn hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "HU-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Ungarische Ratifikation",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Ungarn haftet absolut für Erdoberflächen-Schäden durch ungarische Weltraumobjekte. Allgemeine Gefährdungs-Operations-Bestimmungen des Zivilgesetzbuchs greifen mangels dedizierter Weltraum-Haftungs-Vorschriften.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IL-OST-1977",
+    {
+      title: "Weltraumvertrag — Israelische Ratifikation",
+      scopeDescription:
+        "Israelische Ratifikation des OST. Mangels eines umfassenden israelischen Weltraum-Statuts wird die Genehmigungs-Pflicht aus Art. VI über Kabinetts-Beschlüsse, ISA-Koordination und das Defense Export Control Law für hardware-bezogene Kontrollen erfüllt.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Israel ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten — derzeit erfüllt über inter-ministerielle Koordination statt durch ein einheitliches Statut, in Erwartung des vorgeschlagenen Israel Space Activities Act.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IN-OST-1982",
+    {
+      title: "Weltraumvertrag — Indische Ratifikation",
+      scopeDescription:
+        "Indische Ratifikation des OST. Verankert die Pflicht Indiens aus Art. VI zur Genehmigung und fortlaufenden Aufsicht nationaler Weltraumtätigkeiten — die völkerrechtliche Grundlage, die die Indische Weltraum-Politik 2023 und das IN-SPACe-NGP umsetzen.",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Indien ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten. Innerstaatlich erfüllt durch das IN-SPACe-Genehmigungs-Regime unter der Politik 2023 und dem NGP 2024.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IS-OST",
+    {
+      title: "Weltraumvertrag — Isländischer Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — kein innerstaatlicher Rahmen",
+          summary:
+            "Island trägt die völkerrechtliche Verantwortung für etwaige nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime und faktisch keine kommerzielle Weltraumindustrie.",
+        },
+      },
+    },
+  ],
+
+  [
+    "IS-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Isländischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Island haftet absolut für Erdoberflächen-Schäden durch etwaige isländische Weltraumobjekte. Kein dedizierter Weltraum-Haftungs- oder Versicherungs-Rahmen. Mangels nennenswerter kommerzieller Weltraumtätigkeit hat die Haftungs-Exposition derzeit nur theoretische Bedeutung.",
+        },
+      },
+    },
+  ],
+
+  [
+    "KR-OST-1967",
+    {
+      title: "Weltraumvertrag — Koreanische Ratifikation",
+      scopeDescription:
+        "Koreanische Ratifikation des Weltraumvertrags 1967. Staaten-Verantwortlichkeits-Pflichten werden über das Space Development Promotion Act und das Space Liability Act erfüllt. Korea ist außerdem Unterzeichner der Artemis Accords (Mai 2021).",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Korea ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten — Grundlage des KASA-administrierten Genehmigungs-Regimes.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LI-OST",
+    {
+      title: "Weltraumvertrag — Liechtensteiner Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — theoretische Exposition",
+          summary:
+            "Liechtenstein trägt die völkerrechtliche Verantwortung für etwaige nationale Weltraumtätigkeiten. In der Praxis bestehen keine innerstaatlichen Weltraumtätigkeiten, und kein Genehmigungs-Regime ist kodifiziert. Die Art.-VI-Exposition bleibt theoretisch.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LI-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Liechtensteiner Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Liechtenstein haftet absolut für Erdoberflächen-Schäden durch Weltraumobjekte, bei denen es Startstaat oder Registrierungs-Staat ist. Kein innerstaatlicher Weltraum-Haftungs-Rahmen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LT-OST",
+    {
+      title: "Weltraumvertrag — Litauischer Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Litauen trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Litauen hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LT-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Litauischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Litauen haftet absolut für Erdoberflächen-Schäden durch litauische Weltraumobjekte. Allgemeine Gefährdungshaftungs-Bestimmungen des Zivilgesetzbuchs greifen mangels dedizierter Weltraum-Haftungs-Vorschriften.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LV-OST",
+    {
+      title: "Weltraumvertrag — Lettischer Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Lettland trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Lettland hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "LV-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Lettischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Lettland haftet absolut für Erdoberflächen-Schäden durch lettische Weltraumobjekte. Allgemeine Gefährdungshaftungs- oder verschuldensbasierte Bestimmungen des Civil Law greifen mangels dedizierter Vorschriften.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-OST-1968",
+    {
+      title: "Weltraumvertrag — Neuseeländischer Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — umgesetzt durch OSHAA 2017",
+          summary:
+            "Neuseeland trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Innerstaatlich umgesetzt durch das Outer Space and High-altitude Activities Act 2017, administriert von der NZ Space Agency unter MBIE.",
+        },
+        "Art. VIII": {
+          title: "Hoheitsgewalt und Kontrolle — NZ-Register",
+          summary:
+            "Neuseeland behält die Hoheitsgewalt über Weltraumobjekte in seinem nationalen Register. Das Register wird von der NZ Space Agency geführt und über MFAT an UNOOSA übermittelt.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-LIABILITY-1974",
+    {
+      title: "Haftungsübereinkommen — Neuseeländische Ratifikation",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung an Erdoberfläche / Luftfahrzeugen im Flug",
+          summary:
+            "Neuseeland haftet absolut gegenüber anderen Staaten für Schäden, die auf der Erdoberfläche oder an Luftfahrzeugen im Flug durch neuseeländische Weltraumobjekte verursacht werden. Innerstaatliche Umsetzung umfasst Indemnifikations-Bestimmungen unter OSHAA 2017 § 15.",
+        },
+        "Art. III": {
+          title: "Verschuldenshaftung im Weltraum",
+          summary:
+            "Für Schäden, die nicht auf der Erdoberfläche entstehen, gilt Verschuldenshaftung. Neuseeländische Operatoren müssen angemessene Space-Traffic-Management-Praxis (Konjunktions-Screening, Manöver-Fähigkeit) nachweisen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "NZ-REGISTRATION-1978",
+    {
+      title: "Registrierungsübereinkommen — Neuseeländischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Neuseeländisches nationales Register — MBIE NZSA",
+          summary:
+            "Jedes Weltraumobjekt, das vom neuseeländischen Territorium oder durch einen neuseeländischen Staatsangehörigen gestartet wird, wird in das von der NZ Space Agency unter MBIE geführte nationale Register eingetragen und über MFAT an UNOOSA übermittelt.",
+        },
+      },
+    },
+  ],
+
+  [
+    "RO-OST-1968",
+    {
+      title: "Weltraumvertrag — Rumänischer Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Rumänien trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten (1967 als Volksrepublik Rumänien unterzeichnet, Kontinuität durch den Nachfolge-Staat ab 1989 bestätigt). Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime.",
+        },
+      },
+    },
+  ],
+
+  [
+    "RO-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Rumänischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Rumänien haftet absolut für Erdoberflächen-Schäden durch rumänische Weltraumobjekte. Kein dedizierter Weltraum-Haftungs- oder Versicherungs-Rahmen — allgemeine Gefährdungshaftungs-Bestimmungen des Zivilgesetzbuchs greifen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "RU-OST-1967",
+    {
+      title:
+        "Weltraumvertrag — UdSSR-/Russische-Föderations-Ratifikation (fortgeführt)",
+      scopeDescription:
+        "Die UdSSR war Original-Unterzeichner des OST 1967, und die Russische Föderation führt diese Ratifikation fort. Staaten-Verantwortlichkeits- und Registrierungs-Pflichten werden über das Bundesgesetz von 1993 über Raumfahrttätigkeit und Roscosmos-Verfahren erfüllt. Russland ist KEIN Unterzeichner der Artemis Accords.",
+      provisions: {
+        "Art. VI / VII": {
+          title: "Staaten-Verantwortlichkeit und Haftung",
+          summary:
+            "Russland ist völkerrechtlich verantwortlich und haftbar für Schäden durch russisch gestartete Weltraumobjekte — erfüllt über das Bundesgesetz von 1993 über Raumfahrttätigkeit.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SI-OST",
+    {
+      title: "Weltraumvertrag — Slowenische Sukzession / Beitritt",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Slowenien trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime — Slowenien hat kein dediziertes nationales Weltraumgesetz.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SI-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Slowenischer Beitritt",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Slowenien haftet absolut für Erdoberflächen-Schäden durch slowenische Weltraumobjekte. Allgemeine Gefährdungshaftungs-Bestimmungen der Obligations Code greifen mangels dedizierter Weltraum-Haftungs-Vorschriften.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SK-OST",
+    {
+      title:
+        "Weltraumvertrag — Slowakische Republik (Tschechoslowakische Sukzession)",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — keine innerstaatliche Umsetzung",
+          summary:
+            "Die Slowakei trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten (über Tschechoslowakische Sukzession 1993). Es gibt jedoch KEIN innerstaatliches Genehmigungs-Regime.",
+        },
+      },
+    },
+  ],
+
+  [
+    "SK-LIABILITY",
+    {
+      title:
+        "Haftungsübereinkommen — Slowakische Republik (Tschechoslowakische Sukzession)",
+      provisions: {
+        "Art. II": {
+          title: "Absolute Haftung — kein innerstaatlicher Rahmen",
+          summary:
+            "Die Slowakei haftet absolut für Erdoberflächen-Schäden durch slowakische Weltraumobjekte. Allgemeine Gefährdungshaftungs-Bestimmungen des Zivilgesetzbuchs greifen mangels dedizierter Weltraum-Haftungs-Vorschriften.",
+        },
+      },
+    },
+  ],
+
+  [
+    "TR-OST",
+    {
+      title: "Weltraumvertrag — Türkische Ratifikation",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit — TUA als Koordinator",
+          summary:
+            "Die Türkei trägt die völkerrechtliche Verantwortung für nationale Weltraumtätigkeiten. Mangels eines dedizierten Weltraumgesetzes koordiniert die TUA die Genehmigung über ihr präsidial-dekret-basiertes Mandat, ergänzt durch sektorale Verordnungen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "TR-LIABILITY",
+    {
+      title: "Haftungsübereinkommen — Türkische Ratifikation",
+      provisions: {
+        "Art. II": {
+          title:
+            "Absolute Haftung — kein dediziertes Weltraum-Versicherungs-Rahmenwerk",
+          summary:
+            "Die Türkei haftet absolut für Erdoberflächen-Schäden durch türkische Weltraumobjekte. Kein dedizierter Weltraum-Haftungs- oder Versicherungs-Rahmen; allgemeine Bestimmungen des türkischen Obligationenrechts greifen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "ZA-OST-1968",
+    {
+      title: "Weltraumvertrag — Südafrikanische Ratifikation",
+      scopeDescription:
+        "Südafrikas Ratifikation des OST. Staaten-Verantwortlichkeits- und Registrierungs-Pflichten werden über das Space Affairs Act 1993 und SACSA-Verfahren erfüllt. Südafrika ist KEIN Unterzeichner der Artemis Accords (Stand April 2026).",
+      provisions: {
+        "Art. VI": {
+          title: "Staaten-Verantwortlichkeit und Genehmigung",
+          summary:
+            "Südafrika ist völkerrechtlich verantwortlich für nationale Weltraumtätigkeiten — erfüllt über das Lizenzierungs-Rahmenwerk des Space Affairs Act 1993.",
+        },
+      },
+    },
+  ],
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
