@@ -631,6 +631,98 @@ describe("executeAtlasTool — compare_jurisdictions_for_filing", () => {
   });
 });
 
+describe("executeAtlasTool — get_filing_deadlines", () => {
+  it("returns recurring + lifecycle buckets with default horizon", async () => {
+    const r = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: {},
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      horizon_days: number;
+      recurring: unknown[];
+      lifecycle: unknown[];
+      headlines: unknown[];
+      counts: { recurring: number; lifecycle: number };
+    };
+    expect(payload.horizon_days).toBe(365);
+    expect(payload.counts.recurring).toBeGreaterThan(0);
+    expect(Array.isArray(payload.headlines)).toBe(true);
+  });
+
+  it("respects horizon_days = 30 narrowing the window", async () => {
+    const r = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: { horizon_days: 30 },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as { horizon_days: number };
+    expect(payload.horizon_days).toBe(30);
+  });
+
+  it("filters by operator_type — earth_observation drops irrelevant deadlines", async () => {
+    const allRes = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: {},
+      ...STUB_CALLER,
+    });
+    const eoRes = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: { operator_type: "earth_observation" },
+      ...STUB_CALLER,
+    });
+    const allCount = (JSON.parse(allRes.content) as { recurring: unknown[] })
+      .recurring.length;
+    const eoCount = (JSON.parse(eoRes.content) as { recurring: unknown[] })
+      .recurring.length;
+    // Earth-observation should keep at least the EO_MISSION + ALL +
+    // SCO entries — never zero, but never more than the unfiltered total.
+    expect(eoCount).toBeGreaterThan(0);
+    expect(eoCount).toBeLessThanOrEqual(allCount);
+  });
+
+  it("rejects horizon_days outside [7, 1825]", async () => {
+    const r = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: { horizon_days: 5 },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("rejects an unknown operator_type", async () => {
+    const r = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: { operator_type: "spaceship_captain" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("includes drafting_directives so the agent renders chronologically", async () => {
+    const r = await executeAtlasTool({
+      name: "get_filing_deadlines",
+      input: {},
+      ...STUB_CALLER,
+    });
+    const payload = JSON.parse(r.content) as {
+      drafting_directives: string[];
+    };
+    expect(payload.drafting_directives.length).toBeGreaterThan(0);
+    expect(
+      payload.drafting_directives.some((d) =>
+        /chronologically|legal-review/.test(d),
+      ),
+    ).toBe(true);
+  });
+});
+
 describe("executeAtlasTool — dispatcher", () => {
   it("returns UNKNOWN_TOOL for an invalid name (defensive)", async () => {
     const r = await executeAtlasTool({

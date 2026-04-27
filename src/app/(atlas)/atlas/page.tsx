@@ -619,6 +619,113 @@ export default function CommandCenterPage() {
           />
         </div>
 
+        {/* Try-this chips — visible only on the empty homepage state.
+            Removes the cold-start moment ("what should I type?") and
+            demonstrates Atlas's range in one glance: each chip routes
+            to the right surface (search vs AI Mode vs comparator vs
+            drafting), not just pre-fills the input. */}
+        <div
+          className={`flex flex-wrap items-center gap-2 transition-all duration-500 mb-3 ${hasAnyResults ? "opacity-0 h-0 overflow-hidden mb-0" : "opacity-100"}`}
+        >
+          <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--atlas-text-faint)] mr-1">
+            {language === "de" ? "Versuche" : "Try"}
+          </span>
+          {(language === "de"
+            ? [
+                {
+                  label: "PMD-Fristen DE/FR/UK",
+                  action: () =>
+                    router.push(
+                      "/atlas/comparator?j=DE,FR,UK&dim=debris_mitigation",
+                    ),
+                  kind: "comparator",
+                },
+                {
+                  label: "FCC Debris-Enforcement",
+                  action: () => setQuery("FCC debris enforcement"),
+                  kind: "search",
+                },
+                {
+                  label: "Welche Behörden in Frankreich?",
+                  action: () => setQuery("Frankreich Behörden CNES"),
+                  kind: "search",
+                },
+                {
+                  label: "Genehmigungsantrag UK draften",
+                  action: () => router.push("/atlas/drafting"),
+                  kind: "drafting",
+                },
+                {
+                  label: "Cosmos-954 Präzedenzfall",
+                  action: () => setQuery("Cosmos 954 Liability"),
+                  kind: "search",
+                },
+                {
+                  label: "EU Space Act Kapitelübersicht",
+                  action: () => router.push("/atlas/eu-space-act"),
+                  kind: "navigate",
+                },
+              ]
+            : [
+                {
+                  label: "Compare PMD timelines DE/FR/UK",
+                  action: () =>
+                    router.push(
+                      "/atlas/comparator?j=DE,FR,UK&dim=debris_mitigation",
+                    ),
+                  kind: "comparator",
+                },
+                {
+                  label: "FCC debris enforcement, last 5 years",
+                  action: () => setQuery("FCC debris enforcement"),
+                  kind: "search",
+                },
+                {
+                  label: "Authorities in France",
+                  action: () => setQuery("France authorities CNES"),
+                  kind: "search",
+                },
+                {
+                  label: "Draft a UK launch licence application",
+                  action: () => router.push("/atlas/drafting"),
+                  kind: "drafting",
+                },
+                {
+                  label: "Cosmos-954 precedent",
+                  action: () => setQuery("Cosmos 954 Liability"),
+                  kind: "search",
+                },
+                {
+                  label: "EU Space Act chapter overview",
+                  action: () => router.push("/atlas/eu-space-act"),
+                  kind: "navigate",
+                },
+              ]
+          ).map((chip) => {
+            // Distinct accent per kind so the chip row reads as
+            // "different surfaces, not just six search queries".
+            const tone =
+              chip.kind === "comparator"
+                ? "border-blue-200 dark:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                : chip.kind === "drafting"
+                  ? "border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                  : chip.kind === "navigate"
+                    ? "border-violet-200 dark:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-500/10 text-violet-700 dark:text-violet-300"
+                    : "border-[var(--atlas-border)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)]";
+            return (
+              <button
+                key={chip.label}
+                type="button"
+                onClick={chip.action}
+                className={`inline-flex items-center gap-1 rounded-full border bg-[var(--atlas-bg-surface)] px-3 py-1 text-[11px] font-medium tracking-wide transition-colors ${tone}`}
+              >
+                {chip.label}
+                <ArrowRight className="h-3 w-3 opacity-60" strokeWidth={1.5} />
+              </button>
+            );
+          })}
+        </div>
+
         {/* Subtle stats line */}
         <div
           className={`flex items-center gap-4 transition-all duration-500 ${hasAnyResults ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto"}`}

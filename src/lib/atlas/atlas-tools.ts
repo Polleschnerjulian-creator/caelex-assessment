@@ -460,6 +460,47 @@ Returns the comparison as a structured payload the agent renders as a markdown t
       },
     },
   },
+
+  {
+    name: "get_filing_deadlines",
+    description: `Returns upcoming regulatory filing windows + recurring deadlines an operator must hit. Three buckets: (a) recurring deadlines (annual reports, quarterly data submissions, ITU filings), (b) launch-anchored windows (X days before / after launch), (c) regulatory-lifecycle events (EU Space Act effective dates, FCC rule changes, transition windows).
+
+Use when the user asks "I'm filing in Germany next month, what should I prepare?", "when is the next EU Space Act milestone?", "what deadlines apply to a constellation operator?", or "what's coming up in the next 90 days?".
+
+Returns a structured list with: title, regulatory reference, due-date semantics (annual/launch-relative/one-time), priority (CRITICAL/HIGH/MEDIUM), penalty info if known, and the ATLAS-ID anchoring the deadline to its source. Filter inputs are optional — empty inputs return the global view.
+
+The agent should render this as a chronologically-sorted list, not a generic table. Wrap the final answer with the legal-review disclaimer.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        jurisdiction: {
+          type: "string",
+          description:
+            "Optional. ISO alpha-2 jurisdiction code (DE, FR, UK, US, INT, EU). When supplied, narrows results to deadlines that target this jurisdiction. Otherwise returns multi-jurisdictional + INT/EU deadlines.",
+        },
+        operator_type: {
+          type: "string",
+          enum: [
+            "satellite_operator",
+            "launch_provider",
+            "ground_segment",
+            "in_orbit_services",
+            "constellation_operator",
+            "earth_observation",
+          ],
+          description:
+            "Optional. Operator category — drops deadlines that don't apply to this class (e.g. ITU filings irrelevant for ground-segment-only).",
+        },
+        horizon_days: {
+          type: "number",
+          description:
+            "Optional. Time-window in days from today. Default 365 (one year ahead). Use 90 for the partner's 'what's coming up next quarter' question; 30 for 'what's urgent this month'.",
+          minimum: 7,
+          maximum: 1825,
+        },
+      },
+    },
+  },
 ];
 
 export type AtlasToolName =
@@ -474,7 +515,8 @@ export type AtlasToolName =
   | "get_case_by_id"
   | "draft_authorization_application"
   | "draft_compliance_brief"
-  | "compare_jurisdictions_for_filing";
+  | "compare_jurisdictions_for_filing"
+  | "get_filing_deadlines";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

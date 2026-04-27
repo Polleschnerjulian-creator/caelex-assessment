@@ -20,6 +20,7 @@ import SourceNotes from "@/components/atlas/SourceNotes";
 import { SourceHistoryPanel } from "@/components/atlas/SourceHistoryPanel";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import { WatchButton } from "@/components/atlas/WatchButton";
+import { CiteThisButton } from "@/components/atlas/CiteThisButton";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -319,6 +320,7 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               user who subscribed both to the source AND its country
               only receives one notification per amendment. */}
           <WatchButton targetType="SOURCE" targetId={source.id} size="sm" />
+          <CiteThisButton source={source} language={language} />
           {source.source_url && (
             <a
               href={source.source_url}
