@@ -3,21 +3,14 @@
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
- * CitationPill — clickable Atlas-ID with hover-preview tooltip.
+ * CitationPill — clickable Atlas-ID OR Case-ID with hover-preview
+ * tooltip. Single component, two backing endpoints:
+ *   - kind="source" → /api/atlas/source-preview/[id]   (legal sources)
+ *   - kind="case"   → /api/atlas/case-preview/[id]     (case-law)
  *
- * Renders the Atlas-ID as an inline pill. On hover (or focus for
- * keyboard users) it lazily fetches the source's title and
- * scope_description and shows them in a tooltip — letting the lawyer
- * preview the citation's scope WITHOUT leaving the chat. Click still
- * navigates to the full source-detail page.
- *
- * Lazy loading: the tooltip only fetches when first hovered/focused.
- * Once loaded, the result is cached on the component for the lifetime
- * of the chat bubble. No prefetch, no waterfall.
- *
- * Resilient to ID-not-found: if the API returns 404, the tooltip
- * shows "Quelle nicht gefunden" but the link still navigates. The
- * source-page handles the canonical not-found rendering.
+ * Lazy fetch on first hover/focus, in-memory cache for the rest of the
+ * page life. Resilient to 404s (tooltip says "nicht gefunden", link
+ * still navigates).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -25,12 +18,16 @@
 import Link from "next/link";
 import { useState, useCallback, useEffect, useRef } from "react";
 
+type CitationKind = "source" | "case";
+
 interface CitationPillProps {
   id: string;
   href: string;
+  kind?: CitationKind;
 }
 
 interface SourcePreview {
+  kind: "source";
   title: string;
   scope_description: string;
   jurisdiction: string;
@@ -38,47 +35,66 @@ interface SourcePreview {
   status: string;
 }
 
-const previewCache = new Map<string, SourcePreview | null>();
+interface CasePreview {
+  kind: "case";
+  title: string;
+  jurisdiction: string;
+  forum: string;
+  date_decided: string;
+  plaintiff: string;
+  defendant: string;
+  ruling_summary: string;
+  precedential_weight: string;
+}
 
-export function CitationPill({ id, href }: CitationPillProps) {
+type Preview = SourcePreview | CasePreview;
+
+const previewCache = new Map<string, Preview | null>();
+
+export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
   const [open, setOpen] = useState(false);
-  const [preview, setPreview] = useState<SourcePreview | null | undefined>(
-    previewCache.get(id),
+  const [preview, setPreview] = useState<Preview | null | undefined>(
+    previewCache.get(`${kind}:${id}`),
   );
   const [loading, setLoading] = useState(false);
   const fetchedRef = useRef(false);
 
   const ensureLoaded = useCallback(async () => {
     if (fetchedRef.current) return;
-    if (previewCache.has(id)) {
-      setPreview(previewCache.get(id) ?? null);
+    const cacheKey = `${kind}:${id}`;
+    if (previewCache.has(cacheKey)) {
+      setPreview(previewCache.get(cacheKey) ?? null);
       fetchedRef.current = true;
       return;
     }
     fetchedRef.current = true;
     setLoading(true);
     try {
+      const endpoint = kind === "case" ? "case-preview" : "source-preview";
       const res = await fetch(
-        `/api/atlas/source-preview/${encodeURIComponent(id)}`,
+        `/api/atlas/${endpoint}/${encodeURIComponent(id)}`,
         { cache: "force-cache" },
       );
       if (!res.ok) {
-        previewCache.set(id, null);
+        previewCache.set(cacheKey, null);
         setPreview(null);
         return;
       }
-      const data = (await res.json()) as SourcePreview;
-      previewCache.set(id, data);
+      const raw = await res.json();
+      const data: Preview =
+        kind === "case"
+          ? { kind: "case", ...(raw as Omit<CasePreview, "kind">) }
+          : { kind: "source", ...(raw as Omit<SourcePreview, "kind">) };
+      previewCache.set(cacheKey, data);
       setPreview(data);
     } catch {
-      previewCache.set(id, null);
+      previewCache.set(`${kind}:${id}`, null);
       setPreview(null);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, kind]);
 
-  // Close tooltip on Escape
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -87,6 +103,15 @@ export function CitationPill({ id, href }: CitationPillProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  // Case pills get a violet accent so users can tell them apart from
+  // source pills (emerald) at a glance.
+  const palette =
+    kind === "case"
+      ? "bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400"
+      : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400";
+
+  const accentText = kind === "case" ? "text-violet-400" : "text-emerald-400";
 
   return (
     <span
@@ -104,7 +129,7 @@ export function CitationPill({ id, href }: CitationPillProps) {
     >
       <Link
         href={href}
-        className="atlas-citation-link inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[12px] font-mono no-underline transition-colors"
+        className={`atlas-citation-link inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md ${palette} text-[12px] font-mono no-underline transition-colors`}
       >
         {id}
       </Link>
@@ -112,16 +137,14 @@ export function CitationPill({ id, href }: CitationPillProps) {
         <span
           role="tooltip"
           className="absolute z-50 left-0 top-[120%] w-80 max-w-[20rem] p-3 rounded-lg bg-[#0d111c] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.55)] text-[12px] leading-relaxed text-white/85 pointer-events-none"
-          style={{
-            // Prevent the tooltip from getting clipped by the chat's
-            // overflow:hidden parents — float above on z-50 + absolute.
-            transform: "translateY(2px)",
-          }}
+          style={{ transform: "translateY(2px)" }}
         >
-          {loading && <span className="text-white/50">Lädt Quelle…</span>}
-          {!loading && preview && (
+          {loading && <span className="text-white/50">Lädt…</span>}
+          {!loading && preview && preview.kind === "source" && (
             <>
-              <span className="block text-emerald-400 font-mono text-[11px] mb-1">
+              <span
+                className={`block ${accentText} font-mono text-[11px] mb-1`}
+              >
                 {preview.jurisdiction} · {preview.type.replace(/_/g, " ")} ·{" "}
                 {preview.status}
               </span>
@@ -138,9 +161,34 @@ export function CitationPill({ id, href }: CitationPillProps) {
               </span>
             </>
           )}
+          {!loading && preview && preview.kind === "case" && (
+            <>
+              <span
+                className={`block ${accentText} font-mono text-[11px] mb-1`}
+              >
+                {preview.jurisdiction} · {preview.forum.replace(/_/g, " ")} ·{" "}
+                {preview.date_decided}
+              </span>
+              <span className="block font-semibold text-white mb-1.5">
+                {preview.title}
+              </span>
+              <span className="block text-white/60 text-[11px] mb-1.5">
+                {preview.plaintiff} v. {preview.defendant}
+              </span>
+              <span className="block text-white/70 text-[11.5px]">
+                {preview.ruling_summary}
+              </span>
+              <span className="block mt-2 text-[10.5px] text-white/40">
+                Klick öffnet den Fall ·{" "}
+                {preview.precedential_weight.replace(/_/g, " ")}
+              </span>
+            </>
+          )}
           {!loading && preview === null && (
             <span className="text-white/50">
-              Quelle nicht im Atlas-Index. Klick öffnet die Quellseite trotzdem.
+              {kind === "case"
+                ? "Fall nicht im Atlas-Index. Klick versucht trotzdem zu öffnen."
+                : "Quelle nicht im Atlas-Index. Klick öffnet die Quellseite trotzdem."}
             </span>
           )}
         </span>

@@ -328,6 +328,111 @@ describe("executeAtlasTool — list_jurisdiction_authorities", () => {
   });
 });
 
+describe("executeAtlasTool — search_cases", () => {
+  it("returns hits for a free-text query", async () => {
+    const r = await executeAtlasTool({
+      name: "search_cases",
+      input: { query: "Swarm" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      hit_count: number;
+      hits: { id: string }[];
+    };
+    expect(payload.hit_count).toBeGreaterThan(0);
+    expect(payload.hits.some((h) => h.id === "CASE-FCC-SWARM-2018")).toBe(true);
+  });
+
+  it("filters by jurisdiction", async () => {
+    const r = await executeAtlasTool({
+      name: "search_cases",
+      input: { jurisdiction: "INT" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      hits: { id: string; jurisdiction: string }[];
+    };
+    expect(payload.hits.length).toBeGreaterThan(0);
+    expect(payload.hits.every((h) => h.jurisdiction === "INT")).toBe(true);
+  });
+
+  it("filters by applied_source_id", async () => {
+    const r = await executeAtlasTool({
+      name: "search_cases",
+      input: { applied_source_id: "INT-LIABILITY-1972" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      hits: { id: string }[];
+    };
+    expect(payload.hits.some((h) => h.id === "CASE-COSMOS-954-1981")).toBe(
+      true,
+    );
+  });
+
+  it("returns empty hits with honesty hint when nothing matches", async () => {
+    const r = await executeAtlasTool({
+      name: "search_cases",
+      input: { query: "zzzqqqxxx-no-such-thing" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      hit_count: number;
+      hint: string;
+    };
+    expect(payload.hit_count).toBe(0);
+    expect(payload.hint.toLowerCase()).toContain("invent");
+  });
+});
+
+describe("executeAtlasTool — get_case_by_id", () => {
+  it("returns full record for a known case id", async () => {
+    const r = await executeAtlasTool({
+      name: "get_case_by_id",
+      input: { case_id: "CASE-COSMOS-954-1981" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      id: string;
+      title: string;
+      ruling_summary: string;
+      applied_sources: string[];
+      peer_cases_on_same_source: { id: string }[];
+    };
+    expect(payload.id).toBe("CASE-COSMOS-954-1981");
+    expect(payload.title).toContain("Cosmos 954");
+    expect(payload.ruling_summary.length).toBeGreaterThan(50);
+    expect(payload.applied_sources).toContain("INT-LIABILITY-1972");
+  });
+
+  it("returns NOT_FOUND for a non-existent case id", async () => {
+    const r = await executeAtlasTool({
+      name: "get_case_by_id",
+      input: { case_id: "CASE-NOT-A-REAL-ID-9999" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("NOT_FOUND");
+  });
+
+  it("rejects malformed case id (missing CASE- prefix)", async () => {
+    const r = await executeAtlasTool({
+      name: "get_case_by_id",
+      input: { case_id: "INT-OST-1967" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+});
+
 describe("executeAtlasTool — dispatcher", () => {
   it("returns UNKNOWN_TOOL for an invalid name (defensive)", async () => {
     const r = await executeAtlasTool({

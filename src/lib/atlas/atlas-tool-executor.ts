@@ -37,6 +37,12 @@ import {
   type ComplianceArea,
 } from "@/data/legal-sources";
 import { listTemplateSummaries } from "@/data/atlas-workspace-templates";
+import {
+  ATLAS_CASES,
+  getCaseById,
+  getCasesApplyingSource,
+  type LegalCase,
+} from "@/data/legal-cases";
 
 // ─── Shared result shape ─────────────────────────────────────────────
 
@@ -820,6 +826,254 @@ function listJurisdictionAuthorities(args: {
   };
 }
 
+// ─── search_cases ───────────────────────────────────────────────────
+
+const SearchCasesInput = z.object({
+  query: z.string().min(0).max(200).optional(),
+  jurisdiction: z
+    .string()
+    .min(2)
+    .max(5)
+    .regex(/^[A-Z]{2,3}$/)
+    .optional(),
+  compliance_area: z.string().max(40).optional(),
+  applied_source_id: z.string().max(80).optional(),
+});
+
+const CASE_HIT_LIMIT = 10;
+
+function searchCasesTool(args: { input: unknown }): AtlasToolResult {
+  // Normalise upper-case for jurisdiction.
+  const raw = args.input as {
+    query?: unknown;
+    jurisdiction?: unknown;
+    compliance_area?: unknown;
+    applied_source_id?: unknown;
+  };
+  const normalised = {
+    query: typeof raw?.query === "string" ? raw.query : undefined,
+    jurisdiction:
+      typeof raw?.jurisdiction === "string"
+        ? raw.jurisdiction.toUpperCase()
+        : undefined,
+    compliance_area:
+      typeof raw?.compliance_area === "string"
+        ? raw.compliance_area
+        : undefined,
+    applied_source_id:
+      typeof raw?.applied_source_id === "string"
+        ? raw.applied_source_id
+        : undefined,
+  };
+  const parsed = SearchCasesInput.safeParse(normalised);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid tool input",
+        code: "INVALID_INPUT",
+        issues: parsed.error.issues.map((i) => i.path.join(".")),
+      }),
+      isError: true,
+    };
+  }
+
+  const { query, jurisdiction, compliance_area, applied_source_id } =
+    parsed.data;
+  const q = (query ?? "").trim().toLowerCase();
+  const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
+
+  // Pre-filter
+  let candidates: LegalCase[] = ATLAS_CASES;
+  if (jurisdiction) {
+    candidates = candidates.filter((c) => c.jurisdiction === jurisdiction);
+  }
+  if (compliance_area) {
+    candidates = candidates.filter((c) =>
+      c.compliance_areas.includes(
+        compliance_area as LegalCase["compliance_areas"][number],
+      ),
+    );
+  }
+  if (applied_source_id) {
+    candidates = candidates.filter((c) =>
+      c.applied_sources.includes(applied_source_id),
+    );
+  }
+
+  // If no query, return the filtered set ordered by date (newest first).
+  if (!q) {
+    const ordered = [...candidates]
+      .sort((a, b) => b.date_decided.localeCompare(a.date_decided))
+      .slice(0, CASE_HIT_LIMIT);
+    return {
+      content: JSON.stringify({
+        filters: { jurisdiction, compliance_area, applied_source_id },
+        hit_count: ordered.length,
+        hits: ordered.map((c) => ({
+          id: c.id,
+          jurisdiction: c.jurisdiction,
+          forum: c.forum,
+          title: c.title,
+          plaintiff: c.plaintiff,
+          defendant: c.defendant,
+          date_decided: c.date_decided,
+          ruling_summary: c.ruling_summary.slice(0, 220),
+          industry_significance: c.industry_significance.slice(0, 200),
+          applied_sources: c.applied_sources,
+        })),
+        hint:
+          ordered.length === 0
+            ? "No cases match these filters. Be honest with the user — do NOT invent."
+            : "Drill into a specific case via get_case_by_id with its `id`. Reference any case inline as [CASE-...] for hover-preview pills.",
+      }),
+      isError: false,
+    };
+  }
+
+  // Score candidates by token overlap.
+  type Hit = LegalCase & { score: number };
+  const scored: Hit[] = [];
+  for (const c of candidates) {
+    const haystack = [
+      c.title,
+      c.plaintiff,
+      c.defendant,
+      c.facts,
+      c.ruling_summary,
+      c.legal_holding,
+      c.industry_significance,
+      ...(c.parties_mentioned ?? []),
+      ...(c.notes ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    const titleLc = c.title.toLowerCase();
+
+    let score = 0;
+    for (const tok of tokens) {
+      const titleIdx = titleLc.indexOf(tok);
+      if (titleIdx === 0) score += 0.5;
+      else if (titleIdx > 0) score += 0.25;
+      else if (haystack.includes(tok)) score += 0.1;
+    }
+    if (titleLc.includes(q)) score += 0.3;
+    else if (haystack.includes(q)) score += 0.15;
+    score = Math.min(score, 1);
+
+    if (score >= MIN_HIT_SCORE) {
+      scored.push({ ...c, score });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  const hits = scored.slice(0, CASE_HIT_LIMIT);
+
+  return {
+    content: JSON.stringify({
+      query,
+      filters: { jurisdiction, compliance_area, applied_source_id },
+      hit_count: hits.length,
+      hits: hits.map((c) => ({
+        id: c.id,
+        jurisdiction: c.jurisdiction,
+        forum: c.forum,
+        title: c.title,
+        plaintiff: c.plaintiff,
+        defendant: c.defendant,
+        date_decided: c.date_decided,
+        ruling_summary: c.ruling_summary.slice(0, 220),
+        industry_significance: c.industry_significance.slice(0, 200),
+        applied_sources: c.applied_sources,
+        score: Math.round(c.score * 100) / 100,
+      })),
+      hint:
+        hits.length === 0
+          ? "No matches. Try a broader query or remove filters. Do NOT invent cases."
+          : "Drill into a specific case via get_case_by_id. Reference inline as [CASE-...] for hover-preview pills.",
+    }),
+    isError: false,
+  };
+}
+
+// ─── get_case_by_id ─────────────────────────────────────────────────
+
+const GetCaseByIdInput = z.object({
+  case_id: z
+    .string()
+    .min(2)
+    .max(100)
+    .regex(/^CASE-[A-Z0-9-]+$/, {
+      message:
+        "case_id must start with 'CASE-' and contain only uppercase alphanumerics + hyphens",
+    }),
+});
+
+function getCaseByIdTool(args: { input: unknown }): AtlasToolResult {
+  const parsed = GetCaseByIdInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid case_id format",
+        code: "INVALID_INPUT",
+        hint: "case_id must look like 'CASE-COSMOS-954-1981' or 'CASE-FCC-SWARM-2018'.",
+      }),
+      isError: true,
+    };
+  }
+  const c = getCaseById(parsed.data.case_id);
+  if (!c) {
+    return {
+      content: JSON.stringify({
+        error: `Case not found: ${parsed.data.case_id}`,
+        code: "NOT_FOUND",
+        hint: "Use search_cases to discover the correct id. Do NOT invent.",
+      }),
+      isError: true,
+    };
+  }
+
+  // Cross-reference: how many other cases also touch the same primary
+  // applied_source? Useful for the model to add context.
+  const peerCases =
+    c.applied_sources.length > 0
+      ? getCasesApplyingSource(c.applied_sources[0])
+          .filter((p) => p.id !== c.id)
+          .slice(0, 5)
+          .map((p) => ({ id: p.id, title: p.title }))
+      : [];
+
+  return {
+    content: JSON.stringify({
+      id: c.id,
+      jurisdiction: c.jurisdiction,
+      forum: c.forum,
+      forum_name: c.forum_name,
+      title: c.title,
+      plaintiff: c.plaintiff,
+      defendant: c.defendant,
+      date_decided: c.date_decided,
+      date_filed: c.date_filed,
+      citation: c.citation,
+      case_number: c.case_number,
+      status: c.status,
+      facts: c.facts,
+      ruling_summary: c.ruling_summary,
+      legal_holding: c.legal_holding,
+      remedy: c.remedy,
+      industry_significance: c.industry_significance,
+      compliance_areas: c.compliance_areas,
+      precedential_weight: c.precedential_weight,
+      applied_sources: c.applied_sources,
+      parties_mentioned: c.parties_mentioned ?? [],
+      source_url: c.source_url,
+      notes: c.notes ?? [],
+      peer_cases_on_same_source: peerCases,
+      last_verified: c.last_verified,
+    }),
+    isError: false,
+  };
+}
+
 // ─── Dispatcher ─────────────────────────────────────────────────────
 
 export async function executeAtlasTool(args: {
@@ -843,6 +1097,10 @@ export async function executeAtlasTool(args: {
       return listWorkspaceTemplates();
     case "list_jurisdiction_authorities":
       return listJurisdictionAuthorities(args);
+    case "search_cases":
+      return searchCasesTool(args);
+    case "get_case_by_id":
+      return getCaseByIdTool(args);
     default: {
       const _never: never = args.name;
       return {

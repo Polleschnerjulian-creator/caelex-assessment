@@ -14,6 +14,7 @@ import { describe, it, expect } from "vitest";
 import {
   tokenizeAtlasMessage,
   atlasIdToHref,
+  caseIdToHref,
 } from "@/lib/atlas/render-message";
 
 describe("tokenizeAtlasMessage", () => {
@@ -139,6 +140,71 @@ describe("atlasIdToHref", () => {
   it("accepts multi-segment ids", () => {
     expect(atlasIdToHref("INT-EU-SANCTIONS-RU-833")).toBe(
       "/atlas/sources/INT-EU-SANCTIONS-RU-833",
+    );
+  });
+});
+
+describe("tokenizeAtlasMessage — case-id support", () => {
+  it("recognises a CASE-... citation as case-id (not atlas-id)", () => {
+    const tokens = tokenizeAtlasMessage(
+      "Cosmos-954 is the operative precedent [CASE-COSMOS-954-1981].",
+    );
+    expect(tokens.length).toBe(3);
+    expect(tokens[1]).toEqual({
+      kind: "case-id",
+      id: "CASE-COSMOS-954-1981",
+      raw: "[CASE-COSMOS-954-1981]",
+    });
+  });
+
+  it("handles mixed source + case citations in the same sentence", () => {
+    const tokens = tokenizeAtlasMessage(
+      "Per [INT-LIABILITY-1972] only one claim has paid: [CASE-COSMOS-954-1981].",
+    );
+    const kinds = tokens.map((t) => t.kind);
+    expect(kinds).toEqual(["text", "atlas-id", "text", "case-id", "text"]);
+  });
+
+  it("orders case-id and atlas-id correctly when interleaved", () => {
+    const tokens = tokenizeAtlasMessage(
+      "[CASE-FCC-SWARM-2018] applied [US-COMM-ACT-1934] and [US-FCC-25-114].",
+    );
+    const ids = tokens
+      .filter((t) => t.kind !== "text")
+      .map((t) => (t as { id: string; kind: string }).id + ":" + t.kind);
+    expect(ids).toEqual([
+      "CASE-FCC-SWARM-2018:case-id",
+      "US-COMM-ACT-1934:atlas-id",
+      "US-FCC-25-114:atlas-id",
+    ]);
+  });
+
+  it("does not double-match a CASE-... id as both kinds", () => {
+    const tokens = tokenizeAtlasMessage("[CASE-FCC-SWARM-2018]");
+    const caseTokens = tokens.filter((t) => t.kind === "case-id");
+    const atlasTokens = tokens.filter((t) => t.kind === "atlas-id");
+    expect(caseTokens.length).toBe(1);
+    expect(atlasTokens.length).toBe(0);
+  });
+});
+
+describe("caseIdToHref", () => {
+  it("returns the canonical cases URL for a valid case id", () => {
+    expect(caseIdToHref("CASE-COSMOS-954-1981")).toBe(
+      "/atlas/cases/CASE-COSMOS-954-1981",
+    );
+  });
+
+  it("returns null for non-CASE prefixes", () => {
+    expect(caseIdToHref("INT-OST-1967")).toBeNull();
+    expect(caseIdToHref("CASE-")).toBeNull();
+    expect(caseIdToHref("CASE")).toBeNull();
+    expect(caseIdToHref("case-fcc-swarm-2018")).toBeNull();
+  });
+
+  it("accepts multi-segment case ids", () => {
+    expect(caseIdToHref("CASE-FCC-INTL-BUREAU-DEBRIS-2024")).toBe(
+      "/atlas/cases/CASE-FCC-INTL-BUREAU-DEBRIS-2024",
     );
   });
 });

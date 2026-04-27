@@ -19,6 +19,7 @@ import { Fragment } from "react";
 import {
   tokenizeAtlasMessage,
   atlasIdToHref,
+  caseIdToHref,
 } from "@/lib/atlas/render-message";
 import { CitationPill } from "@/components/atlas/CitationPill";
 
@@ -42,13 +43,17 @@ export default function AtlasMessageRenderer({
           // wrap a span around every text run (cheaper DOM).
           return <Fragment key={idx}>{tok.value}</Fragment>;
         }
+        if (tok.kind === "case-id") {
+          const href = caseIdToHref(tok.id);
+          if (!href) return <Fragment key={idx}>{tok.raw}</Fragment>;
+          return <CitationPill key={idx} id={tok.id} href={href} kind="case" />;
+        }
+        // Source citation
         const href = atlasIdToHref(tok.id);
         if (!href) {
-          // ID-shaped but didn't survive the validator (defensive — the
-          // tokenizer regex already requires the canonical shape).
           return <Fragment key={idx}>{tok.raw}</Fragment>;
         }
-        return <CitationPill key={idx} id={tok.id} href={href} />;
+        return <CitationPill key={idx} id={tok.id} href={href} kind="source" />;
       })}
     </p>
   );

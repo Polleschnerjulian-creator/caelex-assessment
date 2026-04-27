@@ -260,6 +260,71 @@ For ISO-2/3 country codes the response covers the national regulatory landscape;
       required: ["jurisdiction"],
     },
   },
+
+  {
+    name: "search_cases",
+    description: `Searches the Atlas case-law / enforcement-action knowledge base. Returns leading court decisions, regulator settlements, and Liability-Convention awards that operators must read alongside the statutes — Cosmos-954, Iridium-Cosmos-2009, FCC Swarm/$900K, FCC DISH/$150K, ITT/$100M ITAR, BAE/$79M, ZTE/$1.19B, Loral-Long-March, Viasat-v-FCC, FAA-SpaceX-2024, FCC-Ligado-2020, Vega VV15/VV22 inquiries, BAFA dual-use Bußgelder, etc.
+
+Use this when:
+  - User asks about ENFORCEMENT precedents ("welche Strafen gibt es für ITAR-Verstöße?", "what are FCC debris penalties?")
+  - User asks about HISTORICAL cases ("hat Cosmos-954 jemals gezahlt?", "warum gibt es keine Article-III-Klagen?")
+  - User wants the PRACTICE alongside the STATUTE ("how do regulators actually apply ISO 24113?")
+  - User mentions a case name or company in litigation context (Swarm, DISH, Loral, Hughes, BAE, ZTE, Viasat, Ligado, AAIB Cornwall, Vega-failure)
+
+Filter parameters:
+  - jurisdiction: ISO-2 / 'INT' / 'EU' to scope by primary forum
+  - compliance_area: filter to area (debris_mitigation, export_control, licensing, frequency_spectrum, liability, etc.)
+  - applied_source_id: filter to cases that explicitly applied a given legal-source id (e.g. all cases applying INT-LIABILITY-1972)
+
+Returns max 10 hits with title, plaintiff vs. defendant, date_decided, ruling_summary, industry_significance, and applied_sources[]. The case ids returned (e.g. CASE-COSMOS-954-1981) can then be passed to get_case_by_id for full detail, or rendered inline as [CASE-COSMOS-954-1981] which the UI surfaces as a hover-preview pill.
+
+Returns empty array if no matches — say so honestly, do NOT invent cases.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Free-text query — case name, company, regulator, key facts. Optional if a filter is supplied.",
+        },
+        jurisdiction: {
+          type: "string",
+          description:
+            "Optional. Restrict to cases where this is the primary forum (ISO alpha-2, 'INT', or 'EU').",
+        },
+        compliance_area: {
+          type: "string",
+          description:
+            "Optional. Restrict to cases tagged with this compliance area (e.g. 'debris_mitigation', 'export_control', 'licensing', 'liability', 'frequency_spectrum').",
+        },
+        applied_source_id: {
+          type: "string",
+          description:
+            "Optional. Return only cases whose applied_sources[] contains this legal-source id (e.g. 'INT-LIABILITY-1972', 'US-ITAR', 'INT-IADC-MITIGATION-2020').",
+        },
+      },
+    },
+  },
+
+  {
+    name: "get_case_by_id",
+    description: `Retrieves a single Atlas case-law entry by its canonical id (always 'CASE-' prefix). Returns the full record: title, parties, date_decided, citation, facts, ruling_summary, legal_holding, remedy (monetary + non-monetary), industry_significance, compliance_areas, applied_sources[], parties_mentioned, notes, source_url.
+
+Use this AFTER search_cases has identified the entry the user wants to drill into, OR when the user mentions a case id directly. Returns isError=true with NOT_FOUND if the id does not resolve — never invent.
+
+Render inline references to other cases as [CASE-...] tokens; the UI translates them to hover-preview pills. Same applies to legal-source references like [US-ITAR] in your prose response.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        case_id: {
+          type: "string",
+          description:
+            "Canonical Atlas case id (always starts with 'CASE-'). E.g. 'CASE-COSMOS-954-1981', 'CASE-FCC-SWARM-2018', 'CASE-ITT-ITAR-2007', 'CASE-VEGA-VV15-2019'.",
+        },
+      },
+      required: ["case_id"],
+    },
+  },
 ];
 
 export type AtlasToolName =
@@ -269,7 +334,9 @@ export type AtlasToolName =
   | "search_legal_sources"
   | "get_legal_source_by_id"
   | "list_workspace_templates"
-  | "list_jurisdiction_authorities";
+  | "list_jurisdiction_authorities"
+  | "search_cases"
+  | "get_case_by_id";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

@@ -22,52 +22,84 @@
 
 export type AtlasMessageToken =
   | { kind: "text"; value: string }
-  | { kind: "atlas-id"; id: string; raw: string };
+  | { kind: "atlas-id"; id: string; raw: string }
+  | { kind: "case-id"; id: string; raw: string };
 
 /**
- * Match shape: an opening square bracket, then an Atlas-ID, then a
- * closing bracket. Atlas-IDs are uppercase-prefix + hyphen-separated
- * uppercase-alphanumeric segments. Examples:
+ * Atlas-ID match — uppercase-prefix + hyphen-separated uppercase-alphanumeric
+ * segments. Examples:
  *   - INT-OST-1967
  *   - DE-VVG
  *   - EU-NIS2-2022
- *   - INT-EU-SANCTIONS-RU-833
  *   - UK-INSURANCE-ACT-2015
  *
- * The first segment is 2-3 uppercase letters (jurisdiction code or
- * INT/EU). Each subsequent segment is one or more uppercase letters
- * or digits. At least two segments — bare prefixes like "[DE]" are
- * not citations and stay as plain text.
+ * First segment 2-3 uppercase letters (jurisdiction or INT/EU). Each
+ * subsequent segment one or more uppercase letters or digits. At least
+ * two segments — bare prefixes like "[DE]" stay as plain text.
+ *
+ * IMPORTANT: this pattern excludes "CASE" as a prefix so that case-IDs
+ * don't accidentally match here. They are handled separately via
+ * CASE_ID_PATTERN below.
  */
-const ATLAS_ID_PATTERN = /\[([A-Z]{2,3}(?:-[A-Z0-9]+)+)\]/g;
+const ATLAS_ID_PATTERN = /\[(?!CASE-)([A-Z]{2,3}(?:-[A-Z0-9]+)+)\]/g;
+
+/**
+ * Case-ID match — always starts with the literal "CASE-" prefix,
+ * followed by uppercase-alphanumeric segments. Examples:
+ *   - CASE-COSMOS-954-1981
+ *   - CASE-FCC-SWARM-2018
+ *   - CASE-ITT-ITAR-2007
+ *   - CASE-VEGA-VV15-2019
+ *
+ * Routes to /atlas/cases/[id] rather than /atlas/sources/[id].
+ */
+const CASE_ID_PATTERN = /\[(CASE-[A-Z0-9-]+)\]/g;
 
 export function tokenizeAtlasMessage(text: string): AtlasMessageToken[] {
   if (!text) return [{ kind: "text", value: "" }];
 
+  // Single-pass tokenizer: scan for either pattern, take the earliest
+  // match, advance cursor. Handling both regexes in one pass keeps the
+  // output token order stable when both kinds appear in the same
+  // sentence (common in case-law citations).
   const tokens: AtlasMessageToken[] = [];
   let cursor = 0;
-  // Use exec in a loop rather than matchAll so we keep precise indices
-  // across iterations.
-  const re = new RegExp(ATLAS_ID_PATTERN.source, "g");
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(text)) !== null) {
-    const start = match.index;
-    if (start > cursor) {
-      tokens.push({ kind: "text", value: text.slice(cursor, start) });
+  const atlasRe = new RegExp(ATLAS_ID_PATTERN.source, "g");
+  const caseRe = new RegExp(CASE_ID_PATTERN.source, "g");
+
+  while (cursor < text.length) {
+    atlasRe.lastIndex = cursor;
+    caseRe.lastIndex = cursor;
+    const atlasMatch = atlasRe.exec(text);
+    const caseMatch = caseRe.exec(text);
+
+    // Pick the earliest match (or break out if none).
+    let next: RegExpExecArray | null = null;
+    let kind: "atlas-id" | "case-id" | null = null;
+    if (atlasMatch && (!caseMatch || atlasMatch.index < caseMatch.index)) {
+      next = atlasMatch;
+      kind = "atlas-id";
+    } else if (caseMatch) {
+      next = caseMatch;
+      kind = "case-id";
+    }
+    if (!next || !kind) break;
+
+    if (next.index > cursor) {
+      tokens.push({ kind: "text", value: text.slice(cursor, next.index) });
     }
     tokens.push({
-      kind: "atlas-id",
-      id: match[1],
-      raw: match[0],
+      kind,
+      id: next[1],
+      raw: next[0],
     });
-    cursor = start + match[0].length;
+    cursor = next.index + next[0].length;
   }
+
   if (cursor < text.length) {
     tokens.push({ kind: "text", value: text.slice(cursor) });
   }
 
-  // If nothing matched, return the whole input as one text token so
-  // callers get a stable shape.
   if (tokens.length === 0) {
     tokens.push({ kind: "text", value: text });
   }
@@ -85,4 +117,13 @@ export function tokenizeAtlasMessage(text: string): AtlasMessageToken[] {
 export function atlasIdToHref(id: string): string | null {
   if (!/^[A-Z]{2,3}(?:-[A-Z0-9]+)+$/.test(id)) return null;
   return `/atlas/sources/${encodeURIComponent(id)}`;
+}
+
+/**
+ * Build the deep-link URL for a Case-ID. Returns null if the shape is
+ * wrong — caller falls back to plain text.
+ */
+export function caseIdToHref(id: string): string | null {
+  if (!/^CASE-[A-Z0-9-]+$/.test(id)) return null;
+  return `/atlas/cases/${encodeURIComponent(id)}`;
 }
