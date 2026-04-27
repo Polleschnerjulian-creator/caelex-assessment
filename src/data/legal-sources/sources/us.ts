@@ -341,6 +341,7 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     title_local: "Commercial Space Launch Act (CSLA)",
     date_enacted: "1984-10-30",
     date_last_amended: "2023-12-22",
+    amended_by: ["US-CSLCA-2015"],
     official_reference: "51 USC Ch. 509 (§50901 et seq.)",
     source_url:
       "https://www.law.cornell.edu/uscode/text/51/subtitle-V/chapter-509",
@@ -395,6 +396,7 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     date_enacted: "2015-11-25",
     date_in_force: "2015-11-25",
     official_reference: "Pub. L. 114-90",
+    amends: "US-CSLA-1984",
     source_url: "https://www.congress.gov/bill/114th-congress/house-bill/2262",
     issuing_body: "United States Congress",
     competent_authorities: ["US-FAA-AST", "US-NASA"],

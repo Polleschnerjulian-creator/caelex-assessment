@@ -1515,6 +1515,50 @@ const POLICY_DE: LegalSource[] = [
     related_sources: ["DE-WRG-ECKPUNKTE-2024", "DE-RAUMFAHRTSTRATEGIE-2023"],
     last_verified: "2026-04-13",
   },
+
+  {
+    id: "DE-LAENDER-SPACE-CLUSTERS",
+    jurisdiction: "DE",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "German Länder Space Clusters — Bremen, Bavaria, Baden-Württemberg, Mecklenburg-Vorpommern",
+    title_local:
+      "Raumfahrtcluster der Bundesländer — Bremen, Bayern, Baden-Württemberg, Mecklenburg-Vorpommern",
+    date_published: "2026-04-22",
+    source_url:
+      "https://www.bmwk.de/Redaktion/DE/Pressemitteilungen/2024/raumfahrtland-deutschland.html",
+    issuing_body:
+      "Federal-Land coordination (BMWK + Länder economic ministries)",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "low",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Reference for the Land-level industrial-policy and infrastructure context that operators encounter alongside the federal regulatory framework. Bremen is the German space-industry capital (OHB, Airbus DS Bremen, ZARM); Bavaria hosts the Munich/Augsburg cluster (Rocket Factory Augsburg, Isar Aerospace, Mynaric); Baden-Württemberg hosts Tesat-Spacecom and the EU FedKnoten in Stuttgart; Mecklenburg-Vorpommern is the home of OHB Sweden Plant and the proposed Nordholz/Rostock spaceport-from-sea concept.",
+    key_provisions: [
+      {
+        section: "Bremen — Raumfahrtland",
+        title: "Bremen as Federal-State centre",
+        summary:
+          "Bremen Senate has issued multiple Raumfahrtstrategien (most recent 2024) coordinating Land-level R&D funding, ESA-procurement positioning, and industrial-cluster support. Operators basing manufacturing in Bremen can access Land + Federal + ESA funding stacks in parallel.",
+      },
+      {
+        section: "Bavaria — NewSpace cluster",
+        title: "Munich/Augsburg ecosystem",
+        summary:
+          "Bavarian Ministry for Economic Affairs operates the Bavarian Aerospace Cluster (BavAIRia / BavSpace) coordinating Munich-area NewSpace start-ups. The Rocket Factory Augsburg, Isar Aerospace, and Mynaric are anchored in this cluster.",
+      },
+      {
+        section: "MV — Sea-based launch concept",
+        title: "GSM seaports concept",
+        summary:
+          "MV economic ministry has explored a seaborne launch concept off Rostock; status remains feasibility-study as of 2026 with no operational permit framework yet.",
+      },
+    ],
+    related_sources: ["DE-RAUMFAHRTSTRATEGIE-2023"],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Aggregated Export ───────────────────────────────────────────────

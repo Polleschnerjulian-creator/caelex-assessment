@@ -2478,6 +2478,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     status: "in_force",
     title_en: "ITU Radio Regulations",
     date_in_force: "2024-01-01",
+    amended_by: ["INT-ITU-WRC-23"],
     official_reference:
       "ITU Radio Regulations, Edition of 2024 (incorporating WRC-23 outcomes)",
     source_url: "https://www.itu.int/pub/R-REG-RR",
@@ -2910,6 +2911,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     date_enacted: "1985-06-15",
     date_last_amended: "2024-06-01",
     official_reference: "Australia Group Common Control Lists",
+    amends: "INT-ITU-RR",
     source_url:
       "https://www.dfat.gov.au/publications/minisite/theaustraliagroupnet/site/en/index.html",
     issuing_body: "Australia Group plenary",
@@ -2964,4 +2966,41 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
   },
 
   // âââ EU horizontal regulations adjacent to space âââââââââââââââââââ
+
+  // âââ NATO space framework ââââââââââââââââââââââââââââââââââââââââââ
+
+  {
+    id: "INT-NATO-SPACE-POLICY-2022",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "NATO Space Policy and the Madrid Strategic Concept — Recognition of Space as an Operational Domain",
+    date_published: "2022-06-29",
+    source_url: "https://www.nato.int/cps/en/natohq/topics_175419.htm",
+    issuing_body: "North Atlantic Council",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "cybersecurity"],
+    scope_description:
+      "Reference for NATO's space-domain doctrine. Madrid Strategic Concept (2022) confirms space as an operational domain alongside land, sea, air, and cyber. NATO Space Policy (declassified summary, 2022) and AJP-3.3 (Joint Air and Space Operations doctrine) bind allied operations. NATO Space Centre of Excellence in Toulouse (since 2020) coordinates allied space exercises and capability development.",
+    key_provisions: [
+      {
+        section: "Madrid Strategic Concept",
+        title: "Space as operational domain",
+        summary:
+          "Article 5 deterrence and defence concepts extend to attacks on or from space. Allied military space-asset protection becomes part of the NATO collective-defence calculus.",
+      },
+      {
+        section: "NATO AJP-3.3",
+        title: "Joint air and space operations",
+        summary:
+          "Allied doctrine integrating space effects (PNT, satcom, ISR) into NATO joint operations. Indirectly shapes Allied Government procurement of commercial space services.",
+      },
+    ],
+    related_sources: ["INT-WASSENAAR", "INT-MTCR"],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
 ];
