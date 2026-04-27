@@ -62,7 +62,13 @@ const BodySchema = z.object({
 // Promise is cached (not the resolved value) so two concurrent cold
 // requests share a single read.
 
-type EntityType = "source" | "authority" | "profile" | "case-study" | "conduct";
+type EntityType =
+  | "source"
+  | "authority"
+  | "profile"
+  | "case-study"
+  | "conduct"
+  | "case";
 
 interface EmbeddingEntry {
   id: string;

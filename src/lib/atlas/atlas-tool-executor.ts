@@ -43,6 +43,7 @@ import {
   getCasesApplyingSource,
   type LegalCase,
 } from "@/data/legal-cases";
+import { semanticSearch } from "./semantic-corpus.server";
 
 // ─── Shared result shape ─────────────────────────────────────────────
 
@@ -581,7 +582,9 @@ const SearchSourcesInput = z.object({
 const SOURCE_HIT_LIMIT = 10;
 const MIN_HIT_SCORE = 0.05;
 
-function searchLegalSources(args: { input: unknown }): AtlasToolResult {
+async function searchLegalSources(args: {
+  input: unknown;
+}): Promise<AtlasToolResult> {
   const parsed = SearchSourcesInput.safeParse(args.input);
   if (!parsed.success) {
     return {
@@ -606,6 +609,10 @@ function searchLegalSources(args: { input: unknown }): AtlasToolResult {
     title: string;
     scope_description: string;
     score: number;
+    /** Component breakdown for debugging — omitted from the model-facing
+     *  payload but keeps reasoning explainable in tests. */
+    keyword_score?: number;
+    semantic_score?: number;
   };
 
   // Pre-filter by jurisdiction/type/area; then score remaining by token
@@ -621,7 +628,26 @@ function searchLegalSources(args: { input: unknown }): AtlasToolResult {
     return true;
   });
 
-  const scored: Hit[] = [];
+  // ── Semantic pass (best-effort, fails open to keyword-only) ────────
+  // Cosine-similarity over the prebuilt embeddings catalogue. Returns
+  // null when the catalogue or AI Gateway is unavailable — in that
+  // case we degrade to keyword-only scoring with no user-visible
+  // disruption.
+  const semanticHits = await semanticSearch(query, {
+    types: ["source"],
+    limit: 60,
+  }).catch(() => null);
+  const semanticScores = new Map<string, number>();
+  if (semanticHits) {
+    for (const h of semanticHits) {
+      semanticScores.set(h.entityId, h.score);
+    }
+  }
+
+  const candidateIds = new Set(candidates.map((s) => s.id));
+  const scoreMap = new Map<string, Hit>();
+
+  // Keyword pass — same scoring as before, normalised to 0-1.
   for (const s of candidates) {
     const haystack = (
       s.title_en +
@@ -634,22 +660,52 @@ function searchLegalSources(args: { input: unknown }): AtlasToolResult {
     ).toLowerCase();
     const titleLc = s.title_en.toLowerCase();
 
-    let score = 0;
+    let kw = 0;
     for (const tok of tokens) {
       const titleIdx = titleLc.indexOf(tok);
-      if (titleIdx === 0) score += 0.5;
-      else if (titleIdx > 0) score += 0.25;
-      else if (haystack.includes(tok)) score += 0.1;
+      if (titleIdx === 0) kw += 0.5;
+      else if (titleIdx > 0) kw += 0.25;
+      else if (haystack.includes(tok)) kw += 0.1;
     }
-    // Substring of full query (tight match)
-    if (titleLc.includes(q)) score += 0.3;
-    else if (haystack.includes(q)) score += 0.15;
+    if (titleLc.includes(q)) kw += 0.3;
+    else if (haystack.includes(q)) kw += 0.15;
+    kw = Math.min(kw, 1);
 
-    // Normalise to 0-1 and clamp
-    score = Math.min(score, 1);
+    const sem = semanticScores.get(s.id) ?? 0;
+    // Hybrid weighting: keyword carries titles + exact substrings;
+    // semantic carries paraphrase + cross-language. 60/40 favours
+    // keyword on the assumption that legal queries are often
+    // citation-shaped ("NIS2 Art. 21", "DE-VVG"), where literal
+    // matches should dominate.
+    const score = Math.min(kw * 0.6 + sem * 0.4, 1);
+    if (score < MIN_HIT_SCORE) continue;
 
-    if (score >= MIN_HIT_SCORE) {
-      scored.push({
+    scoreMap.set(s.id, {
+      id: s.id,
+      jurisdiction: s.jurisdiction,
+      type: s.type,
+      status: s.status,
+      title: s.title_en,
+      scope_description:
+        s.scope_description?.slice(0, 220) ?? "(no scope description)",
+      score: Math.round(score * 100) / 100,
+      keyword_score: Math.round(kw * 100) / 100,
+      semantic_score: Math.round(sem * 100) / 100,
+    });
+  }
+
+  // Surface semantic-only hits for sources that survived the
+  // jurisdiction/type/area pre-filter but had zero keyword overlap
+  // (paraphrase recall — the entire point of adding embeddings).
+  if (semanticHits) {
+    for (const h of semanticHits) {
+      if (scoreMap.has(h.entityId)) continue;
+      if (!candidateIds.has(h.entityId)) continue;
+      const s = ALL_SOURCES.find((x) => x.id === h.entityId);
+      if (!s) continue;
+      const score = h.score * 0.4;
+      if (score < MIN_HIT_SCORE) continue;
+      scoreMap.set(s.id, {
         id: s.id,
         jurisdiction: s.jurisdiction,
         type: s.type,
@@ -658,12 +714,15 @@ function searchLegalSources(args: { input: unknown }): AtlasToolResult {
         scope_description:
           s.scope_description?.slice(0, 220) ?? "(no scope description)",
         score: Math.round(score * 100) / 100,
+        keyword_score: 0,
+        semantic_score: Math.round(h.score * 100) / 100,
       });
     }
   }
 
-  scored.sort((a, b) => b.score - a.score);
-  const hits = scored.slice(0, SOURCE_HIT_LIMIT);
+  const hits = [...scoreMap.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, SOURCE_HIT_LIMIT);
 
   return {
     content: JSON.stringify({
@@ -671,6 +730,7 @@ function searchLegalSources(args: { input: unknown }): AtlasToolResult {
       filters: { jurisdiction, type, compliance_area },
       hit_count: hits.length,
       hits,
+      semantic_available: semanticHits !== null,
       hint:
         hits.length === 0
           ? "No matches. Try a broader query or remove filters."
@@ -842,7 +902,9 @@ const SearchCasesInput = z.object({
 
 const CASE_HIT_LIMIT = 10;
 
-function searchCasesTool(args: { input: unknown }): AtlasToolResult {
+async function searchCasesTool(args: {
+  input: unknown;
+}): Promise<AtlasToolResult> {
   // Normalise upper-case for jurisdiction.
   const raw = args.input as {
     query?: unknown;
@@ -930,9 +992,25 @@ function searchCasesTool(args: { input: unknown }): AtlasToolResult {
     };
   }
 
+  // ── Semantic pass for case-law (best-effort, fail-soft) ───────────
+  // Same hybrid pattern as searchLegalSources — embedding-driven
+  // recall + keyword precision. Returns null when embeddings or AI
+  // Gateway are unavailable; we fall back to keyword-only without a
+  // user-visible error.
+  const semanticHits = await semanticSearch(query!, {
+    types: ["case"],
+    limit: 40,
+  }).catch(() => null);
+  const semanticScores = new Map<string, number>();
+  if (semanticHits) {
+    for (const h of semanticHits) semanticScores.set(h.entityId, h.score);
+  }
+
   // Score candidates by token overlap.
   type Hit = LegalCase & { score: number };
-  const scored: Hit[] = [];
+  const scoreMap = new Map<string, Hit>();
+  const candidateIds = new Set(candidates.map((c) => c.id));
+
   for (const c of candidates) {
     const haystack = [
       c.title,
@@ -949,24 +1027,41 @@ function searchCasesTool(args: { input: unknown }): AtlasToolResult {
       .toLowerCase();
     const titleLc = c.title.toLowerCase();
 
-    let score = 0;
+    let kw = 0;
     for (const tok of tokens) {
       const titleIdx = titleLc.indexOf(tok);
-      if (titleIdx === 0) score += 0.5;
-      else if (titleIdx > 0) score += 0.25;
-      else if (haystack.includes(tok)) score += 0.1;
+      if (titleIdx === 0) kw += 0.5;
+      else if (titleIdx > 0) kw += 0.25;
+      else if (haystack.includes(tok)) kw += 0.1;
     }
-    if (titleLc.includes(q)) score += 0.3;
-    else if (haystack.includes(q)) score += 0.15;
-    score = Math.min(score, 1);
+    if (titleLc.includes(q)) kw += 0.3;
+    else if (haystack.includes(q)) kw += 0.15;
+    kw = Math.min(kw, 1);
 
-    if (score >= MIN_HIT_SCORE) {
-      scored.push({ ...c, score });
+    const sem = semanticScores.get(c.id) ?? 0;
+    const score = Math.min(kw * 0.6 + sem * 0.4, 1);
+    if (score < MIN_HIT_SCORE) continue;
+
+    scoreMap.set(c.id, { ...c, score });
+  }
+
+  // Surface semantic-only paraphrase hits that survived the
+  // jurisdiction/area/applied_source pre-filter.
+  if (semanticHits) {
+    for (const h of semanticHits) {
+      if (scoreMap.has(h.entityId)) continue;
+      if (!candidateIds.has(h.entityId)) continue;
+      const c = ATLAS_CASES.find((x) => x.id === h.entityId);
+      if (!c) continue;
+      const score = h.score * 0.4;
+      if (score < MIN_HIT_SCORE) continue;
+      scoreMap.set(c.id, { ...c, score });
     }
   }
 
-  scored.sort((a, b) => b.score - a.score);
-  const hits = scored.slice(0, CASE_HIT_LIMIT);
+  const hits = [...scoreMap.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, CASE_HIT_LIMIT);
 
   return {
     content: JSON.stringify({

@@ -76,6 +76,8 @@ import {
   type CaseStudy,
   type ConductCondition,
 } from "@/data/landing-rights";
+import { ATLAS_CASES, type LegalCase } from "@/data/legal-cases";
+import { LEGAL_CASE_TRANSLATIONS_DE } from "@/data/legal-cases/translations-de";
 
 // ─── Config ────────────────────────────────────────────────────────────
 
@@ -89,7 +91,13 @@ const MAX_PARALLEL = 4;
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
-type EntityType = "source" | "authority" | "profile" | "case-study" | "conduct";
+type EntityType =
+  | "source"
+  | "authority"
+  | "profile"
+  | "case-study"
+  | "conduct"
+  | "case";
 
 interface EmbeddingEntry {
   id: string;
@@ -181,6 +189,35 @@ function buildConductDoc(c: ConductCondition): string {
   ]);
 }
 
+function buildCaseDoc(c: LegalCase): string {
+  const en = joinLines([
+    `Case: ${c.title}`,
+    `Jurisdiction: ${c.jurisdiction} • Forum: ${c.forum} • ${c.date_decided}`,
+    `Parties: ${c.plaintiff} v. ${c.defendant}`,
+    c.facts,
+    `Ruling: ${c.ruling_summary}`,
+    `Holding: ${c.legal_holding}`,
+    `Significance: ${c.industry_significance}`,
+    c.compliance_areas.length
+      ? `Areas: ${c.compliance_areas.join(", ")}`
+      : null,
+    c.applied_sources.length
+      ? `Applied sources: ${c.applied_sources.join(", ")}`
+      : null,
+  ]);
+  const de = LEGAL_CASE_TRANSLATIONS_DE.get(c.id);
+  const deText = de
+    ? joinLines([
+        de.title,
+        de.facts,
+        `Entscheidung: ${de.ruling_summary}`,
+        `Rechtssatz: ${de.legal_holding}`,
+        `Bedeutung: ${de.industry_significance}`,
+      ])
+    : "";
+  return joinLines([en, deText]);
+}
+
 // ─── Hashing ───────────────────────────────────────────────────────────
 
 function sha256(s: string): string {
@@ -215,6 +252,11 @@ async function main(): Promise<void> {
       id: `conduct:${c.id}`,
       type: "conduct",
       text: buildConductDoc(c),
+    })),
+    ...ATLAS_CASES.map<Doc>((c) => ({
+      id: `case:${c.id}`,
+      type: "case",
+      text: buildCaseDoc(c),
     })),
   ];
 

@@ -12905,4 +12905,787 @@ export const AUTHORITY_TRANSLATIONS_DE = new Map<string, TranslatedAuthority>([
         "Statutarischer Lizenzrat nach dem Space Affairs Act 84 von 1993. Erteilt Lizenzen für Starts und den Betrieb von Weltraumobjekten und führt das südafrikanische Register für Weltraumobjekte.",
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // AUTHORITY-VERVOLLSTÄNDIGUNGS-TRANCHE — 97 fehlende Behörden
+  // Mandate kompakt in deutscher Übersetzung; Eigennamen verbatim,
+  // sektorale Akronyme (FAA, FCC, NIS2, ITU usw.) auch verbatim.
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "AE-MBRSC",
+    {
+      name: "Mohammed Bin Rashid Space Centre",
+      mandate:
+        "Operative Weltraum-Engineering-Organisation (KhalifaSat, MBZ-SAT, Hope Mars Mission, Rashid-Mondrover). Berichtet an die Regierung von Dubai; keine Regulierungsbehörde, aber der wichtigste VAE-geflaggte Operator, um den alle UAESA-Genehmigungen kreisen.",
+    },
+  ],
+  [
+    "AU-DEFENCE",
+    {
+      name: "Verteidigungsministerium — Defence Export Controls",
+      mandate:
+        "Verteidigungs-Exportkontrolle nach dem Defence Trade Controls Act 2012 — erfasst die meisten Trägerraketen und viele Raumfahrzeug-Komponenten. Betreibt das AUSTRAC-Sanktions-Screening für Endnutzer-Diligence.",
+    },
+  ],
+  [
+    "BR-DECEA",
+    {
+      name: "Departamento de Controle do Espaço Aéreo (Brasilien)",
+      mandate:
+        "Operative Behörde für den brasilianischen Luftraum, einschließlich Trägerraketen-Transit, Range-Koordination am Alcântara Launch Centre (CLA) und operative Sicherheit für orbitale und suborbitale Starts.",
+    },
+  ],
+  [
+    "BR-ANATEL",
+    {
+      name: "Nationale Telekommunikations-Agentur (Brasilien)",
+      mandate:
+        "Frequenzspektrum-Allokation und Satelliten-Funklizenzierung. Erteilt Right-of-Exploitation-Bewilligungen für Satellitenspektrum, das brasilianische Kunden bedient, sowie ITU-Koordinations-Anmeldungen.",
+    },
+  ],
+  [
+    "CA-ISED",
+    {
+      name: "Innovation, Science and Economic Development Canada (ISED)",
+      mandate:
+        "Spektrum-Lizenzierungs-Behörde für kanadische Satellitensysteme und Erdfunkstellen. Erteilt Spektrum- und Funklizenzen unter dem Radiocommunication Act und betreibt den kanadischen Satellitenspektrum-Politik-Rahmen.",
+    },
+  ],
+  [
+    "CA-FOREIGN-AFFAIRS",
+    {
+      name: "Global Affairs Canada — RSSSA-Lizenzierung",
+      mandate:
+        "Federführende Behörde für den Remote Sensing Space Systems Act (RSSSA): Lizenzierung kommerzieller Erdbeobachtung, Shutter-Control-Befugnis und Endnutzer-Garantie-Regime. Betreibt das kanadische Exportkontroll-Regime für Weltraum-Items.",
+    },
+  ],
+  [
+    "CN-CNSA",
+    {
+      name: "China National Space Administration (CNSA)",
+      mandate:
+        "Zivile Weltraumagentur unter MIIT/SASTIND. Koordiniert internationale Zusammenarbeit, verwaltet das nationale Weltraumregister und ist die öffentlich-zugewandte Behörde — die operative regulatorische Macht liegt jedoch bei SASTIND, MIIT und der PLA Strategic Support Force, je nach Tätigkeitsart.",
+    },
+  ],
+  [
+    "CN-MIIT",
+    {
+      name: "Ministerium für Industrie und Informationstechnik (China)",
+      mandate:
+        "Frequenzspektrum-Allokation für Satellitensysteme, Telekommunikations-Lizenzierung und ITU-Koordinations-Anmeldungen. Beherbergt SASTIND und CNSA. Letzte Instanz für Satelliten-Frequenz-Zuteilungen.",
+    },
+  ],
+  [
+    "EE-MKM",
+    {
+      name: "Ministerium für Wirtschaftsangelegenheiten und Kommunikation — Estnisches Weltraumbüro",
+      mandate:
+        "Primärer Koordinator estnischer Weltraumtätigkeiten. Das Estnische Weltraumbüro (Eesti Kosmosebüroo) operiert innerhalb des MKM und dient als ESA-Delegations-Ministerium, koordiniert Estlands jährlichen ESA-Beitrag von rund 3 Mio. EUR und die nationale Weltraum-Politik.",
+    },
+  ],
+  [
+    "EE-TTJA",
+    {
+      name: "Verbraucherschutz- und Technische Regulierungs-Behörde (Estland)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation. Erteilt individuelle Genehmigungen für Satelliten-Erdfunkstellen und -Uplink-Dienste unter dem Gesetz über elektronische Kommunikation.",
+    },
+  ],
+  [
+    "EE-RIA",
+    {
+      name: "Estnische Informationssystem-Behörde (RIA)",
+      mandate:
+        "NIS2 nationale zuständige Behörde. Koordiniert Cybersicherheits-Vorfallreaktion (CERT-EE), pflegt die nationale Cybersicherheits-Basis (ISKE / E-ITS) und beaufsichtigt wesentliche und wichtige Einrichtungen einschließlich Weltraum-Operatoren.",
+    },
+  ],
+  [
+    "EE-MOD",
+    {
+      name: "Verteidigungsministerium — Strategic Goods Commission (Estland)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Weltraumtechnologie unter dem Strategic Goods Act. Estland ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group. Erteilt Ausfuhrlizenzen für Kategorie 9 (Aerospace) in Kooperation mit dem Außenministerium.",
+    },
+  ],
+  [
+    "EE-MFA",
+    {
+      name: "Außenministerium (Estland)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und außenpolitische Koordination für Exportkontroll-Lizenzierung. Verantwortlich für die Hinterlegung von Vertrags-Ratifikationen und für nationale Register-Notifikationen an UNOOSA.",
+    },
+  ],
+  [
+    "EE-AKI",
+    {
+      name: "Datenschutzinspektorat (Estland)",
+      mandate:
+        "GDPR-Vollzug für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "EU-EC",
+    {
+      name: "Europäische Kommission",
+      mandate:
+        "Schlägt EU-Weltraum-Gesetzgebung vor (EU Space Act, Space Programme Regulation, IRIS²). DG DEFIS leitet die EU-Weltraum-Politik. Setzt EU-Verordnungen mit unmittelbarer Wirkung in allen Mitgliedstaaten durch.",
+    },
+  ],
+  [
+    "EU-EUSPA",
+    {
+      name: "Agentur der Europäischen Union für das Weltraumprogramm (EUSPA)",
+      mandate:
+        "Verwaltet EU-Weltraum-Programme: Galileo, EGNOS, Copernicus, IRIS², GOVSATCOM. Verantwortlich für Sicherheits-Akkreditierung und Markteinführung.",
+    },
+  ],
+  [
+    "EU-ENISA",
+    {
+      name: "Agentur der Europäischen Union für Cybersicherheit (ENISA)",
+      mandate:
+        "EU-Kompetenzzentrum für Cybersicherheit. Veröffentlicht das Space Threat Landscape, das Space Cybersecurity Framework und Umsetzungs-Leitlinien zur NIS2-Richtlinie.",
+    },
+  ],
+  [
+    "HR-MZO",
+    {
+      name: "Ministerium für Wissenschaft, Bildung und Jugend (Kroatien)",
+      mandate:
+        "ESA-Delegations-Ministerium und primärer Koordinator kroatischer Weltraumtätigkeiten. Verwaltet Kroatiens jährlichen ESA-Beitrag von rund 1 Mio. EUR.",
+    },
+  ],
+  [
+    "HR-HAKOM",
+    {
+      name: "Kroatische Regulierungsbehörde für Netzwerk-Industrien (HAKOM)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz über elektronische Kommunikation (2022). Erteilt individuelle Genehmigungen für Satelliten-Erdfunkstellen und -Uplink-Dienste; verwaltet das kroatische Funkfrequenzspektrum.",
+    },
+  ],
+  [
+    "HR-MVEP",
+    {
+      name: "Ministerium für auswärtige und europäische Angelegenheiten (Kroatien)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und Vertrags-Hinterlegungs-Koordination. Kroatien folgte in den großen UN-Weltraumverträgen via jugoslawische Sukzession am 8. Oktober 1991.",
+    },
+  ],
+  [
+    "HR-DURH",
+    {
+      name: "Wirtschaftsministerium — Handelspolitik und Dual-Use-Güter (Kroatien)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter dem Gesetz über die Ausfuhr von Dual-Use-Gütern (2018) zur Umsetzung der EU-Verordnung 2021/821. Kroatien ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "HR-ZSIS",
+    {
+      name: "Information Systems Security Bureau (Kroatien)",
+      mandate:
+        "NIS2 nationale zuständige Behörde unter dem Cybersicherheitsgesetz (2024). Betreibt die nationale CERT-Funktion (CERT.hr, gemeinsam mit CARNET).",
+    },
+  ],
+  [
+    "HR-AZOP",
+    {
+      name: "Agentur für den Schutz personenbezogener Daten (Kroatien)",
+      mandate:
+        "GDPR-Vollzug unter dem Gesetz zur Umsetzung der DSGVO (2018) für Erdbeobachtungs-Bilder und Satelliten-abgeleitete Datenprodukte.",
+    },
+  ],
+  [
+    "HU-HSO",
+    {
+      name: "Ungarisches Weltraumbüro (HSO)",
+      mandate:
+        "Primärer Koordinator ungarischer Weltraumtätigkeiten. Operiert innerhalb des Außen- und Handelsministeriums (KKM) als Űrügyi Főosztály. Dient als ESA-Delegationsbehörde, koordiniert COPUOS-Vertretung und das HUNOR-Astronauten-Programm.",
+    },
+  ],
+  [
+    "HU-NMHH",
+    {
+      name: "Nationale Medien- und Infokommunikations-Behörde (Ungarn)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz C aus 2003. Erteilt individuelle Genehmigungen für Satelliten-Erdfunkstellen und -Uplink-Dienste.",
+    },
+  ],
+  [
+    "HU-KKM",
+    {
+      name: "Außen- und Handelsministerium (Ungarn)",
+      mandate:
+        "Beherbergende Behörde für das Ungarische Weltraumbüro. Behandelt internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung. Unterzeichnete die Artemis Accords am 18. Dezember 2024 als 53. Unterzeichner.",
+    },
+  ],
+  [
+    "HU-SZTNH",
+    {
+      name: "Ungarisches Patentamt — Trade Control Department",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter Gesetz CLVII von 2011 zur Umsetzung der EU-Verordnung 2021/821. Ungarn ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "HU-SZTFH",
+    {
+      name: "Aufsichtsbehörde für regulatorische Angelegenheiten (Ungarn)",
+      mandate:
+        "NIS2 nationale zuständige Behörde für Ungarn unter Gesetz XXIII von 2023 (Cybersicherheits-Zertifizierungs- und -Aufsichts-Gesetz).",
+    },
+  ],
+  [
+    "HU-NAIH",
+    {
+      name: "Nationale Behörde für Datenschutz und Informationsfreiheit (Ungarn)",
+      mandate:
+        "GDPR-Vollzug für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "IL-ISA",
+    {
+      name: "Israel Space Agency (ISA)",
+      mandate:
+        "Zivile Weltraumagentur seit 1983, Koordinator israelischer Weltraumforschung und internationaler Kooperation. Lizenzierungs-Behörde für Export- und Dual-Use-Kontrolle ist die DECA des Verteidigungsministeriums.",
+    },
+  ],
+  [
+    "IL-MOC",
+    {
+      name: "Kommunikationsministerium (Israel)",
+      mandate:
+        "Frequenz-Lizenzierungs-Behörde und Israels Vertreter bei der ITU. Lizenziert israelische Satelliten-Erdfunkstellen und Operatoren israelischen Satellitenspektrums.",
+    },
+  ],
+  [
+    "IN-DOS",
+    {
+      name: "Department of Space (Indien)",
+      mandate:
+        "Apex-Politik-Departement unter dem Premierminister. Beherbergt ISRO (Forschung und Operationen), IN-SPACe (Genehmigung), NSIL (kommerziell) und ANTRIX (Export).",
+    },
+  ],
+  [
+    "INT-UNOOSA",
+    {
+      name: "UN-Büro für Weltraumangelegenheiten (UNOOSA)",
+      mandate:
+        "Fördert internationale Zusammenarbeit bei der friedlichen Nutzung des Weltraums. Verwaltet das UN-Register für in den Weltraum gestartete Objekte (Registrierungsübereinkommen Art. III). Sekretariat des UN-Ausschusses für die friedliche Nutzung des Weltraums (COPUOS).",
+    },
+  ],
+  [
+    "INT-ITU",
+    {
+      name: "Internationale Fernmeldeunion (ITU)",
+      mandate:
+        "Spezialagentur der UN für Informations- und Kommunikationstechnologien. Verwaltet das Master International Frequency Register (MIFR). Verwaltet die Radio Regulations einschließlich Art. 22 EPFD-Limits und Resolution 35 NGSO-Inbetriebnahme-Meilensteine.",
+    },
+  ],
+  [
+    "INT-COPUOS",
+    {
+      name: "Ausschuss für die friedliche Nutzung des Weltraums (COPUOS)",
+      mandate:
+        "UN-Gremium, das die internationale Zusammenarbeit bei der friedlichen Nutzung des Weltraums regelt. Entwickelt Leitlinien zur Vermeidung von Weltraumtrümmern und zur langfristigen Nachhaltigkeit.",
+    },
+  ],
+  [
+    "IS-HVIN",
+    {
+      name: "Ministerium für Hochschulwesen, Wissenschaft und Innovation (Island)",
+      mandate:
+        "Koordiniert Islands Engagement in internationalen Weltraum-Angelegenheiten und EWR-transponierte EU-Weltraum-Instrumente. Island hat keine nationale Weltraumagentur.",
+    },
+  ],
+  [
+    "IS-FJS",
+    {
+      name: "Behörde für elektronische Kommunikation Islands (Fjarskiptastofa)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Telekommunikationsgesetz (Nr. 70/2022). 2022 von PFS umbenannt.",
+    },
+  ],
+  [
+    "IS-CERTIS",
+    {
+      name: "Computer Emergency Response Team Island (CERT-IS)",
+      mandate:
+        "Nationales Cybersicherheits-Vorfallreaktions-Team unter Fjarskiptastofa. NIS2-Transposition läuft, Ziel: 2026–2027.",
+    },
+  ],
+  [
+    "IS-PV",
+    {
+      name: "Datenschutzbehörde (Island, Persónuvernd)",
+      mandate:
+        "GDPR-äquivalente Datenschutzbehörde unter dem Datenschutzgesetz (Nr. 90/2018), das die GDPR über den EWR-Joint-Committee-Beschluss Nr. 154/2018 transponiert.",
+    },
+  ],
+  [
+    "JP-MIC",
+    {
+      name: "Ministerium für Innere Angelegenheiten und Kommunikation (Japan)",
+      mandate:
+        "Frequenzspektrum-Allokation, Satelliten-Funkstation-Lizenzierung unter dem Funkgesetz und ITU-Koordinations-Anmeldungen für japanische Operatoren.",
+    },
+  ],
+  [
+    "KR-MSIT",
+    {
+      name: "Ministerium für Wissenschaft und IKT (Korea)",
+      mandate:
+        "Vor 2024 federführendes Ministerium für Weltraum-Politik; behält Zuständigkeit für Satellitenfrequenz- und Rundfunkspektrum-Allokation unter dem Radio Waves Act und dem Telecommunications Business Act.",
+    },
+  ],
+  [
+    "KR-KARI",
+    {
+      name: "Korea Aerospace Research Institute (KARI)",
+      mandate:
+        "Staatlich finanziertes Forschungsinstitut, verantwortlich für das Nuri- (KSLV-II) Trägerraketen-Programm, KOMPSAT-Erdbeobachtungs-Satelliten und das koreanische Mond-Erforschungs-Programm. Technischer Berater der KASA.",
+    },
+  ],
+  [
+    "LI-REG",
+    {
+      name: "Regierung des Fürstentums Liechtenstein",
+      mandate:
+        "Kein dediziertes Weltraum-Portfolio. Die Regierung (über das Ministerium für Auswärtiges, Justiz und Kultur) koordiniert internationale Vertrags-Angelegenheiten und EWR-Joint-Committee-Positionen.",
+    },
+  ],
+  [
+    "LI-AFK",
+    {
+      name: "Amt für Kommunikation (Liechtenstein)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Kommunikationsgesetz (KomG). Koordiniert mit der Schweiz im Spektrum-Management.",
+    },
+  ],
+  [
+    "LI-FMA",
+    {
+      name: "Finanzmarktaufsicht Liechtenstein (FMA)",
+      mandate:
+        "Beaufsichtigt Finanzinstitute und Vermögensstrukturen (Trusts, Stiftungen, Sitzgesellschaften). Verbriefungs- oder Trust-Strukturen mit Weltraum-Assets fallen unter FMA-Aufsicht.",
+    },
+  ],
+  [
+    "LI-DSS",
+    {
+      name: "Datenschutzstelle (Liechtenstein)",
+      mandate:
+        "GDPR-Vollzug unter dem Datenschutzgesetz (DSG 2018), das die GDPR über den EWR-Joint-Committee-Beschluss Nr. 154/2018 transponiert.",
+    },
+  ],
+  [
+    "LT-EIM",
+    {
+      name: "Wirtschafts- und Innovations-Ministerium — Abteilung Weltraum-Angelegenheiten (Litauen)",
+      mandate:
+        "ESA-Delegations-Ministerium und primärer Koordinator litauischer Weltraumtätigkeiten. Verwaltet Litauens jährlichen ESA-Beitrag von rund 1,5 Mio. EUR.",
+    },
+  ],
+  [
+    "LT-RRT",
+    {
+      name: "Kommunikations-Regulierungsbehörde (Litauen, RRT)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz über elektronische Kommunikation (2004).",
+    },
+  ],
+  [
+    "LT-URM",
+    {
+      name: "Außenministerium (Litauen)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und Vertrags-Hinterlegungs-Koordination. Unterzeichnete die Artemis Accords am 13. Mai 2024 als 40. Unterzeichner.",
+    },
+  ],
+  [
+    "LT-KAM",
+    {
+      name: "Verteidigungsministerium — Strategic Goods Export Control (Litauen)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter dem Gesetz über die Kontrolle strategischer Güter zur Umsetzung der EU-Verordnung 2021/821. Litauen ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "LT-NKSC",
+    {
+      name: "Nationales Cybersicherheits-Zentrum (Litauen, NKSC)",
+      mandate:
+        "NIS2 nationale zuständige Behörde unter dem Cybersicherheitsgesetz. Operiert unter dem Verteidigungsministerium.",
+    },
+  ],
+  [
+    "LT-VDAI",
+    {
+      name: "Staatliche Datenschutzinspektion (Litauen, VDAI)",
+      mandate:
+        "GDPR-Vollzug für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "LV-IZM",
+    {
+      name: "Bildungs- und Wissenschaftsministerium (Lettland)",
+      mandate:
+        "ESA-Delegations-Ministerium und primärer Koordinator lettischer Weltraumtätigkeiten. Verwaltet Lettlands jährlichen ESA-Beitrag von rund 1,5 Mio. EUR. Mutterministerium für VIRAC.",
+    },
+  ],
+  [
+    "LV-EM",
+    {
+      name: "Wirtschaftsministerium (Lettland)",
+      mandate:
+        "Unterstützt die industrielle Beteiligung an ESA-Programmen und am EU-Weltraum-Programm und koordiniert die Weltraumsektor-Exportförderung über die LIAA.",
+    },
+  ],
+  [
+    "LV-VASESD",
+    {
+      name: "Behörde für elektronische Kommunikation (Lettland, VAS ESD)",
+      mandate:
+        "Technischer Administrator des lettischen Funkfrequenzspektrums. Verwaltet die nationale Spektrum-Planung, koordiniert ITU-Satelliten-Anmeldungen und Orbital-Slot-Notifikationen.",
+    },
+  ],
+  [
+    "LV-CERTLV",
+    {
+      name: "Information Technology Security Incident Response Institution (CERT.LV)",
+      mandate:
+        "Teil des unter dem Verteidigungsministerium angesiedelten Cybersicherheits-Rahmens. Nationale CERT- und NIS2-zuständige Behörde für Lettland.",
+    },
+  ],
+  [
+    "LV-ARM",
+    {
+      name: "Außenministerium — Strategic Goods Control Committee (Lettland)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter dem Gesetz über den Verkehr mit Gütern strategischer Bedeutung (2007). Lettland ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "LV-DVI",
+    {
+      name: "Staatliche Daten-Inspektion (Lettland, DVI)",
+      mandate:
+        "GDPR-Vollzug für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste unter dem Gesetz über die Verarbeitung personenbezogener Daten (2018).",
+    },
+  ],
+  [
+    "NZ-MBIE-NZSA",
+    {
+      name: "New Zealand Space Agency (innerhalb des Ministry of Business, Innovation and Employment)",
+      mandate:
+        "Primäre Regulierungsbehörde für alle Weltraumtätigkeiten Neuseelands unter OSHAA 2017. Erteilt Payload-Permits, Launch-Licences, Overseas-Launch-Licences, Facility-Licences und Return-Licences.",
+    },
+  ],
+  [
+    "NZ-CAA",
+    {
+      name: "Civil Aviation Authority of New Zealand (CAA)",
+      mandate:
+        "Ko-Regulator für den Hochhöhen-Aktivitäts-Teil von OSHAA 2017 (Ballons, suborbitale Fahrzeuge, stratosphärische Plattformen) sowie für die Luftraum-Integration orbitaler Starts vom NZ-Territorium.",
+    },
+  ],
+  [
+    "NZ-MFAT",
+    {
+      name: "Ministerium für auswärtige Angelegenheiten und Handel (Neuseeland, MFAT)",
+      mandate:
+        "Internationale Vertrags-Verpflichtungen, UNOOSA-Registrierungs-Einreichungen und bilaterale Weltraum-Kooperations-Vereinbarungen (insbesondere das NZ-US-Technology-Safeguards-Agreement von 2016).",
+    },
+  ],
+  [
+    "NZ-MFAT-EXPORT",
+    {
+      name: "MFAT Export Controls Office (Neuseeland)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Weltraumtechnologie und strategische Güter. NZ ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "NZ-CERT-NZ",
+    {
+      name: "Computer Emergency Response Team NZ (CERT NZ)",
+      mandate:
+        "Nationale Cybersicherheits-Vorfallreaktion und Koordinator für das Weltraum-Sektor-Cybersicherheits-Programm. NZ hat kein NIS2-äquivalentes Mandat.",
+    },
+  ],
+  [
+    "RO-ROSA",
+    {
+      name: "Rumänische Weltraumagentur (ROSA)",
+      mandate:
+        "Primärer Koordinator rumänischer Weltraumtätigkeiten seit 1991. Nationaler Kontaktpunkt für ESA, EU-Weltraum-Programm und COPUOS. Betreibt das Forschungszentrum STAR.",
+    },
+  ],
+  [
+    "RO-ANCOM",
+    {
+      name: "Nationale Behörde für Management und Regulierung in der Kommunikation (Rumänien, ANCOM)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter der Notverordnung 22/2009 und dem Gesetz 140/2023 (Electronic Communications Code).",
+    },
+  ],
+  [
+    "RO-MCID",
+    {
+      name: "Ministerium für Forschung, Innovation und Digitalisierung (Rumänien)",
+      mandate:
+        "Mutterministerium für ROSA. Setzt nationale FuE-Politik einschließlich Weltraum-Forschungs-Programmen.",
+    },
+  ],
+  [
+    "RO-ANCSI",
+    {
+      name: "Nationale Cybersicherheits-Direktion (Rumänien, ANCSI)",
+      mandate:
+        "NIS2 nationale zuständige Behörde unter dem Gesetz 58/2023 (Cybersicherheits-Rahmengesetz). Koordiniert Cybersicherheits-Vorfallreaktion über CERT-RO.",
+    },
+  ],
+  [
+    "RO-MAE-ANCEX",
+    {
+      name: "Außenministerium — Department for Export Controls (ANCEX, Rumänien)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Weltraumtechnologie unter Gesetz 227/2018. Rumänien ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "RO-ANSPDCP",
+    {
+      name: "Nationale Behörde für die Aufsicht über die Verarbeitung personenbezogener Daten (Rumänien)",
+      mandate:
+        "GDPR-Vollzug unter Gesetz 190/2018 für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "RU-FSTEC",
+    {
+      name: "Föderaler Dienst für technische und Exportkontrolle (Russland, FSTEC)",
+      mandate:
+        "Federführende Behörde für russische Exportkontrollen einschließlich Dual-Use-Weltraum-Items. Operiert die Exportkontroll-Liste unter dem Bundesgesetz Nr. 183-FZ über Exportkontrollen (1999).",
+    },
+  ],
+  [
+    "SI-MGTS",
+    {
+      name: "Ministerium für Wirtschaft, Tourismus und Sport (Slowenien)",
+      mandate:
+        "ESA-Delegations-Ministerium und Koordinator slowenischer Weltraumtätigkeiten. Verwaltet Sloweniens ESA-Beitrag und koordiniert die nationale Weltraum-Strategie.",
+    },
+  ],
+  [
+    "SI-AKOS",
+    {
+      name: "Agentur für Kommunikationsnetze und -Dienste der Republik Slowenien (AKOS)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz über elektronische Kommunikation (ZEKom-2, 2023).",
+    },
+  ],
+  [
+    "SI-MZZEU",
+    {
+      name: "Ministerium für auswärtige und europäische Angelegenheiten (Slowenien)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und Vertrags-Hinterlegungs-Koordination. Unterzeichnete die Artemis Accords am 19. April 2024 als 39. Unterzeichner.",
+    },
+  ],
+  [
+    "SI-MO-KOMISIJA",
+    {
+      name: "Wirtschaftsministerium — Interministerielle Exportkontroll-Kommission (Slowenien)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter dem Strategic Goods Regime Act (2018). Slowenien ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "SI-URSIV",
+    {
+      name: "Informationssicherheits-Verwaltung (Slowenien, URSIV)",
+      mandate:
+        "NIS2 nationale zuständige Behörde unter dem Informationssicherheitsgesetz (ZInfV-1). Operiert SI-CERT.",
+    },
+  ],
+  [
+    "SI-IP",
+    {
+      name: "Informationsbeauftragter (Slowenien, IP)",
+      mandate:
+        "GDPR-Vollzug unter ZVOP-2 (Datenschutzgesetz 2023) für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "SK-MSVVAM",
+    {
+      name: "Ministerium für Bildung, Forschung, Entwicklung und Jugend (Slowakei)",
+      mandate:
+        "ESA-Delegations-Ministerium und primärer Koordinator slowakischer Weltraumtätigkeiten. Verwaltet Slowakeis jährlichen ESA-Beitrag von rund 3 Mio. EUR.",
+    },
+  ],
+  [
+    "SK-RU",
+    {
+      name: "Regulierungsbehörde für elektronische Kommunikation und Postdienste (Slowakei, RÚ)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz über elektronische Kommunikation (zákon č. 452/2021 Z.z.).",
+    },
+  ],
+  [
+    "SK-MZV",
+    {
+      name: "Ministerium für auswärtige und europäische Angelegenheiten (Slowakei)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und Vertrags-Hinterlegungs-Koordination. Die Slowakei trat den großen UN-Weltraumverträgen via tschechoslowakische Sukzession am 1. Januar 1993 bei.",
+    },
+  ],
+  [
+    "SK-MH",
+    {
+      name: "Wirtschaftsministerium — Lizenzierungs-Abteilung (Slowakei)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use-Items unter dem Außenhandelsgesetz (zákon č. 39/2011 Z.z.). Die Slowakei ist Mitglied von Wassenaar, MTCR, NSG und der Australia Group.",
+    },
+  ],
+  [
+    "SK-NBU",
+    {
+      name: "Nationale Sicherheitsbehörde (Slowakei, NBÚ; SK-CERT-Host)",
+      mandate:
+        "NIS2 nationale zuständige Behörde unter dem Cybersicherheitsgesetz (zákon č. 69/2018 Z.z., 2024 für NIS2 geändert). Operiert SK-CERT.",
+    },
+  ],
+  [
+    "SK-UOOU",
+    {
+      name: "Behörde für den Schutz personenbezogener Daten (Slowakei, ÚOOÚ)",
+      mandate:
+        "GDPR-Vollzug unter zákon č. 18/2018 Z.z. für Erdbeobachtungs-Bilder, Satelliten-abgeleitete Datenprodukte und weltraumbasierte Telekommunikations-Dienste.",
+    },
+  ],
+  [
+    "TR-TUA",
+    {
+      name: "Türkische Weltraumagentur (TUA)",
+      mandate:
+        "Nationale Weltraumagentur und primärer Koordinator türkischer Weltraumtätigkeiten. Errichtet am 13. Dezember 2018 durch Präsidialdekret Nr. 23, 2024 unter Präsidialdekret Nr. 170 reorganisiert. Sitz: Ankara.",
+    },
+  ],
+  [
+    "TR-BTK",
+    {
+      name: "Behörde für Informations- und Kommunikationstechnologien (Türkei, BTK)",
+      mandate:
+        "Nationale Regulierungsbehörde für elektronische Kommunikation unter dem Gesetz Nr. 5809 über elektronische Kommunikation (2008). Beaufsichtigt die Satellitenflotte von TÜRKSAT.",
+    },
+  ],
+  [
+    "TR-DIS",
+    {
+      name: "Außenministerium (Türkei)",
+      mandate:
+        "Internationale Weltraum-Vertrags-Angelegenheiten, COPUOS-Vertretung und Vertrags-Hinterlegungs-Koordination. Unterzeichnete die Artemis Accords am 13. April 2024 (36. Unterzeichner).",
+    },
+  ],
+  [
+    "TR-SSB",
+    {
+      name: "Präsidium für Verteidigungs-Industrien (Türkei, SSB)",
+      mandate:
+        "Exportkontroll-Behörde für Dual-Use- und militärische Weltraumtechnologie. Beaufsichtigt TAI (Turkish Aerospace Industries) und Aselsan-Weltraumsektor-Programme einschließlich des Erdbeobachtungs-Satelliten İMECE.",
+    },
+  ],
+  [
+    "TR-USOM",
+    {
+      name: "Nationales Cyber-Vorfallreaktions-Zentrum (Türkei, USOM)",
+      mandate:
+        "Nationale CERT, operiert unter der BTK. Da die Türkei kein EU-Mitglied ist, gibt es keine direkte NIS2-Transposition.",
+    },
+  ],
+  [
+    "TR-KVKK",
+    {
+      name: "Datenschutzbehörde (Türkei, KVKK)",
+      mandate:
+        "Setzt das Datenschutzgesetz (Gesetz Nr. 6698, 2016) durch — die GDPR-angrenzende Architektur der Türkei. Nicht in jeder Hinsicht GDPR-äquivalent.",
+    },
+  ],
+  [
+    "US-FAA-AST",
+    {
+      name: "U.S. Federal Aviation Administration — Office of Commercial Space Transportation",
+      mandate:
+        "Primäre Lizenzierungs-Behörde für kommerzielle Starts, Wiedereintritte und Startgelände-Operationen unter dem Commercial Space Launch Act (51 USC Ch. 509) und 14 CFR Parts 400-450. Administriert das staatliche Drittpartie-Haftungs-Indemnifikations-Regime (51 USC § 50914).",
+    },
+  ],
+  [
+    "US-FCC",
+    {
+      name: "U.S. Federal Communications Commission (FCC)",
+      mandate:
+        "Lizenziert Satelliten-Erdfunkstellen, Satellitendienste und Orbital-Operationen unter dem Communications Act of 1934 und 47 CFR Parts 2, 5, 25, 87, 101. Verabschiedete die wegweisende 5-Jahres-End-of-Life-Entsorgungs-Regel (2022).",
+    },
+  ],
+  [
+    "US-NOAA-CRSRA",
+    {
+      name: "NOAA Commercial Remote Sensing Regulatory Affairs Office",
+      mandate:
+        "Lizenziert den privaten Betrieb kommerzieller Erdbeobachtungs-Systeme unter dem Land Remote Sensing Policy Act 1992 (51 USC Ch. 601) und 15 CFR Part 960.",
+    },
+  ],
+  [
+    "US-DDTC",
+    {
+      name: "U.S. Department of State — Directorate of Defense Trade Controls (DDTC)",
+      mandate:
+        "Administriert die International Traffic in Arms Regulations (ITAR, 22 CFR 120-130) unter dem Arms Export Control Act (22 USC 2751). USML Kategorie IV und Kategorie XV decken die meisten militärischen und Dual-Use-Raumfahrzeug-Komponenten ab.",
+    },
+  ],
+  [
+    "US-BIS",
+    {
+      name: "U.S. Department of Commerce — Bureau of Industry and Security (BIS)",
+      mandate:
+        "Administriert die Export Administration Regulations (EAR, 15 CFR 730-774) unter dem Export Control Reform Act 2018 (50 USC Ch. 58). Die Reform 2014 verlagerte die meisten kommerziellen Satelliten-Komponenten von ITAR Kategorie XV zur EAR 9E515 / 9A515.",
+    },
+  ],
+  [
+    "US-NASA",
+    {
+      name: "National Aeronautics and Space Administration (NASA)",
+      mandate:
+        "Zivile US-Weltraumagentur, etabliert durch den National Aeronautics and Space Act 1958 (51 USC Ch. 201). Erstunterzeichner der Artemis Accords (13. Oktober 2020).",
+    },
+  ],
+  [
+    "US-CISA",
+    {
+      name: "Cybersecurity and Infrastructure Security Agency (CISA)",
+      mandate:
+        "Operativer Lead für US-Cybersicherheit kritischer Infrastruktur. Weltraum-Systeme als 16. kritischer Infrastruktur-Sektor unter dem PPD-21-Rahmen designiert (aktive Diskussion; bis 2026 noch nicht kodifiziert).",
+    },
+  ],
+  [
+    "US-USSF",
+    {
+      name: "United States Space Force (USSF)",
+      mandate:
+        "Militärischer Dienstzweig, etabliert am 20. Dezember 2019. Verantwortlich für militärische Weltraum-Operationen, Space Domain Awareness und Konjunktions-Warnungen für kommerzielle Operatoren (über das 18th Space Defense Squadron).",
+    },
+  ],
+  [
+    "ZA-SANSA",
+    {
+      name: "South African National Space Agency (SANSA)",
+      mandate:
+        "Nationale Weltraumagentur seit 2010 (unter Act 36 of 2008). Betreibt Erdbeobachtungs-, Weltraumwissenschafts- und Weltraum-Operations-Programme einschließlich der Hartebeesthoek-Tracking-Station.",
+    },
+  ],
 ]);

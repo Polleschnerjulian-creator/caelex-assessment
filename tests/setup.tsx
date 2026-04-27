@@ -26,6 +26,21 @@ afterAll(() => {
 // normally. Stub it out as an empty module.
 vi.mock("server-only", () => ({}));
 
+// The Vercel AI SDK is a runtime dependency for the semantic-search /
+// embedding paths. Vitest runs without that package installed; stub it
+// so server-side helpers that call `embed()` or `embedMany()` can fall
+// through their fail-open branches and tests don't pull in the
+// production model registry.
+vi.mock("ai", () => ({
+  embed: vi.fn(async () => {
+    throw new Error("ai SDK unavailable in test environment");
+  }),
+  embedMany: vi.fn(async () => {
+    throw new Error("ai SDK unavailable in test environment");
+  }),
+  cosineSimilarity: () => 0,
+}));
+
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
