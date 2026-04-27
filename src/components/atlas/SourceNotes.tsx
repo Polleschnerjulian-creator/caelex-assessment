@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronDown, ChevronRight, StickyNote, Trash2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import {
+  QUOTE_PROVISION_EVENT,
+  type QuoteProvisionDetail,
+} from "@/components/atlas/QuoteProvisionButton";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -206,6 +210,45 @@ export default function SourceNotes({ sourceId }: SourceNotesProps) {
     },
     [saveToApi],
   );
+
+  // ─── Listen for "Quote this provision" events ──────────────────
+  // The QuoteProvisionButton on each KeyProvision card dispatches a
+  // CustomEvent with the formatted quote block. We append it to the
+  // current notes text, expand the panel so the user sees it land,
+  // and trigger the same debounced save path the textarea uses.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<QuoteProvisionDetail>).detail;
+      if (!detail || detail.sourceId !== sourceId) return;
+      // Append with two blank lines between blocks so quotes stack
+      // readably. Ignore the existing trailing whitespace.
+      const next =
+        text.replace(/\s+$/, "") +
+        (text.trim().length > 0 ? "\n\n" : "") +
+        detail.block +
+        "\n";
+      setText(next);
+      setHasContent(true);
+      setIsExpanded(true);
+      setSaveStatus("idle");
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        saveToApi(next);
+      }, 400);
+      // Focus the textarea so the user can immediately add their own
+      // commentary below the quote.
+      requestAnimationFrame(() => {
+        const ta = textareaRef.current;
+        if (ta) {
+          ta.focus();
+          ta.setSelectionRange(next.length, next.length);
+          ta.scrollTop = ta.scrollHeight;
+        }
+      });
+    };
+    window.addEventListener(QUOTE_PROVISION_EVENT, handler);
+    return () => window.removeEventListener(QUOTE_PROVISION_EVENT, handler);
+  }, [sourceId, text, saveToApi]);
 
   // ─── Delete annotation ──────────────────────────────────────────
 

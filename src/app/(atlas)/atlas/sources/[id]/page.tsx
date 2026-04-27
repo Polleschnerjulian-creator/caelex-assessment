@@ -21,6 +21,7 @@ import { SourceHistoryPanel } from "@/components/atlas/SourceHistoryPanel";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import { WatchButton } from "@/components/atlas/WatchButton";
 import { CiteThisButton } from "@/components/atlas/CiteThisButton";
+import { QuoteProvisionButton } from "@/components/atlas/QuoteProvisionButton";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -503,9 +504,21 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     <span className="text-[15px]  font-bold text-[var(--atlas-text-primary)] flex-shrink-0">
                       {provision.section}
                     </span>
-                    <h3 className="text-[14px] font-semibold text-[var(--atlas-text-secondary)]">
+                    <h3 className="text-[14px] font-semibold text-[var(--atlas-text-secondary)] flex-1 min-w-0">
                       {displayTitle}
                     </h3>
+                    {/* Quote-into-notes — single click captures this
+                        provision (section, title, summary, compliance
+                        implication) into the source-page Notes panel
+                        as a Markdown blockquote with timestamp. */}
+                    <QuoteProvisionButton
+                      sourceId={source.id}
+                      section={provision.section}
+                      title={displayTitle}
+                      summary={displaySummary}
+                      complianceImplication={displayImplication}
+                      language={language}
+                    />
                   </div>
 
                   <p className="text-[13px] text-[var(--atlas-text-secondary)] leading-[1.75] mt-1.5 ml-[52px]">

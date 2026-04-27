@@ -53,6 +53,7 @@ import {
 } from "./ActionPanels";
 import { MorningBrief } from "./MorningBrief";
 import { LibrarySaveButton } from "./LibrarySaveButton";
+import { DraftExportButton } from "../DraftExportButton";
 import {
   WorkspacePinboardInline,
   type WorkspaceCard,
@@ -1604,6 +1605,12 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                 !m.streaming &&
                 m.text.trim().length > 30 && (
                   <div className={styles.msgLibraryAction}>
+                    {/* Export-as-Word/Markdown — single dropdown.
+                        Sits next to the Library save chip so any
+                        Astra answer (drafted memo, comparison matrix,
+                        deadline list) is one click from the lawyer's
+                        DMS / Word doc / Notion. */}
+                    <DraftExportButton content={m.text} title={priorUserText} />
                     <LibrarySaveButton
                       variant="compact"
                       content={m.text}

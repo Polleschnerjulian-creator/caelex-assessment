@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { Download } from "lucide-react";
+import { useState, useCallback, useMemo, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Download, Link as LinkIcon, Check } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
@@ -37,15 +38,140 @@ const stickyGlass: React.CSSProperties = {
 
 const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
 
-export default function ComparatorPage() {
-  const [selected, setSelected] =
-    useState<SpaceLawCountryCode[]>(DEFAULT_COUNTRIES);
-  const [dimension, setDimension] = useState<string>("all");
-  // Forecast target date — defaults to today. The comparator shows
-  // forecast badges only when the slider moves into the future, so
-  // default users see no change from the pre-feature experience.
-  const [targetDate, setTargetDate] = useState<Date>(() => new Date());
+const VALID_DIMENSIONS = new Set([
+  "all",
+  "authorization",
+  "liability",
+  "debris",
+  "registration",
+  "timeline",
+  "eu_readiness",
+]);
+
+const VALID_COUNTRIES = new Set<SpaceLawCountryCode>([
+  "FR",
+  "DE",
+  "UK",
+  "IT",
+  "LU",
+  "NL",
+  "BE",
+  "ES",
+  "NO",
+  "SE",
+  "FI",
+  "DK",
+  "AT",
+  "CH",
+  "PT",
+  "IE",
+  "GR",
+  "CZ",
+  "PL",
+]);
+
+function parseStateFromQuery(params: URLSearchParams): {
+  countries: SpaceLawCountryCode[] | null;
+  dimension: string | null;
+  date: Date | null;
+} {
+  const j = params.get("j");
+  let countries: SpaceLawCountryCode[] | null = null;
+  if (j) {
+    const parts = j
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter((s): s is SpaceLawCountryCode =>
+        VALID_COUNTRIES.has(s as SpaceLawCountryCode),
+      );
+    if (parts.length > 0) countries = parts.slice(0, 8);
+  }
+  const dim = params.get("dim");
+  const dimension = dim && VALID_DIMENSIONS.has(dim) ? dim : null;
+  const dateRaw = params.get("t");
+  let date: Date | null = null;
+  if (dateRaw) {
+    const parsed = new Date(dateRaw);
+    if (!Number.isNaN(parsed.getTime())) date = parsed;
+  }
+  return { countries, dimension, date };
+}
+
+function buildShareableUrl(
+  countries: SpaceLawCountryCode[],
+  dimension: string,
+  date: Date,
+): string {
+  const params = new URLSearchParams();
+  if (countries.length > 0) params.set("j", countries.join(","));
+  if (dimension !== "all") params.set("dim", dimension);
+  // Only include the date if it's >24h away from "now" — saves the
+  // shareable URL from carrying an irrelevant timestamp for the common
+  // "current state" comparison.
+  const drift = Math.abs(date.getTime() - Date.now());
+  if (drift > 24 * 60 * 60 * 1000) {
+    params.set("t", date.toISOString().slice(0, 10));
+  }
+  if (typeof window === "undefined") {
+    return `/atlas/comparator${params.size > 0 ? `?${params.toString()}` : ""}`;
+  }
+  return `${window.location.origin}/atlas/comparator${params.size > 0 ? `?${params.toString()}` : ""}`;
+}
+
+function ComparatorPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Lazy initial-state from URL params. This is a one-shot read on
+  // mount — afterwards the page is the source of truth and we sync
+  // back to the URL via router.replace on change.
+  const initial = useMemo(
+    () => parseStateFromQuery(new URLSearchParams(searchParams.toString())),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const [selected, setSelected] = useState<SpaceLawCountryCode[]>(
+    initial.countries ?? DEFAULT_COUNTRIES,
+  );
+  const [dimension, setDimension] = useState<string>(
+    initial.dimension ?? "all",
+  );
+  // Forecast target date — defaults to today (or to the URL-supplied
+  // date when present). Forecast badges only render when the slider
+  // moves into the future, so the default-today path shows no change
+  // from the pre-URL-state experience.
+  const [targetDate, setTargetDate] = useState<Date>(
+    () => initial.date ?? new Date(),
+  );
+  const [linkCopied, setLinkCopied] = useState(false);
   const { t } = useLanguage();
+
+  // Push state changes back into the URL — keeps reload + back-button
+  // returning to the same view. router.replace (not push) so stepping
+  // back doesn't fight the user's filter changes.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selected.length > 0) params.set("j", selected.join(","));
+    if (dimension !== "all") params.set("dim", dimension);
+    const drift = Math.abs(targetDate.getTime() - Date.now());
+    if (drift > 24 * 60 * 60 * 1000) {
+      params.set("t", targetDate.toISOString().slice(0, 10));
+    }
+    const qs = params.toString();
+    router.replace(`/atlas/comparator${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [selected, dimension, targetDate, router]);
+
+  const handleCopyLink = useCallback(async () => {
+    const url = buildShareableUrl(selected, dimension, targetDate);
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1800);
+    } catch {
+      // Clipboard can fail on iOS without a user gesture; silent.
+    }
+  }, [selected, dimension, targetDate]);
 
   // ─── Dimension tabs (translated) ───
   const dimensions = useMemo(
@@ -90,22 +216,53 @@ export default function ComparatorPage() {
               </span>
             </div>
             {selected.length > 0 && (
-              <button
-                onClick={handleExport}
-                className="
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                  text-[11px] font-medium text-[var(--atlas-text-muted)]
-                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
-                  transition-colors duration-150
-                "
-              >
-                <Download
-                  className="h-3.5 w-3.5"
-                  aria-hidden="true"
-                  strokeWidth={1.5}
-                />
-                <span>{t("atlas.export_pdf_btn")}</span>
-              </button>
+              <>
+                <button
+                  onClick={handleCopyLink}
+                  className="
+                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                    text-[11px] font-medium text-[var(--atlas-text-muted)]
+                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                    transition-colors duration-150
+                  "
+                  aria-label={t("atlas.share_comparison_link")}
+                >
+                  {linkCopied ? (
+                    <Check
+                      className="h-3.5 w-3.5 text-emerald-600"
+                      aria-hidden="true"
+                      strokeWidth={2}
+                    />
+                  ) : (
+                    <LinkIcon
+                      className="h-3.5 w-3.5"
+                      aria-hidden="true"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                  <span>
+                    {linkCopied
+                      ? t("atlas.link_copied")
+                      : t("atlas.share_comparison")}
+                  </span>
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="
+                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                    text-[11px] font-medium text-[var(--atlas-text-muted)]
+                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                    transition-colors duration-150
+                  "
+                >
+                  <Download
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                    strokeWidth={1.5}
+                  />
+                  <span>{t("atlas.export_pdf_btn")}</span>
+                </button>
+              </>
             )}
           </div>
         </header>
@@ -193,5 +350,20 @@ export default function ComparatorPage() {
       {/* ─── Print-only export view ─── */}
       <ComparatorExport countries={selected} dimension={dimension} />
     </>
+  );
+}
+
+export default function ComparatorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--atlas-bg-page)] p-4 animate-pulse">
+          <div className="h-6 w-32 bg-[var(--atlas-bg-inset)] rounded mb-3" />
+          <div className="h-16 bg-[var(--atlas-bg-inset)] rounded-xl" />
+        </div>
+      }
+    >
+      <ComparatorPageInner />
+    </Suspense>
   );
 }
