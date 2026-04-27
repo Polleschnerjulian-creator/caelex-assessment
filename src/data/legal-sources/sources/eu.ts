@@ -668,4 +668,285 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-NIS2-2022", "EU-CRA-2024"],
     last_verified: "2026-04-22",
   },
+
+  // ─── EU Space Programme deep-dive ──────────────────────────────────
+  // Programme-specific legal instruments under the umbrella of the
+  // Space Programme Regulation 2021/696. Operators interacting with
+  // Galileo/EGNOS PRS, Copernicus data policy, GOVSATCOM, IRIS², or the
+  // EU SST framework hit one of these texts directly.
+
+  {
+    id: "EU-GALILEO-PRS-2011",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Decision No 1104/2011/EU on the Galileo Public Regulated Service (PRS)",
+    date_enacted: "2011-10-25",
+    date_in_force: "2011-11-21",
+    official_reference: "Decision 1104/2011/EU",
+    source_url: "https://eur-lex.europa.eu/eli/dec/2011/1104/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EUSPA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["frequency_spectrum", "cybersecurity"],
+    scope_description:
+      "Operative legal framework for Galileo's encrypted Public Regulated Service. PRS access is restricted to authorised Government users designated by Member States; commercial operators with PRS-receiver integration require Member-State Competent PRS Authority approval and EUSPA security accreditation. The hardware export-control overlay routes through the EU Dual-Use Regulation Annex IV.",
+    key_provisions: [
+      {
+        section: "Art. 3-5",
+        title: "Authorised PRS users",
+        summary:
+          "PRS access is reserved to Government users (defence, civil protection, customs) designated by a Member State Competent PRS Authority (CPA). Commercial-resale models are prohibited; bona-fide partner contractors may be authorised on a case-by-case basis.",
+      },
+      {
+        section: "Art. 8 + Annex",
+        title: "Common minimum standards",
+        summary:
+          "Member States must adopt common minimum security standards covering cryptographic-key management, equipment certification, and personnel clearance before authorising PRS use.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021", "DE-DUALUSE-2021"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-COPERNICUS-DATA-POLICY",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "Commission Delegated Regulation (EU) No 1159/2013 — Copernicus Data and Information Policy",
+    date_enacted: "2013-07-12",
+    date_in_force: "2013-12-09",
+    official_reference: "Regulation (EU) 1159/2013",
+    source_url: "https://eur-lex.europa.eu/eli/reg_del/2013/1159/oj",
+    issuing_body: "European Commission",
+    competent_authorities: ["EU-EC", "EU-EUSPA"],
+    relevance_level: "high",
+    applicable_to: ["data_provider", "satellite_operator"],
+    compliance_areas: ["data_security", "frequency_spectrum"],
+    scope_description:
+      "Establishes the Copernicus full-and-open data and information policy with carve-outs for security restrictions. Defines what users may do with Sentinel data, the redistribution conditions, and the Commission's authority to invoke security restrictions on a per-mission basis. Operators integrating Copernicus data into downstream services must respect the policy's attribution and redistribution clauses.",
+    key_provisions: [
+      {
+        section: "Art. 3",
+        title: "Free, full, and open access",
+        summary:
+          "Sentinel data and Copernicus information products are made available to all users without charge, subject to attribution and the security-restrictions framework.",
+      },
+      {
+        section: "Art. 12",
+        title: "Security restrictions",
+        summary:
+          "The Commission, in consultation with Member States, may restrict access to specific Copernicus data or products on national-security grounds — historically invoked sparingly but the legal basis is in place.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-IRIS2-CONCESSION-2024",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Regulation (EU) 2023/588 — IRIS² Secure Connectivity Programme",
+    date_enacted: "2023-03-15",
+    date_in_force: "2023-03-21",
+    official_reference: "Regulation (EU) 2023/588",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2023/588/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC", "EU-EUSPA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["cybersecurity", "frequency_spectrum", "licensing"],
+    scope_description:
+      "Establishes the IRIS² (Infrastructure for Resilience, Interconnection and Security by Satellite) sovereign connectivity programme — a dual-use governmental + commercial constellation in MEO/LEO. The 2024 IRIS² Concession Contract awarded to the SpaceRISE consortium operationalises Government-led procurement of secure connectivity through 2040, with explicit cybersecurity, supply-chain, and ITAR-free design obligations.",
+    key_provisions: [
+      {
+        section: "Art. 9",
+        title: "Concession-based procurement",
+        summary:
+          "EU procures the IRIS² secure connectivity service via a concession contract awarded to a consortium (SpaceRISE: Eutelsat-OneWeb / SES / Hispasat / Airbus / Thales / OHB). Concession horizon is 2024-2040 with milestone-linked payments.",
+      },
+      {
+        section: "Art. 10-11",
+        title: "Sovereignty and supply-chain controls",
+        summary:
+          "Constellation must use EU-controlled supply chains and ITAR-free components for the governmental layer. Cyber-resilience requirements built on NIS2 + CRA baseline plus ESA security accreditation.",
+      },
+    ],
+    related_sources: [
+      "EU-SPACE-PROG-2021",
+      "EU-NIS2-2022",
+      "EU-CRA-2024",
+      "INT-ESA-CONV-1975",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-GOVSATCOM-DEC",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "EU Governmental Satellite Communications (GOVSATCOM) — Programme Component under Reg. 2021/696",
+    date_in_force: "2021-05-12",
+    official_reference: "Regulation (EU) 2021/696, Title VIII",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2021/696/oj#d1e3050-44-1",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EUSPA"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity", "frequency_spectrum"],
+    scope_description:
+      "Bridge programme between national/commercial satellite-communications capacity and the future IRIS² sovereign capability. EUSPA aggregates Government demand and procures pooled and shared capacity from Member State and commercial operators under common security accreditation. Active 2022-2030 until IRIS² fully operational.",
+    key_provisions: [
+      {
+        section: "Title VIII Reg. 2021/696",
+        title: "Governmental-user pool",
+        summary:
+          "Authorised Government users from Member States access pooled GOVSATCOM capacity through EUSPA-led procurement; capacity provided by Member State commercial operators (Eutelsat, SES, Hispasat) under uniform security-accreditation conditions.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021", "EU-IRIS2-CONCESSION-2024"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-SST-DECISION",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Decision (EU) 2014/541 — EU Space Surveillance and Tracking (SST) Support Framework",
+    date_enacted: "2014-04-16",
+    date_last_amended: "2021-05-12",
+    official_reference: "Decision No 541/2014/EU (now Reg. 2021/696 Title V)",
+    source_url: "https://eur-lex.europa.eu/eli/dec/2014/541/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EUSPA"],
+    relevance_level: "medium",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "in_orbit_services",
+    ],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "EU Space Surveillance and Tracking framework — the EU's coordinated capability for cataloguing space objects and providing collision-avoidance, re-entry, and fragmentation alerts. Now subsumed under the Space Programme Regulation 2021/696 Title V. EU-SST services are free for Member State operators and form a primary input into European operator collision-avoidance procedures.",
+    key_provisions: [
+      {
+        section: "Reg. 2021/696 Art. 53-58",
+        title: "EU-SST consortium and services",
+        summary:
+          "EU-SST consortium (FR/DE/IT/ES/PL/RO/PT) provides catalogue maintenance, collision-avoidance alerts, re-entry alerts, and fragmentation analysis to authorised users.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021", "INT-ISO-24113", "INT-LTS-2019"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-ESA-FFPA-2024",
+    jurisdiction: "EU",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "EU-ESA Financial Framework Partnership Agreement (FFPA) — 2024 Renewal",
+    date_published: "2024-07-04",
+    source_url: "https://www.esa.int/About_Us/Corporate_news/EU-ESA_FFPA",
+    issuing_body: "European Commission and European Space Agency",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Operative financial framework governing EU-funded ESA programmes (Galileo, EGNOS, Copernicus, GOVSATCOM, IRIS²). The 2024 renewal extended the partnership through 2027 with revised governance and procurement provisions. Critical context for any operator participating in EU-funded ESA tenders — defines geo-return rules, IP allocation, and dispute-resolution.",
+    key_provisions: [
+      {
+        section: "Procurement rules",
+        title: "EU-funded ESA tenders",
+        summary:
+          "Tender rules for EU-funded ESA programmes track ESA's industrial-policy framework with EU-specific overlays on geographic distribution, security accreditation, and IP retention.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021", "INT-ESA-CONV-1975"],
+    last_verified: "2026-04-22",
+  },
+
+  // ─── EU horizontal regulations adjacent to space ───────────────────
+
+  {
+    id: "EU-CRMA-2024",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Critical Raw Materials Act — Regulation (EU) 2024/1252",
+    date_enacted: "2024-04-11",
+    date_in_force: "2024-05-23",
+    official_reference: "Regulation (EU) 2024/1252",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2024/1252/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "EU regulatory framework securing supply of strategic and critical raw materials. Direct relevance to space: the Strategic Raw Materials list captures rare-earth elements, gallium, germanium, lithium, and platinum-group metals used in spacecraft electronics, propulsion, and structures. Requires Member State authorities to identify and assess strategic projects, and imposes monitoring on supply-chain risk for designated technologies.",
+    key_provisions: [
+      {
+        section: "Annex I",
+        title: "Strategic Raw Materials list",
+        summary:
+          "34 critical raw materials and 17 strategic raw materials including rare earths (Nd, Dy, Pr, Tb), gallium, germanium, lithium, platinum-group metals, magnesium, silicon-metal — all heavily used in spacecraft electronics and structures.",
+      },
+      {
+        section: "Art. 6",
+        title: "Strategic projects framework",
+        summary:
+          "Member States and the Commission designate Strategic Projects with priority-permitting and financing access. Space-supply-chain projects (e.g., EU sovereign rare-earth processing, SiC wafer fabs) qualify.",
+      },
+    ],
+    related_sources: ["EU-SPACE-PROG-2021", "EU-IRIS2-CONCESSION-2024"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-FSR-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Foreign Subsidies Regulation",
+    date_enacted: "2022-12-14",
+    date_in_force: "2023-07-12",
+    official_reference: "Regulation (EU) 2022/2560",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/2560/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "EU instrument addressing distortions to the EU internal market caused by non-EU State subsidies received by undertakings active in the EU. Direct relevance to space M&A and procurement: notification thresholds capture acquisitions of EU operators above EUR 500m turnover and public-procurement bids above EUR 250m — routine in space-sector consolidation. Captures Chinese-State-subsidised acquirers and Russian/MENA sovereign-fund participation.",
+    key_provisions: [
+      {
+        section: "Art. 19-23",
+        title: "Concentration notification",
+        summary:
+          "Acquisitions of EU undertakings with EU turnover above EUR 500m and acquirer foreign-financial-contributions above EUR 50m require ex-ante notification. Captures private-equity-led space-sector consolidation.",
+      },
+      {
+        section: "Art. 28-29",
+        title: "Public procurement notification",
+        summary:
+          "Bids in EU public-procurement procedures above EUR 250m require notification of foreign financial contributions. Hits ESA and Member State space-procurement at the prime-contractor level.",
+      },
+    ],
+    related_sources: ["EU-SOLVENCY-II"],
+    last_verified: "2026-04-22",
+  },
 ];

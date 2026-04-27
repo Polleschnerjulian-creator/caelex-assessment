@@ -2580,4 +2580,388 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-04-22",
   },
+
+  // âââ Sectoral cross-JD clusters ââââââââââââââââââââââââââââââââââââ
+  // Cross-cutting reference entries for operating models that span every
+  // jurisdiction: in-orbit servicing / active debris removal, suborbital
+  // human spaceflight, dedicated human-spaceflight crew/participant
+  // regimes, and the comparative space-resources framework.
+
+  {
+    id: "INT-IOS-ADR-FRAMEWORK",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "In-Orbit Servicing and Active Debris Removal â Comparative Regulatory Framework",
+    date_published: "2026-04-22",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/copuos/lsc/icj-iaaa-iisl-iac/index.html",
+    issuing_body:
+      "Atlas reference entry (synthesises FCC IOSSA, JP CRD2, ESA ClearSpace-1, US AWMRA discussion)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services"],
+    compliance_areas: [
+      "licensing",
+      "liability",
+      "insurance",
+      "debris_mitigation",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "Reference entry for the regulatory landscape governing rendezvous-and-proximity operations, on-orbit refuelling, robotic servicing, and active debris removal. No global treaty regime exists — operators navigate a patchwork of national frameworks. Captures FCC IOSSA framework, JP CRD2 commercial-removal precedent, ESA ClearSpace-1 contractual model, NASA OSAM contract structures, and the open question of liability allocation when one operator's spacecraft physically interacts with another's.",
+    key_provisions: [
+      {
+        section: "Regulatory pathways",
+        title: "Per-jurisdiction licensing routes",
+        summary:
+          "FCC: Part 25 + IOSSA framework (declaration regime). FAA: Part 450 mission-licensing basis. UK CAA: SIA 2018 orbital-operator licence + mission-management licence. JP Cabinet Office: Spacecraft management permit (Art. 20-23 SAA 2016). ESA: ClearSpace-1 contractual instrument under Space Safety Programme.",
+      },
+      {
+        section: "Liability allocation",
+        title: "Inter-operator agreements",
+        summary:
+          "OST/Liability Convention assigns State-of-launch liability but does not address operator-to-operator harm during a servicing mission. Industry practice has converged on bilateral Inter-Operator Agreements (IOAs) with mutual cross-waivers modelled on the ISS IGA cross-waiver, plus dedicated insurance layers.",
+      },
+      {
+        section: "Debris-mitigation interaction",
+        title: "ADR mission categorisation",
+        summary:
+          "Active debris removal missions present a regulatory paradox: removing a defunct object reduces population debris, but the rendezvous-and-grab operation creates fragmentation risk. Authorities (FCC, JP, ESA) have created mission-specific approval channels rather than treating ADR under standard collision-avoidance rules.",
+      },
+    ],
+    related_sources: [
+      "INT-ISO-24113",
+      "INT-LTS-2019",
+      "INT-ESA-ZERO-DEBRIS-STD",
+      "US-FCC-5YR-PMD-2022",
+      "US-FAA-NPRM-UPPER-STAGES-2023",
+      "JP-SPACE-ACTIVITIES-ACT-2016",
+      "UK-SI-2021-792",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "The 2024 ESA ClearSpace-1 mission (target: VESPA upper stage) is the first contracted commercial debris-removal mission; lessons from its execution will shape the next round of national rule-making.",
+      "FCC published IOSSA framework guidance October 2024; the Commission has issued mission-by-mission Part 25 licences (Astroscale ELSA-d, Northrop Grumman MEV) under existing rules pending a formal Part 25 IOS rulemaking.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-SUBORBITAL-FRAMEWORK",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Suborbital Spaceflight — Comparative Regulatory Framework (US, UK, NM, AU)",
+    date_published: "2026-04-22",
+    source_url: "https://www.faa.gov/space/licenses/launch_license",
+    issuing_body:
+      "Atlas reference entry (FAA Part 450, UK CAA SIA 2018, NM Space Authority, ASA SLR Act)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing", "liability", "insurance"],
+    scope_description:
+      "Reference for the regulatory regime governing suborbital human spaceflight (Virgin Galactic, Blue Origin) and high-altitude balloon flights. The dominant operator-model is Government-licensed commercial flight under informed-consent waivers from spaceflight participants. The US 'learning period' regime under CSLA §50919(g) suspends prescriptive participant-safety regulation — Congress has repeatedly extended this.",
+    key_provisions: [
+      {
+        section: "US",
+        title: "Learning period — FAA Part 460 + CSLA §50919(g)",
+        summary:
+          "FAA cannot impose prescriptive safety regulations on spaceflight participants except after a triggering incident. Operators rely on participant informed consent + State-tort shields (NM, FL, TX). Learning period extended through October 2025 by 2023 NDAA; further extension legislation pending.",
+      },
+      {
+        section: "UK",
+        title: "SIA 2018 + Spaceflight Activities Regs operator licence",
+        summary:
+          "UK regime expressly addresses spaceflight participants in the SIA 2018 + 2021 Regulations (S.I. 2021/792-815). CAA grants operator licences with prescriptive participant-safety conditions, in contrast to the US learning-period approach.",
+      },
+      {
+        section: "Australia + New Zealand",
+        title: "SLR Act / OSHAA orbital-and-suborbital coverage",
+        summary:
+          "Australia covers suborbital under Part 4-5 of the Space (Launches and Returns) Act 2018; New Zealand under the OSHAA 2017 high-altitude provisions. Both regimes apply launch-permit rules to suborbital operations.",
+      },
+    ],
+    related_sources: [
+      "US-CSLA-1984",
+      "US-14CFR-PART-450",
+      "US-NM-SPACEPORT",
+      "UK-SI-2021-792",
+      "AU-SLR-ACT-2018",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Virgin Galactic (US) and Blue Origin (US) are the operative commercial-suborbital operators; Stratolaunch and Sierra Space have suborbital ambitions. UK suborbital activity remains nascent through 2026.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-HUMAN-SPACEFLIGHT-FRAMEWORK",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Crewed Orbital Spaceflight — Astronaut and Spaceflight-Participant Regime",
+    date_published: "2026-04-22",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/rescue-agreement.html",
+    issuing_body:
+      "Atlas reference entry (Rescue Agreement, ISS IGA, NASA SAA, Axiom commercial astronauts)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "human_spaceflight", "licensing"],
+    scope_description:
+      "Reference for the legal regime governing crewed orbital spaceflight. Distinguishes (1) Government-flagged astronauts (Treaty regime: Rescue Agreement, Liability Convention, ISS IGA cross-waiver), (2) Commercial spaceflight participants on Axiom-style missions (operator informed-consent + ISS IGA cross-waiver requires partner-Government acceptance), (3) Future commercial-station crew (no settled framework — Starlab, Orbital Reef, Vast Haven approaches diverge). National regimes vary: US treats commercial participants under §50919(g) learning period; UK SIA 2018 prescriptive; ESA partner-government participants flow through national agencies.",
+    key_provisions: [
+      {
+        section: "ISS IGA Art. 5 + 11",
+        title: "Jurisdiction and crew duty-of-care",
+        summary:
+          "Partner States exercise jurisdiction over their flight elements and personnel; cross-waiver of liability under Art. 16 immunises partner entities from claims arising from ISS activities, with carved-out exceptions for wilful misconduct.",
+      },
+      {
+        section: "Commercial-participant access",
+        title: "Axiom-style mission gating",
+        summary:
+          "Commercial participants flying to ISS via NASA's Commercial Crew system require ISS IGA partner-government acceptance, NASA Crew Operations agreement, plus operator informed-consent contracts. Direct commercial-station flight (Starlab, Orbital Reef) will require new bilateral arrangements not yet drafted.",
+      },
+    ],
+    related_sources: [
+      "INT-ISS-1998",
+      "INT-RESCUE-1968",
+      "INT-LIABILITY-1972",
+      "US-CSLA-1984",
+      "UK-SI-2021-792",
+      "JP-ISS-AGREEMENT-IMPL",
+    ],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-SPACE-RESOURCES-COMPARATOR",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Space Resources — Comparative Property-Rights Regime (US, LU, AE, JP)",
+    date_published: "2026-04-22",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/copuos/working-groups/space-resources/index.html",
+    issuing_body:
+      "Atlas reference entry (CSLCA Title IV, LU 2017, UAE 2019, JP 2021, COPUOS WG)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["space_resource_operator"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Reference comparator for the four jurisdictions that have legislated commercial space-resource property rights, plus the COPUOS Working Group on Legal Aspects of Space Resource Activities (active since 2021). All four legislative regimes interpret OST Art. II's non-appropriation principle as not barring private property in extracted resources, while disagreeing in part on sovereignty implications. China and Russia reject the four regimes' interpretation; the EU has not legislated.",
+    key_provisions: [
+      {
+        section: "US — CSLCA Title IV (2015)",
+        title: "First-mover statute",
+        summary:
+          "51 USC §51303: A US citizen engaged in commercial recovery of an asteroid resource or space resource shall be entitled to any asteroid resource or space resource obtained, including to possess, own, transport, use, and sell. Predicate of the Artemis Accords' resource-extraction principles.",
+      },
+      {
+        section: "Luxembourg — Law of 20 July 2017",
+        title: "First non-US statutory framework",
+        summary:
+          "Establishes a Government authorisation regime for space-resource activities by Luxembourg-incorporated entities, with explicit recognition of property rights in extracted resources.",
+      },
+      {
+        section: "UAE — Federal Decree-Law 12/2019 Art. 18",
+        title: "Permit-based extraction regime",
+        summary:
+          "Authorises and regulates space-resource activities under UAESA permit. Operative since 2020 Executive Regulations.",
+      },
+      {
+        section: "Japan — Act No. 83 of 2021",
+        title: "Cabinet-Office permit + property recognition",
+        summary:
+          "Confers ownership of extracted resources on Cabinet-Office-permitted Japanese operators.",
+      },
+    ],
+    related_sources: [
+      "INT-OST-1967",
+      "INT-MOON-1979",
+      "INT-ARTEMIS-ACCORDS-2020",
+      "US-CSLCA-2015",
+      "AE-DECREE-12-2019",
+      "JP-SPACE-RESOURCES-2021",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "COPUOS Working Group on Legal Aspects of Space Resource Activities (chaired since 2022 by Brazil-Greece) is developing recommended principles; consensus output expected 2026-2027.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  // âââ Multilateral export-control regimes âââââââââââââââââââââââââââ
+  // Voluntary plurilateral export-control arrangements that underpin the
+  // national licensing regimes catalogued in DE-AWG, FR-CIEEMG, US-EAR/
+  // ITAR, UK-ECA-2002, and the EU Dual-Use Regulation. The arrangements
+  // themselves are not directly applicable, but national lists (and
+  // therefore operator licensing) track the multilateral catalogues.
+
+  {
+    id: "INT-WASSENAAR",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Wassenaar Arrangement on Export Controls for Conventional Arms and Dual-Use Goods and Technologies",
+    date_enacted: "1996-07-12",
+    date_last_amended: "2024-12-01",
+    official_reference:
+      "Wassenaar Arrangement (December 1995 Initial Elements)",
+    source_url: "https://www.wassenaar.org/",
+    issuing_body: "Wassenaar Arrangement plenary",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Plurilateral export-control regime among 42 participating states establishing common Control Lists for conventional arms (Munitions List) and dual-use goods (Dual-Use List). National export-control lists in EU Dual-Use Regulation 2021/821, US EAR, UK ECO 2008, JP FEFTA, AU DSGL, and CA Group all derive their structures from Wassenaar lists. Annual plenary updates flow through to national lists with 6–18 month lag.",
+    key_provisions: [
+      {
+        section: "List of Dual-Use Goods and Technologies",
+        title: "Annual control-list updates",
+        summary:
+          "Categories 1–9 cover everything from materials and chemicals through electronics, computers, telecoms, sensors, and aerospace/propulsion. Updated annually in December plenary; national list updates follow in Q1–Q2 of the next year.",
+      },
+      {
+        section: "Munitions List",
+        title: "Conventional arms scope",
+        summary:
+          "Captures launch vehicles capable of delivering 500 kg payload to 300 km range (Cat. ML4), spacecraft systems with military application (Cat. ML22), and related technology. National-level US ITAR USML and EU Common Military List parallel the Wassenaar ML.",
+      },
+    ],
+    related_sources: [
+      "DE-DUALUSE-2021",
+      "DE-AUSFUHRLISTE",
+      "US-EAR",
+      "US-ITAR",
+      "UK-ECO-2008",
+      "INT-MTCR",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Russia was a participating state until its Wassenaar-membership status was effectively suspended in March 2022; formally Russia remains a member but has been excluded from plenary activities.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-MTCR",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Missile Technology Control Regime (MTCR) Annex — Categories I and II",
+    date_enacted: "1987-04-16",
+    date_last_amended: "2024-10-01",
+    official_reference: "MTCR Equipment, Software and Technology Annex",
+    source_url: "https://mtcr.info/",
+    issuing_body: "MTCR partnership plenary",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Voluntary plurilateral arrangement among 35 partner states aimed at limiting proliferation of missiles capable of delivering 500 kg to 300 km. Category I (complete missile systems and major sub-systems) carries a presumption of denial; Category II (dual-use components, technology, materials) is licensed case-by-case. Captures most space-launch vehicles, propulsion systems, INS/star-trackers above thresholds, and spacecraft sub-systems with missile applicability.",
+    key_provisions: [
+      {
+        section: "Annex Category I",
+        title: "Presumption of denial",
+        summary:
+          "Complete rocket systems, complete unmanned aerial vehicles, and major sub-systems (rocket motors, re-entry vehicles, GNC sets) carry a presumption of denial absent extraordinary policy justification.",
+      },
+      {
+        section: "Annex Category II",
+        title: "Case-by-case licensing",
+        summary:
+          "Dual-use components and technology including propellants, materials, INS, star trackers, ablative materials, ground-test stands. National-list parallels in US EAR Cat. 9 and EU Dual-Use Annex I Cat. 9.",
+      },
+    ],
+    related_sources: [
+      "INT-WASSENAAR",
+      "INT-HCOC-2002",
+      "DE-DUALUSE-2021",
+      "US-EAR",
+      "US-ITAR",
+    ],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-AUSTRALIA-GROUP",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Australia Group Common Control Lists — Chemical and Biological Items",
+    date_enacted: "1985-06-15",
+    date_last_amended: "2024-06-01",
+    official_reference: "Australia Group Common Control Lists",
+    source_url:
+      "https://www.dfat.gov.au/publications/minisite/theaustraliagroupnet/site/en/index.html",
+    issuing_body: "Australia Group plenary",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Plurilateral arrangement among 43 partners aimed at chemical and biological weapons non-proliferation. Marginal direct relevance to space — captured here because biological-payload missions (life-sciences experiments, MISSE-style), planetary-protection activities, and certain Earth-observation chemical-sensing payloads can engage AG-controlled items. National lists incorporate the AG catalogue.",
+    key_provisions: [
+      {
+        section: "Common Control List — Biological",
+        title: "Bio-payload diligence",
+        summary:
+          "Operators of biological-payload missions must screen against the Common Control Lists (human and animal pathogens, plant pathogens, dual-use biological equipment).",
+      },
+    ],
+    related_sources: ["INT-WASSENAAR", "INT-MTCR"],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-NSG",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Nuclear Suppliers Group Guidelines — Trigger List and Dual-Use List",
+    date_enacted: "1978-09-21",
+    date_last_amended: "2024-06-01",
+    official_reference: "INFCIRC/254 Parts 1 and 2",
+    source_url: "https://www.nuclearsuppliersgroup.org/",
+    issuing_body: "Nuclear Suppliers Group",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Plurilateral arrangement among 48 nuclear-supplier states. Direct space relevance is narrow but real: radioisotope thermoelectric generators (RTGs) for deep-space missions, certain radiation-hardened electronics, and nuclear-thermal-propulsion concepts engage NSG-controlled items.",
+    key_provisions: [
+      {
+        section: "INFCIRC/254 Part 2",
+        title: "Dual-use catalogue",
+        summary:
+          "Captures nuclear-related dual-use items including some materials and technology relevant to nuclear-power generation in space.",
+      },
+    ],
+    related_sources: ["INT-WASSENAAR"],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  // âââ EU horizontal regulations adjacent to space âââââââââââââââââââ
 ];
