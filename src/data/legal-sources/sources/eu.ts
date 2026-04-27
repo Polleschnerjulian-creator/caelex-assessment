@@ -550,4 +550,122 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-NIS2-2022"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Insurance regulatory layer ───────────────────────────────────
+  // Where space-insurance contract-law (DE-VVG, FR Code des assurances,
+  // UK-INSURANCE-ACT-2015) sits the prudential rules governing the
+  // insurers themselves. Operators procuring covers from EU-domiciled
+  // insurers, and EU operators procuring from London or other third
+  // countries, must be aware of these regimes — they shape capacity,
+  // pricing, and the cross-border distribution model.
+
+  {
+    id: "EU-SOLVENCY-II",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Solvency II Directive — Prudential Regulation of EU Insurance and Reinsurance Undertakings",
+    date_enacted: "2009-11-25",
+    date_in_force: "2016-01-01",
+    date_last_amended: "2025-12-19",
+    official_reference:
+      "Directive 2009/138/EC (recast by Directive (EU) 2025/2)",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2009/138/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance"],
+    scope_description:
+      "Prudential framework governing capital, governance, and reporting requirements for EU-domiciled (re)insurance undertakings — the regulatory backdrop for any space-insurance capacity placed through Allianz, Munich Re, SCOR, or other EU insurers. Sets the SCR/MCR capital ratios and the Pillar-3 disclosure regime that ultimately drive premium pricing for space risks. The 2025 review (Solvency II 2.0) reduced capital charges for long-term equity and reformed the cross-border supervision regime.",
+    key_provisions: [
+      {
+        section: "Title I, Ch. VI",
+        title: "Solvency Capital Requirement (SCR)",
+        summary:
+          "Risk-based capital requirement covering market, credit, life, non-life, and operational risk. Space-insurance underwriting falls within the non-life module — losses cycle through the SCR calculation and feed into pricing across the European market.",
+      },
+      {
+        section: "Title I, Ch. III",
+        title: "Cross-border supervision",
+        summary:
+          "Single-licence framework under which an EU-authorised insurer can underwrite throughout the EU/EEA. Underpins the practical reality that a German operator can place cover with a French or Italian insurer without re-licensing.",
+      },
+    ],
+    related_sources: ["EU-IDD", "DE-VVG", "INT-SPACE-INSURANCE-MARKET"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-IDD",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Insurance Distribution Directive — Conduct of Business for Insurance Distributors",
+    date_enacted: "2016-01-20",
+    date_in_force: "2018-10-01",
+    official_reference: "Directive (EU) 2016/97",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2016/97/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance"],
+    scope_description:
+      "Harmonises the regulation of insurance distribution across the EU — registration of brokers and agents, conduct-of-business rules, demands-and-needs analysis, and product-oversight-and-governance. Relevant to operators when they engage brokers to access the EU insurance market and when their own corporate structures (e.g., self-insurance vehicles, captives) bring them within the IDD's scope as distributors.",
+    key_provisions: [
+      {
+        section: "Art. 17-20",
+        title: "Information and conduct of business",
+        summary:
+          "Distributors must always act honestly, fairly, and professionally in accordance with the customer's best interests. Pre-contractual information duties cover product features, distributor remuneration, and potential conflicts of interest.",
+      },
+      {
+        section: "Art. 25",
+        title: "Product oversight and governance (POG)",
+        summary:
+          "Product manufacturers (insurers) must maintain a product-approval process; distributors must understand the product and align distribution with the target market. Cited in space-insurance broker engagement letters.",
+      },
+    ],
+    related_sources: ["EU-SOLVENCY-II", "INT-SPACE-INSURANCE-MARKET"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "EU-DORA-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "Digital Operational Resilience Act (DORA) — Financial-Sector Cyber Resilience",
+    date_enacted: "2022-12-14",
+    date_in_force: "2025-01-17",
+    official_reference: "Regulation (EU) 2022/2554",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Sector-specific cyber-resilience regulation for EU financial entities (banks, insurers, investment firms) — supersedes NIS2 sectoral rules for them. Indirectly relevant to space operators in two ways: (1) financial-sector clients of satcom/data services impose DORA-driven contractual requirements on their providers, including space-segment availability and incident-reporting obligations; (2) space operators that issue credit-default-swap-style sustainability instruments fall within DORA's perimeter.",
+    key_provisions: [
+      {
+        section: "Art. 28-30",
+        title: "ICT third-party risk management",
+        summary:
+          "Financial entities must oversee their ICT third-party providers (which can include satcom and ground-station operators) under prescriptive contractual and risk-management standards.",
+      },
+      {
+        section: "Art. 31-44",
+        title: "Critical ICT third-party providers",
+        summary:
+          "Designation regime for critical providers — when triggered, brings space-sector providers under direct ESA-led supervision via the European Supervisory Authorities.",
+      },
+    ],
+    related_sources: ["EU-NIS2-2022", "EU-CRA-2024"],
+    last_verified: "2026-04-22",
+  },
 ];

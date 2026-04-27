@@ -2099,4 +2099,485 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-04-22",
   },
+
+  // ─── Sanctions framework ──────────────────────────────────────────
+  // Cross-jurisdictional reference entries for the active sanctions regimes
+  // that overlay every cross-border space-sector transaction in 2024-2026.
+  // Operators MUST screen against these in addition to domestic export-
+  // control compliance — sanctions diligence sits on top of, not parallel
+  // to, ordinary licensing review.
+
+  {
+    id: "INT-EU-SANCTIONS-RU-833",
+    jurisdiction: "INT",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "Council Regulation (EU) No 833/2014 — Russia Sectoral Sanctions (with 2022+ space-sector escalations)",
+    title_local: "Council Regulation (EU) No 833/2014",
+    date_enacted: "2014-07-31",
+    date_last_amended: "2025-12-19",
+    official_reference: "Council Regulation (EU) No 833/2014",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2014/833/oj",
+    issuing_body: "Council of the European Union",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Operative EU sanctions instrument for Russia, escalated repeatedly since February 2022. Annexes VII (advanced technology) and XXIII (industrial goods) capture spacecraft, launch vehicles, GNSS receivers, and many ground-segment items. Annex IV lists prohibited end-users. Directly applicable in all EU Member States — overrides any contrary commercial arrangement and cannot be displaced by choice-of-law.",
+    key_provisions: [
+      {
+        section: "Art. 2 + Annex VII",
+        title: "Advanced-technology export ban",
+        summary:
+          "Prohibits the sale, supply, transfer, or export — directly or indirectly — of advanced-technology goods and technology, including spacecraft, GNSS, INS, star trackers, and many spacecraft components, to any person in Russia or for use in Russia.",
+      },
+      {
+        section: "Art. 2a + Annex XXIII",
+        title: "Industrial-goods ban",
+        summary:
+          "Captures a broad list of industrial inputs that includes propulsion components, radiation-hardened electronics, and materials used in space hardware. Operators must screen full bills of materials, not just final products.",
+      },
+      {
+        section: "Art. 12 / 12g",
+        title: "No-circumvention and best-efforts duties",
+        summary:
+          "Operators must take affirmative steps to prevent third-country diversion (Art. 12g best-efforts duty for non-EU subsidiaries). Diversion to Russia via Belarus, Central Asia, or Caucasus jurisdictions is the most-frequent compliance trap.",
+        complianceImplication:
+          "A finding of circumvention exposes the operator to criminal liability in every EU Member State plus national-level penalties. Full end-user/end-use screening is non-optional for any 2024-2026 space-component shipment with Eurasian counterparties.",
+      },
+    ],
+    related_sources: [
+      "RU-SPACE-LAW-1993",
+      "INT-UK-RUSSIA-REGS-2019",
+      "INT-OFAC-SDN-SPACE",
+      "DE-DUALUSE-2021",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "16th sanctions package (December 2024) added further space-sector entities to the Annex IV list and tightened the Art. 12g circumvention duty.",
+      "EU sanctions interact with national export-control regimes (e.g. DE-AWG-2013, FR-SBDU-DUALUSE) — both must be cleared in parallel; clearing one does not satisfy the other.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-UK-RUSSIA-REGS-2019",
+    jurisdiction: "INT",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "The Russia (Sanctions) (EU Exit) Regulations 2019 — Post-Brexit UK Russia Sanctions",
+    date_enacted: "2019-04-10",
+    date_last_amended: "2026-02-24",
+    official_reference: "S.I. 2019/855",
+    source_url: "https://www.legislation.gov.uk/uksi/2019/855/contents",
+    issuing_body:
+      "Secretary of State for Foreign, Commonwealth and Development Affairs",
+    competent_authorities: ["UK-ECJU"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "UK's standalone post-Brexit Russia-sanctions regime under the Sanctions and Anti-Money Laundering Act 2018. Regulates trade, financial, immigration, aircraft, and ships sanctions targeting Russia. Significantly expanded since February 2022 to cover space hardware, defence-and-security items, and dual-use technology serving Russian end-users.",
+    key_provisions: [
+      {
+        section: "Part 5 (Trade)",
+        title: "Trade sanctions on dual-use and military items",
+        summary:
+          "Prohibits export, re-export, supply, delivery, technical assistance, and brokering of military, dual-use, critical-industry, and infrastructure-related items to Russia. Captures most space-launch and many spacecraft items via the cross-reference to the UK Strategic Export Control Lists.",
+      },
+      {
+        section: "Reg. 19A-19F",
+        title: "Financial sanctions and asset-freezes",
+        summary:
+          "Asset-freeze designations include space-sector entities and persons. Operators must screen counterparties via the OFSI Consolidated List of designated persons.",
+      },
+    ],
+    related_sources: [
+      "RU-SPACE-LAW-1993",
+      "INT-EU-SANCTIONS-RU-833",
+      "UK-ECA-2002",
+      "UK-ECO-2008",
+    ],
+    notes: [
+      "UK and EU regimes diverged after Brexit. A transaction permitted under EU sanctions can still be prohibited under UK sanctions and vice versa — both must be screened independently for any UK-touch transaction.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-OFAC-SDN-SPACE",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "US OFAC SDN List and Sectoral Sanctions — Space-Sector Entities",
+    date_published: "2026-04-22",
+    source_url:
+      "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
+    issuing_body:
+      "US Department of the Treasury, Office of Foreign Assets Control",
+    competent_authorities: ["US-BIS"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Reference entry to the principal US sanctions instruments touching the space sector: Executive Orders authorising sanctions on Russian space-defence entities (E.O. 14024 + amendments), Iran/DPRK sanctions, the Cuba Restrictions, and the broader SDN-screening obligation that applies to every US-person transaction. OFAC's secondary-sanctions theory of jurisdiction can reach non-US operators dealing with designated counterparties even without a US nexus.",
+    key_provisions: [
+      {
+        section: "E.O. 14024 (April 2021, amended 2022+)",
+        title: "Russia harmful-foreign-activities authorities",
+        summary:
+          "Primary US authority under which Roscosmos subsidiaries, Russian space-defence entities, and supporting third-country networks have been designated. Designations carry asset-freeze and US-person-transaction prohibitions; secondary-sanctions risk for non-US operators is significant.",
+      },
+      {
+        section: "31 CFR Part 510 (DPRK) and 31 CFR Part 560 (Iran)",
+        title: "Comprehensive country sanctions",
+        summary:
+          "DPRK and Iran sanctions are near-comprehensive: practically every space-sector transaction requires OFAC general-licence or specific-licence authorisation, with extraterritorial reach for US-origin content and the 'facilitation' theory.",
+      },
+      {
+        section: "BIS Entity List (15 CFR Part 744 Supp. 4)",
+        title: "Export-control designations beyond OFAC",
+        summary:
+          "BIS Entity List captures Chinese space-defence entities, Russian space-supply networks, and other end-users for whom EAR licence requirements are imposed beyond the standard control list. Updated continuously since 2022.",
+      },
+    ],
+    related_sources: [
+      "US-EAR",
+      "US-ITAR",
+      "INT-EU-SANCTIONS-RU-833",
+      "INT-UK-RUSSIA-REGS-2019",
+      "INT-CN-EXPORT-LAW-2020",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "OFAC '50-percent rule': any entity owned 50 % or more, directly or indirectly, by one or more designated persons is itself blocked even if not separately listed. Routine source of compliance surprises in complex cross-border space transactions.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-CN-EXPORT-LAW-2020",
+    jurisdiction: "INT",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Export Control Law of the People's Republic of China (with the 2024 Dual-Use Items Export Control Regulations)",
+    title_local: "中华人民共和国出口管制法",
+    date_enacted: "2020-10-17",
+    date_in_force: "2020-12-01",
+    date_last_amended: "2024-12-01",
+    official_reference: "Order of the President No. 58 (2020)",
+    source_url:
+      "http://www.npc.gov.cn/npc/c2/c30834/202010/t20201017_307992.html",
+    issuing_body: "Standing Committee of the National People's Congress",
+    competent_authorities: ["CN-MIIT"],
+    relevance_level: "critical",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "China's first comprehensive export-control statute, modelled in part on the US EAR. Captures dual-use items, military items, nuclear items, and 'other goods, technologies and services' related to national security — explicitly extending to spacecraft technology, space-related rare earths, and inertial-navigation components. The 2024 Dual-Use Items Export Control Regulations consolidate the catalogue. Extraterritorial reach for re-export of China-origin content; deemed-export theory captures intra-foreign transfers of Chinese-origin technology.",
+    key_provisions: [
+      {
+        section: "Art. 12-15",
+        title: "Permit and end-user/end-use screening",
+        summary:
+          "MIIT-administered permits required for export of items on the Dual-Use Items Catalogue. End-user and end-use commitments are mandatory; misrepresentation is a criminal offence.",
+      },
+      {
+        section: "Art. 18",
+        title: "Catch-all and unverified-end-user controls",
+        summary:
+          "Items outside the catalogue still require a permit if the exporter knows or should know they will be used for WMD, military end-use in restricted countries, or by listed end-users. The Unverified End-User List operates similarly to the US BIS Entity List.",
+      },
+      {
+        section: "Art. 48",
+        title: "Counter-measures provision",
+        summary:
+          "Authorises retaliatory export-control measures against jurisdictions imposing 'discriminatory' controls on Chinese persons — the legal basis for China's reciprocal restrictions on US space-sector counterparties.",
+      },
+    ],
+    related_sources: ["CN-LAUNCH-REG-2002", "INT-OFAC-SDN-SPACE", "US-EAR"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "Operators sourcing rare earths or radiation-hardened electronics from Chinese suppliers must overlay this regime onto their domestic compliance — Chinese export licences are now a routine pre-condition for downstream Western shipments.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  // ─── Technical standards bodies ────────────────────────────────────
+  // The standards every operator's contract incorporates by reference.
+  // Often quasi-mandatory: not statutes, but cited in licence conditions
+  // (UK CAA CAP 2987, FR RTF, US Part 450, DE BSI TR-03184), in mission-
+  // assurance contracts (ESA, NASA, JAXA), and in insurance underwriting.
+
+  {
+    id: "INT-ISO-24113",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "ISO 24113 — Space Systems: Space Debris Mitigation Requirements",
+    date_enacted: "2019-07-01",
+    date_last_amended: "2023-01-01",
+    official_reference: "ISO 24113:2023",
+    source_url: "https://www.iso.org/standard/83494.html",
+    issuing_body:
+      "International Organization for Standardization (TC 20/SC 14)",
+    competent_authorities: [],
+    relevance_level: "critical",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "launch_provider",
+    ],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "Top-level ISO debris-mitigation standard adopted as the technical baseline by virtually every national licensing authority that regulates non-governmental space activity. Specifies quantitative requirements for orbital lifetime (LEO ≤ 25 years), passivation, end-of-life disposal, casualty risk thresholds, and design-for-disposal. Cited by FR RTF-2011, AU SLR Rules 2019, JP Space Activities Act, and the FCC 5-year PMD rule (which tightens the 25-year baseline).",
+    key_provisions: [
+      {
+        section: "Cl. 6.3 — LEO post-mission disposal",
+        title: "25-year orbital-lifetime ceiling",
+        summary:
+          "Spacecraft and orbital stages in LEO must be removed from the protected region within 25 years of end-of-mission, by atmospheric re-entry, transfer to a graveyard orbit, or active removal.",
+      },
+      {
+        section: "Cl. 6.4 — GEO disposal",
+        title: "GEO disposal orbit",
+        summary:
+          "Spacecraft in GEO must be re-orbited to at least 235 km + ΔP above the geostationary belt (the 'IADC formula') before passivation.",
+      },
+      {
+        section: "Cl. 6.5 — Passivation",
+        title: "Stored-energy passivation",
+        summary:
+          "Stored energy (propellant, batteries, pressurants) must be vented or depleted at end-of-mission to prevent fragmentation events.",
+      },
+      {
+        section: "Cl. 6.6 — Casualty risk",
+        title: "1 in 10,000 casualty risk ceiling",
+        summary:
+          "Uncontrolled re-entry of spacecraft and launch vehicles must achieve a casualty risk of less than 1 in 10,000 per event — quantitative threshold reproduced in licensing rules across jurisdictions.",
+      },
+    ],
+    related_sources: [
+      "INT-COPUOS-DEBRIS-2007",
+      "INT-LTS-2019",
+      "INT-ESA-ZERO-DEBRIS-STD",
+      "INT-ECSS-Q-ST-80C",
+      "US-FCC-5YR-PMD-2022",
+      "FR-ARRETE-2011-RT",
+    ],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-ECSS-Q-ST-80C",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "ECSS-Q-ST-80C — Software Product Assurance (and the broader ECSS standards stack for space)",
+    date_enacted: "2017-12-15",
+    official_reference: "ECSS-Q-ST-80C Rev. 1",
+    source_url: "https://ecss.nl/",
+    issuing_body:
+      "European Cooperation for Space Standardization (ESA, EUMETSAT, CNES, DLR, ASI, UKSA + industry)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity", "debris_mitigation"],
+    scope_description:
+      "Reference entry for the ECSS standards stack — the European industrial-standards system co-owned by space agencies (ESA, EUMETSAT, CNES, DLR, ASI, UKSA) and industry. ECSS-M (management), ECSS-Q (product assurance, including Q-ST-80C software PA), ECSS-E (engineering), and ECSS-U (sustainability, including ECSS-U-AS-10C 'Adoption Notice of ISO 24113') are routinely cited in ESA contracts, national-agency procurement, and insurance underwriting. BSI TR-03184-2 explicitly maps to ECSS-Q-ST-80C and related families.",
+    key_provisions: [
+      {
+        section: "ECSS-Q-ST-80C — Software product assurance",
+        title: "Software-PA baseline for space products",
+        summary:
+          "Defines processes, documentation, and verification standards for spacecraft software development. Compliance is functionally mandatory in any ESA contract and most prime-led satellite manufacturing programmes.",
+      },
+      {
+        section: "ECSS-U-AS-10C",
+        title: "Adoption of ISO 24113",
+        summary:
+          "Adopts ISO 24113 (debris mitigation) as the ECSS sustainability baseline, with European-specific extensions covering casualty risk reporting and conjunction-coordination behaviour.",
+      },
+    ],
+    related_sources: [
+      "INT-ISO-24113",
+      "INT-ESA-ZERO-DEBRIS-STD",
+      "DE-BSI-TR-03184-1",
+      "DE-BSI-TR-03184-2",
+    ],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-CCSDS",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "CCSDS — Consultative Committee for Space Data Systems (Recommended Standards)",
+    date_published: "2026-04-22",
+    source_url: "https://public.ccsds.org/Publications/AllPubs.aspx",
+    issuing_body:
+      "CCSDS Member Agencies (NASA, ESA, JAXA, DLR, CNES, ASI, UKSA, ROSCOSMOS, CNSA, CSA + observers)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum", "cybersecurity"],
+    scope_description:
+      "International standards body publishing the Recommended Standards (the 'Blue Books') that govern telemetry, telecommand, file transfer, and security for space-data systems. Operators design space and ground segments around CCSDS standards by default — CCSDS 401.0-B (Radio Frequency and Modulation), 232.0-B (TC Space Data Link), 132.0-B (TM Space Data Link), and the 35x.0-B security suites (SDLS, ASEC) are universally referenced.",
+    key_provisions: [
+      {
+        section: "CCSDS 401.0-B (Radio Frequency)",
+        title: "RF and modulation Blue Book",
+        summary:
+          "Reference standard for spacecraft RF interface design — coordinates with ITU Radio Regulations for spectrum allocations and modulation schemes used across space agencies.",
+      },
+      {
+        section: "CCSDS 232.0-B / 132.0-B (Data Links)",
+        title: "TC and TM space data-link protocols",
+        summary:
+          "Operative protocols for telecommand and telemetry between spacecraft and ground segment — implemented in virtually every Western and many third-country missions.",
+      },
+      {
+        section: "CCSDS 350.x / 35x.0-B (Security)",
+        title: "Space Data Link Security and crypto suites",
+        summary:
+          "Defines authenticated and encrypted spacecraft commanding (SDLS) and the cryptographic algorithm suites approved for space use. Increasingly cited in NIS2 and BSI TR-03184 conformity assessments.",
+      },
+    ],
+    related_sources: [
+      "INT-ITU-RR",
+      "DE-BSI-TR-03184-1",
+      "DE-BSI-TR-03184-2",
+      "INT-ECSS-Q-ST-80C",
+    ],
+    applies_to_jurisdictions: [],
+    last_verified: "2026-04-22",
+  },
+
+  // ─── ITU framework ─────────────────────────────────────────────────
+  // The international spectrum regime under which every satellite
+  // operates. National frequency licences (BNetzA, Ofcom, FCC, ARCEP,
+  // ANATEL, etc.) all flow from ITU coordination procedures.
+
+  {
+    id: "INT-ITU-RR",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "ITU Radio Regulations",
+    date_in_force: "2024-01-01",
+    official_reference:
+      "ITU Radio Regulations, Edition of 2024 (incorporating WRC-23 outcomes)",
+    source_url: "https://www.itu.int/pub/R-REG-RR",
+    issuing_body: "International Telecommunication Union",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "Treaty-status international instrument allocating the radio-frequency spectrum and the geostationary-satellite orbit. The ITU Radio Regulations bind 194 ITU Member States and are the international layer above every national frequency-licensing regime. Article 5 (Frequency Allocations), Article 9 (Coordination procedures), Article 11 (Notification), and Article 22 (Space services) are the operative provisions for any commercial satellite system.",
+    key_provisions: [
+      {
+        section: "Art. 5",
+        title: "Frequency allocation table by region",
+        summary:
+          "Tripartite regional allocation table assigning each radio-frequency band to specific services. Operators must align their payload and TT&C frequency plans with the allocation tables before national licensing is even feasible.",
+      },
+      {
+        section: "Art. 9",
+        title: "Coordination — API, CR/C, bilateral",
+        summary:
+          "Process by which a satellite network is coordinated with potentially-affected administrations. API (Advance Publication Information) opens the procedure; CR/C (Coordination Request) triggers the bilateral coordination obligations; lead times are typically 2-7 years for GEO networks.",
+        complianceImplication:
+          "Operators must initiate ITU coordination via the responsible national administration (BNetzA, Ofcom, FCC, etc.) well before launch — an unfiled or uncoordinated network has no enforceable spectrum protection.",
+      },
+      {
+        section: "Art. 11",
+        title: "Notification and Recording (MIFR)",
+        summary:
+          "After successful coordination the network is entered into the Master International Frequency Register — securing international protection against subsequent harmful interference.",
+      },
+      {
+        section: "Art. 22",
+        title: "Space services — PFD limits and EPFD constellation rules",
+        summary:
+          "Sets power-flux-density (PFD) limits for space-to-Earth transmissions and equivalent PFD (EPFD) limits for non-GSO constellations operating in shared bands. Determines the technical envelope a constellation operator must respect.",
+      },
+    ],
+    related_sources: [
+      "INT-ITU-WRC-23",
+      "INT-CCSDS",
+      "DE-TKG-2021",
+      "FR-CPCE-SATELLITE",
+      "UK-WTA-2006",
+      "UK-CA-2003",
+      "US-COMM-ACT-1934",
+    ],
+    applies_to_jurisdictions: [],
+    notes: [
+      "ITU Radio Regulations carry treaty force under Art. 4 of the ITU Constitution; they bind Member States, which then implement nationally via BNetzA / Ofcom / FCC / ARCEP / ANFR / ANATEL / etc.",
+      "WRC-23 outcomes (effective from 2024) introduced new rules for IoT non-GSO mega-constellations and adjusted the EPFD limits in several Ku/Ka bands.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "INT-ITU-WRC-23",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "ITU World Radiocommunication Conference 2023 — Final Acts (WRC-23)",
+    date_enacted: "2023-12-15",
+    date_in_force: "2024-01-01",
+    official_reference: "WRC-23 Final Acts (Dubai, 2023)",
+    source_url: "https://www.itu.int/wrc-23/",
+    issuing_body: "ITU World Radiocommunication Conference",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "The treaty-amending instrument that produced the 2024 edition of the ITU Radio Regulations. WRC-23 outcomes — in force since January 2024 — include new rules for non-GSO mega-constellations, IMT-mobile-satellite-service primary allocations, and an updated EPFD framework. Operators planning launches in 2025-2030 must verify their RF plans against the post-WRC-23 Radio Regulations rather than the older 2020 edition.",
+    key_provisions: [
+      {
+        section: "Agenda item 1.16",
+        title: "Non-GSO FSS in Ka and Q/V bands — mega-constellation rules",
+        summary:
+          "New regulatory provisions for non-GSO fixed-satellite-service systems operating in Ka, Q, and V bands — captures Starlink, Kuiper, OneWeb second-generation, and emerging European constellations. Imposes coordination, EPFD, and milestone-based deployment rules.",
+      },
+      {
+        section: "Agenda item 1.18",
+        title: "IMT-2030 and 6G — future mobile-satellite service",
+        summary:
+          "Allocations preparing the spectrum environment for 6G/IMT-2030 satellite-direct-to-device services, with implications for satellite-cellular convergence programmes.",
+      },
+    ],
+    related_sources: ["INT-ITU-RR"],
+    applies_to_jurisdictions: [],
+    notes: [
+      "WRC-27 (next conference, scheduled 2027) will revisit several WRC-23 compromises; operators with long lead-time projects should monitor the Conference Preparatory Meeting (CPM) cycle that begins in 2025.",
+    ],
+    last_verified: "2026-04-22",
+  },
 ];

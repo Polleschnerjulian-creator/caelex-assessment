@@ -656,6 +656,179 @@ const POLICY_US: LegalSource[] = [
     ],
     last_verified: "2026-04-20",
   },
+
+  // ─── State-level spaceports and incentives ─────────────────────────
+  // Federal CSLA / FAA Part 450 sit alongside state-level regimes that
+  // shape where operators actually base. State spaceport authorities,
+  // CEQA-equivalent environmental review, and tax/incentive packages
+  // are decisive in launch-site selection decisions.
+
+  {
+    id: "US-FL-SPACE-FLORIDA",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Florida Statutes Chapter 331 — Space Florida Act",
+    date_enacted: "2006-06-15",
+    date_last_amended: "2024-07-01",
+    official_reference: "Fla. Stat. §§ 331.301 et seq.",
+    source_url:
+      "http://www.leg.state.fl.us/Statutes/index.cfm?App_mode=Display_Statute&URL=0300-0399/0331/0331.html",
+    issuing_body: "Florida Legislature",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Establishes Space Florida as the State's spaceport authority and economic-development entity for the Cape Canaveral / KSC area. Operates the Florida Spaceport Improvement Program (FSIP) capital fund, the Cecil Field Spaceport licence, and the State liability and incentive framework. Effectively operates as the landlord and counterparty for any commercial operator basing in Florida — Federal CSLA + Part 450 sit on top of Space Florida's State-level concession agreements.",
+    key_provisions: [
+      {
+        section: "§ 331.302",
+        title: "Space Florida creation and powers",
+        summary:
+          "Creates Space Florida as an independent special district with the powers of a port authority — issues bonds, holds property, enters into concession agreements, and acts as the State's spaceport licensee under FAA Part 420 / 450.",
+      },
+      {
+        section: "§ 331.367",
+        title: "Spaceflight informed-consent regime",
+        summary:
+          "Florida-specific informed-consent statute limiting liability of launch providers to spaceflight participants — practical analogue of the FAA learning-period framework on the State-tort side.",
+      },
+    ],
+    related_sources: ["US-CSLA-1984", "US-14CFR-PART-450"],
+    notes: [
+      "Space Florida holds the spaceport-operator licence covering KSC's Launch Complex 39A/B (commercial operations area), Cecil Field, and other in-State sites — operators sign concession agreements with Space Florida as part of their site selection.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "US-TX-SPACEPORT",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Texas Local Government Code Chapter 507 — Spaceport Development Corporations",
+    date_enacted: "2013-06-14",
+    date_last_amended: "2023-09-01",
+    official_reference: "Tex. Local Gov't Code §§ 507.001-.103",
+    source_url: "https://statutes.capitol.texas.gov/Docs/LG/htm/LG.507.htm",
+    issuing_body: "Texas Legislature",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Authorises Texas counties to create Spaceport Development Corporations to acquire, develop, and operate spaceports and to issue bonds for spaceport infrastructure. The legal vehicle behind the SpaceX Starbase facility at Boca Chica (Cameron County Spaceport Development Corporation) and any future Texas spaceport. Pairs with the State-level liability-limiting provisions of the Texas Spaceflight Liability Act.",
+    key_provisions: [
+      {
+        section: "§ 507.012",
+        title: "Spaceport Development Corporation powers",
+        summary:
+          "Counties may form a Corporation to acquire, develop, operate, and finance spaceport infrastructure; the Corporation can act as the FAA spaceport-operator licensee and as the contractual landlord for tenant launch operators.",
+      },
+    ],
+    related_sources: ["US-CSLA-1984", "US-14CFR-PART-450", "US-TX-SLIA"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "US-TX-SLIA",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Texas Spaceflight Liability and Immunity Act",
+    date_enacted: "2011-06-17",
+    date_last_amended: "2021-06-15",
+    official_reference: "Tex. Civ. Prac. & Rem. Code §§ 100A.001-.005",
+    source_url: "https://statutes.capitol.texas.gov/Docs/CP/htm/CP.100A.htm",
+    issuing_body: "Texas Legislature",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["liability"],
+    scope_description:
+      "State-tort liability shield for launch providers operating from Texas — limits liability to spaceflight participants who sign an informed-consent waiver, with carve-outs for gross negligence and intentional acts. Practical effect: tenant-operator at a Texas spaceport faces a more favourable State-tort environment than at a non-shielded location.",
+    key_provisions: [
+      {
+        section: "§ 100A.002",
+        title: "Limitation of liability — informed consent",
+        summary:
+          "A spaceflight entity is not liable to a participant for injury or death from the inherent risks of spaceflight if the participant signs the statutorily-required warning and consent.",
+      },
+    ],
+    related_sources: ["US-TX-SPACEPORT", "US-FL-SPACE-FLORIDA"],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "US-CA-CEQA-SPACE",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "California Environmental Quality Act — Application to Space Operations",
+    date_enacted: "1970-09-18",
+    date_last_amended: "2024-09-01",
+    official_reference: "Cal. Pub. Res. Code §§ 21000-21189.70",
+    source_url:
+      "https://leginfo.legislature.ca.gov/faces/codes_displayexpandedbranch.xhtml?tocCode=PRC&division=13.&title=&part=&chapter=&article=",
+    issuing_body: "California Legislature",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "ground_segment"],
+    compliance_areas: ["environmental"],
+    scope_description:
+      "California's State-level environmental-review statute, broader than NEPA in important respects. Applies to spaceport development, satellite-manufacturing facility expansion, and ground-segment construction in California — most relevant for Vandenberg-area expansions, San Francisco / Bay Area satellite-manufacturer plants, and Mojave Spaceport. Operators routinely under-budget California-CEQA review timelines compared with federal NEPA.",
+    key_provisions: [
+      {
+        section: "§ 21080-21082",
+        title: "CEQA applicability",
+        summary:
+          "Any 'project' as defined in CEQA (which includes most space-infrastructure development) requires either a Categorical Exemption finding, a Negative Declaration, or a full Environmental Impact Report.",
+      },
+      {
+        section: "§ 21167",
+        title: "Litigation window",
+        summary:
+          "Strict (often 30-day) limitation period for legal challenge — but the volume of CEQA litigation against California development projects is high, and a successful challenge can stay project execution.",
+      },
+    ],
+    related_sources: ["US-14CFR-PART-450"],
+    notes: [
+      "California's 2024 CEQA reforms streamlined some categories of review but did not exempt aerospace; the SpaceX Vandenberg launch-cadence increase has been a recurring CEQA litigation flashpoint.",
+    ],
+    last_verified: "2026-04-22",
+  },
+
+  {
+    id: "US-NM-SPACEPORT",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "New Mexico Spaceport Development Act",
+    date_enacted: "2005-04-05",
+    date_last_amended: "2010-03-08",
+    official_reference: "N.M. Stat. §§ 58-31-1 to 58-31-23",
+    source_url: "https://nmonesource.com/nmos/nmsa/en/item/4404/index.do",
+    issuing_body: "New Mexico Legislature",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing", "liability"],
+    scope_description:
+      "Authorising statute for the New Mexico Spaceport Authority (operator of Spaceport America, home base of Virgin Galactic suborbital operations). Provides the legal vehicle for the State to hold the FAA spaceport-operator licence, issue revenue bonds, and limit operator liability to participant claimants under the State's spaceflight informed-consent regime.",
+    key_provisions: [
+      {
+        section: "§ 58-31-9",
+        title: "Spaceport Authority powers",
+        summary:
+          "New Mexico Spaceport Authority is the State entity holding the FAA spaceport-operator licence; enters into tenant agreements with launch operators (Virgin Galactic and others); operates Spaceport America revenue and tax-incentive package.",
+      },
+    ],
+    related_sources: ["US-CSLA-1984", "US-14CFR-PART-450"],
+    last_verified: "2026-04-22",
+  },
 ];
 
 // ─── Orbital Debris Rules (2) ─────────────────
