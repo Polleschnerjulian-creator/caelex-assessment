@@ -113,34 +113,89 @@ export function AtlasEntityMini({
     // The shaders render particles in pure white. To make them
     // visible on a light page bg, we apply CSS filter:invert(1) when
     // the page is in light mode — that flips the white particles to
-    // black, alpha is unchanged, transparent stays transparent.
+    // black, alpha unchanged, transparent stays transparent.
     //
-    // Detection priority: explicit .dark / .light class on <html>
-    // (app-level theme toggle) wins over OS-level prefers-color-
-    // scheme. A MutationObserver tracks class changes so the orb
-    // re-tints if the user toggles theme without reloading.
+    // Detection priority (Atlas-specific, then fallbacks):
+    //   1. data-atlas-theme="dark|light" on closest ancestor
+    //      (set by AtlasShell via React context)
+    //   2. data-atlas-preload="dark|light" on <html>
+    //      (set by the flash-guard inline script before hydration)
+    //   3. parse the computed background-color of the closest
+    //      non-transparent ancestor — looks at what's actually
+    //      visually behind the orb. The luminance >0.5 = light bg.
+    //   4. prefers-color-scheme media query
+    //
+    // The walk-up bg detection at step 3 is the robust fallback —
+    // works for any future theming mechanism without code changes.
+    const detectIsDark = (): boolean => {
+      // 1) data-atlas-theme on closest ancestor
+      const themedAncestor = container.closest("[data-atlas-theme]");
+      if (themedAncestor) {
+        const v = themedAncestor.getAttribute("data-atlas-theme");
+        if (v === "dark") return true;
+        if (v === "light") return false;
+      }
+      // 2) data-atlas-preload on html (pre-hydration)
+      const preload =
+        document.documentElement.getAttribute("data-atlas-preload");
+      if (preload === "dark") return true;
+      if (preload === "light") return false;
+      // 3) walk up DOM, find first non-transparent bg, compute lightness
+      let el: Element | null = container;
+      while (el) {
+        const bg = window.getComputedStyle(el).backgroundColor;
+        const m = bg.match(
+          /rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/,
+        );
+        if (m) {
+          const r = Number(m[1]);
+          const g = Number(m[2]);
+          const b = Number(m[3]);
+          const a = m[4] !== undefined ? Number(m[4]) : 1;
+          if (a > 0.05) {
+            // Relative luminance formula (sRGB approximation).
+            const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+            return lum < 0.5;
+          }
+        }
+        el = el.parentElement;
+      }
+      // 4) media query fallback
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    };
+
     const applyThemeFilter = () => {
       if (runtime.current.disposed) return;
-      const html = document.documentElement;
-      const hasDarkClass = html.classList.contains("dark");
-      const hasLightClass = html.classList.contains("light");
-      const prefersDark =
-        typeof window !== "undefined" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const isDark = hasDarkClass || (!hasLightClass && prefersDark);
+      const isDark = detectIsDark();
       // Light mode → invert (white particles become black on light bg)
       // Dark mode → no invert (white particles stay luminous on dark bg)
       renderer.domElement.style.filter = isDark ? "" : "invert(1)";
     };
     applyThemeFilter();
 
+    // Watch for theme changes via three signals:
+    //   - OS-level prefers-color-scheme
+    //   - <html> data-atlas-preload changes (pre-hydration)
+    //   - data-atlas-theme attribute changes anywhere up the tree
+    //     (the closest ancestor is what matters; observing the whole
+    //     subtree is overkill for one element so we observe only
+    //     <html> + the closest themed ancestor at mount time).
     const themeMql = window.matchMedia("(prefers-color-scheme: dark)");
     themeMql.addEventListener("change", applyThemeFilter);
     const htmlObserver = new MutationObserver(applyThemeFilter);
     htmlObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["class", "data-atlas-preload"],
     });
+    const themedAncestorAtMount = container.closest("[data-atlas-theme]");
+    let ancestorObserver: MutationObserver | null = null;
+    if (themedAncestorAtMount) {
+      ancestorObserver = new MutationObserver(applyThemeFilter);
+      ancestorObserver.observe(themedAncestorAtMount, {
+        attributes: true,
+        attributeFilter: ["data-atlas-theme"],
+      });
+    }
 
     const entityGroup = new THREE.Group();
     scene.add(entityGroup);
@@ -296,6 +351,7 @@ export function AtlasEntityMini({
       cancelAnimationFrame(animationId);
       observer.disconnect();
       htmlObserver.disconnect();
+      ancestorObserver?.disconnect();
       themeMql.removeEventListener("change", applyThemeFilter);
 
       [shellGeo, coreGeo, haloGeo].forEach((g) => g.dispose());
