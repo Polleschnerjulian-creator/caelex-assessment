@@ -101,6 +101,8 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "environmental",
       "space_traffic_management",
     ],
+    scope_description:
+      "Proposed Regulation establishing a harmonised EU-wide authorisation framework for space activities. Replaces national licensing fragmentation with mutual recognition across Member States, common safety/sustainability requirements, and a third-country-operator regime requiring an EU representative for non-EU services into the Union. Status: trilogue pending; expected application 2030.",
     key_provisions: [
       {
         section: "Art. 6-16",
@@ -174,6 +176,8 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["registration", "space_traffic_management"],
+    scope_description:
+      "Regulation 2021/696 establishing the EU Space Programme — Galileo, EGNOS, Copernicus, GOVSATCOM, IRIS² — and the legal basis for EUSPA's mandate. Captures security accreditation, market uptake, governance, and the ESA-EU coordination architecture under which EU programmes are implemented.",
     key_provisions: [
       {
         section: "Full regulation",
@@ -223,6 +227,8 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Directive (EU) 2022/2555 on a high common level of cybersecurity across the Union. Annex I designates Space (Sector 11) as a sector of high criticality — covered operators face risk-management duties (Art. 21), 24h/72h incident reporting (Art. 23), management-board accountability, and substantial fines. Member-State transposition deadline was October 2024.",
     key_provisions: [
       {
         section: "Annex I, Sector 11",
@@ -283,6 +289,8 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Regulation 2024/2847 imposing horizontal cybersecurity requirements on products with digital elements placed on the EU market. Hits commercial spacecraft components, ground-segment hardware, and embedded software with mandatory vulnerability handling, security-update obligations, and CE-mark conformity. Phased application from 2026 with full applicability December 2027.",
     key_provisions: [
       {
         section: "Annex I",
@@ -392,6 +400,8 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["launch_provider"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Regulation 2018/1139 establishing the European Union Aviation Safety Agency. Edge-case relevance for space: covers aircraft operations including suborbital-flight transit through controlled airspace and the airspace-coordination interface for launches from EU territory.",
     key_provisions: [
       {
         section: "Art. 2(3)(d)",

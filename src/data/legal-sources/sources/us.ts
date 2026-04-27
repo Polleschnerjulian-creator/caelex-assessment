@@ -167,6 +167,8 @@ const TREATIES_US: LegalSource[] = [
     relevance_level: "fundamental",
     applicable_to: ["all"],
     compliance_areas: ["licensing", "registration", "liability"],
+    scope_description:
+      "United States ratification record for the 1967 Outer Space Treaty. Anchors US Art. VI obligation to authorise and continuously supervise non-governmental US space activities — the constitutional foundation under which CSLA, FCC Part 25, NOAA CRSRA, and ITAR/EAR all operate.",
     key_provisions: [
       {
         section: "Art. VI",
@@ -217,6 +219,8 @@ const TREATIES_US: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "US ratification of the Rescue Agreement obliging the US to render assistance to astronauts in distress and return space objects found on US territory. Operational relevance is low for commercial operators but contributes to the international due-regard framework.",
     key_provisions: [
       {
         section: "Art. 5",
@@ -245,6 +249,8 @@ const TREATIES_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["liability", "insurance"],
+    scope_description:
+      "US ratification of the Liability Convention. Establishes US absolute liability for surface damage and fault liability for in-orbit damage caused by US-registered space objects — drives the CSLA §50914 indemnification regime under which the US Government indemnifies licensees above a contractually-set Maximum Probable Loss.",
     key_provisions: [
       {
         section: "Art. II",
@@ -273,6 +279,8 @@ const TREATIES_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["registration"],
+    scope_description:
+      "US ratification of the Registration Convention. Implemented domestically through the State Department / Department of State Registry of Space Objects, which is updated for every CSLA-licensed launch and every operational US satellite.",
     key_provisions: [
       {
         section: "Art. II",
@@ -299,6 +307,8 @@ const TREATIES_US: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["space_resource_operator"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Reference entry documenting the US position as a non-signatory and non-party to the 1979 Moon Agreement. The US explicitly rejects the Common Heritage of Mankind framing — the legal basis for US private-sector space-resource utilisation under CSLCA Title IV and the Artemis Accords' resource-extraction principles.",
     key_provisions: [
       {
         section: "Full instrument",
@@ -339,6 +349,8 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     relevance_level: "fundamental",
     applicable_to: ["launch_provider", "in_orbit_services"],
     compliance_areas: ["licensing", "liability", "insurance"],
+    scope_description:
+      "Founding statute for US commercial space-launch regulation, codified at 51 U.S.C. Ch. 509. Establishes the FAA's authority over commercial launch and re-entry, the CSLA licensing regime, the indemnification scheme (§50914), and the framework regulators have iteratively expanded through Part 450 and successor amendments.",
     key_provisions: [
       {
         section: "51 USC §50904",
@@ -389,6 +401,8 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all", "space_resource_operator"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "2015 amendment statute (the SPACE Act) modernising CSLA: extends the indemnification regime, codifies the in-space resource-utilisation right (Title IV), opens federal facility access for commercial users, and establishes the FAA learning-period framework. The principal vehicle for current-generation US space-commerce policy.",
     key_provisions: [
       {
         section: "51 USC §51303",
@@ -429,6 +443,8 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["satellite_operator", "data_provider"],
     compliance_areas: ["licensing", "data_security"],
+    scope_description:
+      "Land Remote Sensing Policy Act establishing NOAA's authority over commercial Earth-observation systems (CRSRA programme). Tiers commercial EO operators by capability and imposes shutter-control, encryption, and data-distribution restrictions on US-flagged constellations.",
     key_provisions: [
       {
         section: "51 USC §60121",
@@ -462,6 +478,8 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["launch_provider"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Performance-based, modular FAA regulation governing commercial launch and re-entry licensing — replacing the prescriptive Part 415/431/435 regime. Operators tailor a safety-case to their mission profile rather than checking boxes; the operative document for any current commercial US launch licence.",
     key_provisions: [
       {
         section: "14 CFR 450.101",
@@ -494,6 +512,8 @@ const FEDERAL_LAWS_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["satellite_operator", "ground_segment"],
     compliance_areas: ["frequency_spectrum", "debris_mitigation"],
+    scope_description:
+      "Foundational US telecommunications statute applied to satellite systems through 47 CFR Parts 25 (satellite services), 87 (aviation), and 101 (terrestrial fixed). FCC's licensing power for satellite spectrum, US market-access for non-US satellites, and the basis for the FCC's 5-year post-mission disposal rule.",
     key_provisions: [
       {
         section: "47 CFR §25.114",
@@ -537,6 +557,8 @@ const EXPORT_CONTROL_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "State Department / DDTC defence-export-control regime under the Arms Export Control Act. USML Categories IV (launch vehicles, missiles) and XV (spacecraft) capture most space-launch and many spacecraft items; export, re-export, and deemed-export to non-US persons require DDTC authorisation. The dominant cross-border friction for US space hardware.",
     key_provisions: [
       {
         section: "USML Category IV",
@@ -576,6 +598,8 @@ const EXPORT_CONTROL_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Commerce Department / BIS dual-use export-control regime governing space items not on the USML. Category 9 (Aerospace) covers commercial spacecraft, components, and technology; Category 5 (Telecom) covers satellite-communications encryption. Defines US extraterritorial reach over re-exports of US-origin content.",
     key_provisions: [
       {
         section: "ECCN 9A515 / 9E515",
@@ -612,6 +636,8 @@ const POLICY_US: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all", "space_resource_operator"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "United States as originator and first signatory of the Artemis Accords. Articulates the operational principles US partners must accept for participation in NASA-led lunar exploration — peaceful purposes, transparency, registration, scientific data sharing, safety zones, heritage preservation, and resource-extraction rights consistent with OST.",
     key_provisions: [
       {
         section: "Section 10",

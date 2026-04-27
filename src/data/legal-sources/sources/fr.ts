@@ -233,6 +233,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["licensing", "liability"],
+    scope_description:
+      "Multilateral framework agreement among ISS partners (US, Russia, Japan, Canada, ESA Member States) governing utilisation, registration, jurisdiction-and-control over modules, and the cross-waiver of liability that immunises partners from claims arising from ISS operations. Relevant when French operators interact with ISS payloads, astronauts, or partner-controlled segments.",
     key_provisions: [
       {
         section: "Art. 16",
@@ -271,6 +273,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["military_dual_use", "environmental"],
+    scope_description:
+      "Treaty banning all nuclear test explosions in any environment, including outer space. Indirectly relevant for nuclear-power-source missions, RTG-based deep-space probes, and treaty-compliant verification monitoring constellations. Not yet entered into force globally but signed by France.",
     key_provisions: [
       {
         section: "Art. I",
@@ -317,6 +321,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "fundamental",
     applicable_to: ["all"],
     compliance_areas: ["licensing", "registration", "liability"],
+    scope_description:
+      "France's ratification record for the 1967 Outer Space Treaty. Establishes the constitutional anchor that obliges the State to authorise and continuously supervise national space activities (Art. VI OST) — the legal basis from which the LOS-2008 derives.",
     key_provisions: [
       {
         section: "Art. VI",
@@ -361,6 +367,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["registration"],
+    scope_description:
+      "France's ratification record for the Convention on Registration of Objects Launched into Outer Space. Obliges France to maintain a national registry of space objects and to furnish UNOOSA with launch information — implemented domestically through Décret 2009-644 and CNES procedures.",
     key_provisions: [
       {
         section: "Art. II",
@@ -401,6 +409,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "France's ratification of the Agreement on the Rescue of Astronauts and Return of Objects Launched into Outer Space. Practical relevance is low for commercial operators but constitutes part of the international due-regard framework that LOS authorisations must respect.",
     key_provisions: [
       {
         section: "Art. 1-4",
@@ -441,6 +451,8 @@ const TREATIES_FR: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["liability", "insurance"],
+    scope_description:
+      "France's ratification of the Liability Convention — establishes France's absolute liability for surface damage and fault liability for in-orbit damage caused by French space objects. The treaty drives the LOS Art. 13 indemnification regime: France indemnifies operators for treaty-claim liability above the contractual cap, and recovers from operators in turn.",
     key_provisions: [
       {
         section: "Art. II",
@@ -601,6 +613,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["military_dual_use", "licensing", "data_security"],
+    scope_description:
+      "Carve-out for defence-classified space operations from the ordinary LOS authorisation regime. Defence missions are governed by the Code de la défense and Ministère des Armées procedures rather than CNES technical review — relevant for any operator working on dual-use or military payloads from French territory.",
     key_provisions: [
       {
         section: "Art. 1-3",
@@ -659,6 +673,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["licensing", "military_dual_use", "debris_mitigation"],
+    scope_description:
+      "Article 60 of the 2023 Military Programming Law that grants France direct counter-space-threat capability authority. Authorises active defensive measures in orbit and structures the legal basis for the Commandement de l'Espace's response options. Relevant to any operator whose satellite could be perceived as a threat or be subject to defensive action.",
     key_provisions: [
       {
         section: "Art. 60 §I",
@@ -710,6 +726,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Operational application decree for the LOS-2008 authorisation regime: defines the three-part dossier (administrative, technical-safety, financial), CNES technical-assessment role, and the timing of ministerial decisions. Every commercial LOS authorisation flows through this decree.",
     key_provisions: [
       {
         section: "Art. 1-5",
@@ -759,6 +777,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["registration", "licensing"],
+    scope_description:
+      "Companion decree to 2009-643 governing CNES technical-review obligations, the national registry of space objects, and the data CNES collects from authorised operators. Sets the registry-maintenance procedure that satisfies France's obligations under the Registration Convention.",
     key_provisions: [
       {
         section: "Art. 1-4",
@@ -798,6 +818,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["satellite_operator", "data_provider"],
     compliance_areas: ["data_security"],
+    scope_description:
+      "Earth-observation data decree creating a separate declaration regime for primary-data exploitation activities under LOS Art. 23. Operators distributing high-resolution EO data must declare their activities and accept restrictions on data delivery for sensitive areas — France's national-security overlay on EO data flows.",
     key_provisions: [
       {
         section: "Art. 1-3",
@@ -839,6 +861,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["licensing", "insurance"],
+    scope_description:
+      "2024 update to the LOS authorisation procedures, modernising 2009-643 and 2009-644 to reflect contemporary mission types (mega-constellations, in-orbit servicing, rideshares) and to streamline the dossier review for repeat licensees. Operators with multiple authorisations should re-read the dossier requirements against this latest text.",
     key_provisions: [
       {
         section: "Art. 1",
@@ -906,6 +930,8 @@ const TECHNICAL_FR: LegalSource[] = [
       "cybersecurity",
       "environmental",
     ],
+    scope_description:
+      "Operational technical regulation under the LOS framework — sets the quantitative safety thresholds (1-in-10,000 collective casualty risk for re-entry, 25-year LEO disposal, post-mission passivation) used by CNES to assess every authorisation file. The actual numbers the technical review applies, separate from the procedural Décrets above.",
     key_provisions: [
       {
         section: "Titre II",
@@ -969,6 +995,8 @@ const TECHNICAL_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Implementing arrêté specifying the precise documentation required in the LOS administrative dossier — operator identity, financial standing, mission description, and operator team qualifications. Read alongside the technical RTF when assembling an authorisation file.",
     key_provisions: [
       {
         section: "Art. 1-4",
@@ -1004,6 +1032,8 @@ const TECHNICAL_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["launch_provider", "ground_segment"],
     compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Internal exploitation rules (Règlement d'Exploitation Intérieur) for the Centre Spatial Guyanais — site access, range-safety procedures, and conduct rules binding on every entity operating at the spaceport. Required reading for any launch service provider, launch customer, or sub-contractor intending to work at CSG.",
     key_provisions: [
       {
         section: "Titre I-III (Art. 1-30)",
@@ -1093,6 +1123,8 @@ const CNES_FRAMEWORK_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["licensing", "registration"],
+    scope_description:
+      "Establishes CNES (Centre National d'Études Spatiales) as a public industrial-and-commercial establishment under the Code de la recherche, with the legal mandate to conduct space-research, deliver technical advice on LOS applications, exercise the police spéciale at CSG, and represent France in international space cooperation.",
     key_provisions: [
       {
         section: "Art. L.331-1 to L.331-2",
@@ -1131,6 +1163,8 @@ const DEFENSE_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["military_dual_use", "export_control"],
+    scope_description:
+      "Defence-Code provisions specific to space — requisitioning powers over French space assets in case of grave threat to national security, and the framework for classified defence-space operations operating outside the ordinary LOS regime. Relevant when operators receive defence requests or have dual-use systems.",
     key_provisions: [
       {
         section: "Titre II bis (Art. L.2224-1 to L.2224-6)",
@@ -1173,6 +1207,8 @@ const DEFENSE_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["military_dual_use"],
+    scope_description:
+      "€413.3B 2024-2030 Military Programming Law with €10.2B earmarked for space defence — funds the Commandement de l'Espace, defensive in-orbit systems, the IRIS² security overlay, and sovereign launch capacity. Sets the financial framework within which French defence-space contracts are issued.",
     key_provisions: [
       {
         section: "Art. 2 (Annexe — Rapport annexé)",
@@ -1214,6 +1250,8 @@ const DEFENSE_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["military_dual_use", "space_traffic_management"],
+    scope_description:
+      "France's first formal space-defence doctrine, articulating four operational functions (knowledge of the situation, action in space, support to operations, sovereignty protection) and creating the policy basis for the 2019 Commandement de l'Espace stand-up. Non-binding policy but the strategic frame for subsequent defence-space legislation.",
     key_provisions: [
       {
         section: "Chapter 2",
@@ -1261,6 +1299,8 @@ const TELECOM_FR: LegalSource[] = [
       "ground_segment",
     ],
     compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "Code des postes et des communications électroniques (CPCE) provisions on satellite frequency assignment, ARCEP licensing of satellite communications services, and ANFR coordination of ITU filings for French satellite systems. The frequency-spectrum companion to LOS technical authorisation.",
     key_provisions: [
       {
         section: "Art. L.97-2",
@@ -1306,6 +1346,8 @@ const INSURANCE_FR: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "Code des assurances rules on space-liability insurance — the mandatory third-party-liability coverage operators must hold to receive an LOS authorisation, the regulatory tier of acceptable insurers, and the interaction with the State indemnification ceiling. Critical reading for any LOS application's financial section.",
     key_provisions: [
       {
         section: "Art. L.176-1",
@@ -1354,6 +1396,8 @@ const EXPORT_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Inter-ministerial commission that issues defence-export licences for war material — including space-bound payloads classified as military or dual-use military. The CIEEMG decision is mandatory for any space hardware export with defence relevance, sitting alongside the EU Dual-Use Regulation review.",
     key_provisions: [
       {
         section: "Code de la défense L.2335-1 to L.2335-4",
@@ -1388,6 +1432,8 @@ const EXPORT_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["export_control"],
+    scope_description:
+      "Service des biens à double usage (SBDU) within DGE-EGIDE administers the EU Dual-Use Regulation 2021/821 in France. The national-licensing authority for civilian dual-use space components — GNSS receivers, INS, star trackers, complete satellites under Annex I Cat. 9.",
     key_provisions: [
       {
         section: "EU Reg. 2021/821 — French implementation",
@@ -1434,6 +1480,8 @@ const NIS2_FR: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "France's Loi Résilience transposes NIS2 with a three-tier entity classification (essentielles, importantes, autres). Space operators meeting the criteria fall under ANSSI supervision, with risk-management duties, 24h/72h incident reporting, and substantial fines for non-compliance. The French equivalent of DE-BSIG-NIS2.",
     key_provisions: [
       {
         section: "Titre I",
@@ -1485,6 +1533,8 @@ const ENVIRONMENTAL_FR: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["launch_provider", "ground_segment"],
     compliance_areas: ["environmental"],
+    scope_description:
+      "Environmental Code (ICPE — Installations Classées pour la Protection de l'Environnement) regime applied to CSG. Centre Spatial Guyanais facilities are classified SEVESO upper-tier, triggering quantitative risk assessment, public consultation, and continuous environmental monitoring. Affects any new launch-pad or propellant-handling expansion.",
     key_provisions: [
       {
         section: "Art. L.515-15 to L.515-26",
@@ -1523,6 +1573,8 @@ const POLICY_FR: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "€1.5B space-investment commitment under the France 2030 industrial plan, structured around sovereign access to space, NewSpace ecosystem support, and Earth-observation capacity. Non-binding policy, but the funding source for many CNES procurements and BPI France innovation grants.",
     key_provisions: [
       {
         section: "Objective 9",
@@ -1562,6 +1614,8 @@ const POLICY_FR: LegalSource[] = [
       "military_dual_use",
       "space_traffic_management",
     ],
+    scope_description:
+      "France's 2025-2040 national space strategy, restating sovereign access to space as the over-arching goal and articulating priority areas (defence-space, EO sovereignty, telecommunications, exploration). The strategic policy frame that shapes upcoming legislative and budgetary choices.",
     key_provisions: [
       {
         section: "Pillar 1",

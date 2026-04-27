@@ -205,6 +205,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["launch_provider"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Aviation law that incidentally classifies launch vehicles as aircraft while transiting German airspace. Triggers LBA (aviation authority) clearance and strict aircraft-liability regime in addition to any future space-specific licence — the only national-level licensing hook for German launches today.",
     key_provisions: [
       {
         section: "§ 1 Abs. 2",
@@ -245,6 +247,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "ground_segment",
     ],
     compliance_areas: ["frequency_spectrum", "cybersecurity"],
+    scope_description:
+      "Comprehensive telecommunications framework that BNetzA uses to allocate satellite frequencies, coordinate ITU filings (API, CR/C, Notification, Recording), and enforce TK security obligations on satellite networks. Applies to every commercial DE satellite system regardless of orbit or service type.",
     key_provisions: [
       {
         section: "§§ 91 ff.",
@@ -294,6 +298,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["export_control"],
+    scope_description:
+      "Primary federal authority for export control and inbound investment screening. Captures spacecraft components, ground station equipment, cryptographic modules, and non-EU acquisitions of German space companies (≥10 % voting rights triggers BMWK notification). The export-control hub for any German space-sector cross-border transaction.",
     key_provisions: [
       {
         section: "§§ 4-8",
@@ -330,6 +336,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["export_control"],
+    scope_description:
+      "Implementing regulation under AWG with the operative thresholds and procedures. § 55-62 govern sector-specific investment screening including the space/critical-infrastructure carve-out — a foreign acquirer must consult AWV before AWG to know exactly which notification regime applies.",
     key_provisions: [
       {
         section: "§§ 55-62",
@@ -356,6 +364,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["export_control"],
+    scope_description:
+      "EU Regulation 2021/821 directly applicable in Germany — no national transposition. Annex I Categories 7 and 9 enumerate controlled space items (GNSS, INS, star trackers, complete satellites, propulsion, reaction wheels). The catch-all clause in Art. 4 obliges screening of every space-component export, not just listed items.",
     key_provisions: [
       {
         section: "Annex I, Category 7",
@@ -432,6 +442,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "German national transposition of NIS2 cybersecurity obligations for entities in sectors of high criticality, including the space sector (NIS2 Annex I). Governs risk-management duties (§§ 30-31), 24h/72h incident reporting, BSI registration (§ 33), and the critical-component clearance regime (§ 41) for ground segment and mission-control systems.",
     key_provisions: [
       {
         section: "§§ 30-31",
@@ -482,6 +494,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["launch_provider"],
     compliance_areas: ["environmental"],
+    scope_description:
+      "General environmental impact assessment law triggered by development of launch facilities or large-scale ground stations. Not space-specific — applies the standard UVP procedure to any space infrastructure build that meets the project-list thresholds. Becomes critical if Germany establishes a domestic spaceport.",
     key_provisions: [
       {
         section: "§ 1",
@@ -508,6 +522,8 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["liability"],
+    scope_description:
+      "Strict no-fault product-liability regime applicable to spacecraft components, ground equipment, and satellite subsystems delivered to third parties. The development-risk defence in § 1 Abs. 2 Nr. 5 is the central question for novel space technology — manufacturers should evaluate whether it is invokable for their hardware.",
     key_provisions: [
       {
         section: "§ 1",
@@ -1111,6 +1127,8 @@ const STANDARDS_DE: LegalSource[] = [
     relevance_level: "critical",
     applicable_to: ["satellite_operator", "constellation_operator"],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Technical baseline for space-segment cybersecurity issued by BSI. Defines the threat model (jamming, spoofing, command injection, supply-chain compromise) and mandates measures including encrypted TT&C, authenticated commanding, secure boot, and key management. Quasi-mandatory: ESA, DLR, and Bundeswehr contracts require compliance.",
     key_provisions: [
       {
         section: "Chapter 3",
@@ -1158,6 +1176,8 @@ const STANDARDS_DE: LegalSource[] = [
       "constellation_operator",
     ],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Companion to TR-03184-1 covering ground-segment cybersecurity — mission control, ground stations, TT&C infrastructure, and data processing. Maps onto ISO 27001/27002, NIST CSF, ECSS, CCSDS, and MITRE ATT&CK; serves as BSI's interpretation of 'state of the art' for NIS2-covered space ground infrastructure.",
     key_provisions: [
       {
         section: "Full document",
@@ -1191,6 +1211,8 @@ const STANDARDS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["satellite_operator", "ground_segment"],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Conformity-assessment standard published March 2026 that defines the audit criteria and procedures for certifying compliance with TR-03184 Parts 1 and 2. The newest BSI space publication — establishes how organizations demonstrate space cybersecurity compliance to regulators and procurers.",
     key_provisions: [
       {
         section: "Full document",
@@ -1219,6 +1241,8 @@ const STANDARDS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["satellite_operator", "data_provider"],
     compliance_areas: ["data_security", "cybersecurity"],
+    scope_description:
+      "BSI's technical conformity-assessment standard mandatory as a prerequisite for any SatDSiG licence. BAFA does not issue Earth-observation licences without a positive BSI TR-03140 evaluation — the IT-security gate that sits inside the SatDSiG authorisation flow.",
     key_provisions: [
       {
         section: "Full document",
@@ -1247,6 +1271,8 @@ const STANDARDS_DE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["satellite_operator", "ground_segment"],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Application of the BSI IT-Grundschutz methodology to the full space-system lifecycle, defining minimum (Basisabsicherung) and standard (Standardabsicherung) measures for both space and ground segments. Provides a structured certification path that German authorities accept as evidence of NIS2-adequate security.",
     key_provisions: [
       {
         section: "Full profile",
@@ -1276,6 +1302,8 @@ const STANDARDS_DE: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Strategic policy paper that contextualises TR-03184, IT-Grundschutz, and NIS2 within BSI's broader cybersecurity stance for space infrastructures. Non-binding but signals the regulator's priorities — useful for operators reading the direction of upcoming technical guidance.",
     key_provisions: [
       {
         section: "Full paper",
@@ -1311,6 +1339,8 @@ const POLICY_DE: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "Federal Government's 2023 space-policy strategy, with explicit commitment to enacting a comprehensive German Weltraumgesetz covering licensing, registration, liability, and insurance for all non-governmental space activities. Policy-level only — no immediate compliance obligations, but the political foundation for the WRG-Eckpunkte and subsequent legislative work.",
     key_provisions: [
       {
         section: "Chapter: Regulatory Framework",
@@ -1424,6 +1454,8 @@ const POLICY_DE: LegalSource[] = [
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
+    scope_description:
+      "CDU/CSU-SPD coalition agreement for the 21st Bundestag that re-confirms a comprehensive Weltraumgesetz as a legislative priority for the 2025-2029 period, after the previous Ampel coalition failed to deliver. Signals continued political momentum for a unified national space law — operators should anticipate licensing obligations in this legislative window.",
     key_provisions: [
       {
         section: "Space section",
