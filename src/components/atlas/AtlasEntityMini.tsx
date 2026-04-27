@@ -79,16 +79,12 @@ export function AtlasEntityMini({
     );
 
     const scene = new THREE.Scene();
-    // Opaque black background — same as the full AtlasEntity. The
-    // mini orb gets clipped to a circle by its parent CSS, so the
-    // black square becomes a black "mini stage" in the corner that
-    // visually matches the AI-Mode orb-in-its-stage look.
-    //
-    // We tried alpha:true earlier but UnrealBloomPass + EffectComposer
-    // don't propagate alpha reliably at small canvas sizes — the
-    // result is a solid white block instead of a transparent
-    // background. Opaque-black + parent-clip is the robust path.
-    scene.background = new THREE.Color(0x000000);
+    // Transparent background — the orb floats on whatever the page
+    // bg is. Without EffectComposer, alpha:true on the renderer +
+    // scene.background = null gives a properly transparent canvas
+    // (the bug we hit before was bloom-pass-related, not a basic-
+    // render issue).
+    scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
     // Tighter than the full entity (z=8) so the orb fills the small
@@ -97,7 +93,8 @@ export function AtlasEntityMini({
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: false, // opaque — see scene.background note above
+      alpha: true, // transparent canvas; particles render on page bg
+      premultipliedAlpha: false,
       powerPreference: "low-power",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -105,23 +102,45 @@ export function AtlasEntityMini({
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.LinearToneMapping;
     renderer.toneMappingExposure = 1.0;
+    renderer.setClearColor(0x000000, 0); // alpha-zero clear → fully transparent
     container.appendChild(renderer.domElement);
 
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.display = "block";
-    // ── Theme-adaptive blend ────────────────────────────────────
-    // The canvas is rendered with an opaque black background and
-    // additive-blended white particles. With mix-blend-mode:
-    // difference, both effects auto-adapt to the page bg:
+
+    // ── Theme-adaptive particle color ──────────────────────────
+    // The shaders render particles in pure white. To make them
+    // visible on a light page bg, we apply CSS filter:invert(1) when
+    // the page is in light mode — that flips the white particles to
+    // black, alpha is unchanged, transparent stays transparent.
     //
-    //   • Black canvas-bg vs page-bg → |0 - page| = page (invisible)
-    //   • White particles vs light page → |255 - light| = dark gray (visible)
-    //   • White particles vs dark page → |255 - dark| = light/white (visible)
-    //
-    // No black disc framing the orb on light pages, no white wash
-    // ruining dark pages. One blend rule, both themes covered.
-    renderer.domElement.style.mixBlendMode = "difference";
+    // Detection priority: explicit .dark / .light class on <html>
+    // (app-level theme toggle) wins over OS-level prefers-color-
+    // scheme. A MutationObserver tracks class changes so the orb
+    // re-tints if the user toggles theme without reloading.
+    const applyThemeFilter = () => {
+      if (runtime.current.disposed) return;
+      const html = document.documentElement;
+      const hasDarkClass = html.classList.contains("dark");
+      const hasLightClass = html.classList.contains("light");
+      const prefersDark =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const isDark = hasDarkClass || (!hasLightClass && prefersDark);
+      // Light mode → invert (white particles become black on light bg)
+      // Dark mode → no invert (white particles stay luminous on dark bg)
+      renderer.domElement.style.filter = isDark ? "" : "invert(1)";
+    };
+    applyThemeFilter();
+
+    const themeMql = window.matchMedia("(prefers-color-scheme: dark)");
+    themeMql.addEventListener("change", applyThemeFilter);
+    const htmlObserver = new MutationObserver(applyThemeFilter);
+    htmlObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     const entityGroup = new THREE.Group();
     scene.add(entityGroup);
@@ -276,6 +295,8 @@ export function AtlasEntityMini({
       runtime.current.disposed = true;
       cancelAnimationFrame(animationId);
       observer.disconnect();
+      htmlObserver.disconnect();
+      themeMql.removeEventListener("change", applyThemeFilter);
 
       [shellGeo, coreGeo, haloGeo].forEach((g) => g.dispose());
       [shellMat, coreMat, haloMat].forEach((m) => m.dispose());
