@@ -125,15 +125,40 @@ export interface SemanticSearchOptions {
 }
 
 /**
+ * Cost gate: semantic search calls the Vercel AI Gateway to embed the
+ * user query (~$0.02 per million input tokens at text-embedding-3-small
+ * pricing — typical query is 5-15 tokens, so ~$0.0000003 per call).
+ *
+ * Gateway calls = external cost. To keep Atlas free of recurring
+ * external API spend by default, the helper short-circuits unless
+ * `ATLAS_SEMANTIC_ENABLED=true` is set in the environment. With the
+ * flag off, callers fall back to keyword-only scoring — same code
+ * path as a cold-start before `npm run atlas:embed` has run.
+ *
+ * Flip `ATLAS_SEMANTIC_ENABLED=true` (Vercel env, .env.local) and
+ * re-deploy when you're ready to opt back in.
+ */
+function isSemanticEnabled(): boolean {
+  return process.env.ATLAS_SEMANTIC_ENABLED === "true";
+}
+
+/**
  * Embed `query` and return cosine-ranked hits from the prebuilt
- * catalogue. Returns null if either the catalogue or the embedding
- * call is unavailable — callers must treat null as "fall back to
- * keyword search" rather than as an error.
+ * catalogue. Returns null when:
+ *   - `ATLAS_SEMANTIC_ENABLED` env flag is not set to "true"
+ *     (default — no external API calls, no cost)
+ *   - the embeddings catalogue is missing
+ *   - the `ai` SDK is not installed
+ *   - the gateway call fails
+ *
+ * Callers must treat null as "fall back to keyword search" rather
+ * than as an error — the keyword scorer always runs in parallel.
  */
 export async function semanticSearch(
   query: string,
   opts: SemanticSearchOptions = {},
 ): Promise<SemanticHit[] | null> {
+  if (!isSemanticEnabled()) return null;
   const [catalogue, sdk] = await Promise.all([loadCatalogue(), loadAiSdk()]);
   if (!catalogue || catalogue.length === 0) return null;
   if (!sdk) return null;

@@ -113,6 +113,23 @@ async function loadCatalogue(): Promise<EmbeddingEntry[] | null> {
 export async function POST(request: NextRequest) {
   const started = Date.now();
 
+  // Cost gate — semantic search hits the Vercel AI Gateway to embed
+  // each query, which is a (very small) per-call external cost. The
+  // flag is opt-in: with `ATLAS_SEMANTIC_ENABLED` unset or != "true"
+  // we respond with the same shape the UI sees on a cold catalogue,
+  // so the command-centre falls back silently to keyword search.
+  if (process.env.ATLAS_SEMANTIC_ENABLED !== "true") {
+    return NextResponse.json(
+      {
+        matches: [],
+        corpus: 0,
+        reason: "disabled",
+        tookMs: Date.now() - started,
+      },
+      { status: 200 },
+    );
+  }
+
   // Auth
   const atlas = await getAtlasAuth();
   if (!atlas) {
