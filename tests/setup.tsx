@@ -20,6 +20,12 @@ afterAll(() => {
   server.close();
 });
 
+// `server-only` is a Next.js runtime guard that throws if a server-only
+// module is imported in client code. In vitest (Node-side execution) the
+// guard isn't relevant — we want the modules under test to load
+// normally. Stub it out as an empty module.
+vi.mock("server-only", () => ({}));
+
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

@@ -163,3 +163,81 @@ describe("formatAtlasToolInput — fallbacks", () => {
     );
   });
 });
+
+describe("formatAtlasToolInput — search_legal_sources", () => {
+  it("renders the bare query with no filters", () => {
+    expect(
+      formatAtlasToolInput("search_legal_sources", { query: "NIS2" }),
+    ).toBe('Atlas-Suche: „NIS2"');
+  });
+
+  it("appends jurisdiction filter when provided", () => {
+    expect(
+      formatAtlasToolInput("search_legal_sources", {
+        query: "NIS2",
+        jurisdiction: "DE",
+      }),
+    ).toBe('Atlas-Suche: „NIS2" · DE');
+  });
+
+  it("renders all three filters with comma separation", () => {
+    expect(
+      formatAtlasToolInput("search_legal_sources", {
+        query: "debris",
+        jurisdiction: "INT",
+        type: "technical_standard",
+        compliance_area: "debris_mitigation",
+      }),
+    ).toBe(
+      'Atlas-Suche: „debris" · INT, technical standard, debris mitigation',
+    );
+  });
+
+  it("truncates a long query at 40 chars", () => {
+    const out = formatAtlasToolInput("search_legal_sources", {
+      query: "x".repeat(80),
+    });
+    expect(out.startsWith("Atlas-Suche: „")).toBe(true);
+    expect(out.endsWith('…"')).toBe(true);
+  });
+});
+
+describe("formatAtlasToolInput — get_legal_source_by_id", () => {
+  it("renders the canonical id", () => {
+    expect(
+      formatAtlasToolInput("get_legal_source_by_id", {
+        source_id: "INT-OST-1967",
+      }),
+    ).toBe("Quelle: INT-OST-1967");
+  });
+
+  it("renders ? when source_id is missing", () => {
+    expect(formatAtlasToolInput("get_legal_source_by_id", {})).toBe(
+      "Quelle: ?",
+    );
+  });
+});
+
+describe("formatAtlasToolInput — list_workspace_templates", () => {
+  it("renders the static label regardless of input", () => {
+    expect(formatAtlasToolInput("list_workspace_templates", {})).toBe(
+      "Workspace-Vorlagen abrufen",
+    );
+  });
+});
+
+describe("formatAtlasToolInput — list_jurisdiction_authorities", () => {
+  it("renders the uppercased code", () => {
+    expect(
+      formatAtlasToolInput("list_jurisdiction_authorities", {
+        jurisdiction: "de",
+      }),
+    ).toBe("Behörden: DE");
+  });
+
+  it("renders ? when jurisdiction is missing", () => {
+    expect(formatAtlasToolInput("list_jurisdiction_authorities", {})).toBe(
+      "Behörden: ?",
+    );
+  });
+});

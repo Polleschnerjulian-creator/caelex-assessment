@@ -1,0 +1,345 @@
+/**
+ * Copyright 2026 Caelex GmbH. All rights reserved.
+ *
+ * Tests for the catalogue-navigation tools added to the Atlas tool
+ * executor in 2026-04 (search_legal_sources, get_legal_source_by_id,
+ * list_workspace_templates, list_jurisdiction_authorities).
+ *
+ * The catalogue-navigation tools are pure functions over the legal-
+ * sources dataset and the workspace-template registry — no DB, no
+ * network, no caller scoping. So we exercise them directly via the
+ * exported `executeAtlasTool` dispatcher with fixed inputs and assert
+ * on the JSON shape Claude will see.
+ *
+ * The matter-management tools (find_or_open_matter,
+ * find_operator_organization, create_matter_invite) are NOT covered
+ * here — they hit the database and require integration-test fixtures.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import { describe, it, expect } from "vitest";
+import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
+
+const STUB_CALLER = {
+  callerUserId: "test-user",
+  callerOrgId: "test-org",
+};
+
+interface SearchHit {
+  id: string;
+  jurisdiction: string;
+  type: string;
+  status: string;
+  title: string;
+  scope_description: string;
+  score: number;
+}
+
+interface SearchPayload {
+  query: string;
+  filters: { jurisdiction?: string; type?: string; compliance_area?: string };
+  hit_count: number;
+  hits: SearchHit[];
+  hint: string;
+}
+
+describe("executeAtlasTool — search_legal_sources", () => {
+  it("rejects queries shorter than 2 characters", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "a" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("returns hits for a substantive query", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "NIS2" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    expect(payload.hit_count).toBeGreaterThan(0);
+    expect(payload.hits.length).toBeLessThanOrEqual(10);
+    // Top hit should be NIS2-related
+    const topIds = payload.hits.slice(0, 3).map((h) => h.id);
+    expect(topIds.some((id) => id.includes("NIS2"))).toBe(true);
+  });
+
+  it("filters by jurisdiction", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "NIS2", jurisdiction: "DE" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    expect(payload.hits.every((h) => h.jurisdiction === "DE")).toBe(true);
+  });
+
+  it("filters by type", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "treaty", type: "international_treaty" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    expect(payload.hits.every((h) => h.type === "international_treaty")).toBe(
+      true,
+    );
+  });
+
+  it("filters by compliance_area", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: {
+        query: "ITU",
+        compliance_area: "frequency_spectrum",
+      },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    // Best ITU hit should mention frequency_spectrum coverage
+    expect(payload.hit_count).toBeGreaterThan(0);
+  });
+
+  it("returns zero hits for nonsense query", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "asdfqwertyzxcv" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    expect(payload.hit_count).toBe(0);
+    expect(payload.hint.toLowerCase()).toContain("no matches");
+  });
+
+  it("rejects an invalid type filter at the Zod boundary", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "NIS2", type: "not-a-real-type" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+  });
+
+  it("orders hits by descending score", async () => {
+    const r = await executeAtlasTool({
+      name: "search_legal_sources",
+      input: { query: "satellite" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as SearchPayload;
+    for (let i = 1; i < payload.hits.length; i++) {
+      expect(payload.hits[i - 1].score).toBeGreaterThanOrEqual(
+        payload.hits[i].score,
+      );
+    }
+  });
+});
+
+describe("executeAtlasTool — get_legal_source_by_id", () => {
+  it("rejects ids that violate the format regex", async () => {
+    const r = await executeAtlasTool({
+      name: "get_legal_source_by_id",
+      input: { source_id: "lower-case-id" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("returns NOT_FOUND for a well-formed but unknown id", async () => {
+    const r = await executeAtlasTool({
+      name: "get_legal_source_by_id",
+      input: { source_id: "XX-NONEXISTENT-9999" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string; hint?: string };
+    expect(payload.code).toBe("NOT_FOUND");
+    expect(payload.hint).toContain("search_legal_sources");
+  });
+
+  it("returns the full record for a known id", async () => {
+    const r = await executeAtlasTool({
+      name: "get_legal_source_by_id",
+      input: { source_id: "INT-OST-1967" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      id: string;
+      jurisdiction: string;
+      title: string;
+      relevance_level: string;
+      key_provisions: Array<{
+        section: string;
+        title: string;
+        summary: string;
+      }>;
+    };
+    expect(payload.id).toBe("INT-OST-1967");
+    expect(payload.jurisdiction).toBe("INT");
+    expect(payload.relevance_level).toBe("fundamental");
+    expect(payload.key_provisions.length).toBeGreaterThan(0);
+  });
+
+  it("trims long related_sources arrays to 12 entries", async () => {
+    // The OST is widely related to many other treaties + national
+    // ratifications. We don't know the exact count but it's > 12.
+    const r = await executeAtlasTool({
+      name: "get_legal_source_by_id",
+      input: { source_id: "INT-OST-1967" },
+      ...STUB_CALLER,
+    });
+    const payload = JSON.parse(r.content) as { related_sources: string[] };
+    expect(payload.related_sources.length).toBeLessThanOrEqual(12);
+  });
+});
+
+describe("executeAtlasTool — list_workspace_templates", () => {
+  it("returns all six templates with the expected shape", async () => {
+    const r = await executeAtlasTool({
+      name: "list_workspace_templates",
+      input: {},
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      template_count: number;
+      templates: Array<{
+        id: string;
+        title: string;
+        description: string;
+        category: string;
+        cardCount: number;
+      }>;
+      hint: string;
+    };
+    expect(payload.template_count).toBeGreaterThanOrEqual(6);
+    expect(payload.templates).toContainEqual(
+      expect.objectContaining({ id: "sanctions-diligence-pack" }),
+    );
+    expect(payload.templates).toContainEqual(
+      expect.objectContaining({ id: "itu-filing-pack" }),
+    );
+    expect(payload.templates).toContainEqual(
+      expect.objectContaining({ id: "insurance-placement-pack" }),
+    );
+    // Every template has a non-empty card count
+    expect(payload.templates.every((t) => t.cardCount > 0)).toBe(true);
+  });
+});
+
+describe("executeAtlasTool — list_jurisdiction_authorities", () => {
+  it("rejects lowercase or invalid jurisdiction codes", async () => {
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "X1" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+  });
+
+  it("normalises lowercase input to uppercase", async () => {
+    // Lowercase 'de' should be normalised to 'DE' before validation.
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "de" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      jurisdiction: string;
+      authority_count: number;
+    };
+    expect(payload.jurisdiction).toBe("DE");
+    expect(payload.authority_count).toBeGreaterThan(0);
+  });
+
+  it("returns DE authorities including BMWK and BAFA", async () => {
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "DE" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      authorities: Array<{ id: string; abbreviation: string }>;
+    };
+    const ids = payload.authorities.map((a) => a.id);
+    expect(ids).toContain("DE-BMWK");
+    expect(ids).toContain("DE-BAFA");
+  });
+
+  it("returns INT authorities including UNOOSA and ITU", async () => {
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "INT" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      authority_count: number;
+      authorities: Array<{ id: string }>;
+    };
+    expect(payload.authority_count).toBeGreaterThan(0);
+  });
+
+  it("returns empty list with hint for an unknown but well-formed code", async () => {
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "XX" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      authority_count: number;
+      hint?: string;
+    };
+    expect(payload.authority_count).toBe(0);
+    expect(payload.hint).toContain("INT");
+  });
+
+  it("returns AU authorities for the new strategic-actor jurisdiction", async () => {
+    const r = await executeAtlasTool({
+      name: "list_jurisdiction_authorities",
+      input: { jurisdiction: "AU" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      authorities: Array<{ id: string; abbreviation: string }>;
+    };
+    const ids = payload.authorities.map((a) => a.id);
+    expect(ids).toContain("AU-ASA");
+    expect(ids).toContain("AU-ACMA");
+  });
+});
+
+describe("executeAtlasTool — dispatcher", () => {
+  it("returns UNKNOWN_TOOL for an invalid name (defensive)", async () => {
+    const r = await executeAtlasTool({
+      // Casting through never to bypass the union — simulates a bad name
+      // arriving from the wire (e.g. Claude generating a malformed tool
+      // call). The dispatcher's exhaustive-check should catch it.
+      name: "not_a_real_tool" as never,
+      input: {},
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("UNKNOWN_TOOL");
+  });
+});
