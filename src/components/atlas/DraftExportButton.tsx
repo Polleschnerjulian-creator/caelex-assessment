@@ -6,6 +6,7 @@ import {
   exportDraftAsWord,
   exportDraftAsMarkdown,
 } from "@/lib/atlas/draft-export";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
  * Export-as-Word/Markdown dropdown for any Astra-streamed message.
@@ -34,6 +35,12 @@ export function DraftExportButton({
   const [open, setOpen] = useState(false);
   const [exported, setExported] = useState<"word" | "markdown" | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const { language, t } = useLanguage();
+  // The export helper accepts en|de — collapse fr/es to en for chrome.
+  // Pilot is bilingual EN/DE; if we add full FR/ES later we'll widen
+  // the helper's locale param.
+  const exportLocale: "en" | "de" = language === "de" ? "de" : "en";
+  const isDe = language === "de";
 
   useEffect(() => {
     if (!open) return;
@@ -54,7 +61,7 @@ export function DraftExportButton({
   }, [open]);
 
   const handleWord = () => {
-    exportDraftAsWord({ markdown: content, title });
+    exportDraftAsWord({ markdown: content, title, locale: exportLocale });
     setExported("word");
     setOpen(false);
     setTimeout(() => setExported(null), 1800);
@@ -71,8 +78,8 @@ export function DraftExportButton({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title="Export draft"
-        aria-label="Export draft"
+        title={t("atlas.export_draft_aria")}
+        aria-label={t("atlas.export_draft_aria")}
         aria-expanded={open}
         className={
           compact
@@ -89,7 +96,11 @@ export function DraftExportButton({
         ) : (
           <Download className="h-3 w-3" strokeWidth={1.5} aria-hidden="true" />
         )}
-        {!compact && <span>{exported ? "Exported" : "Export"}</span>}
+        {!compact && (
+          <span>
+            {exported ? t("atlas.export_done") : t("atlas.export_label")}
+          </span>
+        )}
         <ChevronDown
           className={`h-2.5 w-2.5 transition-transform ${open ? "rotate-180" : ""}`}
           strokeWidth={1.5}
@@ -115,7 +126,9 @@ export function DraftExportButton({
             <div className="min-w-0">
               <div className="text-[12px] font-medium">Word (.doc)</div>
               <p className="text-[10px] text-white/40 mt-0.5">
-                Opens in Office Word, formatting preserved
+                {isDe
+                  ? "Öffnet direkt in Office Word, Formatierung erhalten"
+                  : "Opens in Office Word, formatting preserved"}
               </p>
             </div>
           </button>
@@ -132,7 +145,9 @@ export function DraftExportButton({
             <div className="min-w-0">
               <div className="text-[12px] font-medium">Markdown (.md)</div>
               <p className="text-[10px] text-white/40 mt-0.5">
-                For Notion, Obsidian, DMS imports
+                {isDe
+                  ? "Für Notion, Obsidian, DMS-Imports"
+                  : "For Notion, Obsidian, DMS imports"}
               </p>
             </div>
           </button>

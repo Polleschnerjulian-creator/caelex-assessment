@@ -7,6 +7,7 @@ import type {
   JurisdictionLaw,
 } from "@/lib/space-law-types";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useFirmBranding } from "./useFirmBranding";
 
 /**
  * ComparatorExport — Atlas PDF briefing for the /atlas/comparator view.
@@ -377,7 +378,60 @@ export default function ComparatorExport({
   countries,
   dimension,
 }: ComparatorExportProps) {
-  useLanguage(); // keeps language-context subscription for hook ordering
+  const { language } = useLanguage();
+  const isDe = language === "de";
+  const firm = useFirmBranding();
+
+  // Locale-aware chrome strings — without these the German pilot
+  // exports a half-translated artifact (data is bilingual but
+  // headers/disclaimer/methodology hardcoded English).
+  const chrome = isDe
+    ? {
+        kicker: "Regulatorisches Briefing",
+        coverSubtitleTpl: (n: number, dim: string) =>
+          `${dim} — vergleichende Analyse von ${n} europäischen Raumfahrtgesetz-Rahmen, gestützt auf die Atlas-Primärquellen-Datenbank.`,
+        jurisdictionsLabel: "Jurisdiktionen",
+        dimensionLabel: "Bereich",
+        preparedLabel: "Erstellt",
+        dataCurrentLabel: "Daten-Stand",
+        lastVerifiedTpl: (d: string) => `Zuletzt geprüft ${d}`,
+        issuerLabel: "Aussteller",
+        issuerName: "Caelex — Atlas Regulatory Intelligence",
+        confidential: "Vertraulich · Keine Rechtsberatung",
+        glanceKicker: "Zusammenfassung",
+        glanceTitle: "Auf einen Blick",
+        provisionHeader: "Bestimmung",
+        sourcesTitle: "Quellen",
+        methodologyTitle: "Methodik",
+        disclaimerTitle: "Rechtlicher Hinweis",
+        methodologyBody:
+          'Dieses Briefing basiert auf der kuratierten Atlas-Datenbank europäischer Raumfahrtjurisdiktionen. Jede Zeile stammt aus nationalen Amtsblättern oder gleichwertigen offiziellen Registern und ist gegen das UN-Depositär für Weltraumverträge gegengeprüft. Vergleichszellen verwenden eine vier-stufige monochrome Kodierung: gefüllter Kreis (●) für eine bejahende Feststellung, offener Kreis (○) für eine verneinende Feststellung, gestrichelter Kreis für nicht-anwendbar, und Klartext für numerische oder qualitative Werte. Die Datenaktualität ist auf der Cover-Seite im Feld „Daten-Stand" angegeben; einzelne Quellen-Verifikationsdaten werden in der jeweiligen Atlas-Detailansicht gepflegt.',
+        disclaimerBody:
+          "Dieses Briefing dient ausschließlich regulatorischen Informationszwecken und stellt weder Rechtsberatung noch ein Rechtsgutachten dar und ersetzt keine qualifizierte anwaltliche Beratung. Vorschriften, Behörden und Bearbeitungszeiten ändern sich häufig; verifizieren Sie stets die aktuellen Primärquellen, bevor Sie Compliance-Entscheidungen treffen, Anträge einreichen oder Verpflichtungen an Stakeholder kommunizieren. Caelex und Atlas lehnen jede Haftung für Entscheidungen ab, die im Vertrauen auf dieses Dokument getroffen werden. Vertraulich — ausschließlich für den genannten Empfänger erstellt; Weitergabe nur mit schriftlicher Zustimmung.",
+      }
+    : {
+        kicker: "Regulatory Briefing",
+        coverSubtitleTpl: (n: number, dim: string) =>
+          `${dim} — side-by-side analysis of ${n} European space-law frameworks, built on Atlas's primary-source regulatory database.`,
+        jurisdictionsLabel: "Jurisdictions",
+        dimensionLabel: "Dimension",
+        preparedLabel: "Prepared",
+        dataCurrentLabel: "Data current",
+        lastVerifiedTpl: (d: string) => `Last verified ${d}`,
+        issuerLabel: "Issuer",
+        issuerName: "Caelex — Atlas Regulatory Intelligence",
+        confidential: "Confidential · Not legal advice",
+        glanceKicker: "Executive Summary",
+        glanceTitle: "At a Glance",
+        provisionHeader: "Provision",
+        sourcesTitle: "Sources",
+        methodologyTitle: "Methodology",
+        disclaimerTitle: "Legal Disclaimer",
+        methodologyBody:
+          "This briefing draws on Atlas's curated database of European space-law jurisdictions. Each row is sourced from primary national gazettes or equivalent official registers and cross-referenced against the UN depositary of space treaties. Comparative cells use a four-state monochrome encoding: filled circle (●) for an affirmative finding, outlined circle (○) for a negative finding, dashed circle for not-applicable, and plain text for numeric or qualitative values. Data currency is reflected in the cover-page “Data current” field; individual source-verification dates are maintained on each jurisdiction's detail view in Atlas.",
+        disclaimerBody:
+          "This briefing is provided for regulatory-intelligence purposes only and does not constitute legal advice, a legal opinion, or a substitute for qualified counsel. Regulations, authorities, and processing timelines change frequently; always verify current primary sources before making compliance decisions, submitting filings, or communicating obligations to stakeholders. Caelex and Atlas disclaim all liability for decisions taken in reliance on this document. Confidential — prepared for the named recipient only; redistribution requires written consent.",
+      };
 
   const jurisdictions = useMemo(() => {
     return countries
@@ -399,7 +453,8 @@ export default function ComparatorExport({
       : SECTIONS.filter((s) => s.key === dimension);
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString("en-GB", {
+  // Locale-aware date format — German pilot expects DD.MM.YYYY.
+  const dateStr = now.toLocaleDateString(isDe ? "de-DE" : "en-GB", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -451,12 +506,26 @@ export default function ComparatorExport({
     <div className="print-export-container" aria-hidden="true">
       {needsLandscape ? (
         <style
+          id="atlas-comparator-landscape-page"
           // Inline <style> is the only way to override @page size
           // from inside a React tree — @page rules can't be scoped
           // by selector. Also shrinks .print-cover min-height from
           // 257mm (portrait content area) to 170mm (landscape content
           // area) so the cover fills a landscape page instead of
           // overflowing onto a second one.
+          //
+          // Scoping note: this rule is GLOBAL while the component is
+          // mounted, but ComparatorExport unmounts on route change
+          // (jurisdictions/[code] is a different route group) so the
+          // landscape rule does NOT leak into other Atlas exports.
+          // The unique id makes the rule findable in devtools if a
+          // future surface ever does mount Comparator alongside
+          // another export.
+          //
+          // The print-cover-meta grid only fills half a landscape
+          // page width by design — we keep the original layout and
+          // accept the empty right half on the cover so the data
+          // sections (which span full landscape width) stay readable.
           dangerouslySetInnerHTML={{
             __html: `@media print {
               @page { size: A4 landscape; margin: 16mm 18mm 18mm 18mm; }
@@ -469,43 +538,55 @@ export default function ComparatorExport({
       {/* ══════════ COVER ══════════ */}
       <div className="print-cover">
         <div className="print-cover-top">
-          <div className="print-cover-mark">Atlas</div>
-          <div className="print-cover-mark-rule" />
+          <div className="print-cover-brandrow">
+            <div>
+              <div className="print-cover-mark">Atlas</div>
+              <div className="print-cover-mark-rule" />
+            </div>
+            {firm.logo ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={firm.logo}
+                alt={firm.name ? `${firm.name} logo` : "Firm logo"}
+                className="print-cover-firmlogo"
+              />
+            ) : null}
+          </div>
 
-          <div className="print-cover-kicker">Regulatory Briefing</div>
+          <div className="print-cover-kicker">{chrome.kicker}</div>
           <h1 className={coverTitleClass}>{countryNames}</h1>
           <p className="print-cover-subtitle">
-            {dimensionLabel} — side-by-side analysis of {jurisdictions.length}{" "}
-            European space-law frameworks, built on Atlas&apos;s primary-source
-            regulatory database.
+            {chrome.coverSubtitleTpl(jurisdictions.length, dimensionLabel)}
           </p>
         </div>
 
         <div className="print-cover-bottom">
           <div className="print-cover-rule" />
           <div className="print-cover-meta">
-            <div className="print-cover-meta-label">Jurisdictions</div>
+            <div className="print-cover-meta-label">
+              {chrome.jurisdictionsLabel}
+            </div>
             <div className="print-cover-meta-value">{countryCodes}</div>
 
-            <div className="print-cover-meta-label">Dimension</div>
+            <div className="print-cover-meta-label">
+              {chrome.dimensionLabel}
+            </div>
             <div className="print-cover-meta-value">{dimensionLabel}</div>
 
-            <div className="print-cover-meta-label">Prepared</div>
+            <div className="print-cover-meta-label">{chrome.preparedLabel}</div>
             <div className="print-cover-meta-value">{dateStr}</div>
 
-            <div className="print-cover-meta-label">Data current</div>
+            <div className="print-cover-meta-label">
+              {chrome.dataCurrentLabel}
+            </div>
             <div className="print-cover-meta-value">
-              Last verified {isoDate}
+              {chrome.lastVerifiedTpl(isoDate)}
             </div>
 
-            <div className="print-cover-meta-label">Issuer</div>
-            <div className="print-cover-meta-value">
-              Caelex — Atlas Regulatory Intelligence
-            </div>
+            <div className="print-cover-meta-label">{chrome.issuerLabel}</div>
+            <div className="print-cover-meta-value">{chrome.issuerName}</div>
           </div>
-          <div className="print-cover-confidential">
-            Confidential · Not legal advice
-          </div>
+          <div className="print-cover-confidential">{chrome.confidential}</div>
         </div>
       </div>
 
@@ -513,8 +594,8 @@ export default function ComparatorExport({
       {glanceCards && (
         <div className="print-glance">
           <div className="print-glance-header">
-            <div className="print-glance-kicker">Executive Summary</div>
-            <h2 className="print-glance-title">At a Glance</h2>
+            <div className="print-glance-kicker">{chrome.glanceKicker}</div>
+            <h2 className="print-glance-title">{chrome.glanceTitle}</h2>
             <div className="print-glance-rule" />
           </div>
           <div className="print-glance-grid">
@@ -546,7 +627,9 @@ export default function ComparatorExport({
           <table className="print-table">
             <thead>
               <tr>
-                <th className="print-table-provision">Provision</th>
+                <th className="print-table-provision">
+                  {chrome.provisionHeader}
+                </th>
                 {jurisdictions.map(({ code, data }) => (
                   <th key={code} className="print-table-country">
                     {data.countryName}
@@ -577,7 +660,7 @@ export default function ComparatorExport({
       {/* ══════════ APPENDIX — Sources, Methodology, Disclaimer ══════════ */}
       <div className="print-appendix">
         <div className="print-appendix-section">
-          <h3 className="print-appendix-title">Sources</h3>
+          <h3 className="print-appendix-title">{chrome.sourcesTitle}</h3>
           <ul className="print-appendix-list">
             {jurisdictions.map(({ code, data }) => (
               <li key={code}>
@@ -587,41 +670,22 @@ export default function ComparatorExport({
                 {data.legislation.officialUrl
                   ? ` · ${data.legislation.officialUrl}`
                   : ""}
-                {data.lastUpdated ? ` · last updated ${data.lastUpdated}` : ""}
+                {data.lastUpdated
+                  ? ` · ${isDe ? "zuletzt aktualisiert" : "last updated"} ${data.lastUpdated}`
+                  : ""}
               </li>
             ))}
           </ul>
         </div>
 
         <div className="print-appendix-section">
-          <h3 className="print-appendix-title">Methodology</h3>
-          <p className="print-appendix-body">
-            This briefing draws on Atlas&apos;s curated database of European
-            space-law jurisdictions. Each row is sourced from primary national
-            gazettes or equivalent official registers and cross-referenced
-            against the UN depositary of space treaties. Comparative cells use a
-            four-state monochrome encoding: filled circle (●) for an affirmative
-            finding, outlined circle (○) for a negative finding, dashed circle
-            for not-applicable, and plain text for numeric or qualitative
-            values. Data currency is reflected in the cover-page{" "}
-            <em>Data current</em> field; individual source-verification dates
-            are maintained on each jurisdiction&apos;s detail view in Atlas.
-          </p>
+          <h3 className="print-appendix-title">{chrome.methodologyTitle}</h3>
+          <p className="print-appendix-body">{chrome.methodologyBody}</p>
         </div>
 
         <div className="print-appendix-section">
-          <h3 className="print-appendix-title">Legal Disclaimer</h3>
-          <p className="print-disclaimer">
-            This briefing is provided for regulatory-intelligence purposes only
-            and does not constitute legal advice, a legal opinion, or a
-            substitute for qualified counsel. Regulations, authorities, and
-            processing timelines change frequently; always verify current
-            primary sources before making compliance decisions, submitting
-            filings, or communicating obligations to stakeholders. Caelex and
-            Atlas disclaim all liability for decisions taken in reliance on this
-            document. Confidential — prepared for the named recipient only;
-            redistribution requires written consent.
-          </p>
+          <h3 className="print-appendix-title">{chrome.disclaimerTitle}</h3>
+          <p className="print-disclaimer">{chrome.disclaimerBody}</p>
         </div>
       </div>
     </div>

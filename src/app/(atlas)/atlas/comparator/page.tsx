@@ -188,7 +188,14 @@ function ComparatorPageInner() {
   );
 
   const handleExport = useCallback(() => {
-    window.print();
+    // Defer to the next animation frame so any pending React commits
+    // (URL-state sync via router.replace, hover state changes, etc.)
+    // land BEFORE the browser snapshots the page for printing. Safari
+    // sometimes calls print() synchronously without a microtask flush
+    // — leading to a stale snapshot. Two RAFs guarantee a paint.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
   }, []);
 
   return (

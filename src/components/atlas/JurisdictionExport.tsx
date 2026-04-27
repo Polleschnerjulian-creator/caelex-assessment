@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type {
   LegalSource,
   Authority,
@@ -15,6 +14,7 @@ import type {
   JurisdictionLaw,
 } from "@/lib/space-law-types";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import { useFirmBranding } from "./useFirmBranding";
 
 /**
  * JurisdictionExport — Atlas PDF briefing for a single jurisdiction detail page.
@@ -46,32 +46,6 @@ interface JurisdictionExportProps {
   authorities: Authority[];
   groupedSources: SourceGroup[];
   language: string;
-}
-
-// ─── Firm branding hook — pulls firm logo/name from Atlas settings ───
-
-function useFirmBranding(): { name: string | null; logo: string | null } {
-  const [logo, setLogo] = useState<string | null>(null);
-  const [name, setName] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/atlas/settings/firm")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (cancelled || !data) return;
-        setName(data.name || null);
-        setLogo(data.logoUrl || null);
-      })
-      .catch(() => {
-        // silently fail — export works without branding
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { name, logo };
 }
 
 // ─── Key Facts cards — derived from jurisdiction data ───
@@ -157,24 +131,126 @@ export default function JurisdictionExport({
   language,
 }: JurisdictionExportProps) {
   const firm = useFirmBranding();
+  const isDe = language === "de";
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString("en-GB", {
+  // Locale-aware date format — German pilot expects DD.MM.YYYY-style.
+  const dateStr = now.toLocaleDateString(isDe ? "de-DE" : "en-GB", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
   const isoDate = now.toISOString().slice(0, 10);
 
-  const brandLine = firm.name
-    ? `${firm.name} — powered by Atlas / Caelex`
-    : "Caelex · Atlas Regulatory Intelligence";
+  // Locale-aware export chrome — without these the German pilot
+  // exports a half-translated artifact (data is bilingual but
+  // headers/disclaimer/methodology hardcoded English).
+  const chrome = isDe
+    ? {
+        kicker: "Regulatorisches Briefing",
+        confidential: "Vertraulich · Keine Rechtsberatung",
+        glanceKicker: "Zusammenfassung",
+        glanceTitle: "Auf einen Blick",
+        jurisdictionLabel: "Jurisdiktion",
+        legalSourcesLabel: "Rechtsquellen",
+        legalSourcesIndexed: "indiziert",
+        authoritiesLabel: "Behörden",
+        dataCurrentLabel: "Daten-Stand",
+        lastVerifiedTpl: (d: string) => `Zuletzt geprüft ${d}`,
+        preparedLabel: "Erstellt",
+        issuerLabel: "Aussteller",
+        issuerName: firm.name
+          ? `${firm.name} — Atlas / Caelex`
+          : "Caelex · Atlas Regulatory Intelligence",
+        methodologyTitle: "Methodik",
+        disclaimerTitle: "Rechtlicher Hinweis",
+        methodologyBody: (
+          <>
+            Dieses Briefing basiert auf der kuratierten Atlas-Datenbank für{" "}
+            <strong>
+              {jurisdiction.countryName} ({code})
+            </strong>
+            . Jede aufgeführte Rechtsquelle ist gegen das nationale Amtsblatt
+            oder ein gleichwertiges offizielles Register cross-referenziert.
+            Internationale Verträge sind anhand des UN-Depositärs für
+            Weltraumverträge geprüft. Das Feld <em>Daten-Stand</em> auf der
+            Coverseite spiegelt die jüngste Verifikation wider; einzelne
+            Quellen-Verifikationsdaten sind in der jeweiligen
+            Atlas-Detailansicht gepflegt.
+          </>
+        ),
+        disclaimerBody: (
+          <>
+            Dieses Briefing dient ausschließlich regulatorischen
+            Informationszwecken und stellt weder Rechtsberatung noch ein
+            Rechtsgutachten dar und ersetzt keine qualifizierte anwaltliche
+            Beratung. Vorschriften, Behörden und Bearbeitungszeiten ändern sich
+            häufig; verifizieren Sie stets die aktuellen Primärquellen, bevor
+            Sie Compliance-Entscheidungen treffen, Anträge einreichen oder
+            Verpflichtungen an Stakeholder kommunizieren. Caelex und Atlas
+            lehnen jede Haftung für Entscheidungen ab, die im Vertrauen auf
+            dieses Dokument getroffen werden. Vertraulich — ausschließlich für
+            den genannten Empfänger erstellt; Weitergabe nur mit schriftlicher
+            Zustimmung.
+          </>
+        ),
+      }
+    : {
+        kicker: "Regulatory Briefing",
+        confidential: "Confidential · Not legal advice",
+        glanceKicker: "Executive Summary",
+        glanceTitle: "At a Glance",
+        jurisdictionLabel: "Jurisdiction",
+        legalSourcesLabel: "Legal sources",
+        legalSourcesIndexed: "indexed",
+        authoritiesLabel: "Authorities",
+        dataCurrentLabel: "Data current",
+        lastVerifiedTpl: (d: string) => `Last verified ${d}`,
+        preparedLabel: "Prepared",
+        issuerLabel: "Issuer",
+        issuerName: firm.name
+          ? `${firm.name} — powered by Atlas / Caelex`
+          : "Caelex · Atlas Regulatory Intelligence",
+        methodologyTitle: "Methodology",
+        disclaimerTitle: "Legal Disclaimer",
+        methodologyBody: (
+          <>
+            This briefing draws on Atlas&apos;s curated database for{" "}
+            <strong>
+              {jurisdiction.countryName} ({code})
+            </strong>
+            . Every legal source listed is cross-referenced against the national
+            gazette or equivalent official register. International treaties are
+            verified against the UN depositary of space treaties. The cover-page{" "}
+            <em>Data current</em> field reflects the most recent verification;
+            individual source-verification dates are maintained on each
+            entry&apos;s detail view in Atlas.
+          </>
+        ),
+        disclaimerBody: (
+          <>
+            This briefing is provided for regulatory-intelligence purposes only
+            and does not constitute legal advice, a legal opinion, or a
+            substitute for qualified counsel. Regulations, authorities, and
+            processing timelines change frequently; always verify current
+            primary sources before making compliance decisions, submitting
+            filings, or communicating obligations to stakeholders. Caelex and
+            Atlas disclaim all liability for decisions taken in reliance on this
+            document. Confidential — prepared for the named recipient only;
+            redistribution requires written consent.
+          </>
+        ),
+      };
 
   // Subtitle for cover — derive a crisp one-line summary
   const hasDedicatedLaw = jurisdiction.legislation.status === "enacted";
   const coverSubtitle = hasDedicatedLaw
-    ? `${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted}) — authoritative framework for national space activities in ${jurisdiction.countryName}.`
-    : `${jurisdiction.countryName} operates under an interim sectoral framework — no dedicated national space law. EU Space Act applies directly once in force.`;
+    ? isDe
+      ? `${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted}) — maßgeblicher Rahmen für nationale Raumfahrtaktivitäten in ${jurisdiction.countryName}.`
+      : `${jurisdiction.legislation.name} (${jurisdiction.legislation.yearEnacted}) — authoritative framework for national space activities in ${jurisdiction.countryName}.`
+    : isDe
+      ? `${jurisdiction.countryName} arbeitet mit einem sektoralen Übergangsrahmen — kein eigenständiges nationales Raumfahrtgesetz. Der EU Space Act gilt direkt, sobald in Kraft.`
+      : `${jurisdiction.countryName} operates under an interim sectoral framework — no dedicated national space law. EU Space Act applies directly once in force.`;
 
   const keyFacts = deriveKeyFacts(jurisdiction);
 
@@ -190,11 +266,15 @@ export default function JurisdictionExport({
             </div>
             {firm.logo ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={firm.logo} alt="" className="print-cover-firmlogo" />
+              <img
+                src={firm.logo}
+                alt={firm.name ? `${firm.name} logo` : "Firm logo"}
+                className="print-cover-firmlogo"
+              />
             ) : null}
           </div>
 
-          <div className="print-cover-kicker">Regulatory Briefing</div>
+          <div className="print-cover-kicker">{chrome.kicker}</div>
           <h1 className="print-cover-title">
             {jurisdiction.countryName}{" "}
             <span className="print-cover-title-suffix">{code}</span>
@@ -205,43 +285,50 @@ export default function JurisdictionExport({
         <div className="print-cover-bottom">
           <div className="print-cover-rule" />
           <div className="print-cover-meta">
-            <div className="print-cover-meta-label">Jurisdiction</div>
+            <div className="print-cover-meta-label">
+              {chrome.jurisdictionLabel}
+            </div>
             <div className="print-cover-meta-value">
               {jurisdiction.countryName} ({code})
             </div>
 
-            <div className="print-cover-meta-label">Legal sources</div>
+            <div className="print-cover-meta-label">
+              {chrome.legalSourcesLabel}
+            </div>
             <div className="print-cover-meta-value">
-              {legalSources.length} indexed
+              {legalSources.length} {chrome.legalSourcesIndexed}
             </div>
 
-            <div className="print-cover-meta-label">Authorities</div>
+            <div className="print-cover-meta-label">
+              {chrome.authoritiesLabel}
+            </div>
             <div className="print-cover-meta-value">
-              {authorities.length} competent bodies
+              {authorities.length}
+              {isDe ? " zuständige Stellen" : " competent bodies"}
             </div>
 
-            <div className="print-cover-meta-label">Prepared</div>
+            <div className="print-cover-meta-label">{chrome.preparedLabel}</div>
             <div className="print-cover-meta-value">{dateStr}</div>
 
-            <div className="print-cover-meta-label">Data current</div>
+            <div className="print-cover-meta-label">
+              {chrome.dataCurrentLabel}
+            </div>
             <div className="print-cover-meta-value">
-              Last verified {jurisdiction.lastUpdated || isoDate}
+              {chrome.lastVerifiedTpl(jurisdiction.lastUpdated || isoDate)}
             </div>
 
-            <div className="print-cover-meta-label">Issuer</div>
-            <div className="print-cover-meta-value">{brandLine}</div>
+            <div className="print-cover-meta-label">{chrome.issuerLabel}</div>
+            <div className="print-cover-meta-value">{chrome.issuerName}</div>
           </div>
-          <div className="print-cover-confidential">
-            Confidential · Not legal advice
-          </div>
+          <div className="print-cover-confidential">{chrome.confidential}</div>
         </div>
       </div>
 
       {/* ══════════ AT A GLANCE — Key Facts ══════════ */}
       <div className="print-glance">
         <div className="print-glance-header">
-          <div className="print-glance-kicker">Executive Summary</div>
-          <h2 className="print-glance-title">At a Glance</h2>
+          <div className="print-glance-kicker">{chrome.glanceKicker}</div>
+          <h2 className="print-glance-title">{chrome.glanceTitle}</h2>
           <div className="print-glance-rule" />
         </div>
         <div className="print-glance-grid">
@@ -337,7 +424,7 @@ export default function JurisdictionExport({
               {String(groupedSources.length + 1).padStart(2, "0")}
             </div>
             <h2 className="print-section-title">
-              Competent Authorities
+              {isDe ? "Zuständige Behörden" : "Competent Authorities"}
               <span className="print-section-count">
                 ({authorities.length})
               </span>
@@ -345,9 +432,9 @@ export default function JurisdictionExport({
           </div>
           <div className="print-section-rule" />
           <p className="print-section-lede">
-            National authorities with jurisdiction over authorization, spectrum,
-            cybersecurity, export control, and data protection as they apply to{" "}
-            {jurisdiction.countryName} space operators.
+            {isDe
+              ? `Nationale Behörden mit Zuständigkeit für Genehmigung, Frequenzen, Cybersicherheit, Exportkontrolle und Datenschutz für Raumfahrtbetreiber in ${jurisdiction.countryName}.`
+              : `National authorities with jurisdiction over authorization, spectrum, cybersecurity, export control, and data protection as they apply to ${jurisdiction.countryName} space operators.`}
           </p>
 
           <table className="print-table">
@@ -358,9 +445,9 @@ export default function JurisdictionExport({
             </colgroup>
             <thead>
               <tr>
-                <th>Abbr.</th>
-                <th>Authority</th>
-                <th>Mandate</th>
+                <th>{isDe ? "Kürzel" : "Abbr."}</th>
+                <th>{isDe ? "Behörde" : "Authority"}</th>
+                <th>{isDe ? "Mandat" : "Mandate"}</th>
               </tr>
             </thead>
             <tbody>
@@ -388,33 +475,13 @@ export default function JurisdictionExport({
       {/* ══════════ APPENDIX — Methodology + Disclaimer ══════════ */}
       <div className="print-appendix">
         <div className="print-appendix-section">
-          <h3 className="print-appendix-title">Methodology</h3>
-          <p className="print-appendix-body">
-            This briefing draws on Atlas&apos;s curated database of European
-            space-law jurisdictions. Each legal source is indexed from primary
-            national gazettes or the UN depositary of space treaties, and each
-            competent authority is verified against its statutory legal basis.
-            Source verification dates are tracked per record in Atlas; the
-            cover-page <em>Data current</em> field reflects the most recent
-            refresh of this jurisdiction&apos;s dataset. Key provisions are
-            summarised editorially — consult the linked primary source for the
-            authoritative text.
-          </p>
+          <h3 className="print-appendix-title">{chrome.methodologyTitle}</h3>
+          <p className="print-appendix-body">{chrome.methodologyBody}</p>
         </div>
 
         <div className="print-appendix-section">
-          <h3 className="print-appendix-title">Legal Disclaimer</h3>
-          <p className="print-disclaimer">
-            {brandLine}. This briefing is provided for regulatory- intelligence
-            purposes only and does not constitute legal advice, a legal opinion,
-            or a substitute for qualified counsel. Regulations, authorities, and
-            processing timelines change frequently; always verify current
-            primary sources before making compliance decisions, submitting
-            filings, or communicating obligations to stakeholders. Caelex and
-            Atlas disclaim all liability for decisions taken in reliance on this
-            document. Confidential — prepared for the named recipient only;
-            redistribution requires written consent.
-          </p>
+          <h3 className="print-appendix-title">{chrome.disclaimerTitle}</h3>
+          <p className="print-disclaimer">{chrome.disclaimerBody}</p>
         </div>
       </div>
     </div>

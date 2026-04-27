@@ -399,7 +399,14 @@ export default function JurisdictionDetailPage({
   const authorities = getAuthoritiesByJurisdiction(displayCode);
 
   const handleExportBriefing = useCallback(() => {
-    window.print();
+    // Defer to the next animation frame so any pending React commits
+    // land BEFORE the browser snapshots the page for printing. Safari
+    // sometimes calls print() synchronously without a microtask flush.
+    // Two RAFs guarantee a paint cycle has occurred — including the
+    // useFirmBranding hook's logo URL hydration.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
   }, []);
 
   const hasDetailedSources = legalSources.length > 0;
