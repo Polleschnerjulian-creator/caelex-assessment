@@ -6,7 +6,7 @@ import {
 } from "@/data/legal-sources";
 import { generateDocumentPDF } from "@/lib/pdf/jspdf-generator";
 import type { ReportSection } from "@/lib/pdf/types";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import {
   checkRateLimit,
   getIdentifier,
@@ -51,19 +51,24 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
-  // H2: require authenticated session
-  const session = await auth();
-  if (!session?.user?.id) {
+  // HIGH-4: gate on Atlas-org membership, not just an authenticated
+  // session. The previous `auth()` check let any Caelex compliance-
+  // platform user (SATELLITE_OPERATOR / SPACE_AGENCY orgs) pull the
+  // memo PDF, bypassing the Atlas subscription model. getAtlasAuth()
+  // resolves to a LAW_FIRM/BOTH org membership and returns null for
+  // non-Atlas users — same shape as the rest of /api/atlas/*.
+  const atlas = await getAtlasAuth();
+  if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // H1: rate-limit by user (falls back to IP on anonymous, but we already
-  //     require auth above so this is user-keyed in practice)
-  const identifier = getIdentifier(req, session.user.id);
+  // H1: rate-limit by user (auth above guarantees a userId, so this
+  // is user-keyed in practice rather than IP-keyed).
+  const identifier = getIdentifier(req, atlas.userId);
   const rl = await checkRateLimit("document_generation", identifier);
   if (!rl.success) {
     logger.warn("Atlas country-memo rate-limited", {
-      userId: session.user.id,
+      userId: atlas.userId,
       identifier,
     });
     return createRateLimitResponse(rl);

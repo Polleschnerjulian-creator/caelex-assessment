@@ -119,6 +119,12 @@ export async function GET(request: NextRequest) {
 
 // ─── POST: create workspace ───────────────────────────────────────────
 
+/** MED-1: per-user cap. Mirrors the Bookmark quota pattern. Without
+ *  this, a script can post POST /workspaces in a loop and balloon the
+ *  DB (each workspace can carry up to 8000-char cards). 200 is well
+ *  above realistic lawyer usage and still bounds storage. */
+const MAX_WORKSPACES_PER_USER = 200;
+
 const CreateBody = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   /** Pre-fill the workspace from a template. The template's cards
@@ -168,41 +174,57 @@ export async function POST(request: NextRequest) {
       ? getTemplateById(parsed.data.templateId)
       : undefined;
 
-    // Create + (optionally) seed cards in one transaction so a partial
-    // failure can't leave a workspace with half its template cards.
-    const ws = await prisma.$transaction(async (tx) => {
-      const created = await tx.atlasWorkspace.create({
-        data: {
-          userId: session.user.id!,
-          organizationId: orgId,
-          title: parsed.data.title ?? template?.workspaceTitle ?? "Workspace",
-        },
-        select: {
-          id: true,
-          title: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      if (template && template.cards.length > 0) {
-        // createMany is faster than sequential creates here because
-        // the template cards don't reference each other (no
-        // sourceCardIds remapping needed — that's only for the
-        // fork endpoint).
-        await tx.atlasWorkspaceCard.createMany({
-          data: template.cards.map((c) => ({
-            workspaceId: created.id,
-            kind: c.kind,
-            title: c.title,
-            content: c.content,
-            sourceCardIds: [],
-          })),
+    // Create + (optionally) seed cards in one Serializable
+    // transaction. Serializable is needed for MED-1: the quota check
+    // must observe other concurrent inserts so two parallel calls
+    // can't both pass count=199 and end up with 201 rows.
+    const ws = await prisma.$transaction(
+      async (tx) => {
+        const existing = await tx.atlasWorkspace.count({
+          where: {
+            userId: session.user.id!,
+            organizationId: orgId,
+            archived: false,
+          },
         });
-      }
+        if (existing >= MAX_WORKSPACES_PER_USER) {
+          throw new Error("WORKSPACE_QUOTA_EXCEEDED");
+        }
 
-      return { ws: created, cardCount: template?.cards.length ?? 0 };
-    });
+        const created = await tx.atlasWorkspace.create({
+          data: {
+            userId: session.user.id!,
+            organizationId: orgId,
+            title: parsed.data.title ?? template?.workspaceTitle ?? "Workspace",
+          },
+          select: {
+            id: true,
+            title: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        if (template && template.cards.length > 0) {
+          // createMany is faster than sequential creates here because
+          // the template cards don't reference each other (no
+          // sourceCardIds remapping needed — that's only for the
+          // fork endpoint).
+          await tx.atlasWorkspaceCard.createMany({
+            data: template.cards.map((c) => ({
+              workspaceId: created.id,
+              kind: c.kind,
+              title: c.title,
+              content: c.content,
+              sourceCardIds: [],
+            })),
+          });
+        }
+
+        return { ws: created, cardCount: template?.cards.length ?? 0 };
+      },
+      { isolationLevel: "Serializable" },
+    );
 
     return NextResponse.json({
       workspace: {
@@ -215,6 +237,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    if (msg === "WORKSPACE_QUOTA_EXCEEDED") {
+      return NextResponse.json(
+        {
+          error: "Workspace quota exceeded",
+          limit: MAX_WORKSPACES_PER_USER,
+        },
+        { status: 409 },
+      );
+    }
     logger.error(`POST /api/atlas/workspaces failed: ${msg}`);
     return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }

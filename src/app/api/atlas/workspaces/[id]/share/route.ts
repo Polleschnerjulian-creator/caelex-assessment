@@ -78,10 +78,18 @@ export async function POST(
       );
     }
 
-    const origin =
-      request.headers.get("origin") ??
+    // HIGH-5: do NOT trust the request `Origin` header for the
+    // outbound share URL. An attacker setting `Origin: https://evil`
+    // would receive a poisoned `shareUrl` that, if pasted into a
+    // message to a colleague, sends the recipient to the attacker's
+    // domain. Use the canonical app URL from env; fall back to the
+    // Origin only when the env var is unset (dev/preview without a
+    // configured `NEXT_PUBLIC_APP_URL`).
+    const origin = (
       process.env.NEXT_PUBLIC_APP_URL ??
-      "https://caelex.app";
+      request.headers.get("origin") ??
+      "https://caelex.app"
+    ).replace(/\/+$/, "");
 
     if (parsed.data.enabled) {
       // If sharing is already on, return the existing token rather

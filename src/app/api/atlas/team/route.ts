@@ -167,8 +167,15 @@ export async function POST(request: Request) {
       invitedBy: atlas.userId,
     });
 
+    // HIGH-2: do NOT echo the raw token back in the API response.
+    // The token is the bearer credential for the invitation; once
+    // the email has been dispatched (above) the email is the only
+    // disclosure channel we want. Returning it here also leaks it
+    // into browser DevTools, any frontend logging, and any proxy
+    // that happens to capture the response body. The UI gets just
+    // enough to render the pending-invite row.
     return NextResponse.json({
-      invitation: { id: invitation.id, email, inviteUrl },
+      invitation: { id: invitation.id, email },
     });
   } catch (err) {
     logger.error("Atlas team invite failed", { error: err });

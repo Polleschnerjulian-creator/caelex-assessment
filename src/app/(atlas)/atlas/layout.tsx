@@ -14,6 +14,15 @@ import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
  * that happens otherwise while React hydrates.
  *
  * Matches what next-themes does for its own theme switching.
+ *
+ * MED-2 SAFETY CONTRACT — DO NOT INTERPOLATE VARIABLES INTO THIS STRING.
+ *   This script is injected via `dangerouslySetInnerHTML` below, which
+ *   bypasses React's auto-escape. The current implementation is a static
+ *   literal, so it is XSS-safe. ANY future change that interpolates a
+ *   server-side value (user prefs, locale, org slug, …) into this string
+ *   would create an XSS vector. If you need dynamic data, render it onto
+ *   a `data-*` attribute on <html> server-side and have the script read
+ *   from there — never via string concat.
  */
 const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var r=(t==='dark'||(t!=='light'&&d))?'dark':'light';document.documentElement.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
 
@@ -42,18 +51,25 @@ export default async function AtlasLayout({
 
   // Membership check — a user with an account but no active org
   // membership lands on /atlas-no-access which explains the situation
-  // (rather than a generic redirect loop). Uses findFirst because a
-  // user can belong to multiple orgs; we only need to know one is
-  // active.
+  // (rather than a generic redirect loop).
+  //
+  // HIGH-1: must require an Atlas-flavored org (LAW_FIRM or BOTH),
+  // otherwise SATELLITE_OPERATOR/SPACE_AGENCY customers of the Caelex
+  // compliance platform could see the Atlas shell just because they
+  // have any org membership at all. The API layer already scopes via
+  // getAtlasAuth(), but the layout shell is the visible-to-user gate
+  // and must match that constraint.
   const membership = await prisma.organizationMember.findFirst({
-    where: { userId: session.user.id },
-    include: {
+    where: {
+      userId: session.user.id,
       organization: {
-        select: { isActive: true },
+        isActive: true,
+        orgType: { in: ["LAW_FIRM", "BOTH"] },
       },
     },
+    select: { id: true },
   });
-  if (!membership || !membership.organization.isActive) {
+  if (!membership) {
     redirect("/atlas-no-access");
   }
 

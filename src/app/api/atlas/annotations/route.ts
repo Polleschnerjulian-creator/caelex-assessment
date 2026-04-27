@@ -33,6 +33,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // MED-3: read-path rate-limit. POST already has one; without this
+  // the GET could be looped to enumerate which sourceIds a user has
+  // annotated and to load the DB. Same `api` tier as the write path
+  // for consistency.
+  const rl = await checkRateLimit("api", getIdentifier(request, atlas.userId));
+  if (!rl.success) return createRateLimitResponse(rl);
+
   const { searchParams } = new URL(request.url);
   const rawSourceId = searchParams.get("sourceId");
   const parsed = SourceIdSchema.safeParse(rawSourceId);

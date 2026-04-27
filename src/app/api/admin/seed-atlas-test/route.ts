@@ -24,6 +24,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -45,10 +46,24 @@ const DEFAULT_ORG_SLUG = "atlas-test-demo";
 
 export async function POST(request: NextRequest) {
   try {
-    // 🚧 PREVIEW MODE — token-check deaktiviert für die Test-Phase.
-    //    Vor Production-Release: Bearer-Token-Logik wieder aktivieren
-    //    (oder den Endpoint löschen — Test-Account bleibt in der DB,
-    //    weiterer Aufruf nicht mehr nötig).
+    // Bearer-Token gate — re-uses PHAROS_SEED_TOKEN. Same trust scope
+    // as seed-pharos-test / migrate-atlas-workspace (one shared knob).
+    const expected = process.env.PHAROS_SEED_TOKEN;
+    if (!expected || expected.length < 16) {
+      return NextResponse.json(
+        { error: "PHAROS_SEED_TOKEN not configured" },
+        { status: 503 },
+      );
+    }
+    const supplied = (request.headers.get("authorization") ?? "")
+      .replace(/^Bearer\s+/i, "")
+      .trim();
+    if (
+      supplied.length !== expected.length ||
+      !timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
+    ) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const raw = await request.json().catch(() => ({}));
     const parsed = Body.safeParse(raw);
@@ -134,15 +149,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // MED-5: never echo the plaintext password in the JSON response.
+    // The caller already supplied it (or used the documented default),
+    // so leaking it here only widens the exposure surface (Vercel
+    // function logs, Sentry breadcrumbs, network traces). The success
+    // signal `passwordWasSet` tells the operator whether a fresh hash
+    // was written without disclosing the secret.
     return NextResponse.json({
       ok: true,
       message: "Atlas test setup complete.",
       login: {
         url: "/atlas-login",
         email,
-        password: passwordWasSet
-          ? password
-          : "<unverändert — bestehende Credentials des Users>",
         passwordWasSet,
       },
       lawFirmOrg: {
@@ -151,7 +169,7 @@ export async function POST(request: NextRequest) {
         slug: DEFAULT_ORG_SLUG,
         role: "OWNER",
       },
-      next: "Gehe nach /atlas-login, melde dich mit den oberen Daten an, dann landest du auf /atlas. ⌘5 öffnet einen Workspace.",
+      next: "Gehe nach /atlas-login mit den vom Aufrufer gesetzten Credentials. ⌘5 öffnet einen Workspace.",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

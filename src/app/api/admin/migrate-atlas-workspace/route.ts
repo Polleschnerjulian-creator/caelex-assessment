@@ -22,19 +22,40 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Postgres identifier — alphanum + underscore, must start with letter or
+ * underscore. Matches what pg accepts for unquoted identifiers and is
+ * the only safe shape to interpolate into raw DDL/`pg_namespace` lookups.
+ */
+const PG_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]{0,62}$/;
+
 export async function POST(request: NextRequest) {
   try {
-    // 🚧 PREVIEW MODE — token-check deaktiviert für die Test-Phase.
-    //    Vor Production-Release: Bearer-Token-Logik wieder aktivieren
-    //    (oder den ganzen Endpoint löschen — die Migration ist dann
-    //    eh schon gelaufen).
-    //    siehe Pendant in /api/admin/seed-atlas-test/route.ts
+    // Bearer-Token gate — re-uses PHAROS_SEED_TOKEN (same trust scope
+    // as the seed endpoints; one knob for all preview-only ops).
+    const expected = process.env.PHAROS_SEED_TOKEN;
+    if (!expected || expected.length < 16) {
+      return NextResponse.json(
+        { error: "PHAROS_SEED_TOKEN not configured" },
+        { status: 503 },
+      );
+    }
+    const supplied = (request.headers.get("authorization") ?? "")
+      .replace(/^Bearer\s+/i, "")
+      .trim();
+    if (
+      supplied.length !== expected.length ||
+      !timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
+    ) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const results: Array<{ step: string; ok: boolean; detail?: string }> = [];
 
@@ -136,8 +157,19 @@ export async function POST(request: NextRequest) {
 
     // Use the discovered schema if non-public — fixes the raw-SQL
     // search_path issue.
-    const schema = schemaInfo?.legalMatterSchema ?? "public";
-    const matterStatusSchema = schemaInfo?.matterStatusSchema ?? schema;
+    //
+    // CRIT-3: Whitelist the schema names to a strict pg-identifier
+    // regex BEFORE any interpolation into $executeRawUnsafe. The
+    // values come from pg_namespace.nspname which is normally trusted,
+    // but a compromised DB role could create a schema with crafted
+    // characters. A non-matching value collapses to "public" so the
+    // raw DDL never executes with attacker-controlled bytes.
+    const rawSchema = schemaInfo?.legalMatterSchema ?? "public";
+    const rawMatterStatusSchema = schemaInfo?.matterStatusSchema ?? rawSchema;
+    const schema = PG_IDENTIFIER.test(rawSchema) ? rawSchema : "public";
+    const matterStatusSchema = PG_IDENTIFIER.test(rawMatterStatusSchema)
+      ? rawMatterStatusSchema
+      : "public";
 
     // Step 1: Add STANDALONE to MatterStatus enum (idempotent)
     try {

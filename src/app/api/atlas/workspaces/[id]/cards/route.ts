@@ -20,12 +20,33 @@ import { logger } from "@/lib/logger";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** MED-4: explicit allowlist of card kinds. Was previously a free
+ *  z.string() up to 40 chars on the assumption that the frontend
+ *  union was authoritative — but a script-driven caller could store
+ *  arbitrary `kind` values that downstream renderers might switch on.
+ *
+ *  Keep this set in sync with:
+ *    - frontend visual-treatment switch (atlas pinboard)
+ *    - workspace-template seeded card kinds (`src/data/atlas-workspace-templates.ts`)
+ *    - the suggest endpoint output (`./[id]/suggest/route.ts` — emits
+ *      "source" / "question" / "client" / "note")
+ *
+ *  Adding a new kind now requires a 1-line code change here, which is
+ *  cheaper than the cleanup risk of a permissive column. */
+const CardKind = z.enum([
+  "user",
+  "ai-clause",
+  "ai-answer",
+  "ai-suggestion",
+  "ai-conflict",
+  "source",
+  "client",
+  "question",
+  "note",
+]);
+
 const Body = z.object({
-  /** "user" / "ai-clause" / "ai-answer" — drives the visual treatment
-   *  on the pinboard. Free-string with a default rather than enum so
-   *  we can add new card kinds without a migration; the frontend
-   *  validates the union. */
-  kind: z.string().min(1).max(40).optional().default("user"),
+  kind: CardKind.optional().default("user"),
   title: z.string().min(1).max(200),
   content: z.string().max(8000),
   question: z.string().max(2000).nullable().optional(),
