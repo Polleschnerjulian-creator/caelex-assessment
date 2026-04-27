@@ -6090,6 +6090,867 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VERIFIZIERTE ÜBERSETZUNGSTRANCHE — DEBRIS / STM / ENVIRONMENTAL
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── INTL: IADC, ISO, CCSDS, COPUOS, ECSS, ESA, ITU, LTS, Aarhus ────
+
+  [
+    "INT-IADC-MITIGATION-2002",
+    {
+      title:
+        "IADC-Leitlinien zur Vermeidung von Weltraumtrümmern (Originalfassung 2002)",
+      scopeDescription:
+        "Originaldokument des Inter-Agency Space Debris Coordination Committee (IADC) aus 2002 — die ingenieurtechnische Grundlage für COPUOS-2007 und jedes nationale Trümmer-Mitigations-Regime. Definierte die geschützten Regionen (LEO ≤ 2000 km Höhe; GEO ±200 km × ±15° Breite), die 25-Jahres-Regel zur LEO-End-of-Life-Entsorgung, die GEO-Friedhofs-Bahnformel (235 km + 1000·CR·A/m über GEO) und die Passivierungspflicht. Operativ durch die 2007er Minor-Revision und die Updates 2020/2025 abgelöst, die geschützten Regionen-Definitionen bleiben jedoch unverändert und sind weiterhin die kanonische Referenz.",
+      provisions: {
+        "§3": {
+          title: "Geschützte Regionen",
+          summary:
+            "Region A (LEO): kugelförmiger Bereich von der Erdoberfläche bis 2000 km Höhe. Region B (GEO): Torus ±200 km Höhe × ±15° Breite um den geostationären Gürtel.",
+          complianceImplication:
+            "Alle nationalen Entsorgungsvorschriften (FCC 5-Jahre, ESA 25-Jahre, JAXA 25-Jahre, UKSA Einzelfall) gelten ausschließlich für diese beiden Regionen. Operatoren außerhalb von Region A/B haben formal keine End-of-Life-Entsorgungspflicht.",
+        },
+        "§5.3.1": {
+          title: "LEO-End-of-Life-Entsorgung — 25 Jahre",
+          summary:
+            "Raumfahrzeuge und Orbitalstufen sollen Region A nach Missionsende nicht länger als 25 Jahre verbleiben — durch direkten Wiedereintritt, atmosphärischen Drag oder Transfer in eine Langzeit-Friedhofsbahn.",
+        },
+        "§5.3.2": {
+          title: "GEO-Friedhofsbahn-Formel",
+          summary:
+            "Re-Orbit-Höhe über GEO ≥ 235 km + 1000·CR·A/m, wobei CR der Solarstrahlungsdruck-Koeffizient (typisch 1,2–1,5) und A/m das Flächen-Masse-Verhältnis in m²/kg ist.",
+          complianceImplication:
+            "Die meisten Operatoren steuern ~300 km über GEO an, um Reserve einzubauen. Unterschreitung der Formel ist der häufigste GEO-Entsorgungs-Verstoß in Operator-Audits.",
+        },
+        "§5.2.2": {
+          title: "Passivierung",
+          summary:
+            "Alle bordeigenen Energiequellen (Resttreibstoff, Batterien, Druckbehälter, Schwungräder) sind am Missionsende zu entladen oder sicher zu stellen, um Post-Mission-Auseinanderbrechen zu verhindern.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-IADC-MITIGATION-2020",
+    {
+      title:
+        "IADC-Leitlinien zur Vermeidung von Weltraumtrümmern (Revision 2020)",
+      scopeDescription:
+        "Revision 2020, die die Basis 2002/2007 verschärft. Führt eine ausdrückliche Zuverlässigkeitsanforderung von 90 % für die LEO-End-of-Life-Entsorgung ein, präzisiert die Passivierungs-Sprache und empfiehlt die Koordination kollisionsvermeidender Manöver über geteilte Katalogdaten. Bleibt die Version, auf die FCC-/FAA-/UKSA-/CNES-Leitlinien wörtlich verweisen — bis jede Behörde das 2025er Update einzeln übernimmt.",
+      provisions: {
+        "§5.3.1": {
+          title: "LEO-Entsorgung — 25 Jahre und 90 % Zuverlässigkeit",
+          summary:
+            "Behält die 25-Jahres-Regel bei, ergänzt jedoch: 'Das End-of-Life-Entsorgungsmanöver ist so auszulegen, dass eine Erfolgswahrscheinlichkeit von mindestens 0,9 erreicht wird.'",
+          complianceImplication:
+            "Der 90 %-Schwellwert ist die Grundlage moderner Lizenz-Auflagen ('Nachweis ≥ 0,9 Entsorgungs-Zuverlässigkeit'). Single-String-Antriebsarchitekturen erfüllen dies in der Regel nicht ohne Redundanz.",
+        },
+        "§5.4": {
+          title: "Konjunktionsbewertung & Vermeidung",
+          summary:
+            "Operatoren sollen Konjunktions-Screening anhand der genauesten verfügbaren Bahndaten durchführen und Ausweichmanöver ausführen, sobald die Kollisionswahrscheinlichkeit eine vom Operator definierte Schwelle überschreitet.",
+        },
+        "§5.6": {
+          title: "Casualty-Risk beim Wiedereintritt",
+          summary:
+            "Wiedereintretende Objekte sollen nationale Casualty-Risk-Schwellwerte (typisch 10⁻⁴) einhalten — die IADC selbst legt keine Zahl fest, sondern verweist ausdrücklich auf nationale Regime.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-IADC-MITIGATION-2025",
+    {
+      title:
+        "IADC-Leitlinien zur Vermeidung von Weltraumtrümmern — Update 2025 (5-Jahres-LEO-Regel)",
+      scopeDescription:
+        "Aktueller IADC-Konsens, beim Plenum 2025 verabschiedet. Ersetzt das 25-Jahres-Ziel für LEO-End-of-Life-Entsorgung durch ein 5-Jahres-Ziel für neue Raumfahrzeuge (konsistent mit der FCC-Anordnung 2022), führt eine Koordinationspflicht für den Wiedereintritt ein und verschärft die Zuverlässigkeitsanforderung für die End-of-Life-Entsorgung auf 0,95. Operativ die anspruchsvollste IADC-Fassung — die meisten modernen Lizenzentscheidungen (FCC, UKSA Standard Conditions, ASI Note 02/2024) verweisen direkt auf diese Revision.",
+      provisions: {
+        "§5.3.1 (Rev. 3)": {
+          title: "5-Jahres-LEO-Entsorgung",
+          summary:
+            "Neue Raumfahrzeuge und Orbitalstufen sind innerhalb von fünf Jahren nach Missionsende aus dem LEO zu entfernen, mit einer Erfolgswahrscheinlichkeit der End-of-Life-Entsorgung von mindestens 0,95.",
+          complianceImplication:
+            "Erfordert effektiv Antrieb (oder aerodynamische Drag-Augmentation-Devices für Bahnen unter 600 km). Die '5 Jahre' sind heute der Mindeststandard für jede Mission nach 2025, die eine US-, UK- oder französische Genehmigung anstrebt.",
+        },
+        "§5.3.3": {
+          title: "Wiedereintritts-Koordination",
+          summary:
+            "Staaten und Operatoren sollen Zeit und Bodenspur kontrollierter und unkontrollierter Wiedereintritte koordinieren, um Risiken für besiedelte Gebiete zu minimieren, und potenziell betroffene Staaten vorab benachrichtigen.",
+        },
+        "§5.7": {
+          title: "Sonderbestimmungen für Konstellationen",
+          summary:
+            "Große Konstellationen (>100 Raumfahrzeuge) sollen einen flottenweiten Trümmer-Mitigations-Plan veröffentlichen — mit Ersatz-vs-aktiv-Strategie, End-of-Life-Kadenz und kumulativem Katastrophen-Kollisions-Risiko-Modell.",
+          complianceImplication:
+            "Erste IADC-Fassung, die Konstellationen als Kategorie adressiert. Treibt Filings vom Typ Astranis/Starlink/OneWeb/Kuiper dazu, flottenweite Statistiken statt nur Pro-Satelliten-Werte einzureichen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ISO-24113-2023",
+    {
+      title:
+        "ISO 24113:2023 — Raumfahrtsysteme — Anforderungen an die Vermeidung von Weltraumtrümmern",
+      scopeDescription:
+        "Top-Level-ISO-Norm, die die IADC-Leitlinien in auditierbare ingenieurtechnische Anforderungen übersetzt. Die 4. Ausgabe (2023) richtet sich an der IADC-Basis 2020 Rev. 2 aus und ergänzt explizite Anforderungen an den Nachweis der Entsorgungs-Zuverlässigkeit, das Casualty-Risk nach Wiedereintritt und die Verifikation der End-of-Life-Passivierung. Die meisten ESA-, JAXA- und CNES-Verträge verlangen ISO-24113-Konformität in den technischen Klauseln; viele Privatoperatoren referenzieren sie als projekt-internen SDM-Standard.",
+      provisions: {
+        "§6.2": {
+          title: "Beschränkung von Trümmer-Freisetzung im Normalbetrieb",
+          summary:
+            "Die Wahrscheinlichkeit der Freisetzung operativer Trümmer ≥ 1 mm ist nachweisbar zu minimieren. Linsendeckel, Trennfedern und Sprengbolzenfragmente werden ausdrücklich als Beispiele genannt.",
+        },
+        "§6.3": {
+          title: "Beschränkung unbeabsichtigter Auseinanderbrüche",
+          summary:
+            "Raumfahrzeug- und Orbitalstufen-Konstruktionen müssen nachweisen, dass die Wahrscheinlichkeit unbeabsichtigter Auseinanderbrüche im Betrieb unter 10⁻³ liegt.",
+        },
+        "§6.4": {
+          title: "Beschränkung Post-Mission-Auseinanderbrüche",
+          summary:
+            "Alle gespeicherten Energiequellen (Treibstoff, Druckbehälter, Batterien, Schwungräder) sind innerhalb eines definierten Post-Mission-Zeitrahmens zu passivieren. Die Passivierungs-Verifikation muss orbital nachweisbar sein.",
+        },
+        "§6.5": {
+          title: "End-of-Life-Entsorgung — geschützte Regionen",
+          summary:
+            "Entsorgung aus LEO innerhalb von 25 Jahren (gemäß IADC 2020). Entsorgung aus GEO via Friedhofsbahn nach IADC-Formel. Nachgewiesene Erfolgswahrscheinlichkeit ≥ 0,9.",
+        },
+        "§6.6": {
+          title: "Casualty-Risk beim Wiedereintritt",
+          summary:
+            "Casualty-Risk bei unkontrolliertem Wiedereintritt darf 10⁻⁴ nicht überschreiten (ESA-/JAXA-/FAA-Schwellwert). Bei kontrolliertem Wiedereintritt ist die Zielbodenspur mit den zuständigen nationalen Behörden abzustimmen.",
+        },
+        "§6.7": {
+          title: "Behandlung von Konjunktionsereignissen",
+          summary:
+            "Es muss ein operatives Verfahren existieren zum Empfang von Conjunction-Data-Messages, Berechnung der Kollisionswahrscheinlichkeit und Ausführung von Ausweichmanövern.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-COPUOS-DEBRIS-2007",
+    {
+      title:
+        "Leitlinien zur Vermeidung von Weltraumtrümmern des Ausschusses der Vereinten Nationen für die friedliche Nutzung des Weltraums (COPUOS)",
+      scopeDescription:
+        "Sieben unverbindliche Leitlinien, die die internationale Basis für die Trümmer-Vermeidung bilden. Von der UN-Generalversammlung gebilligt (Res. 62/217) und in praktisch jedem nationalen Weltraumgesetz-Trümmer-Regime referenziert (FR LOS, IT Gesetz 89/2025, UK SIA 2018, FAA 14 CFR Part 450, ESA-Politik).",
+      provisions: {
+        "Guideline 1": {
+          title: "Beschränkung von Trümmern im Normalbetrieb",
+          summary:
+            "Weltraumsysteme sollen so ausgelegt werden, dass im Normalbetrieb keine Trümmer freigesetzt werden. Wo dies nicht möglich ist, ist der Effekt auf die Orbitalumgebung zu minimieren.",
+        },
+        "Guideline 2": {
+          title: "Vermeidung von Auseinanderbrüchen im Betrieb",
+          summary:
+            "Konstruktion und Betrieb sollen das Risiko unbeabsichtigter Explosion oder unbeabsichtigten Auseinanderbrechens im Betrieb minimieren.",
+        },
+        "Guideline 3": {
+          title:
+            "Beschränkung der Wahrscheinlichkeit unbeabsichtigter Kollisionen im Orbit",
+          summary:
+            "Bahnauswahl, Ausweichmanöver und Koordination sollen die Kollisionswahrscheinlichkeit reduzieren. Operatoren sollen aktive Maßnahmen zur Vermeidung bekannter Weltraumobjekte ergreifen.",
+        },
+        "Guideline 4": {
+          title:
+            "Vermeidung absichtlicher Zerstörung und schädlicher Aktivitäten",
+          summary:
+            "Absichtliche Zerstörung, die langlebige Trümmer erzeugt, ist zu vermeiden. Diese Leitlinie umrahmt die internationale Reaktion auf ASAT-Tests.",
+        },
+        "Guideline 5": {
+          title:
+            "Minimierung von Post-Mission-Auseinanderbrüchen aus gespeicherter Energie",
+          summary:
+            "Passivierung: Entladung von Resttreibstoff und Batterien am Missionsende, um explosivem Auseinanderbrechen vorzubeugen.",
+        },
+        "Guideline 6": {
+          title: "Begrenzung der LEO-Langzeit-Präsenz",
+          summary:
+            "End-of-Life-Entsorgung aus LEO innerhalb von 25 Jahren (die '25-Jahres-Regel') — durch Wiedereintritt oder Transfer in eine Friedhofsbahn. Zunehmend durch 5-Jahres-Regeln (FCC 2022) abgelöst und durch das IADC-2025-Update verstärkt.",
+        },
+        "Guideline 7": {
+          title: "Begrenzung der GEO-Langzeit-Präsenz",
+          summary:
+            "End-of-Life-Entsorgung aus GEO via Transfer in eine Friedhofsbahn mindestens 235 km + (1000 × CR × A/m) über GEO.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-LTS-2019",
+    {
+      title:
+        "Leitlinien für die langfristige Nachhaltigkeit von Weltraumtätigkeiten (UN COPUOS LTS Guidelines)",
+      scopeDescription:
+        "21 Leitlinien (A.1–D.5), 2019 vom UN-COPUOS verabschiedet, mit Empfehlungen zu nationalem regulatorischem Rahmen, sicherem Betrieb von Weltraumobjekten, internationaler Kooperation und wissenschaftlicher und technischer Zusammenarbeit. Die meisten westlichen Raumfahrtnationen orientieren ihre regulatorische Modernisierung an diesem Korpus.",
+      provisions: {
+        "A.1–A.7": {
+          title: "Politik- und regulatorischer Rahmen",
+          summary:
+            "Mitgliedstaaten sollen geeignete nationale regulatorische Rahmen für Weltraumtätigkeiten einrichten und an internationaler Standardsetzung mitwirken.",
+        },
+        "B.1–B.10": {
+          title: "Sichere Durchführung von Weltraumoperationen",
+          summary:
+            "Empfehlungen zu Konjunktionsbewertung, Bahndaten-Austausch, Vorab-Anmeldung von Manövern und Wiedereintritts-Koordination.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ECSS-U-AS-10C",
+    {
+      title:
+        "ECSS-U-AS-10C Rev.2 — Übernahme von ISO 24113: Anforderungen an die Vermeidung von Weltraumtrümmern",
+      scopeDescription:
+        "ESA-Übernahme von ISO 24113 mit europa-spezifischer Anpassung. ECSS-U-AS-10C Rev.2 ist in allen ESA-Verträgen verbindlich und wird von CNES, DLR, ASI, INTA, Belspo, NSO und den meisten nationalen Trümmer-Mitigations-Leitlinien als technische Basis referenziert. Die europäische Anpassung verschärft die Passivierungs-Nachweise und führt mit der ESA-SDM-Politik konsistente Casualty-Risk-Modellierungs-Regeln ein.",
+      provisions: {
+        "Tailoring §4.1": {
+          title: "Entsorgungs-Zuverlässigkeit ≥ 0,9",
+          summary:
+            "ESA-Missionen müssen am Ende-Mission-Confirmation-Meilenstein eine Erfolgswahrscheinlichkeit der End-of-Life-Entsorgung von ≥ 0,9 nachweisen.",
+        },
+        "Tailoring §4.4": {
+          title: "Casualty-Risk-Schwellwert 10⁻⁴",
+          summary:
+            "Aggregiertes Casualty-Risk bei unkontrolliertem Wiedereintritt darf 10⁻⁴ nicht überschreiten; bei höheren Risiken ist kontrollierter Wiedereintritt in das SPOUA (South-Pacific Ocean Uninhabited Area) zwingend.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ESA-SDM-POLICY-2014",
+    {
+      title:
+        "ESA-Politik zur Vermeidung von Weltraumtrümmern bei Agentur-Projekten",
+      scopeDescription:
+        "Verbindliche interne ESA-Politik zur Trümmer-Vermeidung für alle Projekte, Verträge und Partnerschaften der Agentur. Verlangt für jede ESA-Mission die Konformität mit ECSS-U-AS-10C (und damit ISO 24113) zuzüglich agenturspezifischer Anpassung bei Entsorgungs-Zuverlässigkeits-Nachweisen, Casualty-Risk-Schwellwerten und dem SPOUA-Wiedereintritts-Korridor.",
+      provisions: {
+        "§4": {
+          title: "Konformität mit ECSS-U-AS-10C",
+          summary:
+            "Alle ESA-Projekte müssen die Konformität mit ECSS-U-AS-10C (übernimmt ISO 24113) einhalten und durch die projekteigene Trümmer-Mitigations-Dokumentation nachweisen.",
+        },
+        "§5": {
+          title: "Tailoring-Befugnis",
+          summary:
+            "Projektspezifische Anpassungen sind nur mit formaler Genehmigung des Programm-Direktors zulässig; Abweichungen sind zu dokumentieren und risikobasiert zu rechtfertigen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-CCSDS-CDM-508",
+    {
+      title: "CCSDS 508.0-B-1 — Conjunction Data Message (CDM)",
+      scopeDescription:
+        "Industriestandard-Format für maschinenlesbare Konjunktions-Warnungen. Ursprünglich vom 18th Space Defense Squadron / Space-Track entwickelt und von jedem großen SSA-Anbieter übernommen (LeoLabs, Slingshot, ESA SST, EU SST, JAXA SSA). Operatoren MÜSSEN CDMs in diesem Format konsumieren, um an einer modernen Kollisionsvermeidungs-Pipeline teilnehmen zu können.",
+      provisions: {
+        "§4": {
+          title: "CDM-Datenfelder",
+          summary:
+            "Definiert die obligatorischen Konjunktions-Felder: TCA (Time of Closest Approach), Miss-Distance, Relativgeschwindigkeit, Primary-/Secondary-State-Vector am TCA, Kovarianzmatrizen, Hard-Body-Radius und Kollisionswahrscheinlichkeit.",
+        },
+        "§5": {
+          title: "Berechnung der Kollisionswahrscheinlichkeit",
+          summary:
+            "Standardisierte Pc-Berechnungs-Methodik; Referenz-Implementierungen von Foster, Patera und Alfano sind normativ aufgeführt.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-ITU-RES-35",
+    {
+      title:
+        "ITU-R Resolution 35 (WRC-19) — Meilensteinbasierte Inbetriebnahme von NGSO-Satellitensystemen in bestimmten Frequenzbändern und Diensten",
+      scopeDescription:
+        "Auf der WRC-19 verabschiedet: Resolution 35 verhängt verbindliche Inbetriebnahme-Meilensteine für NGSO-Satelliten-Netze in bestimmten Frequenzbändern: mindestens 10 % des Netzes innerhalb von 2 Jahren ab Bringing-Into-Use-Datum, 50 % innerhalb von 5 Jahren und 100 % innerhalb von 7 Jahren. Verfehlung eines Meilensteins führt zu einer proportionalen Reduktion der im Master International Frequency Register (MIFR) eingetragenen Satellitenzahl. Beschränkt Konstellations-Inbetriebnahme-Zeitpläne und stärkt die Trümmer-Vermeidungs-Disziplin durch Sanktionierung reiner Papier-Anmeldungen.",
+      provisions: {
+        "Resolves 1": {
+          title: "Drei-Stufen-Inbetriebnahme-Meilensteine",
+          summary:
+            "Meilenstein 1 (≥ 10 % Inbetriebnahme) innerhalb von 2 Jahren ab BIU; Meilenstein 2 (≥ 50 %) innerhalb von 5 Jahren; Meilenstein 3 (≥ 100 %) innerhalb von 7 Jahren.",
+        },
+        "Resolves 2": {
+          title: "MIFR-Konsequenz bei Nichteinhaltung",
+          summary:
+            "Verfehlung eines Meilensteins reduziert die im MIFR eingetragene Satellitenzahl auf die zum Meilenstein-Datum tatsächlich in Betrieb genommene Zahl.",
+          complianceImplication:
+            "NGSO-Konstellations-Operatoren müssen ihre Inbetriebnahme-Kadenz an den Meilenstein-Plan anpassen oder eine dauerhafte Reduktion ihrer ITU-eingetragenen Flotte hinnehmen — wirkt sich direkt auf die lebenslange Spektrumsrechte-Hülle aus.",
+        },
+      },
+    },
+  ],
+
+  [
+    "INT-AARHUS-1998",
+    {
+      title:
+        "Aarhus-Übereinkommen über den Zugang zu Informationen, die Öffentlichkeitsbeteiligung an Entscheidungsverfahren und den Zugang zu Gerichten in Umweltangelegenheiten",
+      scopeDescription:
+        "UN-ECE-Übereinkommen, das der Öffentlichkeit drei Verfahrensrechte in Umweltangelegenheiten gewährt: (1) Zugang zu Umweltinformationen bei Behörden, (2) Beteiligung an umweltbezogenen Entscheidungsverfahren, (3) Zugang zu Gerichten zur Überprüfung umweltbezogener Entscheidungen. Von allen EU-Mitgliedstaaten und der EU selbst ratifiziert (Beschluss 2005/370/EG). Bestimmt die Verfahrensoberfläche für Spaceport-Lizenzierung und Startkorridor-Umweltprüfung in ganz Europa — die Pflichten zur Öffentlichkeitsbeteiligung in EU-EIA, Habitats und nationalen Genehmigungsregimen sind Aarhus-basiert.",
+      provisions: {
+        "Art. 4-5": {
+          title: "Zugang zu Umweltinformationen",
+          summary:
+            "Behörden haben Umweltinformationen auf Anfrage bereitzustellen und bestimmte Informationskategorien proaktiv zu verbreiten.",
+        },
+        "Art. 6": {
+          title: "Öffentlichkeitsbeteiligung bei bestimmten Tätigkeiten",
+          summary:
+            "Annex-I-Tätigkeiten (große Industrieanlagen und bestimmte Verkehrsinfrastruktur) erfordern frühzeitige und wirksame Öffentlichkeitsbeteiligung im Genehmigungsverfahren.",
+        },
+        "Art. 9": {
+          title: "Zugang zu Gerichten",
+          summary:
+            "Mitgliedern der Öffentlichkeit muss Klagebefugnis zustehen, um Verstöße gegen nationales Umweltrecht und die materielle und verfahrensrechtliche Rechtmäßigkeit von Genehmigungsentscheidungen anzufechten.",
+        },
+      },
+    },
+  ],
+
+  // ─── EU: STM Strategy, EIA, Habitats ────────────────────────────────
+
+  [
+    "EU-STM-STRATEGY-2022",
+    {
+      title:
+        "EU-Strategie zum Space Traffic Management — Gemeinsame Mitteilung JOIN(2022) 4 final",
+      scopeDescription:
+        "Gemeinsame Mitteilung der Europäischen Kommission und der Hohen Vertreterin, die die EU-STM-Ambition formuliert: Aufbau einer koordinierten EU-STM-Fähigkeit auf Basis der EU-SST-Partnerschaft, Beitrag zu internationalen STM-Standards, Aufbau operativer STM-Dienste auf EU-Ebene und Adressierung der regulatorischen Dimension (mögliches künftiges EU-Weltraumgesetz zu STM). Anschlussakt: EU Space Act (COM(2025) 335), der STM-Bestimmungen in seinem Entwurf-Titel VI integriert.",
+      provisions: {
+        "§ 2 — Operativer Pfeiler": {
+          title: "STM-Dienste auf EU-Ebene",
+          summary:
+            "Die EU-SST-Partnerschaft soll zum operativen Rückgrat des EU-STM ausgebaut werden, ergänzt durch zusätzliche Dienste (Wiedereintritts-Analyse, Fragmentierungs-Analyse, Manöver-Koordination).",
+        },
+        "§ 4 — Regulatorischer Pfeiler": {
+          title: "Künftige EU-STM-Regulierung",
+          summary:
+            "Die Kommission soll EU-Rechtsetzung zu STM vorschlagen, wo Mitgliedstaatsrahmen unzureichend sind — verfolgt im Entwurf des EU-Weltraumgesetzes.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EU-EIA-DIR-2011-92",
+    {
+      title:
+        "Richtlinie über die Umweltverträglichkeitsprüfung (Richtlinie 2011/92/EU, geändert durch 2014/52/EU)",
+      scopeDescription:
+        "EU-Richtlinie, die eine Umweltverträglichkeitsprüfung (UVP) für öffentliche und private Vorhaben mit voraussichtlich erheblichen Umweltauswirkungen vorschreibt. Annex I listet UVP-pflichtige Vorhaben (große Industrieanlagen, bestimmte Verkehrsinfrastrukturen); Annex II listet Vorhaben, die einer mitgliedstaatlichen Vorprüfung unterliegen. Spaceport-Bau und größere Startgelände-Erweiterungen fallen unter Annex-II-Vorprüfung; die Änderung 2014/52 verschärfte die Vorprüfungs-Kriterien und führte verbindliche 'begründete Schlussfolgerungen' der Mitgliedstaaten zur Umweltauswirkung ein. Innerstaatlich umgesetzt: UK SI 2017/571, deutsches UVPG, französischer Code de l'environnement Art. L122 etc.",
+      provisions: {
+        "Art. 4": {
+          title: "Vorprüfung (Screening)",
+          summary:
+            "Mitgliedstaaten bestimmen, ob das Projekt einer UVP unterzogen wird — Annex-I-Projekte stets; Annex II via Einzelfallprüfung.",
+        },
+        "Art. 5-7": {
+          title: "Scoping und Konsultation",
+          summary:
+            "Vorhabenträger legt einen Scoping-Bericht vor; Konsultation mit Umweltbehörden und der Öffentlichkeit; grenzüberschreitende Konsultation bei mitgliedstaatsübergreifenden Auswirkungen.",
+        },
+        "Art. 8a (post-2014)": {
+          title: "Begründete Schlussfolgerung",
+          summary:
+            "Die zuständige Behörde muss eine begründete Schlussfolgerung zu den erheblichen Umweltauswirkungen des Projekts in die Genehmigung integrieren.",
+        },
+      },
+    },
+  ],
+
+  [
+    "EU-HABITATS-DIR-92-43",
+    {
+      title:
+        "FFH-Richtlinie (Richtlinie 92/43/EWG zur Erhaltung der natürlichen Lebensräume sowie der wildlebenden Tiere und Pflanzen)",
+      scopeDescription:
+        "Grundlage des Natura-2000-Netzwerks. Art. 6 Abs. 3 verlangt eine 'angemessene Prüfung' jedes Plans oder Projekts, das ein Natura-2000-Gebiet erheblich beeinträchtigen könnte — einzeln oder im Zusammenwirken mit anderen Vorhaben. Mehrere europäische Spaceports und Startkorridore überschneiden sich mit Natura-2000-Gebieten (insbesondere entlang atlantischer und mediterraner Küsten und in skandinavischen Boreal-Zonen), sodass FFH-Prüfungen ein wiederkehrender Bestandteil europäischer Startgelände-Genehmigungen sind.",
+      provisions: {
+        "Art. 6 Abs. 3": {
+          title: "Angemessene Prüfung",
+          summary:
+            "Pläne oder Projekte, die ein Natura-2000-Gebiet erheblich beeinträchtigen könnten, sind einer angemessenen Prüfung der Auswirkungen auf die Erhaltungsziele des Gebiets zu unterziehen.",
+        },
+        "Art. 6 Abs. 4": {
+          title: "Zwingende Gründe des überwiegenden öffentlichen Interesses",
+          summary:
+            "Wenn die Prüfung negativ ausfällt, das Vorhaben aber aus zwingenden Gründen des überwiegenden öffentlichen Interesses durchgeführt werden muss, hat der Mitgliedstaat alle erforderlichen Ausgleichsmaßnahmen zu treffen.",
+        },
+      },
+    },
+  ],
+
+  // ─── US: NEPA, FAA Part 450, FCC Rules, ODMSP, NASA-STD, SPD-3, ITAR/EAR ────
+
+  [
+    "US-NEPA-1969",
+    {
+      title: "National Environmental Policy Act (NEPA) von 1969",
+      scopeDescription:
+        "Bundesgesetz, das eine Umweltprüfung für 'major federal actions' vorschreibt — jede FAA-Startlizenz, jede FCC-Raumstation-Genehmigung und jede NOAA-Fernerkundungs-Lizenz ist eine 'federal action' im Sinne von NEPA. Löst entweder eine Environmental Assessment (EA) oder eine vollständige Environmental Impact Statement (EIS) aus, sofern keine kategorische Ausnahme greift. Der Rahmen aus CSE-v-DOT (und Viasat-v-FCC) bestätigt, dass kategorische Ausnahmen für die Satellitenlizenzierung gültig sind, wo durch dokumentarische Evidenz allgemeiner Nicht-Erheblichkeit gestützt.",
+      provisions: {
+        "§ 4332(C)": {
+          title: "Environmental Impact Statement",
+          summary:
+            "Jede Empfehlung oder jeder Bericht zu Vorschlägen für Gesetzgebung und sonstigen 'major federal actions' mit erheblichen Auswirkungen auf die menschliche Umwelt muss eine detaillierte Erklärung zu Umweltauswirkungen und Alternativen enthalten.",
+        },
+        "40 CFR § 1501.4": {
+          title: "Entscheidungsbaum EA / EIS / kategorische Ausnahme",
+          summary:
+            "CEQ-Verordnungen schreiben vor, wie eine Behörde zwischen EA, EIS oder kategorischer Ausnahme entscheidet — der praktische Schritt, der den Umweltprüfungs-Aufwand einer Startlizenz bestimmt.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-FAA-450-131",
+    {
+      title:
+        "14 CFR § 450.131 — Umweltprüfung für FAA-Start- und Wiedereintrittslizenzen",
+      scopeDescription:
+        "Die Umweltprüfungs-Bestimmung von Part 450: Verlangt vom Lizenznehmer Umweltinformationen, die der FAA eine NEPA-Analyse (42 USC §§ 4321 ff.) und Anwendung weiterer Umweltgesetze (Endangered Species Act, National Historic Preservation Act, Clean Air Act etc.) erlauben. Der Antragsteller muss die Start- und Wiedereintritts-Umweltauswirkungen identifizieren und Mitigationsmaßnahmen vorschlagen. Die FAA erstellt dann eine EA, erteilt eine kategorische Ausnahme oder leitet ein EIS ein — abhängig vom Projekt-Profil.",
+      provisions: {
+        "(a)": {
+          title: "Pflicht des Antragstellers",
+          summary:
+            "Der Antragsteller hat Umweltinformationen bereitzustellen, die der FAA die Erfüllung von NEPA und weiteren Umweltgesetzen und -verordnungen ermöglichen.",
+        },
+        "(b)": {
+          title: "Mitigations-Verpflichtungen",
+          summary:
+            "Mitigationsmaßnahmen zur Reduktion von Umweltauswirkungen sind zu identifizieren; die FAA kann sie als Lizenz-Bedingungen verhängen.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-NASA-STD-8719-14B",
+    {
+      title:
+        "NASA-STD-8719.14B — Verfahren zur Beschränkung von Orbital-Trümmern (mit Change 1)",
+      scopeDescription:
+        "Verbindliche interne NASA-Trümmer-Mitigations-Norm, anwendbar auf alle NASA-finanzierten Missionen und bindend für Auftragnehmer und Partner. Setzt die US-Government Orbital Debris Mitigation Standard Practices (ODMSP, 2019-Update) um und wird von FAA, FCC, NOAA und Verteidigungsministerium als Gold-Standard-Methodik für die unterstützenden Analysen referenziert (DAS — Debris Assessment Software — läuft gegen diese Norm).",
+      provisions: {
+        "§4.3": {
+          title: "Operative Trümmer-Limits",
+          summary:
+            "Mission-bezogene Trümmer ≥ 1 mm, die in den LEO freigesetzt werden, sind soweit praktikabel zu eliminieren.",
+        },
+        "§4.4": {
+          title: "Unbeabsichtigte Auseinanderbruchs-Wahrscheinlichkeit",
+          summary:
+            "Die Wahrscheinlichkeit unbeabsichtigter Explosionen im operativen Betrieb ist unter 0,001 zu halten.",
+        },
+        "§4.5": {
+          title: "End-of-Life-Entsorgung — LEO 25 Jahre (Übergang zu 5)",
+          summary:
+            "End-of-Life-Entsorgung aus LEO innerhalb von 25 Jahren; an die FCC-2022-5-Jahres-Regel für neue Raumfahrzeuge angepasst über missionsspezifische Waiver und das ODMSP-Update 2024.",
+        },
+        "§4.6": {
+          title: "Casualty-Risk beim Wiedereintritt — 1:10.000",
+          summary:
+            "Aggregiertes menschliches Casualty-Risk bei unkontrolliertem Wiedereintritt darf 1 von 10.000 (10⁻⁴) nicht überschreiten.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-ODMSP-2019",
+    {
+      title:
+        "US-Government Orbital Debris Mitigation Standard Practices (ODMSP) — Update 2019",
+      scopeDescription:
+        "Inter-Agency-Politik der US-Regierung zur Umsetzung der IADC-Leitlinien. Das ODMSP ist die harmonisierte Basis, auf die NASA-STD-8719.14B, FAA 14 CFR Part 450, FCC § 25.114 und NOAA-CRSRA verweisen. Das Update 2019 führte quantitative Kollisions-Risiko- und Zuverlässigkeits-Metriken für den Betrieb und für große Konstellationen ein.",
+      provisions: {
+        "§1": {
+          title: "Beschränkung der Freisetzung operativer Trümmer",
+          summary:
+            "Programme sollen Raumfahrzeuge und Orbitalstufen so auslegen, dass im Normalbetrieb keine Trümmer freigesetzt werden (mission-bezogene Trümmer > 1 mm).",
+        },
+        "§3": {
+          title: "Zuverlässigkeitsziel der End-of-Life-Entsorgung",
+          summary:
+            "Die Erfolgswahrscheinlichkeit des End-of-Life-Entsorgungs-Manövers muss ≥ 0,9 sein (für das vorgeschlagene 2024-Update für große Konstellationen auf 0,99 erhöht).",
+        },
+        "§4-B": {
+          title: "Konstellationen — zusätzliche Anforderungen",
+          summary:
+            "Große Konstellationen (>100 Satelliten) müssen aggregierte Kollisions-Risiko-Statistiken veröffentlichen und nachweisen, dass die flottenweite Katastrophen-Kollisions-Wahrscheinlichkeit über die Konstellationslebenszeit < 10⁻⁴ ist.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-FCC-25-114",
+    {
+      title:
+        "47 CFR § 25.114 — Antragsanforderungen für Satelliten-Raumstationen (Trümmer-Mitigations-Erklärung)",
+      scopeDescription:
+        "Abschnitt der FCC-Part-25-Satellitenlizenz-Verordnung, der bei jedem Raumstation-Antrag eine Trümmer-Erklärung verlangt. Operatoren müssen die Konformität mit § 25.283 (PMD), § 25.281 (operativen Praktiken) und der 5-Jahres-Entsorgungsregel (eingeführt 2022) nachweisen. Eine fehlende § 25.114(d)(14)-Erklärung führt zur Rückweisung des Antrags.",
+      provisions: {
+        "(d)(14)(i)": {
+          title: "Hardware-Auslegung des Raumfahrzeugs",
+          summary:
+            "Nachweis der getroffenen Maßnahmen zur Beschränkung der Trümmer-Freisetzung im Normalbetrieb und zur Minimierung der Kollisionswahrscheinlichkeit mit großen Trümmern.",
+        },
+        "(d)(14)(ii)": {
+          title: "Minimierung möglicher Auseinanderbrüche",
+          summary:
+            "Nachweis von Passivierungsverfahren für gespeicherte Energie am Missionsende und Bewertung der unbeabsichtigten Auseinanderbruchs-Wahrscheinlichkeit.",
+        },
+        "(d)(14)(iii)": {
+          title: "Entsorgungs-Erklärung",
+          summary:
+            "Entsorgungsplan konform zu § 25.283 — kontrollierter Wiedereintritt, atmosphärisches Verglühen innerhalb von 5 Jahren (post-2022) oder Transfer in eine Entsorgungsbahn.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-FCC-25-283",
+    {
+      title:
+        "47 CFR § 25.283 — End-of-Life-Entsorgung von Raumstationen (5-Jahres-Regel)",
+      scopeDescription:
+        "Kodifiziert die 5-Jahres-FCC-End-of-Life-Entsorgungsregel — der operative Text hinter FCC 22-74. Neue Raumstationen, deren Genehmigung nach dem 29. September 2024 erteilt wird, sind innerhalb von 5 Jahren nach Missionsende zu entsorgen. Entsorgungspfade: kontrollierter Wiedereintritt, atmosphärisches Verglühen via natürlicher Bahnverfall oder Transfer in eine Entsorgungsbahn nachweislich außerhalb der LEO-geschützten Region.",
+      provisions: {
+        "(a)": {
+          title: "5-Jahres-LEO-End-of-Life-Entsorgung",
+          summary:
+            "Raumstationen, die ihren Betrieb im LEO einstellen oder durch ihn passieren (≤ 2000 km Höhe), sind innerhalb von 5 Jahren nach Missionsende zu entsorgen.",
+          complianceImplication:
+            "Erste verbindliche nationale Abweichung von der IADC-25-Jahres-Leitlinie. Erfordert effektiv Antrieb (oder aerodynamische Augmentations-Devices) bei jeder LEO-Mission ab 2024 — außer bei Höhen < 600 km, wo natürlicher Bahnverfall allein die Regel erfüllen kann.",
+        },
+        "(b)": {
+          title: "Entsorgungs-Zuverlässigkeit ≥ 0,9",
+          summary:
+            "Operator hat eine Erfolgswahrscheinlichkeit des End-of-Life-Entsorgungs-Manövers von mindestens 0,9 nachzuweisen, konsistent mit dem US-Government ODMSP.",
+        },
+        "(c)": {
+          title: "GEO-Friedhof",
+          summary:
+            "GEO-Entsorgung via Re-Orbit ≥ 235 km + 1000·CR·A/m über GEO; Entsorgungs-Zuverlässigkeit ≥ 0,9.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-FCC-5YR-PMD-2022",
+    {
+      title:
+        "FCC Second Report and Order — Mitigation of Orbital Debris in the New Space Age (FCC 22-74)",
+      scopeDescription:
+        "FCC-Anordnung von September 2022, die die LEO-End-of-Life-Entsorgungsregel von der bisherigen 25-Jahres-Vorgabe auf 5 Jahre verkürzt. Erstmalige verbindliche nationale Abweichung von der IADC-Leitlinie, gilt für neue Raumfahrzeug-Genehmigungen ab dem 29. September 2024. Treibt die Branche zu propulsion-equipped LEO-Missionen.",
+      provisions: {
+        "Order ¶17": {
+          title: "5-Jahres-Regel verkündet",
+          summary:
+            "Raumstationen, die in oder durch das LEO operieren, sind innerhalb von 5 Jahren nach Missionsende zu entsorgen — kodifiziert in 47 CFR § 25.283.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-SPD-3-2018",
+    {
+      title:
+        "Space Policy Directive 3 (SPD-3) — National Space Traffic Management Policy",
+      scopeDescription:
+        "Etabliert die US-National-STM-Politik: Weist das Handelsministerium an, die öffentlich-zugewandte Space-Situational-Awareness-Datenteilungs-Rolle vom Verteidigungsministerium zu übernehmen, SSA-Standards zu entwickeln und STM-Dienste für zivile und kommerzielle Operatoren bereitzustellen. Der Aufbau des Traffic Coordination System for Space (TraCSS) durch das Office of Space Commerce seit 2024 setzt diese Direktive operativ um.",
+      provisions: {
+        "§ 2": {
+          title: "Ziele und Grundsätze",
+          summary:
+            "Die Vereinigten Staaten sollen führend bei sicheren und verantwortungsvollen Weltraumtätigkeiten sein; das Handelsministerium soll die öffentlich-zugewandte Behörde für zivile SSA-Daten und grundlegende STM-Dienste sein.",
+        },
+        "§ 4": {
+          title: "Rolle des Handelsministeriums",
+          summary:
+            "Handelsministerium / Office of Space Commerce sollen einen öffentlichen Katalog von Weltraumobjekten pflegen, grundlegende SSA-Dienste bereitstellen und STM-Standards in Koordination mit FCC, FAA, NASA und DoD entwickeln.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-CSLA-1984",
+    {
+      title: "Commercial Space Launch Act (CSLA) von 1984",
+      scopeDescription:
+        "Foundational US-Bundesgesetz, das das kommerzielle Startgenehmigungs-Regime der FAA/AST etabliert. Kodifiziert in 51 USC Chapter 509. Schafft das Lizenzregime für kommerzielle Starts und Wiedereintritte, die Genehmigung von Startanlagen-Betreibern, das Maximum-Probable-Loss-Versicherungsregime und die staatliche Indemnifikation oberhalb der MPL-Grenze.",
+      provisions: {
+        "§ 50904": {
+          title: "Lizenzpflicht",
+          summary:
+            "Niemand darf ohne FAA-Lizenz einen Start, Wiedereintritt oder Betrieb einer Startanlage durchführen.",
+        },
+        "§ 50914": {
+          title: "Maximum Probable Loss & staatliche Indemnifikation",
+          summary:
+            "Operatoren müssen Drittpartie-Haftpflicht in Höhe der MPL versichern; oberhalb dieser Grenze leistet die US-Regierung Indemnifikation bis zur Diet-festgelegten Obergrenze.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-COMM-ACT-1934",
+    {
+      title: "Communications Act von 1934 (auf Satelliten anwendbar)",
+      scopeDescription:
+        "Foundational US-Telekommunikationsgesetz, auf dessen Grundlage die FCC Satellitenkommunikation reguliert. § 301 verbietet den Betrieb von Funkanlagen ohne FCC-Lizenz; § 303 ermächtigt die FCC zur Spektrum-Zuteilung; § 308 regelt das Antragsverfahren. Anwendbar auf Satelliten-Raumstationen (47 CFR Part 25), Erdfunkstellen und Frequenzkoordination.",
+      provisions: {
+        "§ 301": {
+          title: "Lizenzpflicht für Funkanlagen",
+          summary:
+            "Niemand darf eine Funkanlage in den USA ohne FCC-Lizenz betreiben.",
+          complianceImplication:
+            "Die statutäre Grundlage für die Bußgelder gegen Swarm Technologies (2018, 900.000 USD) und EchoStar/DISH (2023, 150.000 USD).",
+        },
+        "§ 303": {
+          title: "Spektrum-Zuteilung",
+          summary:
+            "Die FCC ist befugt, Frequenzen zuzuteilen, Klassen von Funkdiensten festzulegen und Lizenzbedingungen zu definieren.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-ITAR",
+    {
+      title:
+        "International Traffic in Arms Regulations (ITAR) — Kategorie IV & XV",
+      scopeDescription:
+        "Verwaltet vom State Department / DDTC unter dem Arms Export Control Act (22 USC § 2778). Die US Munitions List (USML) Kategorie IV (Startfahrzeuge, Lenkwaffen, Raketenmotoren) und Kategorie XV (Spacecraft Systems) erfassen die meisten militärischen und dual-use-Raumfahrt-Komponenten. ITAR-Verstöße ziehen Strafsanktionen bis zu 20 Jahren Haft und 1 Mio. USD pro Verstoß nach sich. Technical Assistance Agreements (TAAs) sind für technische Daten-Transfers an ausländische Personen erforderlich.",
+      provisions: {
+        "USML Kategorie IV": {
+          title: "Startfahrzeuge, Lenkwaffen, Raketenmotoren",
+          summary:
+            "Erfasst Trägerraketen, Raketenmotoren, Wiedereintritts-Fahrzeuge und zugehörige Komponenten. Export erfordert DDTC-Lizenz; technischer Daten-Transfer erfordert TAA.",
+        },
+        "USML Kategorie XV": {
+          title: "Spacecraft Systems",
+          summary:
+            "Erfasst militärische Satelliten und bestimmte kommerzielle Satelliten-Komponenten. Die Reform 2014 verschob viele kommerzielle Komponenten zur EAR — Kategorie XV bleibt für militär-spezifische Hardware bindend.",
+        },
+      },
+    },
+  ],
+
+  [
+    "US-EAR",
+    {
+      title:
+        "Export Administration Regulations (EAR) — Kategorie 9 (Aerospace)",
+      scopeDescription:
+        "Verwaltet vom Commerce Department / BIS unter dem Export Control Reform Act 2018 (50 USC Ch. 58). Commerce Control List (CCL) Kategorie 9 (Aerospace and Propulsion) erfasst dual-use-Raumfahrt-Items, die nicht auf der ITAR-USML stehen. Die Export Control Reform 2014 verlagerte die meisten kommerziellen Satelliten-Komponenten von ITAR-Kategorie XV zur EAR-9E515 / 9A515. BIS-Screening-Verfahren für End-User, End-Use und Bestimmungsländer (insbesondere China, Russland, Iran).",
+      provisions: {
+        "ECCN 9A515": {
+          title: "Satelliten und Komponenten",
+          summary:
+            "Kommerzielle Satelliten und definierte Komponenten — Export erfordert BIS-Lizenz, abhängig von Bestimmungsland und End-Use.",
+        },
+        "Entity List Screening": {
+          title: "Endnutzer-Screening",
+          summary:
+            "Operatoren müssen vor Ausfuhr gegen die Entity List, die SDN List (OFAC) und die Unverified List screenen.",
+        },
+      },
+    },
+  ],
+
+  // ─── UK: SIR 2021, CAP 2589 ─────────────────────────────────────────
+
+  [
+    "UK-SIR-2021",
+    {
+      title: "Space Industry Regulations 2021",
+      scopeDescription:
+        "Statutory Instrument zur Operationalisierung des Space Industry Act 2018 — legt die detaillierten Lizenzantrags-Anforderungen, Technical-Information-Schedules und Operating-Licence-Bedingungen fest, die durch die CAA durchgesetzt werden. Die Verordnungen enthalten ausdrückliche Trümmer-Vermeidungs- und End-of-Mission-Anforderungen (Schedule 1 Part 3) mit ISO 24113 als technischer Basis. Begleitverordnungen zu Rechtsbehelfen (SI 2021/793) und Vollzug (SI 2021/795) vervollständigen das Sekundärrechts-Paket unter SIA 2018.",
+      provisions: {
+        "Sched. 1 Part 3": {
+          title: "Mission-Management-Plan",
+          summary:
+            "Antrag muss einen Mission-Management-Plan enthalten, der Betrieb, Konjunktions-Bewertungs-Verfahren, End-of-Life-Entsorgung und Passivierung abdeckt — gemessen an ISO 24113.",
+        },
+        "Sched. 1 Part 7": {
+          title: "Versicherung und Indemnifikation",
+          summary:
+            "Antrag muss Drittpartie-Haftpflicht-Versicherung in der von der CAA festgesetzten Höhe nachweisen — typisch EUR 60M Basisbetrag plus missions-spezifische Aufschläge.",
+        },
+      },
+    },
+  ],
+
+  [
+    "UK-CAA-CAP2589",
+    {
+      title:
+        "CAP 2589 — UK CAA Politik zur Vermeidung von Weltraumtrümmern und Nachhaltigkeit",
+      scopeDescription:
+        "Verbindliche Trümmer-Vermeidungs-Politik der CAA unter dem Space Industry Act 2018. Setzt die technische Basis (ISO 24113:2023) für die Lizenzierung und wendet einen Zwei-Stufen-Ansatz an: Standard-Lizenzierung für Missionen, die ISO 24113 erfüllen; verschärfte Prüfung für abweichende Missionen. Die erste CAP-2589-Revision im November 2024 führte eine Präferenz für 5-Jahres-LEO-End-of-Life-Entsorgung ein und brachte die UK in Linie mit FCC und IADC 2025.",
+      provisions: {
+        "§4.2": {
+          title: "ISO-24113-Basis",
+          summary:
+            "Alle Lizenzantragsteller müssen die Konformität mit ISO 24113:2023 in der technischen Einreichung nachweisen.",
+        },
+        "§4.3": {
+          title: "End-of-Life-Entsorgungs-Präferenz — 5 Jahre",
+          summary:
+            "Ab 2025 verschiebt sich das End-of-Life-Manöver-Ziel von 25 auf 5 Jahre für neue LEO-Missionen; die 25-Jahres-Fallback-Option nur mit dokumentierter Begründung.",
+        },
+        "§5": {
+          title: "Manöver-Datenteilung",
+          summary:
+            "Operatoren müssen operative Manöver-Pläne mindestens 24 Stunden vor Ausführung mit dem NSpOC teilen — außer bei Kollisionsvermeidungs-Manövern, wo Post-Event-Reporting akzeptabel ist.",
+        },
+        "§6": {
+          title: "Bereitschaft für Active Debris Removal",
+          summary:
+            "Raumfahrzeuge, die nach dem 1. Januar 2027 starten, sollten so ausgelegt sein, dass sie Active Debris Removal ermöglichen (Capture-Schnittstellen, Beacon-Tracking-Hilfen).",
+        },
+      },
+    },
+  ],
+
+  // ─── FR: CNES RTE 2024, Décret 2009-643 ─────────────────────────────
+
+  [
+    "FR-CNES-DEBRIS-RTE-2024",
+    {
+      title:
+        "CNES Référentiel Technique d'Exigence — Trümmer-Vermeidung im Weltraum",
+      scopeDescription:
+        "Technisches Referenzwerk des CNES, das von ANFR/CNES-Experten unter der LOS-Art.-4-Technische-Verordnungs-Prüfung angewandt wird. Setzt ISO 24113 mit französischen Spezifika um: strengerer Casualty-Risk-Schwellwert (10⁻⁵ für kontrollierten Wiedereintritt über französischem Territorium), verpflichtende CNES-Prüfung für Missionen mit Behauptungen ≥ 0,95 Entsorgungs-Zuverlässigkeit und ein verbindliches 5-Jahres-LEO-End-of-Life-Entsorgungs-Ziel seit der 2024er-Revision.",
+      provisions: {
+        "§4": {
+          title: "5-Jahres-LEO-End-of-Life-Entsorgungs-Ziel",
+          summary:
+            "Das Référentiel verlangt eine Rest-Lebensdauer ≤ 5 Jahre im LEO nach Missionsende für alle ab 2025 eingereichten neuen Missionen.",
+        },
+        "§7": {
+          title: "Casualty-Risk über französischem Territorium",
+          summary:
+            "Individuelles Casualty-Risk ≤ 10⁻⁵ für jeden kontrollierten Wiedereintritt über französischem Territorium oder den Übersee-Gebieten.",
+        },
+        "§9": {
+          title: "Automatische Manöver-Mitteilung",
+          summary:
+            "Jedes Kollisionsvermeidungs-Manöver muss innerhalb einer Stunde nach Ausführung an das CIE (Centre d'Information sur l'Environnement) gemeldet werden.",
+        },
+      },
+    },
+  ],
+
+  [
+    "FR-DECRET-LOS-DEBRIS-IMPLEMENT",
+    {
+      title:
+        "Décret n° 2009-643 — Anwendung des LOS Art. 4 (Technische Verordnung zur Trümmer-Vermeidung)",
+      scopeDescription:
+        "Anwendungs-Décret zum LOS, das die verbindliche technische Verordnung zur Trümmer-Vermeidung in französischen Weltraumtätigkeiten regelt. Artikel 14–17 legen die End-of-Life-Pflichten, Passivierungs-Anforderungen und Casualty-Risk-Schwellwerte fest; die Änderung 2024 führte das 5-Jahres-LEO-Ziel durch Verweis auf ISO 24113:2023 ein.",
+      provisions: {
+        "Art. 14": {
+          title: "Post-Mission-Entsorgung",
+          summary:
+            "Jedes im LEO platzierte Objekt ist innerhalb von 5 Jahren nach Missionsende zu entsorgen (geändert 2024).",
+        },
+        "Art. 16": {
+          title: "Casualty-Risk",
+          summary:
+            "Globales menschliches Risiko bei unkontrolliertem Wiedereintritt ≤ 10⁻⁴; bei Überschreitung kontrollierter Wiedereintritt zwingend.",
+        },
+        "Art. 17": {
+          title: "Passivierung",
+          summary:
+            "Alle bordeigenen Energiequellen sind am Missionsende zu deaktivieren; Nachweise sind dem CNES vorzulegen.",
+        },
+      },
+    },
+  ],
+
+  // ─── DE: Entwurf Weltraumgesetz Title IV ────────────────────────────
+
+  [
+    "DE-WELTRAUMG-DEBRIS-OBLIGATIONS",
+    {
+      title:
+        "Entwurf Bundes-Weltraumgesetz — Vermeidung von Weltraumtrümmern (Titel IV)",
+      scopeDescription:
+        "Titel IV des Entwurfs des Bundes-Weltraumgesetzes (Inkrafttreten erwartet 2026/2027) führt erstmals statutäre End-of-Life- und Passivierungs-Anforderungen auf Bundesebene für deutsche Operatoren ein. Der Entwurf verweist namentlich auf ISO 24113:2023 und bindet Lizenzinhaber an ein 5-Jahres-LEO-End-of-Life-Entsorgungs-Ziel (konsistent mit FCC und IADC 2025).",
+      provisions: {
+        "§ 24 Entwurf": {
+          title: "Auflagen zur Vermeidung von Trümmern",
+          summary:
+            "Genehmigungspflichtige Tätigkeiten sind mit Auflagen zu versehen, die der ISO 24113:2023 sowie ECSS-U-AS-10C Rev.2 entsprechen.",
+        },
+        "§ 25 Entwurf": {
+          title: "End-of-Life-Verpflichtungen",
+          summary:
+            "Betreiber müssen die Wahrscheinlichkeit erfolgreicher End-of-Life-Manöver ≥ 0,9 nachweisen; LEO-Verweildauer max. 5 Jahre nach Missionsende.",
+        },
+        "§ 26 Entwurf": {
+          title: "Passivierung",
+          summary:
+            "Alle Energiequellen (Treibstoff, Druckbehälter, Batterien) müssen am Missionsende deaktiviert werden; Nachweis durch Telemetrie.",
+        },
+      },
+    },
+  ],
+
+  // ─── JP: JAXA JMR-003 ───────────────────────────────────────────────
+
+  [
+    "JP-JAXA-SED-STD",
+    {
+      title: "JAXA-Standard zur Vermeidung von Weltraumtrümmern (JMR-003)",
+      scopeDescription:
+        "Verbindlicher interner JAXA-Trümmer-Vermeidungs-Standard, anwendbar auf alle JAXA-Missionen und auf kommerzielle Raumfahrzeuge auf JAXA-beauftragten Trägern. Setzt die IADC-Leitlinien mit einem Japan-spezifischen Casualty-Risk-Ziel von 1×10⁻⁶ um — der weltweit strengste Wiedereintritts-Casualty-Schwellwert — getrieben durch die hohe Bevölkerungsdichte entlang potenzieller Bodenspuren. Rev. D (April 2023) ergänzte eine 5-Jahres-LEO-End-of-Life-Präferenz konsistent mit IADC 2025.",
+      provisions: {
+        "§5.4": {
+          title: "Casualty-Risk — 1:1.000.000",
+          summary:
+            "Aggregiertes menschliches Casualty-Risk bei unkontrolliertem Wiedereintritt darf 1×10⁻⁶ nicht überschreiten — zehnmal strenger als die internationale 10⁻⁴-Basis.",
+          complianceImplication:
+            "Erzwingt effektiv kontrollierten Wiedereintritt für alle Raumfahrzeuge mit überlebenden Fragmenten > 0,1 kg. Begründung von JAXA für Konstruktions-Entscheidungen (z. B. vollständig verbrennende Materialien, präventive Demisability-Analyse) bei Missionen wie ETS-9 und ALOS-4.",
+        },
+        "§5.6": {
+          title: "End-of-Life-Zuverlässigkeit ≥ 0,95",
+          summary:
+            "Erfolgswahrscheinlichkeit der End-of-Life-Entsorgung ≥ 0,95; redundante Entsorgungs-Mechanismen erforderlich für Missionen über 100 kg.",
+        },
+      },
+    },
+  ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ENDE VERIFIZIERTE ÜBERSETZUNGSTRANCHE
+  // ═══════════════════════════════════════════════════════════════════
 ]);
 
 // ─── Authority Translations ──────────────────────────────────────────
