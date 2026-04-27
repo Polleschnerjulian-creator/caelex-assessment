@@ -1163,6 +1163,79 @@ const ENVIRONMENTAL_UK: LegalSource[] = [
     related_sources: ["UK-COMAH-2015"],
     last_verified: "2026-04-13",
   },
+
+  {
+    id: "UK-EIA-REGS-2017",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "The Town and Country Planning (Environmental Impact Assessment) Regulations 2017",
+    date_enacted: "2017-04-12",
+    date_in_force: "2017-05-16",
+    official_reference: "SI 2017/571",
+    source_url: "https://www.legislation.gov.uk/uksi/2017/571/contents/made",
+    issuing_body:
+      "Secretary of State (made under European Communities Act 1972 / now retained EU law)",
+    competent_authorities: ["UK-DSIT", "UK-CAA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "Domestic implementation of the EU EIA Directive (2011/92/EU as amended by 2014/52/EU). Sets the screening, scoping, and reasoned-conclusion machinery for development projects in England — the standard EIA framework that intersects with spaceport planning consents (Cornwall, Sutherland, SaxaVord) alongside the Space Industry Act 2018 § 11 Assessment of Environmental Effects regime. Scotland, Wales, and Northern Ireland have parallel SIs implementing the same Directive.",
+    key_provisions: [
+      {
+        section: "Reg. 5",
+        title: "Screening",
+        summary:
+          "Local planning authority decides whether the development is EIA development, with reference to Schedule 1 (mandatory EIA) and Schedule 2 (case-by-case screening) project lists.",
+      },
+      {
+        section: "Reg. 14-15",
+        title: "Environmental statement and consultation",
+        summary:
+          "Developer must prepare an environmental statement; competent authority and statutory consultees must be consulted; public comments invited.",
+      },
+      {
+        section: "Reg. 26",
+        title: "Reasoned conclusion",
+        summary:
+          "The competent authority's reasoned conclusion on the significant effects must be incorporated in the planning decision.",
+      },
+    ],
+    related_sources: ["UK-SIA-S11-AEE", "EU-EIA-DIR-2011-92"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "UK-HABITATS-REGS-2017",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "The Conservation of Habitats and Species Regulations 2017",
+    date_enacted: "2017-11-20",
+    date_in_force: "2017-11-30",
+    official_reference: "SI 2017/1012",
+    source_url: "https://www.legislation.gov.uk/uksi/2017/1012/contents/made",
+    issuing_body:
+      "Secretary of State (made under European Communities Act 1972 / now retained EU law)",
+    competent_authorities: ["UK-DSIT"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "UK implementation of the EU Habitats Directive (92/43/EEC). Establishes the network of Special Areas of Conservation (SACs) in the UK and the assessment regime for plans or projects likely to have a significant effect on a European site. SaxaVord (Shetland) and Sutherland spaceports both fall within or adjacent to designated sites, making Habitats-Regs compliance an integral part of their licensing journey.",
+    key_provisions: [
+      {
+        section: "Reg. 63",
+        title: "Appropriate assessment",
+        summary:
+          "Plans or projects likely to have a significant effect on a European site shall be subject to appropriate assessment of implications for the site's conservation objectives — competent authority may agree only after ascertaining no adverse effect on site integrity.",
+      },
+    ],
+    related_sources: ["UK-SIA-S11-AEE", "EU-HABITATS-DIR-92-43"],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Cybersecurity (1) ──────────────────────────────────────────────

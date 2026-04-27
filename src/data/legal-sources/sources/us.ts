@@ -1277,6 +1277,199 @@ const DEBRIS_RULES_US: LegalSource[] = [
     related_sources: ["US-LRSPA-1992", "US-NASA-STD-8719-14B", "US-ODMSP-2019"],
     last_verified: "2026-04-27",
   },
+
+  // ─── Verified additions: Environmental + STM tranche ──────────────
+
+  {
+    id: "US-NEPA-1969",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "National Environmental Policy Act (NEPA) of 1969",
+    date_enacted: "1970-01-01",
+    official_reference: "42 U.S.C. § 4321 et seq. (Pub. L. 91-190)",
+    source_url: "https://www.law.cornell.edu/uscode/text/42/chapter-55",
+    issuing_body: "United States Congress",
+    competent_authorities: ["US-FAA-AST", "US-FCC", "US-NOAA-CRSRA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "The federal statute that requires environmental review for major federal actions — every FAA launch licence, FCC space-station authorisation, and NOAA remote-sensing licence is a 'federal action' for NEPA purposes. Triggers either an Environmental Assessment (EA) or a full Environmental Impact Statement (EIS) unless the action falls under a categorical exclusion. The CSE-v-DOT framework (and Viasat-v-FCC) confirm that categorical exclusions for satellite licensing are valid where supported by record evidence of generic non-significance.",
+    key_provisions: [
+      {
+        section: "§ 4332(C)",
+        title: "Environmental Impact Statement",
+        summary:
+          "Every recommendation or report on proposals for legislation and other major federal actions significantly affecting the quality of the human environment shall include a detailed statement on environmental impacts and alternatives.",
+      },
+      {
+        section: "40 CFR § 1501.4",
+        title: "EA / EIS / categorical exclusion decision tree",
+        summary:
+          "CEQ regulations prescribe how an agency decides between an EA, an EIS, or a categorical exclusion — the practical step that determines launch-licence environmental burden.",
+      },
+    ],
+    related_sources: ["US-14CFR-PART-450", "US-CSLA-1984"],
+    notes: [
+      "Most FAA launch-licence environmental work proceeds via EA (≈ 6-12 months for a new vehicle). Full EIS is reserved for novel or high-impact missions.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FAA-450-131",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "14 CFR § 450.131 — Environmental review for FAA launch and reentry licences",
+    date_published: "2020-12-10",
+    date_in_force: "2021-03-10",
+    official_reference: "14 CFR § 450.131",
+    source_url:
+      "https://www.ecfr.gov/current/title-14/chapter-III/subchapter-C/part-450/subpart-C/section-450.131",
+    issuing_body:
+      "Federal Aviation Administration (FAA), Office of Commercial Space Transportation (AST)",
+    competent_authorities: ["US-FAA-AST"],
+    relevance_level: "fundamental",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "The Part 450 environmental-review provision: requires the licence applicant to provide environmental information sufficient for the FAA to perform NEPA analysis (42 USC §§ 4321 et seq.) and any other environmental statutes (Endangered Species Act, National Historic Preservation Act, Clean Air Act, etc.). The applicant must identify the launch and reentry environmental impacts and propose mitigations. The FAA either prepares an EA, issues a categorical exclusion, or commences an EIS depending on the project profile.",
+    key_provisions: [
+      {
+        section: "(a)",
+        title: "Applicant obligation",
+        summary:
+          "Applicant shall provide environmental information sufficient to enable the FAA to comply with NEPA and other environmental laws and regulations.",
+      },
+      {
+        section: "(b)",
+        title: "Mitigation commitments",
+        summary:
+          "Mitigation measures necessary to reduce environmental impacts shall be identified; FAA may impose them as licence conditions.",
+      },
+    ],
+    related_sources: ["US-14CFR-PART-450", "US-NEPA-1969", "US-CA-CEQA-SPACE"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-FCC-1-1306",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "47 CFR § 1.1306 — FCC categorical exclusion from NEPA for satellite licensing",
+    date_published: "1986-08-08",
+    date_last_amended: "2024-09-26",
+    official_reference: "47 CFR § 1.1306",
+    source_url:
+      "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-A/part-1/subpart-I/subject-group-ECFR79e0ae6c2c9f2c1/section-1.1306",
+    issuing_body: "Federal Communications Commission (FCC)",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "Establishes the FCC's categorical exclusion from NEPA review for the licensing actions in 47 CFR Part 25 (satellite communications). The exclusion is judicially-confirmed (Viasat v. FCC, 47 F.4th 769) but does NOT apply when the action involves significant environmental effects identified in § 1.1307 (radiofrequency-radiation thresholds, environmentally-sensitive areas, Native American tribal sites). The 2024 amendment narrowed the categorical exclusion for very-large-constellation modifications, requiring a § 1.1307 environmental assessment if the constellation exceeds 1,000 satellites.",
+    key_provisions: [
+      {
+        section: "§ 1.1306(a)",
+        title: "Categorical exclusion",
+        summary:
+          "Actions covered by this section are categorically excluded from NEPA-analysis requirements unless the action falls within § 1.1307 exceptions.",
+      },
+      {
+        section: "§ 1.1307",
+        title: "Excluded categories",
+        summary:
+          "Actions causing significant RF-exposure, modifying historic-property sites, affecting threatened/endangered species, or constituting very-large-constellation actions (post-2024) require environmental assessment.",
+      },
+    ],
+    related_sources: ["US-NEPA-1969", "US-FCC-25-114"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-SPD-3-2018",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Space Policy Directive 3 (SPD-3) — National Space Traffic Management Policy",
+    date_published: "2018-06-18",
+    official_reference: "Presidential Memorandum, 18 June 2018",
+    source_url:
+      "https://trumpwhitehouse.archives.gov/presidential-actions/space-policy-directive-3-national-space-traffic-management-policy/",
+    issuing_body: "Office of the President of the United States",
+    competent_authorities: ["US-FAA-AST", "US-FCC", "US-NOAA-CRSRA", "US-USSF"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["space_traffic_management", "debris_mitigation"],
+    scope_description:
+      "Establishes the US National STM Policy: directs the Department of Commerce to assume the public-facing space-situational-awareness (SSA) data-sharing role from the Department of Defense, develop SSA standards, and provide STM services to civil and commercial operators. The Office of Space Commerce stand-up of the Traffic Coordination System for Space (TraCSS) since 2024 implements this directive operationally.",
+    key_provisions: [
+      {
+        section: "§ 2",
+        title: "Goals and principles",
+        summary:
+          "United States shall lead in safe and responsible space activities; Department of Commerce shall be the public-facing agency for civil SSA data and basic STM services.",
+      },
+      {
+        section: "§ 4",
+        title: "Department of Commerce role",
+        summary:
+          "Commerce/Office of Space Commerce shall maintain a public catalog of space objects, provide basic SSA services, and develop STM standards in coordination with FCC, FAA, NASA, and DoD.",
+      },
+    ],
+    related_sources: [
+      "US-OFFICE-SPACE-COMMERCE",
+      "US-FCC-25-283",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "US-OFFICE-SPACE-COMMERCE",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "51 U.S.C. § 60101 et seq. — Office of Space Commerce",
+    date_enacted: "2010-12-18",
+    date_last_amended: "2024-12-23",
+    official_reference: "51 U.S.C. Ch. 601 (Pub. L. 111-314)",
+    source_url: "https://www.law.cornell.edu/uscode/text/51/chapter-601",
+    issuing_body: "United States Congress",
+    competent_authorities: ["US-NOAA-CRSRA"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "data_provider",
+    ],
+    compliance_areas: ["space_traffic_management", "data_security"],
+    scope_description:
+      "Codifies the Office of Space Commerce within the Department of Commerce / NOAA. Statutory basis for Commerce's STM mission under SPD-3 and for the Traffic Coordination System for Space (TraCSS), the public-facing SSA-data and conjunction-warning service that has been transitioning from DoD's Space-Track since 2024. The 2024 reauthorisation in NDAA provisions formalised TraCSS funding and operator-participation expectations.",
+    key_provisions: [
+      {
+        section: "§ 60101",
+        title: "Office establishment",
+        summary:
+          "Establishes the Office of Space Commerce as the principal unit for the coordination of space-related issues, programs, and initiatives within the Department of Commerce.",
+      },
+      {
+        section: "§ 60102 (post-2024)",
+        title: "TraCSS role",
+        summary:
+          "Authorises the Office to operate a Traffic Coordination System for Space providing SSA data, conjunction-assessment messages, and basic STM services to operators.",
+      },
+    ],
+    related_sources: ["US-SPD-3-2018", "INT-CCSDS-CDM-508"],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ────────────────────────────────────────────

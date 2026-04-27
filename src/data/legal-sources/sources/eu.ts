@@ -952,4 +952,126 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-SOLVENCY-II"],
     last_verified: "2026-04-22",
   },
+
+  // ─── Verified additions: Environmental + STM tranche ──────────────
+
+  {
+    id: "EU-EIA-DIR-2011-92",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Environmental Impact Assessment Directive (Directive 2011/92/EU, as amended by 2014/52/EU)",
+    date_enacted: "2011-12-13",
+    date_last_amended: "2014-04-16",
+    official_reference: "Directive 2011/92/EU (consolidated post-2014/52)",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2011/92/oj",
+    issuing_body: "European Parliament and Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "EU directive requiring environmental-impact assessment for public and private projects likely to have significant environmental effects. Annex I lists projects requiring mandatory EIA (large industrial installations, certain transport infrastructure); Annex II lists projects subject to Member-State screening. Spaceport construction and major launch-site upgrades fall under Annex II screening; the 2014/52 amendment tightened the screening criteria and introduced mandatory Member-State 'reasoned conclusions' on environmental impact. Implemented domestically by Member States — UK Regs 2017/571, German UVPG, French Code de l'environnement Art. L122, etc.",
+    key_provisions: [
+      {
+        section: "Art. 4",
+        title: "Screening",
+        summary:
+          "Member States shall determine whether the project is to be made subject to an EIA — Annex I projects always; Annex II via case-by-case examination.",
+      },
+      {
+        section: "Art. 5-7",
+        title: "Scoping and consultation",
+        summary:
+          "Developer must provide a scoping report; consultation with environmental authorities and the public; transboundary consultation if effects extend across Member State borders.",
+      },
+      {
+        section: "Art. 8a (post-2014)",
+        title: "Reasoned conclusion",
+        summary:
+          "Competent authority shall include a reasoned conclusion on the significant effects of the project on the environment, integrated into the development consent.",
+      },
+    ],
+    related_sources: ["EU-HABITATS-DIR-92-43", "INT-AARHUS-1998"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "EU-HABITATS-DIR-92-43",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Habitats Directive (Directive 92/43/EEC on the conservation of natural habitats and of wild fauna and flora)",
+    date_enacted: "1992-05-21",
+    date_last_amended: "2013-05-13",
+    official_reference: "Directive 92/43/EEC",
+    source_url: "https://eur-lex.europa.eu/eli/dir/1992/43/oj",
+    issuing_body: "Council of the European Union",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["environmental", "licensing"],
+    scope_description:
+      "Foundation of the Natura 2000 ecological network. Article 6(3) requires an 'appropriate assessment' for any plan or project likely to have a significant effect on a Natura 2000 site, alone or in combination with other projects. Several EU spaceports and launch corridors intersect with Natura 2000 areas (notably along Atlantic and Mediterranean coastlines and in Scandinavian boreal-zone sites), so Habitats-Directive review is a recurring component of European launch-site authorisation.",
+    key_provisions: [
+      {
+        section: "Art. 6(3)",
+        title: "Appropriate assessment",
+        summary:
+          "Plans or projects likely to have a significant effect on a Natura 2000 site shall be subject to appropriate assessment of implications for the site's conservation objectives.",
+      },
+      {
+        section: "Art. 6(4)",
+        title: "Imperative reasons of overriding public interest",
+        summary:
+          "Where assessment is negative but the project must proceed for imperative reasons of overriding public interest, Member State must take all compensatory measures necessary.",
+      },
+    ],
+    related_sources: ["EU-EIA-DIR-2011-92"],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "EU-STM-STRATEGY-2022",
+    jurisdiction: "EU",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "EU Space Traffic Management Strategy — Joint Communication JOIN(2022) 4 final",
+    date_published: "2022-02-15",
+    official_reference: "JOIN(2022) 4 final",
+    source_url:
+      "https://defence-industry-space.ec.europa.eu/eu-approach-space-traffic-management_en",
+    issuing_body:
+      "European Commission and High Representative of the Union for Foreign Affairs and Security Policy",
+    competent_authorities: ["EU-EC", "EU-EUSPA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["space_traffic_management", "debris_mitigation"],
+    scope_description:
+      "Joint Communication setting out the EU's STM ambition: develop a coordinated EU STM capability building on the EU-SST partnership, contribute to international STM standards, develop EU-level operational STM services, and address the regulatory dimension (potential future EU Space Law on STM). Followed by EU Space Act (COM(2025) 335) which integrates STM provisions in its draft Title VI.",
+    key_provisions: [
+      {
+        section: "§ 2 — Operational pillar",
+        title: "EU-level STM services",
+        summary:
+          "EU-SST partnership to evolve into the operational backbone for EU STM, complemented by additional services (re-entry analysis, fragmentation analysis, manoeuvre coordination).",
+      },
+      {
+        section: "§ 4 — Regulatory pillar",
+        title: "Future EU STM regulation",
+        summary:
+          "Commission to propose EU-level legislation addressing STM where Member State frameworks are insufficient — pursued through the EU Space Act draft.",
+      },
+    ],
+    related_sources: [
+      "EU-SST-DECISION",
+      "EU-SPACE-PROG-2021",
+      "EU-SPACE-ACT",
+      "INT-IADC-MITIGATION-2025",
+    ],
+    last_verified: "2026-04-27",
+  },
 ];

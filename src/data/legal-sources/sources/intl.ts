@@ -3593,4 +3593,112 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-ITU-CONST", "INT-ITU-RR", "INT-ITU-WRC-23"],
     last_verified: "2026-04-27",
   },
+
+  // ─── Verified additions: Environmental + STM tranche ──────────────
+
+  {
+    id: "INT-AARHUS-1998",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "Aarhus Convention on Access to Information, Public Participation in Decision-making and Access to Justice in Environmental Matters",
+    date_enacted: "1998-06-25",
+    date_in_force: "2001-10-30",
+    un_reference: "UN ECE Treaty Series No. 7",
+    source_url:
+      "https://unece.org/environment-policy/public-participation/aarhus-convention/text",
+    issuing_body: "United Nations Economic Commission for Europe (UNECE)",
+    competent_authorities: ["INT-UNOOSA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["environmental"],
+    scope_description:
+      "UNECE convention granting the public three procedural rights in environmental matters: (1) access to environmental information held by public authorities, (2) participation in environmental decision-making, (3) access to justice for review of environmental decisions. Ratified by all EU Member States and the EU itself (Decision 2005/370/EC). Determines the procedural surface for spaceport licensing and launch-corridor environmental review across Europe — public-consultation obligations under EU EIA, Habitats, and national permitting regimes are Aarhus-grounded.",
+    key_provisions: [
+      {
+        section: "Art. 4-5",
+        title: "Access to environmental information",
+        summary:
+          "Public authorities shall make environmental information available on request and proactively disseminate certain categories of information.",
+      },
+      {
+        section: "Art. 6",
+        title: "Public participation in specific activities",
+        summary:
+          "Annex I activities (covering large industrial installations and certain transport infrastructure) require early and effective public participation in the permitting decision.",
+      },
+      {
+        section: "Art. 9",
+        title: "Access to justice",
+        summary:
+          "Members of the public must have standing to challenge alleged violations of national environmental law and the substantive and procedural legality of permitting decisions.",
+      },
+    ],
+    applies_to_jurisdictions: [
+      "AT",
+      "BE",
+      "CZ",
+      "DE",
+      "DK",
+      "EE",
+      "ES",
+      "FI",
+      "FR",
+      "GR",
+      "HR",
+      "HU",
+      "IE",
+      "IT",
+      "LT",
+      "LU",
+      "LV",
+      "NL",
+      "NO",
+      "PL",
+      "PT",
+      "RO",
+      "SE",
+      "SI",
+      "SK",
+      "UK",
+    ],
+    related_sources: [],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-SDA",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Space Data Association (SDA) — Industry Best Practices and Operational Procedures",
+    date_published: "2009-07-01",
+    official_reference: "SDA Founding Charter (2009); SDA Operational Manual",
+    source_url: "https://www.space-data.org/sda/",
+    issuing_body: "Space Data Association (industry consortium)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["space_traffic_management", "debris_mitigation"],
+    scope_description:
+      "Voluntary industry consortium for sharing operational data among GEO and increasingly LEO operators. Founded 2009 by Inmarsat, Intelsat, and SES; membership has grown to include most major commercial GEO operators plus several LEO constellation operators. SDA's Space Data Center (SDC) provides member-to-member orbital-data exchange, conjunction-assessment products, and RFI (radio-frequency-interference) mitigation services. Increasingly cited in NCA guidance as a best-practice reference for inter-operator coordination.",
+    key_provisions: [
+      {
+        section: "SDC service",
+        title: "Bilateral conjunction-data exchange",
+        summary:
+          "Members share precision orbital data via the Space Data Center; conjunction analyses use member-supplied data rather than public-catalogue data, reducing covariance and improving Pc accuracy.",
+      },
+      {
+        section: "RFI service",
+        title: "Radio-frequency interference reporting",
+        summary:
+          "Members report RFI events; SDA coordinates investigation and source identification across operator boundaries.",
+      },
+    ],
+    related_sources: ["INT-CCSDS-CDM-508", "INT-IADC-MITIGATION-2025"],
+    last_verified: "2026-04-27",
+  },
 ];
